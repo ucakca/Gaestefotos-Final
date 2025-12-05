@@ -1,0 +1,27 @@
+{
+  "name": "gaestefotos-app-v2",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Gästefotos App V2 - Next.js + Node.js",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm --filter frontend dev & pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "build": "pnpm --filter shared build && pnpm --filter frontend build && pnpm --filter backend build",
+    "build:frontend": "pnpm --filter frontend build",
+    "build:backend": "pnpm --filter backend build",
+    "lint": "pnpm --recursive lint",
+    "type-check": "pnpm --recursive type-check"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
+

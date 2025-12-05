@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-green: #295B4D;
+  --brand-light: #e8f5f0;
+  --brand-dark: #18382f;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background-color: #F9F5F2;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #F9F5F2 !important;
+  color: #295B4D !important;
+  min-height: 100vh;
+  height: 100%;
+}
+
+#__next {
+  min-height: 100vh;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fix für Tailwind - sicherstellen dass Utility-Klassen funktionieren */
+.min-h-screen {
+  min-height: 100vh !important;
+}
+
+.flex {
+  display: flex !important;
+}
+
+.items-center {
+  align-items: center !important;
+}
+
+.justify-center {
+  justify-content: center !important;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Input Fields - Fix für lesbare Schrift */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="url"],
+input[type="datetime-local"],
+textarea,
+select {
+  @apply text-gray-900 bg-white border-gray-300;
+  color: #111827 !important;
+  background-color: #ffffff !important;
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="number"]::placeholder,
+input[type="url"]::placeholder,
+textarea::placeholder {
+  @apply text-gray-400;
+  color: #9ca3af !important;
+}
+
+/* Focus States */
+input:focus,
+textarea:focus,
+select:focus {
+  @apply border-primary-500 ring-primary-500;
+  outline: none;
+}
+
+/* React DatePicker Styles */
+.react-datepicker {
+  border: 2px solid #EAA48F;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.react-datepicker__header {
+  background-color: #295B4D;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  padding-top: 0.8rem;
+}
+
+.react-datepicker__current-month {
+  color: white;
+  font-weight: 600;
+}
+
+.react-datepicker__day-name {
+  color: white;
+  font-weight: 500;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: #295B4D;
+  border-radius: 4px;
+}
+
+.react-datepicker__day:hover {
+  background-color: #EAA48F;
+  border-radius: 4px;
+}
+
+.react-datepicker__time-container .react-datepicker__time {
+  background: white;
+}
+
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box {
+  width: 100%;
+}
+
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list {
+  height: 195px;
+}
+
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected {
+  background-color: #295B4D;
+}
+
+.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item:hover {
+  background-color: #EAA48F;
+}

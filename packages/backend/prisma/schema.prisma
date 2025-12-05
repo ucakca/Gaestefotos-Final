@@ -1,0 +1,110 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String   // hashed
+  role      UserRole @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events Event[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  SUPERADMIN
+  ADMIN
+  GUEST
+}
+
+model Event {
+  id                     String   @id @default(uuid())
+  hostId                 String
+  slug                   String   @unique
+  title                  String
+  dateTime               DateTime?
+  locationName           String?
+  locationGoogleMapsLink String?
+  
+  // JSONB für flexible Konfiguration
+  designConfig           Json?    @default("{}")
+  featuresConfig         Json     @default("{\"showGuestlist\":true,\"mysteryMode\":false,\"allowUploads\":true,\"moderationRequired\":false,\"allowDownloads\":true}")
+  
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  host   User     @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  guests Guest[]
+  photos Photo[]
+
+  @@index([slug])
+  @@index([hostId])
+  @@map("events")
+}
+
+model Guest {
+  id                 String      @id @default(uuid())
+  eventId            String
+  firstName          String
+  lastName           String
+  email              String?
+  status             GuestStatus @default(PENDING)
+  dietaryRequirements String?    @db.Text
+  plusOneCount       Int         @default(0)
+  accessToken        String      @unique @default(uuid())
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  event  Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  photos Photo[]
+
+  @@index([eventId])
+  @@index([accessToken])
+  @@map("guests")
+}
+
+enum GuestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model Photo {
+  id         String      @id @default(uuid())
+  eventId    String
+  guestId    String?
+  storagePath String
+  url        String?
+  status     PhotoStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest Guest? @relation(fields: [guestId], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
+  @@index([status])
+  @@index([guestId])
+  @@map("photos")
+}
+
+enum PhotoStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DELETED
+}
+

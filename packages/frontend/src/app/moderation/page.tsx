@@ -1,0 +1,238 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import api from '@/lib/api';
+import { Photo, Event as EventType } from '@gaestefotos/shared';
+import { Check, X, Trash2 } from 'lucide-react';
+
+export default function ModerationPage() {
+  const [pendingPhotos, setPendingPhotos] = useState<(Photo & { event: EventType })[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+
+  useEffect(() => {
+    loadPendingPhotos();
+  }, []);
+
+  const loadPendingPhotos = async () => {
+    try {
+      // Get all events first
+      const { data: eventsData } = await api.get('/events');
+      const events = eventsData.events || [];
+
+      // Get pending photos for each event
+      const allPendingPhotos: (Photo & { event: EventType })[] = [];
+      
+      for (const event of events) {
+        try {
+          const { data: photosData } = await api.get(`/events/${event.id}/photos`, {
+            params: { status: 'PENDING' },
+          });
+          
+          const photos = photosData.photos || [];
+          allPendingPhotos.push(
+            ...photos.map((photo: Photo) => ({ ...photo, event }))
+          );
+        } catch (err) {
+          // Fehler für einzelne Events ignorieren
+        }
+      }
+
+      setPendingPhotos(allPendingPhotos);
+    } catch (err) {
+      console.error('Fehler beim Laden der Fotos:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async (photoId: string) => {
+    try {
+      await api.post(`/photos/${photoId}/approve`);
+      setPendingPhotos(prev => prev.filter(p => p.id !== photoId));
+      if (selectedPhoto?.id === photoId) {
+        setSelectedPhoto(null);
+      }
+    } catch (err: any) {
+      alert('Fehler: ' + (err.response?.data?.error || 'Unbekannter Fehler'));
+    }
+  };
+
+  const handleReject = async (photoId: string) => {
+    try {
+      await api.post(`/photos/${photoId}/reject`);
+      setPendingPhotos(prev => prev.filter(p => p.id !== photoId));
+      if (selectedPhoto?.id === photoId) {
+        setSelectedPhoto(null);
+      }
+    } catch (err: any) {
+      alert('Fehler: ' + (err.response?.data?.error || 'Unbekannter Fehler'));
+    }
+  };
+
+  const handleDelete = async (photoId: string) => {
+    if (!confirm('Foto wirklich löschen?')) return;
+
+    try {
+      await api.delete(`/photos/${photoId}`);
+      setPendingPhotos(prev => prev.filter(p => p.id !== photoId));
+      if (selectedPhoto?.id === photoId) {
+        setSelectedPhoto(null);
+      }
+    } catch (err: any) {
+      alert('Fehler: ' + (err.response?.data?.error || 'Unbekannter Fehler'));
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Laden...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Foto-Moderation</h1>
+          <p className="text-gray-600">
+            {pendingPhotos.length} Foto{pendingPhotos.length !== 1 ? 's' : ''} wartet{pendingPhotos.length !== 1 ? 'en' : ''} auf Freigabe
+          </p>
+        </motion.div>
+
+        {pendingPhotos.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white rounded-lg shadow p-12 text-center"
+          >
+            <p className="text-gray-500 text-lg">🎉 Alle Fotos wurden moderiert!</p>
+          </motion.div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Photo List */}
+            <div className="lg:col-span-1 space-y-4">
+              {pendingPhotos.map((photo, index) => (
+                <motion.div
+                  key={photo.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={() => setSelectedPhoto(photo)}
+                  className={`bg-white rounded-lg shadow cursor-pointer overflow-hidden border-2 transition-colors ${
+                    selectedPhoto?.id === photo.id
+                      ? 'border-primary-500'
+                      : 'border-transparent hover:border-gray-300'
+                  }`}
+                >
+                  <div className="aspect-square bg-gray-200 relative">
+                    {photo.url ? (
+                      <img
+                        src={photo.url}
+                        alt="Moderation"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        Foto
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded">
+                      Ausstehend
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {photo.event.title}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(photo.createdAt).toLocaleDateString('de-DE')}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Photo Detail */}
+            <div className="lg:col-span-2">
+              {selectedPhoto ? (
+                <motion.div
+                  key={selectedPhoto.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="bg-white rounded-lg shadow p-6"
+                >
+                  <div className="mb-6">
+                    <h2 className="text-xl font-semibold mb-2">
+                      {(selectedPhoto as any).event?.title || 'Foto'}
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                      Hochgeladen: {new Date(selectedPhoto.createdAt).toLocaleString('de-DE')}
+                    </p>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden mb-4">
+                      {selectedPhoto.url ? (
+                        <img
+                          src={selectedPhoto.url}
+                          alt="Foto"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          Foto
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleApprove(selectedPhoto.id)}
+                      className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium flex items-center justify-center gap-2"
+                    >
+                      <Check className="w-5 h-5" />
+                      Freigeben
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleReject(selectedPhoto.id)}
+                      className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium flex items-center justify-center gap-2"
+                    >
+                      <X className="w-5 h-5" />
+                      Ablehnen
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleDelete(selectedPhoto.id)}
+                      className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium flex items-center justify-center gap-2"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ) : (
+                <div className="bg-white rounded-lg shadow p-12 text-center">
+                  <p className="text-gray-500">Wähle ein Foto aus, um es zu moderieren</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
