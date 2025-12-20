@@ -233,6 +233,11 @@ test('invitation: UNLISTED requires access cookie (shortlink grants access)', as
     await page.goto(`/s/${code}`);
     await page.waitForURL(new RegExp(`/i/${invitation.slug}$`), { timeout: 30_000 });
     await expect(page.getByTestId('rsvp-name')).toBeVisible({ timeout: 30_000 });
+
+    // /s2 should behave the same.
+    await page.goto(`/s2/${code}`);
+    await page.waitForURL(new RegExp(`/i/${invitation.slug}$`), { timeout: 30_000 });
+    await expect(page.getByTestId('rsvp-name')).toBeVisible({ timeout: 30_000 });
   } finally {
     await cleanupBase(db, { userId: user.id, eventId: event.id, invitationId: invitation.id });
     await db.$disconnect();
