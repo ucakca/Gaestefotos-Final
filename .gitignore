@@ -5,6 +5,8 @@ node_modules/
 
 # Testing
 coverage/
+test-results/
+playwright-report/
 
 # Next.js
 .next/
@@ -42,6 +44,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Built artifacts (keep repo clean)
+packages/shared/src/**/*.js
+packages/shared/src/**/*.js.map
+packages/shared/src/**/*.d.ts.map
+
 # IDE
 .vscode/
 .idea/
@@ -52,3 +59,4 @@ next-env.d.ts
 # OS
 Thumbs.db
 
+.pids/
