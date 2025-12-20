@@ -89,19 +89,23 @@ test('stories: public event shows stories bar and viewer opens', async ({ page, 
       },
     ]);
 
-    await page.goto(`/e/${event.slug}`);
+    const assertStoriesViewerWorks = async (path: string) => {
+      await page.goto(path);
+      await expect(page.getByTestId('stories-bar')).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByTestId('story-item-0')).toBeVisible();
 
-    await expect(page.getByTestId('stories-bar')).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByTestId('story-item-0')).toBeVisible();
+      await page.getByTestId('story-item-0').click();
 
-    await page.getByTestId('story-item-0').click();
+      await expect(page.getByTestId('story-viewer')).toBeVisible();
+      await expect(page.getByTestId('story-progress')).toBeVisible();
+      await expect(page.getByTestId('story-image')).toBeVisible();
 
-    await expect(page.getByTestId('story-viewer')).toBeVisible();
-    await expect(page.getByTestId('story-progress')).toBeVisible();
-    await expect(page.getByTestId('story-image')).toBeVisible();
+      await page.getByTestId('story-close').click();
+      await expect(page.getByTestId('story-viewer')).not.toBeVisible();
+    };
 
-    await page.getByTestId('story-close').click();
-    await expect(page.getByTestId('story-viewer')).not.toBeVisible();
+    await assertStoriesViewerWorks(`/e/${event.slug}`);
+    await assertStoriesViewerWorks(`/e2/${event.slug}`);
   } finally {
     await db.story.deleteMany({ where: { id: story.id } });
     await db.photo.deleteMany({ where: { id: photo.id } });
