@@ -45,8 +45,8 @@ test('smoke: login -> dashboard loads', async ({ page, request }) => {
     await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
 
-    // Dashboard page always renders the welcome heading when loaded.
-    await expect(page.getByText('Willkommen zurück!')).toBeVisible({ timeout: 30_000 });
+    // Dashboard page always renders the dashboard heading when loaded.
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 30_000 });
   } finally {
     await db.user.delete({ where: { id: user.id } });
     await db.$disconnect();
