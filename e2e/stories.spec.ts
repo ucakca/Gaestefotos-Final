@@ -67,6 +67,15 @@ test('stories: public event shows stories bar and viewer opens', async ({ page, 
   });
 
   try {
+    page.on('pageerror', (err) => {
+      console.error('Page error:', err);
+    });
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        console.error('Console error:', msg.text());
+      }
+    });
+
     const jwtMod: any = await import('jsonwebtoken');
     const jwtSecret = process.env.JWT_SECRET || '';
     if (!jwtSecret) {
@@ -79,6 +88,7 @@ test('stories: public event shows stories bar and viewer opens', async ({ page, 
     }
 
     const eventAccessToken = sign({ type: 'event_access', eventId: event.id }, jwtSecret, { expiresIn: '12h' });
+    // The dev server may be reached via localhost OR 127.0.0.1 (cookie domain must match).
     await page.context().addCookies([
       {
         name: `event_access_${event.id}`,
@@ -87,10 +97,26 @@ test('stories: public event shows stories bar and viewer opens', async ({ page, 
         path: '/',
         httpOnly: true,
       },
+      {
+        name: `event_access_${event.id}`,
+        value: eventAccessToken,
+        domain: '127.0.0.1',
+        path: '/',
+        httpOnly: true,
+      },
     ]);
 
     const assertStoriesViewerWorks = async (path: string) => {
+      // First verify the backend endpoint is reachable with the minted cookie.
+      const backendBase = apiBase.replace('127.0.0.1', 'localhost');
+      const cookieHeader = `event_access_${event.id}=${eventAccessToken}`;
+      const apiRes = await request.get(`${backendBase}/api/events/${event.id}/stories`, {
+        headers: { cookie: cookieHeader },
+      });
+      expect(apiRes.ok(), `Stories API failed (${apiRes.status()}) for ${path}`).toBeTruthy();
+
       await page.goto(path);
+
       await expect(page.getByTestId('stories-bar')).toBeVisible({ timeout: 30_000 });
       await expect(page.getByTestId('story-item-0')).toBeVisible();
 
