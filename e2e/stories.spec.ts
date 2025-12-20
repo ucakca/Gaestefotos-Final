@@ -97,6 +97,7 @@ test('stories: public event shows stories bar and viewer opens', async ({ page, 
     await page.getByTestId('story-item-0').click();
 
     await expect(page.getByTestId('story-viewer')).toBeVisible();
+    await expect(page.getByTestId('story-progress')).toBeVisible();
     await expect(page.getByTestId('story-image')).toBeVisible();
 
     await page.getByTestId('story-close').click();
