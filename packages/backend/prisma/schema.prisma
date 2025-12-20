@@ -15,7 +15,8 @@ model User {
   email     String   @unique
   name      String
   password  String   // hashed
-  role      UserRole @default(ADMIN)
+  role      UserRole @default(HOST)
+  wordpressUserId Int?     @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -25,34 +26,109 @@ model User {
 }
 
 enum UserRole {
-  SUPERADMIN
   ADMIN
-  GUEST
+  HOST
 }
 
 model Event {
   id                     String   @id @default(uuid())
   hostId                 String
   slug                   String   @unique
+  eventCode              String?  @unique
   title                  String
   dateTime               DateTime?
   locationName           String?
   locationGoogleMapsLink String?
+  password               String?  // hashed
+  isActive               Boolean  @default(true)
+  deletedAt              DateTime?
+  purgeAfter             DateTime?
   
   // JSONB für flexible Konfiguration
   designConfig           Json?    @default("{}")
-  featuresConfig         Json     @default("{\"showGuestlist\":true,\"mysteryMode\":false,\"allowUploads\":true,\"moderationRequired\":false,\"allowDownloads\":true}")
+  featuresConfig         Json     @default("{\"showGuestlist\":false,\"mysteryMode\":false,\"allowUploads\":true,\"moderationRequired\":false,\"allowDownloads\":true}")
+  guestbookHostMessage   String?  @db.Text // Host-Nachricht im Gästebuch (Standardtext)
+  designAssetsBytes      BigInt?  // optional aggregate for logo/profile/cover uploads
   
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 
-  host   User     @relation(fields: [hostId], references: [id], onDelete: Cascade)
-  guests Guest[]
-  photos Photo[]
+  host      User       @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  guests    Guest[]
+  photos    Photo[]
+  videos    Video[]
+  categories Category[]
+  stories   Story[]
+  guestbookEntries GuestbookEntry[]
+  guestbookPhotoUploads GuestbookPhotoUpload[]
+  challenges Challenge[]
+  entitlements EventEntitlement[]
+  invitations Invitation[]
 
   @@index([slug])
   @@index([hostId])
+  @@index([deletedAt])
+  @@index([purgeAfter])
   @@map("events")
+}
+
+enum EntitlementStatus {
+  ACTIVE
+  REPLACED
+  CANCELLED
+}
+
+model EventEntitlement {
+  id              String            @id @default(uuid())
+  eventId         String
+  wpUserId        Int
+  status          EntitlementStatus @default(ACTIVE)
+  source          String
+  wcOrderId       String?
+  wcProductId     String?
+  wcSku           String?
+  storageLimitBytes BigInt?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([wpUserId])
+  @@index([status])
+  @@map("event_entitlements")
+}
+
+enum PackageDefinitionType {
+  BASE
+  UPGRADE
+}
+
+model WooWebhookReceipt {
+  id        String   @id @default(uuid())
+  wcOrderId String   @unique @map("wc_order_id")
+  createdAt DateTime @default(now())
+
+  @@index([wcOrderId])
+  @@map("woo_webhook_receipts")
+}
+
+model PackageDefinition {
+  id                String                @id @default(uuid())
+  sku               String                @unique
+  name              String
+  type              PackageDefinitionType @default(BASE)
+  resultingTier     String
+  upgradeFromTier   String?
+  storageLimitBytes BigInt?
+  isActive          Boolean               @default(true)
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  @@index([sku])
+  @@index([type])
+  @@index([isActive])
+  @@map("package_definitions")
 }
 
 model Guest {
@@ -70,6 +146,8 @@ model Guest {
 
   event  Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
   photos Photo[]
+  videos Video[]
+  challengeCompletions ChallengeCompletion[]
 
   @@index([eventId])
   @@index([accessToken])
@@ -86,19 +164,84 @@ model Photo {
   id         String      @id @default(uuid())
   eventId    String
   guestId    String?
+  categoryId String?
   storagePath String
   url        String?
   status     PhotoStatus @default(PENDING)
+  deletedAt  DateTime?
+  purgeAfter DateTime?
+  sizeBytes  BigInt?
+  
+  // Metadaten
+  title       String?
+  description String?   @db.Text
+  tags        String[]  @default([])
+  uploadedBy  String?   // Name des Uploaders (wenn kein Gast)
+  views       Int       @default(0)
+  latitude    Float?
+  longitude   Float?
+  exifData    Json?     // EXIF-Metadaten als JSON
+  
+  // Duplikat-Erkennung
+  perceptualHash String?  // Perceptual hash für ähnliche Bilder
+  md5Hash        String?  // MD5 hash für exakte Duplikate
+  duplicateGroupId String? // ID der Duplikat-Gruppe
+  isBestInGroup   Boolean @default(false) // Bestes Foto in der Gruppe
+  qualityScore    Float?  // Qualitäts-Score (für Beste-Foto-Auswahl)
+  
+  // Gesichtserkennung
+  faceCount       Int?    // Anzahl erkannte Gesichter
+  faceData        Json?   // Gesichtserkennungs-Daten (Positionen, etc.)
+  
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
 
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  guest Guest? @relation(fields: [guestId], references: [id], onDelete: SetNull)
+  event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest    Guest?    @relation(fields: [guestId], references: [id], onDelete: SetNull)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  
+  likes    PhotoLike[]
+  comments PhotoComment[]
+  votes    PhotoVote[]
+  stories  Story[]
+  challengeCompletions ChallengeCompletion[]
 
   @@index([eventId])
   @@index([status])
   @@index([guestId])
+  @@index([categoryId])
+  @@index([tags])
+  @@index([duplicateGroupId])
+  @@index([perceptualHash])
+  @@index([md5Hash])
+  @@index([deletedAt])
+  @@index([purgeAfter])
   @@map("photos")
+}
+
+model Category {
+  id                  String    @id @default(uuid())
+  eventId             String
+  name                String
+  order               Int        @default(0)
+  isVisible           Boolean    @default(true)  // Sichtbar für Gäste
+  uploadLocked        Boolean    @default(false) // Upload gesperrt
+  uploadLockUntil     DateTime?  // Upload gesperrt bis Datum
+  challengeEnabled    Boolean   @default(false) // Challenge aktiviert
+  challengeDescription String?   @db.Text        // Challenge-Beschreibung
+  dateTime            DateTime?  // Datum & Uhrzeit für dieses Album
+  locationName        String?    // Ort für dieses Album
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  event  Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  photos Photo[]
+  videos Video[]
+  challenges Challenge[]
+
+  @@index([eventId])
+  @@index([isVisible])
+  @@map("categories")
 }
 
 enum PhotoStatus {
@@ -106,5 +249,328 @@ enum PhotoStatus {
   APPROVED
   REJECTED
   DELETED
+}
+
+model PhotoLike {
+  id        String   @id @default(uuid())
+  photoId   String
+  guestId   String?
+  ipAddress String?  // Fallback für anonyme Likes
+  userAgent String?  // Browser-Info
+  createdAt DateTime @default(now())
+
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([photoId, ipAddress]) // Verhindert doppelte Likes von gleicher IP
+  @@index([photoId])
+  @@map("photo_likes")
+}
+
+model PhotoComment {
+  id        String   @id @default(uuid())
+  photoId   String
+  guestId   String?
+  authorName String  // Fallback wenn kein Gast
+  comment   String   @db.Text
+  status    CommentStatus @default(PENDING) // Moderation
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@index([photoId])
+  @@index([status])
+  @@map("photo_comments")
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model PhotoVote {
+  id        String   @id @default(uuid())
+  photoId   String
+  guestId   String?
+  ipAddress String?  // Fallback für anonyme Votes
+  rating    Int      // 1-5 Sterne
+  createdAt DateTime @default(now())
+
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([photoId, ipAddress]) // Verhindert doppelte Votes
+  @@index([photoId])
+  @@map("photo_votes")
+}
+
+model Story {
+  id        String   @id @default(uuid())
+  eventId   String
+  photoId   String
+  isActive  Boolean  @default(true) // Gast kann Story aktivieren/deaktivieren
+  expiresAt DateTime // 24 Stunden nach Upload
+  views     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([expiresAt])
+  @@index([isActive])
+  @@map("stories")
+}
+
+model GuestbookEntry {
+  id        String   @id @default(uuid())
+  eventId   String
+  guestId   String?
+  authorName String
+  message   String   @db.Text
+  photoUrl  String?  // Optional: Foto zur Nachricht
+  photoStoragePath String? // Storage path für das Foto
+  photoSizeBytes BigInt?
+  isPublic  Boolean  @default(true) // Ob der Eintrag im Feed erscheint
+  status    EntryStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([status])
+  @@index([isPublic])
+  @@map("guestbook_entries")
+}
+
+model GuestbookPhotoUpload {
+  id          String   @id @default(uuid())
+  eventId     String
+  storagePath String
+  sizeBytes   BigInt
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+  claimedAt   DateTime?
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([storagePath])
+  @@index([expiresAt])
+  @@index([claimedAt])
+  @@map("guestbook_photo_uploads")
+}
+
+enum EntryStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Video {
+  id         String      @id @default(uuid())
+  eventId    String
+  guestId    String?
+  categoryId String?
+  storagePath String
+  url        String?
+  status     VideoStatus @default(PENDING)
+  deletedAt  DateTime?
+  purgeAfter DateTime?
+  sizeBytes  BigInt?
+  scanStatus String?
+  scannedAt  DateTime?
+  scanError  String?
+  
+  // Metadaten
+  title       String?
+  description String?   @db.Text
+  tags        String[]  @default([])
+  uploadedBy  String?   // Name des Uploaders (wenn kein Gast)
+  views       Int       @default(0)
+  duration    Int?      // Dauer in Sekunden
+  thumbnailPath String?  // Pfad zum Thumbnail
+  
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest    Guest?    @relation(fields: [guestId], references: [id], onDelete: SetNull)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
+  @@index([status])
+  @@index([guestId])
+  @@index([categoryId])
+  @@index([tags])
+  @@index([deletedAt])
+  @@index([purgeAfter])
+  @@map("videos")
+}
+
+enum VideoStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DELETED
+}
+
+model Challenge {
+  id          String   @id @default(uuid())
+  eventId     String
+  categoryId String?  // null = globale Challenge, sonst Album-spezifisch
+  title       String
+  description String?  @db.Text
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  isVisible   Boolean  @default(true) // Sichtbarkeit des Challenge-Fotos
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  event     Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  category  Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  completions ChallengeCompletion[]
+
+  @@index([eventId])
+  @@index([categoryId])
+  @@index([isActive])
+  @@map("challenges")
+}
+
+model ChallengeCompletion {
+  id          String   @id @default(uuid())
+  challengeId String
+  photoId     String   @unique // Pro Challenge nur ein Foto
+  guestId     String?
+  uploaderName String?  // Fallback für anonyme Uploads
+  ratingCount Int      @default(0)
+  averageRating Float?  // Durchschnittsbewertung (1-5)
+  completedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  guest     Guest?   @relation(fields: [guestId], references: [id], onDelete: SetNull)
+  ratings   ChallengeRating[]
+
+  @@index([challengeId])
+  @@index([photoId])
+  @@index([guestId])
+  @@map("challenge_completions")
+}
+
+model ChallengeRating {
+  id          String   @id @default(uuid())
+  completionId String
+  raterGuestId String?
+  raterName   String?  // Fallback für anonyme Bewertungen
+  ipAddress   String?  // Fallback für anonyme Bewertungen
+  rating      Int      // 1-5 Sterne
+  createdAt   DateTime @default(now())
+
+  completion ChallengeCompletion @relation(fields: [completionId], references: [id], onDelete: Cascade)
+
+  @@unique([completionId, ipAddress]) // Verhindert doppelte Bewertungen
+  @@index([completionId])
+  @@map("challenge_ratings")
+}
+
+model Invitation {
+  id           String   @id @default(uuid())
+  eventId       String
+  slug          String   @unique
+  name          String
+  config        Json?    @default("{}")
+  passwordHash  String?
+  visibility    InvitationVisibility @default(UNLISTED)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  event        Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  shortLinks   InvitationShortLink[]
+  visits       InvitationVisit[]
+  rsvps        InvitationRsvp[]
+
+  @@index([eventId])
+  @@index([slug])
+  @@index([visibility])
+  @@index([isActive])
+  @@map("invitations")
+}
+
+enum InvitationVisibility {
+  UNLISTED
+  PUBLIC
+}
+
+enum InvitationRsvpStatus {
+  YES
+  NO
+  MAYBE
+}
+
+model InvitationRsvp {
+  id           String               @id @default(uuid())
+  invitationId String
+  status       InvitationRsvpStatus
+  name         String?
+  ipHash       String?
+  userAgent    String?
+  createdAt    DateTime             @default(now())
+
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
+  @@index([invitationId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("invitation_rsvps")
+}
+
+model InvitationShortLink {
+  id            String   @id @default(uuid())
+  invitationId  String
+  code          String   @unique
+  channel       String?
+  createdAt     DateTime @default(now())
+  lastAccessedAt DateTime?
+
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  visits     InvitationVisit[]
+
+  @@index([invitationId])
+  @@index([code])
+  @@map("invitation_short_links")
+}
+
+model InvitationVisit {
+  id            String   @id @default(uuid())
+  invitationId  String
+  shortLinkId   String?
+  ipHash        String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  shortLink   InvitationShortLink? @relation(fields: [shortLinkId], references: [id], onDelete: SetNull)
+
+  @@index([invitationId])
+  @@index([shortLinkId])
+  @@index([createdAt])
+  @@map("invitation_visits")
+}
+
+model InvitationTemplate {
+  id        String   @id @default(uuid())
+  name      String
+  config    Json     @default("{}")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@map("invitation_templates")
 }
 

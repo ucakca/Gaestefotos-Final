@@ -2,15 +2,52 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Download, Share2 } from 'lucide-react';
 import { Photo } from '@gaestefotos/shared';
 
 interface GalleryProps {
   photos: Photo[];
+  allowDownloads?: boolean;
+  eventSlug?: string;
 }
 
-export default function Gallery({ photos }: GalleryProps) {
+export default function Gallery({ photos, allowDownloads = true, eventSlug }: GalleryProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
+
+  const handleDownload = (photo: Photo) => {
+    if (!allowDownloads) return;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+    window.open(`${apiUrl}/api/photos/${photo.id}/download`, '_blank');
+  };
+
+  const handleShare = async (photo: Photo) => {
+    const shareUrl = eventSlug 
+      ? `${window.location.origin}/e/${eventSlug}?photo=${photo.id}`
+      : photo.url || '';
+
+    if (navigator.share && photo.url) {
+      try {
+        await navigator.share({
+          title: 'Event Foto',
+          text: 'Schau dir dieses Event-Foto an!',
+          url: shareUrl,
+        });
+      } catch (err) {
+        // User cancelled or error
+        copyToClipboard(shareUrl);
+      }
+    } else {
+      copyToClipboard(shareUrl);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopyFeedback('Link kopiert');
+      window.setTimeout(() => setCopyFeedback(null), 1500);
+    });
+  };
 
   const openLightbox = (index: number) => {
     setSelectedPhoto(index);
@@ -134,6 +171,50 @@ export default function Gallery({ photos }: GalleryProps) {
                 className="max-w-full max-h-full object-contain"
                 onClick={(e) => e.stopPropagation()}
               />
+            </AnimatePresence>
+
+            {/* Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="absolute bottom-20 left-1/2 transform -translate-x-1/2 flex gap-4"
+            >
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDownload(photos[selectedPhoto]);
+                }}
+                className="p-3 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70"
+              >
+                <Download className="w-6 h-6" />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleShare(photos[selectedPhoto]);
+                }}
+                className="p-3 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70"
+              >
+                <Share2 className="w-6 h-6" />
+              </motion.button>
+            </motion.div>
+
+            <AnimatePresence>
+              {copyFeedback && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute bottom-32 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full bg-black bg-opacity-60 text-white text-sm"
+                >
+                  {copyFeedback}
+                </motion.div>
+              )}
             </AnimatePresence>
 
             {/* Photo Counter */}
