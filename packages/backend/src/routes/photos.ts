@@ -31,8 +31,15 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
 
     const where: any = { eventId };
 
-    if (status) {
-      where.status = status;
+    const statusValue = Array.isArray(status) ? status[0] : status;
+    if (typeof statusValue === 'string') {
+      const normalized = statusValue.trim().toUpperCase();
+      if (normalized && normalized !== 'ALL') {
+        const allowed = new Set(['PENDING', 'APPROVED', 'REJECTED', 'DELETED']);
+        if (allowed.has(normalized)) {
+          where.status = normalized;
+        }
+      }
     }
 
     const photos = await prisma.photo.findMany({

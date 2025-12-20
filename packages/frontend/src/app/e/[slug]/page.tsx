@@ -33,7 +33,13 @@ export default function PublicEventPage() {
 
   const [stories, setStories] = useState<any[]>([]);
   const [selectedStoryIndex, setSelectedStoryIndex] = useState<number | null>(null);
+  const [storyProgress, setStoryProgress] = useState(0);
   const viewedStoriesRef = useRef<Set<string>>(new Set());
+  const storyProgressRafRef = useRef<number | null>(null);
+  const storyProgressStartedAtRef = useRef<number>(0);
+  const storyProgressRef = useRef<number>(0);
+  const storyPausedRef = useRef<boolean>(false);
+  const STORY_DURATION_MS = 6000;
   
   // Infinite scroll state
   const [hasMore, setHasMore] = useState(true);
@@ -156,6 +162,114 @@ export default function PublicEventPage() {
 
     trackView();
   }, [selectedStoryIndex, stories]);
+
+  useEffect(() => {
+    storyProgressRef.current = storyProgress;
+  }, [storyProgress]);
+
+  useEffect(() => {
+    if (selectedStoryIndex === null) return;
+    if (!stories[selectedStoryIndex]) return;
+
+    const preload = (idx: number) => {
+      const url = stories[idx]?.photo?.url;
+      if (!url || typeof Image === 'undefined') return;
+      const img = new Image();
+      img.src = url;
+    };
+
+    if (stories.length > 1) {
+      preload((selectedStoryIndex + 1) % stories.length);
+      preload((selectedStoryIndex - 1 + stories.length) % stories.length);
+    }
+  }, [selectedStoryIndex, stories]);
+
+  useEffect(() => {
+    if (storyProgressRafRef.current !== null) {
+      cancelAnimationFrame(storyProgressRafRef.current);
+      storyProgressRafRef.current = null;
+    }
+
+    if (selectedStoryIndex === null || !stories[selectedStoryIndex]) {
+      setStoryProgress(0);
+      return;
+    }
+
+    setStoryProgress(0);
+    storyProgressStartedAtRef.current = typeof performance !== 'undefined' ? performance.now() : Date.now();
+
+    const tick = () => {
+      if (selectedStoryIndex === null) return;
+
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+
+      if (storyPausedRef.current) {
+        storyProgressStartedAtRef.current = now - storyProgressRef.current * STORY_DURATION_MS;
+        storyProgressRafRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
+      const elapsed = now - storyProgressStartedAtRef.current;
+      const nextProgress = Math.min(1, elapsed / STORY_DURATION_MS);
+      setStoryProgress(nextProgress);
+      storyProgressRef.current = nextProgress;
+
+      if (nextProgress >= 1) {
+        setSelectedStoryIndex((i) => {
+          if (i === null) return null;
+          if (stories.length <= 1) return null;
+          if (i >= stories.length - 1) return null;
+          return i + 1;
+        });
+        return;
+      }
+
+      storyProgressRafRef.current = requestAnimationFrame(tick);
+    };
+
+    storyProgressRafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (storyProgressRafRef.current !== null) {
+        cancelAnimationFrame(storyProgressRafRef.current);
+        storyProgressRafRef.current = null;
+      }
+    };
+  }, [selectedStoryIndex, stories]);
+
+  useEffect(() => {
+    if (selectedStoryIndex === null) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setSelectedStoryIndex(null);
+        return;
+      }
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setSelectedStoryIndex((i) => {
+          if (i === null) return 0;
+          if (stories.length <= 1) return i;
+          return (i - 1 + stories.length) % stories.length;
+        });
+        return;
+      }
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setSelectedStoryIndex((i) => {
+          if (i === null) return 0;
+          if (stories.length <= 1) return i;
+          return (i + 1) % stories.length;
+        });
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selectedStoryIndex, stories.length]);
 
   const loadCategories = async () => {
     if (!event?.id) return;
@@ -654,6 +768,28 @@ export default function PublicEventPage() {
             data-testid="story-viewer"
             className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
           >
+            <div
+              className="absolute top-4 left-4 right-4 mx-auto w-full max-w-md flex gap-1"
+              data-testid="story-progress"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {stories.map((_: any, idx: number) => {
+                const fill =
+                  selectedStoryIndex === null
+                    ? 0
+                    : idx < selectedStoryIndex
+                      ? 1
+                      : idx === selectedStoryIndex
+                        ? storyProgress
+                        : 0;
+                return (
+                  <div key={idx} className="h-1 flex-1 rounded bg-white/30 overflow-hidden">
+                    <div className="h-full bg-white" style={{ width: `${Math.max(0, Math.min(1, fill)) * 100}%` }} />
+                  </div>
+                );
+              })}
+            </div>
+
             <button
               type="button"
               onClick={(e) => {
@@ -704,8 +840,82 @@ export default function PublicEventPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md"
+              drag={stories.length > 1 ? 'x' : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(_, info) => {
+                if (stories.length <= 1) return;
+                const threshold = 60;
+                if (info.offset.x > threshold) {
+                  setSelectedStoryIndex((i) => {
+                    if (i === null) return 0;
+                    return (i - 1 + stories.length) % stories.length;
+                  });
+                  return;
+                }
+                if (info.offset.x < -threshold) {
+                  setSelectedStoryIndex((i) => {
+                    if (i === null) return 0;
+                    return (i + 1) % stories.length;
+                  });
+                }
+              }}
+              className="w-full max-w-md relative select-none touch-pan-y"
             >
+              <div
+                className="absolute inset-0 z-10"
+                onPointerDown={() => {
+                  storyPausedRef.current = true;
+                }}
+                onPointerUp={() => {
+                  storyPausedRef.current = false;
+                  const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+                  storyProgressStartedAtRef.current = now - storyProgressRef.current * STORY_DURATION_MS;
+                }}
+                onPointerCancel={() => {
+                  storyPausedRef.current = false;
+                  const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+                  storyProgressStartedAtRef.current = now - storyProgressRef.current * STORY_DURATION_MS;
+                }}
+                onPointerLeave={() => {
+                  storyPausedRef.current = false;
+                  const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+                  storyProgressStartedAtRef.current = now - storyProgressRef.current * STORY_DURATION_MS;
+                }}
+              >
+                <div className="absolute inset-y-0 left-0 w-1/2" />
+                <div className="absolute inset-y-0 right-0 w-1/2" />
+              </div>
+
+              {stories.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    aria-label="Vorherige Story"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedStoryIndex((i) => {
+                        if (i === null) return 0;
+                        return (i - 1 + stories.length) % stories.length;
+                      });
+                    }}
+                    className="absolute inset-y-0 left-0 w-1/2 z-20"
+                  />
+                  <button
+                    type="button"
+                    aria-label="Nächste Story"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedStoryIndex((i) => {
+                        if (i === null) return 0;
+                        return (i + 1) % stories.length;
+                      });
+                    }}
+                    className="absolute inset-y-0 right-0 w-1/2 z-20"
+                  />
+                </>
+              )}
+
               <img
                 src={stories[selectedStoryIndex]?.photo?.url || ''}
                 alt="Story"
