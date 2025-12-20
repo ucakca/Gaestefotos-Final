@@ -648,17 +648,17 @@ export default function PublicEventPage() {
 
       {stories.length > 0 && (
         <div className="px-4 py-3 border-b border-gray-100" data-testid="stories-bar">
-          <div className="flex gap-3 overflow-x-auto">
+          <div className="flex gap-3 overflow-x-auto pr-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {stories.map((s: any, idx: number) => (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => setSelectedStoryIndex(idx)}
                 data-testid={`story-item-${idx}`}
-                className="flex flex-col items-center gap-1 flex-shrink-0"
+                className="flex flex-col items-center gap-1.5 flex-shrink-0 active:scale-[0.98]"
               >
-                <div className="w-14 h-14 rounded-full ring-2 ring-[#EAA48F] p-0.5 bg-white">
-                  <div className="w-full h-full rounded-full overflow-hidden bg-gray-100">
+                <div className="w-[60px] h-[60px] rounded-full bg-gradient-to-tr from-[#EAA48F] via-[#F2C6A0] to-[#EAA48F] p-[2px] shadow-sm">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-gray-100 ring-2 ring-white">
                     {s?.photo?.url ? (
                       <img src={s.photo.url} alt="Story" className="w-full h-full object-cover" />
                     ) : (
@@ -666,7 +666,7 @@ export default function PublicEventPage() {
                     )}
                   </div>
                 </div>
-                <div className="text-[10px] text-gray-600 max-w-[64px] truncate">
+                <div className="text-[11px] font-medium text-gray-700 max-w-[72px] truncate">
                   {(s?.photo?.uploadedBy as string) || 'Story'}
                 </div>
               </button>
@@ -766,41 +766,54 @@ export default function PublicEventPage() {
             exit={{ opacity: 0 }}
             onClick={() => setSelectedStoryIndex(null)}
             data-testid="story-viewer"
-            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center"
           >
+            <div className="absolute inset-0" onClick={() => setSelectedStoryIndex(null)} />
+
             <div
-              className="absolute top-4 left-4 right-4 mx-auto w-full max-w-md flex gap-1"
-              data-testid="story-progress"
+              className="absolute top-0 left-0 right-0 z-30 px-4 pt-4 pb-5 bg-gradient-to-b from-black/80 via-black/50 to-transparent"
               onClick={(e) => e.stopPropagation()}
             >
-              {stories.map((_: any, idx: number) => {
-                const fill =
-                  selectedStoryIndex === null
-                    ? 0
-                    : idx < selectedStoryIndex
-                      ? 1
-                      : idx === selectedStoryIndex
-                        ? storyProgress
-                        : 0;
-                return (
-                  <div key={idx} className="h-1 flex-1 rounded bg-white/30 overflow-hidden">
-                    <div className="h-full bg-white" style={{ width: `${Math.max(0, Math.min(1, fill)) * 100}%` }} />
-                  </div>
-                );
-              })}
-            </div>
+              <div className="mx-auto w-full max-w-md">
+                <div className="flex gap-1" data-testid="story-progress">
+                  {stories.map((_: any, idx: number) => {
+                    const fill =
+                      selectedStoryIndex === null
+                        ? 0
+                        : idx < selectedStoryIndex
+                          ? 1
+                          : idx === selectedStoryIndex
+                            ? storyProgress
+                            : 0;
+                    return (
+                      <div key={idx} className="h-1 flex-1 rounded bg-white/25 overflow-hidden">
+                        <div
+                          className="h-full bg-white"
+                          style={{ width: `${Math.max(0, Math.min(1, fill)) * 100}%` }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
 
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedStoryIndex(null);
-              }}
-              data-testid="story-close"
-              className="absolute top-4 right-4 text-white/90 hover:text-white"
-            >
-              <X className="w-8 h-8" />
-            </button>
+                <div className="mt-3 flex items-center justify-between">
+                  <div className="min-w-0 text-white/90 text-sm font-medium truncate">
+                    {(stories[selectedStoryIndex]?.photo?.uploadedBy as string) || 'Story'}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedStoryIndex(null);
+                    }}
+                    data-testid="story-close"
+                    className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/10 hover:bg-white/15 text-white"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
 
             {stories.length > 1 && (
               <>
@@ -814,9 +827,9 @@ export default function PublicEventPage() {
                     });
                   }}
                   data-testid="story-prev"
-                  className="absolute left-4 text-white/90 hover:text-white"
+                  className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/10 hover:bg-white/15 text-white flex items-center justify-center"
                 >
-                  <ChevronLeft className="w-12 h-12" />
+                  <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button
                   type="button"
@@ -828,9 +841,9 @@ export default function PublicEventPage() {
                     });
                   }}
                   data-testid="story-next"
-                  className="absolute right-4 text-white/90 hover:text-white"
+                  className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/10 hover:bg-white/15 text-white flex items-center justify-center"
                 >
-                  <ChevronRight className="w-12 h-12" />
+                  <ChevronRight className="w-6 h-6" />
                 </button>
               </>
             )}
@@ -860,7 +873,7 @@ export default function PublicEventPage() {
                   });
                 }
               }}
-              className="w-full max-w-md relative select-none touch-pan-y"
+              className="w-full max-w-md relative select-none touch-pan-y px-4"
             >
               <div
                 className="absolute inset-0 z-10"
@@ -920,7 +933,7 @@ export default function PublicEventPage() {
                 src={stories[selectedStoryIndex]?.photo?.url || ''}
                 alt="Story"
                 data-testid="story-image"
-                className="w-full max-h-[80vh] object-contain rounded-lg"
+                className="w-full max-h-[82vh] object-contain rounded-2xl shadow-2xl"
               />
             </motion.div>
           </motion.div>
