@@ -140,13 +140,15 @@ export default function PublicEventPageV2() {
       />
 
       {featuresConfig?.challengesEnabled === true && Array.isArray(challenges) && challenges.filter((c: any) => c?.isActive).length > 0 && (
-        <div className="px-4 py-3 bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-yellow-200">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-yellow-500" />
-            <p className="text-sm text-gray-700">
-              <strong>Tolle Challenges verfügbar!</strong> Klicke auf "Challenges" im Menü unten, um teilzunehmen.
-            </p>
-          </div>
+        <div className="px-4 py-3 border-b border-yellow-200">
+          <Alert className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200 text-gray-900">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-yellow-500" />
+              <p className="text-sm text-gray-700">
+                <strong>Tolle Challenges verfügbar!</strong> Klicke auf "Challenges" im Menü unten, um teilzunehmen.
+              </p>
+            </div>
+          </Alert>
         </div>
       )}
 
