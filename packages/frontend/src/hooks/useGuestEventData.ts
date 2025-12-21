@@ -24,6 +24,7 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
 
   const loadingRef = useRef(false);
   const feedPhotosRef = useRef<any[]>([]);
+  const challengePhotosRef = useRef<any[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
@@ -139,6 +140,56 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
         } catch {
           feedPhotosRef.current = [];
         }
+
+        try {
+          const challengesResponse = await api.get(`/events/${eventId}/challenges`, {
+            params: { public: 'true' },
+          });
+          const activeChallenges = challengesResponse.data?.challenges || [];
+
+          const challengePhotos = (Array.isArray(activeChallenges) ? activeChallenges : [])
+            .filter((challenge: any) => challenge?.isVisible !== false && Array.isArray(challenge?.completions) && challenge.completions.length > 0)
+            .flatMap((challenge: any) =>
+              (challenge.completions || []).map((completion: any) => {
+                const photo = completion?.photo;
+                let photoUrl = photo?.url;
+
+                if (photo?.id && photo?.storagePath) {
+                  photoUrl = `/api/photos/${photo.id}/file`;
+                } else if (photo?.storagePath && typeof photoUrl === 'string' && !photoUrl.startsWith('http') && !photoUrl.startsWith('/api/')) {
+                  photoUrl = `/api/events/${eventId}/guestbook/photo/${encodeURIComponent(photo.storagePath)}`;
+                }
+
+                return {
+                  id: `challenge-${completion.id}`,
+                  eventId,
+                  photoId: photo?.id,
+                  storagePath: photo?.storagePath,
+                  url: photoUrl,
+                  status: 'APPROVED',
+                  createdAt: completion?.completedAt,
+                  uploadedBy: completion?.uploaderName || null,
+                  challenge: {
+                    id: challenge.id,
+                    title: challenge.title,
+                    description: challenge.description,
+                  },
+                  completion: {
+                    id: completion.id,
+                    guest: completion.guest,
+                    uploaderName: completion?.uploaderName || null,
+                    averageRating: completion?.averageRating,
+                    ratingCount: completion?.ratingCount,
+                  },
+                  isChallengePhoto: true,
+                };
+              })
+            );
+
+          challengePhotosRef.current = challengePhotos;
+        } catch {
+          challengePhotosRef.current = [];
+        }
       }
 
       const hasMorePhotos =
@@ -149,8 +200,22 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
       setPhotos((prev) => {
         const base = reset ? [] : (prev as any[]);
         const existingIds = new Set(base.map((p: any) => p.id));
-        const deduped = (nextPhotos as any[]).filter((p: any) => !existingIds.has(p.id));
-        const merged = [...base, ...deduped, ...(reset ? feedPhotosRef.current : [])];
+        const challengePhotoIds = new Set(
+          (reset ? challengePhotosRef.current : [])
+            .map((p: any) => p?.photoId)
+            .filter(Boolean)
+            .map((id: any) => String(id))
+        );
+
+        // Remove regular photos that are also represented as challenge photos (avoid duplicates)
+        const deduped = (nextPhotos as any[]).filter((p: any) => !existingIds.has(p.id) && !challengePhotoIds.has(String(p.id)));
+
+        const merged = [
+          ...base,
+          ...deduped,
+          ...(reset ? feedPhotosRef.current : []),
+          ...(reset ? challengePhotosRef.current : []),
+        ];
 
         // Ensure guestbook + photos are shown newest-first
         merged.sort((a: any, b: any) => {
