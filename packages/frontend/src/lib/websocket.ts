@@ -6,10 +6,13 @@ class WebSocketManager {
   private listeners: Map<string, Set<(data: any) => void>> = new Map();
 
   connect() {
+    if (process.env.NEXT_PUBLIC_DISABLE_REALTIME === 'true') return;
     if (this.socket?.connected) return;
 
     this.socket = io(process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:8001', {
-      transports: ['websocket'],
+      transports: ['polling'],
+      upgrade: false,
+      path: '/socket.io',
     });
 
     this.socket.on('connect', () => {

@@ -28,7 +28,7 @@ const apiBaseForFrontend = (() => {
   }
 })();
 
-const frontendEnv = `${frontendPort ? `PORT=${frontendPort} ` : ''}NEXT_PUBLIC_API_URL=${apiBaseForFrontend} API_URL=${apiBaseForFrontend}`.trim();
+const frontendEnv = `${frontendPort ? `PORT=${frontendPort} ` : ''}NEXT_PUBLIC_API_URL=${apiBaseForFrontend} API_URL=${apiBaseForFrontend} NEXT_PUBLIC_WS_URL=${apiBaseForFrontend} NEXT_PUBLIC_DISABLE_REALTIME=true`.trim();
 const backendEnv = 'PORT=8001';
 
 export default defineConfig({
