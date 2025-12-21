@@ -110,7 +110,11 @@ export default function PublicEventPageV2() {
                 placeholder="Passwort eingeben"
                 required
               />
-              {passwordError && <p className="mt-2 text-sm text-red-600">{passwordError}</p>}
+              {passwordError && (
+                <Alert variant="danger" className="mt-2">
+                  {passwordError}
+                </Alert>
+              )}
             </div>
             <Button type="submit" className="w-full" size="lg">
               Zugriff erhalten
@@ -173,7 +177,12 @@ export default function PublicEventPageV2() {
 
         {hasMore && (
           <div ref={loadMoreRef} className="py-8 flex justify-center">
-            {loadingMore && <div className="text-gray-500 text-sm">Lade weitere Fotos...</div>}
+            {loadingMore && (
+              <div className="flex items-center gap-2 text-gray-600 text-sm">
+                <Spinner size="sm" />
+                <div>Lade weitere Fotos...</div>
+              </div>
+            )}
           </div>
         )}
       </div>
