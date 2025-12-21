@@ -9,16 +9,12 @@ import BottomNavigation from '@/components/BottomNavigation';
 import StoriesBar from '@/components/guest/StoriesBar';
 import StoryViewer from '@/components/guest/StoryViewer';
 import FaceSearch from '@/components/FaceSearch';
-import { Alert } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { Centered } from '@/components/ui/Centered';
-import { Container } from '@/components/ui/Container';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { Input } from '@/components/ui/Input';
 import { LoadMoreIndicator } from '@/components/ui/LoadMoreIndicator';
 import { LoadingRow } from '@/components/ui/LoadingRow';
+import { PasswordGate } from '@/components/ui/PasswordGate';
 import { Section } from '@/components/ui/Section';
 import { Spinner } from '@/components/ui/Spinner';
 import { Trophy } from 'lucide-react';
@@ -97,31 +93,12 @@ export default function PublicEventPageV2() {
   if (passwordRequired) {
     return (
       <Centered>
-        <Container>
-          <Card className="p-8 w-full">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-900">Event-Passwort</h2>
-            <p className="text-gray-600 mb-6 text-sm">Dieses Event ist passwortgeschützt.</p>
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              <div>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Passwort eingeben"
-                  required
-                />
-                {passwordError && (
-                  <Alert variant="danger" className="mt-2">
-                    {passwordError}
-                  </Alert>
-                )}
-              </div>
-              <Button type="submit" className="w-full" size="lg">
-                Zugriff erhalten
-              </Button>
-            </form>
-          </Card>
-        </Container>
+        <PasswordGate
+          password={password}
+          onPasswordChange={setPassword}
+          passwordError={passwordError}
+          onSubmit={handlePasswordSubmit}
+        />
       </Centered>
     );
   }
