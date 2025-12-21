@@ -13,6 +13,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Centered } from '@/components/ui/Centered';
+import { Container } from '@/components/ui/Container';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Input } from '@/components/ui/Input';
 import { Section } from '@/components/ui/Section';
@@ -92,9 +93,9 @@ export default function PublicEventPageV2() {
   if (error || !event) {
     return (
       <Centered>
-        <div className="w-full max-w-md px-4">
+        <Container>
           <Alert variant="danger">{error || 'Event nicht gefunden'}</Alert>
-        </div>
+        </Container>
       </Centered>
     );
   }
