@@ -13,6 +13,7 @@ import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Input } from '@/components/ui/Input';
+import { Section } from '@/components/ui/Section';
 import { Spinner } from '@/components/ui/Spinner';
 import { Trophy } from 'lucide-react';
 import { useGuestEventData } from '@/hooks/useGuestEventData';
@@ -141,7 +142,7 @@ export default function PublicEventPageV2() {
       />
 
       {featuresConfig?.challengesEnabled === true && Array.isArray(challenges) && challenges.filter((c: any) => c?.isActive).length > 0 && (
-        <div className="px-4 py-3 border-b border-yellow-200">
+        <Section borderColorClassName="border-yellow-200">
           <Alert className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200 text-gray-900">
             <div className="flex items-center gap-2">
               <Trophy className="w-5 h-5 text-yellow-500" />
@@ -150,13 +151,13 @@ export default function PublicEventPageV2() {
               </p>
             </div>
           </Alert>
-        </div>
+        </Section>
       )}
 
       {featuresConfig?.faceSearch !== false && (
-        <div className="px-4 py-3 border-b border-gray-100">
+        <Section borderColorClassName="border-gray-100">
           <FaceSearch eventId={event.id} />
-        </div>
+        </Section>
       )}
 
       <div className="pb-24">
