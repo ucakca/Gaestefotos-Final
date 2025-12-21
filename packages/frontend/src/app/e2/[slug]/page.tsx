@@ -15,6 +15,7 @@ import { Card } from '@/components/ui/Card';
 import { Centered } from '@/components/ui/Centered';
 import { Container } from '@/components/ui/Container';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { Input } from '@/components/ui/Input';
 import { LoadMoreIndicator } from '@/components/ui/LoadMoreIndicator';
 import { LoadingRow } from '@/components/ui/LoadingRow';
@@ -90,13 +91,7 @@ export default function PublicEventPageV2() {
   }
 
   if (error || !event) {
-    return (
-      <Centered>
-        <Container>
-          <Alert variant="danger">{error || 'Event nicht gefunden'}</Alert>
-        </Container>
-      </Centered>
-    );
+    return <ErrorState message={error || 'Event nicht gefunden'} />;
   }
 
   if (passwordRequired) {
