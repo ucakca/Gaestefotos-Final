@@ -6,7 +6,7 @@ import { Category } from '@gaestefotos/shared';
 
 export function useGuestEventData(slug: string, selectedAlbum: string | null) {
   const [event, setEvent] = useState<EventType | null>(null);
-  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [photos, setPhotos] = useState<any[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [challenges, setChallenges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,6 +23,7 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
   const [inviteExchangeBump, setInviteExchangeBump] = useState(0);
 
   const loadingRef = useRef(false);
+  const feedPhotosRef = useRef<any[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
@@ -114,15 +115,59 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
       const { data } = await api.get(`/events/${eventId}/photos`, { params });
       const nextPhotos = (data.photos || []) as Photo[];
 
+      if (reset) {
+        try {
+          const feedResponse = await api.get(`/events/${eventId}/feed`);
+          const feedEntries = feedResponse.data?.entries || [];
+          const feedPhotos = (Array.isArray(feedEntries) ? feedEntries : []).map((entry: any) => ({
+            id: `guestbook-${entry.id}`,
+            eventId,
+            storagePath: entry.photoStoragePath,
+            url: entry.photoUrl,
+            status: 'APPROVED',
+            createdAt: entry.createdAt,
+            guestbookEntry: {
+              id: entry.id,
+              authorName: entry.authorName,
+              message: entry.message,
+              photoUrl: entry.photoUrl,
+              createdAt: entry.createdAt,
+            },
+            isGuestbookEntry: true,
+          }));
+          feedPhotosRef.current = feedPhotos;
+        } catch {
+          feedPhotosRef.current = [];
+        }
+      }
+
       const hasMorePhotos =
         typeof data?.pagination?.hasMore === 'boolean' ? data.pagination.hasMore : nextPhotos.length >= photosPerPage;
       setHasMore(hasMorePhotos);
       setCurrentPage(page + 1);
 
       setPhotos((prev) => {
-        const existingIds = new Set((prev as any[]).map((p: any) => p.id));
+        const base = reset ? [] : (prev as any[]);
+        const existingIds = new Set(base.map((p: any) => p.id));
         const deduped = (nextPhotos as any[]).filter((p: any) => !existingIds.has(p.id));
-        return [...prev, ...deduped] as any;
+        const merged = [...base, ...deduped, ...(reset ? feedPhotosRef.current : [])];
+
+        // Ensure guestbook + photos are shown newest-first
+        merged.sort((a: any, b: any) => {
+          const dateA = new Date(a?.createdAt).getTime();
+          const dateB = new Date(b?.createdAt).getTime();
+          return dateB - dateA;
+        });
+
+        // Final dedupe after merge (safety)
+        const seen = new Set<string>();
+        return merged.filter((p: any) => {
+          const id = String(p?.id ?? '');
+          if (!id) return false;
+          if (seen.has(id)) return false;
+          seen.add(id);
+          return true;
+        });
       });
     } catch {
       // ignore
@@ -201,7 +246,10 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
 
   const filteredPhotos = useMemo(() => {
     if (!selectedAlbum) return photos;
-    return (photos as any[]).filter((p: any) => p?.categoryId === selectedAlbum || p?.category?.id === selectedAlbum) as any;
+    return (photos as any[]).filter((p: any) => {
+      if (p?.isGuestbookEntry) return false;
+      return p?.categoryId === selectedAlbum || p?.category?.id === selectedAlbum;
+    }) as any;
   }, [photos, selectedAlbum]);
 
   return {
