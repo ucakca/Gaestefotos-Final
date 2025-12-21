@@ -11,6 +11,7 @@ import StoryViewer from '@/components/guest/StoryViewer';
 import FaceSearch from '@/components/FaceSearch';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 import { Trophy } from 'lucide-react';
@@ -160,11 +161,11 @@ export default function PublicEventPageV2() {
 
       <div className="pb-24">
         {featuresConfig?.mysteryMode ? (
-          <div className="flex flex-col items-center justify-center py-32 px-4">
-            <div className="text-6xl mb-4">🎭</div>
-            <p className="text-xl text-gray-900 mb-2 font-semibold">Mystery Mode aktiviert</p>
-            <p className="text-gray-500 text-sm text-center max-w-sm">Die Fotos werden später veröffentlicht...</p>
-          </div>
+          <EmptyState
+            icon="🎭"
+            title="Mystery Mode aktiviert"
+            description="Die Fotos werden später veröffentlicht..."
+          />
         ) : (
           <ModernPhotoGrid
             photos={filteredPhotos as any}
