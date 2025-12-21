@@ -9,8 +9,10 @@ import BottomNavigation from '@/components/BottomNavigation';
 import StoriesBar from '@/components/guest/StoriesBar';
 import StoryViewer from '@/components/guest/StoryViewer';
 import FaceSearch from '@/components/FaceSearch';
+import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Spinner } from '@/components/ui/Spinner';
 import { Trophy } from 'lucide-react';
 import { useGuestEventData } from '@/hooks/useGuestEventData';
 import { useStoriesViewer } from '@/hooks/useStoriesViewer';
@@ -75,7 +77,10 @@ export default function PublicEventPageV2() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-gray-500">Laden...</div>
+        <div className="flex items-center gap-2 text-gray-600">
+          <Spinner size="md" />
+          <div>Laden...</div>
+        </div>
       </div>
     );
   }
@@ -83,7 +88,9 @@ export default function PublicEventPageV2() {
   if (error || !event) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-red-600">{error || 'Event nicht gefunden'}</div>
+        <div className="w-full max-w-md px-4">
+          <Alert variant="danger">{error || 'Event nicht gefunden'}</Alert>
+        </div>
       </div>
     );
   }
