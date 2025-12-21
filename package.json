@@ -16,6 +16,7 @@
     "lint": "pnpm --recursive lint",
     "type-check": "pnpm --recursive type-check",
     "e2e": "pnpm exec playwright test",
+    "e2e:install": "pnpm exec playwright install chromium",
     "e2e:stable": "E2E_API_URL=http://127.0.0.1:8001 E2E_BASE_URL=http://localhost:3002 E2E_START_WEB_SERVER=true pnpm exec playwright test",
     "hooks:install": "bash scripts/git-hooks/install-hooks.sh",
     "e2e:ui": "pnpm exec playwright test --ui",
