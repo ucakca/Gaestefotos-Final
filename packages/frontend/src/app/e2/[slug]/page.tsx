@@ -11,6 +11,7 @@ import StoryViewer from '@/components/guest/StoryViewer';
 import FaceSearch from '@/components/FaceSearch';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Input } from '@/components/ui/Input';
 import { Section } from '@/components/ui/Section';
@@ -100,7 +101,7 @@ export default function PublicEventPageV2() {
   if (passwordRequired) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="bg-white rounded-lg border border-gray-200 p-8 max-w-md w-full mx-4">
+        <Card className="p-8 max-w-md w-full mx-4">
           <h2 className="text-2xl font-semibold mb-4 text-gray-900">Event-Passwort</h2>
           <p className="text-gray-600 mb-6 text-sm">Dieses Event ist passwortgeschützt.</p>
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
@@ -122,7 +123,7 @@ export default function PublicEventPageV2() {
               Zugriff erhalten
             </Button>
           </form>
-        </div>
+        </Card>
       </div>
     );
   }
