@@ -9,6 +9,7 @@ import BottomNavigation from '@/components/BottomNavigation';
 import StoriesBar from '@/components/guest/StoriesBar';
 import StoryViewer from '@/components/guest/StoryViewer';
 import FaceSearch from '@/components/FaceSearch';
+import { Button } from '@/components/ui/Button';
 import { Trophy } from 'lucide-react';
 import { useGuestEventData } from '@/hooks/useGuestEventData';
 import { useStoriesViewer } from '@/hooks/useStoriesViewer';
@@ -104,12 +105,9 @@ export default function PublicEventPageV2() {
               />
               {passwordError && <p className="mt-2 text-sm text-red-600">{passwordError}</p>}
             </div>
-            <button
-              type="submit"
-              className="w-full px-4 py-2.5 bg-black text-white rounded-md hover:bg-gray-800 font-medium text-sm"
-            >
+            <Button type="submit" className="w-full" size="lg">
               Zugriff erhalten
-            </button>
+            </Button>
           </form>
         </div>
       </div>
