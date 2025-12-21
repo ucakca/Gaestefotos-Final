@@ -17,6 +17,7 @@ import { Container } from '@/components/ui/Container';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Input } from '@/components/ui/Input';
 import { LoadMoreIndicator } from '@/components/ui/LoadMoreIndicator';
+import { LoadingRow } from '@/components/ui/LoadingRow';
 import { Section } from '@/components/ui/Section';
 import { Spinner } from '@/components/ui/Spinner';
 import { Trophy } from 'lucide-react';
@@ -83,10 +84,7 @@ export default function PublicEventPageV2() {
   if (loading) {
     return (
       <Centered>
-        <div className="flex items-center gap-2 text-gray-600">
-          <Spinner size="md" />
-          <div>Laden...</div>
-        </div>
+        <LoadingRow text="Laden..." size="md" />
       </Centered>
     );
   }
