@@ -16,6 +16,7 @@ import { Centered } from '@/components/ui/Centered';
 import { Container } from '@/components/ui/Container';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Input } from '@/components/ui/Input';
+import { LoadMoreIndicator } from '@/components/ui/LoadMoreIndicator';
 import { Section } from '@/components/ui/Section';
 import { Spinner } from '@/components/ui/Spinner';
 import { Trophy } from 'lucide-react';
@@ -187,13 +188,8 @@ export default function PublicEventPageV2() {
         )}
 
         {hasMore && (
-          <div ref={loadMoreRef} className="py-8 flex justify-center">
-            {loadingMore && (
-              <div className="flex items-center gap-2 text-gray-600 text-sm">
-                <Spinner size="sm" />
-                <div>Lade weitere Fotos...</div>
-              </div>
-            )}
+          <div ref={loadMoreRef}>
+            <LoadMoreIndicator loading={loadingMore} />
           </div>
         )}
       </div>
