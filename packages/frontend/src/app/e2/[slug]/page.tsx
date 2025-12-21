@@ -8,6 +8,8 @@ import ModernPhotoGrid from '@/components/ModernPhotoGrid';
 import BottomNavigation from '@/components/BottomNavigation';
 import StoriesBar from '@/components/guest/StoriesBar';
 import StoryViewer from '@/components/guest/StoryViewer';
+import FaceSearch from '@/components/FaceSearch';
+import { Trophy } from 'lucide-react';
 import { useGuestEventData } from '@/hooks/useGuestEventData';
 import { useStoriesViewer } from '@/hooks/useStoriesViewer';
 
@@ -21,6 +23,7 @@ export default function PublicEventPageV2() {
     event,
     categories,
     filteredPhotos,
+    challenges,
     featuresConfig,
     hostName,
     loading,
@@ -108,16 +111,43 @@ export default function PublicEventPageV2() {
         totalPhotos={totalPhotos}
       />
 
+      {featuresConfig?.challengesEnabled === true &&
+        Array.isArray(challenges) &&
+        challenges.filter((c: any) => c?.isActive).length > 0 && (
+          <div className="px-4 py-3 bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-yellow-200">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-yellow-500" />
+              <p className="text-sm text-gray-700">
+                <strong>Tolle Challenges verfügbar!</strong> Klicke auf "Challenges" im Menü unten, um teilzunehmen.
+              </p>
+            </div>
+          </div>
+        )}
+
+      {featuresConfig?.faceSearch !== false && (
+        <div className="px-4 py-3 border-b border-gray-100">
+          <FaceSearch eventId={event.id} />
+        </div>
+      )}
+
       <div className="pb-24">
-        <ModernPhotoGrid
-          photos={filteredPhotos as any}
-          allowDownloads={featuresConfig?.allowDownloads}
-          eventSlug={slug}
-          eventTitle={event.title}
-          eventId={(event as any).id}
-          onUploadSuccess={reloadPhotos}
-          allowUploads={featuresConfig?.allowUploads}
-        />
+        {featuresConfig?.mysteryMode ? (
+          <div className="flex flex-col items-center justify-center py-32 px-4">
+            <div className="text-6xl mb-4">🎭</div>
+            <p className="text-xl text-gray-900 mb-2 font-semibold">Mystery Mode aktiviert</p>
+            <p className="text-gray-500 text-sm text-center max-w-sm">Die Fotos werden später veröffentlicht...</p>
+          </div>
+        ) : (
+          <ModernPhotoGrid
+            photos={filteredPhotos as any}
+            allowDownloads={featuresConfig?.allowDownloads}
+            eventSlug={slug}
+            eventTitle={event.title}
+            eventId={(event as any).id}
+            onUploadSuccess={reloadPhotos}
+            allowUploads={featuresConfig?.allowUploads}
+          />
+        )}
 
         {hasMore && (
           <div className="py-8 flex justify-center">

@@ -8,6 +8,7 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
   const [event, setEvent] = useState<EventType | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [challenges, setChallenges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -77,6 +78,17 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
       setCategories(data.categories || []);
     } catch {
       // ignore
+    }
+  };
+
+  const loadChallenges = async (eventId: string) => {
+    try {
+      const { data } = await api.get(`/events/${eventId}/challenges`, {
+        params: { public: 'true' },
+      });
+      setChallenges(Array.isArray(data?.challenges) ? data.challenges : []);
+    } catch {
+      setChallenges([]);
     }
   };
 
@@ -176,6 +188,7 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
   useEffect(() => {
     if (!event?.id) return;
     loadCategories(event.id);
+    loadChallenges(event.id);
     loadPhotos(event.id, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id]);
@@ -196,6 +209,7 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
     categories,
     photos,
     filteredPhotos,
+    challenges,
     featuresConfig,
     hostName,
     loading,
