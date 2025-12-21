@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import EventHeader from '@/components/EventHeader';
 import AlbumNavigation from '@/components/AlbumNavigation';
@@ -18,6 +18,8 @@ export default function PublicEventPageV2() {
   const slug = params.slug as string;
 
   const [selectedAlbum, setSelectedAlbum] = useState<string | null>(null);
+
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const {
     event,
@@ -50,6 +52,23 @@ export default function PublicEventPageV2() {
     onStoryPause,
     onStoryResume,
   } = useStoriesViewer(event?.id ?? null, inviteExchangeBump);
+
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasMore) return;
+
+    const el = loadMoreRef.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore && !loadingMore) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, loadMore]);
 
   if (loading) {
     return (
@@ -111,18 +130,16 @@ export default function PublicEventPageV2() {
         totalPhotos={totalPhotos}
       />
 
-      {featuresConfig?.challengesEnabled === true &&
-        Array.isArray(challenges) &&
-        challenges.filter((c: any) => c?.isActive).length > 0 && (
-          <div className="px-4 py-3 bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-yellow-200">
-            <div className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-500" />
-              <p className="text-sm text-gray-700">
-                <strong>Tolle Challenges verfügbar!</strong> Klicke auf "Challenges" im Menü unten, um teilzunehmen.
-              </p>
-            </div>
+      {featuresConfig?.challengesEnabled === true && Array.isArray(challenges) && challenges.filter((c: any) => c?.isActive).length > 0 && (
+        <div className="px-4 py-3 bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-yellow-200">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-yellow-500" />
+            <p className="text-sm text-gray-700">
+              <strong>Tolle Challenges verfügbar!</strong> Klicke auf "Challenges" im Menü unten, um teilzunehmen.
+            </p>
           </div>
-        )}
+        </div>
+      )}
 
       {featuresConfig?.faceSearch !== false && (
         <div className="px-4 py-3 border-b border-gray-100">
@@ -150,14 +167,8 @@ export default function PublicEventPageV2() {
         )}
 
         {hasMore && (
-          <div className="py-8 flex justify-center">
-            {loadingMore ? (
-              <div className="text-gray-500 text-sm">Lade weitere Fotos...</div>
-            ) : (
-              <button type="button" onClick={loadMore} className="text-sm text-gray-700 underline">
-                Mehr laden
-              </button>
-            )}
+          <div ref={loadMoreRef} className="py-8 flex justify-center">
+            {loadingMore && <div className="text-gray-500 text-sm">Lade weitere Fotos...</div>}
           </div>
         )}
       </div>
