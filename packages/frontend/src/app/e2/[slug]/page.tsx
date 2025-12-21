@@ -10,6 +10,7 @@ import StoriesBar from '@/components/guest/StoriesBar';
 import StoryViewer from '@/components/guest/StoryViewer';
 import FaceSearch from '@/components/FaceSearch';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { Trophy } from 'lucide-react';
 import { useGuestEventData } from '@/hooks/useGuestEventData';
 import { useStoriesViewer } from '@/hooks/useStoriesViewer';
@@ -95,11 +96,10 @@ export default function PublicEventPageV2() {
           <p className="text-gray-600 mb-6 text-sm">Dieses Event ist passwortgeschützt.</p>
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div>
-              <input
+              <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-black focus:border-black text-gray-900 bg-white text-sm"
                 placeholder="Passwort eingeben"
                 required
               />
