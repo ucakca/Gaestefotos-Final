@@ -103,29 +103,31 @@ export default function PublicEventPageV2() {
   if (passwordRequired) {
     return (
       <Centered>
-        <Card className="p-8 max-w-md w-full mx-4">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-900">Event-Passwort</h2>
-          <p className="text-gray-600 mb-6 text-sm">Dieses Event ist passwortgeschützt.</p>
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <div>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Passwort eingeben"
-                required
-              />
-              {passwordError && (
-                <Alert variant="danger" className="mt-2">
-                  {passwordError}
-                </Alert>
-              )}
-            </div>
-            <Button type="submit" className="w-full" size="lg">
-              Zugriff erhalten
-            </Button>
-          </form>
-        </Card>
+        <Container>
+          <Card className="p-8 w-full">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-900">Event-Passwort</h2>
+            <p className="text-gray-600 mb-6 text-sm">Dieses Event ist passwortgeschützt.</p>
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <div>
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Passwort eingeben"
+                  required
+                />
+                {passwordError && (
+                  <Alert variant="danger" className="mt-2">
+                    {passwordError}
+                  </Alert>
+                )}
+              </div>
+              <Button type="submit" className="w-full" size="lg">
+                Zugriff erhalten
+              </Button>
+            </form>
+          </Card>
+        </Container>
       </Centered>
     );
   }
@@ -165,11 +167,13 @@ export default function PublicEventPageV2() {
 
       <div className="pb-24">
         {featuresConfig?.mysteryMode ? (
-          <EmptyState
-            icon="🎭"
-            title="Mystery Mode aktiviert"
-            description="Die Fotos werden später veröffentlicht..."
-          />
+          <Container>
+            <EmptyState
+              icon="🎭"
+              title="Mystery Mode aktiviert"
+              description="Die Fotos werden später veröffentlicht..."
+            />
+          </Container>
         ) : (
           <ModernPhotoGrid
             photos={filteredPhotos as any}
