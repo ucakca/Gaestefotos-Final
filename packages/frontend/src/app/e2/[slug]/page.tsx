@@ -12,6 +12,7 @@ import FaceSearch from '@/components/FaceSearch';
 import { Alert } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { Centered } from '@/components/ui/Centered';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Input } from '@/components/ui/Input';
 import { Section } from '@/components/ui/Section';
@@ -79,28 +80,28 @@ export default function PublicEventPageV2() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <Centered>
         <div className="flex items-center gap-2 text-gray-600">
           <Spinner size="md" />
           <div>Laden...</div>
         </div>
-      </div>
+      </Centered>
     );
   }
 
   if (error || !event) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <Centered>
         <div className="w-full max-w-md px-4">
           <Alert variant="danger">{error || 'Event nicht gefunden'}</Alert>
         </div>
-      </div>
+      </Centered>
     );
   }
 
   if (passwordRequired) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <Centered>
         <Card className="p-8 max-w-md w-full mx-4">
           <h2 className="text-2xl font-semibold mb-4 text-gray-900">Event-Passwort</h2>
           <p className="text-gray-600 mb-6 text-sm">Dieses Event ist passwortgeschützt.</p>
@@ -124,7 +125,7 @@ export default function PublicEventPageV2() {
             </Button>
           </form>
         </Card>
-      </div>
+      </Centered>
     );
   }
 
