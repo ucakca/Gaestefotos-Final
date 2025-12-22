@@ -1,0 +1,1571 @@
+'use client';
+
+import { useEffect, useState, useRef } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import api from '@/lib/api';
+import { Event as EventType } from '@gaestefotos/shared';
+import {
+  Settings,
+  Camera,
+  Image as ImageIcon,
+  Users,
+  BarChart3,
+  Eye,
+  EyeOff,
+  Check,
+  X,
+  Upload,
+  Info,
+  ChevronRight,
+  Sparkles,
+  Trophy,
+  Calendar,
+  MapPin,
+  Lock,
+  Globe,
+  Download,
+  UserCheck,
+  Eye as EyeIcon,
+  Clock,
+  Mail,
+} from 'lucide-react';
+import DashboardFooter from '@/components/DashboardFooter';
+import AppLayout from '@/components/AppLayout';
+
+interface PhotoStats {
+  total: number;
+  approved: number;
+  pending: number;
+  rejected: number;
+}
+
+function formatBytes(input: string | number | null | undefined): string {
+  const n = typeof input === 'string' ? Number(input) : typeof input === 'number' ? input : 0;
+  if (!Number.isFinite(n) || n <= 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let v = n;
+  let i = 0;
+  while (v >= 1024 && i < units.length - 1) {
+    v /= 1024;
+    i++;
+  }
+  return `${v.toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
+}
+
+export default function EventDashboardPage() {
+  const params = useParams();
+  const router = useRouter();
+  const eventId = params.id as string;
+  
+  const [event, setEvent] = useState<EventType | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [photos, setPhotos] = useState<any[]>([]);
+  const [photoStats, setPhotoStats] = useState<PhotoStats>({ total: 0, approved: 0, pending: 0, rejected: 0 });
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState<string | null>(null);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+  const [showEventMode, setShowEventMode] = useState(false);
+  const [togglingActive, setTogglingActive] = useState(false);
+
+  const [usage, setUsage] = useState<any | null>(null);
+  const [usageLoading, setUsageLoading] = useState(false);
+  const [usageError, setUsageError] = useState<string | null>(null);
+
+  const [upgradeSku, setUpgradeSku] = useState('');
+  const [upgradeProductId, setUpgradeProductId] = useState('');
+  const [upgradeUrl, setUpgradeUrl] = useState<string | null>(null);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
+  const [upgradeError, setUpgradeError] = useState<string | null>(null);
+
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [shareError, setShareError] = useState<string | null>(null);
+
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
+
+  const [invitations, setInvitations] = useState<any[]>([]);
+  const [invitationsLoading, setInvitationsLoading] = useState(false);
+  const [invitationsError, setInvitationsError] = useState<string | null>(null);
+  const [creatingInvitation, setCreatingInvitation] = useState(false);
+  const [newInvitationName, setNewInvitationName] = useState('');
+
+  const [editingInvitationId, setEditingInvitationId] = useState<string | null>(null);
+  const [editingInvitationName, setEditingInvitationName] = useState('');
+  const [editingInvitationIsActive, setEditingInvitationIsActive] = useState(true);
+  const [editingInvitationPassword, setEditingInvitationPassword] = useState('');
+  const [editingInvitationHasPassword, setEditingInvitationHasPassword] = useState(false);
+  const [editingInvitationVisibility, setEditingInvitationVisibility] = useState<'UNLISTED' | 'PUBLIC'>('UNLISTED');
+  const [savingInvitationId, setSavingInvitationId] = useState<string | null>(null);
+  const [generatingShortLinkInvitationId, setGeneratingShortLinkInvitationId] = useState<string | null>(null);
+  
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
+  const coverImageInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    loadEvent();
+  }, [eventId]);
+
+  useEffect(() => {
+    if (event) {
+      loadStats();
+      loadUsage();
+      loadInvitations();
+    }
+  }, [event]);
+
+  const loadEvent = async () => {
+    try {
+      const { data } = await api.get(`/events/${eventId}`);
+      setEvent(data.event);
+    } catch (err: any) {
+      console.error('Fehler beim Laden des Events:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateNewInvitationShortLink = async (invId: string) => {
+    try {
+      setGeneratingShortLinkInvitationId(invId);
+      setInvitationsError(null);
+      await api.post(`/events/${eventId}/invitations/${invId}/shortlinks`, { channel: 'default' });
+      await loadInvitations();
+      setCopyFeedback('Neuer Shortlink erzeugt');
+      window.setTimeout(() => setCopyFeedback(null), 1500);
+    } catch (err: any) {
+      setInvitationsError(err.response?.data?.error || 'Fehler beim Erzeugen des Shortlinks');
+    } finally {
+      setGeneratingShortLinkInvitationId(null);
+    }
+  };
+
+  const copyToClipboard = async (text: string, message = 'Link kopiert') => {
+    await navigator.clipboard.writeText(text);
+    setCopyFeedback(message);
+    window.setTimeout(() => setCopyFeedback(null), 1500);
+  };
+
+  const loadInvitations = async () => {
+    try {
+      setInvitationsLoading(true);
+      setInvitationsError(null);
+      const { data } = await api.get(`/events/${eventId}/invitations`);
+      setInvitations(Array.isArray(data?.invitations) ? data.invitations : []);
+    } catch (err: any) {
+      setInvitationsError(err.response?.data?.error || 'Fehler beim Laden der Einladungen');
+      setInvitations([]);
+    } finally {
+      setInvitationsLoading(false);
+    }
+  };
+
+  const createInvitation = async () => {
+    const name = newInvitationName.trim();
+    if (!name) return;
+    try {
+      setCreatingInvitation(true);
+      setInvitationsError(null);
+      await api.post(`/events/${eventId}/invitations`, { name });
+      setNewInvitationName('');
+      await loadInvitations();
+    } catch (err: any) {
+      setInvitationsError(err.response?.data?.error || 'Fehler beim Erstellen der Einladung');
+    } finally {
+      setCreatingInvitation(false);
+    }
+  };
+
+  const startEditInvitation = (inv: any) => {
+    setInvitationsError(null);
+    setEditingInvitationId(inv.id);
+    setEditingInvitationName(String(inv?.name || ''));
+    setEditingInvitationIsActive(Boolean(inv?.isActive ?? true));
+    setEditingInvitationHasPassword(Boolean(inv?.hasPassword));
+    setEditingInvitationVisibility((inv?.visibility === 'PUBLIC' ? 'PUBLIC' : 'UNLISTED') as any);
+    setEditingInvitationPassword('');
+  };
+
+  const cancelEditInvitation = () => {
+    setEditingInvitationId(null);
+    setEditingInvitationName('');
+    setEditingInvitationIsActive(true);
+    setEditingInvitationPassword('');
+    setEditingInvitationHasPassword(false);
+    setEditingInvitationVisibility('UNLISTED');
+    setSavingInvitationId(null);
+  };
+
+  const saveInvitation = async (invId: string, opts?: { removePassword?: boolean }) => {
+    try {
+      setSavingInvitationId(invId);
+      setInvitationsError(null);
+
+      const body: any = {
+        name: editingInvitationName.trim() || undefined,
+        isActive: editingInvitationIsActive,
+        visibility: editingInvitationVisibility,
+      };
+
+      if (opts?.removePassword) {
+        body.password = null;
+      } else if (editingInvitationPassword.trim().length > 0) {
+        body.password = editingInvitationPassword.trim();
+      }
+
+      await api.put(`/events/${eventId}/invitations/${invId}`, body);
+      await loadInvitations();
+      cancelEditInvitation();
+    } catch (err: any) {
+      setInvitationsError(err.response?.data?.error || 'Fehler beim Speichern der Einladung');
+    } finally {
+      setSavingInvitationId(null);
+    }
+  };
+
+  const shareInvitation = (url: string, channel: 'whatsapp' | 'facebook' | 'x' | 'linkedin') => {
+    const u = encodeURIComponent(url);
+    if (channel === 'whatsapp') {
+      window.open(`https://wa.me/?text=${u}`, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (channel === 'facebook') {
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${u}`, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (channel === 'x') {
+      window.open(`https://twitter.com/intent/tweet?url=${u}`, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${u}`, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleGenerateShareLink = async () => {
+    try {
+      setShareError(null);
+      setShareLoading(true);
+      const { data } = await api.post(`/events/${eventId}/invite-token`);
+      const url = data?.shareUrl;
+      if (typeof url === 'string' && url.length > 0) {
+        setShareUrl(url);
+      } else {
+        setShareError('Share-Link konnte nicht erzeugt werden');
+      }
+    } catch (err: any) {
+      setShareError(err.response?.data?.error || 'Fehler beim Erzeugen des Share-Links');
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
+  const loadUsage = async () => {
+    try {
+      setUsageLoading(true);
+      setUsageError(null);
+      const { data } = await api.get(`/events/${eventId}/usage`);
+      setUsage(data);
+    } catch (err: any) {
+      setUsageError(err.response?.data?.error || 'Fehler beim Abrufen der Speicher-Nutzung');
+      setUsage(null);
+    } finally {
+      setUsageLoading(false);
+    }
+  };
+
+  const handleUpgrade = async () => {
+    setUpgradeError(null);
+    setUpgradeUrl(null);
+    const sku = upgradeSku.trim();
+    const productId = upgradeProductId.trim();
+    if (!sku && !productId) {
+      setUpgradeError('Bitte SKU oder ProductId angeben');
+      return;
+    }
+    try {
+      setUpgradeLoading(true);
+      const qs = new URLSearchParams();
+      if (sku) qs.set('sku', sku);
+      if (productId) qs.set('productId', productId);
+      const { data } = await api.get(`/events/${eventId}/upgrade-link?${qs.toString()}`);
+      const url = data?.url;
+      if (typeof url === 'string' && url.length > 0) {
+        setUpgradeUrl(url);
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        setUpgradeError('Upgrade-Link konnte nicht erzeugt werden');
+      }
+    } catch (err: any) {
+      setUpgradeError(err.response?.data?.error || 'Fehler beim Erstellen des Upgrade-Links');
+    } finally {
+      setUpgradeLoading(false);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const { data } = await api.get(`/events/${eventId}/photos?status=all`);
+      const loadedPhotos = data.photos || [];
+      setPhotos(loadedPhotos);
+      setPhotoStats({
+        total: loadedPhotos.length,
+        approved: loadedPhotos.filter((p: any) => p.status === 'APPROVED').length,
+        pending: loadedPhotos.filter((p: any) => p.status === 'PENDING').length,
+        rejected: loadedPhotos.filter((p: any) => p.status === 'REJECTED').length,
+      });
+    } catch (err) {
+      console.error('Fehler beim Laden der Statistiken:', err);
+    }
+  };
+
+  const handleImageUpload = async (type: 'profile' | 'cover', file: File) => {
+    try {
+      setUploadingImage(type);
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await api.post(`/events/${eventId}/upload-${type}-image`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      // Update event with new image URL
+      await loadEvent();
+      setUploadingImage(null);
+    } catch (err: any) {
+      console.error('Fehler beim Hochladen:', err);
+      const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Hochladen des Bildes';
+      alert(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
+      setUploadingImage(null);
+    }
+  };
+
+  const updateEventField = async (field: string, value: any) => {
+    try {
+      await api.put(`/events/${eventId}`, { [field]: value });
+      await loadEvent();
+      setEditingField(null);
+    } catch (err: any) {
+      console.error('Fehler beim Aktualisieren:', err);
+      const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Aktualisieren';
+      alert(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
+    }
+  };
+
+  const updateDesignConfig = async (updates: any) => {
+    try {
+      const currentDesignConfig = (event?.designConfig as any) || {};
+      await api.put(`/events/${eventId}`, {
+        designConfig: {
+          ...currentDesignConfig,
+          ...updates,
+        },
+      });
+      await loadEvent();
+      setEditingField(null);
+    } catch (err: any) {
+      console.error('Fehler beim Aktualisieren:', err);
+      const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Aktualisieren';
+      alert(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
+    }
+  };
+
+  const updateFeaturesConfig = async (updates: any) => {
+    try {
+      const currentFeaturesConfig = (event?.featuresConfig as any) || {};
+      await api.put(`/events/${eventId}`, {
+        featuresConfig: {
+          ...currentFeaturesConfig,
+          ...updates,
+        },
+      });
+      await loadEvent();
+    } catch (err: any) {
+      console.error('Fehler beim Aktualisieren:', err);
+      const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Aktualisieren';
+      alert(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
+    }
+  };
+
+  const updateEventActive = async (isActive: boolean) => {
+    try {
+      setTogglingActive(true);
+      await api.put(`/events/${eventId}/active`, { isActive });
+      await loadEvent();
+    } catch (err: any) {
+      console.error('Fehler beim Aktualisieren des Event-Status:', err);
+      const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Aktualisieren des Event-Status';
+      alert(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
+    } finally {
+      setTogglingActive(false);
+    }
+  };
+
+
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Laden...</div>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Event nicht gefunden</div>
+      </div>
+    );
+  }
+
+  const designConfig = (event.designConfig as any) || {};
+  const featuresConfig = (event.featuresConfig as any) || {};
+  
+  // Get image URLs - use storage path if available, otherwise use direct URL
+  const profileImageStoragePath = designConfig.profileImageStoragePath;
+  const coverImageStoragePath = designConfig.coverImageStoragePath;
+  const profileImage = profileImageStoragePath 
+    ? `/api/events/${eventId}/design-image/profile/${profileImageStoragePath}`
+    : (designConfig.profileImage || '/default-profile.png');
+  const coverImage = coverImageStoragePath
+    ? `/api/events/${eventId}/design-image/cover/${coverImageStoragePath}`
+    : (designConfig.coverImage || '/default-cover.jpg');
+  const welcomeMessage = designConfig.welcomeMessage || '';
+  const limitBytes = usage?.entitlement?.storageLimitBytes ?? null;
+  const usedBytes = usage?.usage?.totalBytes ?? null;
+  const usedNum = typeof usedBytes === 'string' ? Number(usedBytes) : 0;
+  const limitNum = typeof limitBytes === 'string' ? Number(limitBytes) : 0;
+  const hasLimit = Number.isFinite(limitNum) && limitNum > 0;
+  const percent = hasLimit && Number.isFinite(usedNum) ? Math.min(100, Math.max(0, (usedNum / limitNum) * 100)) : 0;
+
+  const isStorageLocked = (() => {
+    const e: any = event as any;
+    if (!e) return false;
+    if (typeof e.isStorageLocked === 'boolean') return e.isStorageLocked;
+    const endsAt = e.storageEndsAt ? new Date(e.storageEndsAt).getTime() : null;
+    if (!endsAt || Number.isNaN(endsAt)) return false;
+    return Date.now() > endsAt;
+  })();
+
+  const withinUploadWindow = (() => {
+    const e: any = event as any;
+    if (!e?.dateTime) return true;
+    const eventTime = new Date(e.dateTime).getTime();
+    if (!Number.isFinite(eventTime)) return true;
+    const windowMs = 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    return now >= eventTime - windowMs && now <= eventTime + windowMs;
+  })();
+
+  return (
+    <AppLayout showBackButton backUrl="/dashboard">
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        {event && (event as any).isActive === false && (
+          <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-yellow-700 mt-0.5" />
+              <div>
+                <p className="font-semibold text-sm text-yellow-900">Event ist deaktiviert</p>
+                <p className="text-xs text-yellow-900/80 mt-1">
+                  Gäste können dieses Event aktuell nicht öffnen. Du kannst es jederzeit wieder aktivieren.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isStorageLocked && (
+          <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-yellow-700 mt-0.5" />
+              <div>
+                <p className="font-semibold text-sm text-yellow-900">Speicherperiode beendet</p>
+                <p className="text-xs text-yellow-900/80 mt-1">
+                  Uploads und Downloads sind deaktiviert. Bitte verlängere das Paket, um wieder Zugriff zu erhalten.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!isStorageLocked && featuresConfig?.allowUploads !== false && !withinUploadWindow && (
+          <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-yellow-700 mt-0.5" />
+              <div>
+                <p className="font-semibold text-sm text-yellow-900">Upload-Fenster ist aktuell geschlossen</p>
+                <p className="text-xs text-yellow-900/80 mt-1">
+                  Uploads sind nur 1 Tag vor/nach dem Event möglich.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Cover Image */}
+        <div className="relative w-full h-48 md:h-64 bg-gradient-to-r from-[#295B4D] to-[#EAA48F] rounded-lg mb-4 overflow-hidden group">
+          {coverImage && coverImage !== '/default-cover.jpg' ? (
+            <img
+              src={coverImage}
+              alt="Cover"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-white opacity-50">
+              <ImageIcon className="w-12 h-12" />
+            </div>
+          )}
+
+        <div className="mt-6 rounded-xl border border-[#EAA48F]/40 bg-white p-4">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <div className="text-[#295B4D] font-semibold">Speicher</div>
+              <div className="text-sm text-[#295B4D]/70">
+                {usageLoading ? 'Lade…' : usageError ? 'Nicht verfügbar' : hasLimit ? 'Limit aktiv' : 'Kein Limit aktiv'}
+              </div>
+            </div>
+            <button
+              onClick={loadUsage}
+              className="px-3 py-2 rounded-lg bg-[#295B4D] text-white text-sm font-medium"
+            >
+              Aktualisieren
+            </button>
+          </div>
+
+          {usageError && <div className="mt-3 text-sm text-red-700">{usageError}</div>}
+
+          {!usageLoading && usage && (
+            <div className="mt-4">
+              <div className="flex items-baseline justify-between gap-4">
+                <div className="text-sm text-[#295B4D]">
+                  {formatBytes(usedBytes)} {hasLimit ? `von ${formatBytes(limitBytes)}` : ''}
+                </div>
+                {hasLimit && (
+                  <div className="text-sm text-[#295B4D]/70">{percent.toFixed(0)}%</div>
+                )}
+              </div>
+              {hasLimit && (
+                <div className="mt-2 h-2 w-full rounded-full bg-[#295B4D]/10">
+                  <div
+                    className="h-2 rounded-full bg-[#EAA48F]"
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
+              )}
+
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-[#295B4D]/80">
+                <div>Fotos: {formatBytes(usage?.usage?.photosBytes)}</div>
+                <div>Videos: {formatBytes(usage?.usage?.videosBytes)}</div>
+                <div>Gästebuch: {formatBytes(usage?.usage?.guestbookBytes)}</div>
+                <div>Design: {formatBytes(usage?.usage?.designBytes)}</div>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-6 border-t border-[#EAA48F]/30 pt-4">
+            <div className="text-[#295B4D] font-semibold">Upgrade</div>
+            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input
+                value={upgradeSku}
+                onChange={(e) => setUpgradeSku(e.target.value)}
+                placeholder="SKU (optional)"
+                className="w-full rounded-lg border border-[#EAA48F]/60 px-3 py-2 text-sm text-[#295B4D]"
+              />
+              <input
+                value={upgradeProductId}
+                onChange={(e) => setUpgradeProductId(e.target.value)}
+                placeholder="ProductId (optional)"
+                className="w-full rounded-lg border border-[#EAA48F]/60 px-3 py-2 text-sm text-[#295B4D]"
+              />
+            </div>
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
+              <button
+                onClick={handleUpgrade}
+                className="px-4 py-2 rounded-lg bg-[#EAA48F] text-white text-sm font-semibold"
+                disabled={upgradeLoading}
+              >
+                {upgradeLoading ? 'Erzeuge…' : 'Upgrade öffnen'}
+              </button>
+              {upgradeUrl && (
+                <button
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(upgradeUrl);
+                  }}
+                  className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                >
+                  Link kopieren
+                </button>
+              )}
+            </div>
+            {upgradeError && <div className="mt-2 text-sm text-red-700">{upgradeError}</div>}
+            {upgradeUrl && (
+              <div className="mt-2 text-xs text-[#295B4D]/70 break-all">{upgradeUrl}</div>
+            )}
+          </div>
+
+          <div className="mt-6 border-t border-[#EAA48F]/30 pt-4">
+            <div className="text-[#295B4D] font-semibold">Share-Link</div>
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
+              <button
+                onClick={handleGenerateShareLink}
+                className="px-4 py-2 rounded-lg bg-[#295B4D] text-white text-sm font-semibold"
+                disabled={shareLoading}
+              >
+                {shareLoading ? 'Erzeuge…' : 'Link erzeugen'}
+              </button>
+              {shareUrl && (
+                <button
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(shareUrl);
+                  }}
+                  className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                >
+                  Link kopieren
+                </button>
+              )}
+            </div>
+            {shareError && <div className="mt-2 text-sm text-red-700">{shareError}</div>}
+            {shareUrl && (
+              <div className="mt-2 text-xs text-[#295B4D]/70 break-all">{shareUrl}</div>
+            )}
+          </div>
+
+          <div className="mt-6 border-t border-[#EAA48F]/30 pt-4">
+            <div className="text-[#295B4D] font-semibold">Einladungsseiten</div>
+            <div className="mt-2 text-sm text-[#295B4D]/70">
+              Erstelle mehrere Einladungen (z.B. Familie, Freunde) und teile Shortlinks für WhatsApp & Social Media.
+            </div>
+
+            {copyFeedback && (
+              <div className="mt-2 text-sm text-[#295B4D]">{copyFeedback}</div>
+            )}
+
+            <div className="mt-3 flex items-center gap-2 flex-wrap">
+              <input
+                value={newInvitationName}
+                onChange={(e) => setNewInvitationName(e.target.value)}
+                placeholder="Name (z.B. Familie)"
+                className="flex-1 min-w-[220px] rounded-lg border border-[#EAA48F]/60 px-3 py-2 text-sm text-[#295B4D]"
+              />
+              <button
+                onClick={createInvitation}
+                className="px-4 py-2 rounded-lg bg-[#295B4D] text-white text-sm font-semibold"
+                disabled={creatingInvitation || newInvitationName.trim().length === 0}
+              >
+                {creatingInvitation ? 'Erstelle…' : 'Neu erstellen'}
+              </button>
+              <button
+                onClick={loadInvitations}
+                className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                disabled={invitationsLoading}
+              >
+                Aktualisieren
+              </button>
+            </div>
+
+            {invitationsError && <div className="mt-2 text-sm text-red-700">{invitationsError}</div>}
+
+            <div className="mt-4 space-y-3">
+              {invitationsLoading && (
+                <div className="text-sm text-[#295B4D]/70">Lade Einladungen…</div>
+              )}
+
+              {!invitationsLoading && invitations.length === 0 && (
+                <div className="text-sm text-[#295B4D]/70">Noch keine Einladungen erstellt.</div>
+              )}
+
+              {invitations.map((inv: any) => {
+                const shortUrl = inv?.shortLinks?.[0]?.url as string | undefined;
+                const publicUrl = typeof window !== 'undefined'
+                  ? `${window.location.origin}/i/${inv.slug}`
+                  : `/i/${inv.slug}`;
+                const isEditing = editingInvitationId === inv.id;
+                const isSaving = savingInvitationId === inv.id;
+                const isGeneratingShortLink = generatingShortLinkInvitationId === inv.id;
+                return (
+                  <div key={inv.id} className="rounded-xl border border-[#EAA48F]/30 bg-white p-3">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div>
+                        {isEditing ? (
+                          <div className="space-y-2">
+                            <input
+                              value={editingInvitationName}
+                              onChange={(e) => setEditingInvitationName(e.target.value)}
+                              data-testid={`invitation-edit-name-${inv.id}`}
+                              className="w-full rounded-lg border border-[#EAA48F]/60 px-3 py-2 text-sm text-[#295B4D]"
+                              placeholder="Name"
+                            />
+                            <label className="flex items-center gap-2 text-sm text-[#295B4D]">
+                              <input
+                                type="checkbox"
+                                checked={editingInvitationIsActive}
+                                onChange={(e) => setEditingInvitationIsActive(e.target.checked)}
+                                data-testid={`invitation-edit-active-${inv.id}`}
+                              />
+                              Aktiv
+                            </label>
+
+                            <label className="flex items-center justify-between gap-2 text-sm text-[#295B4D]">
+                              <span>Öffentlich</span>
+                              <input
+                                type="checkbox"
+                                checked={editingInvitationVisibility === 'PUBLIC'}
+                                onChange={(e) => setEditingInvitationVisibility(e.target.checked ? 'PUBLIC' : 'UNLISTED')}
+                                data-testid={`invitation-edit-visibility-${inv.id}`}
+                              />
+                            </label>
+
+                            <div>
+                              <div className="text-xs text-[#295B4D]/70">Passwort (optional)</div>
+                              <input
+                                type="password"
+                                value={editingInvitationPassword}
+                                onChange={(e) => setEditingInvitationPassword(e.target.value)}
+                                data-testid={`invitation-edit-password-${inv.id}`}
+                                className="mt-1 w-full rounded-lg border border-[#EAA48F]/60 px-3 py-2 text-sm text-[#295B4D]"
+                                placeholder={editingInvitationHasPassword ? 'Neues Passwort setzen (leer = unverändert)' : 'Passwort setzen'}
+                              />
+                              {editingInvitationHasPassword && (
+                                <button
+                                  type="button"
+                                  onClick={() => saveInvitation(inv.id, { removePassword: true })}
+                                  disabled={isSaving}
+                                  data-testid={`invitation-remove-password-${inv.id}`}
+                                  className="mt-2 px-3 py-2 rounded-lg border border-red-300 text-red-700 text-sm font-medium disabled:opacity-50"
+                                >
+                                  {isSaving ? 'Speichere…' : 'Passwort entfernen'}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-sm font-semibold text-[#295B4D]">{inv.name}</div>
+                        )}
+                        <div className="text-xs text-[#295B4D]/70">Opens: {typeof inv.opens === 'number' ? inv.opens : 0}</div>
+                        <div className="text-xs text-[#295B4D]/70">
+                          RSVP: {inv?.rsvp?.yes ?? 0}/{inv?.rsvp?.no ?? 0}/{inv?.rsvp?.maybe ?? 0}
+                          {inv?.hasPassword ? ' · Passwort: ja' : ''}
+                          {inv?.isActive === false ? ' · inaktiv' : ''}
+                          {inv?.visibility === 'PUBLIC' ? ' · öffentlich' : ' · unlisted'}
+                        </div>
+
+                        {inv?.visibility === 'PUBLIC' && (
+                          <div className="mt-1">
+                            <div className="text-xs text-[#295B4D]/70">Direkt-Link</div>
+                            <div className="text-xs text-[#295B4D]/70 break-all">{publicUrl}</div>
+                          </div>
+                        )}
+
+                        {shortUrl && (
+                          <div className="mt-1">
+                            <div className="text-xs text-[#295B4D]/70 break-all">{shortUrl}</div>
+                            {inv?.visibility !== 'PUBLIC' && (
+                              <div className="mt-1 text-xs text-[#295B4D]/70">
+                                Hinweis: UNLISTED-Einladungen sind nur über den Shortlink erreichbar.
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {isEditing ? (
+                          <>
+                            <button
+                              onClick={() => saveInvitation(inv.id)}
+                              data-testid={`invitation-save-${inv.id}`}
+                              className="px-3 py-2 rounded-lg bg-[#295B4D] text-white text-sm font-semibold disabled:opacity-50"
+                              disabled={isSaving || editingInvitationName.trim().length === 0}
+                            >
+                              {isSaving ? 'Speichere…' : 'Speichern'}
+                            </button>
+                            <button
+                              onClick={cancelEditInvitation}
+                              data-testid={`invitation-cancel-${inv.id}`}
+                              className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                              disabled={isSaving}
+                            >
+                              Abbrechen
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => startEditInvitation(inv)}
+                            data-testid={`invitation-edit-${inv.id}`}
+                            className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                          >
+                            Bearbeiten
+                          </button>
+                        )}
+                        {shortUrl && (
+                          <button
+                            onClick={async () => {
+                              await copyToClipboard(shortUrl);
+                            }}
+                            className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                          >
+                            Link kopieren
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => generateNewInvitationShortLink(inv.id)}
+                          className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium disabled:opacity-50"
+                          disabled={isGeneratingShortLink}
+                        >
+                          {isGeneratingShortLink ? 'Erzeuge…' : 'Neuen Shortlink'}
+                        </button>
+                        {inv?.visibility === 'PUBLIC' && (
+                          <button
+                            onClick={async () => {
+                              await copyToClipboard(publicUrl, 'Direkt-Link kopiert');
+                            }}
+                            className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                          >
+                            Direkt-Link kopieren
+                          </button>
+                        )}
+                        {shortUrl && (
+                          <button
+                            onClick={() => shareInvitation(shortUrl, 'whatsapp')}
+                            className="px-3 py-2 rounded-lg bg-[#EAA48F] text-white text-sm font-semibold"
+                          >
+                            WhatsApp
+                          </button>
+                        )}
+                        {shortUrl && (
+                          <button
+                            onClick={() => shareInvitation(shortUrl, 'facebook')}
+                            className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                          >
+                            Facebook
+                          </button>
+                        )}
+                        {shortUrl && (
+                          <button
+                            onClick={() => shareInvitation(shortUrl, 'x')}
+                            className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                          >
+                            X
+                          </button>
+                        )}
+                        {shortUrl && (
+                          <button
+                            onClick={() => shareInvitation(shortUrl, 'linkedin')}
+                            className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                          >
+                            LinkedIn
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+          <motion.button
+            whileHover={{ opacity: 1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => coverImageInputRef.current?.click()}
+            className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center text-white opacity-0"
+          >
+            {uploadingImage === 'cover' ? (
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            ) : (
+              <>
+                <Camera className="w-6 h-6 mr-2" />
+                <span className="text-sm font-medium">Titelbild ändern</span>
+              </>
+            )}
+          </motion.button>
+          <input
+            ref={coverImageInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleImageUpload('cover', file);
+            }}
+          />
+        </div>
+
+        {/* Profile Info */}
+        <div className="flex items-start gap-4 mb-6">
+          {/* Profile Image */}
+          <div className="relative">
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-[#295B4D] to-[#EAA48F] overflow-hidden border-4 border-white shadow-lg group">
+              {profileImage && profileImage !== '/default-profile.png' ? (
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white">
+                  <Users className="w-10 h-10" />
+                </div>
+              )}
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => profileImageInputRef.current?.click()}
+              className="absolute bottom-0 right-0 w-7 h-7 bg-black rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white"
+            >
+              {uploadingImage === 'profile' ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                <Camera className="w-4 h-4" />
+              )}
+            </motion.button>
+            <input
+              ref={profileImageInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleImageUpload('profile', file);
+              }}
+            />
+          </div>
+
+          {/* Event Info */}
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              {editingField === 'title' ? (
+                <input
+                  type="text"
+                  defaultValue={event.title}
+                  onBlur={(e) => updateEventField('title', e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      updateEventField('title', (e.target as HTMLInputElement).value);
+                    }
+                  }}
+                  className="text-xl font-semibold border-b-2 border-black focus:outline-none"
+                  autoFocus
+                />
+              ) : (
+                <h2
+                  onClick={() => setEditingField('title')}
+                  className="text-xl font-semibold cursor-pointer hover:opacity-70 transition-opacity"
+                >
+                  {event.title}
+                </h2>
+              )}
+            </div>
+            
+            {/* Stats */}
+            <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+              <span><strong>{photoStats.total}</strong> Fotos</span>
+              <span><strong>{photoStats.approved}</strong> Freigegeben</span>
+              {photoStats.pending > 0 && (
+                <span className="text-orange-600"><strong>{photoStats.pending}</strong> Ausstehend</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Welcome Message */}
+        <div className="mb-6">
+          {editingField === 'welcomeMessage' ? (
+            <textarea
+              defaultValue={welcomeMessage}
+              onBlur={(e) => {
+                updateDesignConfig({
+                  welcomeMessage: e.target.value,
+                });
+              }}
+              placeholder="Schreibe eine Willkommensnachricht..."
+              className="w-full p-3 border-2 border-black rounded-lg focus:outline-none resize-none"
+              rows={3}
+              autoFocus
+            />
+          ) : (
+            <div
+              onClick={() => setEditingField('welcomeMessage')}
+              className="p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors min-h-[60px]"
+            >
+              {welcomeMessage ? (
+                <p className="text-gray-700 whitespace-pre-wrap">{welcomeMessage}</p>
+              ) : (
+                <p className="text-gray-400 italic">Klicke hier, um eine Willkommensnachricht hinzuzufügen...</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Event Details */}
+        <div className="mb-6 space-y-3">
+          {/* Date - Required */}
+          <div className="bg-gray-50 rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <Calendar className="w-5 h-5 text-[#295B4D]" />
+              <label className="text-sm font-medium text-gray-700">
+                Datum <span className="text-red-500">*</span>
+              </label>
+            </div>
+            {editingField === 'date' ? (
+              <input
+                type="date"
+                required
+                defaultValue={event.dateTime ? new Date(event.dateTime).toISOString().split('T')[0] : ''}
+                onBlur={(e) => {
+                  const dateValue = e.target.value;
+                  const timeValue = event.dateTime ? new Date(event.dateTime).toTimeString().slice(0, 5) : '00:00';
+                  if (dateValue) {
+                    const combinedDateTime = new Date(`${dateValue}T${timeValue}`);
+                    updateEventField('dateTime', combinedDateTime.toISOString());
+                  }
+                }}
+                className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#295B4D]"
+                autoFocus
+              />
+            ) : (
+              <div
+                onClick={() => setEditingField('date')}
+                className="cursor-pointer hover:opacity-70 transition-opacity"
+              >
+                {event.dateTime ? (
+                  <p className="text-gray-900">
+                    {new Date(event.dateTime).toLocaleDateString('de-DE', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                    })}
+                  </p>
+                ) : (
+                  <p className="text-red-400 italic">Bitte Datum auswählen *</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Time - Required */}
+          <div className="bg-gray-50 rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <Clock className="w-5 h-5 text-[#295B4D]" />
+              <label className="text-sm font-medium text-gray-700">
+                Uhrzeit <span className="text-red-500">*</span>
+              </label>
+            </div>
+            {editingField === 'time' ? (
+              <input
+                type="time"
+                required
+                defaultValue={event.dateTime ? new Date(event.dateTime).toTimeString().slice(0, 5) : '00:00'}
+                onBlur={(e) => {
+                  const timeValue = e.target.value;
+                  const dateValue = event.dateTime ? new Date(event.dateTime).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+                  if (timeValue) {
+                    const combinedDateTime = new Date(`${dateValue}T${timeValue}`);
+                    updateEventField('dateTime', combinedDateTime.toISOString());
+                  }
+                }}
+                className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#295B4D]"
+                autoFocus
+              />
+            ) : (
+              <div
+                onClick={() => setEditingField('time')}
+                className="cursor-pointer hover:opacity-70 transition-opacity"
+              >
+                {event.dateTime ? (
+                  <p className="text-gray-900">
+                    {new Date(event.dateTime).toLocaleTimeString('de-DE', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                ) : (
+                  <p className="text-red-400 italic">Bitte Uhrzeit auswählen *</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Location */}
+          <div className="bg-gray-50 rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <MapPin className="w-5 h-5 text-[#295B4D]" />
+              <label className="text-sm font-medium text-gray-700">Veranstaltungsort</label>
+            </div>
+            {editingField === 'locationName' ? (
+              <input
+                type="text"
+                defaultValue={event.locationName || ''}
+                onBlur={(e) => {
+                  updateEventField('locationName', e.target.value || null);
+                }}
+                placeholder="z.B. Musterstraße 123, 12345 Musterstadt"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#295B4D]"
+                autoFocus
+              />
+            ) : (
+              <div
+                onClick={() => setEditingField('locationName')}
+                className="cursor-pointer hover:opacity-70 transition-opacity"
+              >
+                {event.locationName ? (
+                  <p className="text-gray-900">{event.locationName}</p>
+                ) : (
+                  <p className="text-gray-400 italic">Klicke hier, um einen Ort hinzuzufügen...</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Event URL/Slug - Read-only */}
+          <div className="bg-gray-50 rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <Globe className="w-5 h-5 text-[#295B4D]" />
+              <label className="text-sm font-medium text-gray-700">Event-URL</label>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-gray-900 font-mono text-sm">/e2/{event.slug}</p>
+                <p className="text-xs text-gray-500 mt-1">Automatisch generiert, nicht bearbeitbar</p>
+              </div>
+              <button
+                onClick={() => {
+                  const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/e2/${event.slug}`;
+                  navigator.clipboard.writeText(url);
+                  alert('URL kopiert!');
+                }}
+                className="px-3 py-1 text-xs bg-[#295B4D] text-white rounded-lg hover:bg-[#1f4238] transition-colors"
+              >
+                Kopieren
+              </button>
+            </div>
+          </div>
+
+          {/* Password */}
+          <div className="bg-gray-50 rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <Lock className="w-5 h-5 text-[#295B4D]" />
+              <label className="text-sm font-medium text-gray-700">Event-Passwort</label>
+            </div>
+            {editingField === 'password' ? (
+              <div className="space-y-2">
+                <input
+                  type="password"
+                  placeholder="Neues Passwort eingeben (leer lassen zum Entfernen)"
+                  onBlur={(e) => {
+                    updateEventField('password', e.target.value || null);
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#295B4D]"
+                  autoFocus
+                />
+                <p className="text-xs text-gray-500">
+                  {(event as any).password ? 'Leer lassen, um Passwort zu entfernen' : 'Passwort schützt den Event-Zugang'}
+                </p>
+              </div>
+            ) : (
+              <div
+                onClick={() => setEditingField('password')}
+                className="cursor-pointer hover:opacity-70 transition-opacity"
+              >
+                {(event as any).password ? (
+                  <p className="text-gray-900">•••••••• (Passwort gesetzt)</p>
+                ) : (
+                  <p className="text-gray-400 italic">Klicke hier, um ein Passwort hinzuzufügen...</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+
+
+        {/* Quick Actions - iOS Style */}
+        <div className="space-y-2 mb-6">
+          {/* Event-Modus Accordion */}
+          <div className="bg-gray-50 rounded-xl overflow-hidden">
+            <motion.div
+              whileTap={{ scale: 0.98 }}
+              className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+              onClick={() => setShowEventMode(!showEventMode)}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#295B4D]/10 rounded-full flex items-center justify-center">
+                  <Settings className="w-5 h-5 text-[#295B4D]" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Event-Modus</p>
+                  <p className="text-xs text-gray-500">Event-Verhalten konfigurieren</p>
+                </div>
+              </div>
+              <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform ${showEventMode ? 'rotate-90' : ''}`} />
+            </motion.div>
+            <AnimatePresence>
+              {showEventMode && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="px-4 pb-4"
+                >
+                  <div className="space-y-2 pt-2">
+                    <label className="flex items-center justify-between px-1 py-2">
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm">Event aktiv</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={event ? (event as any).isActive !== false : true}
+                        disabled={!event || togglingActive}
+                        onChange={(e) => updateEventActive(e.target.checked)}
+                        className="w-5 h-5"
+                        style={{ accentColor: '#295B4D' }}
+                      />
+                    </label>
+
+                    {['STANDARD', 'MODERATION', 'COLLECT', 'VIEW_ONLY'].map((mode) => (
+                      <label
+                        key={mode}
+                        className={`flex items-start p-3 border-2 rounded-lg cursor-pointer transition-all ${
+                          featuresConfig.mode === mode
+                            ? 'border-[#295B4D] bg-[#295B4D]/5'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="mode"
+                          value={mode}
+                          checked={featuresConfig.mode === mode}
+                          onChange={(e) => updateFeaturesConfig({ mode: e.target.value })}
+                          className="mt-1 mr-3"
+                          style={{ accentColor: '#295B4D' }}
+                        />
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">
+                            {mode === 'STANDARD' && 'Standard'}
+                            {mode === 'MODERATION' && 'Moderation'}
+                            {mode === 'COLLECT' && 'Foto Sammeln'}
+                            {mode === 'VIEW_ONLY' && 'Nur Ansicht'}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {mode === 'STANDARD' && 'Gäste können Fotos hochladen und alle Fotos sehen'}
+                            {mode === 'MODERATION' && 'Uploads müssen erst freigegeben werden'}
+                            {mode === 'COLLECT' && 'Gäste sehen nur eigene Fotos, du siehst alle'}
+                            {mode === 'VIEW_ONLY' && 'Gäste können keine Fotos hochladen, nur ansehen'}
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                  
+                  {/* Mystery Mode */}
+                  <div className="pt-3 mt-3 border-t border-gray-200 space-y-3">
+                    <label className="flex items-center justify-between px-1 py-2">
+                      <div className="flex items-center gap-2">
+                        <EyeIcon className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm">Mystery Mode <span className="text-gray-500 font-normal">(Überschreibt die Sichtbarkeitsregeln der Event-Modi - Fotos werden erst nach dem Event sichtbar)</span></span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={featuresConfig.mysteryMode === true}
+                        onChange={(e) => updateFeaturesConfig({ mysteryMode: e.target.checked })}
+                        className="w-5 h-5"
+                        style={{ accentColor: '#295B4D' }}
+                      />
+                    </label>
+                    
+                    {/* Foto-Uploads erlauben */}
+                    <label className="flex items-center justify-between px-1 py-2">
+                      <div className="flex items-center gap-2">
+                        <Upload className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm">Foto-Uploads erlauben</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={featuresConfig.allowUploads !== false}
+                        onChange={(e) => updateFeaturesConfig({ allowUploads: e.target.checked })}
+                        disabled={isStorageLocked}
+                        className="w-5 h-5"
+                        style={{ accentColor: '#295B4D' }}
+                      />
+                    </label>
+                    
+                    {/* Downloads erlauben */}
+                    <label className="flex items-center justify-between px-1 py-2">
+                      <div className="flex items-center gap-2">
+                        <Download className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm">Downloads erlauben</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={featuresConfig.allowDownloads !== false}
+                        onChange={(e) => updateFeaturesConfig({ allowDownloads: e.target.checked })}
+                        disabled={isStorageLocked}
+                        className="w-5 h-5"
+                        style={{ accentColor: '#295B4D' }}
+                      />
+                    </label>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Gäste Section */}
+          <div className="space-y-2">
+            {/* Gäste Link */}
+            {featuresConfig.showGuestlist === false ? (
+              <div className="bg-gray-50 rounded-xl p-4 opacity-50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                    <Users className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm text-gray-400">Gäste</p>
+                    <p className="text-xs text-gray-400">Gästelistenfunktion ist deaktiviert</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link href={`/events/${eventId}/guests`}>
+                <motion.div
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gray-50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[#295B4D]/10 rounded-full flex items-center justify-center">
+                      <Users className="w-5 h-5 text-[#295B4D]" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">Gäste</p>
+                      <p className="text-xs text-gray-500">Gäste verwalten und einladen</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </motion.div>
+              </Link>
+            )}
+
+            {/* Alben Link */}
+            <Link href={`/events/${eventId}/categories`}>
+              <motion.div
+                whileTap={{ scale: 0.98 }}
+                className="bg-gray-50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#EAA48F]/10 rounded-full flex items-center justify-center">
+                    <ImageIcon className="w-5 h-5 text-[#EAA48F]" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">Alben</p>
+                    <p className="text-xs text-gray-500">Alben erstellen und verwalten</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </motion.div>
+            </Link>
+
+            {/* Challenges Link */}
+            {featuresConfig.challengesEnabled === false ? (
+              <div className="bg-gray-50 rounded-xl p-4 opacity-50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                    <Trophy className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm text-gray-400">Challenges</p>
+                    <p className="text-xs text-gray-400">Challenges sind deaktiviert</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link href={`/events/${eventId}/challenges`}>
+                <motion.div
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-gray-50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                      <Trophy className="w-5 h-5 text-yellow-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">Challenges</p>
+                      <p className="text-xs text-gray-500">Challenges erstellen und verwalten</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                </motion.div>
+              </Link>
+            )}
+          </div>
+
+          <Link href={`/events/${eventId}/statistics`}>
+            <motion.div
+              whileTap={{ scale: 0.98 }}
+              className="bg-gray-50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#295B4D]/10 rounded-full flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-[#295B4D]" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Statistiken</p>
+                  <p className="text-xs text-gray-500">Event-Übersicht und Analysen</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </motion.div>
+          </Link>
+
+          {/* Erweiterte Einstellungen Accordion */}
+          <div className="bg-gray-50 rounded-xl overflow-hidden">
+            <motion.div
+              whileTap={{ scale: 0.98 }}
+              className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+              onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#295B4D]/10 rounded-full flex items-center justify-center">
+                  <Settings className="w-5 h-5 text-[#295B4D]" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Erweiterte Einstellungen</p>
+                  <p className="text-xs text-gray-500">Weitere Features & Optionen</p>
+                </div>
+              </div>
+              <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform ${showAdvancedSettings ? 'rotate-90' : ''}`} />
+            </motion.div>
+            <AnimatePresence>
+              {showAdvancedSettings && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="px-4 pb-4"
+                >
+                  <div className="pt-4 space-y-3">
+                    <label className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <UserCheck className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm">Gästeliste anzeigen</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={featuresConfig.showGuestlist !== false}
+                        onChange={(e) => updateFeaturesConfig({ showGuestlist: e.target.checked })}
+                        className="w-5 h-5"
+                        style={{ accentColor: '#295B4D' }}
+                      />
+                    </label>
+
+                    <label className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Trophy className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm">Challenges aktivieren</span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={featuresConfig.challengesEnabled === true}
+                        onChange={(e) => updateFeaturesConfig({ challengesEnabled: e.target.checked })}
+                        className="w-5 h-5"
+                        style={{ accentColor: '#295B4D' }}
+                      />
+                    </label>
+
+                  </div>
+                  
+                  {/* Speichern Button */}
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={async () => {
+                      try {
+                        await loadEvent();
+                        alert('Änderungen gespeichert!');
+                      } catch (err) {
+                        console.error('Fehler beim Speichern:', err);
+                        alert('Fehler beim Speichern');
+                      }
+                    }}
+                    className="w-full mt-4 bg-[#295B4D] text-white rounded-xl p-4 font-semibold hover:bg-[#1f4238] transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Check className="w-5 h-5" />
+                    Speichern
+                  </motion.button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Settings Modal */}
+      <AnimatePresence>
+        {showSettings && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowSettings(false)}
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end"
+          >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-hidden"
+            >
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Einstellungen</h2>
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="p-1 hover:bg-gray-100 rounded-full"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="overflow-y-auto max-h-[calc(80vh-60px)] p-4 space-y-2">
+                <Link href={`/events/${eventId}`}>
+                  <motion.div
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-gray-50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Eye className="w-5 h-5 text-gray-600" />
+                      <span className="font-medium">Event ansehen</span>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                  </motion.div>
+                </Link>
+                
+                <Link href={`/events/${eventId}/duplicates`}>
+                  <motion.div
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-gray-50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <ImageIcon className="w-5 h-5 text-gray-600" />
+                      <span className="font-medium">Duplikate verwalten</span>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                  </motion.div>
+                </Link>
+              </div>
+            </motion.div>
+          </motion.div>
+          )}
+        </AnimatePresence>
+
+      {/* Sticky Footer Navigation */}
+      <DashboardFooter eventId={eventId} eventSlug={event.slug} />
+      
+      {/* Padding for footer */}
+      <div className="h-20" />
+    </AppLayout>
+  );
+}
+

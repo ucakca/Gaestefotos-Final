@@ -116,27 +116,28 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
   return (
     <div className="space-y-4">
       {/* Dropzone */}
-      <motion.div
-        {...getRootProps()}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className={`
-          border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors
-          ${isDragActive 
-            ? 'border-primary-500 bg-primary-50' 
-            : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
-          }
-        `}
-      >
-        <input {...getInputProps()} />
-        <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-        <p className="text-lg font-medium text-gray-700 mb-2">
-          {isDragActive ? 'Fotos hier ablegen' : 'Fotos hochladen'}
-        </p>
-        <p className="text-sm text-gray-500">
-          Drag & Drop oder klicken zum Auswählen
-        </p>
-      </motion.div>
+      <div {...getRootProps()}>
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className={`
+            border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors
+            ${isDragActive 
+              ? 'border-primary-500 bg-primary-50' 
+              : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
+            }
+          `}
+        >
+          <input {...getInputProps()} />
+          <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+          <p className="text-lg font-medium text-gray-700 mb-2">
+            {isDragActive ? 'Fotos hier ablegen' : 'Fotos hochladen'}
+          </p>
+          <p className="text-sm text-gray-500">
+            Drag & Drop oder klicken zum Auswählen
+          </p>
+        </motion.div>
+      </div>
 
       {/* Upload Progress */}
       <AnimatePresence>

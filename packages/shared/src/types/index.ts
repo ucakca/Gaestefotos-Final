@@ -49,6 +49,7 @@ export interface Guest {
   eventId: string;
   firstName: string;
   lastName: string;
+  email?: string;
   status: 'pending' | 'accepted' | 'declined';
   dietaryRequirements?: string;
   plusOneCount: number;
@@ -62,8 +63,23 @@ export interface Photo {
   eventId: string;
   guestId?: string;
   storagePath: string;
+  url?: string;
+  uploadedBy?: string | null;
   status: 'approved' | 'pending' | 'deleted';
   createdAt: Date;
+}
+
+// Category Types
+export interface Category {
+  id: string;
+  eventId: string;
+  name: string;
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+  _count?: {
+    photos: number;
+  };
 }
 
 // API Response Types

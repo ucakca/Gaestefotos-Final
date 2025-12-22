@@ -393,6 +393,30 @@ export default function PhotoManagementPage() {
     : null;
   const moderationRequired = featuresConfig?.moderationRequired === true;
 
+  const isStorageLocked = (() => {
+    const e: any = event as any;
+    if (!e) return false;
+    if (typeof e.isStorageLocked === 'boolean') return e.isStorageLocked;
+    const endsAt = e.storageEndsAt ? new Date(e.storageEndsAt).getTime() : null;
+    if (!endsAt || Number.isNaN(endsAt)) return false;
+    return Date.now() > endsAt;
+  })();
+
+  const withinUploadWindow = (() => {
+    const e: any = event as any;
+    if (!e?.dateTime) return true;
+    const eventTime = new Date(e.dateTime).getTime();
+    if (!Number.isFinite(eventTime)) return true;
+    const windowMs = 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    return now >= eventTime - windowMs && now <= eventTime + windowMs;
+  })();
+
+  const uploadDisabled = isStorageLocked || !withinUploadWindow;
+  const uploadDisabledReason = isStorageLocked
+    ? 'Die Speicherperiode ist beendet – Uploads sind nicht mehr möglich.'
+    : 'Uploads sind nur 1 Tag vor/nach dem Event möglich.';
+
   if (loading && photos.length === 0) {
     return (
       <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
@@ -440,8 +464,14 @@ export default function PhotoManagementPage() {
             <ActionButton
               icon={Upload}
               label="Foto hochladen"
-              onClick={() => setShowUploadModal(true)}
-              disabled={viewMode === 'trash'}
+              onClick={() => {
+                if (uploadDisabled) {
+                  showToast(uploadDisabledReason, 'error');
+                  return;
+                }
+                setShowUploadModal(true);
+              }}
+              disabled={viewMode === 'trash' || uploadDisabled}
             />
             <ActionButton
               icon={ScanFace}
@@ -455,6 +485,19 @@ export default function PhotoManagementPage() {
             </Link>
           </div>
         </PageHeader>
+
+        {isStorageLocked && (
+          <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+            <div className="flex items-start gap-3">
+              <div>
+                <p className="font-semibold text-sm text-yellow-900">Speicherperiode beendet</p>
+                <p className="text-xs text-yellow-900/80 mt-1">
+                  Uploads und Downloads sind deaktiviert. Bitte verlängere das Paket, um wieder Zugriff zu erhalten.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {uploading && (
           <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -686,7 +729,8 @@ export default function PhotoManagementPage() {
                         handleBulkDownload();
                         setShowActionsMenu(false);
                       }}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                      disabled={isStorageLocked}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                     >
                       <Download className="w-4 h-4" />
                       Herunterladen
@@ -732,7 +776,7 @@ export default function PhotoManagementPage() {
 
         {/* Upload Modal */}
         <UploadModal
-          open={showUploadModal}
+          open={showUploadModal && !uploadDisabled}
           onClose={() => setShowUploadModal(false)}
           onUpload={handleUpload}
           categories={categories}
@@ -813,7 +857,7 @@ export default function PhotoManagementPage() {
                     <img
                       src={photo.url}
                       alt="Foto"
-                      className="w-full h-full object-cover"
+                      className={`w-full h-full object-cover ${isStorageLocked ? 'blur-md' : ''}`}
                       loading="lazy"
                       onContextMenu={(e) => e.preventDefault()}
                       draggable={false}
@@ -862,12 +906,12 @@ export default function PhotoManagementPage() {
         {/* Bulk Actions Bar removed - now handled by actions menu in header */}
 
         {/* Floating Action Button for ZIP Download */}
-        {photos.length > 0 && (
+        {photos.length > 0 && !isStorageLocked && (
           <motion.button
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={async () => {
               try {
                 const allIds = photos.map((p: any) => p.id).filter(Boolean);
@@ -1052,6 +1096,10 @@ export default function PhotoManagementPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              if (isStorageLocked) {
+                                showToast('Speicherperiode beendet – Download nicht mehr möglich', 'error');
+                                return;
+                              }
                               const url = selectedPhoto.url || '';
                               if (url) {
                                 const link = document.createElement('a');
