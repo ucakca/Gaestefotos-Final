@@ -355,7 +355,12 @@ export default function PhotoManagementPage() {
       showToast(`${selectedPhotos.size} Foto(s) heruntergeladen`, 'success');
       setSelectedPhotos(new Set());
     } catch (err: any) {
-      showToast('Fehler beim Download', 'error');
+      const code = err?.response?.data?.code;
+      if (code === 'STORAGE_LOCKED') {
+        showToast('Speicherperiode beendet – Download nicht mehr möglich', 'error');
+      } else {
+        showToast('Fehler beim Download', 'error');
+      }
     }
   };
 
@@ -865,9 +870,14 @@ export default function PhotoManagementPage() {
             whileTap={{ scale: 0.9 }}
             onClick={async () => {
               try {
-                const response = await api.get(`/events/${eventId}/download-zip`, {
+                const allIds = photos.map((p: any) => p.id).filter(Boolean);
+                if (allIds.length === 0) return;
+                const response = await api.post('/photos/bulk/download', {
+                  photoIds: allIds,
+                }, {
                   responseType: 'blob',
                 });
+
                 const url = window.URL.createObjectURL(new Blob([response.data]));
                 const link = document.createElement('a');
                 link.href = url;
@@ -878,7 +888,12 @@ export default function PhotoManagementPage() {
                 window.URL.revokeObjectURL(url);
                 showToast('Alle Fotos heruntergeladen', 'success');
               } catch (err: any) {
-                showToast('Fehler beim Download', 'error');
+                const code = err?.response?.data?.code;
+                if (code === 'STORAGE_LOCKED') {
+                  showToast('Speicherperiode beendet – Download nicht mehr möglich', 'error');
+                } else {
+                  showToast('Fehler beim Download', 'error');
+                }
               }
             }}
             className="fixed bottom-24 right-6 w-14 h-14 bg-[#295B4D] text-white rounded-full shadow-lg flex items-center justify-center z-40 hover:bg-[#204a3e] transition-colors"
@@ -1130,7 +1145,7 @@ export default function PhotoManagementPage() {
                       <p className="text-sm text-gray-500 mb-2">Teilen & Download</p>
                       <div className="flex gap-2">
                         <a
-                          href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/photos/${selectedPhoto.id}/download`}
+                          href={`/api/photos/${selectedPhoto.id}/download`}
                           download
                           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                         >
