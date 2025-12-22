@@ -531,7 +531,6 @@ router.get(
       return res.status(404).json({ error: 'Video nicht gefunden' });
     }
 
-    // Check download time restriction: Only 21 days after event date
     // NOTE: Storage period policy is enforced elsewhere (lifecycle rules); do not hardcode date limits here.
 
     if (!video.storagePath) {

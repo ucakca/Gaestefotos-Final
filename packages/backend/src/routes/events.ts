@@ -6,6 +6,7 @@ import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie } from
 import { randomString, slugify } from '@gaestefotos/shared';
 import { logger } from '../utils/logger';
 import { getActiveEventEntitlement, getEventUsageBreakdown, bigintToString } from '../services/packageLimits';
+import { getEventStorageEndsAt } from '../services/storagePolicy';
 
 const router = Router();
 
@@ -105,7 +106,9 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Event not found' });
     }
 
-    res.json({ event });
+    const storageEndsAt = await getEventStorageEndsAt(event.id);
+    const isStorageLocked = storageEndsAt ? Date.now() > storageEndsAt.getTime() : false;
+    res.json({ event: { ...event, storageEndsAt, isStorageLocked } });
   } catch (error) {
     logger.error('Get event error', { message: (error as any)?.message || String(error), eventId: req.params.id });
     res.status(500).json({ error: 'Internal server error' });
@@ -137,7 +140,9 @@ router.get('/slug/:slug', async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Event not found' });
     }
 
-    res.json({ event });
+    const storageEndsAt = await getEventStorageEndsAt(event.id);
+    const isStorageLocked = storageEndsAt ? Date.now() > storageEndsAt.getTime() : false;
+    res.json({ event: { ...event, storageEndsAt, isStorageLocked } });
   } catch (error) {
     logger.error('Get event by slug error', { message: (error as any)?.message || String(error), slug: req.params.slug });
     res.status(500).json({ error: 'Internal server error' });
@@ -485,7 +490,7 @@ router.post('/:id/invite-token', authMiddleware, async (req: AuthRequest, res: R
 
     const frontendBaseUrl = process.env.FRONTEND_URL || process.env.PUBLIC_URL || '';
     const shareUrl = event.slug
-      ? `${frontendBaseUrl}/e/${event.slug}?invite=${encodeURIComponent(inviteToken)}`
+      ? `${frontendBaseUrl}/e2/${event.slug}?invite=${encodeURIComponent(inviteToken)}`
       : null;
 
     return res.json({ ok: true, eventId, inviteToken, shareUrl });

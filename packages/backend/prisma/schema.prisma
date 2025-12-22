@@ -121,6 +121,7 @@ model PackageDefinition {
   resultingTier     String
   upgradeFromTier   String?
   storageLimitBytes BigInt?
+  storageDurationDays Int?
   isActive          Boolean               @default(true)
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
