@@ -23,6 +23,7 @@ export default function AdminDashboardPage() {
     resultingTier: 'SMART',
     upgradeFromTier: '',
     storageLimitBytes: '',
+    storageDurationDays: '',
     isActive: true,
   });
 
@@ -261,13 +262,14 @@ export default function AdminDashboardPage() {
                       <th style={{ padding: '0.5rem' }}>Tier</th>
                       <th style={{ padding: '0.5rem' }}>From</th>
                       <th style={{ padding: '0.5rem' }}>Limit (Bytes)</th>
+                      <th style={{ padding: '0.5rem' }}>Dauer (Tage)</th>
                       <th style={{ padding: '0.5rem' }}>Aktiv</th>
                       <th style={{ padding: '0.5rem' }}></th>
                     </tr>
                   </thead>
                   <tbody>
                     {packagesLoading ? (
-                      <tr><td colSpan={8} style={{ padding: '0.75rem', color: '#666' }}>Lade…</td></tr>
+                      <tr><td colSpan={9} style={{ padding: '0.75rem', color: '#666' }}>Lade…</td></tr>
                     ) : (
                       packages.map((p) => (
                         <tr key={p.id} style={{ borderBottom: '1px solid #f2f2f2' }}>
@@ -277,10 +279,17 @@ export default function AdminDashboardPage() {
                           <td style={{ padding: '0.5rem' }}>{p.resultingTier}</td>
                           <td style={{ padding: '0.5rem' }}>{p.upgradeFromTier || '-'}</td>
                           <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{p.storageLimitBytes ?? '-'}</td>
+                          <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{p.storageDurationDays ?? '-'}</td>
                           <td style={{ padding: '0.5rem' }}>{p.isActive ? 'ja' : 'nein'}</td>
                           <td style={{ padding: '0.5rem', whiteSpace: 'nowrap' }}>
                             <button
-                              onClick={() => setEditingPkg({ ...p, storageLimitBytes: p.storageLimitBytes ?? '' })}
+                              onClick={() =>
+                                setEditingPkg({
+                                  ...p,
+                                  storageLimitBytes: p.storageLimitBytes ?? '',
+                                  storageDurationDays: p.storageDurationDays ?? '',
+                                })
+                              }
                               style={{
                                 padding: '0.35rem 0.6rem',
                                 backgroundColor: '#EAA48F',
@@ -295,7 +304,7 @@ export default function AdminDashboardPage() {
                             </button>
                             <button
                               onClick={async () => {
-                                if (!confirm(`Paket löschen? ${p.sku}`)) return;
+                                if (!confirm(`Paket deaktivieren? ${p.sku}`)) return;
                                 setPackagesError(null);
                                 try {
                                   await api.delete(`/admin/package-definitions/${p.id}`);
@@ -336,6 +345,7 @@ export default function AdminDashboardPage() {
                   <input value={newPkg.resultingTier} onChange={(e) => setNewPkg({ ...newPkg, resultingTier: e.target.value })} placeholder="resultingTier" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid #ddd' }} />
                   <input value={newPkg.upgradeFromTier} onChange={(e) => setNewPkg({ ...newPkg, upgradeFromTier: e.target.value })} placeholder="upgradeFromTier (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid #ddd' }} />
                   <input value={newPkg.storageLimitBytes} onChange={(e) => setNewPkg({ ...newPkg, storageLimitBytes: e.target.value })} placeholder="storageLimitBytes (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid #ddd', fontFamily: 'monospace' }} />
+                  <input value={newPkg.storageDurationDays} onChange={(e) => setNewPkg({ ...newPkg, storageDurationDays: e.target.value })} placeholder="storageDurationDays (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid #ddd', fontFamily: 'monospace' }} />
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#295B4D' }}>
                     <input type="checkbox" checked={newPkg.isActive} onChange={(e) => setNewPkg({ ...newPkg, isActive: e.target.checked })} />
                     aktiv
@@ -352,6 +362,7 @@ export default function AdminDashboardPage() {
                         resultingTier: newPkg.resultingTier.trim(),
                         upgradeFromTier: newPkg.upgradeFromTier.trim() || null,
                         storageLimitBytes: newPkg.storageLimitBytes.trim() || null,
+                        storageDurationDays: newPkg.storageDurationDays.trim() ? Number(newPkg.storageDurationDays.trim()) : null,
                         isActive: newPkg.isActive,
                       });
                       setNewPkg({
@@ -361,6 +372,7 @@ export default function AdminDashboardPage() {
                         resultingTier: 'SMART',
                         upgradeFromTier: '',
                         storageLimitBytes: '',
+                        storageDurationDays: '',
                         isActive: true,
                       });
                       await loadPackages();
@@ -399,6 +411,7 @@ export default function AdminDashboardPage() {
                     <input value={editingPkg.resultingTier} onChange={(e) => setEditingPkg({ ...editingPkg, resultingTier: e.target.value })} placeholder="resultingTier" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid #ddd' }} />
                     <input value={editingPkg.upgradeFromTier || ''} onChange={(e) => setEditingPkg({ ...editingPkg, upgradeFromTier: e.target.value })} placeholder="upgradeFromTier (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid #ddd' }} />
                     <input value={editingPkg.storageLimitBytes ?? ''} onChange={(e) => setEditingPkg({ ...editingPkg, storageLimitBytes: e.target.value })} placeholder="storageLimitBytes (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid #ddd', fontFamily: 'monospace' }} />
+                    <input value={editingPkg.storageDurationDays ?? ''} onChange={(e) => setEditingPkg({ ...editingPkg, storageDurationDays: e.target.value })} placeholder="storageDurationDays (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid #ddd', fontFamily: 'monospace' }} />
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#295B4D' }}>
                       <input type="checkbox" checked={!!editingPkg.isActive} onChange={(e) => setEditingPkg({ ...editingPkg, isActive: e.target.checked })} />
                       aktiv
@@ -416,6 +429,7 @@ export default function AdminDashboardPage() {
                             resultingTier: editingPkg.resultingTier.trim(),
                             upgradeFromTier: (editingPkg.upgradeFromTier || '').trim() || null,
                             storageLimitBytes: (String(editingPkg.storageLimitBytes || '')).trim() || null,
+                            storageDurationDays: (String(editingPkg.storageDurationDays || '')).trim() ? Number(String(editingPkg.storageDurationDays || '').trim()) : null,
                             isActive: !!editingPkg.isActive,
                           });
                           setEditingPkg(null);

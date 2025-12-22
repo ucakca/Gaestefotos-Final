@@ -80,8 +80,11 @@ router.put('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest
 
 router.delete('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  await prisma.packageDefinition.delete({ where: { id } });
-  res.json({ success: true });
+  const updated = await prisma.packageDefinition.update({
+    where: { id },
+    data: { isActive: false },
+  });
+  res.json({ success: true, package: serializePackage(updated) });
 });
 
 export default router;
