@@ -21,6 +21,13 @@ function parseCookies(req: Request): Record<string, string> {
   return out;
 }
 
+function getAuthTokenFromRequest(req: Request): string | null {
+  const fromHeader = req.headers.authorization?.replace('Bearer ', '') || null;
+  if (fromHeader) return fromHeader;
+  const cookies = parseCookies(req);
+  return cookies['auth_token'] || null;
+}
+
 function getEventAccessCookieName(eventId: string) {
   return `event_access_${eventId}`;
 }
@@ -104,7 +111,7 @@ export const authMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.headers.authorization?.replace('Bearer ', '');
+    const token = getAuthTokenFromRequest(req);
 
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized: No token provided' });
@@ -135,7 +142,7 @@ export const optionalAuthMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    const token = req.headers.authorization?.replace('Bearer ', '');
+    const token = getAuthTokenFromRequest(req);
     if (!token) return next();
 
     const jwtSecret = process.env.JWT_SECRET;
