@@ -9,13 +9,15 @@ interface AuthState {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   loadUser: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
+  token: typeof window !== 'undefined'
+    ? (sessionStorage.getItem('token') || localStorage.getItem('token'))
+    : null,
   isAuthenticated: false,
   loading: false,
 
@@ -41,8 +43,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  logout: () => {
-    authApi.logout();
+  logout: async () => {
+    await authApi.logout();
     set({ user: null, token: null, isAuthenticated: false });
   },
 

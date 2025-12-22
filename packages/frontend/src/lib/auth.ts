@@ -21,9 +21,6 @@ export const authApi = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     try {
       const { data } = await api.post('/auth/login', credentials);
-      if (typeof window !== 'undefined' && data.token) {
-        localStorage.setItem('token', data.token);
-      }
       return data;
     } catch (error: any) {
       console.error('Login API error:', error);
@@ -34,9 +31,6 @@ export const authApi = {
   register: async (data: RegisterData): Promise<AuthResponse> => {
     try {
       const response = await api.post('/auth/register', data);
-      if (typeof window !== 'undefined' && response.data.token) {
-        localStorage.setItem('token', response.data.token);
-      }
       return response.data;
     } catch (error: any) {
       console.error('Register API error:', error);
@@ -54,9 +48,15 @@ export const authApi = {
     }
   },
 
-  logout: () => {
+  logout: async (): Promise<void> => {
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // ignore
+    }
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
     }
   },
 };
