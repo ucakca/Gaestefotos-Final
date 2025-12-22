@@ -9,7 +9,9 @@ import BottomNavigation from '@/components/BottomNavigation';
 import StoriesBar from '@/components/guest/StoriesBar';
 import StoryViewer from '@/components/guest/StoryViewer';
 import FaceSearch from '@/components/FaceSearch';
+import { Alert } from '@/components/ui/Alert';
 import { Centered } from '@/components/ui/Centered';
+import { Container } from '@/components/ui/Container';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { LoadMoreIndicator } from '@/components/ui/LoadMoreIndicator';
@@ -36,6 +38,9 @@ export default function PublicEventPageV2() {
     challenges,
     featuresConfig,
     hostName,
+    isStorageLocked,
+    uploadDisabled,
+    uploadDisabledReason,
     loading,
     error,
     passwordRequired,
@@ -154,6 +159,9 @@ export default function PublicEventPageV2() {
             eventId={(event as any).id}
             onUploadSuccess={reloadPhotos}
             allowUploads={featuresConfig?.allowUploads}
+            isStorageLocked={isStorageLocked}
+            uploadDisabled={uploadDisabled}
+            uploadDisabledReason={uploadDisabledReason}
           />
         )}
 

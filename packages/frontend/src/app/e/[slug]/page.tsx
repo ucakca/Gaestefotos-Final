@@ -7,7 +7,6 @@ import api from '@/lib/api';
 import { Event as EventType, Photo } from '@gaestefotos/shared';
 import { useEventRealtime } from '@/hooks/useEventRealtime';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Category } from '@gaestefotos/shared';
 import EventHeader from '@/components/EventHeader';
 import AlbumNavigation from '@/components/AlbumNavigation';
 import ModernPhotoGrid from '@/components/ModernPhotoGrid';
@@ -15,6 +14,18 @@ import FaceSearch from '@/components/FaceSearch';
 import StoriesBar from '@/components/guest/StoriesBar';
 import StoryViewer from '@/components/guest/StoryViewer';
 import { Trophy } from 'lucide-react';
+
+type Category = {
+  id: string;
+  eventId: string;
+  name: string;
+  order: number;
+  createdAt: any;
+  updatedAt: any;
+  _count?: {
+    photos: number;
+  };
+};
 
 export default function PublicEventPage() {
   const params = useParams();
@@ -643,6 +654,34 @@ export default function PublicEventPage() {
   const featuresConfig = event.featuresConfig as any;
   const hostName = (event as any).host?.name || 'Gastgeber';
 
+  const isStorageLocked = (() => {
+    const e: any = event as any;
+    if (!e) return false;
+    if (typeof e.isStorageLocked === 'boolean') return e.isStorageLocked;
+    const endsAt = e.storageEndsAt ? new Date(e.storageEndsAt).getTime() : null;
+    if (!endsAt || Number.isNaN(endsAt)) return false;
+    return Date.now() > endsAt;
+  })();
+
+  const withinUploadWindow = (() => {
+    const e: any = event as any;
+    if (!e?.dateTime) return true;
+    const eventTime = new Date(e.dateTime).getTime();
+    if (!Number.isFinite(eventTime)) return true;
+    const windowMs = 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    return now >= eventTime - windowMs && now <= eventTime + windowMs;
+  })();
+
+  const uploadDisabled = !featuresConfig?.allowUploads || isStorageLocked || !withinUploadWindow;
+  const uploadDisabledReason = !featuresConfig?.allowUploads
+    ? 'Uploads sind deaktiviert.'
+    : isStorageLocked
+      ? 'Die Speicherzeit ist abgelaufen.'
+      : !withinUploadWindow
+        ? 'Uploads sind nur 1 Tag vor/nach dem Event möglich.'
+        : undefined;
+
   const onStoryPrev = () => {
     setSelectedStoryIndex((i) => {
       if (i === null) return 0;
@@ -734,6 +773,9 @@ export default function PublicEventPage() {
             eventId={event.id}
             onUploadSuccess={handleUploadSuccess}
             allowUploads={featuresConfig?.allowUploads}
+            isStorageLocked={isStorageLocked}
+            uploadDisabled={uploadDisabled}
+            uploadDisabledReason={uploadDisabledReason}
           />
         )}
         

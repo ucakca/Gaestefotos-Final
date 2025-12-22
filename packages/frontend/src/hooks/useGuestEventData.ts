@@ -19,6 +19,38 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
   const featuresConfig = useMemo(() => (event ? ((event as any).featuresConfig as any) : null), [event]);
   const hostName = useMemo(() => ((event as any)?.host?.name as string) || 'Gastgeber', [event]);
 
+  const isStorageLocked = useMemo(() => {
+    const e: any = event as any;
+    if (!e) return false;
+    if (typeof e.isStorageLocked === 'boolean') return e.isStorageLocked;
+    const endsAt = e.storageEndsAt ? new Date(e.storageEndsAt).getTime() : null;
+    if (!endsAt || Number.isNaN(endsAt)) return false;
+    return Date.now() > endsAt;
+  }, [event]);
+
+  const withinUploadWindow = useMemo(() => {
+    const e: any = event as any;
+    if (!e?.dateTime) return true;
+    const eventTime = new Date(e.dateTime).getTime();
+    if (!Number.isFinite(eventTime)) return true;
+    const windowMs = 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    return now >= eventTime - windowMs && now <= eventTime + windowMs;
+  }, [event]);
+
+  const uploadDisabled = useMemo(() => {
+    if (!featuresConfig?.allowUploads) return true;
+    if (isStorageLocked) return true;
+    return !withinUploadWindow;
+  }, [featuresConfig?.allowUploads, isStorageLocked, withinUploadWindow]);
+
+  const uploadDisabledReason = useMemo(() => {
+    if (!featuresConfig?.allowUploads) return 'Uploads sind deaktiviert.';
+    if (isStorageLocked) return 'Die Speicherzeit ist abgelaufen.';
+    if (!withinUploadWindow) return 'Uploads sind nur 1 Tag vor/nach dem Event möglich.';
+    return undefined;
+  }, [featuresConfig?.allowUploads, isStorageLocked, withinUploadWindow]);
+
   const inviteTokenRef = useRef<string | null>(null);
   const [inviteExchangeBump, setInviteExchangeBump] = useState(0);
 
@@ -325,6 +357,9 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
     challenges,
     featuresConfig,
     hostName,
+    isStorageLocked,
+    uploadDisabled,
+    uploadDisabledReason,
     loading,
     error,
     passwordRequired,
