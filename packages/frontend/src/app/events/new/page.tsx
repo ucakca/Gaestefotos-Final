@@ -42,6 +42,11 @@ export default function NewEventPage() {
       console.error('Event creation error:', err);
       const errorData = err.response?.data;
       let errorMessage = 'Fehler beim Erstellen des Events';
+
+      if (errorData?.code === 'FREE_EVENT_LIMIT_REACHED') {
+        const limit = typeof errorData.limit === 'number' ? errorData.limit : 3;
+        errorMessage = `Du hast das Limit von ${limit} kostenlosen Events erreicht. Bitte upgrade dein Paket, um weitere Events zu erstellen.`;
+      }
       
       if (errorData) {
         if (typeof errorData.error === 'string') {
@@ -109,7 +114,7 @@ export default function NewEventPage() {
               placeholder="hochzeit-maria-max"
             />
             <p className="mt-1 text-sm text-gray-500">
-              Event-URL: /e/{formData.slug || 'event-slug'}
+              Event-URL: /e2/{formData.slug || 'event-slug'}
             </p>
           </div>
 

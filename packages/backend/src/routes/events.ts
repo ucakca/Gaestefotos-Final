@@ -5,7 +5,7 @@ import prisma from '../config/database';
 import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie } from '../middleware/auth';
 import { randomString, slugify } from '@gaestefotos/shared';
 import { logger } from '../utils/logger';
-import { getActiveEventEntitlement, getEventUsageBreakdown, bigintToString } from '../services/packageLimits';
+import { getActiveEventEntitlement, getEffectiveEventPackage, getEventUsageBreakdown, bigintToString } from '../services/packageLimits';
 import { getEventStorageEndsAt } from '../services/storagePolicy';
 
 const router = Router();
@@ -108,7 +108,8 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 
     const storageEndsAt = await getEventStorageEndsAt(event.id);
     const isStorageLocked = storageEndsAt ? Date.now() > storageEndsAt.getTime() : false;
-    res.json({ event: { ...event, storageEndsAt, isStorageLocked } });
+    const effectivePackage = await getEffectiveEventPackage(event.id);
+    res.json({ event: { ...event, storageEndsAt, isStorageLocked, effectivePackage } });
   } catch (error) {
     logger.error('Get event error', { message: (error as any)?.message || String(error), eventId: req.params.id });
     res.status(500).json({ error: 'Internal server error' });
@@ -142,7 +143,8 @@ router.get('/slug/:slug', async (req: AuthRequest, res: Response) => {
 
     const storageEndsAt = await getEventStorageEndsAt(event.id);
     const isStorageLocked = storageEndsAt ? Date.now() > storageEndsAt.getTime() : false;
-    res.json({ event: { ...event, storageEndsAt, isStorageLocked } });
+    const effectivePackage = await getEffectiveEventPackage(event.id);
+    res.json({ event: { ...event, storageEndsAt, isStorageLocked, effectivePackage } });
   } catch (error) {
     logger.error('Get event by slug error', { message: (error as any)?.message || String(error), slug: req.params.slug });
     res.status(500).json({ error: 'Internal server error' });
@@ -156,6 +158,54 @@ router.post(
   async (req: AuthRequest, res: Response) => {
     try {
       const data = createEventSchema.parse(req.body);
+
+      // Free-event limit enforcement (default: 3) for hosts.
+      // An event is considered "free" if it has no ACTIVE entitlement for the owner.
+      const freeLimit = Number(process.env.FREE_EVENT_LIMIT || 3);
+      if (Number.isFinite(freeLimit) && freeLimit > 0) {
+        const host = await prisma.user.findUnique({
+          where: { id: req.userId! },
+          select: { wordpressUserId: true },
+        });
+
+        const freeEventCount = await prisma.event.count({
+          where: {
+            hostId: req.userId!,
+            deletedAt: null,
+            isActive: true,
+            ...(host?.wordpressUserId
+              ? {
+                  NOT: {
+                    entitlements: {
+                      some: {
+                        status: 'ACTIVE',
+                        wpUserId: host.wordpressUserId,
+                      },
+                    },
+                  },
+                }
+              : {
+                  NOT: {
+                    entitlements: {
+                      some: {
+                        status: 'ACTIVE',
+                      },
+                    },
+                  },
+                }),
+          },
+        });
+
+        if (freeEventCount >= freeLimit) {
+          return res.status(403).json({
+            error:
+              'Du hast das Limit von 3 kostenlosen Events erreicht. Bitte upgrade dein Paket, um weitere Events zu erstellen.',
+            code: 'FREE_EVENT_LIMIT_REACHED',
+            limit: freeLimit,
+            current: freeEventCount,
+          });
+        }
+      }
 
       // Generate slug if not provided
       let preferredSlug = data.slug || slugify(data.title);
