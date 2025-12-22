@@ -37,6 +37,7 @@ import { storageService } from './services/storage';
 import { startRetentionPurgeWorker } from './services/retentionPurge';
 import { startVirusScanWorker } from './services/virusScan';
 import { startOrphanCleanupWorker } from './services/orphanCleanup';
+import { startStorageReminderWorker } from './services/storageReminder';
 import prisma from './config/database';
 import { hasEventAccess } from './middleware/auth';
 
@@ -53,6 +54,7 @@ storageService.ensureBucketExists().catch((err) => {
 startRetentionPurgeWorker();
 startVirusScanWorker();
 startOrphanCleanupWorker();
+startStorageReminderWorker();
 
 // Initialize Sentry for error tracking
 if (process.env.SENTRY_DSN) {
@@ -139,6 +141,16 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
+
+    // Always allow our known app domains even if FRONTEND_URL is misconfigured.
+    // This prevents accidental lockouts (e.g. login) when the browser sends an Origin header.
+    const alwaysAllow = [
+      /^https?:\/\/(appv2|staging)\.(xn--gstefotos-v2a\.com|gästefotos\.com)$/i,
+      /^https?:\/\/app\.(xn--gstefotos-v2a\.com|gästefotos\.com)$/i,
+    ];
+    if (alwaysAllow.some((re) => re.test(origin))) {
+      return callback(null, true);
+    }
 
     // Dev/E2E: allow any localhost origin regardless of port.
     // This avoids CORS issues when the frontend runs on 3000/3001/3002/... while backend is on 8001.

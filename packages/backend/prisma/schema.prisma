@@ -64,12 +64,30 @@ model Event {
   challenges Challenge[]
   entitlements EventEntitlement[]
   invitations Invitation[]
+  reminderLogs EventReminderLog[]
 
   @@index([slug])
   @@index([hostId])
   @@index([deletedAt])
   @@index([purgeAfter])
   @@map("events")
+}
+
+model EventReminderLog {
+  id        String   @id @default(uuid())
+  eventId   String
+  kind      String
+  daysBefore Int
+  sentAt    DateTime @default(now())
+  storageEndsAt DateTime?
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, kind, daysBefore])
+  @@index([eventId])
+  @@index([kind])
+  @@index([sentAt])
+  @@map("event_reminder_logs")
 }
 
 enum EntitlementStatus {
