@@ -1,5 +1,6 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { Readable } from 'stream';
 
 // SeaweedFS S3 API Configuration
 const SEAWEEDFS_ENDPOINT = process.env.SEAWEEDFS_ENDPOINT || 'localhost:8333';
@@ -23,7 +24,10 @@ export class StorageService {
     eventId: string,
     filename: string,
     buffer: Buffer,
-    contentType: string
+    contentType: string,
+    _mediaId?: string,
+    _uploadedBy?: string,
+    _hostId?: string
   ): Promise<string> {
     const key = `events/${eventId}/${Date.now()}-${filename}`;
 
@@ -36,6 +40,29 @@ export class StorageService {
 
     await s3Client.send(command);
     return key;
+  }
+
+  async getFile(key: string): Promise<Buffer> {
+    const command = new GetObjectCommand({
+      Bucket: BUCKET,
+      Key: key,
+    });
+
+    const response: any = await s3Client.send(command);
+    const body = response?.Body;
+    if (!body) {
+      throw new Error('Storage: empty response body');
+    }
+
+    if (Buffer.isBuffer(body)) return body;
+    if (typeof body === 'string') return Buffer.from(body);
+
+    const stream: Readable = body as Readable;
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks);
   }
 
   async getFileUrl(key: string, expiresIn: number = 3600): Promise<string> {

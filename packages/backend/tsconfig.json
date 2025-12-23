@@ -15,10 +15,10 @@
     "declarationMap": true,
     "sourceMap": true,
     "paths": {
-      "@gaestefotos/shared": ["../../packages/shared/src"]
+      "@gaestefotos/shared": ["../../packages/shared/dist"]
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist", "src/services/packages/frontend/**"]
 }
 
