@@ -20,6 +20,12 @@
 - [Ops Runbooks](#ops-runbooks)
 - [Troubleshooting](#troubleshooting)
 
+## 📚 Kurze Doku-Links (empfohlen)
+
+- `docs/FEATURES.md`
+- `docs/TEST_GUIDE.md`
+- `docs/DEPLOYMENT.md`
+
 ---
 
 ## 🎯 Überblick
