@@ -64,3 +64,13 @@ Thumbs.db
 
 .pids/
 .pids-appv2/
+
+# Local-only notes / secrets
+/credentials/
+
+# Local scratch markdown files in repo root (keep real docs under /docs)
+/*.md
+!/README.md
+
+# Local-only experiments
+/wordpress-plugin/
