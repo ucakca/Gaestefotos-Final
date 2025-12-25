@@ -64,6 +64,7 @@ export default function PublicEventPageV2() {
     onStoryNext,
     onStoryPause,
     onStoryResume,
+    reloadStories,
   } = useStoriesViewer(event?.id ?? null, inviteExchangeBump);
 
   useEffect(() => {
@@ -112,7 +113,27 @@ export default function PublicEventPageV2() {
 
   return (
     <div className="min-h-screen bg-white">
-      <EventHeader event={event} hostName={hostName} />
+      <EventHeader
+        event={event}
+        hostName={hostName}
+        variant="hero"
+        isStorageLocked={isStorageLocked}
+        uploadDisabled={uploadDisabled}
+        uploadDisabledReason={uploadDisabledReason}
+        showUploadCta={false}
+        hasStories={Array.isArray(stories) && stories.length > 0}
+        onProfileClick={() => {
+          if (Array.isArray(stories) && stories.length > 0) {
+            setSelectedStoryIndex(0);
+          }
+        }}
+        onStoryCreated={() => {
+          reloadStories();
+          reloadPhotos();
+        }}
+        onPhotosChanged={reloadPhotos}
+      />
+
       <StoriesBar stories={stories} onSelect={setSelectedStoryIndex} />
 
       <AlbumNavigation

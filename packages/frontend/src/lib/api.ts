@@ -45,6 +45,17 @@ const api = axios.create({
   timeout: 30000, // 30 second timeout
 });
 
+export function buildApiUrl(path: string): string {
+  const base = (api.defaults.baseURL || '').replace(/\/+$/, '');
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+  if (!base) return normalizedPath;
+  if (base.startsWith('http://') || base.startsWith('https://')) {
+    return `${base}${normalizedPath}`;
+  }
+  return `${base}${normalizedPath}`;
+}
+
 // Add response interceptor for better error handling
 api.interceptors.response.use(
   (response) => response,

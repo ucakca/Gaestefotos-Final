@@ -25,6 +25,9 @@
 - `docs/FEATURES.md`
 - `docs/TEST_GUIDE.md`
 - `docs/DEPLOYMENT.md`
+- `docs/STORAGE_AND_BLUR_POLICY.md`
+- `docs/DB_FIELD_MEANINGS.md`
+- `docs/STORIES.md`
 
 ---
 
@@ -215,8 +218,11 @@ nano .env
 Quick smoke (local):
 
 ```bash
-curl -sS -X POST http://localhost:8002/api/woocommerce-webhooks/order-paid -H 'Content-Type: application/json' --data '{}' -w "\nHTTP_STATUS=%{http_code}\n"
-grep -E "woocommerce_webhook_(ignored|duplicate)" /tmp/backend-appv2.log | tail -n 50
+curl -sS -X POST http://localhost:8002/api/woocommerce-webhooks/order-paid \
+  -H 'Content-Type: application/json' \
+  --data '{}' \
+  -w "\nHTTP_STATUS=%{http_code}\n"
+grep -E "woocommerce_webhook_(ignored|duplicate)" /tmp/backend-local.log | tail -n 50
 ```
 
 Siehe [Konfiguration](#konfiguration) für Details.

@@ -14,7 +14,7 @@ const SAMPLE_IMAGES = [
 ];
 
 const DEFAULT_SAMPLE_VIDEO_URL =
-  'https://filesamples.com/samples/video/mp4/sample_640x360.mp4';
+  'https://samplelib.com/lib/preview/mp4/sample-5s.mp4';
 
 async function downloadToBuffer(url: string): Promise<Buffer> {
   const res = await fetch(url);
@@ -112,7 +112,11 @@ async function clearEventMedia(eventId: string) {
   await (prisma as any).video.deleteMany({ where: { eventId } });
 }
 
-async function seedPhotos(event: { id: string; hostId: string }, label: string) {
+async function seedPhotos(
+  event: { id: string; hostId: string },
+  label: string,
+  opts?: { createdAt?: Date }
+) {
   const maxPhotos = Number(process.env.TEST_PHOTO_COUNT || 5);
   const selected = SAMPLE_IMAGES.slice(0, maxPhotos);
 
@@ -138,7 +142,7 @@ async function seedPhotos(event: { id: string; hostId: string }, label: string) 
     const proxyUrl = `/api/photos/${'__ID__'}/file`; // placeholder, not used
     const presignedUrl = await storageService.getFileUrl(storagePath, 7 * 24 * 3600);
 
-    await prisma.photo.create({
+    const created = await prisma.photo.create({
       data: {
         eventId: event.id,
         storagePath,
@@ -151,18 +155,39 @@ async function seedPhotos(event: { id: string; hostId: string }, label: string) 
       },
     });
 
+    if (opts?.createdAt) {
+      await prisma.$executeRaw`
+        UPDATE photos
+        SET "createdAt" = ${opts.createdAt}
+        WHERE id = ${created.id}
+      `;
+    }
+
     ok++;
   }
 
   return ok;
 }
 
-async function seedVideos(event: { id: string; hostId: string }, label: string) {
+async function seedVideos(
+  event: { id: string; hostId: string },
+  label: string,
+  opts?: { createdAt?: Date }
+) {
   const videoUrl = process.env.TEST_VIDEO_URL || DEFAULT_SAMPLE_VIDEO_URL;
   const count = Number(process.env.TEST_VIDEO_COUNT || 1);
 
   let ok = 0;
-  const videoBuffer = await downloadToBuffer(videoUrl);
+  let videoBuffer: Buffer;
+  try {
+    videoBuffer = await downloadToBuffer(videoUrl);
+  } catch (err) {
+    console.warn(
+      `seedVideos: failed to download video from ${videoUrl} (skipping video seeding):`,
+      err
+    );
+    return 0;
+  }
 
   for (let i = 0; i < count; i++) {
     const filename = `${label}-video-${i + 1}.mp4`;
@@ -189,6 +214,14 @@ async function seedVideos(event: { id: string; hostId: string }, label: string) 
         sizeBytes: BigInt(videoBuffer.length),
       },
     });
+
+    if (opts?.createdAt) {
+      await prisma.$executeRaw`
+        UPDATE videos
+        SET "createdAt" = ${opts.createdAt}
+        WHERE id = ${created.id}
+      `;
+    }
 
     const proxyUrl = `/api/videos/${created.id}/file`;
     await (prisma as any).video.update({
@@ -228,10 +261,13 @@ async function main() {
     await clearEventMedia(expiredEvent.id);
   }
 
+  const expiredMediaDaysAgo = Number(process.env.TEST_EXPIRED_MEDIA_DAYS_AGO || 30);
+  const expiredMediaCreatedAt = daysAgo(expiredMediaDaysAgo);
+
   const activePhotos = await seedPhotos(activeEvent, 'active');
   const activeVideos = await seedVideos(activeEvent, 'active');
-  const expiredPhotos = await seedPhotos(expiredEvent, 'expired');
-  const expiredVideos = await seedVideos(expiredEvent, 'expired');
+  const expiredPhotos = await seedPhotos(expiredEvent, 'expired', { createdAt: expiredMediaCreatedAt });
+  const expiredVideos = await seedVideos(expiredEvent, 'expired', { createdAt: expiredMediaCreatedAt });
 
   // storageEndsAt is computed from dateTime + package duration. For expired event (dateTime - 30d)
   // default free duration 14d => storageEndsAt in the past => locked.

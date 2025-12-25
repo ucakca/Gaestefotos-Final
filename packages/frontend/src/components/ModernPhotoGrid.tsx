@@ -6,6 +6,7 @@ import { X, ChevronLeft, ChevronRight, Heart, Share2, Download, MoreHorizontal, 
 import { Photo } from '@gaestefotos/shared';
 import UploadButton from './UploadButton';
 import api from '@/lib/api';
+import { buildApiUrl } from '@/lib/api';
 
 interface ModernPhotoGridProps {
   photos: Photo[];
@@ -33,6 +34,7 @@ export default function ModernPhotoGrid({
   uploadDisabledReason,
 }: ModernPhotoGridProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
+  const [showUploadDisabled, setShowUploadDisabled] = useState(false);
   const [likedPhotos, setLikedPhotos] = useState<Set<string>>(new Set());
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [comments, setComments] = useState<Record<string, any[]>>({});
@@ -40,12 +42,14 @@ export default function ModernPhotoGrid({
   const [authorName, setAuthorName] = useState('');
   const [loadingComments, setLoadingComments] = useState<Set<string>>(new Set());
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [commentNotice, setCommentNotice] = useState<string | null>(null);
 
   const downloadsEnabled = allowDownloads && !isStorageLocked;
 
   const handleDownload = (photo: Photo) => {
     if (!downloadsEnabled) return;
-    window.open(`/api/photos/${photo.id}/download`, '_blank');
+    const url = buildApiUrl(`/photos/${photo.id}/download`);
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleShare = async (photo: Photo) => {
@@ -81,7 +85,8 @@ export default function ModernPhotoGrid({
         ...prev,
         [photoId]: response.data.likeCount || 0,
       }));
-      if (response.data.liked) {
+      const liked = response.data?.liked ?? response.data?.isLiked;
+      if (liked) {
         setLikedPhotos((prev) => new Set(prev).add(photoId));
       }
     } catch (err) {
@@ -145,9 +150,20 @@ export default function ModernPhotoGrid({
         authorName: authorName.trim(),
       });
 
+      const created = response.data?.comment;
+      const status = String(created?.status || '').toUpperCase();
+
+      if (status === 'PENDING') {
+        setCommentNotice('Wird nach Freigabe sichtbar.');
+        setCommentText('');
+        setAuthorName('');
+        setTimeout(() => setCommentNotice(null), 3500);
+        return;
+      }
+
       setComments((prev) => ({
         ...prev,
-        [photoId]: [...(prev[photoId] || []), response.data.comment],
+        [photoId]: [...(prev[photoId] || []), created],
       }));
 
       setCommentText('');
@@ -162,6 +178,7 @@ export default function ModernPhotoGrid({
 
   useEffect(() => {
     if (selectedPhoto !== null) {
+      setCommentNotice(null);
       const photo = photos[selectedPhoto];
       if (photo) {
         // Only load likes and comments for regular photos (not challenge or guestbook entries)
@@ -179,10 +196,15 @@ export default function ModernPhotoGrid({
   }, [selectedPhoto]);
 
   const openPost = (index: number) => {
+    if (isStorageLocked) {
+      return;
+    }
+    setCommentNotice(null);
     setSelectedPhoto(index);
   };
 
   const closePost = () => {
+    setCommentNotice(null);
     setSelectedPhoto(null);
   };
 
@@ -213,18 +235,66 @@ export default function ModernPhotoGrid({
 
   return (
     <>
+      {allowUploads && (
+        <div
+          className="fixed left-1/2 -translate-x-1/2 z-50"
+          style={{
+            bottom: `calc(env(safe-area-inset-bottom) + 84px)`,
+          }}
+        >
+          <div
+            onClick={(e) => {
+              if (!uploadDisabled && !isStorageLocked) return;
+              e.preventDefault();
+              e.stopPropagation();
+              setShowUploadDisabled(true);
+            }}
+          >
+            <UploadButton
+              eventId={eventId}
+              onUploadSuccess={onUploadSuccess}
+              disabled={uploadDisabled || isStorageLocked}
+              disabledReason={isStorageLocked ? 'Die Speicherzeit ist abgelaufen.' : uploadDisabledReason}
+              variant="fab"
+            />
+          </div>
+        </div>
+      )}
+
+      <AnimatePresence>
+        {showUploadDisabled && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowUploadDisabled(false)}
+            className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center p-4"
+          >
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md rounded-2xl bg-white p-4 shadow-xl"
+            >
+              <div className="text-sm font-semibold text-gray-900">Upload nicht möglich</div>
+              <div className="mt-1 text-sm text-gray-600">
+                {isStorageLocked ? 'Die Speicherzeit ist abgelaufen.' : uploadDisabledReason || 'Uploads sind aktuell deaktiviert.'}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowUploadDisabled(false)}
+                className="mt-4 w-full rounded-xl bg-gray-900 text-white py-2 text-sm font-semibold"
+              >
+                OK
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Modern 3-Column Grid with Upload Button */}
       <div className="grid grid-cols-3 gap-0.5 md:gap-1 max-w-md mx-auto">
-        {/* Upload Button - Top Left */}
-        {allowUploads && (
-          <UploadButton
-            eventId={eventId}
-            onUploadSuccess={onUploadSuccess}
-            disabled={uploadDisabled || isStorageLocked}
-            disabledReason={isStorageLocked ? 'Die Speicherzeit ist abgelaufen.' : uploadDisabledReason}
-          />
-        )}
-
         {/* Photo Grid */}
         {photos.map((photo, index) => {
           const isGuestbookEntry = (photo as any).isGuestbookEntry;
@@ -246,7 +316,7 @@ export default function ModernPhotoGrid({
                 <img
                   src={photo.url}
                   alt="Event Foto"
-                  className={`w-full h-full object-contain ${isStorageLocked ? 'blur-md' : ''}`}
+                  className={`w-full h-full object-cover ${isStorageLocked ? 'blur-md' : ''}`}
                   loading="lazy"
                   onError={(e) => {
                     // Fallback: versuche absolute URL wenn relative
@@ -406,7 +476,21 @@ export default function ModernPhotoGrid({
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="relative w-full h-full flex items-center justify-center p-4"
+                    drag={photos.length > 1 ? 'x' : false}
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.2}
+                    onDragEnd={(_, info) => {
+                      if (photos.length <= 1) return;
+                      const threshold = 60;
+                      if (info.offset.x > threshold) {
+                        prevPhoto();
+                        return;
+                      }
+                      if (info.offset.x < -threshold) {
+                        nextPhoto();
+                      }
+                    }}
+                    className="relative w-full h-full flex items-center justify-center p-4 select-none touch-pan-y"
                   >
                     <img
                       src={photos[selectedPhoto]?.url?.startsWith('/api/') ? photos[selectedPhoto]?.url : photos[selectedPhoto]?.url || ''}
@@ -611,6 +695,11 @@ export default function ModernPhotoGrid({
                 {/* Comment Input */}
                 <div className="border-t border-gray-200 p-4 bg-white">
                   <div className="space-y-2">
+                    {commentNotice && (
+                      <div className="text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                        {commentNotice}
+                      </div>
+                    )}
                     <input
                       type="text"
                       value={authorName}

@@ -11,8 +11,15 @@ import { attachEventUploadRateLimits, videoUploadEventLimiter, videoUploadIpLimi
 import { assertUploadWithinLimit } from '../services/packageLimits';
 import { isWithinDateWindowPlusMinusDays } from '../services/uploadDatePolicy';
 import { denyByVisibility, isWithinEventDateWindow } from '../services/eventPolicy';
+import { getEventStorageEndsAt } from '../services/storagePolicy';
 
 const router = Router();
+
+function serializeBigInt<T>(value: T): T {
+  return JSON.parse(
+    JSON.stringify(value, (_key, v) => (typeof v === 'bigint' ? v.toString() : v))
+  ) as T;
+}
 
 // Multer setup for video uploads
 const upload = multer({
@@ -175,9 +182,126 @@ router.get(
       hasMore,
     };
 
-    res.json(result);
+    res.json(serializeBigInt(result));
   } catch (error) {
     logger.error('Fehler beim Abrufen der Videos', { error, eventId: req.params.eventId });
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// Create story from video (Gast entscheidet)
+router.post(
+  '/:videoId/story',
+  optionalAuthMiddleware,
+  async (req: AuthRequest, res: Response) => {
+  try {
+    // This router is mounted under /api/events and /api/videos.
+    // To avoid accidental exposure under /api/events/:eventId/videos/:videoId/story,
+    // we only allow this endpoint when mounted under /api/videos.
+    if (!req.baseUrl?.endsWith('/api/videos')) {
+      return res.status(404).json({ error: 'Nicht gefunden' });
+    }
+
+    const { videoId } = req.params;
+    const { isActive = true } = req.body;
+
+    const video = await prisma.video.findUnique({
+      where: { id: videoId },
+      include: {
+        event: true,
+      },
+    });
+
+    if (!video) {
+      return res.status(404).json({ error: 'Video nicht gefunden' });
+    }
+
+    if (video.deletedAt || video.status === 'DELETED') {
+      return res.status(404).json({ error: 'Video nicht gefunden' });
+    }
+
+    if (video.event.deletedAt || video.event.isActive === false) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    const eventId = video.eventId;
+    const isHost = req.userId && req.userId === video.event.hostId;
+    if (!isHost && !hasEventAccess(req, eventId)) {
+      return res.status(404).json({ error: 'Video nicht gefunden' });
+    }
+
+    if (video.status !== 'APPROVED') {
+      return res.status(400).json({ error: 'Nur freigegebene Videos können als Story verwendet werden' });
+    }
+
+    const existingStory = await prisma.story.findFirst({
+      where: {
+        videoId,
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (existingStory) {
+      await prisma.video.update({
+        where: { id: videoId },
+        data: { isStoryOnly: true },
+      });
+
+      const updatedStory = await prisma.story.update({
+        where: { id: existingStory.id },
+        data: {
+          isActive,
+        },
+        include: {
+          video: {
+            select: {
+              id: true,
+              url: true,
+              uploadedBy: true,
+              duration: true,
+            },
+          },
+        },
+      });
+
+      return res.json({ story: updatedStory });
+    }
+
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
+
+    await prisma.video.update({
+      where: { id: videoId },
+      data: { isStoryOnly: true },
+    });
+
+    const story = await prisma.story.create({
+      data: {
+        eventId: video.eventId,
+        videoId,
+        isActive,
+        expiresAt,
+      },
+      include: {
+        video: {
+          select: {
+            id: true,
+            url: true,
+            uploadedBy: true,
+            duration: true,
+          },
+        },
+      },
+    });
+
+    res.status(201).json({ story });
+  } catch (error: any) {
+    logger.error('Fehler beim Erstellen der Story', {
+      message: (error as any)?.message || String(error),
+      videoId: req.params.videoId,
+    });
     res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
@@ -470,13 +594,56 @@ router.get(
     next();
   },
   async (req: AuthRequest, res: Response) => {
-  try {
-    // ... (rest of the code remains the same)
-  } catch (error: any) {
-    logger.error('Error serving video', { message: (error as any)?.message || String(error), eventId: req.params.eventId, storagePath: req.params.storagePath });
-    res.status(500).json({ error: 'Ein interner Serverfehler ist aufgetreten' });
+    try {
+      const { eventId } = req.params;
+      const storagePath = (req.params as any).storagePath as string;
+
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { id: true, hostId: true, deletedAt: true, isActive: true },
+      });
+
+      if (!event || event.deletedAt || event.isActive === false) {
+        return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      const storageEndsAt = await getEventStorageEndsAt(eventId);
+      if (storageEndsAt && Date.now() > storageEndsAt.getTime()) {
+        return res.status(404).json({ error: 'Video nicht gefunden' });
+      }
+
+      const isHost = !!req.userId && req.userId === event.hostId;
+      const isAdmin = req.userRole === 'ADMIN';
+      if (!isHost && !isAdmin && !hasEventAccess(req, eventId)) {
+        return res.status(404).json({ error: 'Video nicht gefunden' });
+      }
+
+      const fileBuffer = await storageService.getFile(storagePath);
+
+      const lower = (storagePath || '').toLowerCase();
+      const contentType = lower.endsWith('.mp4')
+        ? 'video/mp4'
+        : lower.endsWith('.webm')
+          ? 'video/webm'
+          : lower.endsWith('.mov')
+            ? 'video/quicktime'
+            : 'video/mp4';
+
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+      res.setHeader('Content-Disposition', 'inline');
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.send(fileBuffer);
+    } catch (error: any) {
+      logger.error('Error serving video', {
+        message: (error as any)?.message || String(error),
+        eventId: req.params.eventId,
+        storagePath: (req.params as any).storagePath,
+      });
+      res.status(500).json({ error: 'Ein interner Serverfehler ist aufgetreten' });
+    }
   }
-});
+);
 
 // Download video
 router.get(
@@ -516,6 +683,17 @@ router.get(
       return res.status(404).json({ error: 'Video nicht gefunden' });
     }
 
+    const denyVisibility = isHost || req.userRole === 'ADMIN' ? 'hostOrAdmin' : 'guest';
+
+    // Storage period enforcement
+    const storageEndsAt = await getEventStorageEndsAt(video.eventId);
+    if (storageEndsAt && Date.now() > storageEndsAt.getTime()) {
+      return denyByVisibility(res, denyVisibility, {
+        code: 'STORAGE_LOCKED',
+        error: 'Speicherperiode beendet',
+      });
+    }
+
     // Check if downloads are allowed
     const featuresConfig = video.event.featuresConfig as any;
     if (featuresConfig?.allowDownloads === false) {
@@ -531,6 +709,7 @@ router.get(
       return res.status(404).json({ error: 'Video nicht gefunden' });
     }
 
+    // Check download time restriction: Only 21 days after event date
     // NOTE: Storage period policy is enforced elsewhere (lifecycle rules); do not hardcode date limits here.
 
     if (!video.storagePath) {
@@ -825,6 +1004,12 @@ router.post(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
+      // Storage period enforcement
+      const storageEndsAt = await getEventStorageEndsAt(event.id);
+      if (storageEndsAt && Date.now() > storageEndsAt.getTime()) {
+        return res.status(403).json({ code: 'STORAGE_LOCKED', error: 'Speicherperiode beendet' });
+      }
+
       // Check if downloads are allowed
       const featuresConfig = event.featuresConfig as any;
       if (featuresConfig?.allowDownloads === false) {
@@ -959,6 +1144,11 @@ router.get(
 
       if (video.event.deletedAt || video.event.isActive === false) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      const storageEndsAt = await getEventStorageEndsAt(video.event.id);
+      if (storageEndsAt && Date.now() > storageEndsAt.getTime()) {
+        return res.status(404).json({ error: 'Video nicht gefunden' });
       }
 
       if (!video.storagePath) {

@@ -12,7 +12,21 @@ import { denyByVisibility, isWithinEventDateWindow } from '../services/eventPoli
 import { getEventStorageEndsAt } from '../services/storagePolicy';
 import archiver from 'archiver';
 
+// Sharp is optional; if missing we fall back to a tiny placeholder for blurred previews.
+let sharp: any;
+try {
+  sharp = require('sharp');
+} catch {
+  sharp = null;
+}
+
 const router = Router();
+
+function serializeBigInt<T>(value: T): T {
+  return JSON.parse(
+    JSON.stringify(value, (_key, v) => (typeof v === 'bigint' ? v.toString() : v))
+  ) as T;
+}
 
 // Multer setup for file uploads
 const upload = multer({
@@ -20,14 +34,84 @@ const upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB
   },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'));
-    }
-  },
 });
+
+const enforceEventUploadAllowed = async (req: AuthRequest, res: Response, next: any) => {
+  try {
+    const { eventId } = req.params;
+
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: {
+        id: true,
+        hostId: true,
+        deletedAt: true,
+        isActive: true,
+        featuresConfig: true,
+        dateTime: true,
+      },
+    });
+
+    if (!event || event.deletedAt || event.isActive === false) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    const isHost = !!req.userId && req.userId === event.hostId;
+    const isAdmin = req.userRole === 'ADMIN';
+    const denyVisibility = isHost || isAdmin ? 'hostOrAdmin' : 'guest';
+
+    const featuresConfig = (event.featuresConfig || {}) as any;
+    const allowUploads = featuresConfig?.allowUploads !== false;
+    if (!allowUploads && !isHost && !isAdmin) {
+      return denyByVisibility(res, denyVisibility, {
+        code: 'UPLOADS_DISABLED',
+        error: 'Uploads sind für dieses Event deaktiviert',
+      });
+    }
+
+    if (!event.dateTime) {
+      return denyByVisibility(res, denyVisibility, {
+        code: 'EVENT_DATE_MISSING',
+        error: 'Event-Datum fehlt',
+      });
+    }
+
+    if (!isWithinEventDateWindow(new Date(), event.dateTime, 1)) {
+      return denyByVisibility(res, denyVisibility, {
+        code: 'UPLOAD_WINDOW_CLOSED',
+        error: 'Uploads sind nur rund um das Event-Datum möglich (±1 Tag)',
+      });
+    }
+
+    const storageEndsAt = await getEventStorageEndsAt(eventId);
+    if (storageEndsAt && Date.now() > storageEndsAt.getTime()) {
+      return denyByVisibility(res, denyVisibility, {
+        code: 'STORAGE_LOCKED',
+        error: 'Speicherperiode beendet',
+      });
+    }
+
+    (req as any).gfEventForUpload = event;
+    return next();
+  } catch (e) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+const uploadSinglePhoto = (req: AuthRequest, res: Response, next: any) => {
+  upload.single('file')(req as any, res as any, (err: any) => {
+    if (!err) return next();
+    const code = (err as any)?.code;
+    if (code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'Datei zu groß. Maximum: 10MB' });
+    }
+    const message = (err as any)?.message || String(err);
+    if (message === 'Only image files are allowed') {
+      return res.status(400).json({ error: 'Ungültiger Dateityp. Bitte ein Foto hochladen.' });
+    }
+    return res.status(400).json({ error: message });
+  });
+};
 
 // Get all photos for an event
 router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
@@ -35,7 +119,7 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
     const { eventId } = req.params;
     const { status } = req.query;
 
-    const where: any = { eventId };
+    const where: any = { eventId, isStoryOnly: false };
 
     const statusValue = Array.isArray(status) ? status[0] : status;
     if (typeof statusValue === 'string') {
@@ -64,7 +148,13 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
       },
     });
 
-    res.json({ photos });
+    // Always serve via backend proxy URL to avoid mixed content (presigned SeaweedFS URLs may be http://)
+    const photosWithProxyUrls = photos.map((photo: any) => ({
+      ...photo,
+      url: photo.id ? `/api/photos/${photo.id}/file` : photo.url,
+    }));
+
+    res.json({ photos: serializeBigInt(photosWithProxyUrls) });
   } catch (error) {
     console.error('Get photos error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -76,10 +166,11 @@ router.post(
   '/:eventId/photos/upload',
   optionalAuthMiddleware,
   requireEventAccess((req) => (req as any).params.eventId),
+  enforceEventUploadAllowed,
   attachEventUploadRateLimits,
   photoUploadIpLimiter,
   photoUploadEventLimiter,
-  upload.single('file'),
+  uploadSinglePhoto,
   validateUploadedFile('image'),
   async (req: AuthRequest, res: Response) => {
     try {
@@ -90,53 +181,17 @@ router.post(
         return res.status(400).json({ error: 'No file provided' });
       }
 
-      // Check if event exists
-      const event = await prisma.event.findUnique({
-        where: { id: eventId },
-        select: {
-          id: true,
-          hostId: true,
-          deletedAt: true,
-          isActive: true,
-          featuresConfig: true,
-          dateTime: true,
-        },
-      });
-
-      if (!event) {
-        return res.status(404).json({ error: 'Event not found' });
-      }
-
-      if (event.deletedAt || event.isActive === false) {
-        return res.status(404).json({ error: 'Event not found' });
-      }
+      const event = (req as any).gfEventForUpload as {
+        id: string;
+        hostId: string;
+        featuresConfig: any;
+      };
 
       const isHost = !!req.userId && req.userId === event.hostId;
       const isAdmin = req.userRole === 'ADMIN';
       const denyVisibility = isHost || isAdmin ? 'hostOrAdmin' : 'guest';
 
       const featuresConfig = (event.featuresConfig || {}) as any;
-      const allowUploads = featuresConfig?.allowUploads !== false;
-      if (!allowUploads && !isHost && !isAdmin) {
-        return denyByVisibility(res, denyVisibility, {
-          code: 'UPLOADS_DISABLED',
-          error: 'Uploads sind für dieses Event deaktiviert',
-        });
-      }
-
-      if (!event.dateTime) {
-        return denyByVisibility(res, denyVisibility, {
-          code: 'EVENT_DATE_MISSING',
-          error: 'Event-Datum fehlt',
-        });
-      }
-
-      if (!isWithinEventDateWindow(new Date(), event.dateTime, 1)) {
-        return denyByVisibility(res, denyVisibility, {
-          code: 'UPLOAD_WINDOW_CLOSED',
-          error: 'Uploads sind nur rund um das Event-Datum möglich (±1 Tag)',
-        });
-      }
 
       // Process image
       const processed = await imageProcessor.processImage(file.buffer);
@@ -159,10 +214,6 @@ router.post(
         file.mimetype
       );
 
-      // Get presigned URL from SeaweedFS
-      // Note: SeaweedFS S3 API supports presigned URLs
-      const url = await storageService.getFileUrl(storagePath, 7 * 24 * 3600); // 7 days
-
       const moderationRequired = featuresConfig?.moderationRequired === true;
       const status = moderationRequired && !isHost && !isAdmin ? 'PENDING' : 'APPROVED';
 
@@ -170,7 +221,8 @@ router.post(
         data: {
           eventId,
           storagePath,
-          url,
+          // Persist a stable proxy URL (no mixed-content issues)
+          url: '',
           status,
           sizeBytes: uploadBytes,
         },
@@ -185,14 +237,136 @@ router.post(
         },
       });
 
-      // Emit WebSocket event
-      io.to(`event:${eventId}`).emit('photo_uploaded', {
-        photo,
+      const photoWithProxyUrl = {
+        ...photo,
+        url: `/api/photos/${photo.id}/file`,
+      };
+
+      await prisma.photo.update({
+        where: { id: photo.id },
+        data: { url: photoWithProxyUrl.url },
       });
 
-      res.status(201).json({ photo });
+      // Emit WebSocket event
+      io.to(`event:${eventId}`).emit('photo_uploaded', {
+        photo: serializeBigInt(photoWithProxyUrl),
+      });
+
+      res.status(201).json({ photo: serializeBigInt(photoWithProxyUrl) });
     } catch (error) {
       console.error('Upload photo error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+// Serve photo file (proxy) - suitable for <img src>
+router.get(
+  '/:photoId/file',
+  optionalAuthMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoId } = req.params;
+
+      const photo = await prisma.photo.findUnique({
+        where: { id: photoId },
+        include: {
+          event: {
+            select: {
+              id: true,
+              hostId: true,
+              featuresConfig: true,
+              deletedAt: true,
+              isActive: true,
+            },
+          },
+        },
+      });
+
+      if (!photo || photo.deletedAt || photo.status === 'DELETED') {
+        return res.status(404).json({ error: 'Foto nicht gefunden' });
+      }
+
+      if (photo.event.deletedAt || photo.event.isActive === false) {
+        return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      const isHost = !!req.userId && photo.event.hostId === req.userId;
+      const isAdmin = req.userRole === 'ADMIN';
+      const denyVisibility = isHost || isAdmin ? 'hostOrAdmin' : 'guest';
+
+      if (!isHost && !isAdmin && !hasEventAccess(req, photo.eventId)) {
+        return res.status(404).json({ error: 'Foto nicht gefunden' });
+      }
+
+      const storageEndsAt = await getEventStorageEndsAt(photo.eventId);
+      const isStorageLocked = !!(storageEndsAt && Date.now() > storageEndsAt.getTime());
+
+      res.setHeader('X-GF-Storage-Locked', isStorageLocked ? '1' : '0');
+      res.setHeader('X-GF-Viewer', isHost ? 'host' : isAdmin ? 'admin' : 'guest');
+
+      // NOTE: For the public page UX we still want to show thumbnails even when storage is locked,
+      // but downloads must remain blocked via /download.
+
+      if (!isHost && !isAdmin && photo.status !== 'APPROVED') {
+        return res.status(404).json({ error: 'Foto nicht gefunden' });
+      }
+
+      if (!photo.storagePath) {
+        return res.status(404).json({ error: 'Foto nicht gefunden' });
+      }
+
+      const fileBuffer = await storageService.getFile(photo.storagePath);
+
+      // If storage is locked, return a blurred preview instead of the original.
+      // This prevents bypassing the storage lock by opening the photo in a modal (guest/host).
+      if (isStorageLocked) {
+        res.setHeader('X-GF-Photo-Preview', 'blur');
+        if (sharp) {
+          try {
+            const blurred = await sharp(fileBuffer)
+              .resize(400, 400, { fit: 'inside', withoutEnlargement: true })
+              .blur(20)
+              .jpeg({ quality: 50 })
+              .toBuffer();
+            res.setHeader('Content-Type', 'image/jpeg');
+            res.setHeader('Cache-Control', 'private, max-age=0');
+            res.setHeader('Content-Disposition', `inline; filename="photo-${photoId}-blur.jpg"`);
+            return res.send(blurred);
+          } catch (e) {
+            // fall through to placeholder
+          }
+        }
+
+        // Fallback placeholder (1x1 transparent PNG)
+        const placeholder = Buffer.from(
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/w8AAwMB/6n6v5QAAAAASUVORK5CYII=',
+          'base64'
+        );
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'private, max-age=0');
+        res.setHeader('Content-Disposition', `inline; filename="photo-${photoId}-blur.png"`);
+        return res.send(placeholder);
+      }
+
+      res.setHeader('X-GF-Photo-Preview', 'original');
+
+      const extension = photo.storagePath.split('.').pop() || 'jpg';
+      const contentType =
+        extension === 'png'
+          ? 'image/png'
+          : extension === 'webp'
+          ? 'image/webp'
+          : extension === 'gif'
+          ? 'image/gif'
+          : 'image/jpeg';
+
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'private, max-age=0');
+      res.setHeader('Content-Disposition', `inline; filename="photo-${photoId}.${extension}"`);
+      res.send(fileBuffer);
+    } catch (error: any) {
+      console.error('Serve photo file error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }

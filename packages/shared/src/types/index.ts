@@ -18,11 +18,13 @@ export interface Event {
   locationGoogleMapsLink?: string;
   designConfig: EventDesignConfig;
   featuresConfig: EventFeaturesConfig;
+  profileDescription?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface EventDesignConfig {
+  designPresetKey?: string;
   colors?: {
     primary?: string;
     secondary?: string;
@@ -65,6 +67,7 @@ export interface Photo {
   storagePath: string;
   url?: string;
   uploadedBy?: string | null;
+  isStoryOnly?: boolean;
   status: 'approved' | 'pending' | 'deleted';
   createdAt: Date;
 }
@@ -74,6 +77,7 @@ export interface Category {
   id: string;
   eventId: string;
   name: string;
+  iconKey?: string | null;
   order: number;
   createdAt: Date;
   updatedAt: Date;

@@ -30,7 +30,6 @@ export async function getEventStorageEndsAt(eventId: string): Promise<Date | nul
     where: { id: eventId },
     select: {
       id: true,
-      dateTime: true,
       entitlements: {
         where: { status: 'ACTIVE' },
         orderBy: { createdAt: 'desc' },
@@ -39,11 +38,44 @@ export async function getEventStorageEndsAt(eventId: string): Promise<Date | nul
       },
     },
   });
-  if (!event?.dateTime) return null;
+  if (!event) return null;
+
+  const [firstPhoto, firstVideo, firstGuestbook] = await Promise.all([
+    prisma.photo.aggregate({
+      where: {
+        eventId,
+        deletedAt: null,
+        NOT: { status: 'DELETED' },
+      },
+      _min: { createdAt: true },
+    }),
+    prisma.video.aggregate({
+      where: {
+        eventId,
+        deletedAt: null,
+        NOT: { status: 'DELETED' },
+      },
+      _min: { createdAt: true },
+    }),
+    prisma.guestbookEntry.aggregate({
+      where: {
+        eventId,
+      },
+      _min: { createdAt: true },
+    }),
+  ]);
+
+  const firstMediaAt =
+    [firstPhoto._min.createdAt, firstVideo._min.createdAt, firstGuestbook._min.createdAt]
+      .filter((d): d is Date => !!d)
+      .sort((a, b) => a.getTime() - b.getTime())[0] || null;
+
+  // If there is no uploaded media yet, there is no storage window to expire.
+  if (!firstMediaAt) return null;
 
   const sku = event.entitlements?.[0]?.wcSku || null;
   const durationDays = sku ? await getPackageDurationDaysBySku(sku) : DEFAULT_FREE_STORAGE_DAYS;
-  return addDays(event.dateTime, durationDays || DEFAULT_FREE_STORAGE_DAYS);
+  return addDays(firstMediaAt, durationDays || DEFAULT_FREE_STORAGE_DAYS);
 }
 
 export async function isEventStorageLocked(eventId: string, now = new Date()): Promise<boolean> {

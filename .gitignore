@@ -63,7 +63,7 @@ packages/shared/src/**/*.d.ts.map
 Thumbs.db
 
 .pids/
-.pids-appv2/
+.pids-services/
 
 # Local-only notes / secrets
 /credentials/
@@ -71,6 +71,7 @@ Thumbs.db
 # Local scratch markdown files in repo root (keep real docs under /docs)
 /*.md
 !/README.md
+!/OPSRUNBOOK-*.md
 
 # Local-only experiments
 /wordpress-plugin/

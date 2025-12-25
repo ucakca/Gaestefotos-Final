@@ -1,12 +1,14 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import jwt from 'jsonwebtoken';
+import archiver from 'archiver';
 import prisma from '../config/database';
-import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie } from '../middleware/auth';
+import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie, optionalAuthMiddleware, hasEventAccess } from '../middleware/auth';
 import { randomString, slugify } from '@gaestefotos/shared';
 import { logger } from '../utils/logger';
 import { getActiveEventEntitlement, getEffectiveEventPackage, getEventUsageBreakdown, bigintToString } from '../services/packageLimits';
 import { getEventStorageEndsAt } from '../services/storagePolicy';
+import { storageService } from '../services/storage';
 
 const router = Router();
 
@@ -77,6 +79,153 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
+async function handleEventStorageUsage(req: AuthRequest, res: Response) {
+  try {
+    const eventId = req.params.id;
+
+    const existingEvent = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { hostId: true, deletedAt: true, isActive: true },
+    });
+
+    if (!existingEvent || existingEvent.deletedAt || existingEvent.isActive === false) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    // Storage usage/limits are host/admin only.
+    // Guests should not see 401s here (they don't have a JWT); return 404 instead.
+    if (existingEvent.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    const [entitlement, usage] = await Promise.all([
+      getActiveEventEntitlement(eventId),
+      getEventUsageBreakdown(eventId),
+    ]);
+
+    const pkg = entitlement?.wcSku
+      ? await prisma.packageDefinition.findFirst({
+          where: { sku: entitlement.wcSku, isActive: true },
+          select: { sku: true, name: true, resultingTier: true, type: true },
+        })
+      : null;
+
+    return res.json({
+      ok: true,
+      eventId,
+      enforceStorageLimits: process.env.ENFORCE_STORAGE_LIMITS === 'true',
+      entitlement: entitlement
+        ? {
+            ...entitlement,
+            storageLimitBytes: bigintToString((entitlement as any).storageLimitBytes as any),
+            package: pkg,
+          }
+        : null,
+      usage: {
+        photosBytes: usage.photosBytes.toString(),
+        videosBytes: usage.videosBytes.toString(),
+        guestbookBytes: usage.guestbookBytes.toString(),
+        guestbookPendingBytes: usage.guestbookPendingBytes.toString(),
+        designBytes: usage.designBytes.toString(),
+        totalBytes: usage.totalBytes.toString(),
+      },
+    });
+  } catch (error) {
+    logger.error('Get storage limits error', {
+      message: (error as any)?.message || String(error),
+      eventId: req.params.id,
+    });
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+router.get(
+  '/:eventId/download-zip',
+  optionalAuthMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: {
+          id: true,
+          slug: true,
+          hostId: true,
+          featuresConfig: true,
+          deletedAt: true,
+          isActive: true,
+        },
+      });
+
+      if (!event || event.deletedAt || event.isActive === false) {
+        return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      const isHost = !!req.userId && req.userId === event.hostId;
+      const isAdmin = req.userRole === 'ADMIN';
+      const isGuestWithAccess = hasEventAccess(req, eventId);
+
+      if (!isHost && !isAdmin && !isGuestWithAccess) {
+        return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      const storageEndsAt = await getEventStorageEndsAt(eventId);
+      if (storageEndsAt && Date.now() > storageEndsAt.getTime()) {
+        return res.status(404).json({ error: 'Speicherperiode beendet' });
+      }
+
+      const featuresConfig = (event.featuresConfig || {}) as any;
+      if (!isHost && !isAdmin && featuresConfig?.allowDownloads === false) {
+        return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      const photos = await prisma.photo.findMany({
+        where: {
+          eventId,
+          deletedAt: null,
+          status: (isHost || isAdmin) ? undefined : 'APPROVED',
+        },
+        select: { id: true, storagePath: true, createdAt: true },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      if (!photos.length) {
+        return res.status(404).json({ error: 'Keine Fotos gefunden' });
+      }
+
+      const filename = `${event.slug || 'event'}-photos.zip`;
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Cache-Control', 'private, max-age=0');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+      const archive = archiver('zip', { zlib: { level: 9 } });
+      archive.on('error', (err) => {
+        logger.error('ZIP archive error', { message: (err as any)?.message || String(err), eventId });
+        try {
+          res.status(500).end();
+        } catch {
+          // noop
+        }
+      });
+
+      archive.pipe(res);
+
+      for (const photo of photos) {
+        if (!photo.storagePath) continue;
+        const buf = await storageService.getFile(photo.storagePath);
+        const ext = (photo.storagePath.split('.').pop() || 'jpg').toLowerCase();
+        archive.append(buf, { name: `photo-${photo.id}.${ext}` });
+      }
+
+      await archive.finalize();
+    } catch (error) {
+      logger.error('Download zip error', { message: (error as any)?.message || String(error) });
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
 // Get event by ID
 router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
@@ -144,6 +293,9 @@ router.get('/slug/:slug', async (req: AuthRequest, res: Response) => {
     const storageEndsAt = await getEventStorageEndsAt(event.id);
     const isStorageLocked = storageEndsAt ? Date.now() > storageEndsAt.getTime() : false;
     const effectivePackage = await getEffectiveEventPackage(event.id);
+
+    // Issue access cookie for guests so follow-up public endpoints work in a fresh browser.
+    issueEventAccessCookie(res, event.id);
     res.json({ event: { ...event, storageEndsAt, isStorageLocked, effectivePackage } });
   } catch (error) {
     logger.error('Get event by slug error', { message: (error as any)?.message || String(error), slug: req.params.slug });
@@ -267,6 +419,36 @@ router.post(
         return res.status(400).json({ error: error.errors });
       }
       logger.error('Create event error', { message: (error as any)?.message || String(error) });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+router.get(
+  '/:id/storage-limits',
+  optionalAuthMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const eventId = req.params.id;
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { hostId: true, deletedAt: true, isActive: true },
+      });
+
+      if (!event || event.deletedAt || event.isActive === false) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+
+      if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+
+      const storageEndsAt = await getEventStorageEndsAt(eventId);
+      const isStorageLocked = storageEndsAt ? Date.now() > storageEndsAt.getTime() : false;
+      const effectivePackage = await getEffectiveEventPackage(eventId);
+      res.json({ storageEndsAt, isStorageLocked, effectivePackage });
+    } catch (error) {
+      logger.error('Get storage limits error', { message: (error as any)?.message || String(error), eventId: req.params.id });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -553,67 +735,8 @@ router.post('/:id/invite-token', authMiddleware, async (req: AuthRequest, res: R
   }
 });
 
-router.get(
-  '/:id/storage-limits',
-  authMiddleware,
-  async (req: AuthRequest, res: Response) => {
-    try {
-      const eventId = req.params.id;
-
-      const existingEvent = await prisma.event.findUnique({
-        where: { id: eventId },
-        select: { hostId: true, deletedAt: true, isActive: true },
-      });
-
-      if (!existingEvent || existingEvent.deletedAt || existingEvent.isActive === false) {
-        return res.status(404).json({ error: 'Event nicht gefunden' });
-      }
-
-      if (existingEvent.hostId !== req.userId && req.userRole !== 'ADMIN') {
-        return res.status(403).json({ error: 'Forbidden' });
-      }
-
-      const [entitlement, usage] = await Promise.all([
-        getActiveEventEntitlement(eventId),
-        getEventUsageBreakdown(eventId),
-      ]);
-
-      const pkg = entitlement?.wcSku
-        ? await prisma.packageDefinition.findFirst({
-            where: { sku: entitlement.wcSku, isActive: true },
-            select: { sku: true, name: true, resultingTier: true, type: true },
-          })
-        : null;
-
-      res.json({
-        ok: true,
-        eventId,
-        enforceStorageLimits: process.env.ENFORCE_STORAGE_LIMITS === 'true',
-        entitlement: entitlement
-          ? {
-              ...entitlement,
-              storageLimitBytes: bigintToString((entitlement as any).storageLimitBytes as any),
-              package: pkg,
-            }
-          : null,
-        usage: {
-          photosBytes: usage.photosBytes.toString(),
-          videosBytes: usage.videosBytes.toString(),
-          guestbookBytes: usage.guestbookBytes.toString(),
-          guestbookPendingBytes: usage.guestbookPendingBytes.toString(),
-          designBytes: usage.designBytes.toString(),
-          totalBytes: usage.totalBytes.toString(),
-        },
-      });
-    } catch (error) {
-      logger.error('Get storage limits error', {
-        message: (error as any)?.message || String(error),
-        eventId: req.params.id,
-      });
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-);
+// Backwards-compatible alias used by some frontend pages
+router.get('/:id/usage', optionalAuthMiddleware, handleEventStorageUsage);
 
 // Update event
 router.put(

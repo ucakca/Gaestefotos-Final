@@ -48,6 +48,7 @@ model Event {
   designConfig           Json?    @default("{}")
   featuresConfig         Json     @default("{\"showGuestlist\":false,\"mysteryMode\":false,\"allowUploads\":true,\"moderationRequired\":false,\"allowDownloads\":true}")
   guestbookHostMessage   String?  @db.Text // Host-Nachricht im Gästebuch (Standardtext)
+  profileDescription     String?  @db.Text
   designAssetsBytes      BigInt?  // optional aggregate for logo/profile/cover uploads
   
   createdAt              DateTime @default(now())
@@ -190,6 +191,7 @@ model Photo {
   deletedAt  DateTime?
   purgeAfter DateTime?
   sizeBytes  BigInt?
+  isStoryOnly Boolean    @default(false)
   
   // Metadaten
   title       String?
@@ -242,6 +244,7 @@ model Category {
   id                  String    @id @default(uuid())
   eventId             String
   name                String
+  iconKey             String?
   order               Int        @default(0)
   isVisible           Boolean    @default(true)  // Sichtbar für Gäste
   uploadLocked        Boolean    @default(false) // Upload gesperrt
@@ -326,18 +329,22 @@ model PhotoVote {
 model Story {
   id        String   @id @default(uuid())
   eventId   String
-  photoId   String
+  photoId   String?
+  videoId   String?
   isActive  Boolean  @default(true) // Gast kann Story aktivieren/deaktivieren
   expiresAt DateTime // 24 Stunden nach Upload
   views     Int      @default(0)
   createdAt DateTime @default(now())
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  photo Photo? @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  video Video? @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
   @@index([eventId])
   @@index([expiresAt])
   @@index([isActive])
+  @@index([photoId])
+  @@index([videoId])
   @@map("stories")
 }
 
@@ -398,6 +405,7 @@ model Video {
   deletedAt  DateTime?
   purgeAfter DateTime?
   sizeBytes  BigInt?
+  isStoryOnly Boolean    @default(false)
   scanStatus String?
   scannedAt  DateTime?
   scanError  String?
@@ -417,6 +425,8 @@ model Video {
   event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
   guest    Guest?    @relation(fields: [guestId], references: [id], onDelete: SetNull)
   category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  stories  Story[]
 
   @@index([eventId])
   @@index([status])

@@ -73,7 +73,7 @@ if (process.env.SENTRY_DSN) {
 // CORS Configuration - Must be defined before use
 const allowedOrigins = process.env.FRONTEND_URL?.split(',').map(url => url.trim()) || [
   'http://localhost:3000',
-  'https://app.gaestefotos.com',
+  'http://app.xn--gstefotos-v2a.com',
   'https://app.xn--gstefotos-v2a.com',
   'http://app.gästefotos.com',
   'https://app.gästefotos.com'
@@ -145,7 +145,6 @@ app.use(cors({
     // Always allow our known app domains even if FRONTEND_URL is misconfigured.
     // This prevents accidental lockouts (e.g. login) when the browser sends an Origin header.
     const alwaysAllow = [
-      /^https?:\/\/(appv2|staging)\.(xn--gstefotos-v2a\.com|gästefotos\.com)$/i,
       /^https?:\/\/app\.(xn--gstefotos-v2a\.com|gästefotos\.com)$/i,
     ];
     if (alwaysAllow.some((re) => re.test(origin))) {
@@ -165,12 +164,10 @@ app.use(cors({
       return callback(null, true);
     }
 
-    // Also check Punycode variants (legacy + appv2)
+    // Also check Punycode variants (legacy)
     const punycodeVariants = new Set([
       origin.replace('app.gästefotos.com', 'app.xn--gstefotos-v2a.com'),
-      origin.replace('appv2.gästefotos.com', 'appv2.xn--gstefotos-v2a.com'),
       origin.replace('app.xn--gstefotos-v2a.com', 'app.gästefotos.com'),
-      origin.replace('appv2.xn--gstefotos-v2a.com', 'appv2.gästefotos.com'),
     ]);
 
     for (const candidate of punycodeVariants) {

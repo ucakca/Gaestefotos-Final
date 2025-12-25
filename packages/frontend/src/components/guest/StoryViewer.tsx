@@ -31,6 +31,7 @@ export default function StoryViewer({
   onDragNext,
 }: Props) {
   const hasSelection = selectedStoryIndex !== null && !!stories[selectedStoryIndex];
+  const selectedStory = hasSelection ? stories[selectedStoryIndex as number] : null;
 
   return (
     <AnimatePresence>
@@ -70,7 +71,9 @@ export default function StoryViewer({
 
               <div className="mt-3 flex items-center justify-between">
                 <div className="min-w-0 text-white/90 text-sm font-medium truncate">
-                  {(stories[selectedStoryIndex as number]?.photo?.uploadedBy as string) || 'Story'}
+                  ((stories[selectedStoryIndex as number]?.photo?.uploadedBy as string) ||
+                    (stories[selectedStoryIndex as number]?.video?.uploadedBy as string) ||
+                    'Story')
                 </div>
                 <button
                   type="button"
@@ -169,12 +172,23 @@ export default function StoryViewer({
               </>
             )}
 
-            <img
-              src={stories[selectedStoryIndex as number]?.photo?.url || ''}
-              alt="Story"
-              data-testid="story-image"
-              className="w-full max-h-[82vh] object-contain rounded-2xl shadow-2xl"
-            />
+            {selectedStory?.video?.url ? (
+              <video
+                src={selectedStory.video.url}
+                data-testid="story-video"
+                className="w-full max-h-[82vh] object-contain rounded-2xl shadow-2xl"
+                playsInline
+                autoPlay
+                muted
+              />
+            ) : (
+              <img
+                src={selectedStory?.photo?.url || ''}
+                alt="Story"
+                data-testid="story-image"
+                className="w-full max-h-[82vh] object-contain rounded-2xl shadow-2xl"
+              />
+            )}
           </motion.div>
         </motion.div>
       )}

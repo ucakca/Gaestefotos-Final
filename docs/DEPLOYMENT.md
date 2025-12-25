@@ -1,13 +1,13 @@
 # Deployment
 
-## appv2 (Server)
+## Server
 
 ### Services starten
 
 Im Repo Root:
 
 ```bash
-bash ./start-appv2-services.sh
+bash ./start-local-services.sh
 ```
 
 - **Backend**: `http://localhost:8002`
@@ -15,8 +15,8 @@ bash ./start-appv2-services.sh
 
 ### Logs
 
-- Backend: `tail -f /tmp/backend-appv2.log`
-- Frontend: `tail -f /tmp/frontend-appv2.log`
+- Backend: `tail -f /tmp/backend-local.log`
+- Frontend: `tail -f /tmp/frontend-local.log`
 
 ### Ports
 
@@ -30,4 +30,4 @@ bash ./start-appv2-services.sh
 
 ## staging
 
-`staging.gästefotos.com` ist als Reverse-Proxy auf appv2 gedacht (Routing/Parität prüfen).
+`staging.gästefotos.com` ist als Reverse-Proxy auf die App gedacht (Routing/Parität prüfen).
