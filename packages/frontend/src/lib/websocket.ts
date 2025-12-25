@@ -1,6 +1,27 @@
 import { io, Socket } from 'socket.io-client';
 import { Photo } from '@gaestefotos/shared';
 
+const getWsBaseUrl = (): string => {
+  const envUrl = process.env.NEXT_PUBLIC_WS_URL;
+
+  // During SSR we can't inspect window; keep the previous behavior.
+  if (typeof window === 'undefined') {
+    return envUrl || 'http://localhost:8001';
+  }
+
+  const host = window.location.hostname;
+  const isLocalHost = host === 'localhost' || host === '127.0.0.1';
+
+  // In local dev/E2E, prefer local backend even if NEXT_PUBLIC_WS_URL is set to production.
+  if (isLocalHost) {
+    if (envUrl && /(localhost|127\.0\.0\.1)/i.test(envUrl)) return envUrl;
+    return 'http://localhost:8001';
+  }
+
+  // In production (or any non-local host), prefer same-origin unless explicitly overridden.
+  return envUrl || window.location.origin;
+};
+
 class WebSocketManager {
   private socket: Socket | null = null;
   private listeners: Map<string, Set<(data: any) => void>> = new Map();
@@ -9,7 +30,7 @@ class WebSocketManager {
     if (process.env.NEXT_PUBLIC_DISABLE_REALTIME === 'true') return;
     if (this.socket?.connected) return;
 
-    this.socket = io(process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:8001', {
+    this.socket = io(getWsBaseUrl(), {
       transports: ['polling'],
       upgrade: false,
       path: '/socket.io',

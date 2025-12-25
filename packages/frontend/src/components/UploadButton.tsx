@@ -44,8 +44,18 @@ export default function UploadButton({
   const [showModal, setShowModal] = useState(false);
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [uploaderName, setUploaderName] = useState('');
+  const [uploaderNameError, setUploaderNameError] = useState<string | null>(null);
+
+  const nameOk = uploaderName.trim().length > 0;
+  const canPickFiles = !disabled && nameOk;
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    const name = uploaderName.trim();
+    if (!name) {
+      setUploaderNameError('Bitte zuerst deinen Namen eingeben.');
+      return;
+    }
+
     const newFiles = acceptedFiles.map((file) => ({
       id: createUploadId(),
       file,
@@ -60,7 +70,7 @@ export default function UploadButton({
     newFiles.forEach((uploadFile) => {
       uploadMedia(uploadFile.id, uploadFile.file);
     });
-  }, []);
+  }, [uploaderName]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -69,9 +79,15 @@ export default function UploadButton({
       'video/*': ['.mp4', '.mov', '.webm'],
     },
     multiple: true,
+    disabled: !canPickFiles,
   });
 
   const capturePhoto = useCallback(() => {
+    const name = uploaderName.trim();
+    if (!name) {
+      setUploaderNameError('Bitte zuerst deinen Namen eingeben.');
+      return;
+    }
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -85,9 +101,14 @@ export default function UploadButton({
       }
     };
     input.click();
-  }, [onDrop]);
+  }, [onDrop, uploaderName]);
 
   const captureVideo = useCallback(() => {
+    const name = uploaderName.trim();
+    if (!name) {
+      setUploaderNameError('Bitte zuerst deinen Namen eingeben.');
+      return;
+    }
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'video/*';
@@ -101,32 +122,32 @@ export default function UploadButton({
       }
     };
     input.click();
-  }, [onDrop]);
+  }, [onDrop, uploaderName]);
 
   const uploadMedia = async (uploadId: string, file: File) => {
     setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, uploading: true, progress: 0 } : f)));
 
     const formData = new FormData();
     formData.append('file', file);
-    if (uploaderName.trim()) {
-      formData.append('uploaderName', uploaderName.trim());
+    const name = uploaderName.trim();
+    if (name) {
+      formData.append('uploaderName', name);
     }
 
     const isVideo = typeof file.type === 'string' && file.type.startsWith('video/');
     const endpoint = isVideo ? `/events/${eventId}/videos/upload` : `/events/${eventId}/photos/upload`;
 
     try {
-      const interval = setInterval(() => {
-        setFiles((prev) =>
-          prev.map((f) => (f.id === uploadId ? { ...f, progress: Math.min(f.progress + 10, 90) } : f))
-        );
-      }, 200);
-
       await api.post(endpoint, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (evt) => {
+          const total = typeof evt.total === 'number' ? evt.total : 0;
+          const loaded = typeof evt.loaded === 'number' ? evt.loaded : 0;
+          if (!total || total <= 0) return;
+          const pct = Math.max(0, Math.min(100, Math.round((loaded / total) * 100)));
+          setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, progress: pct } : f)));
+        },
       });
-
-      clearInterval(interval);
 
       setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, uploading: false, progress: 100, success: true } : f)));
 
@@ -139,8 +160,18 @@ export default function UploadButton({
         }
       }, 2000);
     } catch (error: any) {
-      setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, uploading: false, error: error.message } : f)));
+      const msg =
+        (error?.response?.data?.error as string) ||
+        (error?.message as string) ||
+        'Upload fehlgeschlagen';
+      setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, uploading: false, error: msg } : f)));
     }
+  };
+
+  const retryUpload = (uploadId: string) => {
+    const entry = files.find((f) => f.id === uploadId);
+    if (!entry) return;
+    uploadMedia(uploadId, entry.file);
   };
 
   const removeFile = (index: number) => {
@@ -261,18 +292,25 @@ export default function UploadButton({
                   <input
                     type="text"
                     value={uploaderName}
-                    onChange={(e) => setUploaderName(e.target.value)}
+                    onChange={(e) => {
+                      setUploaderName(e.target.value);
+                      if (uploaderNameError) setUploaderNameError(null);
+                    }}
                     placeholder="z.B. Max Mustermann"
                     required
                     className="w-full px-4 py-3 border-2 border-[#295B4D] rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#295B4D] focus:border-[#295B4D] font-medium"
                   />
+                  {uploaderNameError && <p className="text-xs text-red-700">{uploaderNameError}</p>}
                   <p className="text-xs text-gray-600">
                     Damit der Gastgeber weiß, wer die Fotos hochgeladen hat
                   </p>
                 </motion.div>
               </div>
 
-              <div {...getRootProps()} className="mb-4">
+              <div
+                {...getRootProps()}
+                className={`mb-4 ${canPickFiles ? '' : 'opacity-60 cursor-not-allowed'}`}
+              >
                 <input {...getInputProps()} />
                 <motion.div
                   whileHover={{ scale: 1.02 }}
@@ -287,10 +325,14 @@ export default function UploadButton({
                 >
                   <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                   <p className="text-sm font-medium text-gray-700 mb-2">
-                    {isDragActive ? 'Fotos hier ablegen' : 'Fotos hochladen'}
+                    {!nameOk
+                      ? 'Bitte zuerst deinen Namen eingeben'
+                      : isDragActive
+                        ? 'Fotos hier ablegen'
+                        : 'Fotos hochladen'}
                   </p>
                   <p className="text-xs text-gray-500">
-                    Drag & Drop oder klicken
+                    {!nameOk ? 'Dann kannst du Dateien auswählen' : 'Drag & Drop oder klicken'}
                   </p>
                 </motion.div>
               </div>
@@ -300,9 +342,9 @@ export default function UploadButton({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={capturePhoto}
-                  disabled={disabled}
+                  disabled={!canPickFiles}
                   className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition-colors ${
-                    disabled ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-[#295B4D] text-white hover:bg-[#1f4438]'
+                    !canPickFiles ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-[#295B4D] text-white hover:bg-[#1f4438]'
                   }`}
                 >
                   <Camera className="w-5 h-5" />
@@ -313,9 +355,9 @@ export default function UploadButton({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={captureVideo}
-                  disabled={disabled}
+                  disabled={!canPickFiles}
                   className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition-colors ${
-                    disabled ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gray-900 text-white hover:bg-black'
+                    !canPickFiles ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gray-900 text-white hover:bg-black'
                   }`}
                 >
                   <Video className="w-5 h-5" />
@@ -362,7 +404,16 @@ export default function UploadButton({
                             </div>
                           )}
                           {file.error && (
-                            <p className="text-xs text-red-600 mt-1">{file.error}</p>
+                            <div className="mt-1">
+                              <p className="text-xs text-red-700">{file.error}</p>
+                              <button
+                                type="button"
+                                onClick={() => retryUpload(file.id)}
+                                className="mt-1 text-xs font-semibold text-[#295B4D] underline"
+                              >
+                                Erneut versuchen
+                              </button>
+                            </div>
                           )}
                         </div>
 
