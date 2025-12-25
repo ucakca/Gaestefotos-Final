@@ -10,32 +10,57 @@ import { logger } from '../utils/logger';
 
 const router = Router();
 
-function normalizeEmailForAuth(input: unknown): unknown {
-  if (typeof input !== 'string') return input;
-  const raw = input.trim();
-  const at = raw.lastIndexOf('@');
-  if (at <= 0 || at === raw.length - 1) return raw;
+function isValidEmailLoose(email: string): boolean {
+  // Accept unicode domains (e.g. gäste…) without rewriting to punycode.
+  // We only enforce minimal sanity: local@domain.tld with no spaces.
+  const trimmed = email.trim();
+  if (!trimmed) return false;
+  if (/\s/.test(trimmed)) return false;
+  const at = trimmed.lastIndexOf('@');
+  if (at <= 0 || at === trimmed.length - 1) return false;
+  const local = trimmed.slice(0, at);
+  const domain = trimmed.slice(at + 1);
+  if (!local || !domain) return false;
+  if (!domain.includes('.')) return false;
+  if (domain.startsWith('.') || domain.endsWith('.')) return false;
+  return true;
+}
 
-  const local = raw.slice(0, at);
-  const domain = raw.slice(at + 1);
+const emailSchema = z
+  .string()
+  .transform((v) => v.trim())
+  .refine(isValidEmailLoose, { message: 'Invalid email' });
 
-  try {
-    const asciiDomain = toASCII(domain);
-    return `${local}@${asciiDomain}`;
-  } catch {
-    return raw;
+function getEmailAuthCandidates(email: string): string[] {
+  const trimmed = email.trim();
+  const candidates = new Set<string>();
+  candidates.add(trimmed);
+
+  const at = trimmed.lastIndexOf('@');
+  if (at > 0 && at < trimmed.length - 1) {
+    const local = trimmed.slice(0, at);
+    const domain = trimmed.slice(at + 1);
+    try {
+      const asciiDomain = toASCII(domain);
+      const asciiEmail = `${local}@${asciiDomain}`;
+      candidates.add(asciiEmail);
+    } catch {
+      // ignore
+    }
   }
+
+  return Array.from(candidates);
 }
 
 // Validation schemas
 const registerSchema = z.object({
-  email: z.preprocess(normalizeEmailForAuth, z.string().email()),
+  email: emailSchema,
   name: z.string().min(1),
   password: z.string().min(6),
 });
 
 const loginSchema = z.object({
-  email: z.preprocess(normalizeEmailForAuth, z.string().email()),
+  email: emailSchema,
   password: z.string(),
 });
 
@@ -150,11 +175,13 @@ router.post('/login', async (req: Request, res: Response) => {
   try {
     const data = loginSchema.parse(req.body);
 
-    logger.info('[auth] login attempt', { email: data.email });
+    const emailCandidates = getEmailAuthCandidates(data.email);
+
+    logger.info('[auth] login attempt', { email: data.email, emailCandidatesCount: emailCandidates.length });
 
     // Find user
-    const user = await prisma.user.findUnique({
-      where: { email: data.email },
+    const user = await prisma.user.findFirst({
+      where: { email: { in: emailCandidates } },
     });
 
     const localPasswordOk = user ? await bcrypt.compare(data.password, user.password) : false;
@@ -162,6 +189,7 @@ router.post('/login', async (req: Request, res: Response) => {
     logger.info('[auth] login local check', {
       email: data.email,
       hasLocalUser: !!user,
+      matchedLocalEmail: user?.email,
       localPasswordOk,
       localRole: user?.role,
     });
@@ -169,7 +197,11 @@ router.post('/login', async (req: Request, res: Response) => {
     let effectiveUser = user;
     if (!localPasswordOk) {
       try {
-        const wpUser = await verifyWordPressUser(data.email, data.password);
+        let wpUser: Awaited<ReturnType<typeof verifyWordPressUser>> = null;
+        for (const identifier of emailCandidates) {
+          wpUser = await verifyWordPressUser(identifier, data.password);
+          if (wpUser) break;
+        }
         if (!wpUser) {
           logger.info('[auth] login failed (wordpress invalid credentials)', { email: data.email });
           return res.status(401).json({ error: 'Invalid credentials' });
