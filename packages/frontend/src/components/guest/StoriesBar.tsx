@@ -1,5 +1,7 @@
 'use client';
 
+import { Play } from 'lucide-react';
+
 type Story = any;
 
 export default function StoriesBar({ stories, onSelect }: { stories: Story[]; onSelect: (index: number) => void }) {
@@ -20,13 +22,17 @@ export default function StoriesBar({ stories, onSelect }: { stories: Story[]; on
               <div className="w-full h-full rounded-full overflow-hidden bg-gray-100 ring-2 ring-white">
                 {s?.photo?.url ? (
                   <img src={s.photo.url} alt="Story" className="w-full h-full object-cover" />
+                ) : s?.video?.url ? (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-900/5">
+                    <Play className="w-6 h-6 text-gray-700" />
+                  </div>
                 ) : (
                   <div className="w-full h-full" />
                 )}
               </div>
             </div>
             <div className="text-[11px] font-medium text-gray-700 max-w-[72px] truncate">
-              {(s?.photo?.uploadedBy as string) || 'Story'}
+              {(s?.photo?.uploadedBy as string) || (s?.video?.uploadedBy as string) || 'Story'}
             </div>
           </button>
         ))}

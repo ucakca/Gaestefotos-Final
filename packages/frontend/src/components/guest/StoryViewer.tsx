@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -32,6 +33,25 @@ export default function StoryViewer({
 }: Props) {
   const hasSelection = selectedStoryIndex !== null && !!stories[selectedStoryIndex];
   const selectedStory = hasSelection ? stories[selectedStoryIndex as number] : null;
+
+  useEffect(() => {
+    if (!hasSelection) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [hasSelection, onClose]);
 
   return (
     <AnimatePresence>
@@ -71,8 +91,8 @@ export default function StoryViewer({
 
               <div className="mt-3 flex items-center justify-between">
                 <div className="min-w-0 text-white/90 text-sm font-medium truncate">
-                  ((stories[selectedStoryIndex as number]?.photo?.uploadedBy as string) ||
-                    (stories[selectedStoryIndex as number]?.video?.uploadedBy as string) ||
+                  ((selectedStory?.photo?.uploadedBy as string) ||
+                    (selectedStory?.video?.uploadedBy as string) ||
                     'Story')
                 </div>
                 <button

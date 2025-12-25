@@ -25,6 +25,10 @@ export function useStoriesViewer(eventId: string | null, reloadKey: number) {
   };
 
   useEffect(() => {
+    // Reset per-event view tracking and selection when switching events.
+    viewedStoriesRef.current = new Set();
+    setSelectedStoryIndex(null);
+    setStoryProgress(0);
     loadStories();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId, reloadKey]);
@@ -45,6 +49,13 @@ export function useStoriesViewer(eventId: string | null, reloadKey: number) {
     };
     trackView();
   }, [selectedStoryIndex, stories]);
+
+  useEffect(() => {
+    if (selectedStoryIndex === null) return;
+    if (!stories[selectedStoryIndex]) {
+      setSelectedStoryIndex(null);
+    }
+  }, [stories, selectedStoryIndex]);
 
   useEffect(() => {
     storyProgressRef.current = storyProgress;
@@ -106,7 +117,7 @@ export function useStoriesViewer(eventId: string | null, reloadKey: number) {
     setSelectedStoryIndex((i) => {
       if (i === null) return 0;
       if (stories.length <= 1) return i;
-      return (i - 1 + stories.length) % stories.length;
+      return Math.max(0, i - 1);
     });
   };
 
@@ -114,7 +125,8 @@ export function useStoriesViewer(eventId: string | null, reloadKey: number) {
     setSelectedStoryIndex((i) => {
       if (i === null) return 0;
       if (stories.length <= 1) return i;
-      return (i + 1) % stories.length;
+      if (i >= stories.length - 1) return null;
+      return i + 1;
     });
   };
 

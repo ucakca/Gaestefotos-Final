@@ -10,6 +10,7 @@ import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
+import { toASCII } from 'node:punycode';
 
 import authRoutes from './routes/auth';
 import eventRoutes from './routes/events';
@@ -75,9 +76,40 @@ const allowedOrigins = process.env.FRONTEND_URL?.split(',').map(url => url.trim(
   'http://localhost:3000',
   'http://app.xn--gstefotos-v2a.com',
   'https://app.xn--gstefotos-v2a.com',
-  'http://app.gästefotos.com',
-  'https://app.gästefotos.com'
+  // NOTE: avoid unicode hostnames here to prevent mojibake in response headers.
+  // The unicode domain is still allowed via alwaysAllow regex below.
 ];
+
+const toAsciiOrigin = (origin: string): string => {
+  try {
+    const u = new URL(origin);
+    const asciiHost = toASCII(u.hostname);
+    return `${u.protocol}//${asciiHost}${u.port ? `:${u.port}` : ''}`;
+  } catch {
+    return origin;
+  }
+};
+
+// Use ASCII-only origins for headers like CSP to avoid broken encoding.
+const allowedOriginsForHeaders = Array.from(
+  new Set(
+    allowedOrigins
+      .map((o) => toAsciiOrigin(o))
+      .filter((o) => /^[\x00-\x7F]*$/.test(o))
+      .filter((o) => (process.env.NODE_ENV === 'production' ? !/^https?:\/\/localhost:\d+$/i.test(o) : true))
+  )
+);
+
+// Always include canonical ASCII production origins in CSP.
+const cspConnectSrc = Array.from(
+  new Set([
+    "'self'",
+    ...allowedOriginsForHeaders,
+    'https://app.xn--gstefotos-v2a.com',
+    'http://app.xn--gstefotos-v2a.com',
+    'https://ws.xn--gstefotos-v2a.com',
+  ])
+);
 
 const app = express();
 
@@ -109,7 +141,8 @@ app.use(helmet({
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Next.js benötigt unsafe-inline und unsafe-eval
       scriptSrcElem: ["'self'", "'unsafe-inline'"], // Separate directive für script elements
       imgSrc: ["'self'", "data:", "https:", "http:"],
-      connectSrc: ["'self'", ...allowedOrigins, "https://ws.gästefotos.com", "https://ws.xn--gstefotos-v2a.com"],
+      // Keep connect-src ASCII-only to avoid broken header encoding; 'self' covers same-origin API calls.
+      connectSrc: cspConnectSrc,
     },
   },
   crossOriginEmbedderPolicy: false, // Allow Socket.IO
