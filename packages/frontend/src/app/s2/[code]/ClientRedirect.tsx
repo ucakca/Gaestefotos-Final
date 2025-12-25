@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function ClientRedirect({ apiBase, code, initialTarget }: { apiBase: string; code: string; initialTarget: string | null }) {
+export default function ClientRedirect({ code, initialTarget }: { code: string; initialTarget: string | null }) {
   const router = useRouter();
 
   useEffect(() => {
@@ -13,7 +13,7 @@ export default function ClientRedirect({ apiBase, code, initialTarget }: { apiBa
       if (!initialTarget) return;
 
       try {
-        const res = await fetch(`${apiBase}/api/shortlinks/${encodeURIComponent(code)}`, {
+        const res = await fetch(`/api/shortlinks/${encodeURIComponent(code)}`, {
           credentials: 'include',
           cache: 'no-store',
         });
@@ -41,7 +41,7 @@ export default function ClientRedirect({ apiBase, code, initialTarget }: { apiBa
     return () => {
       cancelled = true;
     };
-  }, [apiBase, code, initialTarget, router]);
+  }, [code, initialTarget, router]);
 
   return null;
 }

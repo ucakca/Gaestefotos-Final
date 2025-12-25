@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import ClientRedirect from './ClientRedirect';
+import { headers } from 'next/headers';
 
 type ShortlinkResolveResponse = {
   code: string;
@@ -13,6 +14,16 @@ type ShortlinkResolveResponse = {
 };
 
 function getApiBaseUrl(): string {
+  // In production we must use same-origin to avoid mixed deployments / wrong domains.
+  if (process.env.NODE_ENV === 'production') {
+    const h = headers();
+    const proto = h.get('x-forwarded-proto') || 'https';
+    const host = h.get('x-forwarded-host') || h.get('host');
+    if (host) return `${proto}://${host}`;
+    return '';
+  }
+
+  // Dev/E2E fallback: allow explicit overrides.
   const raw = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'http://localhost:8001';
   return raw.replace(/\/+$/, '');
 }
@@ -54,7 +65,6 @@ export async function generateMetadata({ params }: { params: { code: string } })
 
 export default async function ShortLinkResolvePageV2({ params }: { params: { code: string } }) {
   const code = params.code;
-  const apiBase = getApiBaseUrl();
   const initialData = await resolveShortlink(code);
   const initialSlug = initialData?.invitationSlug;
   const initialTarget = typeof initialSlug === 'string' && initialSlug.length > 0 ? `/i/${initialSlug}` : null;
@@ -69,7 +79,7 @@ export default async function ShortLinkResolvePageV2({ params }: { params: { cod
             <a className="mt-3 inline-block text-sm text-[#295B4D] underline" href={initialTarget}>
               Falls du nicht weitergeleitet wirst, klicke hier.
             </a>
-            <ClientRedirect apiBase={apiBase} code={code} initialTarget={initialTarget} />
+            <ClientRedirect code={code} initialTarget={initialTarget} />
           </>
         ) : (
           <div className="mt-3 text-sm text-red-700">Link konnte nicht aufgelöst werden</div>
