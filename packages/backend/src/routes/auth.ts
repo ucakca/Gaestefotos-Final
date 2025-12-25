@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
+import { toASCII } from 'node:punycode';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { verifyWordPressUser, WordPressAuthUnavailableError } from '../config/wordpress';
@@ -9,15 +10,32 @@ import { logger } from '../utils/logger';
 
 const router = Router();
 
+function normalizeEmailForAuth(input: unknown): unknown {
+  if (typeof input !== 'string') return input;
+  const raw = input.trim();
+  const at = raw.lastIndexOf('@');
+  if (at <= 0 || at === raw.length - 1) return raw;
+
+  const local = raw.slice(0, at);
+  const domain = raw.slice(at + 1);
+
+  try {
+    const asciiDomain = toASCII(domain);
+    return `${local}@${asciiDomain}`;
+  } catch {
+    return raw;
+  }
+}
+
 // Validation schemas
 const registerSchema = z.object({
-  email: z.string().email(),
+  email: z.preprocess(normalizeEmailForAuth, z.string().email()),
   name: z.string().min(1),
   password: z.string().min(6),
 });
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.preprocess(normalizeEmailForAuth, z.string().email()),
   password: z.string(),
 });
 
