@@ -1,12 +1,14 @@
 #!/bin/bash
 
-# Gästefotos V2 - Service Restart Script
+# Gästefotos - Service Restart Script
 # Führt alle Services neu, um morgen weiterarbeiten zu können
 
-echo "🚀 Starte Gästefotos V2 Services..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+echo "🚀 Starte Gästefotos Services..."
 
 echo "📦 Starte lokale Services..."
-bash /root/gaestefotos-app-v2/start-local-services.sh
+bash "$SCRIPT_DIR/start-local-services.sh"
 
 # 3. Warten und testen
 sleep 3

@@ -1,4 +1,4 @@
-# 📸 Gästefotos V2 - Event Foto-Sharing Plattform
+# 📸 Gästefotos - Event Foto-Sharing Plattform
 
 **Version:** 2.0.0  
 **Status:** ✅ Produktionsbereit  
@@ -33,7 +33,7 @@
 
 ## 🎯 Überblick
 
-Gästefotos V2 ist eine moderne, vollständig funktionsfähige Web-Anwendung für Event-Foto-Sharing. Die Plattform ermöglicht es Event-Organisatoren, Fotos von ihren Veranstaltungen zu sammeln, zu moderieren und mit Gästen zu teilen.
+Gästefotos ist eine moderne, vollständig funktionsfähige Web-Anwendung für Event-Foto-Sharing. Die Plattform ermöglicht es Event-Organisatoren, Fotos von ihren Veranstaltungen zu sammeln, zu moderieren und mit Gästen zu teilen.
 
 ### Hauptfunktionen
 
@@ -119,7 +119,7 @@ Gästefotos V2 ist eine moderne, vollständig funktionsfähige Web-Anwendung fü
 ## 📁 Projektstruktur
 
 ```
-gaestefotos-app-v2/
+<repo-root>/
 ├── packages/
 │   ├── backend/              # Backend API Server
 │   │   ├── src/
@@ -183,7 +183,7 @@ gaestefotos-app-v2/
 
 ```bash
 git clone <repository-url>
-cd gaestefotos-app-v2
+cd <repo-root>
 ```
 
 ### Schritt 2: Dependencies installieren

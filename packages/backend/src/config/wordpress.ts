@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { PasswordHash } from 'phpass';
 import { verify } from '@cbashik/wp-password-hash';
 import { logger } from '../utils/logger';
+import path from 'path';
 
 export class WordPressAuthUnavailableError extends Error {
   code = 'WP_AUTH_UNAVAILABLE' as const;
@@ -115,7 +116,7 @@ async function verifyWordPressPasswordPHP(email: string, password: string): Prom
     const execAsync = promisify(exec);
     
     // Use PHP to verify password via WordPress
-    const phpScript = '/root/gaestefotos-app-v2/packages/backend/verify-wp-password.php';
+    const phpScript = path.resolve(__dirname, '../../verify-wp-password.php');
     const { stdout, stderr } = await execAsync(
       `php ${phpScript} "${email}" "${password.replace(/"/g, '\\"')}" 2>&1`
     );

@@ -90,12 +90,19 @@ const toAsciiOrigin = (origin: string): string => {
   }
 };
 
+const isAllAscii = (input: string): boolean => {
+  for (let i = 0; i < input.length; i++) {
+    if (input.charCodeAt(i) > 0x7f) return false;
+  }
+  return true;
+};
+
 // Use ASCII-only origins for headers like CSP to avoid broken encoding.
 const allowedOriginsForHeaders = Array.from(
   new Set(
     allowedOrigins
       .map((o) => toAsciiOrigin(o))
-      .filter((o) => /^[\x00-\x7F]*$/.test(o))
+      .filter((o) => isAllAscii(o))
       .filter((o) => (process.env.NODE_ENV === 'production' ? !/^https?:\/\/localhost:\d+$/i.test(o) : true))
   )
 );
@@ -237,7 +244,7 @@ app.get('/api/health', (req, res) => {
 // API Root endpoint
 app.get('/api', (req, res) => {
   res.json({
-    message: 'Gästefotos V2 API',
+    message: 'Gästefotos API',
     version: '2.0.0',
     endpoints: {
       auth: {
@@ -290,7 +297,7 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Gästefotos V2 API',
+      title: 'Gästefotos API',
       version: '2.0.0',
       description: 'API für Event-Foto-Sharing Plattform',
     },

@@ -1,8 +1,8 @@
 {
-  "name": "gaestefotos-app-v2",
+  "name": "gaestefotos-app",
   "version": "2.0.0",
   "private": true,
-  "description": "Gästefotos App V2 - Next.js + Node.js",
+  "description": "Gästefotos App - Next.js + Node.js",
   "workspaces": [
     "packages/*"
   ],
