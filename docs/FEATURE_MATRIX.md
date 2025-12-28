@@ -1,0 +1,130 @@
+# Feature Matrix (✅ implementiert / ◐ teilweise / ❌ fehlt)
+
+Ziel: **eine** Tabelle, in der du sofort siehst, was schon existiert (mit Pfaden/Endpoints) und was fehlt.
+
+Legende:
+- ✅ = implementiert
+- ◐ = teilweise implementiert (Basis vorhanden, Spec-Teile fehlen)
+- ❌ = fehlt
+
+---
+
+## QR / Print / Tracking
+
+- ✅ **QR Templates + Export (PNG/PDF)**
+  - Backend: `packages/backend/src/routes/events.ts`
+    - `GET /api/events/:id/qr/config`
+    - `PUT /api/events/:id/qr/config`
+    - `POST /api/events/:id/qr/export.png`
+    - `POST /api/events/:id/qr/export.pdf`
+  - Frontend Admin: `packages/frontend/src/app/admin/dashboard/page.tsx`
+
+- ✅ **QR source tracking (`?source=qr`)**
+  - Frontend:
+    - Live Wall: `packages/frontend/src/app/live/[slug]/wall/page.tsx`
+    - Admin QR Print-Service: `packages/frontend/src/app/admin/dashboard/page.tsx`
+    - Guest `/e`: `packages/frontend/src/app/e/[slug]/page.tsx` (reicht `source` durch)
+    - Guest `/e2`: `packages/frontend/src/hooks/useGuestEventData.ts` (reicht `source` durch)
+  - Backend:
+    - `GET /api/events/slug/:slug?source=...` zählt
+    - `GET /api/events/:id/traffic` readback
+    - Code: `packages/backend/src/routes/events.ts`
+  - DB:
+    - Prisma: `EventTrafficStat` in `packages/backend/prisma/schema.prisma`
+    - Migration: `packages/backend/prisma/migrations/20251228214500_event_traffic_stats/`
+
+- ✅ **Admin Anzeige "Views by source"**
+  - `packages/frontend/src/app/admin/dashboard/page.tsx`
+
+---
+
+## Core Plattform
+
+- ✅ **Auth/Login (JWT + Cookies)**
+  - Backend: `packages/backend/src/routes/auth.ts`
+  - Middleware: `packages/backend/src/middleware/auth.ts`
+
+- ✅ **Events (Create/Read/Update + Public by slug)**
+  - Backend: `packages/backend/src/routes/events.ts`
+    - `GET /api/events/slug/:slug`
+
+- ✅ **Photos/Videos Upload + Moderation (Basis)**
+  - Backend: `packages/backend/src/routes/photos.ts`, `packages/backend/src/routes/videos.ts`
+
+- ✅ **Categories/Albums (als Filter)**
+  - Backend: `packages/backend/src/routes/categories.ts`
+  - Frontend: `packages/frontend/src/components/AlbumNavigation`
+
+- ✅ **Guestbook**
+  - Backend: `packages/backend/src/routes/guestbook.ts`
+
+- ✅ **Stories**
+  - Backend: `packages/backend/src/routes/stories.ts` (inkl. `POST /:storyId/view`)
+
+- ✅ **Stats (Host/Admin)**
+  - Backend: `packages/backend/src/routes/statistics.ts`
+
+---
+
+## Live Wall
+
+- ◐ **Live Wall UI**
+  - Frontend: `packages/frontend/src/app/live/[slug]/wall/page.tsx`
+  - Backend realtime: Socket.io in `packages/backend/src/index.ts`
+  - Fehlt:
+    - Tiering (Polling vs Premium)
+    - Sort-Modi
+    - Spezifizierte Animationen
+
+---
+
+## PWA / Offline
+
+- ◐ **PWA Basis**
+  - Manifest: `packages/frontend/public/manifest.json`
+  - Service Worker: `packages/frontend/public/sw.js` (minimal cache)
+  - Fehlt:
+    - robuste Offline Queue (IndexedDB)
+    - Retry/Background Sync
+    - Caching-Strategien für Event Pages/Assets
+
+---
+
+## Host Wizard / Smart Albums
+
+- ❌ **Host Wizard (Setup Flow + Live Preview)**
+
+- ❌ **Smart Albums (Zeitfenster)**
+  - Fehlt:
+    - DB Modell (Zeitranges)
+    - Overlap-Validation
+    - EXIF/createdAt → Album mapping
+    - UI für Erstellung/Bearbeitung
+
+---
+
+## WordPress / Woo Bridge
+
+- ◐ **Woo Webhooks + Logging**
+  - Backend: `packages/backend/src/routes/woocommerceWebhooks.ts`
+  - Admin Logs: `packages/backend/src/routes/adminWooWebhooks.ts`
+  - Fehlt (falls Spec v1 abweicht):
+    - v1 Contract/Endpoint-Alignment
+    - Marketing stats endpoint
+
+---
+
+## Admin
+
+- ❌ **Admin Impersonation (Login as Host)**
+
+---
+
+## Hard Constraints
+
+- ✅ **Rate Limiting (Basis)**
+  - Backend: `packages/backend/src/middleware/rateLimit.ts`
+
+- ✅ **Storage Lifecycle (Policy + Workers)**
+  - Backend Services (u.a.): `packages/backend/src/services/storagePolicy.ts`
+
