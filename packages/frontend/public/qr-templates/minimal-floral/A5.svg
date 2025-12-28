@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="148mm" height="210mm" viewBox="0 0 1480 2100">
+  <style>
+    :root {
+      --gf-bg: #fbf7f1;
+      --gf-text: #2b2b2b;
+      --gf-accent: #6c7a5f;
+    }
+    #gf\:bg { fill: var(--gf-bg); }
+    .gf-text { fill: var(--gf-text); }
+    .gf-accent { fill: var(--gf-accent); }
+  </style>
+
+  <rect id="gf:bg" x="0" y="0" width="1480" height="2100" />
+
+  <g opacity="0.9" class="gf-accent">
+    <path d="M160 220c60-90 180-90 240 0-90-30-150 15-180 90-15-45-30-70-60-90z" fill="var(--gf-accent)" opacity="0.18" />
+    <path d="M1320 1880c-60 90-180 90-240 0 90 30 150-15 180-90 15 45 30 70 60 90z" fill="var(--gf-accent)" opacity="0.18" />
+    <path d="M1280 240c-90 45-195 15-225-90 75 45 135 15 180-30 15 52 30 90 45 120z" fill="var(--gf-accent)" opacity="0.12" />
+    <path d="M200 1860c90-45 195-15 225 90-75-45-135-15-180 30-15-52-30-90-45-120z" fill="var(--gf-accent)" opacity="0.12" />
+  </g>
+
+  <text id="gf:text:headline" x="740" y="400" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="96" font-weight="700" class="gf-text">Unsere Fotogalerie</text>
+  <text id="gf:text:subline" x="740" y="520" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="44" font-weight="500" class="gf-text">Teilt eure Fotos mit uns</text>
+
+  <text id="gf:text:eventName" x="740" y="660" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="54" font-weight="600" class="gf-accent">Anna & Ben</text>
+
+  <rect id="gf:qr" x="560" y="860" width="360" height="360" rx="24" fill="#ffffff" stroke="var(--gf-accent)" stroke-width="8" />
+
+  <text id="gf:text:callToAction" x="740" y="1400" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="40" font-weight="500" class="gf-text">Einfach scannen & hochladen</text>
+
+  <text x="740" y="1780" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="28" font-weight="400" class="gf-text">gästefotos.com</text>
+</svg>

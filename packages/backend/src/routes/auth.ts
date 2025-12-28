@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import { toASCII } from 'node:punycode';
+import { domainToASCII } from 'node:url';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { verifyWordPressUser, WordPressAuthUnavailableError } from '../config/wordpress';
@@ -41,7 +41,7 @@ function getEmailAuthCandidates(email: string): string[] {
     const local = trimmed.slice(0, at);
     const domain = trimmed.slice(at + 1);
     try {
-      const asciiDomain = toASCII(domain);
+      const asciiDomain = domainToASCII(domain);
       const asciiEmail = `${local}@${asciiDomain}`;
       candidates.add(asciiEmail);
     } catch {
@@ -116,6 +116,11 @@ router.post('/register', async (req: Request, res: Response) => {
   }
 
   try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({ error: 'Server misconfigured: JWT_SECRET is missing' });
+    }
+
     const data = registerSchema.parse(req.body);
 
     // Check if user exists
@@ -151,7 +156,7 @@ router.post('/register', async (req: Request, res: Response) => {
     const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as any;
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      process.env.JWT_SECRET || 'secret',
+      jwtSecret,
       { expiresIn }
     );
 
@@ -173,6 +178,11 @@ router.post('/register', async (req: Request, res: Response) => {
 // Login
 router.post('/login', async (req: Request, res: Response) => {
   try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({ error: 'Server misconfigured: JWT_SECRET is missing' });
+    }
+
     const data = loginSchema.parse(req.body);
 
     const emailCandidates = getEmailAuthCandidates(data.email);
@@ -259,7 +269,7 @@ router.post('/login', async (req: Request, res: Response) => {
     const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as any;
     const token = jwt.sign(
       { userId: effectiveUser.id, role: effectiveUser.role },
-      process.env.JWT_SECRET || 'secret',
+      jwtSecret,
       { expiresIn }
     );
 

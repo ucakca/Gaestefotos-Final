@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="148mm" height="210mm" viewBox="0 0 1480 2100">
+  <style>
+    :root { --gf-bg:#fffaf7; --gf-text:#2a2220; --gf-accent:#b7798a; }
+    #gf\:bg { fill: var(--gf-bg); }
+    .gf-text { fill: var(--gf-text); }
+    .gf-accent { fill: var(--gf-accent); }
+  </style>
+
+  <rect id="gf:bg" x="0" y="0" width="1480" height="2100"/>
+
+  <rect x="90" y="90" width="1300" height="1920" rx="52" fill="none" stroke="var(--gf-accent)" stroke-width="8" opacity="0.55"/>
+  <path d="M220 240c130-170 320-170 450 0-170-55-275 30-335 170-30-85-60-125-115-170z" fill="var(--gf-accent)" opacity="0.16"/>
+  <path d="M1260 1860c-130 170-320 170-450 0 170 55 275-30 335-170 30 85 60 125 115 170z" fill="var(--gf-accent)" opacity="0.16"/>
+
+  <text id="gf:text:headline" x="740" y="430" text-anchor="middle" font-family="Playfair Display, Georgia, 'Times New Roman', serif" font-size="108" font-weight="700" class="gf-text">Unsere Fotogalerie</text>
+  <text id="gf:text:subline" x="740" y="550" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="44" font-weight="500" class="gf-text" opacity="0.9">Teilt eure Fotos mit uns</text>
+
+  <text id="gf:text:eventName" x="740" y="690" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="54" font-weight="600" class="gf-accent">Anna & Ben</text>
+
+  <rect id="gf:qr" x="560" y="900" width="360" height="360" rx="24" fill="#ffffff" stroke="var(--gf-accent)" stroke-width="8" opacity="0.95"/>
+
+  <text id="gf:text:callToAction" x="740" y="1480" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="40" font-weight="500" class="gf-text">Einfach scannen & hochladen</text>
+
+  <text x="740" y="1820" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="28" font-weight="400" class="gf-text" opacity="0.75">gästefotos.com</text>
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="148mm" height="210mm" viewBox="0 0 1480 2100">
+  <style>
+    :root { --gf-bg:#ffffff; --gf-text:#111827; --gf-accent:#2563eb; }
+    #gf\:bg { fill: var(--gf-bg); }
+    .gf-text { fill: var(--gf-text); }
+    .gf-accent { fill: var(--gf-accent); }
+  </style>
+
+  <rect id="gf:bg" x="0" y="0" width="1480" height="2100"/>
+
+  <path d="M0 0h1480v340H0z" fill="var(--gf-accent)" opacity="0.10"/>
+  <path d="M0 300c330-90 580 60 900-25 220-60 360-25 580 20v45H0z" fill="var(--gf-accent)" opacity="0.18"/>
+
+  <text id="gf:text:headline" x="90" y="240" text-anchor="start" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="96" font-weight="800" class="gf-text">Unsere Fotogalerie</text>
+  <text id="gf:text:subline" x="90" y="330" text-anchor="start" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="44" font-weight="500" class="gf-text" opacity="0.9">Fotos & Videos sammeln</text>
+
+  <text id="gf:text:eventName" x="90" y="440" text-anchor="start" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="52" font-weight="700" class="gf-accent">Anna & Ben</text>
+
+  <rect x="90" y="680" width="1300" height="700" rx="36" fill="#ffffff" stroke="var(--gf-accent)" stroke-width="10" opacity="0.96"/>
+  <rect id="gf:qr" x="560" y="830" width="360" height="360" rx="24" fill="#ffffff" stroke="#e5e7eb" stroke-width="8"/>
+
+  <text id="gf:text:callToAction" x="740" y="1300" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="44" font-weight="600" class="gf-text">QR-Code scannen & los geht’s</text>
+  <text x="740" y="1388" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="30" font-weight="500" class="gf-text" opacity="0.7">/e/event</text>
+
+  <path d="M0 2020h1480v80H0z" fill="var(--gf-accent)" opacity="0.10"/>
+</svg>

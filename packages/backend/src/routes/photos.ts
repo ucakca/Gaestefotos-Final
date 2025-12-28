@@ -22,10 +22,10 @@ try {
 
 const router = Router();
 
-function serializeBigInt<T>(value: T): T {
+function serializeBigInt(value: unknown): unknown {
   return JSON.parse(
     JSON.stringify(value, (_key, v) => (typeof v === 'bigint' ? v.toString() : v))
-  ) as T;
+  ) as unknown;
 }
 
 // Multer setup for file uploads
