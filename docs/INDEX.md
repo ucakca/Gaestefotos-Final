@@ -31,6 +31,10 @@ Ziel: Diese Dokumente sind die **Single Source of Truth** für Architektur, APIs
 
 - **Aktueller Umsetzungsstand & Lücken**: `docs/GAP_ANALYSIS.md`
 
+## TODO (Arbeitsliste)
+
+- **Aktuelle TODO-Liste (Repo)**: `docs/TODO.md`
+
 ## Repo-Navigation (Where to look)
 
 - **Backend**: `packages/backend/src`
