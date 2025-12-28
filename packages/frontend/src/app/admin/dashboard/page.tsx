@@ -135,6 +135,10 @@ export default function AdminDashboardPage() {
   const [qrExporting, setQrExporting] = useState(false);
   const [qrExportError, setQrExportError] = useState<string | null>(null);
 
+  const [qrTrafficLoading, setQrTrafficLoading] = useState(false);
+  const [qrTrafficError, setQrTrafficError] = useState<string | null>(null);
+  const [qrTrafficStats, setQrTrafficStats] = useState<any[] | null>(null);
+
   const [wooLogs, setWooLogs] = useState<any[]>([]);
   const [wooLogsLoading, setWooLogsLoading] = useState(false);
   const [wooLogsError, setWooLogsError] = useState<string | null>(null);
@@ -287,6 +291,27 @@ export default function AdminDashboardPage() {
   const baseOrigin = typeof window !== 'undefined' ? window.location.origin : '';
   const hostEventUrl = qrEventId && baseOrigin ? `${baseOrigin}/events/${qrEventId}` : '';
   const guestEventUrl = qrEventSlug && baseOrigin ? `${baseOrigin}/e/${qrEventSlug}?source=qr` : '';
+
+  const loadQrTraffic = async () => {
+    try {
+      setQrTrafficError(null);
+      setQrTrafficStats(null);
+
+      const eventId = qrEventId.trim();
+      if (!eventId) {
+        setQrTrafficError('Bitte eventId eingeben');
+        return;
+      }
+
+      setQrTrafficLoading(true);
+      const { data } = await api.get(`/events/${eventId}/traffic`);
+      setQrTrafficStats(Array.isArray(data?.stats) ? data.stats : []);
+    } catch (err: any) {
+      setQrTrafficError(err?.response?.data?.error || err?.message || 'Traffic konnte nicht geladen werden');
+    } finally {
+      setQrTrafficLoading(false);
+    }
+  };
 
   const loadQrEvent = async () => {
     try {
@@ -1480,9 +1505,13 @@ export default function AdminDashboardPage() {
                 <ActionButton onClick={loadQrEvent} disabled={qrEventLoading}>
                   {qrEventLoading ? 'Lade…' : 'Event laden'}
                 </ActionButton>
+                <ActionButton variant="secondary" onClick={loadQrTraffic} disabled={qrTrafficLoading}>
+                  {qrTrafficLoading ? 'Traffic…' : 'Views laden'}
+                </ActionButton>
               </div>
 
               {qrEventError && <p style={{ marginTop: '0.75rem', color: '#B00020' }}>{qrEventError}</p>}
+              {qrTrafficError && <p style={{ marginTop: '0.75rem', color: '#B00020' }}>{qrTrafficError}</p>}
 
               {(hostEventUrl || guestEventUrl) && (
                 <div style={{ marginTop: '0.75rem', display: 'grid', gap: '0.5rem' }}>
@@ -1531,6 +1560,31 @@ export default function AdminDashboardPage() {
               </div>
 
               {qrExportError && <p style={{ marginTop: '0.75rem', color: '#B00020' }}>{qrExportError}</p>}
+
+              <div style={{ marginTop: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ color: '#295B4D', fontWeight: 800 }}>Views by source</div>
+                  <HelpTooltip title="Views by source" content={'Zeigt die gezählten Aufrufe pro Quelle (z.B. source=qr).'} />
+                </div>
+
+                {qrTrafficStats && (
+                  <div style={{ marginTop: '0.5rem', display: 'grid', gap: '0.25rem', fontSize: '0.9rem' }}>
+                    {qrTrafficStats.length === 0 ? (
+                      <div style={{ color: '#666' }}>Noch keine Views (oder Migration noch nicht deployed).</div>
+                    ) : (
+                      qrTrafficStats.map((s: any) => (
+                        <div key={String(s?.source || '')} style={{ display: 'flex', gap: '0.75rem', alignItems: 'baseline' }}>
+                          <div style={{ fontFamily: 'monospace', minWidth: 120 }}>{String(s?.source || '')}</div>
+                          <div style={{ fontWeight: 800 }}>{Number(s?.count || 0)}</div>
+                          <div style={{ color: '#666' }}>
+                            {s?.lastSeenAt ? `last: ${new Date(s.lastSeenAt).toLocaleString()}` : ''}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
             </section>
 
             {/* Usage Inspector */}
