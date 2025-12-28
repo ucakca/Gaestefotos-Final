@@ -219,6 +219,59 @@ Siehe Details: `docs/STORAGE_AND_BLUR_POLICY.md`.
 - `PackageDefinition.sku`
   - SKU-Mapping.
 
+---
+
+## CMS Content Snapshots
+
+### CmsContentSnapshot (`cms_content_snapshots`)
+
+- **Zweck (laiensicher):**
+  - Diese Tabelle speichert eine **Kopie (Snapshot)** von wichtigen WordPress-Inhalten (z.B. FAQ-Seite).
+  - Vorteil: Die Gästefotos-App kann die Inhalte **stabil und schnell** aus der eigenen Datenbank anzeigen, auch wenn WordPress gerade langsam ist oder Plugins/Page-Builder im WP-REST-API keinen Editor-Text liefern.
+
+- **Zweck (technisch):**
+  - Persistierte Quelle für HTML/Excerpt von WP-Seiten/Posts.
+  - Wird über Admin CMS Sync (`/api/admin/cms/*`) aktualisiert.
+  - Bei WordPress-Instanzen, die `content.rendered` leer liefern (Theme/Page-Builder), nutzt der Sync einen Fallback:
+    - Fetch von `link` (public page) und Extraktion des Hauptbereichs (z.B. `<main>`).
+
+#### Felder
+
+- `CmsContentSnapshot.id`
+  - Primärschlüssel (UUID).
+
+- `CmsContentSnapshot.kind`
+  - Quelle/Typ: `pages` oder `posts`.
+
+- `CmsContentSnapshot.slug`
+  - WordPress Slug (URL-Teil, z.B. `faq`).
+  - Unique zusammen mit `kind`.
+
+- `CmsContentSnapshot.title`
+  - Titel aus WordPress (`title.rendered`).
+
+- `CmsContentSnapshot.html`
+  - Gespeicherter HTML-Inhalt.
+  - Kann aus `content.rendered` kommen oder aus dem Fallback `link.<main|article|body>`.
+
+- `CmsContentSnapshot.excerpt`
+  - Optionaler Auszug aus WordPress (`excerpt.rendered`).
+
+- `CmsContentSnapshot.sourceUrl`
+  - Die WP-REST-URL, die beim Sync verwendet wurde.
+
+- `CmsContentSnapshot.link`
+  - Öffentliche URL der Seite/Posts (wichtig für den HTML-Fallback).
+
+- `CmsContentSnapshot.modifiedGmt`
+  - `modified_gmt` aus WordPress (String).
+
+- `CmsContentSnapshot.fetchedAt`
+  - Zeitpunkt des letzten erfolgreichen Fetch/Snapshots.
+
+- `CmsContentSnapshot.createdAt`, `CmsContentSnapshot.updatedAt`
+  - System-Timestamps.
+
 - `PackageDefinition.storageDurationDays`
   - Überschreibt Default Dauer, wenn gesetzt.
 

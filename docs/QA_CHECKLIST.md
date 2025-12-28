@@ -20,7 +20,15 @@ Diese Checklist ist zum schnellen „Abhaken“ gedacht. Details & Setup siehe `
 ### Login / Dashboard
 
 - [ ] Host kann sich einloggen
+- [ ] Login UI enthält "Passwort anzeigen" und "Passwort vergessen?"
+- [ ] `/register` redirectet auf `/login`
 - [ ] Dashboard lädt ohne Fehler
+
+### Admin (falls Account vorhanden)
+
+- [ ] Admin kann sich einloggen
+- [ ] Nach Login: Redirect auf `/admin/dashboard`
+- [ ] Direktaufruf `/admin/dashboard` bleibt erlaubt (kein Redirect zurück auf `/dashboard`)
 
 ### Storage-Lock Verhalten (gelocktes Event)
 

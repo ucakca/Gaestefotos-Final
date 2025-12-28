@@ -2,7 +2,7 @@
 
 **Version:** 2.0.0  
 **Status:** ✅ Produktionsbereit  
-**Letzte Aktualisierung:** 2025-12-06
+**Letzte Aktualisierung:** 2025-12-25
 
 ---
 
@@ -20,8 +20,11 @@
 - [Ops Runbooks](#ops-runbooks)
 - [Troubleshooting](#troubleshooting)
 
-## 📚 Kurze Doku-Links (empfohlen)
+## Kurze Doku-Links (empfohlen)
 
+- `docs/INDEX.md` (Start hier)
+- `docs/API_MAP.md` (Endpoints → Dateien)
+- `docs/GAP_ANALYSIS.md` (Spec → Status → Pfade)
 - `docs/FEATURES.md`
 - `docs/TEST_GUIDE.md`
 - `docs/DEPLOYMENT.md`
@@ -31,7 +34,7 @@
 
 ---
 
-## 🎯 Überblick
+## Überblick
 
 Gästefotos ist eine moderne, vollständig funktionsfähige Web-Anwendung für Event-Foto-Sharing. Die Plattform ermöglicht es Event-Organisatoren, Fotos von ihren Veranstaltungen zu sammeln, zu moderieren und mit Gästen zu teilen.
 
@@ -82,6 +85,15 @@ Gästefotos ist eine moderne, vollständig funktionsfähige Web-Anwendung für E
 - ✅ PostgreSQL Database
 - ✅ PWA mit Service Worker
 - ✅ Responsive Design
+
+### Auth / Login (kurz)
+
+- **Login** läuft über `POST /api/auth/login` und setzt ein httpOnly Cookie (`auth_token`).
+- **WordPress Login/Verifikation**: je nach Konfiguration wird das Passwort gegen WordPress verifiziert.
+- **Unicode/IDN Emails** werden unterstützt (z.B. `test@gästefotos.com`), indem Unicode- und Punycode-Varianten geprüft werden.
+- **Admin Flow**: Admins/Superadmins landen nach Login auf `/admin/dashboard`.
+- **Registrierung** ist in der UI deaktiviert; Backend-Register ist standardmäßig gesperrt (optional via `ALLOW_SELF_REGISTER=true`).
+- **Production Routing**: Frontend macht API Calls same-origin (Browser: `'/api'`), `NEXT_PUBLIC_API_URL` ist nur für Dev/E2E.
 
 ---
 
@@ -242,8 +254,8 @@ pnpm dev
 ```
 
 Die Anwendung ist jetzt verfügbar unter:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8001
+- Frontend: http://localhost:3002
+- Backend API: http://localhost:8002
 
 ---
 
@@ -253,11 +265,11 @@ Die Anwendung ist jetzt verfügbar unter:
 
 ```env
 # Server
-PORT=8001
+PORT=8002
 NODE_ENV=development
 
 # Frontend URL (für CORS)
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:3002
 
 # Database
 DATABASE_URL=postgresql://user:password@localhost:5432/gaestefotos_v2
@@ -288,8 +300,11 @@ Die Frontend-Konfiguration erfolgt über Umgebungsvariablen oder direkt im Code:
 
 ```env
 # .env.local
-NEXT_PUBLIC_API_URL=http://localhost:8001
+# Dev/E2E only:
+NEXT_PUBLIC_API_URL=http://localhost:8002
 ```
+
+In Produktion werden API Calls **same-origin** gemacht (Browser: relative `'/api'`).
 
 Siehe `EMAIL_SETUP.md` für detaillierte Email-Konfiguration.
 
@@ -359,7 +374,7 @@ pnpm build
 ### Base URL
 
 ```
-http://localhost:8001/api
+http://localhost:8002/api
 ```
 
 ### Authentifizierung
@@ -374,7 +389,7 @@ Authorization: Bearer <token>
 
 #### Authentication
 
-- `POST /api/auth/register` - Benutzer registrieren
+- `POST /api/auth/register` - Benutzer registrieren (standardmäßig deaktiviert; optional via `ALLOW_SELF_REGISTER=true`)
 - `POST /api/auth/login` - Einloggen
 - `GET /api/auth/me` - Aktueller Benutzer
 
@@ -442,6 +457,26 @@ pnpm build
 pnpm start
 ```
 
+### Produktion (systemd) – WICHTIGER Deploy-Ablauf
+
+In Produktion darf **niemals** ein `next build` / `pnpm build:prod` laufen, während `gaestefotos-frontend.service` bereits läuft.
+Sonst können gemischte/inkonsistente Next-Assets ausgeliefert werden (typisch: `ChunkLoadError` / 404 auf `/_next/static/*`, ggf. durch CDN-Cache verstärkt).
+
+Empfohlen: Deploy über Script (erzwingt die Reihenfolge):
+
+```bash
+bash ./scripts/deploy-frontend-prod.sh
+```
+
+```bash
+sudo systemctl stop gaestefotos-frontend.service
+
+cd packages/frontend
+pnpm build:prod
+
+sudo systemctl start gaestefotos-frontend.service
+```
+
 ### Mit PM2
 
 ```bash
@@ -476,13 +511,13 @@ CMD ["pnpm", "start"]
 
 1. Prüfe `.env` Datei
 2. Prüfe Datenbank-Verbindung
-3. Prüfe Port 8001 (nicht belegt)
+3. Prüfe Port 8002 (nicht belegt)
 4. Prüfe Logs: `/tmp/backend.log`
 
 ### Frontend startet nicht
 
-1. Prüfe Port 3000 (nicht belegt)
-2. Prüfe `NEXT_PUBLIC_API_URL`
+1. Prüfe Port 3002 (nicht belegt)
+2. In Produktion: API Calls sind same-origin (`/api`). In Dev/E2E kann `NEXT_PUBLIC_API_URL` genutzt werden.
 3. Prüfe Logs: `/tmp/frontend.log`
 
 ### Sharp Image Processing Fehler
