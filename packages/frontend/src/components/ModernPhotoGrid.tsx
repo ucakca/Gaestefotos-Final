@@ -11,6 +11,7 @@ import { buildApiUrl } from '@/lib/api';
 interface ModernPhotoGridProps {
   photos: Photo[];
   allowDownloads?: boolean;
+  allowComments?: boolean;
   eventSlug?: string;
   eventTitle?: string;
   eventId: string;
@@ -24,6 +25,7 @@ interface ModernPhotoGridProps {
 export default function ModernPhotoGrid({
   photos,
   allowDownloads = true,
+  allowComments = true,
   eventSlug,
   eventTitle = 'Event',
   eventId,
@@ -37,14 +39,28 @@ export default function ModernPhotoGrid({
   const [showUploadDisabled, setShowUploadDisabled] = useState(false);
   const [likedPhotos, setLikedPhotos] = useState<Set<string>>(new Set());
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [myReactions, setMyReactions] = useState<Record<string, string | null>>({});
+  const [reactionCounts, setReactionCounts] = useState<Record<string, Record<string, number>>>({});
+  const [customReactionInput, setCustomReactionInput] = useState('');
   const [comments, setComments] = useState<Record<string, any[]>>({});
   const [commentText, setCommentText] = useState('');
   const [authorName, setAuthorName] = useState('');
   const [loadingComments, setLoadingComments] = useState<Set<string>>(new Set());
   const [submittingComment, setSubmittingComment] = useState(false);
   const [commentNotice, setCommentNotice] = useState<string | null>(null);
+  const [commentError, setCommentError] = useState<string | null>(null);
 
   const downloadsEnabled = allowDownloads && !isStorageLocked;
+
+  const REACTIONS: Array<{ key: string; label: string }> = [
+    { key: 'heart', label: '❤️' },
+    { key: 'laugh', label: '😂' },
+    { key: 'wow', label: '😮' },
+    { key: 'fire', label: '🔥' },
+    { key: 'clap', label: '👏' },
+  ];
+
+  const REACTION_KEYS = new Set(REACTIONS.map((r) => r.key));
 
   const handleDownload = (photo: Photo) => {
     if (!downloadsEnabled) return;
@@ -89,14 +105,20 @@ export default function ModernPhotoGrid({
       if (liked) {
         setLikedPhotos((prev) => new Set(prev).add(photoId));
       }
+
+      const rt = typeof response.data?.reactionType === 'string' ? response.data.reactionType : null;
+      setMyReactions((prev) => ({ ...prev, [photoId]: rt }));
+      if (response.data?.reactionCounts && typeof response.data.reactionCounts === 'object') {
+        setReactionCounts((prev) => ({ ...prev, [photoId]: response.data.reactionCounts }));
+      }
     } catch (err) {
       console.error('Fehler beim Laden der Likes:', err);
     }
   };
 
-  const toggleLike = async (photoId: string) => {
+  const toggleLike = async (photoId: string, reactionType?: string) => {
     try {
-      const response = await api.post(`/photos/${photoId}/like`);
+      const response = await api.post(`/photos/${photoId}/like`, reactionType ? { reactionType } : undefined);
       setLikedPhotos((prev) => {
         const newSet = new Set(prev);
         if (response.data.liked) {
@@ -110,6 +132,17 @@ export default function ModernPhotoGrid({
         ...prev,
         [photoId]: response.data.likeCount || 0,
       }));
+
+      const rt = typeof response.data?.reactionType === 'string' ? response.data.reactionType : null;
+      setMyReactions((prev) => ({ ...prev, [photoId]: rt }));
+      if (response.data?.reactionCounts && typeof response.data.reactionCounts === 'object') {
+        setReactionCounts((prev) => ({ ...prev, [photoId]: response.data.reactionCounts }));
+      }
+
+      // Clear input if we just sent a custom emoji reaction.
+      if (reactionType && !REACTION_KEYS.has(reactionType)) {
+        setCustomReactionInput('');
+      }
     } catch (err) {
       console.error('Fehler beim Liken:', err);
     }
@@ -145,6 +178,7 @@ export default function ModernPhotoGrid({
 
     try {
       setSubmittingComment(true);
+      setCommentError(null);
       const response = await api.post(`/photos/${photoId}/comments`, {
         comment: commentText.trim(),
         authorName: authorName.trim(),
@@ -170,7 +204,7 @@ export default function ModernPhotoGrid({
       setAuthorName('');
     } catch (err: any) {
       console.error('Fehler beim Erstellen des Kommentars:', err);
-      alert(err.response?.data?.error || 'Fehler beim Erstellen des Kommentars');
+      setCommentError(err?.response?.data?.error || err?.message || 'Fehler beim Erstellen des Kommentars');
     } finally {
       setSubmittingComment(false);
     }
@@ -179,21 +213,42 @@ export default function ModernPhotoGrid({
   useEffect(() => {
     if (selectedPhoto !== null) {
       setCommentNotice(null);
+      setCommentError(null);
       const photo = photos[selectedPhoto];
       if (photo) {
         // Only load likes and comments for regular photos (not challenge or guestbook entries)
         // Challenge and guestbook entries have different ID formats (challenge-xxx, guestbook-xxx)
         // and may not have a valid photoId
-        const isRegularPhoto = !(photo as any).isChallengePhoto && !(photo as any).isGuestbookEntry;
-        const photoId = (photo as any).photoId || photo.id;
-        
-        if (isRegularPhoto && photoId && !photoId.startsWith('challenge-') && !photoId.startsWith('guestbook-')) {
-          loadLikeCount(photoId);
-          loadComments(photoId);
+        const isGuestbookEntry = !!(photo as any).isGuestbookEntry;
+        const isChallengePhoto = !!(photo as any).isChallengePhoto;
+        const underlyingPhotoId = (photo as any).photoId || photo.id;
+
+        // Likes/comments: allow regular photos, and challenge photos if they carry a real photoId.
+        // Never allow guestbook items (they are a different entity).
+        if (!isGuestbookEntry && underlyingPhotoId && typeof underlyingPhotoId === 'string') {
+          const isFake = underlyingPhotoId.startsWith('challenge-') || underlyingPhotoId.startsWith('guestbook-');
+          if (!isFake) {
+            loadLikeCount(underlyingPhotoId);
+            if (allowComments && !isChallengePhoto) {
+              loadComments(underlyingPhotoId);
+            } else if (allowComments && isChallengePhoto) {
+              // For challenge photos, comments are optional; enable later if needed.
+            }
+          }
         }
       }
     }
-  }, [selectedPhoto]);
+  }, [allowComments, selectedPhoto]);
+
+  const getUnderlyingPhotoId = (photo: Photo | undefined | null): string | null => {
+    if (!photo) return null;
+    const isGuestbookEntry = !!(photo as any).isGuestbookEntry;
+    if (isGuestbookEntry) return null;
+    const id = (photo as any).photoId || photo.id;
+    if (!id || typeof id !== 'string') return null;
+    if (id.startsWith('challenge-') || id.startsWith('guestbook-')) return null;
+    return id;
+  };
 
   const openPost = (index: number) => {
     if (isStorageLocked) {
@@ -611,19 +666,22 @@ export default function ModernPhotoGrid({
                   <div className="flex items-center gap-4 mb-3">
                     <motion.button
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => toggleLike(photos[selectedPhoto]?.id || '')}
+                      onClick={() => {
+                        const id = getUnderlyingPhotoId(photos[selectedPhoto]);
+                        if (id) toggleLike(id, 'heart');
+                      }}
                       className="p-1 flex items-center gap-2"
                     >
                       <Heart
                         className={`w-6 h-6 ${
-                          likedPhotos.has(photos[selectedPhoto]?.id || '')
+                          likedPhotos.has(getUnderlyingPhotoId(photos[selectedPhoto]) || '')
                             ? 'fill-red-500 text-red-500'
                             : 'text-gray-900'
                         }`}
                       />
-                      {likeCounts[photos[selectedPhoto]?.id || ''] > 0 && (
+                      {likeCounts[getUnderlyingPhotoId(photos[selectedPhoto]) || ''] > 0 && (
                         <span className="text-sm font-medium text-gray-900">
-                          {likeCounts[photos[selectedPhoto]?.id || '']}
+                          {likeCounts[getUnderlyingPhotoId(photos[selectedPhoto]) || '']}
                         </span>
                       )}
                     </motion.button>
@@ -646,27 +704,105 @@ export default function ModernPhotoGrid({
                   </div>
                   
                   {/* Like Count */}
-                  {likeCounts[photos[selectedPhoto]?.id || ''] > 0 && (
+                  {likeCounts[getUnderlyingPhotoId(photos[selectedPhoto]) || ''] > 0 && (
                     <div className="text-sm font-semibold text-gray-900 mb-3">
-                      {likeCounts[photos[selectedPhoto]?.id || '']} {likeCounts[photos[selectedPhoto]?.id || ''] === 1 ? 'Like' : 'Likes'}
+                      {likeCounts[getUnderlyingPhotoId(photos[selectedPhoto]) || '']} {likeCounts[getUnderlyingPhotoId(photos[selectedPhoto]) || ''] === 1 ? 'Like' : 'Likes'}
                     </div>
                   )}
+
+                  {(() => {
+                    const pid = getUnderlyingPhotoId(photos[selectedPhoto]);
+                    if (!pid) return null;
+                    const counts = reactionCounts[pid];
+                    const hasCounts = counts && Object.keys(counts).length > 0;
+                    if (!hasCounts) return null;
+
+                    const customEntries = Object.entries(counts)
+                      .filter(([key]) => !REACTION_KEYS.has(key))
+                      .sort((a, b) => (b[1] || 0) - (a[1] || 0))
+                      .slice(0, 12);
+
+                    return (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {REACTIONS.map((r) => {
+                          const c = counts?.[r.key] || 0;
+                          const active = myReactions[pid] === r.key;
+                          return (
+                            <button
+                              key={r.key}
+                              type="button"
+                              onClick={() => toggleLike(pid, r.key)}
+                              className={`px-2 py-1 rounded-full border text-sm ${
+                                active ? 'border-gray-900 bg-gray-50' : 'border-gray-200 bg-white'
+                              }`}
+                            >
+                              <span className="mr-1">{r.label}</span>
+                              {c > 0 ? <span className="text-gray-700">{c}</span> : <span className="text-gray-400">0</span>}
+                            </button>
+                          );
+                        })}
+
+                        {customEntries.map(([key, c]) => {
+                          const active = myReactions[pid] === key;
+                          return (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() => toggleLike(pid, key)}
+                              className={`px-2 py-1 rounded-full border text-sm ${
+                                active ? 'border-gray-900 bg-gray-50' : 'border-gray-200 bg-white'
+                              }`}
+                            >
+                              <span className="mr-1">{key}</span>
+                              {c > 0 ? <span className="text-gray-700">{c}</span> : <span className="text-gray-400">0</span>}
+                            </button>
+                          );
+                        })}
+
+                        <div className="flex items-center gap-2">
+                          <input
+                            value={customReactionInput}
+                            onChange={(e) => setCustomReactionInput(e.target.value)}
+                            placeholder="Emoji…"
+                            className="px-2 py-1 border border-gray-200 rounded-full text-sm w-24"
+                            inputMode="text"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const v = customReactionInput.trim();
+                              if (!v) return;
+                              void toggleLike(pid, v);
+                            }}
+                            className="px-2 py-1 rounded-full border border-gray-200 bg-white text-sm"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Comments Section */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
-                  {loadingComments.has(photos[selectedPhoto]?.id || '') ? (
+                  {!allowComments ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Kommentare sind deaktiviert</p>
+                    </div>
+                  ) : loadingComments.has(getUnderlyingPhotoId(photos[selectedPhoto]) || '') ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
                     </div>
-                  ) : (comments[photos[selectedPhoto]?.id || ''] || []).length === 0 ? (
+                  ) : (comments[getUnderlyingPhotoId(photos[selectedPhoto]) || ''] || []).length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
                       <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
                       <p className="text-sm">Noch keine Kommentare</p>
                       <p className="text-xs mt-1 opacity-70">Sei der Erste, der kommentiert!</p>
                     </div>
                   ) : (
-                    (comments[photos[selectedPhoto]?.id || ''] || []).map((comment: any) => (
+                    (comments[getUnderlyingPhotoId(photos[selectedPhoto]) || ''] || []).map((comment: any) => (
                       <div key={comment.id} className="flex items-start gap-3">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center flex-shrink-0">
                           <User className="w-4 h-4 text-white" />
@@ -700,13 +836,18 @@ export default function ModernPhotoGrid({
                         {commentNotice}
                       </div>
                     )}
+                    {commentError && (
+                      <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                        {commentError}
+                      </div>
+                    )}
                     <input
                       type="text"
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
                       placeholder="Dein Name"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm"
-                      disabled={submittingComment}
+                      disabled={submittingComment || !allowComments}
                       maxLength={100}
                     />
                     <div className="flex gap-2">
@@ -716,19 +857,29 @@ export default function ModernPhotoGrid({
                         onChange={(e) => setCommentText(e.target.value)}
                         placeholder="Schreibe einen Kommentar..."
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm"
-                        disabled={submittingComment}
+                        disabled={submittingComment || !allowComments}
                         maxLength={1000}
                         onKeyPress={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
-                            submitComment(photos[selectedPhoto]?.id || '');
+                            const id = getUnderlyingPhotoId(photos[selectedPhoto]);
+                            if (id) submitComment(id);
                           }
                         }}
                       />
                       <motion.button
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => submitComment(photos[selectedPhoto]?.id || '')}
-                        disabled={submittingComment || !commentText.trim() || !authorName.trim()}
+                        onClick={() => {
+                          const id = getUnderlyingPhotoId(photos[selectedPhoto]);
+                          if (id) submitComment(id);
+                        }}
+                        disabled={
+                          !allowComments ||
+                          submittingComment ||
+                          !commentText.trim() ||
+                          !authorName.trim() ||
+                          !getUnderlyingPhotoId(photos[selectedPhoto])
+                        }
                         className="px-4 py-2 bg-black text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {submittingComment ? (

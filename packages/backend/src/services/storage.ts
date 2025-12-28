@@ -1,13 +1,36 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import crypto from 'crypto';
+import path from 'path';
 import { Readable } from 'stream';
 
 // SeaweedFS S3 API Configuration
 const SEAWEEDFS_ENDPOINT = process.env.SEAWEEDFS_ENDPOINT || 'localhost:8333';
 const SEAWEEDFS_SECURE = process.env.SEAWEEDFS_SECURE === 'true';
-const SEAWEEDFS_ACCESS_KEY = process.env.SEAWEEDFS_ACCESS_KEY || 'admin';
-const SEAWEEDFS_SECRET_KEY = process.env.SEAWEEDFS_SECRET_KEY || 'password';
+const IS_PROD = process.env.NODE_ENV === 'production';
+const SEAWEEDFS_ACCESS_KEY = process.env.SEAWEEDFS_ACCESS_KEY || (IS_PROD ? '' : 'admin');
+const SEAWEEDFS_SECRET_KEY = process.env.SEAWEEDFS_SECRET_KEY || (IS_PROD ? '' : 'password');
 const BUCKET = process.env.SEAWEEDFS_BUCKET || 'gaestefotos-v2';
+
+if (IS_PROD && (!process.env.SEAWEEDFS_ACCESS_KEY || !process.env.SEAWEEDFS_SECRET_KEY)) {
+  throw new Error('Server misconfigured: SEAWEEDFS_ACCESS_KEY/SEAWEEDFS_SECRET_KEY must be set in production');
+}
+
+function sanitizeFilename(original: string): { base: string; ext: string } {
+  const trimmed = String(original || '').trim();
+  const baseName = path.basename(trimmed || 'file');
+  const ext = path.extname(baseName).toLowerCase();
+  const rawBase = ext ? baseName.slice(0, -ext.length) : baseName;
+
+  const safeBase = rawBase
+    .replace(/[^a-zA-Z0-9._-]+/g, '-')
+    .replace(/[-_]{2,}/g, '-')
+    .replace(/^[-_.]+|[-_.]+$/g, '')
+    .slice(0, 80);
+
+  const safeExt = ext && /^[.][a-z0-9]{1,10}$/.test(ext) ? ext : '';
+  return { base: safeBase || 'file', ext: safeExt };
+}
 
 const s3Client = new S3Client({
   endpoint: `http${SEAWEEDFS_SECURE ? 's' : ''}://${SEAWEEDFS_ENDPOINT}`,
@@ -29,7 +52,11 @@ export class StorageService {
     _uploadedBy?: string,
     _hostId?: string
   ): Promise<string> {
-    const key = `events/${eventId}/${Date.now()}-${filename}`;
+    const { base, ext } = sanitizeFilename(filename);
+    const nonce = typeof (crypto as any).randomUUID === 'function'
+      ? (crypto as any).randomUUID()
+      : crypto.randomBytes(16).toString('hex');
+    const key = `events/${eventId}/${Date.now()}-${nonce}-${base}${ext}`;
 
     const command = new PutObjectCommand({
       Bucket: BUCKET,

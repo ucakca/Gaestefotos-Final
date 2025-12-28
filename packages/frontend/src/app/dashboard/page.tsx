@@ -60,6 +60,15 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="flex gap-4 items-center">
+              <a
+                href="https://xn--gstefotos-v2a.com/faq/"
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-2 rounded-md border font-medium transition-colors"
+                style={{ borderColor: '#EAA48F', color: '#295B4D' }}
+              >
+                FAQ
+              </a>
               <Link
                 href="/moderation"
                 className="px-4 py-2 rounded-md text-white font-medium transition-colors"

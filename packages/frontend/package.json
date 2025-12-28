@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:prod": "bash ../../scripts/ensure-frontend-service-stopped.sh && next build",
     "start": "next start",
     "lint": "next lint --max-warnings=10000",
     "type-check": "tsc --noEmit"
@@ -14,18 +15,19 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "@gaestefotos/shared": "workspace:*",
+    "date-fns": "^3.6.0",
     "framer-motion": "^10.16.0",
     "zustand": "^4.4.7",
+    "next-intl": "^3.26.2",
     "react-hook-form": "^7.48.2",
     "@tanstack/react-query": "^5.12.2",
     "axios": "^1.6.2",
     "socket.io-client": "^4.6.0",
     "lucide-react": "^0.294.0",
+    "react-datepicker": "^7.6.0",
     "react-dropzone": "^14.2.3",
     "zod": "^3.22.4",
-    "qrcode.react": "^3.1.0",
-    "socket.io-client": "^4.6.0",
-    "react-dropzone": "^14.2.3"
+    "qrcode.react": "^3.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

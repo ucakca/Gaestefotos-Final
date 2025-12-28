@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import prisma from '../config/database';
 
 interface EmailConfig {
   host: string;
@@ -10,8 +11,83 @@ interface EmailConfig {
 }
 
 class EmailService {
-  private transporter: nodemailer.Transporter | null = null;
+  private transporter: any = null;
   private config: EmailConfig | null = null;
+
+  private escapeHtml(value: any): string {
+    const s = value === null || value === undefined ? '' : String(value);
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  renderTemplate(input: {
+    subject: string;
+    html?: string | null;
+    text?: string | null;
+    variables: Record<string, any>;
+  }): { subject: string; html?: string; text?: string } {
+    const replace = (tpl: string, mode: 'html' | 'text' | 'subject'): string => {
+      return tpl.replace(/\{\{\s*([a-zA-Z0-9_\.]+)\s*\}\}/g, (_m, key) => {
+        const parts = String(key).split('.');
+        let cur: any = input.variables;
+        for (const p of parts) {
+          if (cur && typeof cur === 'object' && p in cur) cur = cur[p];
+          else return '';
+        }
+
+        if (mode === 'html') {
+          return this.escapeHtml(cur);
+        }
+        return cur === null || cur === undefined ? '' : String(cur);
+      });
+    };
+
+    const subject = replace(input.subject, 'subject');
+    const html = input.html ? replace(input.html, 'html') : undefined;
+    const text = input.text ? replace(input.text, 'text') : undefined;
+    return { subject, html, text };
+  }
+
+  async sendTemplatedEmail(options: {
+    to: string;
+    template: { subject: string; html?: string | null; text?: string | null };
+    variables: Record<string, any>;
+  }) {
+    if (!this.transporter || !this.config) {
+      throw new Error('Email-Service nicht konfiguriert');
+    }
+
+    const rendered = this.renderTemplate({
+      subject: options.template.subject,
+      html: options.template.html,
+      text: options.template.text,
+      variables: options.variables,
+    });
+
+    await this.transporter.sendMail({
+      from: this.config.from,
+      to: options.to,
+      subject: rendered.subject,
+      html: rendered.html,
+      text: rendered.text,
+    });
+  }
+
+  private async getActiveTemplate(kind: 'INVITATION' | 'STORAGE_ENDS_REMINDER' | 'PHOTO_NOTIFICATION') {
+    try {
+      const tpl = await (prisma as any).emailTemplate.findFirst({
+        where: { kind, isActive: true },
+        orderBy: { updatedAt: 'desc' },
+      });
+      return tpl || null;
+    } catch {
+      return null;
+    }
+  }
 
   async configure(config: EmailConfig) {
     this.config = config;
@@ -41,6 +117,25 @@ class EmailService {
     const inviteFragment = options.inviteToken ? `#invite=${encodeURIComponent(options.inviteToken)}` : '';
     const eventUrl = `${baseUrl}/e2/${options.eventSlug}/invitation${inviteFragment}`;
 
+    const tpl = await this.getActiveTemplate('INVITATION');
+    if (tpl) {
+      await this.sendTemplatedEmail({
+        to: options.to,
+        template: { subject: tpl.subject, html: tpl.html, text: tpl.text },
+        variables: {
+          eventTitle: options.eventTitle,
+          eventSlug: options.eventSlug,
+          guestName: options.guestName,
+          eventUrl,
+        },
+      });
+      return;
+    }
+
+    const safeEventTitle = this.escapeHtml(options.eventTitle);
+    const safeGuestName = this.escapeHtml(options.guestName);
+    const safeEventUrl = this.escapeHtml(eventUrl);
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -58,17 +153,17 @@ class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <h1>${options.eventTitle}</h1>
+              <h1>${safeEventTitle}</h1>
             </div>
             <div class="content">
-              <p>Hallo ${options.guestName},</p>
-              <p>Du bist herzlich eingeladen zu unserem Event: <strong>${options.eventTitle}</strong></p>
+              <p>Hallo ${safeGuestName},</p>
+              <p>Du bist herzlich eingeladen zu unserem Event: <strong>${safeEventTitle}</strong></p>
               <p>Klicke auf den Button unten, um zur Event-Seite zu gelangen und deine Teilnahme zu bestätigen:</p>
               <p style="text-align: center;">
-                <a href="${eventUrl}" class="button">Zur Event-Seite</a>
+                <a href="${safeEventUrl}" class="button">Zur Event-Seite</a>
               </p>
               <p>Oder kopiere diesen Link in deinen Browser:</p>
-              <p style="word-break: break-all; color: #295B4D;">${eventUrl}</p>
+              <p style="word-break: break-all; color: #295B4D;">${safeEventUrl}</p>
             </div>
             <div class="footer">
               <p>Diese Einladung wurde von Gästefotos versendet.</p>
@@ -113,6 +208,21 @@ Viele Grüße
       ? `Dein${options.photoCount > 1 ? 'e' : ''} Foto${options.photoCount > 1 ? 's' : ''} wurde${options.photoCount === 1 ? '' : 'n'} freigegeben!`
       : `Dein${options.photoCount > 1 ? 'e' : ''} Foto${options.photoCount > 1 ? 's' : ''} wurde${options.photoCount === 1 ? '' : 'n'} abgelehnt.`;
 
+    const tpl = await this.getActiveTemplate('PHOTO_NOTIFICATION');
+    if (tpl) {
+      await this.sendTemplatedEmail({
+        to: options.to,
+        template: { subject: tpl.subject, html: tpl.html, text: tpl.text },
+        variables: {
+          eventTitle: options.eventTitle,
+          photoCount: options.photoCount,
+          status: options.status,
+          message,
+        },
+      });
+      return;
+    }
+
     await this.transporter.sendMail({
       from: this.config.from,
       to: options.to,
@@ -144,6 +254,30 @@ Viele Grüße
 
     const subjectPrefix = options.daysBefore === 1 ? 'Morgen' : `In ${options.daysBefore} Tagen`;
 
+    const tpl = await this.getActiveTemplate('STORAGE_ENDS_REMINDER');
+    if (tpl) {
+      await this.sendTemplatedEmail({
+        to: options.to,
+        template: { subject: tpl.subject, html: tpl.html, text: tpl.text },
+        variables: {
+          hostName: options.hostName,
+          eventTitle: options.eventTitle,
+          eventId: options.eventId,
+          storageEndsAt: endsAtText,
+          daysBefore: options.daysBefore,
+          subjectPrefix,
+          dashboardUrl,
+        },
+      });
+      return;
+    }
+
+    const safeEventTitle = this.escapeHtml(options.eventTitle);
+    const safeHostName = this.escapeHtml(options.hostName);
+    const safeSubjectPrefix = this.escapeHtml(subjectPrefix);
+    const safeEndsAtText = this.escapeHtml(endsAtText);
+    const safeDashboardUrl = this.escapeHtml(dashboardUrl);
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -161,18 +295,18 @@ Viele Grüße
         <body>
           <div class="container">
             <div class="header">
-              <h1>${options.eventTitle}</h1>
+              <h1>${safeEventTitle}</h1>
             </div>
             <div class="content">
-              <p>Hallo ${options.hostName},</p>
-              <p><strong>${subjectPrefix}</strong> endet die Speicherperiode für dein Event <strong>${options.eventTitle}</strong>.</p>
-              <p>Speicherende: <strong>${endsAtText}</strong></p>
+              <p>Hallo ${safeHostName},</p>
+              <p><strong>${safeSubjectPrefix}</strong> endet die Speicherperiode für dein Event <strong>${safeEventTitle}</strong>.</p>
+              <p>Speicherende: <strong>${safeEndsAtText}</strong></p>
               <p>Du kannst deine Fotos und Videos im Dashboard herunterladen, solange die Speicherperiode aktiv ist.</p>
               <p style="text-align: center;">
-                <a href="${dashboardUrl}" class="button">Zum Dashboard</a>
+                <a href="${safeDashboardUrl}" class="button">Zum Dashboard</a>
               </p>
               <p>Oder kopiere diesen Link in deinen Browser:</p>
-              <p style="word-break: break-all; color: #295B4D;">${dashboardUrl}</p>
+              <p style="word-break: break-all; color: #295B4D;">${safeDashboardUrl}</p>
             </div>
             <div class="footer">
               <p>Diese Erinnerung wurde von Gästefotos versendet.</p>

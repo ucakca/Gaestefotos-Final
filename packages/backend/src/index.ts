@@ -7,10 +7,9 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import crypto from 'crypto';
 import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
-import { toASCII } from 'node:punycode';
+import { domainToASCII } from 'node:url';
 
 import authRoutes from './routes/auth';
 import eventRoutes from './routes/events';
@@ -31,6 +30,14 @@ import videoRoutes from './routes/videos';
 import packageDefinitionsRoutes from './routes/packageDefinitions';
 import invitationRoutes from './routes/invitations';
 import woocommerceWebhooksRoutes from './routes/woocommerceWebhooks';
+import adminWooWebhooksRoutes from './routes/adminWooWebhooks';
+import adminApiKeysRoutes from './routes/adminApiKeys';
+import adminInvoicesRoutes from './routes/adminInvoices';
+import adminEmailTemplatesRoutes from './routes/adminEmailTemplates';
+import adminCmsSyncRoutes from './routes/adminCmsSync';
+import cmsPublicRoutes from './routes/cmsPublic';
+import maintenanceRoutes from './routes/maintenance';
+import adminMaintenanceRoutes from './routes/adminMaintenance';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -41,6 +48,7 @@ import { startOrphanCleanupWorker } from './services/orphanCleanup';
 import { startStorageReminderWorker } from './services/storageReminder';
 import prisma from './config/database';
 import { hasEventAccess } from './middleware/auth';
+import { maintenanceModeMiddleware } from './middleware/maintenanceMode';
 
 dotenv.config();
 const envFile = process.env.ENV_FILE;
@@ -62,28 +70,28 @@ if (process.env.SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     environment: process.env.NODE_ENV || 'development',
-    integrations: [
-      nodeProfilingIntegration(),
-    ],
-    tracesSampleRate: 1.0,
-    profilesSampleRate: 1.0,
+    tracesSampleRate: 0,
   });
   logger.info('Sentry initialized for error tracking');
 }
 
 // CORS Configuration - Must be defined before use
 const allowedOrigins = process.env.FRONTEND_URL?.split(',').map(url => url.trim()) || [
-  'http://localhost:3000',
-  'http://app.xn--gstefotos-v2a.com',
-  'https://app.xn--gstefotos-v2a.com',
-  // NOTE: avoid unicode hostnames here to prevent mojibake in response headers.
-  // The unicode domain is still allowed via alwaysAllow regex below.
+  'http://localhost:3002',
+];
+
+const CANONICAL_APP_HOST_UNICODE = 'app.gästefotos.com';
+const CANONICAL_WP_HOST_UNICODE = 'gästefotos.com';
+
+const canonicalAppOriginsAscii = [
+  `https://${domainToASCII(CANONICAL_APP_HOST_UNICODE)}`,
+  `http://${domainToASCII(CANONICAL_APP_HOST_UNICODE)}`,
 ];
 
 const toAsciiOrigin = (origin: string): string => {
   try {
     const u = new URL(origin);
-    const asciiHost = toASCII(u.hostname);
+    const asciiHost = domainToASCII(u.hostname);
     return `${u.protocol}//${asciiHost}${u.port ? `:${u.port}` : ''}`;
   } catch {
     return origin;
@@ -108,15 +116,18 @@ const allowedOriginsForHeaders = Array.from(
 );
 
 // Always include canonical ASCII production origins in CSP.
-const cspConnectSrc = Array.from(
-  new Set([
-    "'self'",
-    ...allowedOriginsForHeaders,
-    'https://app.xn--gstefotos-v2a.com',
-    'http://app.xn--gstefotos-v2a.com',
-    'https://ws.xn--gstefotos-v2a.com',
-  ])
-);
+const cspConnectSrc =
+  process.env.NODE_ENV === 'production'
+    ? ["'self'"]
+    : Array.from(
+        new Set([
+          "'self'",
+          ...allowedOriginsForHeaders,
+          ...canonicalAppOriginsAscii,
+        ])
+      );
+
+const STARTED_AT = new Date().toISOString();
 
 const app = express();
 
@@ -137,7 +148,8 @@ const io = new Server(httpServer, {
   path: '/socket.io', // Explizit path setzen, damit Client und Server übereinstimmen
 });
 
-const PORT = process.env.PORT || 8001;
+const PORT = process.env.PORT || 8002;
+const IS_PROD = process.env.NODE_ENV === 'production';
 
 // Security middleware - must be before other middleware
 app.use(helmet({
@@ -145,7 +157,9 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Next.js benötigt unsafe-inline und unsafe-eval
+      scriptSrc: IS_PROD
+        ? ["'self'", "'unsafe-inline'"]
+        : ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       scriptSrcElem: ["'self'", "'unsafe-inline'"], // Separate directive für script elements
       imgSrc: ["'self'", "data:", "https:", "http:"],
       // Keep connect-src ASCII-only to avoid broken header encoding; 'self' covers same-origin API calls.
@@ -158,14 +172,48 @@ app.use(helmet({
 // Sanitize input to prevent NoSQL injection
 app.use(mongoSanitize());
 
+app.use((req, res, next) => {
+  const incoming = req.get('x-request-id');
+  const requestId = (typeof incoming === 'string' && incoming.trim())
+    ? incoming.trim().slice(0, 128)
+    : (typeof (crypto as any).randomUUID === 'function'
+        ? (crypto as any).randomUUID()
+        : crypto.randomBytes(16).toString('hex'));
+
+  (req as any).requestId = requestId;
+  res.setHeader('X-Request-Id', requestId);
+
+  if (process.env.SENTRY_DSN) {
+    try {
+      (Sentry as any).getCurrentScope?.()?.setTag?.('requestId', requestId);
+      (Sentry as any).getCurrentScope?.()?.setContext?.('request', {
+        id: requestId,
+        method: req.method,
+        path: req.path,
+      });
+    } catch {
+      // ignore
+    }
+  }
+
+  next();
+});
+
 // Request logging
 app.use((req, res, next) => {
-  const secret = process.env.IP_HASH_SECRET || process.env.JWT_SECRET || 'default';
-  const ipHash = crypto.createHash('sha256').update(`${req.ip || 'unknown'}|${secret}`).digest('hex');
+  const isProd = process.env.NODE_ENV === 'production';
+  const secret = process.env.IP_HASH_SECRET || process.env.JWT_SECRET || '';
+  if (isProd && !secret) {
+    throw new Error('Server misconfigured: IP_HASH_SECRET (or at least JWT_SECRET) must be set in production');
+  }
+
+  const effectiveSecret = secret || 'dev-ip-hash-secret';
+  const ipHash = crypto.createHash('sha256').update(`${req.ip || 'unknown'}|${effectiveSecret}`).digest('hex');
   const userAgent = req.get('user-agent');
 
   logger.info(`${req.method} ${req.path}`, {
     ip: ipHash,
+    requestId: (req as any).requestId,
     userAgent: process.env.NODE_ENV === 'production' ? undefined : userAgent,
   });
   next();
@@ -185,14 +233,15 @@ app.use(cors({
     // Always allow our known app domains even if FRONTEND_URL is misconfigured.
     // This prevents accidental lockouts (e.g. login) when the browser sends an Origin header.
     const alwaysAllow = [
-      /^https?:\/\/app\.(xn--gstefotos-v2a\.com|gästefotos\.com)$/i,
+      new RegExp(`^https?:\/\/${domainToASCII(CANONICAL_APP_HOST_UNICODE).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
+      /^https?:\/\/app\.gästefotos\.com$/i,
     ];
     if (alwaysAllow.some((re) => re.test(origin))) {
       return callback(null, true);
     }
 
     // Dev/E2E: allow any localhost origin regardless of port.
-    // This avoids CORS issues when the frontend runs on 3000/3001/3002/... while backend is on 8001.
+    // This avoids CORS issues when the frontend runs on 3000/3001/3002/... while backend is on 8002.
     if (process.env.NODE_ENV !== 'production') {
       if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
         return callback(null, true);
@@ -204,18 +253,6 @@ app.use(cors({
       return callback(null, true);
     }
 
-    // Also check Punycode variants (legacy)
-    const punycodeVariants = new Set([
-      origin.replace('app.gästefotos.com', 'app.xn--gstefotos-v2a.com'),
-      origin.replace('app.xn--gstefotos-v2a.com', 'app.gästefotos.com'),
-    ]);
-
-    for (const candidate of punycodeVariants) {
-      if (allowedOrigins.includes(candidate)) {
-        return callback(null, true);
-      }
-    }
-
     console.warn(`[CORS] Blocked origin: ${origin}`);
     // IMPORTANT: do not throw here; deny via CORS without crashing the process
     return callback(null, false);
@@ -225,12 +262,56 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposedHeaders: ['Authorization'],
 }));
+
+app.use((req, res, next) => {
+  const method = (req.method || 'GET').toUpperCase();
+  const isSafeMethod = method === 'GET' || method === 'HEAD' || method === 'OPTIONS';
+  if (isSafeMethod) return next();
+
+  const authHeader = req.headers.authorization;
+  if (typeof authHeader === 'string' && authHeader.trim()) {
+    return next();
+  }
+
+  const cookieHeader = req.headers.cookie || '';
+  const usesAuthCookie = typeof cookieHeader === 'string' && (cookieHeader.includes('auth_token=') || cookieHeader.includes('event_access_'));
+  if (!usesAuthCookie) {
+    return next();
+  }
+
+  const origin = req.get('origin');
+  const referer = req.get('referer');
+
+  const originFromReferer = (() => {
+    if (!referer) return null;
+    try {
+      return new URL(referer).origin;
+    } catch {
+      return null;
+    }
+  })();
+
+  const effectiveOrigin = origin || originFromReferer;
+  if (!effectiveOrigin) {
+    return next();
+  }
+
+  if (allowedOrigins.includes(effectiveOrigin)) {
+    return next();
+  }
+
+  return res.status(403).json({ error: 'Forbidden: CSRF protection' });
+});
+
 app.use(express.json({
   verify: (req: any, _res, buf) => {
     req.rawBody = buf;
   },
 }));
 app.use(express.urlencoded({ extended: true }));
+
+// Maintenance mode gate (must be after request parsing, before routes)
+app.use(maintenanceModeMiddleware);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -239,6 +320,15 @@ app.get('/health', (req, res) => {
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'healthy', version: '2.0.0' });
+});
+
+app.get('/api/version', (_req, res) => {
+  res.json({
+    service: 'backend',
+    version: '2.0.0',
+    nodeEnv: process.env.NODE_ENV || 'unknown',
+    startedAt: STARTED_AT,
+  });
 });
 
 // API Root endpoint
@@ -307,7 +397,7 @@ const swaggerOptions = {
         description: 'Development server',
       },
       {
-        url: 'https://app.xn--gstefotos-v2a.com',
+        url: `https://${CANONICAL_APP_HOST_UNICODE}`,
         description: 'Production server',
       },
     ],
@@ -330,6 +420,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // API Routes with rate limiting
 // Note: authLimiter is applied per-route in auth.ts for more granular control
 app.use('/api/auth', authRoutes);
+app.use('/api', maintenanceRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/events', guestRoutes);
 app.use('/api/events', photoRoutes); // Photo routes: /api/events/:eventId/photos/*
@@ -354,6 +445,13 @@ app.use('/api/events', videoRoutes); // Videos: /api/events/:eventId/videos
 app.use('/api/videos', videoRoutes); // Video files: /api/videos/:eventId/file/*
 app.use('/api', invitationRoutes);
 app.use('/api/admin/package-definitions', packageDefinitionsRoutes);
+app.use('/api/admin/webhooks/woocommerce', adminWooWebhooksRoutes);
+app.use('/api/admin/api-keys', adminApiKeysRoutes);
+app.use('/api/admin/invoices', adminInvoicesRoutes);
+app.use('/api/admin/email-templates', adminEmailTemplatesRoutes);
+app.use('/api/admin/cms', adminCmsSyncRoutes);
+app.use('/api/cms', cmsPublicRoutes);
+app.use('/api/admin/maintenance', adminMaintenanceRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
 
 // Sentry error handler (must be after routes, before error handlers)
@@ -362,6 +460,22 @@ app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   logger.error('Unhandled error', { error: err.message, stack: err.stack });
+  if (process.env.SENTRY_DSN) {
+    try {
+      Sentry.withScope((scope) => {
+        const requestId = (req as any).requestId;
+        if (requestId) scope.setTag('requestId', String(requestId));
+        scope.setContext('request', {
+          id: requestId,
+          method: req.method,
+          path: req.path,
+        });
+        Sentry.captureException(err);
+      });
+    } catch {
+      // ignore
+    }
+  }
   res.status(err.status || 500).json({
     error: process.env.NODE_ENV === 'production' 
       ? 'Interner Serverfehler' 

@@ -49,6 +49,13 @@ async function verifyJwtHs256(token: string, secret: string): Promise<any | null
 }
 
 export async function middleware(request: NextRequest) {
+  // We do not use Next.js Server Actions in this app.
+  // Some clients/proxies can send Server Action requests which then cause noisy Next errors
+  // (e.g. "Failed to find Server Action" and follow-up digest errors). Block them early.
+  if (request.method === 'POST' && request.headers.get('next-action')) {
+    return new NextResponse('Bad Request', { status: 400 });
+  }
+
   // Public routes that don't require authentication
   const publicRoutes = ['/login', '/e', '/e2', '/i', '/s', '/s2'];
   
@@ -76,7 +83,7 @@ export async function middleware(request: NextRequest) {
     }
 
     const role = String(payload?.role || '').toUpperCase();
-    if (role !== 'ADMIN') {
+    if (role !== 'ADMIN' && role !== 'SUPERADMIN') {
       const url = request.nextUrl.clone();
       url.pathname = '/dashboard';
       return NextResponse.redirect(url);

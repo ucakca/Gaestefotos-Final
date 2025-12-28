@@ -234,7 +234,7 @@ WordPress Verify (direct):
 EMAIL="<wp_email_or_username>"
 PASS="<wp_password>"
 
-curl -sS -X POST "https://xn--gstefotos-v2a.com/wp-json/gaestefotos/v1/verify-password" \
+curl -sS -X POST "https://gästefotos.com/wp-json/gaestefotos/v1/verify-password" \
   -H "Content-Type: application/json" \
   --data "{\"email\":\"$EMAIL\",\"password\":\"$PASS\"}"
 ```

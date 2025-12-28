@@ -279,6 +279,12 @@ export default function UploadButton({
 
               <h2 className="text-xl font-semibold mb-6">Foto/Video hochladen</h2>
 
+              {disabled && disabledReason && (
+                <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  {disabledReason}
+                </div>
+              )}
+
               {/* Uploader Name - Auffällig als Pflichtfeld */}
               <div className="mb-4">
                 <motion.div

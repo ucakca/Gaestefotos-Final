@@ -1316,6 +1316,24 @@ export default function EventDashboardPage() {
 
           {/* Gäste Section */}
           <div className="space-y-2">
+            <Link href={`/events/${eventId}/qr-styler`}>
+              <motion.div
+                whileTap={{ scale: 0.98 }}
+                className="bg-gray-50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#295B4D]/10 rounded-full flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-[#295B4D]" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">QR‑Aufsteller</p>
+                    <p className="text-xs text-gray-500">Vorlagen gestalten und herunterladen</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </motion.div>
+            </Link>
+
             {/* Gäste Link */}
             {featuresConfig.showGuestlist === false ? (
               <div className="bg-gray-50 rounded-xl p-4 opacity-50">

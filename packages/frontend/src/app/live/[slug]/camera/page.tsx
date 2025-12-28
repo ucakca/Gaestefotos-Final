@@ -15,6 +15,7 @@ export default function CameraPage() {
   const [event, setEvent] = useState<EventType | null>(null);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -59,6 +60,7 @@ export default function CameraPage() {
   const uploadPhoto = async (file: File) => {
     if (!event) return;
 
+    setUploadError(null);
     setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
@@ -78,7 +80,7 @@ export default function CameraPage() {
         setUploading(false);
       }, 1000);
     } catch (err: any) {
-      alert('Fehler beim Upload: ' + (err.response?.data?.error || 'Unbekannter Fehler'));
+      setUploadError(err.response?.data?.error || 'Unbekannter Fehler');
       setUploading(false);
     }
   };
@@ -129,6 +131,11 @@ export default function CameraPage() {
               <div className="text-center">
                 <Camera className="w-24 h-24 mx-auto mb-4 text-gray-600" />
                 <p className="text-gray-400 mb-4">Kamera-Stream</p>
+                {uploadError && (
+                  <div className="mb-4 px-4 py-2 rounded-lg bg-red-900/40 border border-red-700 text-red-100 text-sm max-w-xs mx-auto">
+                    Fehler beim Upload: {uploadError}
+                  </div>
+                )}
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -141,9 +148,10 @@ export default function CameraPage() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
                   className="px-6 py-3 bg-primary-600 rounded-lg hover:bg-primary-700"
                 >
-                  Foto auswählen
+                  {uploading ? 'Hochladen…' : 'Foto auswählen'}
                 </motion.button>
               </div>
             </div>

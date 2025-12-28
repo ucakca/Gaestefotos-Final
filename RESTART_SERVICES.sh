@@ -34,5 +34,5 @@ echo ""
 echo "🌐 URLs:"
 echo "   Frontend: http://localhost:3002"
 echo "   Backend API: http://localhost:8002/api"
-echo "   Production: https://app.xn--gstefotos-v2a.com"
+echo "   Production: https://app.gästefotos.com"
 

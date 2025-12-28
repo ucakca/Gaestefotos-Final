@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, X, Check } from 'lucide-react';
+import api from '@/lib/api';
 
 interface PhotoUploadProps {
   eventId: string;
@@ -22,6 +23,45 @@ interface UploadFile {
 export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
 
+  const uploadPhoto = useCallback(
+    async (fileIndex: number, file: File) => {
+      setFiles((prev) => prev.map((f, i) => (i === fileIndex ? { ...f, uploading: true, progress: 0, error: undefined } : f)));
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        await api.post(`/events/${eventId}/photos/upload`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (evt) => {
+            const total = typeof evt.total === 'number' ? evt.total : 0;
+            const loaded = typeof evt.loaded === 'number' ? evt.loaded : 0;
+            if (!total || total <= 0) return;
+            const pct = Math.max(0, Math.min(100, Math.round((loaded / total) * 100)));
+            setFiles((prev) => prev.map((f, i) => (i === fileIndex ? { ...f, progress: pct } : f)));
+          },
+        });
+
+        setFiles((prev) => prev.map((f, i) => (i === fileIndex ? { ...f, uploading: false, progress: 100, success: true } : f)));
+
+        setTimeout(() => {
+          setFiles((prev) => prev.filter((_, i) => i !== fileIndex));
+          onUploadSuccess?.();
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('photoUploaded'));
+          }
+        }, 1500);
+      } catch (error: any) {
+        const msg =
+          (error?.response?.data?.error as string) ||
+          (error?.message as string) ||
+          'Upload fehlgeschlagen';
+        setFiles((prev) => prev.map((f, i) => (i === fileIndex ? { ...f, uploading: false, error: msg } : f)));
+      }
+    },
+    [eventId, onUploadSuccess]
+  );
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map(file => ({
       file,
@@ -30,13 +70,16 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
       progress: 0,
     }));
 
-    setFiles(prev => [...prev, ...newFiles]);
-
-    // Upload files
-    newFiles.forEach((uploadFile) => {
-      uploadPhoto(uploadFile.file);
+    setFiles(prev => {
+      const startIndex = prev.length;
+      const next = [...prev, ...newFiles];
+      // Kick off uploads with stable indices
+      newFiles.forEach((uploadFile, offset) => {
+        void uploadPhoto(startIndex + offset, uploadFile.file);
+      });
+      return next;
     });
-  }, []);
+  }, [uploadPhoto]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -45,61 +88,6 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
     },
     multiple: true,
   });
-
-  const uploadPhoto = async (file: File) => {
-    const fileIndex = files.findIndex(f => f.file === file);
-    
-    setFiles(prev => prev.map((f, i) => 
-      i === fileIndex ? { ...f, uploading: true, progress: 0 } : f
-    ));
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      // Simulate upload progress
-      const interval = setInterval(() => {
-        setFiles(prev => prev.map((f, i) => 
-          i === fileIndex ? { ...f, progress: Math.min(f.progress + 10, 90) } : f
-        ));
-      }, 200);
-
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'}/api/events/${eventId}/photos/upload`,
-        {
-          method: 'POST',
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: formData,
-        }
-      );
-
-      clearInterval(interval);
-
-      if (!response.ok) {
-        throw new Error('Upload fehlgeschlagen');
-      }
-
-      setFiles(prev => prev.map((f, i) => 
-        i === fileIndex 
-          ? { ...f, uploading: false, progress: 100, success: true }
-          : f
-      ));
-
-      setTimeout(() => {
-        setFiles(prev => prev.filter((_, i) => i !== fileIndex));
-        onUploadSuccess?.();
-      }, 2000);
-    } catch (error: any) {
-      setFiles(prev => prev.map((f, i) => 
-        i === fileIndex 
-          ? { ...f, uploading: false, error: error.message }
-          : f
-      ));
-    }
-  };
 
   const removeFile = (index: number) => {
     setFiles(prev => {

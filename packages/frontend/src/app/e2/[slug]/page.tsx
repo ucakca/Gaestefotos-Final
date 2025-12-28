@@ -175,6 +175,7 @@ export default function PublicEventPageV2() {
           <ModernPhotoGrid
             photos={filteredPhotos as any}
             allowDownloads={featuresConfig?.allowDownloads}
+            allowComments={featuresConfig?.allowComments}
             eventSlug={slug}
             eventTitle={event.title}
             eventId={(event as any).id}

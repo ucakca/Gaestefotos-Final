@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@gaestefotos/shared'],
-  distDir: process.env.NEXT_DIST_DIR || '.next',
+  distDir: '.next',
   async rewrites() {
     return [
       {
@@ -12,7 +12,6 @@ const nextConfig = {
     ];
   },
   images: {
-    domains: ['localhost'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -26,7 +25,6 @@ const nextConfig = {
   },
   // Allow cross-origin requests from Cloudflare domain
   allowedDevOrigins: [
-    'app.xn--gstefotos-v2a.com',
     'app.gästefotos.com',
   ],
 }

@@ -2,13 +2,17 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff } from 'lucide-react';
+import { authApi } from '@/lib/auth';
 import Logo from '@/components/Logo';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -18,97 +22,88 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.user) {
-          localStorage.setItem('token', data.token);
-          router.push('/dashboard');
+      const response = await authApi.login({ email, password });
+      if (response.user) {
+        if (typeof window !== 'undefined') {
+          if (rememberMe) {
+            if (response.token) localStorage.setItem('token', response.token);
+            sessionStorage.removeItem('token');
+          } else {
+            if (response.token) sessionStorage.setItem('token', response.token);
+            localStorage.removeItem('token');
+          }
         }
-      } else {
-        const err = await response.json();
-        setError(err.error || 'Login fehlgeschlagen');
+
+        const roleRaw = (response.user as any).role;
+        const roleLower = String(roleRaw || '').toLowerCase().trim();
+        const isAdmin =
+          roleRaw === 'ADMIN' ||
+          roleRaw === 'SUPERADMIN' ||
+          roleLower === 'admin' ||
+          roleLower === 'superadmin' ||
+          roleLower === 'administrator';
+
+        router.push(isAdmin ? '/admin/dashboard' : '/dashboard');
       }
     } catch (err: any) {
       console.error('Login error:', err);
-      setError('Login fehlgeschlagen');
+      const errorMessage = err.response?.data?.error || err.message || 'Login fehlgeschlagen';
+      setError(Array.isArray(errorMessage) ? errorMessage[0]?.message || 'Login fehlgeschlagen' : errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div 
-      style={{ 
-        backgroundColor: '#295B4D', 
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        backgroundColor: '#295B4D',
         minHeight: '100vh',
         width: '100vw',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1rem'
+        position: 'relative',
+        zIndex: 1,
       }}
     >
-      <div
-        style={{ 
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-2xl shadow-xl p-8 w-full max-w-md"
+        style={{
           backgroundColor: '#F9F5F2',
-          borderRadius: '1rem',
-          padding: '2.5rem',
           width: '100%',
           maxWidth: '28rem',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1)'
         }}
       >
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-            <Logo width={200} height={80} />
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4" style={{ display: 'flex', justifyContent: 'center' }}>
+            <Logo width={180} height={72} />
           </div>
-          <h1 
-            style={{ 
-              color: '#295B4D', 
-              fontSize: '1.875rem', 
-              fontWeight: 'bold', 
-              marginBottom: '0.5rem' 
-            }}
+          <h1
+            className="text-3xl font-bold mb-2"
+            style={{ color: '#295B4D', fontSize: '1.875rem', fontWeight: 'bold', marginBottom: '0.5rem' }}
           >
             Willkommen zurück
           </h1>
-          <p style={{ color: '#295B4D', fontSize: '0.875rem', opacity: 0.8 }}>
+          <p className="text-sm" style={{ color: '#295B4D' }}>
             Melde dich an, um fortzufahren
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div
-              style={{
-                backgroundColor: '#fef2f2',
-                border: '2px solid #f87171',
-                color: '#991b1b',
-                padding: '0.75rem 1rem',
-                borderRadius: '0.5rem'
-              }}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-red-50 border-2 border-red-400 text-red-800 px-4 py-3 rounded-lg"
             >
               {error}
-            </div>
+            </motion.div>
           )}
 
           <div>
-            <label 
-              htmlFor="email" 
-              style={{ 
-                display: 'block',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                marginBottom: '0.5rem',
-                color: '#295B4D'
-              }}
-            >
+            <label htmlFor="email" className="block text-sm font-medium mb-2" style={{ color: '#295B4D' }}>
               E-Mail
             </label>
             <input
@@ -118,15 +113,19 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              style={{ 
-                width: '100%',
-                padding: '0.75rem 1rem',
-                border: '1px solid #EAA48F',
-                borderRadius: '0.5rem',
+              className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition-all"
+              style={{
+                borderColor: '#EAA48F',
                 color: '#295B4D',
                 backgroundColor: '#ffffff',
-                fontSize: '1rem',
-                boxSizing: 'border-box'
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#EAA48F';
+                e.target.style.boxShadow = '0 0 0 2px rgba(234, 164, 143, 0.2)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#EAA48F';
+                e.target.style.boxShadow = 'none';
               }}
               placeholder="deine@email.com"
               autoComplete="email"
@@ -134,57 +133,80 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label 
-              htmlFor="password" 
-              style={{ 
-                display: 'block',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                marginBottom: '0.5rem',
-                color: '#295B4D'
-              }}
-            >
+            <label htmlFor="password" className="block text-sm font-medium mb-2" style={{ color: '#295B4D' }}>
               Passwort
             </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{ 
-                width: '100%',
-                padding: '0.75rem 1rem',
-                border: '1px solid #EAA48F',
-                borderRadius: '0.5rem',
-                color: '#295B4D',
-                backgroundColor: '#ffffff',
-                fontSize: '1rem',
-                boxSizing: 'border-box'
-              }}
-              placeholder="••••••••"
-              autoComplete="current-password"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:outline-none transition-all"
+                style={{
+                  borderColor: '#EAA48F',
+                  color: '#295B4D',
+                  backgroundColor: '#ffffff',
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#EAA48F';
+                  e.target.style.boxShadow = '0 0 0 2px rgba(234, 164, 143, 0.2)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#EAA48F';
+                  e.target.style.boxShadow = 'none';
+                }}
+                placeholder="••••••••"
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 focus:outline-none"
+                style={{ color: '#295B4D' }}
+                aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
 
-          <button
+          <div className="flex items-center justify-between">
+            <label className="flex items-center" style={{ color: '#295B4D' }}>
+              <input
+                id="rememberMe"
+                name="rememberMe"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 rounded"
+                style={{
+                  accentColor: '#EAA48F',
+                  borderColor: '#EAA48F',
+                }}
+              />
+              <span className="ml-2 text-sm">Angemeldet bleiben</span>
+            </label>
+            <a
+              className="text-sm hover:underline"
+              style={{ color: '#295B4D' }}
+              href="https://gästefotos.com/wp-login.php?action=lostpassword"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Passwort vergessen?
+            </a>
+          </div>
+
+          <motion.button
             type="submit"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             disabled={loading}
-            style={{ 
-              width: '100%',
-              padding: '0.75rem',
-              backgroundColor: loading ? '#d89a87' : '#EAA48F',
-              color: 'white',
-              borderRadius: '0.5rem',
-              fontWeight: '600',
-              fontSize: '1rem',
-              border: 'none',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.5 : 1,
-              transition: 'background-color 0.2s ease',
-              boxShadow: loading ? 'none' : '0 2px 4px rgba(234, 164, 143, 0.3)'
-            }}
+            className="w-full text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: '#EAA48F' }}
             onMouseEnter={(e) => {
               if (!loading) e.currentTarget.style.backgroundColor = '#d89a87';
             }}
@@ -193,33 +215,38 @@ export default function LoginPage() {
             }}
           >
             {loading ? 'Anmelden...' : 'Anmelden'}
-          </button>
+          </motion.button>
 
-          <div style={{ textAlign: 'center', marginTop: '0.5rem' }}>
-            <Link 
-              href="/register" 
-              style={{ 
-                fontSize: '0.875rem',
-                color: '#295B4D',
-                textDecoration: 'none',
-                fontWeight: '500',
-                opacity: 0.9,
-                transition: 'opacity 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '1';
-                e.currentTarget.style.textDecoration = 'underline';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '0.9';
-                e.currentTarget.style.textDecoration = 'none';
-              }}
-            >
-              Noch kein Konto? Registrieren
-            </Link>
+          <div className="text-center text-sm" style={{ color: '#295B4D', opacity: 0.9 }}>
+            Kein Konto? Bitte auf <strong>gästefotos.com</strong> anlegen.
+          </div>
+
+          <div
+            className="text-center"
+            style={{
+              marginTop: '0.75rem',
+              paddingTop: '0.75rem',
+              borderTop: '1px solid rgba(41, 91, 77, 0.12)',
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '0.75rem',
+              flexWrap: 'wrap',
+            }}
+          >
+            <a className="text-sm hover:underline" style={{ color: '#295B4D' }} href="https://xn--gstefotos-v2a.com/faq/" target="_blank" rel="noreferrer">
+              Hilfe / FAQ
+            </a>
+            <span style={{ color: 'rgba(41, 91, 77, 0.35)' }}>|</span>
+            <a className="text-sm hover:underline" style={{ color: '#295B4D' }} href="https://xn--gstefotos-v2a.com/datenschutz/" target="_blank" rel="noreferrer">
+              Datenschutz
+            </a>
+            <span style={{ color: 'rgba(41, 91, 77, 0.35)' }}>|</span>
+            <a className="text-sm hover:underline" style={{ color: '#295B4D' }} href="https://gästefotos.com/impressum" target="_blank" rel="noreferrer">
+              Impressum
+            </a>
           </div>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 }

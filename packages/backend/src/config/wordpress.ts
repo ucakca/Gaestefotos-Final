@@ -1,11 +1,12 @@
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcryptjs';
-import bcryptNative from 'bcrypt';
 import crypto from 'crypto';
 import { PasswordHash } from 'phpass';
 import { verify } from '@cbashik/wp-password-hash';
 import { logger } from '../utils/logger';
 import path from 'path';
+import http from 'http';
+import https from 'https';
 
 export class WordPressAuthUnavailableError extends Error {
   code = 'WP_AUTH_UNAVAILABLE' as const;
@@ -27,6 +28,61 @@ function preHashPassword(password: string): string {
 
 // WordPress password verification using WordPress REST API (most reliable)
 // This uses WordPress's own wp_check_password function
+async function requestJsonWithTimeout(
+  url: string,
+  options: { method: 'GET' | 'POST'; headers?: Record<string, string>; body?: any },
+  timeoutMs: number
+): Promise<{ status: number; data: any }> {
+  return await new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    const client = parsed.protocol === 'https:' ? https : http;
+
+    const bodyStr = options.body === undefined ? undefined : JSON.stringify(options.body);
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+      ...(options.headers || {}),
+    };
+    if (bodyStr !== undefined) {
+      headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+      headers['Content-Length'] = Buffer.byteLength(bodyStr, 'utf8').toString();
+    }
+
+    const req = client.request(
+      {
+        protocol: parsed.protocol,
+        hostname: parsed.hostname,
+        port: parsed.port,
+        path: `${parsed.pathname}${parsed.search}`,
+        method: options.method,
+        headers,
+      },
+      (res) => {
+        const status = res.statusCode || 0;
+        let body = '';
+        res.setEncoding('utf8');
+        res.on('data', (chunk) => {
+          body += chunk;
+        });
+        res.on('end', () => {
+          try {
+            const data = body ? JSON.parse(body) : null;
+            resolve({ status, data });
+          } catch (_e) {
+            reject(new Error('wordpress_rest_json_parse_failed'));
+          }
+        });
+      }
+    );
+
+    req.on('error', (err) => reject(err));
+    req.setTimeout(timeoutMs, () => {
+      req.destroy(new Error('wordpress_rest_timeout'));
+    });
+    if (bodyStr !== undefined) req.write(bodyStr);
+    req.end();
+  });
+}
+
 async function verifyWordPressPasswordREST(email: string, password: string): Promise<{
   id: number;
   user_email: string;
@@ -35,7 +91,7 @@ async function verifyWordPressPasswordREST(email: string, password: string): Pro
   is_admin: boolean;
 } | null> {
   try {
-    const wpUrl = process.env.WORDPRESS_URL || 'https://xn--gstefotos-v2a.com';
+    const wpUrl = process.env.WORDPRESS_URL || 'https://gästefotos.com';
     const url = `${wpUrl}/wp-json/gaestefotos/v1/verify-password`;
 
     const verifySecret = process.env.WORDPRESS_VERIFY_SECRET;
@@ -46,28 +102,20 @@ async function verifyWordPressPasswordREST(email: string, password: string): Pro
       headers['X-GF-Verify-Secret'] = verifySecret;
     }
     
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ email, password }),
-      signal: controller.signal,
-    });
-    
-    clearTimeout(timeout);
-    
-    if (!response.ok) {
+    const { status, data } = await requestJsonWithTimeout(
+      url,
+      { method: 'POST', headers, body: { email, password } },
+      5000
+    );
+
+    if (status < 200 || status >= 300) {
       // 400 can be used by an implementation to indicate "invalid credentials".
       // 401/403/404 usually indicate endpoint misconfiguration (auth required / missing route).
-      if (response.status === 400) {
+      if (status === 400) {
         return null;
       }
-      throw new WordPressAuthUnavailableError(`wordpress_rest_http_${response.status}`);
+      throw new WordPressAuthUnavailableError(`wordpress_rest_http_${status}`);
     }
-    
-    const data = (await response.json()) as any;
 
     // If the endpoint exists but returns an unexpected shape, treat as misconfigured.
     if (!data || typeof data.verified !== 'boolean') {
@@ -93,7 +141,7 @@ async function verifyWordPressPasswordREST(email: string, password: string): Pro
 
     return null;
   } catch (error: any) {
-    if (error?.name === 'AbortError') {
+    if (error?.message === 'wordpress_rest_timeout') {
       logger.warn('[WordPress Auth] REST API timeout');
       throw new WordPressAuthUnavailableError('wordpress_rest_timeout');
     }
@@ -180,24 +228,12 @@ async function verifyWordPressPassword(password: string, hash: string, email?: s
     
     logger.debug('[WordPress Auth] Password pre-hash decision', { needsPreHash });
     
-    // Fallback 1: Try native bcrypt with $2y$ format (supports $2y$ natively)
+    // Fallback 1: Try bcryptjs (normalize $2y$ -> $2a$ for compatibility)
     if (cleanHash.startsWith('$2y$') || cleanHash.startsWith('$2a$') || cleanHash.startsWith('$2b$')) {
-      logger.debug('[WordPress Auth] Fallback 1: native bcrypt');
+      logger.debug('[WordPress Auth] Fallback 1: bcryptjs');
       try {
-        const result = await bcryptNative.compare(password, cleanHash);
-        logger.debug('[WordPress Auth] Native bcrypt result', { ok: result });
-        if (result) return true;
-      } catch (e) {
-        logger.debug('[WordPress Auth] Native bcrypt error');
-      }
-    }
-    
-    // Fallback 2: Try bcryptjs with $2a$ conversion (for $2y$ hashes)
-    if (cleanHash.startsWith('$2y$')) {
-      const hash2a = '$2a$' + cleanHash.substring(4);
-      logger.debug('[WordPress Auth] Fallback 2: bcryptjs with $2a$ conversion');
-      try {
-        const result = await bcrypt.compare(password, hash2a);
+        const normalizedHash = cleanHash.startsWith('$2y$') ? `$2a$${cleanHash.slice(4)}` : cleanHash;
+        const result = await bcrypt.compare(preHashedPassword, normalizedHash);
         logger.debug('[WordPress Auth] bcryptjs result', { ok: result });
         if (result) return true;
       } catch (e) {
