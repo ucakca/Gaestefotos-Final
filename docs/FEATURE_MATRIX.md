@@ -33,42 +33,65 @@ Legende:
     - Prisma: `EventTrafficStat` in `packages/backend/prisma/schema.prisma`
     - Migration: `packages/backend/prisma/migrations/20251228214500_event_traffic_stats/`
 
-- ✅ **Admin Anzeige "Views by source"**
+- **Admin Anzeige "Views by source"**
   - `packages/frontend/src/app/admin/dashboard/page.tsx`
 
 ---
 
 ## Core Plattform
 
-- ✅ **Auth/Login (JWT + Cookies)**
+- **Auth/Login (JWT + Cookies)**
   - Backend: `packages/backend/src/routes/auth.ts`
   - Middleware: `packages/backend/src/middleware/auth.ts`
 
-- ✅ **Events (Create/Read/Update + Public by slug)**
+- **Events (Create/Read/Update + Public by slug)**
   - Backend: `packages/backend/src/routes/events.ts`
     - `GET /api/events/slug/:slug`
 
-- ✅ **Photos/Videos Upload + Moderation (Basis)**
+- **Photos/Videos Upload + Moderation (Basis)**
   - Backend: `packages/backend/src/routes/photos.ts`, `packages/backend/src/routes/videos.ts`
 
-- ✅ **Categories/Albums (als Filter)**
+- **Moderation (Host UI + API Endpoints)**
+  - Frontend: `packages/frontend/src/app/moderation/page.tsx`
+    - nutzt `POST /api/photos/:photoId/approve` und `POST /api/photos/:photoId/reject`
+    - lädt pending photos pro Event via `GET /api/events/:id/photos?status=PENDING`
+  - Backend:
+    - Photo moderation: `packages/backend/src/routes/photos.ts`
+    - Video moderation: `packages/backend/src/routes/videos.ts`
+
+- **Meine Fotos (Guest: "nur meine Uploads")**
+  - Status: aktuell keine explizite UI/Route gefunden, die für Gäste "Meine Fotos" anbietet.
+  - Hinweis: Es gibt zwar uploader/guestId Felder in der DB, aber es fehlt eine klar dokumentierte Guest-UX und API-Filter, die sicher und eindeutig "meine Uploads" liefert.
+
+- **Categories/Albums (als Filter)**
   - Backend: `packages/backend/src/routes/categories.ts`
   - Frontend: `packages/frontend/src/components/AlbumNavigation`
 
-- ✅ **Guestbook**
+- **Guestbook**
   - Backend: `packages/backend/src/routes/guestbook.ts`
 
-- ✅ **Stories**
+- **Guestbook Audio (Upload + Proxy)**
+  - Backend: `packages/backend/src/routes/guestbook.ts`
+    - Proxy: `GET /api/events/:eventId/guestbook/audio/:storagePath(*)`
+    - Upload-Handling via `guestbookAudioUpload` (Prisma model)
+
+- **Stories**
   - Backend: `packages/backend/src/routes/stories.ts` (inkl. `POST /:storyId/view`)
 
-- ✅ **Stats (Host/Admin)**
+- **Stats (Host/Admin)**
   - Backend: `packages/backend/src/routes/statistics.ts`
+
+- **Invitations / RSVP / Shortlinks / ICS**
+  - Backend: `packages/backend/src/routes/invitations.ts`
+    - enthält RSVP Schema + Passwort-Gate + Shortlink Codes
+    - enthält ICS Generation (Calendar Download)
+  - (Frontend Pages sind vorhanden, aber nicht vollständig in dieser Matrix verlinkt; siehe Next.js app routes unter `packages/frontend/src/app/i/*` und Dashboard/Event Pages)
 
 ---
 
 ## Live Wall
 
-- ◐ **Live Wall UI**
+- **Live Wall UI**
   - Frontend: `packages/frontend/src/app/live/[slug]/wall/page.tsx`
   - Backend realtime: Socket.io in `packages/backend/src/index.ts`
   - Fehlt:
@@ -80,7 +103,7 @@ Legende:
 
 ## PWA / Offline
 
-- ◐ **PWA Basis**
+- **PWA Basis**
   - Manifest: `packages/frontend/public/manifest.json`
   - Service Worker: `packages/frontend/public/sw.js` (minimal cache)
   - Fehlt:
@@ -92,9 +115,9 @@ Legende:
 
 ## Host Wizard / Smart Albums
 
-- ❌ **Host Wizard (Setup Flow + Live Preview)**
+- **Host Wizard (Setup Flow + Live Preview)**
 
-- ❌ **Smart Albums (Zeitfenster)**
+- **Smart Albums (Zeitfenster)**
   - Fehlt:
     - DB Modell (Zeitranges)
     - Overlap-Validation
@@ -105,7 +128,7 @@ Legende:
 
 ## WordPress / Woo Bridge
 
-- ◐ **Woo Webhooks + Logging**
+- **Woo Webhooks + Logging**
   - Backend: `packages/backend/src/routes/woocommerceWebhooks.ts`
   - Admin Logs: `packages/backend/src/routes/adminWooWebhooks.ts`
   - Fehlt (falls Spec v1 abweicht):
@@ -116,13 +139,28 @@ Legende:
 
 ## Admin
 
-- ❌ **Admin Impersonation (Login as Host)**
+- **Admin Impersonation (Login as Host)**
+
+- **Duplicates (Duplikat-Gruppen, Best-of, Delete)**
+  - Backend: `packages/backend/src/routes/duplicates.ts`
+    - `GET /api/events/:eventId/duplicates`
+    - `POST /api/events/:eventId/duplicates/:groupId/best`
+    - `DELETE /api/events/:eventId/duplicates/:groupId`
+
+- **Face Search (Gesichtssuche)**
+  - Backend: `packages/backend/src/routes/faceSearch.ts`
+    - `POST /api/events/:eventId/face-search` (multipart reference image)
+
+- **Challenges**
+  - Backend: `packages/backend/src/routes/challenges.ts`
+    - `GET /api/events/:eventId/challenges`
+    - `POST/PUT ...` (host/admin)
 
 ---
 
 ## Hard Constraints
 
-- ✅ **Rate Limiting (Basis)**
+- **Rate Limiting (Basis)**
   - Backend: `packages/backend/src/middleware/rateLimit.ts`
 
 - ✅ **Storage Lifecycle (Policy + Workers)**
