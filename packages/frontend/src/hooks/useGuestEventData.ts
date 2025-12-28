@@ -92,7 +92,10 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
 
   const loadEvent = async () => {
     try {
-      const { data } = await api.get(`/events/slug/${slug}`);
+      const source = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('source') : null;
+      const { data } = await api.get(`/events/slug/${slug}`, {
+        params: source ? { source } : undefined,
+      });
       setEvent(data.event);
       if (data.event.hasPassword) {
         setPasswordRequired(true);

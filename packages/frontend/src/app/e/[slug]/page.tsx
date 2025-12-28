@@ -313,7 +313,10 @@ export default function PublicEventPage() {
 
   const loadEvent = async () => {
     try {
-      const { data } = await api.get(`/events/slug/${slug}`);
+      const source = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('source') : null;
+      const { data } = await api.get(`/events/slug/${slug}`, {
+        params: source ? { source } : undefined,
+      });
       setEvent(data.event);
       
       // Check if password is required
@@ -343,7 +346,7 @@ export default function PublicEventPage() {
     }
   };
   
-  const loadPhotos = async (reset: boolean = false) => {
+  const loadPhotos = async (reset = false) => {
     if (!event?.id) return;
     
     // Prevent multiple simultaneous loads
@@ -768,6 +771,7 @@ export default function PublicEventPage() {
           <ModernPhotoGrid
                       photos={photos} 
                       allowDownloads={featuresConfig?.allowDownloads}
+                      allowComments={featuresConfig?.allowComments}
                       eventSlug={slug}
             eventTitle={event.title}
             eventId={event.id}

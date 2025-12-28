@@ -21,6 +21,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   events Event[]
+  apiKeys ApiKey[]
 
   @@map("users")
 }
@@ -60,18 +61,37 @@ model Event {
   videos    Video[]
   categories Category[]
   stories   Story[]
+  trafficStats EventTrafficStat[]
   guestbookEntries GuestbookEntry[]
   guestbookPhotoUploads GuestbookPhotoUpload[]
+  guestbookAudioUploads GuestbookAudioUpload[]
   challenges Challenge[]
   entitlements EventEntitlement[]
   invitations Invitation[]
   reminderLogs EventReminderLog[]
+  invoiceRecords InvoiceRecord[]
 
   @@index([slug])
   @@index([hostId])
   @@index([deletedAt])
   @@index([purgeAfter])
   @@map("events")
+}
+
+model EventTrafficStat {
+  id         String   @id @default(uuid())
+  eventId    String
+  source     String
+  count      Int      @default(0)
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, source])
+  @@index([eventId])
+  @@index([source])
+  @@map("event_traffic_stats")
 }
 
 model EventReminderLog {
@@ -89,6 +109,15 @@ model EventReminderLog {
   @@index([kind])
   @@index([sentAt])
   @@map("event_reminder_logs")
+}
+
+model AppSetting {
+  key       String   @id
+  value     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("app_settings")
 }
 
 enum EntitlementStatus {
@@ -130,6 +159,47 @@ model WooWebhookReceipt {
 
   @@index([wcOrderId])
   @@map("woo_webhook_receipts")
+}
+
+enum WooWebhookProvider {
+  WOOCOMMERCE
+}
+
+enum WooWebhookLogStatus {
+  RECEIVED
+  PROCESSED
+  IGNORED
+  FAILED
+  FORBIDDEN
+}
+
+model WooWebhookEventLog {
+  id           String            @id @default(uuid())
+  provider     WooWebhookProvider @default(WOOCOMMERCE)
+  topic        String
+  wcOrderId    String?
+  eventCode    String?
+  eventId      String?
+  wpUserId     Int?
+  wcProductId  String?
+  wcSku        String?
+  skus         String[]          @default([])
+  signatureOk  Boolean           @default(false)
+  status       WooWebhookLogStatus @default(RECEIVED)
+  reason       String?
+  error        String?
+  payloadHash  String?
+  payload      Json?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([provider])
+  @@index([topic])
+  @@index([wcOrderId])
+  @@index([eventId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("woo_webhook_event_logs")
 }
 
 model PackageDefinition {
@@ -279,6 +349,7 @@ model PhotoLike {
   guestId   String?
   ipAddress String?  // Fallback für anonyme Likes
   userAgent String?  // Browser-Info
+  reactionType String? // z.B. "heart", "laugh", "wow", "fire", "clap"
   createdAt DateTime @default(now())
 
   photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
@@ -357,6 +428,11 @@ model GuestbookEntry {
   photoUrl  String?  // Optional: Foto zur Nachricht
   photoStoragePath String? // Storage path für das Foto
   photoSizeBytes BigInt?
+  audioUrl  String?  // Optional: Audio zur Nachricht
+  audioStoragePath String? // Storage path für das Audio
+  audioMimeType String?
+  audioDurationMs Int?
+  audioSizeBytes BigInt?
   isPublic  Boolean  @default(true) // Ob der Eintrag im Feed erscheint
   status    EntryStatus @default(PENDING)
   createdAt DateTime @default(now())
@@ -386,6 +462,26 @@ model GuestbookPhotoUpload {
   @@index([expiresAt])
   @@index([claimedAt])
   @@map("guestbook_photo_uploads")
+}
+
+model GuestbookAudioUpload {
+  id          String   @id @default(uuid())
+  eventId     String
+  storagePath String
+  mimeType    String
+  sizeBytes   BigInt
+  durationMs  Int?
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+  claimedAt   DateTime?
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([storagePath])
+  @@index([expiresAt])
+  @@index([claimedAt])
+  @@map("guestbook_audio_uploads")
 }
 
 enum EntryStatus {
@@ -603,3 +699,143 @@ model InvitationTemplate {
   @@map("invitation_templates")
 }
 
+enum EmailTemplateKind {
+  INVITATION
+  STORAGE_ENDS_REMINDER
+  PHOTO_NOTIFICATION
+}
+
+model EmailTemplate {
+  id        String            @id @default(uuid())
+  kind      EmailTemplateKind @unique
+  name      String
+  subject   String
+  html      String?           @db.Text
+  text      String?           @db.Text
+  isActive  Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@index([kind])
+  @@index([isActive])
+  @@map("email_templates")
+}
+
+enum CmsContentKind {
+  pages
+  posts
+}
+
+model CmsContentSnapshot {
+  id        String         @id @default(uuid())
+  kind      CmsContentKind
+  slug      String
+  title     String
+  html      String?        @db.Text
+  excerpt   String?        @db.Text
+  sourceUrl String
+  link      String?
+  modifiedGmt String?
+  fetchedAt DateTime       @default(now())
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([kind, slug])
+  @@index([kind])
+  @@index([slug])
+  @@index([fetchedAt])
+  @@map("cms_content_snapshots")
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+model ApiKey {
+  id           String       @id @default(uuid())
+  name         String
+  prefix       String       @unique
+  keyHash      String       @unique
+  scopes       String[]     @default([])
+  status       ApiKeyStatus @default(ACTIVE)
+  lastUsedAt   DateTime?
+  expiresAt    DateTime?
+  createdById  String?
+  revokedAt    DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  audits    ApiKeyAuditLog[]
+
+  @@index([status])
+  @@index([prefix])
+  @@index([createdById])
+  @@index([expiresAt])
+  @@map("api_keys")
+}
+
+enum ApiKeyAuditAction {
+  CREATED
+  REVOKED
+  USED
+  FAILED
+}
+
+model ApiKeyAuditLog {
+  id         String           @id @default(uuid())
+  apiKeyId   String?
+  action     ApiKeyAuditAction
+  scope      String?
+  path       String?
+  ipHash     String?
+  userAgent  String?
+  message    String?
+  createdAt  DateTime         @default(now())
+
+  apiKey ApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+
+  @@index([apiKeyId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("api_key_audit_logs")
+}
+
+enum InvoiceSource {
+  WOOCOMMERCE
+  MANUAL
+}
+
+enum InvoiceStatus {
+  OPEN
+  PAID
+  VOID
+  REFUNDED
+}
+
+model InvoiceRecord {
+  id         String        @id @default(uuid())
+  source     InvoiceSource @default(WOOCOMMERCE)
+  status     InvoiceStatus @default(OPEN)
+  wcOrderId  String?
+  wpUserId   Int?
+  eventId    String?
+  currency   String        @default("EUR")
+  amountCents Int
+  issuedAt   DateTime      @default(now())
+  payload    Json?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  event Event? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  @@index([source])
+  @@index([status])
+  @@index([wcOrderId])
+  @@index([wpUserId])
+  @@index([eventId])
+  @@index([issuedAt])
+  @@map("invoice_records")
+}

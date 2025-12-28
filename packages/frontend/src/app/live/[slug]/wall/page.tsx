@@ -87,7 +87,7 @@ export default function LiveWallPage() {
   }
 
   const publicUrl = typeof window !== 'undefined' 
-    ? `${window.location.origin}/e/${slug}`
+    ? `${window.location.origin}/e/${slug}?source=qr`
     : '';
 
   return (
