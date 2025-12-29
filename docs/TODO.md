@@ -20,6 +20,8 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
   - Frontend QR Links: `/e/<slug>?source=qr`
   - Backend zählt in `GET /api/events/slug/:slug?source=...`
   - Host/Admin readback: `GET /api/events/:id/traffic`
+  - External Smoke (Prod Domain): Count increment + Readback verifiziert
+- ✅ Production Frontend: `/_next/static/*` liefert wieder `200` + korrekte Content-Types
 - ✅ Admin UI: "Views by source" im Admin Dashboard (QR Print‑Service)
 - ✅ DB Migration in Prod deployed: `20251228214500_event_traffic_stats`
 

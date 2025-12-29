@@ -33,8 +33,13 @@ Legende:
     - Prisma: `EventTrafficStat` in `packages/backend/prisma/schema.prisma`
     - Migration: `packages/backend/prisma/migrations/20251228214500_event_traffic_stats/`
 
-- **Admin Anzeige "Views by source"**
+- ✅ **Admin Anzeige "Views by source"**
   - `packages/frontend/src/app/admin/dashboard/page.tsx`
+  - Backend: `GET /api/events/:id/traffic`
+
+- ✅ **Smoke verified (Prod Domain)**
+  - `GET /api/events/slug/:slug?source=qr` increments `source=qr`
+  - `GET /api/events/:id/traffic` readback shows increased count
 
 ---
 
