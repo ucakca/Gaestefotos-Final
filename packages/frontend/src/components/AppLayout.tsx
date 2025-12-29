@@ -4,10 +4,8 @@ import { ReactNode, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
-import { motion } from 'framer-motion';
 import { 
   LogOut, 
-  Settings, 
   Home
 } from 'lucide-react';
 
@@ -31,19 +29,19 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
   const eventId = pathname?.match(/\/events\/([^\/]+)/)?.[1];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-app-bg">
       {/* Consistent Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-40 border-b border-app-border bg-app-card">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left: Back Button */}
             <div className="flex items-center gap-4 flex-1">
               {showBackButton && backUrl ? (
                 <Link
                   href={backUrl}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="rounded-lg p-2 text-app-muted transition-colors hover:bg-app-bg hover:text-app-fg"
                 >
-                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </Link>
@@ -51,7 +49,7 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
                 pathname !== '/dashboard' && (
                   <Link
                     href="/dashboard"
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 hover:text-gray-900"
+                    className="rounded-lg p-2 text-app-muted transition-colors hover:bg-app-bg hover:text-app-fg"
                     title="Zur Übersicht"
                   >
                     <Home className="w-5 h-5" />
@@ -60,11 +58,11 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
               )}
               
               {isEventPage && eventId && (
-                <div className="hidden md:flex items-center gap-2 text-sm text-gray-500">
+                <div className="hidden md:flex items-center gap-2 text-sm text-app-muted">
                   <span>/</span>
                   <Link 
                     href={`/events/${eventId}/dashboard`}
-                    className="hover:text-gray-900 transition-colors"
+                    className="transition-colors hover:text-app-fg"
                   >
                     Event verwalten
                   </Link>
@@ -86,14 +84,14 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
             {/* Right: User Actions */}
             <div className="flex items-center gap-2 flex-1 justify-end">
               {user && (
-                <div className="flex items-center gap-2 pl-3 border-l border-gray-200">
+                <div className="flex items-center gap-2 border-l border-app-border pl-3">
                   <div className="hidden sm:block text-right">
-                    <p className="text-xs text-gray-500">Angemeldet als</p>
-                    <p className="text-sm font-medium text-gray-900">{user.name || user.email}</p>
+                    <p className="text-xs text-app-muted">Angemeldet als</p>
+                    <p className="text-sm font-medium text-app-fg">{user.name || user.email}</p>
                   </div>
                   <button
                     onClick={logout}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 hover:text-gray-900"
+                    className="rounded-lg p-2 text-app-muted transition-colors hover:bg-app-bg hover:text-app-fg"
                     title="Abmelden"
                   >
                     <LogOut className="w-5 h-5" />
