@@ -83,6 +83,8 @@ Backend nutzt für Login optional WordPress-Verifikation.
     - `WooWebhookEventLog` speichert Topic/Status/Reason/PayloadHash (Admin Readback möglich)
   - Admin Readback:
     - `GET /api/admin/webhooks/woocommerce/logs` → `packages/backend/src/routes/adminWooWebhooks.ts`
+    - `POST /api/admin/webhooks/woocommerce/replay/:logId` → `packages/backend/src/routes/adminWooWebhooks.ts`
+      - Body: `{ "mode": "dry_run" | "apply" }` (aktuell ist es ein "readback" der gespeicherten Payload)
 
 ## QR / Print Export
 

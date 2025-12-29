@@ -122,6 +122,16 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
       - `WooWebhookReceipt` (Idempotency)
       - `EventEntitlement` (Result)
 
+- **Admin: WooCommerce Webhook Logs/Replay**
+  - **Status**: vorhanden (Logs), teilweise (Replay)
+  - **Belege**:
+    - Backend: `packages/backend/src/routes/adminWooWebhooks.ts`
+      - `GET /api/admin/webhooks/woocommerce/logs`
+      - `POST /api/admin/webhooks/woocommerce/replay/:logId`
+    - Frontend Admin UI: `packages/frontend/src/app/admin/dashboard/page.tsx` ("WooCommerce Webhook Inbox")
+  - **Fehlt**:
+    - echtes "apply" replay (aktuell gibt `replay` nur den gespeicherten Log/Payload zurück)
+
 - **Marketing stats (Admin)**
   - **Status**: vorhanden
   - **Belege**:
