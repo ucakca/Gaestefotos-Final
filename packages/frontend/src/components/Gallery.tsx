@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Download, Share2 } from 'lucide-react';
 import { Photo } from '@gaestefotos/shared';
+import { buildApiUrl } from '@/lib/api';
 
 interface GalleryProps {
   photos: Photo[];
@@ -17,8 +18,8 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
 
   const handleDownload = (photo: Photo) => {
     if (!allowDownloads) return;
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
-    window.open(`${apiUrl}/api/photos/${photo.id}/download`, '_blank');
+    const url = buildApiUrl(`/photos/${photo.id}/download`);
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleShare = async (photo: Photo) => {

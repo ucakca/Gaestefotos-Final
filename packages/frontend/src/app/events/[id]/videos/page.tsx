@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
+import { buildApiUrl } from '@/lib/api';
 import AppLayout from '@/components/AppLayout';
 import DashboardFooter from '@/components/DashboardFooter';
 import { Video, Upload, Download, Trash2, Check, X, Square, CheckSquare, Folder, FileDown, MoreVertical, ChevronDown } from 'lucide-react';
@@ -910,6 +911,24 @@ export default function VideosPage() {
                         </p>
                       </div>
                     )}
+
+                    <div className="pt-4">
+                      <p className="text-sm text-gray-500 mb-2">Download</p>
+                      <button
+                        onClick={() => {
+                          if (isStorageLocked) {
+                            showToast('Speicherperiode beendet – Download nicht mehr möglich', 'error');
+                            return;
+                          }
+                          const url = buildApiUrl(`/videos/${selectedVideo.id}/download`);
+                          window.open(url, '_blank', 'noopener,noreferrer');
+                        }}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        Original herunterladen
+                      </button>
+                    </div>
                     
                     {/* Actions are now in the header dropdown - keeping this section for additional info if needed */}
                   </div>

@@ -17,6 +17,7 @@ import ActionButton from '@/components/ActionButton';
 import FilterButtons from '@/components/FilterButtons';
 import UploadModal from '@/components/UploadModal';
 import Link from 'next/link';
+import { buildApiUrl } from '@/lib/api';
 
 export default function PhotoManagementPage() {
   const params = useParams();
@@ -1100,15 +1101,8 @@ export default function PhotoManagementPage() {
                                 showToast('Speicherperiode beendet – Download nicht mehr möglich', 'error');
                                 return;
                               }
-                              const url = selectedPhoto.url || '';
-                              if (url) {
-                                const link = document.createElement('a');
-                                link.href = url;
-                                link.download = `foto-${selectedPhoto.id}.jpg`;
-                                document.body.appendChild(link);
-                                link.click();
-                                link.remove();
-                              }
+                              const url = buildApiUrl(`/photos/${selectedPhoto.id}/download`);
+                              window.open(url, '_blank', 'noopener,noreferrer');
                               setShowPhotoActionsMenu(false);
                             }}
                             className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
