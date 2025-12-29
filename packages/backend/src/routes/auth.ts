@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { domainToASCII } from 'node:url';
 import prisma from '../config/database';
-import { authLimiter, passwordLimiter } from '../middleware/rateLimit';
+import { authLimiter, passwordLimiter, wordpressSsoLimiter } from '../middleware/rateLimit';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { getWordPressUserById, verifyWordPressUser, WordPressAuthUnavailableError } from '../config/wordpress';
 import { logger } from '../utils/logger';
@@ -332,7 +332,7 @@ const wordpressSsoSchema = z.object({
   ssoSecret: z.string().optional(),
 });
 
-router.post('/wordpress-sso', authLimiter, async (req: Request, res: Response) => {
+router.post('/wordpress-sso', wordpressSsoLimiter, async (req: Request, res: Response) => {
   try {
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
