@@ -99,13 +99,31 @@ function setAuthCookie(res: Response, token: string, ttlSeconds: number) {
 
 function getAppBaseUrl(): string {
   const raw = (process.env.FRONTEND_URL || '').split(',').map((s) => s.trim()).filter(Boolean)[0];
-  const fallback = 'https://app.gästefotos.com';
+  const fallbackUnicode = 'https://app.gästefotos.com';
+  const fallback = (() => {
+    try {
+      const u = new URL(fallbackUnicode);
+      const asciiHost = domainToASCII(u.hostname);
+      return `${u.protocol}//${asciiHost}${u.port ? `:${u.port}` : ''}`;
+    } catch {
+      return fallbackUnicode;
+    }
+  })();
+
   const candidate = (raw || fallback).replace(/\/$/, '');
 
   try {
     const u = new URL(candidate);
     const asciiHost = domainToASCII(u.hostname);
-    return `${u.protocol}//${asciiHost}${u.port ? `:${u.port}` : ''}`;
+    const normalized = `${u.protocol}//${asciiHost}${u.port ? `:${u.port}` : ''}`;
+
+    // Guard against misconfigured FRONTEND_URL that already contains a broken ASCII transformation.
+    // Example seen in the wild: app.g00e4stefotos.com
+    if (/g00e4/i.test(asciiHost)) {
+      return fallback;
+    }
+
+    return normalized;
   } catch {
     return candidate;
   }
