@@ -2,10 +2,20 @@ import { useEffect, useState } from 'react';
 import { wsManager } from '@/lib/websocket';
 import { Photo } from '@gaestefotos/shared';
 
-export function useEventRealtime(eventId: string, initialPhotos: Photo[] = []) {
+export function useEventRealtime(
+  eventId: string,
+  initialPhotos: Photo[] = [],
+  opts?: {
+    enabled?: boolean;
+  }
+) {
   const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
 
   useEffect(() => {
+    const enabled = opts?.enabled !== false;
+    if (!enabled) return;
+    if (!eventId) return;
+
     // Connect WebSocket
     wsManager.connect();
 
@@ -30,7 +40,7 @@ export function useEventRealtime(eventId: string, initialPhotos: Photo[] = []) {
       unsubscribePhotoApproved();
       wsManager.leaveEvent(eventId);
     };
-  }, [eventId]);
+  }, [eventId, opts?.enabled]);
 
   // Update photos when initialPhotos change
   useEffect(() => {

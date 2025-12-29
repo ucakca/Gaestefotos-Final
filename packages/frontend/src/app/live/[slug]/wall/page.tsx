@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
@@ -16,7 +16,11 @@ export default function LiveWallPage() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'slideshow'>('grid');
+  const [sortMode, setSortMode] = useState<'newest' | 'random'>('newest');
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [realtimeEnabled, setRealtimeEnabled] = useState(true);
+  const prevIdsRef = useRef<Set<string>>(new Set());
+  const [newIds, setNewIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadEvent();
@@ -27,6 +31,14 @@ export default function LiveWallPage() {
       loadPhotos();
     }
   }, [event?.id]);
+
+  useEffect(() => {
+    // Simple tiering switch:
+    // - If realtime is disabled via env, fall back to polling.
+    // - Otherwise default to realtime.
+    const disabledByEnv = process.env.NEXT_PUBLIC_DISABLE_REALTIME === 'true';
+    setRealtimeEnabled(!disabledByEnv);
+  }, []);
 
   const loadEvent = async () => {
     try {
@@ -53,11 +65,46 @@ export default function LiveWallPage() {
   };
 
   // Realtime updates
-  const realtimePhotos = useEventRealtime(event?.id || '', photos);
+  const realtimePhotos = useEventRealtime(event?.id || '', photos, { enabled: realtimeEnabled });
 
   useEffect(() => {
     setPhotos(realtimePhotos);
   }, [realtimePhotos]);
+
+  // Polling fallback (Free tier / realtime disabled)
+  useEffect(() => {
+    if (!event?.id) return;
+    if (realtimeEnabled) return;
+    const interval = setInterval(() => {
+      void loadPhotos();
+    }, 10_000);
+    return () => clearInterval(interval);
+  }, [event?.id, realtimeEnabled]);
+
+  // Track newly-arrived photos for a subtle highlight animation
+  useEffect(() => {
+    const currentIds = new Set((photos || []).map((p) => p.id));
+    const prevIds = prevIdsRef.current;
+    const added = new Set<string>();
+    for (const id of currentIds) {
+      if (!prevIds.has(id)) added.add(id);
+    }
+    prevIdsRef.current = currentIds;
+    if (added.size > 0) {
+      setNewIds((prev) => {
+        const next = new Set(prev);
+        for (const id of added) next.add(id);
+        return next;
+      });
+      window.setTimeout(() => {
+        setNewIds((prev) => {
+          const next = new Set(prev);
+          for (const id of added) next.delete(id);
+          return next;
+        });
+      }, 2500);
+    }
+  }, [photos]);
 
   // Slideshow auto-advance
   useEffect(() => {
@@ -69,6 +116,32 @@ export default function LiveWallPage() {
       return () => clearInterval(interval);
     }
   }, [viewMode, photos.length]);
+
+  useEffect(() => {
+    if (currentSlide >= photos.length) {
+      setCurrentSlide(0);
+    }
+  }, [currentSlide, photos.length]);
+
+  const displayPhotos = useMemo(() => {
+    const list = [...(photos || [])];
+    if (sortMode === 'newest') {
+      // Backend already returns createdAt desc, but keep stable and robust here.
+      list.sort((a: any, b: any) => {
+        const ta = new Date(a?.createdAt || 0).getTime();
+        const tb = new Date(b?.createdAt || 0).getTime();
+        return tb - ta;
+      });
+      return list;
+    }
+
+    // random
+    for (let i = list.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+    return list;
+  }, [photos, sortMode]);
 
   if (loading) {
     return (
@@ -103,6 +176,20 @@ export default function LiveWallPage() {
           >
             {viewMode === 'grid' ? 'Slideshow' : 'Grid'}
           </button>
+
+          <button
+            onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
+            className="px-4 py-2 bg-white bg-opacity-20 rounded hover:bg-opacity-30"
+          >
+            {sortMode === 'newest' ? 'Neueste' : 'Zufall'}
+          </button>
+
+          <button
+            onClick={() => setRealtimeEnabled((v) => !v)}
+            className="px-4 py-2 bg-white bg-opacity-20 rounded hover:bg-opacity-30"
+          >
+            {realtimeEnabled ? 'Realtime' : 'Polling'}
+          </button>
           
           {/* QR Code */}
           <div className="hidden lg:block">
@@ -115,33 +202,41 @@ export default function LiveWallPage() {
       {viewMode === 'grid' ? (
         <div className="pt-20 px-4 pb-4">
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-            {photos.map((photo, index) => (
-              <motion.div
-                key={photo.id}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.03 }}
-                className="aspect-square bg-gray-800 rounded overflow-hidden"
-              >
-                {photo.url ? (
+            <AnimatePresence initial={false}>
+              {displayPhotos.map((photo) => (
+                <motion.div
+                  key={photo.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{
+                    opacity: 1,
+                    scale: 1,
+                    boxShadow: newIds.has(photo.id) ? '0 0 0 3px rgba(255,255,255,0.65)' : '0 0 0 0px rgba(255,255,255,0)',
+                  }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.25 }}
+                  className="aspect-square bg-gray-800 rounded overflow-hidden"
+                >
+                  {photo.url ? (
                   <img
                     src={photo.url}
                     alt="Event Foto"
                     className="w-full h-full object-cover"
                   />
-                ) : (
+                  ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-600">
                     Foto
                   </div>
-                )}
-              </motion.div>
-            ))}
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
       ) : (
         <div className="min-h-screen flex items-center justify-center relative">
           <AnimatePresence mode="wait">
-            {photos.length > 0 && (
+            {displayPhotos.length > 0 && (
               <motion.div
                 key={currentSlide}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -151,7 +246,7 @@ export default function LiveWallPage() {
                 className="max-w-7xl mx-auto px-4"
               >
                 <img
-                  src={photos[currentSlide]?.url || ''}
+                  src={displayPhotos[currentSlide]?.url || ''}
                   alt="Event Foto"
                   className="max-w-full max-h-screen object-contain"
                 />
@@ -159,16 +254,16 @@ export default function LiveWallPage() {
             )}
           </AnimatePresence>
 
-          {photos.length === 0 && (
+          {displayPhotos.length === 0 && (
             <div className="text-center">
               <p className="text-2xl text-gray-400">Noch keine Fotos</p>
             </div>
           )}
 
           {/* Photo Counter */}
-          {photos.length > 0 && (
+          {displayPhotos.length > 0 && (
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 px-4 py-2 rounded">
-              {currentSlide + 1} / {photos.length}
+              {currentSlide + 1} / {displayPhotos.length}
             </div>
           )}
         </div>
