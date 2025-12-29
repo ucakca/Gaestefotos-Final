@@ -392,8 +392,8 @@ export default function VideosPage() {
   if (loading && videos.length === 0) {
     return (
       <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+        <div className="min-h-screen flex items-center justify-center bg-app-bg">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-app-border border-t-tokens-brandGreen" />
         </div>
       </AppLayout>
     );
@@ -431,11 +431,11 @@ export default function VideosPage() {
         </PageHeader>
 
         {isStorageLocked && (
-          <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+          <div className="mb-4 rounded-xl border border-app-border bg-app-card p-4">
             <div className="flex items-start gap-3">
               <div>
-                <p className="font-semibold text-sm text-yellow-900">Speicherperiode beendet</p>
-                <p className="text-xs text-yellow-900/80 mt-1">
+                <p className="font-semibold text-sm text-app-fg">Speicherperiode beendet</p>
+                <p className="text-xs text-app-muted mt-1">
                   Uploads und Downloads sind deaktiviert. Bitte verlängere das Paket, um wieder Zugriff zu erhalten.
                 </p>
               </div>
