@@ -79,6 +79,8 @@ export interface Category {
   name: string;
   iconKey?: string | null;
   order: number;
+  startAt?: Date | null;
+  endAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
   _count?: {

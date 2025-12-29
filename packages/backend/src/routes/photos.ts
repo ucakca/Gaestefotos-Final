@@ -10,6 +10,7 @@ import { validateUploadedFile } from '../middleware/uploadSecurity';
 import { assertUploadWithinLimit } from '../services/packageLimits';
 import { denyByVisibility, isWithinEventDateWindow } from '../services/eventPolicy';
 import { getEventStorageEndsAt } from '../services/storagePolicy';
+import { extractCapturedAtFromImage } from '../services/uploadDatePolicy';
 import archiver from 'archiver';
 
 // Sharp is optional; if missing we fall back to a tiny placeholder for blurred previews.
@@ -21,6 +22,28 @@ try {
 }
 
 const router = Router();
+
+async function selectSmartCategoryId(opts: {
+  eventId: string;
+  capturedAt: Date;
+  isGuest: boolean;
+}): Promise<string | null> {
+  const { eventId, capturedAt, isGuest } = opts;
+
+  const cat = await prisma.category.findFirst({
+    where: {
+      eventId,
+      startAt: { not: null, lte: capturedAt },
+      endAt: { not: null, gte: capturedAt },
+    },
+    select: { id: true, uploadLocked: true },
+    orderBy: { startAt: 'desc' },
+  });
+
+  if (!cat) return null;
+  if (isGuest && cat.uploadLocked) return null;
+  return cat.id;
+}
 
 function serializeBigInt(value: unknown): unknown {
   return JSON.parse(
@@ -190,11 +213,26 @@ router.post(
       const isHost = !!req.userId && req.userId === event.hostId;
       const isAdmin = req.userRole === 'ADMIN';
       const denyVisibility = isHost || isAdmin ? 'hostOrAdmin' : 'guest';
+      void denyVisibility;
 
       const featuresConfig = (event.featuresConfig || {}) as any;
 
+      const rawCategoryId = typeof (req as any).body?.categoryId === 'string' ? String((req as any).body.categoryId) : '';
+      const categoryId = rawCategoryId.trim() || null;
+
       // Process image
       const processed = await imageProcessor.processImage(file.buffer);
+
+      const uploadTime = new Date();
+      const capturedAtResult = await extractCapturedAtFromImage(file.buffer, uploadTime);
+
+      const resolvedCategoryId = categoryId
+        ? categoryId
+        : await selectSmartCategoryId({
+            eventId,
+            capturedAt: capturedAtResult.capturedAt,
+            isGuest: !isHost && !isAdmin,
+          });
 
       const uploadBytes = BigInt(processed.optimized.length);
       try {
@@ -221,6 +259,7 @@ router.post(
         data: {
           eventId,
           storagePath,
+          categoryId: resolvedCategoryId,
           // Persist a stable proxy URL (no mixed-content issues)
           url: '',
           status,

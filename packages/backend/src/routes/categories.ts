@@ -6,6 +6,29 @@ import { logger } from '../utils/logger';
 
 const router = Router();
 
+async function assertNoCategoryWindowOverlap(opts: {
+  eventId: string;
+  startAt: Date;
+  endAt: Date;
+  excludeCategoryId?: string;
+}) {
+  const { eventId, startAt, endAt, excludeCategoryId } = opts;
+
+  const overlapping = await prisma.category.findFirst({
+    where: {
+      eventId,
+      id: excludeCategoryId ? { not: excludeCategoryId } : undefined,
+      startAt: { not: null, lt: endAt },
+      endAt: { not: null, gt: startAt },
+    },
+    select: { id: true, name: true, startAt: true, endAt: true },
+  });
+
+  if (overlapping) {
+    throw new Error(`Zeitfenster überschneidet sich mit Album "${overlapping.name}"`);
+  }
+}
+
 // Validation schema
 const createCategorySchema = z.object({
   name: z.string().min(1, 'Name ist erforderlich'),
@@ -17,6 +40,8 @@ const createCategorySchema = z.object({
   challengeEnabled: z.boolean().default(false),
   challengeDescription: z.string().nullable().optional(),
   dateTime: z.string().datetime().nullable().optional(),
+  startAt: z.string().datetime().nullable().optional(),
+  endAt: z.string().datetime().nullable().optional(),
   locationName: z.string().nullable().optional(),
 });
 
@@ -80,6 +105,15 @@ router.post(
       const { eventId } = req.params;
       const data = createCategorySchema.parse(req.body);
 
+      const startAt = data.startAt ? new Date(data.startAt) : null;
+      const endAt = data.endAt ? new Date(data.endAt) : null;
+      if ((startAt && !endAt) || (!startAt && endAt)) {
+        return res.status(400).json({ error: 'Bitte startAt und endAt gemeinsam setzen (oder beide leer lassen)' });
+      }
+      if (startAt && endAt && startAt.getTime() > endAt.getTime()) {
+        return res.status(400).json({ error: 'startAt muss vor endAt liegen' });
+      }
+
       // Check if event exists and user owns it
       const event = await prisma.event.findUnique({
         where: { id: eventId },
@@ -97,6 +131,10 @@ router.post(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
+      if (startAt && endAt) {
+        await assertNoCategoryWindowOverlap({ eventId, startAt, endAt });
+      }
+
       const category = await prisma.category.create({
         data: {
           eventId,
@@ -109,6 +147,8 @@ router.post(
           challengeEnabled: data.challengeEnabled ?? false,
           challengeDescription: data.challengeDescription || null,
           dateTime: data.dateTime ? new Date(data.dateTime) : null,
+          startAt,
+          endAt,
           locationName: data.locationName || null,
         },
       });
@@ -150,6 +190,14 @@ router.put(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
+      const existing = await prisma.category.findUnique({
+        where: { id: categoryId },
+        select: { id: true, eventId: true, startAt: true, endAt: true },
+      });
+      if (!existing || existing.eventId !== eventId) {
+        return res.status(404).json({ error: 'Album nicht gefunden' });
+      }
+
       const updateData: any = {};
       if (data.name !== undefined) updateData.name = data.name;
       if (data.iconKey !== undefined) updateData.iconKey = data.iconKey;
@@ -162,7 +210,27 @@ router.put(
       if (data.challengeEnabled !== undefined) updateData.challengeEnabled = data.challengeEnabled;
       if (data.challengeDescription !== undefined) updateData.challengeDescription = data.challengeDescription || null;
       if (data.dateTime !== undefined) updateData.dateTime = data.dateTime ? new Date(data.dateTime) : null;
+      if (data.startAt !== undefined) updateData.startAt = data.startAt ? new Date(data.startAt) : null;
+      if (data.endAt !== undefined) updateData.endAt = data.endAt ? new Date(data.endAt) : null;
       if (data.locationName !== undefined) updateData.locationName = data.locationName || null;
+
+      const effectiveStartAt = updateData.startAt !== undefined ? updateData.startAt : existing.startAt;
+      const effectiveEndAt = updateData.endAt !== undefined ? updateData.endAt : existing.endAt;
+
+      if ((effectiveStartAt && !effectiveEndAt) || (!effectiveStartAt && effectiveEndAt)) {
+        return res.status(400).json({ error: 'Bitte startAt und endAt gemeinsam setzen (oder beide leer lassen)' });
+      }
+      if (effectiveStartAt && effectiveEndAt && effectiveStartAt.getTime() > effectiveEndAt.getTime()) {
+        return res.status(400).json({ error: 'startAt muss vor endAt liegen' });
+      }
+      if (effectiveStartAt && effectiveEndAt) {
+        await assertNoCategoryWindowOverlap({
+          eventId,
+          startAt: effectiveStartAt,
+          endAt: effectiveEndAt,
+          excludeCategoryId: categoryId,
+        });
+      }
 
       const category = await prisma.category.update({
         where: { id: categoryId },

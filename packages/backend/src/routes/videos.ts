@@ -15,6 +15,28 @@ import { getEventStorageEndsAt } from '../services/storagePolicy';
 
 const router = Router();
 
+async function selectSmartCategoryId(opts: {
+  eventId: string;
+  capturedAt: Date;
+  isGuest: boolean;
+}): Promise<string | null> {
+  const { eventId, capturedAt, isGuest } = opts;
+
+  const cat = await prisma.category.findFirst({
+    where: {
+      eventId,
+      startAt: { not: null, lte: capturedAt },
+      endAt: { not: null, gte: capturedAt },
+    },
+    select: { id: true, uploadLocked: true },
+    orderBy: { startAt: 'desc' },
+  });
+
+  if (!cat) return null;
+  if (isGuest && cat.uploadLocked) return null;
+  return cat.id;
+}
+
 function serializeBigInt(value: unknown): unknown {
   return JSON.parse(
     JSON.stringify(value, (_key, v) => (typeof v === 'bigint' ? v.toString() : v))
@@ -393,7 +415,18 @@ router.post(
       }
 
       // Check category upload lock if categoryId is provided
-      const { categoryId } = req.body;
+      const rawCategoryId = typeof (req as any)?.body?.categoryId === 'string' ? String((req as any).body.categoryId) : '';
+      const categoryId = rawCategoryId.trim() || null;
+      const capturedAt = new Date();
+
+      const resolvedCategoryId = categoryId
+        ? categoryId
+        : await selectSmartCategoryId({
+            eventId,
+            capturedAt,
+            isGuest: !!isGuest,
+          });
+
       if (categoryId && isGuest) {
         const category = await prisma.category.findUnique({
           where: { id: categoryId },
@@ -413,11 +446,11 @@ router.post(
         }
       }
 
-      const capturedAt = new Date();
       let referenceDateTime: Date | null = null;
-      if (categoryId) {
+
+      if (resolvedCategoryId) {
         const category = await prisma.category.findUnique({
-          where: { id: categoryId },
+          where: { id: resolvedCategoryId },
           select: { id: true, eventId: true, dateTime: true },
         });
 
@@ -493,7 +526,7 @@ router.post(
         data: {
           eventId,
           guestId: isGuest ? req.userId : null,
-          categoryId: categoryId || null,
+          categoryId: resolvedCategoryId,
           storagePath: '', // Will be set after upload
           url: '', // Will be set after creation
           uploadedBy: uploaderName,

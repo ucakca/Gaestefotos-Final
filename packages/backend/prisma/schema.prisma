@@ -322,6 +322,8 @@ model Category {
   challengeEnabled    Boolean   @default(false) // Challenge aktiviert
   challengeDescription String?   @db.Text        // Challenge-Beschreibung
   dateTime            DateTime?  // Datum & Uhrzeit für dieses Album
+  startAt             DateTime?  // Smart Album Start (Zeitfenster)
+  endAt               DateTime?  // Smart Album Ende (Zeitfenster)
   locationName        String?    // Ort für dieses Album
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
