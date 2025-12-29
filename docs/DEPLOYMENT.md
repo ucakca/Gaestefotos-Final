@@ -33,6 +33,45 @@ bash ./start-local-services.sh
 - Backend läuft via `gaestefotos-backend.service` als **Build + Start** (kein `pnpm dev/tsx watch`).
 - Nginx setzt für `/_next/static/*` ein **immutable Cache-Control** und überschreibt Upstream-Header, damit keine doppelten Cache-Control Header entstehen.
 
+#### Admin-Dashboard (Next.js, Port 3001)
+
+Das Admin-Dashboard liegt als separates Package unter `packages/admin-dashboard`.
+
+- **Local Dev**: `pnpm --filter @gaestefotos/admin-dashboard dev` (Port `3001`)
+- **Prod Ziel** (typisch): Subdomain `dash.*` → Reverse Proxy auf Port `3001`
+- **Nginx Beispiel**: `packages/admin-dashboard/nginx.conf.example`
+- **DNS/Setup Hinweise**: `packages/admin-dashboard/SUBDOMAIN_SETUP.md`
+
+**Wichtig (Env):**
+
+- `NEXT_PUBLIC_API_URL`
+  - Local Dev: typischerweise `http://localhost:8001`
+  - Production: muss auf die API zeigen (z.B. `https://app.gästefotos.com/api`), da das Admin-Dashboard i.d.R. auf einer eigenen Subdomain läuft.
+
+**Deploy Admin-Dashboard (systemd) – Reihenfolge analog Frontend**
+
+Wie beim Frontend gilt: in Produktion **niemals** `next build` laufen lassen, während der Service bereits läuft.
+
+```bash
+sudo systemctl stop gaestefotos-admin-dashboard.service
+
+cd packages/admin-dashboard
+pnpm build
+
+sudo systemctl start gaestefotos-admin-dashboard.service
+```
+
+**Post-Deploy Smoke Check (Production)**
+
+```bash
+# Admin UI muss 200 liefern
+curl -sS -o /dev/null -w "HTTP %{http_code}\n" https://dash.gästefotos.com/
+
+# Eine _next/static Datei muss 200 liefern
+curl -sS https://dash.gästefotos.com/ | grep -oE '/_next/static/[^"\x27 ]+\.js' | head -n 1
+curl -sS -I "https://dash.gästefotos.com<PASTE_PATH_HERE>" | head
+```
+
 #### Frontend Deploy (systemd) – Reihenfolge ist Pflicht
 
 In Produktion darf **niemals** ein `next build` / `pnpm build:prod` laufen, während `gaestefotos-frontend.service` bereits läuft.
