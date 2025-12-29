@@ -57,3 +57,19 @@ Ziel: Diese Dokumente sind die **Single Source of Truth** für Architektur, APIs
 
 - **Git Policy (Ignore/Exclude Regeln)**: `docs/GIT_POLICY.md`
 
+## IDE / Git (Quick Fix bei "hängt")
+
+- **Warum kann `git push` "hängen"?**
+  - Im Repo ist ein `pre-push` Hook aktiv, der ggf. `pnpm run e2e:stable` startet.
+  - Wenn Playwright/Browser nicht installiert sind oder der Run lange dauert, wirkt das wie ein Freeze.
+
+- **IDE-sichere Commands (non-interactive)**
+  - `git --no-pager status --porcelain=v1`
+  - `git --no-pager log -n 3 --oneline`
+  - Push ohne Hook (schnell): `SKIP_E2E_HOOK=1 git push`
+  - Alternativ (skip alle Hooks): `git push --no-verify`
+  - E2E erzwingen: `FORCE_E2E_HOOK=1 git push`
+
+- **Hooks sauber installieren**
+  - `pnpm run hooks:install` (installiert die Repo-Hooks nach `.git/hooks/*`)
+
