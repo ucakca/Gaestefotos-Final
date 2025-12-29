@@ -1,0 +1,339 @@
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Camera, X, Search, Image as ImageIcon, Loader2 } from 'lucide-react';
+import api from '@/lib/api';
+
+interface FaceSearchProps {
+  eventId: string;
+  onResults?: (results: any[]) => void;
+  onClose?: () => void;
+  open?: boolean;
+  showButton?: boolean;
+}
+
+interface SearchResult {
+  photoId: string;
+  photoUrl: string;
+  similarity: number;
+  facePosition?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+}
+
+export default function FaceSearch({ eventId, onResults, onClose, open, showButton = false }: FaceSearchProps) {
+  const [showModal, setShowModal] = useState(open || false);
+  
+  useEffect(() => {
+    if (open !== undefined) {
+      setShowModal(open);
+    }
+  }, [open]);
+  const [capturing, setCapturing] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [error, setError] = useState('');
+  const [preview, setPreview] = useState<string | null>(null);
+  
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user' } 
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setCapturing(true);
+    } catch (err) {
+      setError('Kamera konnte nicht geöffnet werden. Bitte Berechtigung erteilen.');
+      console.error('Camera error:', err);
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setCapturing(false);
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx?.drawImage(video, 0, 0);
+
+    const dataUrl = canvas.toDataURL('image/jpeg');
+    setPreview(dataUrl);
+    stopCamera();
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const searchPhotos = async () => {
+    if (!preview) return;
+
+    setSearching(true);
+    setError('');
+    setResults([]);
+
+    try {
+      // Convert data URL to blob
+      const response = await fetch(preview);
+      const blob = await response.blob();
+      
+      const formData = new FormData();
+      formData.append('reference', blob, 'reference.jpg');
+      formData.append('minSimilarity', '0.6');
+
+      const { data } = await api.post(`/events/${eventId}/face-search`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      setResults(data.results || []);
+      onResults?.(data.results || []);
+      
+      if (data.results.length === 0) {
+        setError('Keine Fotos mit diesem Gesicht gefunden. Versuche es mit einem anderen Foto!');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Fehler bei der Suche');
+      console.error('Search error:', err);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const reset = () => {
+    setPreview(null);
+    setResults([]);
+    setError('');
+    stopCamera();
+  };
+
+  const closeModal = () => {
+    reset();
+    setShowModal(false);
+    onClose?.();
+  };
+
+  return (
+    <>
+      {showButton && (
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowModal(true)}
+          className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium flex items-center gap-2"
+        >
+          <Search className="w-5 h-5" />
+          Finde Bilder von mir
+        </motion.button>
+      )}
+
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeModal}
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Finde Bilder von mir
+                </h2>
+                <button
+                  onClick={closeModal}
+                  className="p-2 hover:bg-gray-100 rounded-full"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {!preview ? (
+                <div className="space-y-4">
+                  <p className="text-gray-600 mb-4">
+                    Mache ein Selfie oder lade ein Foto hoch, um alle Fotos zu finden, auf denen du zu sehen bist!
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={startCamera}
+                      className="p-6 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors flex flex-col items-center gap-2"
+                    >
+                      <Camera className="w-8 h-8 text-gray-400" />
+                      <span className="font-medium">Selfie aufnehmen</span>
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-6 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors flex flex-col items-center gap-2"
+                    >
+                      <ImageIcon className="w-8 h-8 text-gray-400" />
+                      <span className="font-medium">Foto hochladen</span>
+                    </motion.button>
+                  </div>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+
+                  {capturing && (
+                    <div className="mt-4">
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        className="w-full rounded-lg"
+                      />
+                      <div className="mt-4 flex gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={capturePhoto}
+                          className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium"
+                        >
+                          Foto aufnehmen
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={stopCamera}
+                          className="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium"
+                        >
+                          Abbrechen
+                        </motion.button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="relative">
+                    <img
+                      src={preview}
+                      alt="Referenzbild"
+                      className="w-full rounded-lg"
+                    />
+                    <button
+                      onClick={reset}
+                      className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {error && (
+                    <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                      {error}
+                    </div>
+                  )}
+
+                  {results.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold mb-2">
+                        {results.length} Foto{results.length !== 1 ? 's' : ''} gefunden!
+                      </h3>
+                      <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                        {results.map((result) => (
+                          <div key={result.photoId} className="relative">
+                            <img
+                              src={result.photoUrl}
+                              alt="Gefundenes Foto"
+                              className="w-full aspect-square object-cover rounded"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-1 text-center">
+                              {Math.round(result.similarity * 100)}% ähnlich
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={searchPhotos}
+                      disabled={searching}
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {searching ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Suche...
+                        </>
+                      ) : (
+                        <>
+                          <Search className="w-5 h-5" />
+                          Fotos suchen
+                        </>
+                      )}
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={reset}
+                      className="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium"
+                    >
+                      Neues Foto
+                    </motion.button>
+                  </div>
+                </div>
+              )}
+
+              <canvas ref={canvasRef} className="hidden" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+

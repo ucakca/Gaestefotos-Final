@@ -1,0 +1,65 @@
+# Nginx-Konfiguration für Admin-Dashboard
+# dash.gästefotos.com (oder dash.xn--gstefotos-v2a.com)
+#
+# Diese Konfiguration muss in Plesk erstellt werden oder manuell in:
+# /etc/nginx/plesk.conf.d/ip_default/dash.xn--gstefotos-v2a.com.conf
+#
+# WICHTIG: Diese Datei wird von Plesk automatisch überschrieben!
+# Besser: In Plesk eine Subdomain erstellen und dann manuell anpassen
+
+server {
+    listen 443 ssl http2;
+    server_name dash.gästefotos.com dash.xn--gstefotos-v2a.com;
+
+    # SSL-Zertifikat (muss in Plesk konfiguriert werden)
+    ssl_certificate /opt/psa/var/certificates/[CERT_NAME];
+    ssl_certificate_key /opt/psa/var/certificates/[CERT_NAME];
+
+    client_max_body_size 128m;
+
+    # Redirect HTTP to HTTPS
+    if ($scheme != "https") {
+        return 301 https://$host$request_uri;
+    }
+
+    # Proxy to Admin-Dashboard (Next.js on Port 3001)
+    location / {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 300s;
+        proxy_connect_timeout 75s;
+    }
+
+    # Proxy API requests to Backend (Port 8001)
+    location /api {
+        proxy_pass http://127.0.0.1:8001/api;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;
+        proxy_connect_timeout 75s;
+    }
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+}
+
+# HTTP to HTTPS redirect
+server {
+    listen 80;
+    server_name dash.gästefotos.com dash.xn--gstefotos-v2a.com;
+    return 301 https://$host$request_uri;
+}
+
