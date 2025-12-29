@@ -509,7 +509,7 @@ export default function EventDashboardPage() {
           </div>
         )}
         {/* Cover Image */}
-        <div className="relative w-full h-48 md:h-64 bg-gradient-to-r from-[#295B4D] to-[#EAA48F] rounded-lg mb-4 overflow-hidden group">
+        <div className="relative w-full h-48 md:h-64 bg-gradient-to-r from-tokens-brandGreen to-tokens-brandPeach rounded-lg mb-4 overflow-hidden group">
           {coverImage && coverImage !== '/default-cover.jpg' ? (
             <img
               src={coverImage}
@@ -517,7 +517,7 @@ export default function EventDashboardPage() {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-white opacity-50">
+            <div className="w-full h-full flex items-center justify-center text-app-bg opacity-50">
               <ImageIcon className="w-12 h-12" />
             </div>
           )}
@@ -526,10 +526,10 @@ export default function EventDashboardPage() {
             whileHover={{ opacity: 1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => coverImageInputRef.current?.click()}
-            className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center text-white opacity-0"
+            className="absolute inset-0 bg-app-fg/0 group-hover:bg-app-fg/30 transition-all flex items-center justify-center text-app-bg opacity-0"
           >
             {uploadingImage === 'cover' ? (
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-app-bg"></div>
             ) : (
               <>
                 <Camera className="w-6 h-6 mr-2" />
@@ -570,23 +570,23 @@ export default function EventDashboardPage() {
           {!usageLoading && usage && (
             <div className="mt-4">
               <div className="flex items-baseline justify-between gap-4">
-                <div className="text-sm text-[#295B4D]">
+                <div className="text-sm text-app-fg">
                   {formatBytes(usedBytes)} {hasLimit ? `von ${formatBytes(limitBytes)}` : ''}
                 </div>
                 {hasLimit && (
-                  <div className="text-sm text-[#295B4D]/70">{percent.toFixed(0)}%</div>
+                  <div className="text-sm text-app-muted">{percent.toFixed(0)}%</div>
                 )}
               </div>
               {hasLimit && (
-                <div className="mt-2 h-2 w-full rounded-full bg-[#295B4D]/10">
+                <div className="mt-2 h-2 w-full rounded-full bg-app-bg">
                   <div
-                    className="h-2 rounded-full bg-[#EAA48F]"
+                    className="h-2 rounded-full bg-tokens-brandPeach"
                     style={{ width: `${percent}%` }}
                   />
                 </div>
               )}
 
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-[#295B4D]/80">
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-app-muted">
                 <div>Fotos: {formatBytes(usage?.usage?.photosBytes)}</div>
                 <div>Videos: {formatBytes(usage?.usage?.videosBytes)}</div>
                 <div>Gästebuch: {formatBytes(usage?.usage?.guestbookBytes)}</div>
@@ -632,16 +632,16 @@ export default function EventDashboardPage() {
             </div>
             {upgradeError && <div className="mt-2 text-sm text-red-700">{upgradeError}</div>}
             {upgradeUrl && (
-              <div className="mt-2 text-xs text-[#295B4D]/70 break-all">{upgradeUrl}</div>
+              <div className="mt-2 text-xs text-app-muted break-all">{upgradeUrl}</div>
             )}
           </div>
 
-          <div className="mt-6 border-t border-[#EAA48F]/30 pt-4">
-            <div className="text-[#295B4D] font-semibold">Share-Link</div>
+          <div className="mt-6 border-t border-app-border pt-4">
+            <div className="text-app-fg font-semibold">Share-Link</div>
             <div className="mt-2 flex items-center gap-2 flex-wrap">
               <button
                 onClick={handleGenerateShareLink}
-                className="px-4 py-2 rounded-lg bg-[#295B4D] text-white text-sm font-semibold"
+                className="px-4 py-2 rounded-lg bg-tokens-brandGreen text-white text-sm font-semibold hover:opacity-90"
                 disabled={shareLoading}
               >
                 {shareLoading ? 'Erzeuge…' : 'Link erzeugen'}
@@ -651,7 +651,7 @@ export default function EventDashboardPage() {
                   onClick={async () => {
                     await navigator.clipboard.writeText(shareUrl);
                   }}
-                  className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                  className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
                 >
                   Link kopieren
                 </button>
@@ -659,18 +659,18 @@ export default function EventDashboardPage() {
             </div>
             {shareError && <div className="mt-2 text-sm text-red-700">{shareError}</div>}
             {shareUrl && (
-              <div className="mt-2 text-xs text-[#295B4D]/70 break-all">{shareUrl}</div>
+              <div className="mt-2 text-xs text-app-muted break-all">{shareUrl}</div>
             )}
           </div>
 
-          <div className="mt-6 border-t border-[#EAA48F]/30 pt-4">
-            <div className="text-[#295B4D] font-semibold">Einladungsseiten</div>
-            <div className="mt-2 text-sm text-[#295B4D]/70">
+          <div className="mt-6 border-t border-app-border pt-4">
+            <div className="text-app-fg font-semibold">Einladungsseiten</div>
+            <div className="mt-2 text-sm text-app-muted">
               Erstelle mehrere Einladungen (z.B. Familie, Freunde) und teile Shortlinks für WhatsApp & Social Media.
             </div>
 
             {copyFeedback && (
-              <div className="mt-2 text-sm text-[#295B4D]">{copyFeedback}</div>
+              <div className="mt-2 text-sm text-app-fg">{copyFeedback}</div>
             )}
 
             <div className="mt-3 flex items-center gap-2 flex-wrap">
@@ -678,18 +678,18 @@ export default function EventDashboardPage() {
                 value={newInvitationName}
                 onChange={(e) => setNewInvitationName(e.target.value)}
                 placeholder="Name (z.B. Familie)"
-                className="flex-1 min-w-[220px] rounded-lg border border-[#EAA48F]/60 px-3 py-2 text-sm text-[#295B4D]"
+                className="flex-1 min-w-[220px] rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
               />
               <button
                 onClick={createInvitation}
-                className="px-4 py-2 rounded-lg bg-[#295B4D] text-white text-sm font-semibold"
+                className="px-4 py-2 rounded-lg bg-tokens-brandGreen text-white text-sm font-semibold hover:opacity-90"
                 disabled={creatingInvitation || newInvitationName.trim().length === 0}
               >
                 {creatingInvitation ? 'Erstelle…' : 'Neu erstellen'}
               </button>
               <button
                 onClick={loadInvitations}
-                className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
                 disabled={invitationsLoading}
               >
                 Aktualisieren
@@ -700,11 +700,11 @@ export default function EventDashboardPage() {
 
             <div className="mt-4 space-y-3">
               {invitationsLoading && (
-                <div className="text-sm text-[#295B4D]/70">Lade Einladungen…</div>
+                <div className="text-sm text-app-muted">Lade Einladungen…</div>
               )}
 
               {!invitationsLoading && invitations.length === 0 && (
-                <div className="text-sm text-[#295B4D]/70">Noch keine Einladungen erstellt.</div>
+                <div className="text-sm text-app-muted">Noch keine Einladungen erstellt.</div>
               )}
 
               {invitations.map((inv: any) => {
@@ -716,7 +716,7 @@ export default function EventDashboardPage() {
                 const isSaving = savingInvitationId === inv.id;
                 const isGeneratingShortLink = generatingShortLinkInvitationId === inv.id;
                 return (
-                  <div key={inv.id} className="rounded-xl border border-[#EAA48F]/30 bg-white p-3">
+                  <div key={inv.id} className="rounded-xl border border-app-border bg-app-card p-3">
                     <div className="flex items-start justify-between gap-3 flex-wrap">
                       <div>
                         {isEditing ? (
@@ -725,10 +725,10 @@ export default function EventDashboardPage() {
                               value={editingInvitationName}
                               onChange={(e) => setEditingInvitationName(e.target.value)}
                               data-testid={`invitation-edit-name-${inv.id}`}
-                              className="w-full rounded-lg border border-[#EAA48F]/60 px-3 py-2 text-sm text-[#295B4D]"
+                              className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
                               placeholder="Name"
                             />
-                            <label className="flex items-center gap-2 text-sm text-[#295B4D]">
+                            <label className="flex items-center gap-2 text-sm text-app-fg">
                               <input
                                 type="checkbox"
                                 checked={editingInvitationIsActive}
@@ -738,7 +738,7 @@ export default function EventDashboardPage() {
                               Aktiv
                             </label>
 
-                            <label className="flex items-center justify-between gap-2 text-sm text-[#295B4D]">
+                            <label className="flex items-center justify-between gap-2 text-sm text-app-fg">
                               <span>Öffentlich</span>
                               <input
                                 type="checkbox"
@@ -749,13 +749,13 @@ export default function EventDashboardPage() {
                             </label>
 
                             <div>
-                              <div className="text-xs text-[#295B4D]/70">Passwort (optional)</div>
+                              <div className="text-xs text-app-muted">Passwort (optional)</div>
                               <input
                                 type="password"
                                 value={editingInvitationPassword}
                                 onChange={(e) => setEditingInvitationPassword(e.target.value)}
                                 data-testid={`invitation-edit-password-${inv.id}`}
-                                className="mt-1 w-full rounded-lg border border-[#EAA48F]/60 px-3 py-2 text-sm text-[#295B4D]"
+                                className="mt-1 w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
                                 placeholder={editingInvitationHasPassword ? 'Neues Passwort setzen (leer = unverändert)' : 'Passwort setzen'}
                               />
                               {editingInvitationHasPassword && (
@@ -772,10 +772,10 @@ export default function EventDashboardPage() {
                             </div>
                           </div>
                         ) : (
-                          <div className="text-sm font-semibold text-[#295B4D]">{inv.name}</div>
+                          <div className="text-sm font-semibold text-app-fg">{inv.name}</div>
                         )}
-                        <div className="text-xs text-[#295B4D]/70">Opens: {typeof inv.opens === 'number' ? inv.opens : 0}</div>
-                        <div className="text-xs text-[#295B4D]/70">
+                        <div className="text-xs text-app-muted">Opens: {typeof inv.opens === 'number' ? inv.opens : 0}</div>
+                        <div className="text-xs text-app-muted">
                           RSVP: {inv?.rsvp?.yes ?? 0}/{inv?.rsvp?.no ?? 0}/{inv?.rsvp?.maybe ?? 0}
                           {inv?.hasPassword ? ' · Passwort: ja' : ''}
                           {inv?.isActive === false ? ' · inaktiv' : ''}
@@ -784,16 +784,16 @@ export default function EventDashboardPage() {
 
                         {inv?.visibility === 'PUBLIC' && (
                           <div className="mt-1">
-                            <div className="text-xs text-[#295B4D]/70">Direkt-Link</div>
-                            <div className="text-xs text-[#295B4D]/70 break-all">{publicUrl}</div>
+                            <div className="text-xs text-app-muted">Direkt-Link</div>
+                            <div className="text-xs text-app-muted break-all">{publicUrl}</div>
                           </div>
                         )}
 
                         {shortUrl && (
                           <div className="mt-1">
-                            <div className="text-xs text-[#295B4D]/70 break-all">{shortUrl}</div>
+                            <div className="text-xs text-app-muted break-all">{shortUrl}</div>
                             {inv?.visibility !== 'PUBLIC' && (
-                              <div className="mt-1 text-xs text-[#295B4D]/70">
+                              <div className="mt-1 text-xs text-app-muted">
                                 Hinweis: UNLISTED-Einladungen sind nur über den Shortlink erreichbar.
                               </div>
                             )}
@@ -807,7 +807,7 @@ export default function EventDashboardPage() {
                             <button
                               onClick={() => saveInvitation(inv.id)}
                               data-testid={`invitation-save-${inv.id}`}
-                              className="px-3 py-2 rounded-lg bg-[#295B4D] text-white text-sm font-semibold disabled:opacity-50"
+                              className="px-3 py-2 rounded-lg bg-tokens-brandGreen text-white text-sm font-semibold disabled:opacity-50 hover:opacity-90"
                               disabled={isSaving || editingInvitationName.trim().length === 0}
                             >
                               {isSaving ? 'Speichere…' : 'Speichern'}
@@ -815,7 +815,7 @@ export default function EventDashboardPage() {
                             <button
                               onClick={cancelEditInvitation}
                               data-testid={`invitation-cancel-${inv.id}`}
-                              className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                              className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
                               disabled={isSaving}
                             >
                               Abbrechen
@@ -825,7 +825,7 @@ export default function EventDashboardPage() {
                           <button
                             onClick={() => startEditInvitation(inv)}
                             data-testid={`invitation-edit-${inv.id}`}
-                            className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                            className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
                           >
                             Bearbeiten
                           </button>
@@ -835,7 +835,7 @@ export default function EventDashboardPage() {
                             onClick={async () => {
                               await copyToClipboard(shortUrl);
                             }}
-                            className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                            className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
                           >
                             Link kopieren
                           </button>
@@ -843,7 +843,7 @@ export default function EventDashboardPage() {
 
                         <button
                           onClick={() => generateNewInvitationShortLink(inv.id)}
-                          className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium disabled:opacity-50"
+                          className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium disabled:opacity-50 hover:opacity-90"
                           disabled={isGeneratingShortLink}
                         >
                           {isGeneratingShortLink ? 'Erzeuge…' : 'Neuen Shortlink'}
@@ -853,7 +853,7 @@ export default function EventDashboardPage() {
                             onClick={async () => {
                               await copyToClipboard(publicUrl, 'Direkt-Link kopiert');
                             }}
-                            className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                            className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
                           >
                             Direkt-Link kopieren
                           </button>
@@ -861,7 +861,7 @@ export default function EventDashboardPage() {
                         {shortUrl && (
                           <button
                             onClick={() => shareInvitation(shortUrl, 'whatsapp')}
-                            className="px-3 py-2 rounded-lg bg-[#EAA48F] text-white text-sm font-semibold"
+                            className="px-3 py-2 rounded-lg bg-tokens-brandPeach text-white text-sm font-semibold hover:opacity-90"
                           >
                             WhatsApp
                           </button>
@@ -869,7 +869,7 @@ export default function EventDashboardPage() {
                         {shortUrl && (
                           <button
                             onClick={() => shareInvitation(shortUrl, 'facebook')}
-                            className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                            className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
                           >
                             Facebook
                           </button>
@@ -877,7 +877,7 @@ export default function EventDashboardPage() {
                         {shortUrl && (
                           <button
                             onClick={() => shareInvitation(shortUrl, 'x')}
-                            className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                            className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
                           >
                             X
                           </button>
@@ -885,7 +885,7 @@ export default function EventDashboardPage() {
                         {shortUrl && (
                           <button
                             onClick={() => shareInvitation(shortUrl, 'linkedin')}
-                            className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                            className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
                           >
                             LinkedIn
                           </button>
@@ -903,7 +903,7 @@ export default function EventDashboardPage() {
         <div className="flex items-start gap-4 mb-6">
           {/* Profile Image */}
           <div className="relative">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-[#295B4D] to-[#EAA48F] overflow-hidden border-4 border-white shadow-lg group">
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-tokens-brandGreen to-tokens-brandPeach overflow-hidden border-4 border-app-card shadow-lg group">
               {profileImage && profileImage !== '/default-profile.png' ? (
                 <img
                   src={profileImage}
@@ -911,7 +911,7 @@ export default function EventDashboardPage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-white">
+                <div className="w-full h-full flex items-center justify-center text-app-bg">
                   <Users className="w-10 h-10" />
                 </div>
               )}
@@ -920,10 +920,10 @@ export default function EventDashboardPage() {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => profileImageInputRef.current?.click()}
-              className="absolute bottom-0 right-0 w-7 h-7 bg-black rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white"
+              className="absolute bottom-0 right-0 w-7 h-7 bg-app-fg rounded-full flex items-center justify-center text-app-bg shadow-lg border-2 border-app-bg"
             >
               {uploadingImage === 'profile' ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-app-bg"></div>
               ) : (
                 <Camera className="w-4 h-4" />
               )}
@@ -953,7 +953,7 @@ export default function EventDashboardPage() {
                       updateEventField('title', (e.target as HTMLInputElement).value);
                     }
                   }}
-                  className="text-xl font-semibold border-b-2 border-black focus:outline-none"
+                  className="text-xl font-semibold border-b-2 border-app-border focus:outline-none"
                   autoFocus
                 />
               ) : (
@@ -967,7 +967,7 @@ export default function EventDashboardPage() {
             </div>
             
             {/* Stats */}
-            <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+            <div className="flex items-center gap-4 text-sm text-app-muted mb-4">
               <span><strong>{photoStats.total}</strong> Fotos</span>
               <span><strong>{photoStats.approved}</strong> Freigegeben</span>
               {photoStats.pending > 0 && (
@@ -988,19 +988,19 @@ export default function EventDashboardPage() {
                 });
               }}
               placeholder="Schreibe eine Willkommensnachricht..."
-              className="w-full p-3 border-2 border-black rounded-lg focus:outline-none resize-none"
+              className="w-full p-3 border-2 border-app-border rounded-lg focus:outline-none resize-none"
               rows={3}
               autoFocus
             />
           ) : (
             <div
               onClick={() => setEditingField('welcomeMessage')}
-              className="p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors min-h-[60px]"
+              className="p-4 bg-app-card border border-app-border rounded-lg cursor-pointer hover:opacity-90 transition-opacity min-h-[60px]"
             >
               {welcomeMessage ? (
-                <p className="text-gray-700 whitespace-pre-wrap">{welcomeMessage}</p>
+                <p className="text-app-fg whitespace-pre-wrap">{welcomeMessage}</p>
               ) : (
-                <p className="text-gray-400 italic">Klicke hier, um eine Willkommensnachricht hinzuzufügen...</p>
+                <p className="text-app-muted italic">Klicke hier, um eine Willkommensnachricht hinzuzufügen...</p>
               )}
             </div>
           )}
@@ -1009,10 +1009,10 @@ export default function EventDashboardPage() {
         {/* Event Details */}
         <div className="mb-6 space-y-3">
           {/* Date - Required */}
-          <div className="bg-gray-50 rounded-xl p-4">
+          <div className="bg-app-card border border-app-border rounded-xl p-4">
             <div className="flex items-center gap-3 mb-2">
-              <Calendar className="w-5 h-5 text-[#295B4D]" />
-              <label className="text-sm font-medium text-gray-700">
+              <Calendar className="w-5 h-5 text-tokens-brandGreen" />
+              <label className="text-sm font-medium text-app-fg">
                 Datum <span className="text-red-500">*</span>
               </label>
             </div>
@@ -1029,7 +1029,7 @@ export default function EventDashboardPage() {
                     updateEventField('dateTime', combinedDateTime.toISOString());
                   }
                 }}
-                className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#295B4D]"
+                className="w-full px-3 py-2 border-2 border-app-border rounded-lg bg-app-card text-app-fg focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen"
                 autoFocus
               />
             ) : (
@@ -1038,7 +1038,7 @@ export default function EventDashboardPage() {
                 className="cursor-pointer hover:opacity-70 transition-opacity"
               >
                 {event.dateTime ? (
-                  <p className="text-gray-900">
+                  <p className="text-app-fg">
                     {new Date(event.dateTime).toLocaleDateString('de-DE', {
                       day: '2-digit',
                       month: '2-digit',
@@ -1053,10 +1053,10 @@ export default function EventDashboardPage() {
           </div>
 
           {/* Time - Required */}
-          <div className="bg-gray-50 rounded-xl p-4">
+          <div className="bg-app-card border border-app-border rounded-xl p-4">
             <div className="flex items-center gap-3 mb-2">
-              <Clock className="w-5 h-5 text-[#295B4D]" />
-              <label className="text-sm font-medium text-gray-700">
+              <Clock className="w-5 h-5 text-tokens-brandGreen" />
+              <label className="text-sm font-medium text-app-fg">
                 Uhrzeit <span className="text-red-500">*</span>
               </label>
             </div>
@@ -1073,7 +1073,7 @@ export default function EventDashboardPage() {
                     updateEventField('dateTime', combinedDateTime.toISOString());
                   }
                 }}
-                className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#295B4D]"
+                className="w-full px-3 py-2 border-2 border-app-border rounded-lg bg-app-card text-app-fg focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen"
                 autoFocus
               />
             ) : (
@@ -1082,7 +1082,7 @@ export default function EventDashboardPage() {
                 className="cursor-pointer hover:opacity-70 transition-opacity"
               >
                 {event.dateTime ? (
-                  <p className="text-gray-900">
+                  <p className="text-app-fg">
                     {new Date(event.dateTime).toLocaleTimeString('de-DE', {
                       hour: '2-digit',
                       minute: '2-digit',
@@ -1096,10 +1096,10 @@ export default function EventDashboardPage() {
           </div>
 
           {/* Location */}
-          <div className="bg-gray-50 rounded-xl p-4">
+          <div className="bg-app-card border border-app-border rounded-xl p-4">
             <div className="flex items-center gap-3 mb-2">
-              <MapPin className="w-5 h-5 text-[#295B4D]" />
-              <label className="text-sm font-medium text-gray-700">Veranstaltungsort</label>
+              <MapPin className="w-5 h-5 text-tokens-brandGreen" />
+              <label className="text-sm font-medium text-app-fg">Veranstaltungsort</label>
             </div>
             {editingField === 'locationName' ? (
               <input
@@ -1109,7 +1109,7 @@ export default function EventDashboardPage() {
                   updateEventField('locationName', e.target.value || null);
                 }}
                 placeholder="z.B. Musterstraße 123, 12345 Musterstadt"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#295B4D]"
+                className="w-full px-3 py-2 border border-app-border rounded-lg bg-app-card text-app-fg focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen"
                 autoFocus
               />
             ) : (
@@ -1118,24 +1118,24 @@ export default function EventDashboardPage() {
                 className="cursor-pointer hover:opacity-70 transition-opacity"
               >
                 {event.locationName ? (
-                  <p className="text-gray-900">{event.locationName}</p>
+                  <p className="text-app-fg">{event.locationName}</p>
                 ) : (
-                  <p className="text-gray-400 italic">Klicke hier, um einen Ort hinzuzufügen...</p>
+                  <p className="text-app-muted italic">Klicke hier, um einen Ort hinzuzufügen...</p>
                 )}
               </div>
             )}
           </div>
 
           {/* Event URL/Slug - Read-only */}
-          <div className="bg-gray-50 rounded-xl p-4">
+          <div className="bg-app-card border border-app-border rounded-xl p-4">
             <div className="flex items-center gap-3 mb-2">
-              <Globe className="w-5 h-5 text-[#295B4D]" />
-              <label className="text-sm font-medium text-gray-700">Event-URL</label>
+              <Globe className="w-5 h-5 text-tokens-brandGreen" />
+              <label className="text-sm font-medium text-app-fg">Event-URL</label>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-gray-900 font-mono text-sm">/e2/{event.slug}</p>
-                <p className="text-xs text-gray-500 mt-1">Automatisch generiert, nicht bearbeitbar</p>
+                <p className="text-app-fg font-mono text-sm">/e2/{event.slug}</p>
+                <p className="text-xs text-app-muted mt-1">Automatisch generiert, nicht bearbeitbar</p>
               </div>
               <button
                 onClick={() => {
@@ -1143,7 +1143,7 @@ export default function EventDashboardPage() {
                   navigator.clipboard.writeText(url);
                   alert('URL kopiert!');
                 }}
-                className="px-3 py-1 text-xs bg-[#295B4D] text-white rounded-lg hover:bg-[#1f4238] transition-colors"
+                className="px-3 py-1 text-xs bg-tokens-brandGreen text-white rounded-lg hover:opacity-90 transition-opacity"
               >
                 Kopieren
               </button>
@@ -1151,10 +1151,10 @@ export default function EventDashboardPage() {
           </div>
 
           {/* Password */}
-          <div className="bg-gray-50 rounded-xl p-4">
+          <div className="bg-app-card border border-app-border rounded-xl p-4">
             <div className="flex items-center gap-3 mb-2">
-              <Lock className="w-5 h-5 text-[#295B4D]" />
-              <label className="text-sm font-medium text-gray-700">Event-Passwort</label>
+              <Lock className="w-5 h-5 text-tokens-brandGreen" />
+              <label className="text-sm font-medium text-app-fg">Event-Passwort</label>
             </div>
             {editingField === 'password' ? (
               <div className="space-y-2">
@@ -1164,10 +1164,10 @@ export default function EventDashboardPage() {
                   onBlur={(e) => {
                     updateEventField('password', e.target.value || null);
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#295B4D]"
+                  className="w-full px-3 py-2 border border-app-border rounded-lg bg-app-card text-app-fg focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen"
                   autoFocus
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-app-muted">
                   {(event as any).password ? 'Leer lassen, um Passwort zu entfernen' : 'Passwort schützt den Event-Zugang'}
                 </p>
               </div>
@@ -1177,9 +1177,9 @@ export default function EventDashboardPage() {
                 className="cursor-pointer hover:opacity-70 transition-opacity"
               >
                 {(event as any).password ? (
-                  <p className="text-gray-900">•••••••• (Passwort gesetzt)</p>
+                  <p className="text-app-fg">•••••••• (Passwort gesetzt)</p>
                 ) : (
-                  <p className="text-gray-400 italic">Klicke hier, um ein Passwort hinzuzufügen...</p>
+                  <p className="text-app-muted italic">Klicke hier, um ein Passwort hinzuzufügen...</p>
                 )}
               </div>
             )}
@@ -1191,22 +1191,22 @@ export default function EventDashboardPage() {
         {/* Quick Actions - iOS Style */}
         <div className="space-y-2 mb-6">
           {/* Event-Modus Accordion */}
-          <div className="bg-gray-50 rounded-xl overflow-hidden">
+          <div className="bg-app-card border border-app-border rounded-xl overflow-hidden">
             <motion.div
               whileTap={{ scale: 0.98 }}
-              className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+              className="p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
               onClick={() => setShowEventMode(!showEventMode)}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#295B4D]/10 rounded-full flex items-center justify-center">
-                  <Settings className="w-5 h-5 text-[#295B4D]" />
+                <div className="w-10 h-10 bg-tokens-brandGreen/10 rounded-full flex items-center justify-center">
+                  <Settings className="w-5 h-5 text-tokens-brandGreen" />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm">Event-Modus</p>
-                  <p className="text-xs text-gray-500">Event-Verhalten konfigurieren</p>
+                  <p className="font-semibold text-sm text-app-fg">Event-Modus</p>
+                  <p className="text-xs text-app-muted">Event-Verhalten konfigurieren</p>
                 </div>
               </div>
-              <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform ${showEventMode ? 'rotate-90' : ''}`} />
+              <ChevronRight className={`w-5 h-5 text-app-muted transition-transform ${showEventMode ? 'rotate-90' : ''}`} />
             </motion.div>
             <AnimatePresence>
               {showEventMode && (
@@ -1219,8 +1219,8 @@ export default function EventDashboardPage() {
                   <div className="space-y-2 pt-2">
                     <label className="flex items-center justify-between px-1 py-2">
                       <div className="flex items-center gap-2">
-                        <Globe className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm">Event aktiv</span>
+                        <Globe className="w-4 h-4 text-app-muted" />
+                        <span className="text-sm text-app-fg">Event aktiv</span>
                       </div>
                       <input
                         type="checkbox"
@@ -1228,7 +1228,7 @@ export default function EventDashboardPage() {
                         disabled={!event || togglingActive}
                         onChange={(e) => updateEventActive(e.target.checked)}
                         className="w-5 h-5"
-                        style={{ accentColor: '#295B4D' }}
+                        style={{ accentColor: 'var(--tokens-brandGreen)' }}
                       />
                     </label>
 
@@ -1237,8 +1237,8 @@ export default function EventDashboardPage() {
                         key={mode}
                         className={`flex items-start p-3 border-2 rounded-lg cursor-pointer transition-all ${
                           featuresConfig.mode === mode
-                            ? 'border-[#295B4D] bg-[#295B4D]/5'
-                            : 'border-gray-200 hover:border-gray-300'
+                            ? 'border-tokens-brandGreen bg-app-bg'
+                            : 'border-app-border hover:opacity-90'
                         }`}
                       >
                         <input
@@ -1248,7 +1248,7 @@ export default function EventDashboardPage() {
                           checked={featuresConfig.mode === mode}
                           onChange={(e) => updateFeaturesConfig({ mode: e.target.value })}
                           className="mt-1 mr-3"
-                          style={{ accentColor: '#295B4D' }}
+                          style={{ accentColor: 'var(--tokens-brandGreen)' }}
                         />
                         <div className="flex-1">
                           <div className="font-medium text-sm">
@@ -1257,7 +1257,7 @@ export default function EventDashboardPage() {
                             {mode === 'COLLECT' && 'Foto Sammeln'}
                             {mode === 'VIEW_ONLY' && 'Nur Ansicht'}
                           </div>
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="text-xs text-app-muted mt-1">
                             {mode === 'STANDARD' && 'Gäste können Fotos hochladen und alle Fotos sehen'}
                             {mode === 'MODERATION' && 'Uploads müssen erst freigegeben werden'}
                             {mode === 'COLLECT' && 'Gäste sehen nur eigene Fotos, du siehst alle'}
@@ -1269,26 +1269,26 @@ export default function EventDashboardPage() {
                   </div>
                   
                   {/* Mystery Mode */}
-                  <div className="pt-3 mt-3 border-t border-gray-200 space-y-3">
+                  <div className="pt-3 mt-3 border-t border-app-border space-y-3">
                     <label className="flex items-center justify-between px-1 py-2">
                       <div className="flex items-center gap-2">
-                        <EyeIcon className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm">Mystery Mode <span className="text-gray-500 font-normal">(Überschreibt die Sichtbarkeitsregeln der Event-Modi - Fotos werden erst nach dem Event sichtbar)</span></span>
+                        <EyeIcon className="w-4 h-4 text-app-muted" />
+                        <span className="text-sm text-app-fg">Mystery Mode <span className="text-app-muted font-normal">(Überschreibt die Sichtbarkeitsregeln der Event-Modi - Fotos werden erst nach dem Event sichtbar)</span></span>
                       </div>
                       <input
                         type="checkbox"
                         checked={featuresConfig.mysteryMode === true}
                         onChange={(e) => updateFeaturesConfig({ mysteryMode: e.target.checked })}
                         className="w-5 h-5"
-                        style={{ accentColor: '#295B4D' }}
+                        style={{ accentColor: 'var(--tokens-brandGreen)' }}
                       />
                     </label>
                     
                     {/* Foto-Uploads erlauben */}
                     <label className="flex items-center justify-between px-1 py-2">
                       <div className="flex items-center gap-2">
-                        <Upload className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm">Foto-Uploads erlauben</span>
+                        <Upload className="w-4 h-4 text-app-muted" />
+                        <span className="text-sm text-app-fg">Foto-Uploads erlauben</span>
                       </div>
                       <input
                         type="checkbox"
@@ -1296,15 +1296,15 @@ export default function EventDashboardPage() {
                         onChange={(e) => updateFeaturesConfig({ allowUploads: e.target.checked })}
                         disabled={isStorageLocked}
                         className="w-5 h-5"
-                        style={{ accentColor: '#295B4D' }}
+                        style={{ accentColor: 'var(--tokens-brandGreen)' }}
                       />
                     </label>
                     
                     {/* Downloads erlauben */}
                     <label className="flex items-center justify-between px-1 py-2">
                       <div className="flex items-center gap-2">
-                        <Download className="w-4 h-4 text-gray-600" />
-                        <span className="text-sm">Downloads erlauben</span>
+                        <Download className="w-4 h-4 text-app-muted" />
+                        <span className="text-sm text-app-fg">Downloads erlauben</span>
                       </div>
                       <input
                         type="checkbox"
@@ -1312,7 +1312,7 @@ export default function EventDashboardPage() {
                         onChange={(e) => updateFeaturesConfig({ allowDownloads: e.target.checked })}
                         disabled={isStorageLocked}
                         className="w-5 h-5"
-                        style={{ accentColor: '#295B4D' }}
+                        style={{ accentColor: 'var(--tokens-brandGreen)' }}
                       />
                     </label>
                   </div>
@@ -1326,31 +1326,31 @@ export default function EventDashboardPage() {
             <Link href={`/events/${eventId}/qr-styler`}>
               <motion.div
                 whileTap={{ scale: 0.98 }}
-                className="bg-gray-50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+                className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#295B4D]/10 rounded-full flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-[#295B4D]" />
+                  <div className="w-10 h-10 bg-tokens-brandGreen/10 rounded-full flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-tokens-brandGreen" />
                   </div>
                   <div>
-                    <p className="font-semibold text-sm">QR‑Aufsteller</p>
-                    <p className="text-xs text-gray-500">Vorlagen gestalten und herunterladen</p>
+                    <p className="font-semibold text-sm text-app-fg">QR‑Aufsteller</p>
+                    <p className="text-xs text-app-muted">Vorlagen gestalten und herunterladen</p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
+                <ChevronRight className="w-5 h-5 text-app-muted" />
               </motion.div>
             </Link>
 
             {/* Gäste Link */}
             {featuresConfig.showGuestlist === false ? (
-              <div className="bg-gray-50 rounded-xl p-4 opacity-50">
+              <div className="bg-app-card border border-app-border rounded-xl p-4 opacity-50">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                    <Users className="w-5 h-5 text-gray-400" />
+                  <div className="w-10 h-10 bg-app-bg rounded-full flex items-center justify-center">
+                    <Users className="w-5 h-5 text-app-muted" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-sm text-gray-400">Gäste</p>
-                    <p className="text-xs text-gray-400">Gästelistenfunktion ist deaktiviert</p>
+                    <p className="font-semibold text-sm text-app-muted">Gäste</p>
+                    <p className="text-xs text-app-muted">Gästelistenfunktion ist deaktiviert</p>
                   </div>
                 </div>
               </div>
@@ -1358,18 +1358,18 @@ export default function EventDashboardPage() {
               <Link href={`/events/${eventId}/guests`}>
                 <motion.div
                   whileTap={{ scale: 0.98 }}
-                  className="bg-gray-50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+                  className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#295B4D]/10 rounded-full flex items-center justify-center">
-                      <Users className="w-5 h-5 text-[#295B4D]" />
+                    <div className="w-10 h-10 bg-tokens-brandGreen/10 rounded-full flex items-center justify-center">
+                      <Users className="w-5 h-5 text-tokens-brandGreen" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm">Gäste</p>
-                      <p className="text-xs text-gray-500">Gäste verwalten und einladen</p>
+                      <p className="font-semibold text-sm text-app-fg">Gäste</p>
+                      <p className="text-xs text-app-muted">Gäste verwalten und einladen</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                  <ChevronRight className="w-5 h-5 text-app-muted" />
                 </motion.div>
               </Link>
             )}
@@ -1378,31 +1378,31 @@ export default function EventDashboardPage() {
             <Link href={`/events/${eventId}/categories`}>
               <motion.div
                 whileTap={{ scale: 0.98 }}
-                className="bg-gray-50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+                className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#EAA48F]/10 rounded-full flex items-center justify-center">
-                    <ImageIcon className="w-5 h-5 text-[#EAA48F]" />
+                  <div className="w-10 h-10 bg-tokens-brandPeach/10 rounded-full flex items-center justify-center">
+                    <ImageIcon className="w-5 h-5 text-tokens-brandPeach" />
                   </div>
                   <div>
-                    <p className="font-semibold text-sm">Alben</p>
-                    <p className="text-xs text-gray-500">Alben erstellen und verwalten</p>
+                    <p className="font-semibold text-sm text-app-fg">Alben</p>
+                    <p className="text-xs text-app-muted">Alben erstellen und verwalten</p>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
+                <ChevronRight className="w-5 h-5 text-app-muted" />
               </motion.div>
             </Link>
 
             {/* Challenges Link */}
             {featuresConfig.challengesEnabled === false ? (
-              <div className="bg-gray-50 rounded-xl p-4 opacity-50">
+              <div className="bg-app-card border border-app-border rounded-xl p-4 opacity-50">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                    <Trophy className="w-5 h-5 text-gray-400" />
+                  <div className="w-10 h-10 bg-app-bg rounded-full flex items-center justify-center">
+                    <Trophy className="w-5 h-5 text-app-muted" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-sm text-gray-400">Challenges</p>
-                    <p className="text-xs text-gray-400">Challenges sind deaktiviert</p>
+                    <p className="font-semibold text-sm text-app-muted">Challenges</p>
+                    <p className="text-xs text-app-muted">Challenges sind deaktiviert</p>
                   </div>
                 </div>
               </div>
@@ -1410,18 +1410,18 @@ export default function EventDashboardPage() {
               <Link href={`/events/${eventId}/challenges`}>
                 <motion.div
                   whileTap={{ scale: 0.98 }}
-                  className="bg-gray-50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+                  className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
                       <Trophy className="w-5 h-5 text-yellow-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm">Challenges</p>
-                      <p className="text-xs text-gray-500">Challenges erstellen und verwalten</p>
+                      <p className="font-semibold text-sm text-app-fg">Challenges</p>
+                      <p className="text-xs text-app-muted">Challenges erstellen und verwalten</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                  <ChevronRight className="w-5 h-5 text-app-muted" />
                 </motion.div>
               </Link>
             )}
@@ -1430,38 +1430,38 @@ export default function EventDashboardPage() {
           <Link href={`/events/${eventId}/statistics`}>
             <motion.div
               whileTap={{ scale: 0.98 }}
-              className="bg-gray-50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+              className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
             >
               <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#295B4D]/10 rounded-full flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-[#295B4D]" />
+              <div className="w-10 h-10 bg-tokens-brandGreen/10 rounded-full flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-tokens-brandGreen" />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm">Statistiken</p>
-                  <p className="text-xs text-gray-500">Event-Übersicht und Analysen</p>
+                  <p className="font-semibold text-sm text-app-fg">Statistiken</p>
+                  <p className="text-xs text-app-muted">Event-Übersicht und Analysen</p>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
+              <ChevronRight className="w-5 h-5 text-app-muted" />
             </motion.div>
           </Link>
 
           {/* Erweiterte Einstellungen Accordion */}
-          <div className="bg-gray-50 rounded-xl overflow-hidden">
+          <div className="bg-app-card border border-app-border rounded-xl overflow-hidden">
             <motion.div
               whileTap={{ scale: 0.98 }}
-              className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+              className="p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
               onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#295B4D]/10 rounded-full flex items-center justify-center">
-                  <Settings className="w-5 h-5 text-[#295B4D]" />
+                <div className="w-10 h-10 bg-tokens-brandGreen/10 rounded-full flex items-center justify-center">
+                  <Settings className="w-5 h-5 text-tokens-brandGreen" />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm">Erweiterte Einstellungen</p>
-                  <p className="text-xs text-gray-500">Weitere Features & Optionen</p>
+                  <p className="font-semibold text-sm text-app-fg">Erweiterte Einstellungen</p>
+                  <p className="text-xs text-app-muted">Weitere Features & Optionen</p>
                 </div>
               </div>
-              <ChevronRight className={`w-5 h-5 text-gray-400 transition-transform ${showAdvancedSettings ? 'rotate-90' : ''}`} />
+              <ChevronRight className={`w-5 h-5 text-app-muted transition-transform ${showAdvancedSettings ? 'rotate-90' : ''}`} />
             </motion.div>
             <AnimatePresence>
               {showAdvancedSettings && (
@@ -1474,7 +1474,7 @@ export default function EventDashboardPage() {
                   <div className="pt-4 space-y-3">
                     <label className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <UserCheck className="w-4 h-4 text-gray-600" />
+                        <UserCheck className="w-4 h-4 text-app-muted" />
                         <span className="text-sm">Gästeliste anzeigen</span>
                       </div>
                       <input
@@ -1482,13 +1482,13 @@ export default function EventDashboardPage() {
                         checked={featuresConfig.showGuestlist !== false}
                         onChange={(e) => updateFeaturesConfig({ showGuestlist: e.target.checked })}
                         className="w-5 h-5"
-                        style={{ accentColor: '#295B4D' }}
+                        style={{ accentColor: 'var(--tokens-brandGreen)' }}
                       />
                     </label>
 
                     <label className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Trophy className="w-4 h-4 text-gray-600" />
+                        <Trophy className="w-4 h-4 text-app-muted" />
                         <span className="text-sm">Challenges aktivieren</span>
                       </div>
                       <input
@@ -1496,7 +1496,7 @@ export default function EventDashboardPage() {
                         checked={featuresConfig.challengesEnabled === true}
                         onChange={(e) => updateFeaturesConfig({ challengesEnabled: e.target.checked })}
                         className="w-5 h-5"
-                        style={{ accentColor: '#295B4D' }}
+                        style={{ accentColor: 'var(--tokens-brandGreen)' }}
                       />
                     </label>
 
@@ -1514,7 +1514,7 @@ export default function EventDashboardPage() {
                         alert('Fehler beim Speichern');
                       }
                     }}
-                    className="w-full mt-4 bg-[#295B4D] text-white rounded-xl p-4 font-semibold hover:bg-[#1f4238] transition-colors flex items-center justify-center gap-2"
+                    className="w-full mt-4 bg-tokens-brandGreen text-white rounded-xl p-4 font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                   >
                     <Check className="w-5 h-5" />
                     Speichern
@@ -1535,48 +1535,48 @@ export default function EventDashboardPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowSettings(false)}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end"
+            className="fixed inset-0 bg-app-fg/50 z-50 flex items-end"
           >
             <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-hidden"
+              className="bg-app-card rounded-t-3xl w-full max-h-[80vh] overflow-hidden"
             >
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Einstellungen</h2>
+              <div className="sticky top-0 bg-app-card border-b border-app-border px-4 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-app-fg">Einstellungen</h2>
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="p-1 hover:bg-gray-100 rounded-full"
+                  className="p-1 hover:opacity-80 rounded-full"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5 text-app-fg" />
                 </button>
               </div>
               <div className="overflow-y-auto max-h-[calc(80vh-60px)] p-4 space-y-2">
                 <Link href={`/events/${eventId}`}>
                   <motion.div
                     whileTap={{ scale: 0.98 }}
-                    className="bg-gray-50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="bg-app-bg rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
                   >
                     <div className="flex items-center gap-3">
-                      <Eye className="w-5 h-5 text-gray-600" />
-                      <span className="font-medium">Event ansehen</span>
+                      <Eye className="w-5 h-5 text-app-muted" />
+                      <span className="font-medium text-app-fg">Event ansehen</span>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                    <ChevronRight className="w-5 h-5 text-app-muted" />
                   </motion.div>
                 </Link>
 
                 <Link href={`/events/${eventId}/duplicates`}>
                   <motion.div
                     whileTap={{ scale: 0.98 }}
-                    className="bg-gray-50 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="bg-app-bg rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
                   >
                     <div className="flex items-center gap-3">
-                      <ImageIcon className="w-5 h-5 text-gray-600" />
-                      <span className="font-medium">Duplikate verwalten</span>
+                      <ImageIcon className="w-5 h-5 text-app-muted" />
+                      <span className="font-medium text-app-fg">Duplikate verwalten</span>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                    <ChevronRight className="w-5 h-5 text-app-muted" />
                   </motion.div>
                 </Link>
               </div>
