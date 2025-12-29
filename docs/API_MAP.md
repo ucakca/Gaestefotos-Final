@@ -32,6 +32,22 @@ Quelle: `packages/backend/src/index.ts`
 
 ## WordPress Bridge (v1)
 
+### Konfiguration (Env / Secrets)
+
+- **Required (Prod)**
+  - `WOOCOMMERCE_WEBHOOK_SECRET` (Webhook signature validation)
+- **Optional (Feature/Hardening)**
+  - `WORDPRESS_SSO_SECRET` (zusätzlicher Schutz für `POST /api/auth/wordpress-sso` via Header/Body Secret)
+  - `WORDPRESS_URL` (default fallback: `https://gästefotos.com`)
+  - `WORDPRESS_VERIFY_SECRET` (optional Header `X-GF-Verify-Secret` für WP verify-password)
+- **Optional (DB/PHP Fallback für verify-password / user lookup)**
+  - `WORDPRESS_DB_HOST`
+  - `WORDPRESS_DB_PORT`
+  - `WORDPRESS_DB_USER`
+  - `WORDPRESS_DB_PASSWORD`
+  - `WORDPRESS_DB_NAME`
+  - `WORDPRESS_TABLE_PREFIX`
+
 ### WordPress SSO (WP → App)
 
 - Backend: `POST /api/auth/wordpress-sso`
