@@ -97,11 +97,16 @@ Legende:
     - `EventTrafficStat` (Views by source)
     - `WooWebhookEventLog` (Woo webhook logs)
 
-- **Invitations / RSVP / Shortlinks / ICS**
+- ✅ **Invitations / RSVP / Shortlinks / ICS**
   - Backend: `packages/backend/src/routes/invitations.ts`
     - enthält RSVP Schema + Passwort-Gate + Shortlink Codes
     - enthält ICS Generation (Calendar Download)
-  - (Frontend Pages sind vorhanden, aber nicht vollständig in dieser Matrix verlinkt; siehe Next.js app routes unter `packages/frontend/src/app/i/*` und Dashboard/Event Pages)
+  - Frontend:
+    - Einladung: `packages/frontend/src/app/i/[slug]/page.tsx`
+    - Guest redirect: `packages/frontend/src/app/e/[slug]/invitation/page.tsx` → `/i/<slug>`
+    - Shortlink resolver: `packages/frontend/src/app/s2/[code]/page.tsx` (calls `/api/shortlinks/:code`)
+  - Notes:
+    - `visibility=UNLISTED` ist Cookie-gated (gesetzt beim Shortlink resolve)
 
 ---
 

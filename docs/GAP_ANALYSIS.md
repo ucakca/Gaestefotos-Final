@@ -148,6 +148,33 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
       - `EventTrafficStat` (Views by source)
       - `WooWebhookEventLog` (Woo webhook / conversions)
 
+## Invitations / RSVP / Shortlinks / ICS
+
+- **Invitations + RSVP + ICS + Shortlinks**
+  - **Status**: vorhanden
+  - **Belege**:
+    - Backend: `packages/backend/src/routes/invitations.ts`
+      - Host/Admin:
+        - `GET /api/events/:eventId/invitations`
+        - `POST /api/events/:eventId/invitations`
+        - `PUT /api/events/:eventId/invitations/:invitationId`
+        - `POST /api/events/:eventId/invitations/:invitationId/shortlinks`
+      - Public:
+        - `GET /api/invitations/slug/:slug`
+        - `POST /api/invitations/slug/:slug/rsvp`
+        - `GET /api/invitations/slug/:slug/ics`
+        - `GET /api/shortlinks/:code`
+    - Frontend:
+      - Einladung: `packages/frontend/src/app/i/[slug]/page.tsx`
+      - Guest redirect: `packages/frontend/src/app/e/[slug]/invitation/page.tsx`
+      - Shortlink resolver: `packages/frontend/src/app/s2/[code]/page.tsx`
+  - **Notes**:
+    - UNLISTED Einladungen sind über Access-Cookie geschützt (Cookie wird beim Shortlink Resolve gesetzt)
+    - Passwort-Gate: `401 PASSWORD_REQUIRED` / `403 INVALID_PASSWORD`
+    - Rate limit public endpoints via `passwordLimiter` in `packages/backend/src/middleware/rateLimit.ts`
+  - **Fehlt**:
+    - (optional) Admin/Host UI für Templates/Editor (falls Spec mehr als MVP verlangt)
+
 ## Admin Impersonation
 
 - **Admin "Login as Host"**

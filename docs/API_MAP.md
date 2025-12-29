@@ -134,6 +134,59 @@ Quelle: `packages/backend/src/routes/events.ts`
 Frontend Admin nutzt Export:
 - `packages/frontend/src/app/admin/dashboard/page.tsx`
 
+## Invitations / RSVP / Shortlinks / ICS
+
+Quelle: `packages/backend/src/routes/invitations.ts` (gemountet via `app.use('/api', invitationRoutes)`)
+
+### Laiensicher
+
+- **Einladung-Seite**: `/i/<slug>` zeigt Einladung + RSVP + Kalender-Download.
+- **Kurzlink**: `/s2/<code>` löst Kurzcode auf → setzt ggf. ein Access-Cookie → leitet nach `/i/<slug>` weiter.
+- **Unlisted**: Einladungen mit `visibility=UNLISTED` sind nicht direkt per `/i/<slug>` erreichbar, sondern nur nach Shortlink-Auflösung (Cookie).
+- **Passwortschutz**: Wenn `hasPassword=true`, muss ein Passwort mitgegeben werden (GET via Query, RSVP via Body).
+
+### Host/Admin (auth)
+
+- `GET /api/events/:eventId/invitations`
+  - Listet Einladungen + Shortlinks + Opens/Rsvp Counts
+- `POST /api/events/:eventId/invitations`
+  - Body: `{ name, slug?, templateId?, config?, password?, visibility? }`
+  - Creates default shortlink + returns `invitationUrl` (`/i/<slug>`)
+- `PUT /api/events/:eventId/invitations/:invitationId`
+  - Patch: `{ name?, config?, password?, isActive?, visibility? }`
+- `POST /api/events/:eventId/invitations/:invitationId/shortlinks`
+  - Body: `{ channel?: string }`
+  - Returns `{ shortLink: { code, url, ... } }`
+
+### Public
+
+- `GET /api/events/slug/:slug/invitations/public`
+  - Listet PUBLIC Einladungen eines Events (für Landing/Directory)
+
+- `GET /api/invitations/slug/:slug`
+  - Query: `?password=...` (optional)
+  - Returns Einladung + Event Meta + RSVP Counts
+  - Passwort-Gate:
+    - `401 {error: "PASSWORD_REQUIRED"}` wenn fehlt
+    - `403 {error: "INVALID_PASSWORD"}` wenn falsch
+  - UNLISTED Gate:
+    - ohne Cookie → `404` (bewusst „nicht gefunden“)
+
+- `POST /api/invitations/slug/:slug/rsvp`
+  - Body: `{ status: "YES"|"NO"|"MAYBE", name?, password? }`
+  - Returns `{ ok: true, rsvp: { yes, no, maybe } }`
+
+- `GET /api/invitations/slug/:slug/ics`
+  - Query: `?password=...` (optional)
+  - Returns `text/calendar` (Download)
+  - `400 {error: "DATE_TIME_MISSING"}` wenn Datum/Uhrzeit fehlt
+
+- `GET /api/shortlinks/:code`
+  - Resolves Kurzcode → `{ invitationSlug, invitationUrl, event }`
+  - Side effects:
+    - setzt ein `invitation_access_<invitationId>` Cookie (12h default; siehe `INVITATION_ACCESS_TTL_SECONDS`)
+    - tracked Opens in `InvitationVisit` + `InvitationShortLink.lastAccessedAt`
+
 ## Live Wall
 
 Frontend:
