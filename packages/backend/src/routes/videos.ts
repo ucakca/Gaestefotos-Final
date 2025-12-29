@@ -710,13 +710,14 @@ router.get(
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
-    // Access control: host JWT OR event access cookie
+    // Access control: host/admin via JWT OR event access cookie for guests
     const isHost = !!req.userId && video.event.hostId === req.userId;
-    if (!isHost && !hasEventAccess(req, video.eventId)) {
+    const isAdmin = req.userRole === 'ADMIN';
+    if (!isHost && !isAdmin && !hasEventAccess(req, video.eventId)) {
       return res.status(404).json({ error: 'Video nicht gefunden' });
     }
 
-    const denyVisibility = isHost || req.userRole === 'ADMIN' ? 'hostOrAdmin' : 'guest';
+    const denyVisibility = isHost || isAdmin ? 'hostOrAdmin' : 'guest';
 
     // Storage period enforcement
     const storageEndsAt = await getEventStorageEndsAt(video.eventId);
@@ -727,9 +728,15 @@ router.get(
       });
     }
 
-    // Check if downloads are allowed
-    const featuresConfig = video.event.featuresConfig as any;
-    if (featuresConfig?.allowDownloads === false) {
+    const featuresConfig = (video.event.featuresConfig || {}) as any;
+
+    // Guests can download only if host enabled allowDownloads
+    if (!isHost && !isAdmin && featuresConfig?.allowDownloads === false) {
+      return res.status(404).json({ error: 'Video nicht gefunden' });
+    }
+
+    // Guests can download only approved videos
+    if (!isHost && !isAdmin && video.status !== 'APPROVED') {
       return res.status(404).json({ error: 'Video nicht gefunden' });
     }
 
@@ -1043,11 +1050,7 @@ router.post(
         return res.status(403).json({ code: 'STORAGE_LOCKED', error: 'Speicherperiode beendet' });
       }
 
-      // Check if downloads are allowed
-      const featuresConfig = event.featuresConfig as any;
-      if (featuresConfig?.allowDownloads === false) {
-        return res.status(404).json({ error: 'Event nicht gefunden' });
-      }
+      const featuresConfig = (event.featuresConfig || {}) as any;
 
       const enforceVirusScan =
         process.env.VIRUS_SCAN_ENFORCE === 'true' ||

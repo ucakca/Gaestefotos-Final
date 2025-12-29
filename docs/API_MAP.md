@@ -295,6 +295,17 @@ Backend:
       - `photo_uploaded` via Socket.IO room `event:<eventId>`
   - `GET /api/events/:eventId/photos?status=...` (Feed; Live Wall nutzt `APPROVED`)
 
+  - Downloads:
+    - `GET /api/photos/:photoId/download`
+      - ACL:
+        - Host/Admin: immer erlaubt (solange Storage nicht gelocked)
+        - Guest: nur mit Event-Access Cookie (`hasEventAccess`) **und** wenn `featuresConfig.allowDownloads !== false` **und** Photo `APPROVED`
+      - Storage lifecycle:
+        - wenn Storage-Periode vorbei → `403 { code: "STORAGE_LOCKED" }` (denyByVisibility)
+    - `POST /api/photos/bulk/download` (ZIP)
+      - Host/Admin only
+      - Storage lifecycle: wenn vorbei → `403 { code: "STORAGE_LOCKED" }`
+
 - Videos: `packages/backend/src/routes/videos.ts`
   - `POST /api/events/:eventId/videos/upload` (multipart `file`)
     - Guards:
@@ -308,6 +319,23 @@ Backend:
     - Rate limits:
       - `videoUploadIpLimiter` + `videoUploadEventLimiter`
   - `GET /api/events/:eventId/videos` (Feed, inkl. Proxy URLs)
+
+  - Serve/Proxy:
+    - `GET /api/videos/:eventId/file/:storagePath(*)` (inline)
+
+  - Downloads:
+    - `GET /api/videos/:videoId/download`
+      - ACL:
+        - Host/Admin: immer erlaubt (solange Storage nicht gelocked)
+        - Guest: nur mit Event-Access Cookie (`hasEventAccess`) **und** wenn `featuresConfig.allowDownloads !== false` **und** Video `APPROVED`
+      - Zusätzlich:
+        - optional Virus-Scan Enforcement: nicht-clean → 404
+      - Storage lifecycle:
+        - wenn Storage-Periode vorbei → `403 { code: "STORAGE_LOCKED" }` (denyByVisibility)
+    - `POST /api/videos/bulk/download` (ZIP)
+      - Host/Admin only
+      - (Hinweis) allowDownloads Flag gilt für Gäste; Host/Admin dürfen immer (Original-Download-Contract)
+      - Storage lifecycle: wenn vorbei → `403 { code: "STORAGE_LOCKED" }`
 
 Frontend:
 - Upload UI + Retry/Queue:
