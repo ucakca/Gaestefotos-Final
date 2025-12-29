@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
+import { Card } from '@/components/ui/Card';
 
 type UploadIssuesResponse = {
   ok: boolean;
@@ -252,38 +253,41 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   }
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="mx-auto w-full max-w-6xl">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{event?.title || 'Event'}</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-app-fg">{event?.title || 'Event'}</h1>
+          <p className="mt-1 text-sm text-app-muted">
             {event?.dateTime ? new Date(event.dateTime).toLocaleString('de-DE') : 'Kein Datum gesetzt'}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/events" className="text-gray-700 hover:text-gray-900">
+          <Link
+            href="/events"
+            className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm font-medium text-app-fg"
+          >
             Zurück
           </Link>
         </div>
       </div>
 
       {loading && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-gray-600">Wird geladen...</p>
-        </div>
+        <Card className="p-5">
+          <p className="text-sm text-app-muted">Wird geladen...</p>
+        </Card>
       )}
 
       {!loading && error && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-red-700">{error}</p>
-        </div>
+        <Card className="p-5">
+          <p className="text-sm text-red-700">{error}</p>
+        </Card>
       )}
 
       {!loading && !error && (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900">Virus Scan</h2>
-            <p className="text-gray-600 mt-1">
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold text-app-fg">Virus Scan</h2>
+            <p className="mt-1 text-sm text-app-muted">
               Optional: Wenn aktiv, werden Fotos mit scanStatus != CLEAN nicht ausgeliefert (404). Standard ist AUS.
             </p>
 
@@ -294,7 +298,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                   checked={virusScanEnforce}
                   onChange={(e) => setVirusScanEnforce(e.target.checked)}
                 />
-                <span className="text-sm text-gray-700">Enforce Quarantäne (pro Event)</span>
+                <span className="text-sm text-app-fg">Enforce Quarantäne (pro Event)</span>
               </div>
               <div className="flex items-center gap-3">
                 <input
@@ -302,7 +306,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                   checked={virusScanAutoClean}
                   onChange={(e) => setVirusScanAutoClean(e.target.checked)}
                 />
-                <span className="text-sm text-gray-700">Auto-CLEAN (nur Monitoring, ohne echten Scanner)</span>
+                <span className="text-sm text-app-fg">Auto-CLEAN (nur Monitoring, ohne echten Scanner)</span>
               </div>
             </div>
 
@@ -310,19 +314,19 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               <button
                 onClick={saveVirusScanSettings}
                 disabled={savingVirusScan}
-                className={`px-4 py-2 rounded-md text-sm font-medium text-white ${
-                  savingVirusScan ? 'bg-gray-400' : 'bg-primary-600 hover:bg-primary-700'
+                className={`rounded-lg px-4 py-2 text-sm font-medium text-white ${
+                  savingVirusScan ? 'bg-black/30' : 'bg-tokens-brandGreen hover:opacity-90'
                 }`}
               >
                 {savingVirusScan ? 'Speichern…' : 'Speichern'}
               </button>
-              <p className="text-sm text-gray-600">Speichert in: featuresConfig.virusScan.enforce</p>
+              <p className="text-sm text-app-muted">Speichert in: featuresConfig.virusScan.enforce</p>
             </div>
-          </div>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900">Upload Date Policy</h2>
-            <p className="text-gray-600 mt-1">
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold text-app-fg">Upload Date Policy</h2>
+            <p className="mt-1 text-sm text-app-muted">
               Steuert, ob Uploads gegen Event-/Album-Datum geprüft werden und welche Toleranz gilt.
             </p>
 
@@ -333,12 +337,12 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                   checked={uploadDateEnabled}
                   onChange={(e) => setUploadDateEnabled(e.target.checked)}
                 />
-                <span className="text-sm text-gray-700">Aktiv (Datum prüfen)</span>
+                <span className="text-sm text-app-fg">Aktiv (Datum prüfen)</span>
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1">Toleranz (Tage)</label>
+                <label className="mb-1 block text-sm text-app-muted">Toleranz (Tage)</label>
                 <input
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
                   value={uploadDateToleranceDays}
                   onChange={(e) => setUploadDateToleranceDays(e.target.value)}
                   placeholder="Default: 1"
@@ -351,27 +355,27 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               <button
                 onClick={saveUploadDatePolicy}
                 disabled={savingDatePolicy}
-                className={`px-4 py-2 rounded-md text-sm font-medium text-white ${
-                  savingDatePolicy ? 'bg-gray-400' : 'bg-primary-600 hover:bg-primary-700'
+                className={`rounded-lg px-4 py-2 text-sm font-medium text-white ${
+                  savingDatePolicy ? 'bg-black/30' : 'bg-tokens-brandGreen hover:opacity-90'
                 }`}
               >
                 {savingDatePolicy ? 'Speichern…' : 'Speichern'}
               </button>
-              <p className="text-sm text-gray-600">Speichert in: featuresConfig.uploadDatePolicy</p>
+              <p className="text-sm text-app-muted">Speichert in: featuresConfig.uploadDatePolicy</p>
             </div>
-          </div>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900">Upload Rate Limits</h2>
-            <p className="text-gray-600 mt-1">
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold text-app-fg">Upload Rate Limits</h2>
+            <p className="mt-1 text-sm text-app-muted">
               Diese Werte überschreiben die Defaults pro Event. Leer lassen = Default.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
               <div>
-                <label className="block text-sm text-gray-600 mb-1">Photo Uploads pro IP (5 min)</label>
+                <label className="mb-1 block text-sm text-app-muted">Photo Uploads pro IP (5 min)</label>
                 <input
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
                   value={photoIpMax}
                   onChange={(e) => setPhotoIpMax(e.target.value)}
                   placeholder="Default: 120"
@@ -379,9 +383,9 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1">Photo Uploads pro Event (5 min)</label>
+                <label className="mb-1 block text-sm text-app-muted">Photo Uploads pro Event (5 min)</label>
                 <input
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
                   value={photoEventMax}
                   onChange={(e) => setPhotoEventMax(e.target.value)}
                   placeholder="Default: 1000"
@@ -389,9 +393,9 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1">Video Uploads pro IP (10 min)</label>
+                <label className="mb-1 block text-sm text-app-muted">Video Uploads pro IP (10 min)</label>
                 <input
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
                   value={videoIpMax}
                   onChange={(e) => setVideoIpMax(e.target.value)}
                   placeholder="Default: 20"
@@ -399,9 +403,9 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-600 mb-1">Video Uploads pro Event (10 min)</label>
+                <label className="mb-1 block text-sm text-app-muted">Video Uploads pro Event (10 min)</label>
                 <input
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
                   value={videoEventMax}
                   onChange={(e) => setVideoEventMax(e.target.value)}
                   placeholder="Default: 150"
@@ -414,28 +418,28 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               <button
                 onClick={saveUploadRateLimits}
                 disabled={savingLimits}
-                className={`px-4 py-2 rounded-md text-sm font-medium text-white ${
-                  savingLimits ? 'bg-gray-400' : 'bg-primary-600 hover:bg-primary-700'
+                className={`rounded-lg px-4 py-2 text-sm font-medium text-white ${
+                  savingLimits ? 'bg-black/30' : 'bg-tokens-brandGreen hover:opacity-90'
                 }`}
               >
                 {savingLimits ? 'Speichern…' : 'Speichern'}
               </button>
-              <p className="text-sm text-gray-600">Speichert in: featuresConfig.uploadRateLimits</p>
+              <p className="text-sm text-app-muted">Speichert in: featuresConfig.uploadRateLimits</p>
             </div>
-          </div>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <Card className="p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Upload Issues</h2>
-                <p className="text-gray-600 mt-1">
+                <h2 className="text-lg font-semibold text-app-fg">Upload Issues</h2>
+                <p className="mt-1 text-sm text-app-muted">
                   Monitoring von abgebrochenen Uploads, Scan-Problemen und abgelaufenen Gästebuch-Foto-Uploads.
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <label className="text-sm text-gray-600">Zeitraum</label>
+                <label className="text-sm text-app-muted">Zeitraum</label>
                 <select
-                  className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
                   value={sinceHours}
                   onChange={(e) => setSinceHours(parseInt(e.target.value, 10))}
                 >
@@ -448,80 +452,80 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-6">
-              <div className="bg-gray-50 rounded-md p-4">
-                <div className="text-xs text-gray-500">Temp Photos (DELETED)</div>
-                <div className="text-2xl font-bold text-gray-900">{issues?.counts.tempDeletedPhotos ?? '-'}</div>
+              <div className="rounded-lg border border-app-border bg-app-bg p-4">
+                <div className="text-xs text-app-muted">Temp Photos (DELETED)</div>
+                <div className="text-2xl font-semibold text-app-fg">{issues?.counts.tempDeletedPhotos ?? '-'}</div>
               </div>
-              <div className="bg-gray-50 rounded-md p-4">
-                <div className="text-xs text-gray-500">Temp Videos (DELETED)</div>
-                <div className="text-2xl font-bold text-gray-900">{issues?.counts.tempDeletedVideos ?? '-'}</div>
+              <div className="rounded-lg border border-app-border bg-app-bg p-4">
+                <div className="text-xs text-app-muted">Temp Videos (DELETED)</div>
+                <div className="text-2xl font-semibold text-app-fg">{issues?.counts.tempDeletedVideos ?? '-'}</div>
               </div>
-              <div className="bg-gray-50 rounded-md p-4">
-                <div className="text-xs text-gray-500">Scan ERROR Photos</div>
-                <div className="text-2xl font-bold text-gray-900">{issues?.counts.scanErrorPhotos ?? '-'}</div>
+              <div className="rounded-lg border border-app-border bg-app-bg p-4">
+                <div className="text-xs text-app-muted">Scan ERROR Photos</div>
+                <div className="text-2xl font-semibold text-app-fg">{issues?.counts.scanErrorPhotos ?? '-'}</div>
               </div>
-              <div className="bg-gray-50 rounded-md p-4">
-                <div className="text-xs text-gray-500">Scan PENDING Photos</div>
-                <div className="text-2xl font-bold text-gray-900">{issues?.counts.scanPendingPhotos ?? '-'}</div>
+              <div className="rounded-lg border border-app-border bg-app-bg p-4">
+                <div className="text-xs text-app-muted">Scan PENDING Photos</div>
+                <div className="text-2xl font-semibold text-app-fg">{issues?.counts.scanPendingPhotos ?? '-'}</div>
               </div>
-              <div className="bg-gray-50 rounded-md p-4">
-                <div className="text-xs text-gray-500">Scan ERROR Videos</div>
-                <div className="text-2xl font-bold text-gray-900">{issues?.counts.scanErrorVideos ?? '-'}</div>
+              <div className="rounded-lg border border-app-border bg-app-bg p-4">
+                <div className="text-xs text-app-muted">Scan ERROR Videos</div>
+                <div className="text-2xl font-semibold text-app-fg">{issues?.counts.scanErrorVideos ?? '-'}</div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
-              <div className="bg-gray-50 rounded-md p-4">
-                <div className="text-xs text-gray-500">Scan PENDING Videos</div>
-                <div className="text-2xl font-bold text-gray-900">{issues?.counts.scanPendingVideos ?? '-'}</div>
+              <div className="rounded-lg border border-app-border bg-app-bg p-4">
+                <div className="text-xs text-app-muted">Scan PENDING Videos</div>
+                <div className="text-2xl font-semibold text-app-fg">{issues?.counts.scanPendingVideos ?? '-'}</div>
               </div>
-              <div className="bg-gray-50 rounded-md p-4">
-                <div className="text-xs text-gray-500">Expired Guestbook Uploads</div>
-                <div className="text-2xl font-bold text-gray-900">{issues?.counts.guestbookExpiredUploads ?? '-'}</div>
+              <div className="rounded-lg border border-app-border bg-app-bg p-4">
+                <div className="text-xs text-app-muted">Expired Guestbook Uploads</div>
+                <div className="text-2xl font-semibold text-app-fg">{issues?.counts.guestbookExpiredUploads ?? '-'}</div>
               </div>
             </div>
 
             <div className="mt-6">
-              {loadingIssues && <p className="text-gray-600">Issues werden geladen...</p>}
-              {!loadingIssues && errorIssues && <p className="text-red-700">{errorIssues}</p>}
+              {loadingIssues && <p className="text-sm text-app-muted">Issues werden geladen...</p>}
+              {!loadingIssues && errorIssues && <p className="text-sm text-red-700">{errorIssues}</p>}
               {!loadingIssues && !errorIssues && issues && (
-                <p className="text-sm text-gray-600">
-                  Gesamt: <span className="font-medium text-gray-900">{totalIssues}</span>
+                <p className="text-sm text-app-muted">
+                  Gesamt: <span className="font-medium text-app-fg">{totalIssues}</span>
                 </p>
               )}
             </div>
-          </div>
+          </Card>
 
           {!loadingIssues && !errorIssues && issues && (
             <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">Scan ERROR Videos</h3>
+              <Card className="overflow-hidden">
+                <div className="px-6 py-4 border-b border-app-border">
+                  <h3 className="text-lg font-semibold text-app-fg">Scan ERROR Videos</h3>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-app-border">
+                    <thead className="bg-app-bg">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Video ID</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded By</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scan Error</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">Video ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">Created</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">Uploaded By</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">Scan Error</th>
                         <th className="px-6 py-3" />
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-app-border bg-app-card">
                       {issues.items.scanErrorVideos.map((v) => (
                         <tr key={v.id}>
-                          <td className="px-6 py-4 text-sm text-gray-700 font-mono">{v.id}</td>
-                          <td className="px-6 py-4 text-sm text-gray-700 font-mono">{new Date(v.createdAt).toLocaleString('de-DE')}</td>
-                          <td className="px-6 py-4 text-sm text-gray-700 font-mono">{v.uploadedBy || '-'}</td>
-                          <td className="px-6 py-4 text-sm text-gray-700 font-mono">{v.scanError || '-'}</td>
+                          <td className="px-6 py-4 text-sm text-app-fg font-mono">{v.id}</td>
+                          <td className="px-6 py-4 text-sm text-app-muted font-mono">{new Date(v.createdAt).toLocaleString('de-DE')}</td>
+                          <td className="px-6 py-4 text-sm text-app-muted font-mono">{v.uploadedBy || '-'}</td>
+                          <td className="px-6 py-4 text-sm text-app-muted font-mono">{v.scanError || '-'}</td>
                           <td className="px-6 py-4 text-right text-sm">
                             <button
                               onClick={() => markVideoClean(v.id)}
                               disabled={markingVideoClean === v.id}
-                              className={`px-3 py-2 rounded-md text-xs font-medium text-white ${
-                                markingVideoClean === v.id ? 'bg-gray-400' : 'bg-primary-600 hover:bg-primary-700'
+                              className={`rounded-lg px-3 py-2 text-xs font-medium text-white ${
+                                markingVideoClean === v.id ? 'bg-black/30' : 'bg-tokens-brandGreen hover:opacity-90'
                               }`}
                             >
                               {markingVideoClean === v.id ? '…' : 'Freigeben'}
@@ -531,7 +535,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                       ))}
                       {issues.items.scanErrorVideos.length === 0 && (
                         <tr>
-                          <td className="px-6 py-6 text-sm text-gray-600" colSpan={5}>
+                          <td className="px-6 py-6 text-sm text-app-muted" colSpan={5}>
                             Keine Einträge
                           </td>
                         </tr>
@@ -539,34 +543,34 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </Card>
 
-              <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">Scan PENDING Videos</h3>
+              <Card className="overflow-hidden">
+                <div className="px-6 py-4 border-b border-app-border">
+                  <h3 className="text-lg font-semibold text-app-fg">Scan PENDING Videos</h3>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-app-border">
+                    <thead className="bg-app-bg">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Video ID</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded By</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">Video ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">Created</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">Uploaded By</th>
                         <th className="px-6 py-3" />
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-app-border bg-app-card">
                       {issues.items.scanPendingVideos.map((v) => (
                         <tr key={v.id}>
-                          <td className="px-6 py-4 text-sm text-gray-700 font-mono">{v.id}</td>
-                          <td className="px-6 py-4 text-sm text-gray-700 font-mono">{new Date(v.createdAt).toLocaleString('de-DE')}</td>
-                          <td className="px-6 py-4 text-sm text-gray-700 font-mono">{v.uploadedBy || '-'}</td>
+                          <td className="px-6 py-4 text-sm text-app-fg font-mono">{v.id}</td>
+                          <td className="px-6 py-4 text-sm text-app-muted font-mono">{new Date(v.createdAt).toLocaleString('de-DE')}</td>
+                          <td className="px-6 py-4 text-sm text-app-muted font-mono">{v.uploadedBy || '-'}</td>
                           <td className="px-6 py-4 text-right text-sm">
                             <button
                               onClick={() => markVideoClean(v.id)}
                               disabled={markingVideoClean === v.id}
-                              className={`px-3 py-2 rounded-md text-xs font-medium text-white ${
-                                markingVideoClean === v.id ? 'bg-gray-400' : 'bg-primary-600 hover:bg-primary-700'
+                              className={`rounded-lg px-3 py-2 text-xs font-medium text-white ${
+                                markingVideoClean === v.id ? 'bg-black/30' : 'bg-tokens-brandGreen hover:opacity-90'
                               }`}
                             >
                               {markingVideoClean === v.id ? '…' : 'Freigeben'}
@@ -576,7 +580,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                       ))}
                       {issues.items.scanPendingVideos.length === 0 && (
                         <tr>
-                          <td className="px-6 py-6 text-sm text-gray-600" colSpan={4}>
+                          <td className="px-6 py-6 text-sm text-app-muted" colSpan={4}>
                             Keine Einträge
                           </td>
                         </tr>
@@ -584,36 +588,36 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </Card>
 
-              <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">Scan ERROR Photos</h3>
+              <Card className="overflow-hidden">
+                <div className="px-6 py-4 border-b border-app-border">
+                  <h3 className="text-lg font-semibold text-app-fg">Scan ERROR Photos</h3>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-app-border">
+                    <thead className="bg-app-bg">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Photo ID</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded By</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scan Error</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">Photo ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">Created</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">Uploaded By</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">Scan Error</th>
                         <th className="px-6 py-3" />
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-app-border bg-app-card">
                       {issues.items.scanErrorPhotos.map((p) => (
                         <tr key={p.id}>
-                          <td className="px-6 py-4 text-sm text-gray-700 font-mono">{p.id}</td>
-                          <td className="px-6 py-4 text-sm text-gray-700 font-mono">{new Date(p.createdAt).toLocaleString('de-DE')}</td>
-                          <td className="px-6 py-4 text-sm text-gray-700 font-mono">{p.uploadedBy || '-'}</td>
-                          <td className="px-6 py-4 text-sm text-gray-700 font-mono">{p.scanError || '-'}</td>
+                          <td className="px-6 py-4 text-sm text-app-fg font-mono">{p.id}</td>
+                          <td className="px-6 py-4 text-sm text-app-muted font-mono">{new Date(p.createdAt).toLocaleString('de-DE')}</td>
+                          <td className="px-6 py-4 text-sm text-app-muted font-mono">{p.uploadedBy || '-'}</td>
+                          <td className="px-6 py-4 text-sm text-app-muted font-mono">{p.scanError || '-'}</td>
                           <td className="px-6 py-4 text-right text-sm">
                             <button
                               onClick={() => markPhotoClean(p.id)}
                               disabled={markingClean === p.id}
-                              className={`px-3 py-2 rounded-md text-xs font-medium text-white ${
-                                markingClean === p.id ? 'bg-gray-400' : 'bg-primary-600 hover:bg-primary-700'
+                              className={`rounded-lg px-3 py-2 text-xs font-medium text-white ${
+                                markingClean === p.id ? 'bg-black/30' : 'bg-tokens-brandGreen hover:opacity-90'
                               }`}
                             >
                               {markingClean === p.id ? '…' : 'Freigeben'}
@@ -623,7 +627,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                       ))}
                       {issues.items.scanErrorPhotos.length === 0 && (
                         <tr>
-                          <td className="px-6 py-6 text-sm text-gray-600" colSpan={5}>
+                          <td className="px-6 py-6 text-sm text-app-muted" colSpan={5}>
                             Keine Einträge
                           </td>
                         </tr>
@@ -631,34 +635,34 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </Card>
 
-              <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">Scan PENDING Photos</h3>
+              <Card className="overflow-hidden">
+                <div className="px-6 py-4 border-b border-app-border">
+                  <h3 className="text-lg font-semibold text-app-fg">Scan PENDING Photos</h3>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-app-border">
+                    <thead className="bg-app-bg">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Photo ID</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded By</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">Photo ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">Created</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">Uploaded By</th>
                         <th className="px-6 py-3" />
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-app-border bg-app-card">
                       {issues.items.scanPendingPhotos.map((p) => (
                         <tr key={p.id}>
-                          <td className="px-6 py-4 text-sm text-gray-700 font-mono">{p.id}</td>
-                          <td className="px-6 py-4 text-sm text-gray-700 font-mono">{new Date(p.createdAt).toLocaleString('de-DE')}</td>
-                          <td className="px-6 py-4 text-sm text-gray-700 font-mono">{p.uploadedBy || '-'}</td>
+                          <td className="px-6 py-4 text-sm text-app-fg font-mono">{p.id}</td>
+                          <td className="px-6 py-4 text-sm text-app-muted font-mono">{new Date(p.createdAt).toLocaleString('de-DE')}</td>
+                          <td className="px-6 py-4 text-sm text-app-muted font-mono">{p.uploadedBy || '-'}</td>
                           <td className="px-6 py-4 text-right text-sm">
                             <button
                               onClick={() => markPhotoClean(p.id)}
                               disabled={markingClean === p.id}
-                              className={`px-3 py-2 rounded-md text-xs font-medium text-white ${
-                                markingClean === p.id ? 'bg-gray-400' : 'bg-primary-600 hover:bg-primary-700'
+                              className={`rounded-lg px-3 py-2 text-xs font-medium text-white ${
+                                markingClean === p.id ? 'bg-black/30' : 'bg-tokens-brandGreen hover:opacity-90'
                               }`}
                             >
                               {markingClean === p.id ? '…' : 'Freigeben'}
@@ -668,7 +672,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                       ))}
                       {issues.items.scanPendingPhotos.length === 0 && (
                         <tr>
-                          <td className="px-6 py-6 text-sm text-gray-600" colSpan={4}>
+                          <td className="px-6 py-6 text-sm text-app-muted" colSpan={4}>
                             Keine Einträge
                           </td>
                         </tr>
@@ -676,7 +680,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </Card>
 
               <IssuesTable
                 title="Temp Photos (DELETED)"
@@ -722,29 +726,29 @@ function IssuesTable(props: { title: string; columns: string[]; rows: string[][]
   const { title, columns, rows } = props;
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+    <Card className="overflow-hidden">
+      <div className="px-6 py-4 border-b border-app-border">
+        <h3 className="text-lg font-semibold text-app-fg">{title}</h3>
       </div>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-app-border">
+          <thead className="bg-app-bg">
             <tr>
               {columns.map((c) => (
                 <th
                   key={c}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider"
                 >
                   {c}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="divide-y divide-app-border bg-app-card">
             {rows.map((row, idx) => (
               <tr key={idx}>
                 {row.map((cell, j) => (
-                  <td key={j} className="px-6 py-4 text-sm text-gray-700 font-mono">
+                  <td key={j} className="px-6 py-4 text-sm text-app-muted font-mono">
                     {cell}
                   </td>
                 ))}
@@ -752,7 +756,7 @@ function IssuesTable(props: { title: string; columns: string[]; rows: string[][]
             ))}
             {rows.length === 0 && (
               <tr>
-                <td className="px-6 py-6 text-sm text-gray-600" colSpan={columns.length}>
+                <td className="px-6 py-6 text-sm text-app-muted" colSpan={columns.length}>
                   Keine Einträge
                 </td>
               </tr>
@@ -760,6 +764,6 @@ function IssuesTable(props: { title: string; columns: string[]; rows: string[][]
           </tbody>
         </table>
       </div>
-    </div>
+    </Card>
   );
 }
