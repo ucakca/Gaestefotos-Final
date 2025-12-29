@@ -111,23 +111,35 @@ Legende:
 - **PWA Basis**
   - Manifest: `packages/frontend/public/manifest.json`
   - Service Worker: `packages/frontend/public/sw.js` (minimal cache)
+- **Offline Upload Queue (MVP, IndexedDB)**
+  - Frontend:
+    - Queue Lib: `packages/frontend/src/lib/uploadQueue.ts`
+    - Integration: `packages/frontend/src/components/UploadButton.tsx`
+  - Verhalten:
+    - Enqueue bei `offline` oder retryable network errors
+    - Auto-Drain bei `online` und beim Page-Mount
   - Fehlt:
-    - robuste Offline Queue (IndexedDB)
-    - Retry/Background Sync
-    - Caching-Strategien für Event Pages/Assets
+    - UI für Queue Management (Liste/Retry/Delete)
+    - Background Sync (optional)
+    - Robustere Caching-Strategien für Event Pages/Assets
 
 ---
 
 ## Host Wizard / Smart Albums
 
 - **Host Wizard (Setup Flow + Live Preview)**
+  - Frontend:
+    - New Event redirect to wizard: `packages/frontend/src/app/events/new/page.tsx`
+    - Design wizard UI: `packages/frontend/src/app/events/[id]/design/page.tsx`
+    - Categories wizard UI: `packages/frontend/src/app/events/[id]/categories/page.tsx`
+  - Fehlt:
+    - Vollständiger Multi-Step Wizard (mehr Steps/Validation)
 
 - **Smart Albums (Zeitfenster)**
+  - Frontend:
+    - UI (startAt/endAt): `packages/frontend/src/app/events/[id]/categories/page.tsx`
   - Fehlt:
-    - DB Modell (Zeitranges)
-    - Overlap-Validation
-    - EXIF/createdAt → Album mapping
-    - UI für Erstellung/Bearbeitung
+    - DB Modell/Validation/Mapping (falls noch nicht final im Backend implementiert)
 
 ---
 

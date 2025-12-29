@@ -24,6 +24,10 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 - ✅ Production Frontend: `/_next/static/*` liefert wieder `200` + korrekte Content-Types
 - ✅ Admin UI: "Views by source" im Admin Dashboard (QR Print‑Service)
 - ✅ DB Migration in Prod deployed: `20251228214500_event_traffic_stats`
+- ✅ Smart Albums (Zeitfenster): UI + API Integration (startAt/endAt)
+- ✅ Host Wizard (minimal via `?wizard=1`): New Event → Design → Categories
+- ✅ Upload Robustness: zentrale Error-Formatierung + Retryability + Progress UI (Live Camera)
+- ✅ Offline Upload Queue (IndexedDB, minimal): enqueue bei offline/transient, auto-retry bei online
 
 ## ⏳ In Progress
 
@@ -33,10 +37,6 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 
 ## ❌ Next (Priorität hoch)
 
-- ❌ Smart Albums (Zeitfenster): DB/API/Validation/Mapping + UI
-- ❌ Host Wizard (Live Preview + Save Flow)
-- ❌ Upload Robustness (Progress/Retry/Processing)
-- ❌ Offline Upload Queue (Service Worker + IndexedDB)
 - ❌ Live Wall Tiering/Sort/Animations
 - ❌ WP Bridge v1 Contracts/Endpoints (falls Abweichung)
 - ❌ Admin Impersonation
