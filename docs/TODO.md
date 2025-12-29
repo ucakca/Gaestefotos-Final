@@ -29,6 +29,9 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 - ✅ Upload Robustness: zentrale Error-Formatierung + Retryability + Progress UI (Live Camera)
 - ✅ Offline Upload Queue (IndexedDB, minimal): enqueue bei offline/transient, auto-retry bei online
 - ✅ Live Wall Tiering/Sort/Animations (Basis): Sort (Neueste/Zufall) + Realtime/Polling Toggle + sanfte Animations
+- ✅ WP Bridge v1 Contracts/Endpoints (WordPress SSO / Woo Contracts)
+- ✅ Admin Impersonation
+- ✅ Hard Constraints final alignment
 
 ## ⏳ In Progress
 
@@ -38,9 +41,7 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 
 ## ❌ Next (Priorität hoch)
 
-- ❌ WP Bridge v1 Contracts/Endpoints (falls Abweichung)
-- ❌ Admin Impersonation
-- ❌ Hard Constraints final alignment
+- ❌ (frei)
 
 ## ❌ Later
 
