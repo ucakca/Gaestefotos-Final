@@ -17,6 +17,20 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const tokenFromUrl = new URLSearchParams(window.location.search).get('token');
+      if (tokenFromUrl) {
+      try {
+        sessionStorage.setItem('token', tokenFromUrl);
+        localStorage.removeItem('token');
+      } catch {
+        // ignore
+      }
+      window.location.href = '/dashboard';
+      return;
+      }
+    }
+
     loadEvents();
   }, []);
 

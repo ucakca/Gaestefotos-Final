@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { domainToASCII } from 'node:url';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
-import { verifyWordPressUser, WordPressAuthUnavailableError } from '../config/wordpress';
+import { getWordPressUserById, verifyWordPressUser, WordPressAuthUnavailableError } from '../config/wordpress';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -95,6 +95,12 @@ function setAuthCookie(res: Response, token: string, ttlSeconds: number) {
     maxAge: ttlSeconds * 1000,
     path: '/',
   });
+}
+
+function getAppBaseUrl(): string {
+  const raw = (process.env.FRONTEND_URL || '').split(',').map((s) => s.trim()).filter(Boolean)[0];
+  if (raw) return raw.replace(/\/$/, '');
+  return 'https://app.gästefotos.com';
 }
 
 function clearAuthCookie(res: Response) {
@@ -290,6 +296,102 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(400).json({ error: error.errors });
     }
     console.error('Login error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+const wordpressSsoSchema = z.object({
+  wpUserId: z.union([z.number().int(), z.string()]).transform((v) => (typeof v === 'string' ? parseInt(v, 10) : v)),
+  ssoSecret: z.string().optional(),
+});
+
+router.post('/wordpress-sso', async (req: Request, res: Response) => {
+  try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({ error: 'Server misconfigured: JWT_SECRET is missing' });
+    }
+
+    const parsed = wordpressSsoSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid payload' });
+    }
+
+    const wpUserId = parsed.data.wpUserId;
+    if (!Number.isFinite(wpUserId) || wpUserId <= 0) {
+      return res.status(400).json({ error: 'Invalid wpUserId' });
+    }
+
+    const requiredSecret = (process.env.WORDPRESS_SSO_SECRET || '').trim();
+    if (requiredSecret) {
+      const headerSecret = String(req.get('x-gf-wp-sso-secret') || '').trim();
+      const bodySecret = String(parsed.data.ssoSecret || '').trim();
+      if (!headerSecret && !bodySecret) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      if (headerSecret !== requiredSecret && bodySecret !== requiredSecret) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+    }
+
+    let user = await prisma.user.findFirst({
+      where: { wordpressUserId: wpUserId },
+    });
+
+    if (!user) {
+      const wpUser = await getWordPressUserById(wpUserId);
+      if (!wpUser) {
+        return res.status(404).json({ error: 'WordPress user not found' });
+      }
+
+      const existing = await prisma.user.findFirst({
+        where: { email: wpUser.user_email },
+      });
+
+      const role = 'HOST';
+      const passwordHash = await bcrypt.hash(jwt.sign({ wpUserId }, jwtSecret, { expiresIn: '15m' }), 10);
+
+      if (existing) {
+        user = await prisma.user.update({
+          where: { id: existing.id },
+          data: {
+            email: wpUser.user_email,
+            name: wpUser.display_name || wpUser.user_login,
+            role: role as any,
+            wordpressUserId: wpUserId,
+            password: passwordHash,
+          },
+        });
+      } else {
+        user = await prisma.user.create({
+          data: {
+            email: wpUser.user_email,
+            name: wpUser.display_name || wpUser.user_login,
+            role: role as any,
+            wordpressUserId: wpUserId,
+            password: passwordHash,
+          },
+        });
+      }
+    }
+
+    const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as any;
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      jwtSecret,
+      { expiresIn }
+    );
+
+    setAuthCookie(res, token, parseJwtExpiresInSeconds(expiresIn));
+
+    const appUrl = getAppBaseUrl();
+    res.json({
+      success: true,
+      redirectUrl: `${appUrl}/dashboard?token=${encodeURIComponent(token)}`,
+      token,
+    });
+  } catch (error: any) {
+    logger.error('wordpress-sso error', { message: error?.message || String(error) });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
