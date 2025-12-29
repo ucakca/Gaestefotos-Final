@@ -36,7 +36,7 @@ grep -E "woocommerce_webhook_duplicate" /tmp/backend-local.log | tail -n 200
 
 ### 1) Signature failures
 
-If you see frequent `403 Forbidden` for `/api/woocommerce-webhooks/order-paid`, verify:
+If you see frequent `403 Forbidden` for `/api/webhooks/woocommerce/order-paid`, verify:
 
 - `WOOCOMMERCE_WEBHOOK_SECRET` matches the WooCommerce webhook secret
 - Backend receives raw body correctly (webhook signature depends on raw payload)
@@ -93,7 +93,7 @@ Set `EVENT_ID=...` before running.
 - Confirm webhook endpoint reachable (returns 403 if signature missing):
 
 ```bash
-curl -sS -X POST http://localhost:8002/api/woocommerce-webhooks/order-paid -H 'Content-Type: application/json' --data '{}' -w "\nHTTP_STATUS=%{http_code}\n"
+curl -sS -X POST http://localhost:8002/api/webhooks/woocommerce/order-paid -H 'Content-Type: application/json' --data '{}' -w "\nHTTP_STATUS=%{http_code}\n"
 ```
 
 - After sending a real webhook from Woo, confirm exactly one entitlement was created and webhook duplicates are logged as `woocommerce_webhook_duplicate`.
