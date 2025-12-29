@@ -63,6 +63,22 @@ Legende:
     - Guest darf Original-Downloads nur, wenn Host Feature-Flag/Checkbox `allowDownloads` (oder äquivalent) aktiviert
   - Status: ◐ (Requirement festgelegt; Contract/Endpoints/UX sind zu verifizieren/zu implementieren)
 
+- ✅ **Theme System v1 (Design Tokens, system-wide)**
+  - Backend (Admin): `packages/backend/src/routes/adminTheme.ts`
+    - `GET /api/admin/theme`
+    - `PUT /api/admin/theme`
+  - Backend (Public): `packages/backend/src/routes/theme.ts`
+    - `GET /api/theme`
+  - Storage: `AppSetting` key `theme_tokens_v1` (`packages/backend/prisma/schema.prisma`)
+  - Frontend Auto-Apply:
+    - `packages/frontend/src/components/ThemeLoader.tsx`
+    - `packages/frontend/src/app/layout.tsx`
+  - Admin Dashboard Auto-Apply:
+    - `packages/admin-dashboard/src/components/ThemeLoader.tsx`
+    - `packages/admin-dashboard/src/app/layout.tsx`
+  - Admin UI Editor:
+    - `packages/admin-dashboard/src/app/settings/page.tsx`
+
 - **Moderation (Host UI + API Endpoints)**
   - Frontend: `packages/frontend/src/app/moderation/page.tsx`
     - nutzt `POST /api/photos/:photoId/approve` und `POST /api/photos/:photoId/reject`
@@ -198,6 +214,14 @@ Legende:
 
 - ✅ **Admin Dashboard (separates Package, optional)**
   - Package: `packages/admin-dashboard/*`
+
+- ✅ **Admin Dashboard UI Redesign (token-based, responsive)**
+  - App Shell: `packages/admin-dashboard/src/components/AdminShell.tsx`, `Sidebar.tsx`
+  - Pages:
+    - Login: `packages/admin-dashboard/src/app/login/page.tsx`
+    - Dashboard: `packages/admin-dashboard/src/app/dashboard/page.tsx`
+    - Events: `packages/admin-dashboard/src/app/events/page.tsx`, `packages/admin-dashboard/src/app/events/[id]/page.tsx`
+    - Settings/Theme: `packages/admin-dashboard/src/app/settings/page.tsx`
 
 - **Duplicates (Duplikat-Gruppen, Best-of, Delete)**
   - Backend: `packages/backend/src/routes/duplicates.ts`

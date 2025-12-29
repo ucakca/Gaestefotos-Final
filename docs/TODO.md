@@ -40,10 +40,24 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 - ✅ Audit vs. Spec: Live Wall (Realtime/Polling/Socket Events) abgeglichen
 - ✅ Audit vs. Spec: Uploads (Guards/Limits/Offline Queue) abgeglichen
 - ✅ Audit vs. Spec: Admin (Dashboards/Tools/Endpoints) abgeglichen
+- ✅ Admin Dashboard (shadcn/ui + Tailwind, token-based, responsive)
+  - Login, Dashboard, Events List, Event Detail
+  - App Shell: mobile Drawer + Desktop Sidebar
+  - Missing Routes: `/system`, `/users`, `/logs`, `/settings` (auth-gated)
+- ✅ Theme System v1 (Design Tokens in DB)
+  - Backend: Admin API `GET/PUT /api/admin/theme` (AppSetting `theme_tokens_v1`)
+  - Backend: Public API `GET /api/theme`
+  - Admin UI: Theme Editor (live preview + save/load)
+  - Auto-Apply: ThemeLoader in Frontend + Admin root layout
+- ✅ Git Push “hang” Fix (Dev Workflow)
+  - Ursache dokumentiert: pre-push Hook / E2E
+  - IDE-safe Git Commands in `docs/INDEX.md`
 
 ## ⏳ In Progress
 
-- ⏳ (leer)
+- ⏳ Shared App Shell Refactor (Navigation/Layout/Auth gates/Loading/Error)
+  - Frontend: token-based AppLayout + zentrale States vereinheitlichen
+  - Admin: weitere Konsolidierung folgt
 
 ## ❌ Next (Priorität hoch)
 
