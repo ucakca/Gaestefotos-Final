@@ -30,6 +30,36 @@ Quelle: `packages/backend/src/index.ts`
 - Admin Routes (Backend): `packages/backend/src/routes/admin*`
 - Marketing / Stats (Admin): `GET /api/admin/marketing/stats` → `packages/backend/src/routes/adminMarketing.ts`
 
+## WordPress Bridge (v1)
+
+### WordPress SSO (WP → App)
+
+- Backend: `POST /api/auth/wordpress-sso`
+  - Code: `packages/backend/src/routes/auth.ts`
+  - Optional secret:
+    - Env: `WORDPRESS_SSO_SECRET`
+    - Header: `x-gf-wp-sso-secret`
+
+### WordPress Password Verify (App → WP)
+
+Backend nutzt für Login optional WordPress-Verifikation.
+
+- Backend Login (App): `POST /api/auth/login`
+  - Code: `packages/backend/src/routes/auth.ts` → `verifyWordPressUser()`
+- WordPress REST Endpoint (WP): `POST /wp-json/gaestefotos/v1/verify-password`
+  - Code (App-Seite): `packages/backend/src/config/wordpress.ts`
+  - Request body:
+    - `{ "email": string, "password": string }`
+  - Optional secret header:
+    - Env: `WORDPRESS_VERIFY_SECRET`
+    - Header: `X-GF-Verify-Secret: <secret>`
+  - Expected response shape (mindestens):
+    - `{ "verified": boolean, ... }`
+    - Wenn `verified=true`: erwartet zusätzlich u.a. `user_id`, `email`, `login` (siehe `wordpress.ts`)
+  - Failure modes:
+    - `400` → credentials ungültig (wird als normales Login-Fail behandelt)
+    - `401/403/404` oder Netzwerkfehler → WP auth unavailable → Backend antwortet `503`
+
 ## QR / Print Export
 
 Quelle: `packages/backend/src/routes/events.ts`

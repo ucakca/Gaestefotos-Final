@@ -95,6 +95,17 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
     - Backend: `packages/backend/src/routes/auth.ts`
       - `POST /api/auth/wordpress-sso`
 
+- **WordPress Password Verify (REST /wp-json/gaestefotos/v1/verify-password)**
+  - **Status**: vorhanden (als Login-Integration)
+  - **Belege**:
+    - Backend Login: `POST /api/auth/login` → `packages/backend/src/routes/auth.ts`
+    - WP-Verify Client: `packages/backend/src/config/wordpress.ts`
+      - ruft `POST ${WORDPRESS_URL}/wp-json/gaestefotos/v1/verify-password`
+      - optional `X-GF-Verify-Secret` via `WORDPRESS_VERIFY_SECRET`
+  - **Notes**:
+    - WP REST `400` wird als "invalid credentials" behandelt
+    - WP REST unavailable → Backend antwortet `503` (damit gültige WP User nicht fälschlich `401` bekommen)
+
 - **WooCommerce Webhooks**
   - **Status**: teilweise
   - **Belege**:
