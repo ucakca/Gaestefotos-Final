@@ -56,6 +56,13 @@ Legende:
 - **Photos/Videos Upload + Moderation (Basis)**
   - Backend: `packages/backend/src/routes/photos.ts`, `packages/backend/src/routes/videos.ts`
 
+- **Downloads (Optimized Views vs Original Downloads)**
+  - Requirement:
+    - Guest/Host UI darf für Performance optimierte/komprimierte Derivate anzeigen (thumbnails/optimized sizes)
+    - Host/Admin muss immer das Originalfile (uncompressed) herunterladen können
+    - Guest darf Original-Downloads nur, wenn Host Feature-Flag/Checkbox `allowDownloads` (oder äquivalent) aktiviert
+  - Status: ◐ (Requirement festgelegt; Contract/Endpoints/UX sind zu verifizieren/zu implementieren)
+
 - **Moderation (Host UI + API Endpoints)**
   - Frontend: `packages/frontend/src/app/moderation/page.tsx`
     - nutzt `POST /api/photos/:photoId/approve` und `POST /api/photos/:photoId/reject`
@@ -153,6 +160,12 @@ Legende:
     - Categories wizard UI: `packages/frontend/src/app/events/[id]/categories/page.tsx`
   - Fehlt:
     - Vollständiger Multi-Step Wizard (mehr Steps/Validation)
+
+- **Theme-Welten / Design Presets (host-selectable)**
+  - Requirement:
+    - Host kann pro Event eine "Themenwelt" wählen (nicht nur Hochzeit), die Farben/Typo/Komponenten-Stil bestimmt
+    - Basis: "Apple clean" + dezente, wählbare Akzent-/Mood-Welten
+  - Status: ◐ (Design Presets existieren; Theme-Welten als durchgängiges System für alle Oberflächen zu vervollständigen)
 
 - **Smart Albums (Zeitfenster)**
   - Frontend:

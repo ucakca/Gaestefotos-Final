@@ -47,6 +47,8 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 
 ## ❌ Next (Priorität hoch)
 
+- ❌ UI Redesign (alle Oberflächen): shadcn/ui + Tailwind, Apple-clean Basis + Theme-Welten
+- ❌ Media Pipeline/Downloads: Optimized Views für Guest/Host, aber Original Download für Host/Admin; Guest-Downloads nur bei Host `allowDownloads`
 - ❌ Pre-Launch: finaler System-Check (Smoke Tests, Monitoring, Rollback Plan)
 
 ## ❌ Later
