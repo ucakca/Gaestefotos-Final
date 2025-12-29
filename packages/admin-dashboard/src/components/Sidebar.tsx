@@ -12,6 +12,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
+import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -22,18 +23,25 @@ const navigation = [
   { name: 'Einstellungen', href: '/settings', icon: Settings },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({
+  className,
+  onNavigate,
+}: {
+  className?: string;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const { logout, admin } = useAdminAuthStore();
 
   const handleLogout = () => {
     logout();
+    onNavigate?.();
     router.push('/login');
   };
 
   return (
-    <div className="flex h-screen w-64 flex-col bg-gray-900 text-white">
+    <div className={cn('flex w-64 flex-col bg-gray-900 text-white', className)}>
       <div className="flex h-16 items-center justify-center border-b border-gray-800">
         <h1 className="text-xl font-bold">Admin Dashboard</h1>
       </div>
@@ -44,6 +52,7 @@ export default function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
+              onClick={() => onNavigate?.()}
               className={`flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
                   ? 'bg-primary-600 text-white'
