@@ -39,6 +39,7 @@ import cmsPublicRoutes from './routes/cmsPublic';
 import maintenanceRoutes from './routes/maintenance';
 import adminMaintenanceRoutes from './routes/adminMaintenance';
 import adminImpersonationRoutes from './routes/adminImpersonation';
+import adminMarketingRoutes from './routes/adminMarketing';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -234,7 +235,7 @@ app.use(cors({
     // Always allow our known app domains even if FRONTEND_URL is misconfigured.
     // This prevents accidental lockouts (e.g. login) when the browser sends an Origin header.
     const alwaysAllow = [
-      new RegExp(`^https?:\/\/${domainToASCII(CANONICAL_APP_HOST_UNICODE).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
+      new RegExp(`^https?://${domainToASCII(CANONICAL_APP_HOST_UNICODE).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
       /^https?:\/\/app\.gästefotos\.com$/i,
     ];
     if (alwaysAllow.some((re) => re.test(origin))) {
@@ -454,6 +455,7 @@ app.use('/api/admin/cms', adminCmsSyncRoutes);
 app.use('/api/cms', cmsPublicRoutes);
 app.use('/api/admin/maintenance', adminMaintenanceRoutes);
 app.use('/api/admin/impersonation', adminImpersonationRoutes);
+app.use('/api/admin/marketing', adminMarketingRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
 
 // Sentry error handler (must be after routes, before error handlers)

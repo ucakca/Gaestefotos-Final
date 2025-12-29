@@ -86,6 +86,17 @@ Legende:
 - **Stats (Host/Admin)**
   - Backend: `packages/backend/src/routes/statistics.ts`
 
+---
+
+## WordPress Bridge
+
+- ✅ **Marketing stats (Admin)**
+  - Backend: `packages/backend/src/routes/adminMarketing.ts`
+    - `GET /api/admin/marketing/stats?days=30&eventId=...`
+  - Quellen:
+    - `EventTrafficStat` (Views by source)
+    - `WooWebhookEventLog` (Woo webhook logs)
+
 - **Invitations / RSVP / Shortlinks / ICS**
   - Backend: `packages/backend/src/routes/invitations.ts`
     - enthält RSVP Schema + Passwort-Gate + Shortlink Codes

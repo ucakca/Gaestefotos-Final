@@ -31,7 +31,7 @@ class EmailService {
     variables: Record<string, any>;
   }): { subject: string; html?: string; text?: string } {
     const replace = (tpl: string, mode: 'html' | 'text' | 'subject'): string => {
-      return tpl.replace(/\{\{\s*([a-zA-Z0-9_\.]+)\s*\}\}/g, (_m, key) => {
+      return tpl.replace(/\{\{\s*([a-zA-Z0-9_.]+)\s*\}\}/g, (_m, key) => {
         const parts = String(key).split('.');
         let cur: any = input.variables;
         for (const p of parts) {

@@ -511,7 +511,6 @@ router.get('/faq/preview', authMiddleware, requireRole('ADMIN'), async (req: Aut
         // Same fallback as /sync: fetch rendered public HTML
         // (preview only; does not store snapshot)
         // Keep this best-effort; errors should not fail the whole preview.
-        // eslint-disable-next-line no-empty
         try {
           const pageHtml = await fetchTextWithTimeout(link, 12000);
           if (pageHtml && pageHtml.trim()) {
@@ -520,7 +519,9 @@ router.get('/faq/preview', authMiddleware, requireRole('ADMIN'), async (req: Aut
             finalSource = `link.${extractedMain.method}`;
             finalPath = 'link';
           }
-        } catch {}
+        } catch {
+          // ignore
+        }
       }
 
       return {

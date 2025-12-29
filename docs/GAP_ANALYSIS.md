@@ -101,7 +101,16 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
     - `packages/backend/src/routes/woocommerceWebhooks.ts`
   - **Fehlt**:
     - v1 Contract/Endpoints (falls abweichend)
-    - Marketing stats endpoint (Spec)
+    - (n/a) Marketing stats endpoint ist umgesetzt (Admin)
+
+- **Marketing stats (Admin)**
+  - **Status**: vorhanden
+  - **Belege**:
+    - Backend: `packages/backend/src/routes/adminMarketing.ts`
+      - `GET /api/admin/marketing/stats?days=30&eventId=...`
+    - Datenquellen:
+      - `EventTrafficStat` (Views by source)
+      - `WooWebhookEventLog` (Woo webhook / conversions)
 
 ## Admin Impersonation
 
