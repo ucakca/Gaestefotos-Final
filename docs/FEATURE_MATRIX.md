@@ -120,7 +120,7 @@ Legende:
     - Tiering/Fallback (Realtime vs Polling)
     - Basis-Animations (Grid layout + Highlight bei neuen Items)
   - Fehlt:
-    - Premium/Free Plan-Policy (serverseitige Steuerung statt nur env/UI Toggle)
+    - Premium/Free Plan-Policy (serverseitige Steuerung statt nur env/UI Toggle; aktuell `NEXT_PUBLIC_DISABLE_REALTIME`)
     - Spezifizierte Animationen (finales Design/Timing)
 
 ---

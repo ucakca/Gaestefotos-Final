@@ -191,9 +191,27 @@ Quelle: `packages/backend/src/routes/invitations.ts` (gemountet via `app.use('/a
 
 Frontend:
 - `packages/frontend/src/app/live/[slug]/wall/page.tsx`
+  - Modes:
+    - Grid / Slideshow
+    - Sort: Neueste / Zufall
+  - Tiering/Fallback:
+    - Realtime (Socket.IO) default
+    - Polling fallback wenn `NEXT_PUBLIC_DISABLE_REALTIME=true`
+  - Realtime client:
+    - `packages/frontend/src/lib/websocket.ts`
+    - `packages/frontend/src/hooks/useEventRealtime.ts`
 
 Backend liefert Fotos (approved):
 - `GET /api/events/:id/photos?status=APPROVED` (siehe `packages/backend/src/routes/photos.ts` + event policies)
+
+Realtime (Socket.IO):
+- Server init + ACL: `packages/backend/src/index.ts`
+  - Room: `event:<eventId>`
+  - Client join: `join:event` (nur wenn `hasEventAccess()` via Cookie passt)
+  - Client leave: `leave:event`
+- Emitted events:
+  - `photo_uploaded` (bei Upload) → `packages/backend/src/routes/photos.ts`
+  - `photo_approved` (bei Moderation) → `packages/backend/src/routes/photos.ts`
 
 ## Tracking (QR / Quellen)
 

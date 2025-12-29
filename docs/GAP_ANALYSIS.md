@@ -82,8 +82,9 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
   - **Belege**:
     - `packages/frontend/src/app/live/[slug]/wall/page.tsx`
     - Backend: Socket.io init in `packages/backend/src/index.ts`
+    - Emitted events: `photo_uploaded` / `photo_approved` in `packages/backend/src/routes/photos.ts`
   - **Fehlt**:
-    - Tiering (Polling vs Premium)
+    - serverseitige Plan/Feature-Policy (aktuell: Polling vs Realtime nur per Frontend/env)
     - (optional) weitere Sort-Modi / finale Spec-Animationen
     - definierte Animationen (Spec)
 
