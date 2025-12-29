@@ -99,8 +99,16 @@ function setAuthCookie(res: Response, token: string, ttlSeconds: number) {
 
 function getAppBaseUrl(): string {
   const raw = (process.env.FRONTEND_URL || '').split(',').map((s) => s.trim()).filter(Boolean)[0];
-  if (raw) return raw.replace(/\/$/, '');
-  return 'https://app.gästefotos.com';
+  const fallback = 'https://app.gästefotos.com';
+  const candidate = (raw || fallback).replace(/\/$/, '');
+
+  try {
+    const u = new URL(candidate);
+    const asciiHost = domainToASCII(u.hostname);
+    return `${u.protocol}//${asciiHost}${u.port ? `:${u.port}` : ''}`;
+  } catch {
+    return candidate;
+  }
 }
 
 function clearAuthCookie(res: Response) {
