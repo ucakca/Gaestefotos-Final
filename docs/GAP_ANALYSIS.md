@@ -94,6 +94,8 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
   - **Belege**:
     - Backend: `packages/backend/src/routes/auth.ts`
       - `POST /api/auth/wordpress-sso`
+  - **Notes**:
+    - Rate limit: `wordpressSsoLimiter` (60/15min) in `packages/backend/src/middleware/rateLimit.ts`
 
 - **WordPress Password Verify (REST /wp-json/gaestefotos/v1/verify-password)**
   - **Status**: vorhanden (als Login-Integration)
@@ -107,11 +109,10 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
     - WP REST unavailable → Backend antwortet `503` (damit gültige WP User nicht fälschlich `401` bekommen)
 
 - **WooCommerce Webhooks**
-  - **Status**: teilweise
+  - **Status**: vorhanden
   - **Belege**:
     - `packages/backend/src/routes/woocommerceWebhooks.ts`
   - **Fehlt**:
-    - v1 Contract-Doku im Repo (Payload-Minimum + Meta Keys + Create/Upgrade Regeln) (wird gerade ergänzt)
     - Admin Readback/Replay UX (Backend routes vorhanden; UI/Flow optional)
 
   - **Technisch (Ist-Stand / Mounts)**:
@@ -157,9 +158,9 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
   - **Belege**:
     - `packages/backend/src/middleware/rateLimit.ts`
     - Applied:
-      - `POST /api/auth/login` (`packages/backend/src/routes/auth.ts`)
-      - `POST /api/auth/register` (`packages/backend/src/routes/auth.ts`)
-      - `POST /api/auth/wordpress-sso` (`packages/backend/src/routes/auth.ts`)
+      - `POST /api/auth/login` (`passwordLimiter`, 10/15min) (`packages/backend/src/routes/auth.ts`)
+      - `POST /api/auth/register` (`passwordLimiter`, 10/15min) (`packages/backend/src/routes/auth.ts`)
+      - `POST /api/auth/wordpress-sso` (`wordpressSsoLimiter`, 60/15min) (`packages/backend/src/routes/auth.ts`)
       - `GET /api/invitations/slug/:slug` (`packages/backend/src/routes/invitations.ts`)
       - `POST /api/invitations/slug/:slug/rsvp` (`packages/backend/src/routes/invitations.ts`)
       - `GET /api/invitations/slug/:slug/ics` (`packages/backend/src/routes/invitations.ts`)

@@ -39,6 +39,8 @@ Quelle: `packages/backend/src/index.ts`
   - Optional secret:
     - Env: `WORDPRESS_SSO_SECRET`
     - Header: `x-gf-wp-sso-secret`
+  - Rate limit:
+    - `wordpressSsoLimiter` (60/15min) → `packages/backend/src/middleware/rateLimit.ts`
 
 ### WordPress Password Verify (App → WP)
 
@@ -58,7 +60,7 @@ Backend nutzt für Login optional WordPress-Verifikation.
     - Wenn `verified=true`: erwartet zusätzlich u.a. `user_id`, `email`, `login` (siehe `wordpress.ts`)
   - Failure modes:
     - `400` → credentials ungültig (wird als normales Login-Fail behandelt)
-    - `401/403/404` oder Netzwerkfehler → WP auth unavailable → Backend antwortet `503`
+    - `401/403/404`, Timeout oder Netzwerkfehler → WP auth unavailable → Backend antwortet `503`
 
 ### WooCommerce Webhooks (Woo → App)
 
