@@ -75,6 +75,35 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
   - **Fehlt**:
     - UI für Queue Management (Liste/Retry/Delete) (optional)
 
+## Uploads
+
+- **Fotos Upload (Guest)**
+  - **Status**: vorhanden
+  - **Belege**:
+    - Backend: `packages/backend/src/routes/photos.ts`
+      - `POST /api/events/:eventId/photos/upload`
+      - Guards: event access, allowUploads, Event-Date Window, Storage-Periode, Storage-Limits
+      - Rate limits: `photoUploadIpLimiter` + `photoUploadEventLimiter`
+      - File validation: `validateUploadedFile('image')`
+  - **Fehlt**:
+    - (optional) explizite API/UX "Meine Uploads" für Guests (falls Spec)
+
+- **Videos Upload (Guest)**
+  - **Status**: vorhanden
+  - **Belege**:
+    - Backend: `packages/backend/src/routes/videos.ts`
+      - `POST /api/events/:eventId/videos/upload`
+      - Rate limits: `videoUploadIpLimiter` + `videoUploadEventLimiter`
+      - optional `uploadDatePolicy` + category upload locks
+
+- **Offline Upload Queue (Frontend)**
+  - **Status**: vorhanden (MVP)
+  - **Belege**:
+    - `packages/frontend/src/lib/uploadQueue.ts`
+    - `packages/frontend/src/components/UploadButton.tsx`
+  - **Fehlt**:
+    - Queue Management UI (Liste/Retry/Delete)
+
 ## Live Wall
 
 - **Realtime Live Wall**

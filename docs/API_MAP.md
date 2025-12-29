@@ -226,3 +226,51 @@ Realtime (Socket.IO):
 
 - Smart Albums (Zeiträume + Validierung)
 - PWA Offline Upload Queue
+
+## Uploads (Fotos/Videos)
+
+### Laiensicher
+
+- **Gäste laden hoch**: Fotos/Videos werden direkt im Event hochgeladen.
+- **Moderation (optional)**: Wenn Moderation aktiv ist, landen Guest Uploads zuerst in `PENDING`.
+- **Upload-Queue**: Wenn du offline bist oder ein temporärer Netzfehler passiert, wird der Upload gespeichert und später automatisch erneut gesendet.
+
+### Technisch
+
+Backend:
+- Photos: `packages/backend/src/routes/photos.ts`
+  - `POST /api/events/:eventId/photos/upload` (multipart `file`)
+    - Guards:
+      - `requireEventAccess` (oder Host/Admin via auth)
+      - `allowUploads` Feature Flag (guests können blockiert werden)
+      - Upload window: Event-Datum ±1 Tag (`UPLOAD_WINDOW_CLOSED`)
+      - Storage period (`STORAGE_LOCKED`)
+      - Storage limits (`assertUploadWithinLimit`, error → `Speicherlimit erreicht`)
+      - File validation: `validateUploadedFile('image')` (magic bytes + mime)
+    - Rate limits:
+      - `photoUploadIpLimiter` + `photoUploadEventLimiter` (event-spezifisch via `attachEventUploadRateLimits`)
+    - Emits realtime:
+      - `photo_uploaded` via Socket.IO room `event:<eventId>`
+  - `GET /api/events/:eventId/photos?status=...` (Feed; Live Wall nutzt `APPROVED`)
+
+- Videos: `packages/backend/src/routes/videos.ts`
+  - `POST /api/events/:eventId/videos/upload` (multipart `file`)
+    - Guards:
+      - `hasEventAccess` (oder auth)
+      - allowUploads / mode gating (z.B. `VIEW_ONLY`)
+      - Upload window: Event-Datum ±1 Tag
+      - optional `uploadDatePolicy` (± toleranceDays)
+      - Category upload lock (optional)
+      - Storage limits (`assertUploadWithinLimit`)
+      - File validation: `validateUploadedFile('video')`
+    - Rate limits:
+      - `videoUploadIpLimiter` + `videoUploadEventLimiter`
+  - `GET /api/events/:eventId/videos` (Feed, inkl. Proxy URLs)
+
+Frontend:
+- Upload UI + Retry/Queue:
+  - `packages/frontend/src/components/UploadButton.tsx`
+  - Offline Queue: `packages/frontend/src/lib/uploadQueue.ts` (IndexedDB)
+  - Verhalten:
+    - Enqueue wenn `navigator.onLine=false` oder `isRetryableUploadError()`
+    - Auto-drain beim Page mount + `online` event
