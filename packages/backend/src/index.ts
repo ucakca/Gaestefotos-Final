@@ -41,6 +41,7 @@ import adminMaintenanceRoutes from './routes/adminMaintenance';
 import adminImpersonationRoutes from './routes/adminImpersonation';
 import adminMarketingRoutes from './routes/adminMarketing';
 import adminThemeRoutes from './routes/adminTheme';
+import themeRoutes from './routes/theme';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -424,6 +425,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Note: authLimiter is applied per-route in auth.ts for more granular control
 app.use('/api/auth', authRoutes);
 app.use('/api', maintenanceRoutes);
+app.use('/api/theme', themeRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/events', guestRoutes);
 app.use('/api/events', photoRoutes); // Photo routes: /api/events/:eventId/photos/*
