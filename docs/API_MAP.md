@@ -30,6 +30,48 @@ Quelle: `packages/backend/src/index.ts`
 - Admin Routes (Backend): `packages/backend/src/routes/admin*`
 - Marketing / Stats (Admin): `GET /api/admin/marketing/stats` → `packages/backend/src/routes/adminMarketing.ts`
 
+Admin endpoints (Backend mounts in `packages/backend/src/index.ts`):
+
+- Packages:
+  - `GET /api/admin/package-definitions` → `packages/backend/src/routes/packageDefinitions.ts`
+  - `POST /api/admin/package-definitions`
+  - `PUT /api/admin/package-definitions/:id`
+  - `DELETE /api/admin/package-definitions/:id`
+
+- API Keys:
+  - `GET /api/admin/api-keys` → `packages/backend/src/routes/adminApiKeys.ts`
+  - `POST /api/admin/api-keys`
+  - `POST /api/admin/api-keys/:id/revoke`
+
+- Invoices:
+  - `GET /api/admin/invoices` → `packages/backend/src/routes/adminInvoices.ts`
+  - `GET /api/admin/invoices/export.csv` (CSV Export)
+
+- Email templates:
+  - `GET /api/admin/email-templates` → `packages/backend/src/routes/adminEmailTemplates.ts`
+  - `GET /api/admin/email-templates/:kind`
+  - `PUT /api/admin/email-templates/:kind`
+  - `POST /api/admin/email-templates/:kind/preview`
+  - `POST /api/admin/email-templates/:kind/test-send`
+
+- CMS sync:
+  - `GET /api/admin/cms/snapshots` → `packages/backend/src/routes/adminCmsSync.ts`
+  - `POST /api/admin/cms/sync`
+  - `GET /api/admin/cms/faq/preview`
+  - `GET /api/admin/cms/wp/:kind/search`
+  - `GET /api/admin/cms/wp/:kind/recent`
+
+- Maintenance mode:
+  - `GET /api/admin/maintenance` → `packages/backend/src/routes/adminMaintenance.ts`
+  - `PUT /api/admin/maintenance`
+
+- Impersonation:
+  - `POST /api/admin/impersonation/token` → `packages/backend/src/routes/adminImpersonation.ts`
+
+- Woo webhook inbox:
+  - `GET /api/admin/webhooks/woocommerce/logs` → `packages/backend/src/routes/adminWooWebhooks.ts`
+  - `POST /api/admin/webhooks/woocommerce/replay/:logId`
+
 ## WordPress Bridge (v1)
 
 ### Konfiguration (Env / Secrets)

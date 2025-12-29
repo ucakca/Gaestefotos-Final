@@ -214,6 +214,29 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
       - `POST /api/admin/impersonation/token`
     - Frontend Admin UI: `packages/frontend/src/app/admin/dashboard/page.tsx`
 
+## Admin Tools
+
+- **Admin Dashboard (Operations Tools)**
+  - **Status**: vorhanden
+  - **Belege**:
+    - Frontend: `packages/frontend/src/app/admin/dashboard/page.tsx`
+    - Backend mounts: `packages/backend/src/index.ts`
+  - **Backend Endpoints (Auszug)**:
+    - Packages: `packages/backend/src/routes/packageDefinitions.ts`
+      - `GET/POST/PUT/DELETE /api/admin/package-definitions`
+    - API Keys: `packages/backend/src/routes/adminApiKeys.ts`
+      - `GET /api/admin/api-keys`
+      - `POST /api/admin/api-keys`
+      - `POST /api/admin/api-keys/:id/revoke`
+    - Invoices: `packages/backend/src/routes/adminInvoices.ts`
+      - `GET /api/admin/invoices`
+      - `GET /api/admin/invoices/export.csv`
+    - Email templates: `packages/backend/src/routes/adminEmailTemplates.ts`
+    - CMS sync: `packages/backend/src/routes/adminCmsSync.ts`
+    - Maintenance: `packages/backend/src/routes/adminMaintenance.ts`
+  - **Fehlt**:
+    - (optional) Audit logging für Impersonation (aktuell: Token wird ausgestellt, aber keine separate Audit-Tabelle)
+
 ## Hard Constraints
 
 - **Rate Limits**

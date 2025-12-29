@@ -36,14 +36,17 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 - ✅ WP Bridge: Admin Woo logs/replay endpoints dokumentiert + External Smoke (Prod: 401 ohne Auth)
 - ✅ Hard Constraints final alignment
 - ✅ Audit vs. Spec: WP Bridge v1 (Endpoints/Contracts) vollständig gegen Repo abgeglichen
+- ✅ Audit vs. Spec: Invitations/RSVP/Shortlinks/ICS (Code vs Doku) abgeglichen
+- ✅ Audit vs. Spec: Live Wall (Realtime/Polling/Socket Events) abgeglichen
+- ✅ Audit vs. Spec: Uploads (Guards/Limits/Offline Queue) abgeglichen
 
 ## ⏳ In Progress
 
-- ⏳ Audit vs. Spec (laufend)
+- ⏳ Audit vs. Spec: Admin (Dashboards/Tools/Endpoints) abgleichen
 
 ## ❌ Next (Priorität hoch)
 
-- ❌ Audit vs. Spec: Restliche Bereiche (Live Wall, Invitations, Uploads, Admin) sequenziell abarbeiten
+- ❌ Audit vs. Spec: Restliche Bereiche (Admin finalisieren + ggf. weitere Spec-Punkte)
 
 ## ❌ Later
 
