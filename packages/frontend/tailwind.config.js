@@ -8,6 +8,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        app: {
+          bg: 'var(--app-bg)',
+          fg: 'var(--app-fg)',
+          card: 'var(--app-card)',
+          border: 'var(--app-border)',
+          muted: 'var(--app-muted)',
+          accent: 'var(--app-accent)',
+        },
+        tokens: {
+          brandGreen: 'var(--brand-green)',
+          brandLight: 'var(--brand-light)',
+          brandDark: 'var(--brand-dark)',
+        },
         primary: {
           50: '#e8f5f0',
           100: '#d1ebe1',
