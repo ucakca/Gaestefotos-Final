@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Upload, Check, Camera, Video } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import api, { formatApiError, isRetryableUploadError } from '@/lib/api';
+import { enqueueUpload, processUploadQueue } from '@/lib/uploadQueue';
 
 interface UploadButtonProps {
   eventId: string;
@@ -45,9 +46,45 @@ export default function UploadButton({
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [uploaderName, setUploaderName] = useState('');
   const [uploaderNameError, setUploaderNameError] = useState<string | null>(null);
+  const [queueNotice, setQueueNotice] = useState<string | null>(null);
 
   const nameOk = uploaderName.trim().length > 0;
   const canPickFiles = !disabled && nameOk;
+
+  const drainQueue = useCallback(async () => {
+    try {
+      const { processed } = await processUploadQueue({
+        maxItems: 5,
+        fetchFn: async (endpoint, body) => {
+          await api.post(endpoint, body, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+        },
+      });
+
+      if (processed > 0) {
+        setQueueNotice(`${processed} Upload(s) aus der Offline-Queue gesendet.`);
+        onUploadSuccess?.();
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('photoUploaded'));
+        }
+        window.setTimeout(() => setQueueNotice(null), 3500);
+      }
+    } catch {
+      // ignore
+    }
+  }, [onUploadSuccess]);
+
+  useEffect(() => {
+    // Try once on mount.
+    void drainQueue();
+
+    const onOnline = () => void drainQueue();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', onOnline);
+      return () => window.removeEventListener('online', onOnline);
+    }
+  }, [drainQueue]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const name = uploaderName.trim();
@@ -138,6 +175,18 @@ export default function UploadButton({
     const endpoint = isVideo ? `/events/${eventId}/videos/upload` : `/events/${eventId}/photos/upload`;
 
     try {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        await enqueueUpload({
+          endpoint,
+          fields: name ? { uploaderName: name } : {},
+          file,
+        });
+        setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, uploading: false, progress: 0, success: true } : f)));
+        setQueueNotice('Offline: Upload wurde in die Queue gelegt und wird automatisch später gesendet.');
+        window.setTimeout(() => setQueueNotice(null), 4500);
+        return;
+      }
+
       await api.post(endpoint, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (evt) => {
@@ -162,6 +211,23 @@ export default function UploadButton({
     } catch (error: any) {
       const msg = formatApiError(error);
       const retryable = isRetryableUploadError(error);
+
+      if (retryable) {
+        try {
+          await enqueueUpload({
+            endpoint,
+            fields: name ? { uploaderName: name } : {},
+            file,
+          });
+          setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, uploading: false, progress: 0, success: true } : f)));
+          setQueueNotice('Upload in Queue gelegt (wird automatisch erneut versucht).');
+          window.setTimeout(() => setQueueNotice(null), 4500);
+          return;
+        } catch {
+          // fall back to normal error UI
+        }
+      }
+
       setFiles((prev) =>
         prev.map((f) => (f.id === uploadId ? { ...f, uploading: false, error: retryable ? `${msg} (Retry möglich)` : msg } : f))
       );
@@ -278,6 +344,12 @@ export default function UploadButton({
             </button>
 
               <h2 className="text-xl font-semibold mb-6">Foto/Video hochladen</h2>
+
+              {queueNotice && (
+                <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+                  {queueNotice}
+                </div>
+              )}
 
               {disabled && disabledReason && (
                 <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
