@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Upload, Check, Camera, Video } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
-import api from '@/lib/api';
+import api, { formatApiError, isRetryableUploadError } from '@/lib/api';
 
 interface UploadButtonProps {
   eventId: string;
@@ -160,11 +160,11 @@ export default function UploadButton({
         }
       }, 2000);
     } catch (error: any) {
-      const msg =
-        (error?.response?.data?.error as string) ||
-        (error?.message as string) ||
-        'Upload fehlgeschlagen';
-      setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, uploading: false, error: msg } : f)));
+      const msg = formatApiError(error);
+      const retryable = isRetryableUploadError(error);
+      setFiles((prev) =>
+        prev.map((f) => (f.id === uploadId ? { ...f, uploading: false, error: retryable ? `${msg} (Retry möglich)` : msg } : f))
+      );
     }
   };
 

@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from '@/lib/api';
+import api, { formatApiError, isRetryableUploadError } from '@/lib/api';
 import { Event as EventType } from '@gaestefotos/shared';
 import { Camera, Upload, ArrowLeft } from 'lucide-react';
 
@@ -15,7 +15,9 @@ export default function CameraPage() {
   const [event, setEvent] = useState<EventType | null>(null);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [canRetry, setCanRetry] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -61,14 +63,21 @@ export default function CameraPage() {
     if (!event) return;
 
     setUploadError(null);
+    setCanRetry(false);
     setUploading(true);
+    setUploadProgress(0);
     const formData = new FormData();
     formData.append('file', file);
 
     try {
       await api.post(`/events/${event.id}/photos/upload`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (evt) => {
+          const total = typeof evt.total === 'number' ? evt.total : 0;
+          const loaded = typeof evt.loaded === 'number' ? evt.loaded : 0;
+          if (!total || total <= 0) return;
+          const pct = Math.max(0, Math.min(100, Math.round((loaded / total) * 100)));
+          setUploadProgress(pct);
         },
       });
 
@@ -80,7 +89,9 @@ export default function CameraPage() {
         setUploading(false);
       }, 1000);
     } catch (err: any) {
-      setUploadError(err.response?.data?.error || 'Unbekannter Fehler');
+      const msg = formatApiError(err);
+      setUploadError(msg);
+      setCanRetry(isRetryableUploadError(err));
       setUploading(false);
     }
   };
@@ -134,6 +145,29 @@ export default function CameraPage() {
                 {uploadError && (
                   <div className="mb-4 px-4 py-2 rounded-lg bg-red-900/40 border border-red-700 text-red-100 text-sm max-w-xs mx-auto">
                     Fehler beim Upload: {uploadError}
+                    {canRetry && !uploading && capturedPhoto && (
+                      <div className="mt-2">
+                        <button
+                          type="button"
+                          onClick={handleCaptureAndUpload}
+                          className="text-xs font-semibold underline"
+                        >
+                          Erneut versuchen
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {uploading && uploadProgress > 0 && (
+                  <div className="mb-4 max-w-xs mx-auto">
+                    <div className="text-xs text-gray-200 mb-2">Upload: {uploadProgress}%</div>
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div
+                        className="bg-white h-2 rounded-full"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
                   </div>
                 )}
                 <input

@@ -56,6 +56,43 @@ export function buildApiUrl(path: string): string {
   return `${base}${normalizedPath}`;
 }
 
+export function formatApiError(err: any): string {
+  const status = err?.response?.status;
+  const data = err?.response?.data;
+
+  if (typeof data?.error === 'string' && data.error.trim()) {
+    return data.error;
+  }
+
+  if (Array.isArray(data?.error) && data.error.length > 0) {
+    return data.error.map((e: any) => e?.message || String(e)).join(', ');
+  }
+
+  if (status === 413) return 'Datei zu groß.';
+  if (status === 429) return 'Zu viele Uploads – bitte kurz warten und erneut versuchen.';
+  if (status === 401) return 'Nicht eingeloggt (bitte neu laden).';
+  if (status === 403) return 'Upload nicht erlaubt (Event/Album gesperrt oder Zeitraum abgelaufen).';
+  if (status === 404) return 'Event nicht gefunden.';
+
+  const msg = err?.message;
+  if (typeof msg === 'string' && msg.trim()) {
+    if (msg.toLowerCase().includes('timeout')) {
+      return 'Timeout beim Upload – bitte erneut versuchen.';
+    }
+    return msg;
+  }
+
+  return 'Unbekannter Fehler';
+}
+
+export function isRetryableUploadError(err: any): boolean {
+  const status = err?.response?.status;
+  if (status && typeof status === 'number') {
+    return status >= 500 || status === 408 || status === 429;
+  }
+  return !!err?.request;
+}
+
 // Add response interceptor for better error handling
 api.interceptors.response.use(
   (response) => response,

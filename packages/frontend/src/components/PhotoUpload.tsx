@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, X, Check } from 'lucide-react';
-import api from '@/lib/api';
+import api, { formatApiError } from '@/lib/api';
 
 interface PhotoUploadProps {
   eventId: string;
@@ -52,10 +52,7 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
           }
         }, 1500);
       } catch (error: any) {
-        const msg =
-          (error?.response?.data?.error as string) ||
-          (error?.message as string) ||
-          'Upload fehlgeschlagen';
+        const msg = formatApiError(error);
         setFiles((prev) => prev.map((f, i) => (i === fileIndex ? { ...f, uploading: false, error: msg } : f)));
       }
     },
