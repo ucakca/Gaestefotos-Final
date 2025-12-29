@@ -30,14 +30,13 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 - ✅ Offline Upload Queue (IndexedDB, minimal): enqueue bei offline/transient, auto-retry bei online
 - ✅ Live Wall Tiering/Sort/Animations (Basis): Sort (Neueste/Zufall) + Realtime/Polling Toggle + sanfte Animations
 - ✅ WP Bridge v1 Contracts/Endpoints (WordPress SSO / Woo Contracts)
+- ✅ WP Bridge: Marketing stats endpoint (Admin) + External Smoke
 - ✅ Admin Impersonation
 - ✅ Hard Constraints final alignment
 
 ## ⏳ In Progress
 
 - ⏳ Audit vs. Spec (laufend)
-- ⏳ Feature-Liste (implementiert) + Gap Table als Single Source of Truth weiter vervollständigen
-- ⏳ Feature-Matrix (✅/◐/❌) im Repo pflegen: `docs/FEATURE_MATRIX.md`
 
 ## ❌ Next (Priorität hoch)
 
