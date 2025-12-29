@@ -9,5 +9,12 @@ if [ "${SKIP_E2E_HOOK:-}" = "1" ]; then
   exit 0
 fi
 
+if [ "${FORCE_E2E_HOOK:-}" != "1" ]; then
+  if [ ! -d "${PLAYWRIGHT_BROWSERS_PATH:-$HOME/.cache/ms-playwright}" ]; then
+    echo "[pre-push] Playwright browsers not installed; skipping e2e:stable (set FORCE_E2E_HOOK=1 to run)"
+    exit 0
+  fi
+fi
+
 echo "[pre-push] running e2e:stable..."
 pnpm run -s e2e:stable
