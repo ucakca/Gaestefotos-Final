@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { passwordLimiter } from '../middleware/rateLimit';
 import { logger } from '../utils/logger';
 import { randomString, slugify } from '@gaestefotos/shared';
 
@@ -487,7 +488,7 @@ router.get('/events/slug/:slug/invitations/public', async (req: AuthRequest, res
 });
 
 // Public: get invitation by slug (password optional)
-router.get('/invitations/slug/:slug', async (req: AuthRequest, res: Response) => {
+router.get('/invitations/slug/:slug', passwordLimiter, async (req: AuthRequest, res: Response) => {
   try {
     const { slug } = req.params;
     const query = publicGetSchema.parse(req.query);
@@ -579,7 +580,7 @@ router.get('/invitations/slug/:slug', async (req: AuthRequest, res: Response) =>
 });
 
 // Public: submit RSVP (YES/NO/MAYBE)
-router.post('/invitations/slug/:slug/rsvp', async (req: AuthRequest, res: Response) => {
+router.post('/invitations/slug/:slug/rsvp', passwordLimiter, async (req: AuthRequest, res: Response) => {
   try {
     const { slug } = req.params;
     const data = rsvpSchema.parse(req.body);
@@ -656,7 +657,7 @@ router.post('/invitations/slug/:slug/rsvp', async (req: AuthRequest, res: Respon
 });
 
 // Public: download ICS
-router.get('/invitations/slug/:slug/ics', async (req: AuthRequest, res: Response) => {
+router.get('/invitations/slug/:slug/ics', passwordLimiter, async (req: AuthRequest, res: Response) => {
   try {
     const { slug } = req.params;
     const query = publicGetSchema.parse(req.query);
