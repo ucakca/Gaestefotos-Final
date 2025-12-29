@@ -160,6 +160,12 @@ export default function AdminDashboardPage() {
   const [invoiceEventId, setInvoiceEventId] = useState('');
   const [invoiceWcOrderId, setInvoiceWcOrderId] = useState('');
   const [invoiceWpUserId, setInvoiceWpUserId] = useState('');
+
+  const [impersonateUserId, setImpersonateUserId] = useState('');
+  const [impersonateReason, setImpersonateReason] = useState('Support');
+  const [impersonateLoading, setImpersonateLoading] = useState(false);
+  const [impersonateError, setImpersonateError] = useState<string | null>(null);
+  const [impersonateResult, setImpersonateResult] = useState<any | null>(null);
   const [invoiceExporting, setInvoiceExporting] = useState(false);
   const [invoiceExportError, setInvoiceExportError] = useState<string | null>(null);
 
@@ -661,6 +667,36 @@ export default function AdminDashboardPage() {
       setInvoiceExportError(err?.message || 'Export fehlgeschlagen');
     } finally {
       setInvoiceExporting(false);
+    }
+  };
+
+  const issueImpersonationToken = async () => {
+    try {
+      setImpersonateError(null);
+      setImpersonateResult(null);
+      setImpersonateLoading(true);
+
+      const userId = impersonateUserId.trim();
+      if (!userId) {
+        setImpersonateError('Bitte userId eingeben');
+        return;
+      }
+
+      const { data } = await api.post('/admin/impersonation/token', {
+        userId,
+        reason: impersonateReason.trim() || undefined,
+      });
+
+      setImpersonateResult(data || null);
+
+      const token = String(data?.token || '');
+      if (token) {
+        window.open(`/dashboard?token=${encodeURIComponent(token)}`, '_blank', 'noreferrer');
+      }
+    } catch (err: any) {
+      setImpersonateError(err?.response?.data?.error || err?.message || 'Impersonation fehlgeschlagen');
+    } finally {
+      setImpersonateLoading(false);
     }
   };
 
@@ -1444,6 +1480,52 @@ export default function AdminDashboardPage() {
 
             {activeSection === 'more' && (
               <>
+
+            <section id="admin-impersonation" className={sectionCardClass}>
+              <SectionHeader
+                title="Impersonation"
+                helpContent={'Admin-only: erstellt ein kurzlebiges Token für einen Ziel-User und öffnet dessen Dashboard in einem neuen Tab.\n\nHinweis: Nutze das für Support/Debugging.'}
+                actions={
+                  <ActionButton onClick={issueImpersonationToken} disabled={impersonateLoading}>
+                    {impersonateLoading ? 'Token…' : 'Token erstellen & öffnen'}
+                  </ActionButton>
+                }
+              />
+
+              <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    value={impersonateUserId}
+                    onChange={(e) => setImpersonateUserId(e.target.value)}
+                    placeholder="userId (UUID)"
+                    style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid #ddd', fontFamily: 'monospace', flex: 1 }}
+                  />
+                  <HelpTooltip title="userId" content={'Interne User-ID (UUID) aus der DB / Logs.'} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    value={impersonateReason}
+                    onChange={(e) => setImpersonateReason(e.target.value)}
+                    placeholder="reason (optional)"
+                    style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid #ddd', flex: 1 }}
+                  />
+                  <HelpTooltip title="reason" content={'Optionaler Grund (z.B. Ticket/Support-Fall). Wird im Token mitgeführt.'} />
+                </div>
+              </div>
+
+              {impersonateError && (
+                <p style={{ marginTop: '0.75rem', color: '#B00020' }}>{impersonateError}</p>
+              )}
+
+              {impersonateResult && (
+                <pre style={{ marginTop: '0.75rem', whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.8rem', background: '#fafafa', border: '1px solid #eee', borderRadius: '0.75rem', padding: '0.75rem' }}>
+                  {JSON.stringify({
+                    expiresInSeconds: impersonateResult?.expiresInSeconds,
+                    user: impersonateResult?.user,
+                  }, null, 2)}
+                </pre>
+              )}
+            </section>
 
             <section id="admin-invoices" className={sectionCardClass}>
               <SectionHeader

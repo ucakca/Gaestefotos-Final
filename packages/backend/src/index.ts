@@ -38,6 +38,7 @@ import adminCmsSyncRoutes from './routes/adminCmsSync';
 import cmsPublicRoutes from './routes/cmsPublic';
 import maintenanceRoutes from './routes/maintenance';
 import adminMaintenanceRoutes from './routes/adminMaintenance';
+import adminImpersonationRoutes from './routes/adminImpersonation';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -452,6 +453,7 @@ app.use('/api/admin/email-templates', adminEmailTemplatesRoutes);
 app.use('/api/admin/cms', adminCmsSyncRoutes);
 app.use('/api/cms', cmsPublicRoutes);
 app.use('/api/admin/maintenance', adminMaintenanceRoutes);
+app.use('/api/admin/impersonation', adminImpersonationRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
 
 // Sentry error handler (must be after routes, before error handlers)
