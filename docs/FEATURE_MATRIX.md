@@ -158,12 +158,12 @@ Legende:
 
 ## WordPress / Woo Bridge
 
-- **Woo Webhooks + Logging**
+- ✅ **Woo Webhooks + Logging**
   - Backend: `packages/backend/src/routes/woocommerceWebhooks.ts`
   - Admin Logs: `packages/backend/src/routes/adminWooWebhooks.ts`
-  - Fehlt (falls Spec v1 abweicht):
-    - v1 Contract/Endpoint-Alignment
-    - Marketing stats endpoint
+  - Notes:
+    - v1 Contract/Endpoint-Alignment ist dokumentiert (siehe `docs/API_MAP.md`)
+    - Marketing stats ist umgesetzt (siehe Abschnitt "WordPress Bridge")
 
 - ✅ **WordPress SSO (Bridge v1)**
   - Backend: `packages/backend/src/routes/auth.ts`
