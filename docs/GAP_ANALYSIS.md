@@ -8,21 +8,25 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
 ## Host Wizard
 
 - **Wizard Flow / Setup UI**
-  - **Status**: fehlt (noch nicht eindeutig gefunden)
+  - **Status**: teilweise
   - **Belege**:
-    - (TODO: Entry Points finden, falls anders benannt)
+    - `packages/frontend/src/app/events/new/page.tsx` (wizard redirect via `?wizard=1`)
+    - `packages/frontend/src/app/events/[id]/design/page.tsx`
+    - `packages/frontend/src/app/events/[id]/categories/page.tsx`
   - **Fehlt**:
     - geführter Setup-Prozess (Design, QR, Smart Albums, Live Preview)
 
 ## Smart Albums (Zeitfenster)
 
 - **Album nach Zeitbereichen** (z.B. Trauung 13–15)
-  - **Status**: fehlt
+  - **Status**: teilweise
   - **Belege**:
     - Guest Album Navigation existiert als Kategorien-Filter:
       - `packages/frontend/src/app/e/[slug]/page.tsx`
       - `packages/frontend/src/app/e2/[slug]/page.tsx`
       - `packages/frontend/src/components/AlbumNavigation`
+    - Host UI für Zeitfenster (startAt/endAt):
+      - `packages/frontend/src/app/events/[id]/categories/page.tsx`
   - **Fehlt**:
     - DB Modell für Zeitfenster
     - Overlap-Validation + Grenzen (innerhalb Event)
@@ -53,7 +57,7 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
 ## QR Tracking / Analytics
 
 - **source=qr Tracking (QR scans / opens)**
-  - **Status**: teilweise
+  - **Status**: vorhanden
   - **Belege**:
     - Frontend QR URLs:
       - `packages/frontend/src/app/live/[slug]/wall/page.tsx` → `/e/<slug>?source=qr`
@@ -62,14 +66,14 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
       - `GET /api/events/slug/:slug?source=qr` → `packages/backend/src/routes/events.ts`
       - DB: `event_traffic_stats` (Prisma: `EventTrafficStat`)
   - **Fehlt**:
-    - Admin Ansicht "Views by source" (UI)
+    - (n/a) Admin Ansicht "Views by source" ist umgesetzt
 
 ## Guest PWA Offline
 
 - **Service Worker + IndexedDB Upload Queue**
-  - **Status**: unklar/zu prüfen
+  - **Status**: vorhanden (MVP)
   - **Fehlt**:
-    - belastbare Offline Queue & Retry Pipeline (wenn nicht vorhanden)
+    - UI für Queue Management (Liste/Retry/Delete) (optional)
 
 ## Live Wall
 
@@ -80,10 +84,16 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
     - Backend: Socket.io init in `packages/backend/src/index.ts`
   - **Fehlt**:
     - Tiering (Polling vs Premium)
-    - Sort-Modi
+    - (optional) weitere Sort-Modi / finale Spec-Animationen
     - definierte Animationen (Spec)
 
 ## WordPress Bridge
+
+- **WordPress SSO (Bridge v1)**
+  - **Status**: vorhanden
+  - **Belege**:
+    - Backend: `packages/backend/src/routes/auth.ts`
+      - `POST /api/auth/wordpress-sso`
 
 - **WooCommerce Webhooks**
   - **Status**: teilweise
@@ -96,7 +106,11 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
 ## Admin Impersonation
 
 - **Admin "Login as Host"**
-  - **Status**: fehlt
+  - **Status**: vorhanden
+  - **Belege**:
+    - Backend: `packages/backend/src/routes/adminImpersonation.ts`
+      - `POST /api/admin/impersonation/token`
+    - Frontend Admin UI: `packages/frontend/src/app/admin/dashboard/page.tsx`
 
 ## Hard Constraints
 
@@ -104,6 +118,13 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
   - **Status**: vorhanden
   - **Belege**:
     - `packages/backend/src/middleware/rateLimit.ts`
+    - Applied:
+      - `POST /api/auth/login` (`packages/backend/src/routes/auth.ts`)
+      - `POST /api/auth/register` (`packages/backend/src/routes/auth.ts`)
+      - `POST /api/auth/wordpress-sso` (`packages/backend/src/routes/auth.ts`)
+      - `GET /api/invitations/slug/:slug` (`packages/backend/src/routes/invitations.ts`)
+      - `POST /api/invitations/slug/:slug/rsvp` (`packages/backend/src/routes/invitations.ts`)
+      - `GET /api/invitations/slug/:slug/ics` (`packages/backend/src/routes/invitations.ts`)
 
 - **Storage Lifecycle (Retention/Reminders/Cleanup)**
   - **Status**: vorhanden

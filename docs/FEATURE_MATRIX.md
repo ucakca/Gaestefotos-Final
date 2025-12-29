@@ -141,8 +141,7 @@ Legende:
 - **Smart Albums (Zeitfenster)**
   - Frontend:
     - UI (startAt/endAt): `packages/frontend/src/app/events/[id]/categories/page.tsx`
-  - Fehlt:
-    - DB Modell/Validation/Mapping (falls noch nicht final im Backend implementiert)
+  - DB Modell/Validation/Mapping (falls noch nicht final im Backend implementiert)
 
 ---
 
@@ -155,11 +154,21 @@ Legende:
     - v1 Contract/Endpoint-Alignment
     - Marketing stats endpoint
 
+- ✅ **WordPress SSO (Bridge v1)**
+  - Backend: `packages/backend/src/routes/auth.ts`
+    - `POST /api/auth/wordpress-sso`
+
 ---
 
 ## Admin
 
-- **Admin Impersonation (Login as Host)**
+- ✅ **Admin Impersonation (Login as Host)**
+  - Backend: `packages/backend/src/routes/adminImpersonation.ts`
+    - `POST /api/admin/impersonation/token`
+  - Frontend Admin UI: `packages/frontend/src/app/admin/dashboard/page.tsx`
+
+- ✅ **Admin Dashboard (separates Package, optional)**
+  - Package: `packages/admin-dashboard/*`
 
 - **Duplicates (Duplikat-Gruppen, Best-of, Delete)**
   - Backend: `packages/backend/src/routes/duplicates.ts`
@@ -180,9 +189,15 @@ Legende:
 
 ## Hard Constraints
 
-- **Rate Limiting (Basis)**
+- **Rate Limiting (Basis + angewendet auf Auth/Passwort-Flows)**
   - Backend: `packages/backend/src/middleware/rateLimit.ts`
+  - Applied:
+    - `POST /api/auth/login` (`packages/backend/src/routes/auth.ts`)
+    - `POST /api/auth/register` (`packages/backend/src/routes/auth.ts`)
+    - `POST /api/auth/wordpress-sso` (`packages/backend/src/routes/auth.ts`)
+    - `GET /api/invitations/slug/:slug` (`packages/backend/src/routes/invitations.ts`)
+    - `POST /api/invitations/slug/:slug/rsvp` (`packages/backend/src/routes/invitations.ts`)
+    - `GET /api/invitations/slug/:slug/ics` (`packages/backend/src/routes/invitations.ts`)
 
 - ✅ **Storage Lifecycle (Policy + Workers)**
   - Backend Services (u.a.): `packages/backend/src/services/storagePolicy.ts`
-
