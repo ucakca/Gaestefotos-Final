@@ -60,6 +60,30 @@ Backend nutzt für Login optional WordPress-Verifikation.
     - `400` → credentials ungültig (wird als normales Login-Fail behandelt)
     - `401/403/404` oder Netzwerkfehler → WP auth unavailable → Backend antwortet `503`
 
+### WooCommerce Webhooks (Woo → App)
+
+- Webhook endpoint (Backend): `POST /api/webhooks/woocommerce/order-paid`
+  - Code: `packages/backend/src/routes/woocommerceWebhooks.ts`
+  - Signature:
+    - Header: `x-wc-webhook-signature`
+    - Secret: `WOOCOMMERCE_WEBHOOK_SECRET`
+    - Ohne/ungültig → `403 Forbidden`
+  - Payload (minimal relevant):
+    - `id` (Order ID)
+    - `status` (nur `processing`/`completed` wird verarbeitet)
+    - `line_items[].sku` (zu matchen gegen `PackageDefinition.sku`)
+    - optional: `meta_data[]` mit `eventCode` oder `event_code` (Upgrade-Flow)
+    - optional: `customer_id` (WordPress user id) oder fallback über `billing.email`
+  - Business rules:
+    - **Upgrade**: wenn `eventCode` vorhanden und dem Kunden gehört → Entitlement für Event wird ersetzt (`ACTIVE` → `REPLACED`) und neu als `ACTIVE` angelegt.
+    - **Create**: wenn kein `eventCode` → neues Event + Entitlement werden erstellt.
+  - Idempotency:
+    - `WooWebhookReceipt` (unique `wcOrderId`) verhindert Doppelverarbeitung.
+  - Logging:
+    - `WooWebhookEventLog` speichert Topic/Status/Reason/PayloadHash (Admin Readback möglich)
+  - Admin Readback:
+    - `GET /api/admin/webhooks/woocommerce/logs` → `packages/backend/src/routes/adminWooWebhooks.ts`
+
 ## QR / Print Export
 
 Quelle: `packages/backend/src/routes/events.ts`

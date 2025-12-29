@@ -111,8 +111,16 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
   - **Belege**:
     - `packages/backend/src/routes/woocommerceWebhooks.ts`
   - **Fehlt**:
-    - v1 Contract/Endpoints (falls abweichend)
-    - (n/a) Marketing stats endpoint ist umgesetzt (Admin)
+    - v1 Contract-Doku im Repo (Payload-Minimum + Meta Keys + Create/Upgrade Regeln) (wird gerade ergänzt)
+    - Admin Readback/Replay UX (Backend routes vorhanden; UI/Flow optional)
+
+  - **Technisch (Ist-Stand / Mounts)**:
+    - `POST /api/webhooks/woocommerce/order-paid`
+    - Secret: `WOOCOMMERCE_WEBHOOK_SECRET` + `x-wc-webhook-signature`
+    - DB:
+      - `WooWebhookEventLog` (Logging)
+      - `WooWebhookReceipt` (Idempotency)
+      - `EventEntitlement` (Result)
 
 - **Marketing stats (Admin)**
   - **Status**: vorhanden
