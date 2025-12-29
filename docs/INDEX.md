@@ -53,3 +53,7 @@ Ziel: Diese Dokumente sind die **Single Source of Truth** für Architektur, APIs
 - **Kanonische Gast-URL**: `/e/[slug]` (QR/Links sollen hierhin zeigen)
 - **API Calls im Browser (Prod)**: same-origin `'/api'`
 
+## Repo Hygiene
+
+- **Git Policy (Ignore/Exclude Regeln)**: `docs/GIT_POLICY.md`
+
