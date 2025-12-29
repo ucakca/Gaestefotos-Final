@@ -405,17 +405,23 @@ export default function EventDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Laden...</div>
-      </div>
+      <AppLayout showBackButton backUrl="/dashboard">
+        <div className="min-h-screen flex items-center justify-center bg-app-bg">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-app-border border-t-tokens-brandGreen" />
+        </div>
+      </AppLayout>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Event nicht gefunden</div>
-      </div>
+      <AppLayout showBackButton backUrl="/dashboard">
+        <div className="min-h-screen flex items-center justify-center bg-app-bg">
+          <div className="rounded-xl border border-app-border bg-app-card p-6 text-center">
+            <div className="text-lg font-semibold text-app-fg">Event nicht gefunden</div>
+          </div>
+        </div>
+      </AppLayout>
     );
   }
 
@@ -462,13 +468,13 @@ export default function EventDashboardPage() {
     <AppLayout showBackButton backUrl="/dashboard">
       <div className="max-w-4xl mx-auto px-4 py-6">
         {event && (event as any).isActive === false && (
-          <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+          <div className="mb-4 rounded-xl border border-app-border bg-app-card p-4">
             <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-yellow-700 mt-0.5" />
+              <Info className="w-5 h-5 text-app-muted mt-0.5" />
               <div>
-                <p className="font-semibold text-sm text-yellow-900">Event ist deaktiviert</p>
-                <p className="text-xs text-yellow-900/80 mt-1">
-                  Gäste können dieses Event aktuell nicht öffnen. Du kannst es jederzeit wieder aktivieren.
+                <p className="font-semibold text-sm text-app-fg">Event ist deaktiviert</p>
+                <p className="text-xs text-app-muted mt-1">
+                  Gäste können aktuell keine Inhalte sehen. Du kannst das Event jederzeit wieder aktivieren.
                 </p>
               </div>
             </div>
@@ -476,12 +482,12 @@ export default function EventDashboardPage() {
         )}
 
         {isStorageLocked && (
-          <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+          <div className="mb-4 rounded-xl border border-app-border bg-app-card p-4">
             <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-yellow-700 mt-0.5" />
+              <Info className="w-5 h-5 text-app-muted mt-0.5" />
               <div>
-                <p className="font-semibold text-sm text-yellow-900">Speicherperiode beendet</p>
-                <p className="text-xs text-yellow-900/80 mt-1">
+                <p className="font-semibold text-sm text-app-fg">Speicherperiode beendet</p>
+                <p className="text-xs text-app-muted mt-1">
                   Uploads und Downloads sind deaktiviert. Bitte verlängere das Paket, um wieder Zugriff zu erhalten.
                 </p>
               </div>
@@ -490,12 +496,12 @@ export default function EventDashboardPage() {
         )}
 
         {!isStorageLocked && featuresConfig?.allowUploads !== false && !withinUploadWindow && (
-          <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+          <div className="mb-4 rounded-xl border border-app-border bg-app-card p-4">
             <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-yellow-700 mt-0.5" />
+              <Info className="w-5 h-5 text-app-muted mt-0.5" />
               <div>
-                <p className="font-semibold text-sm text-yellow-900">Upload-Fenster ist aktuell geschlossen</p>
-                <p className="text-xs text-yellow-900/80 mt-1">
+                <p className="font-semibold text-sm text-app-fg">Upload-Fenster ist aktuell geschlossen</p>
+                <p className="text-xs text-app-muted mt-1">
                   Uploads sind nur 1 Tag vor/nach dem Event möglich.
                 </p>
               </div>
@@ -516,17 +522,44 @@ export default function EventDashboardPage() {
             </div>
           )}
 
-        <div className="mt-6 rounded-xl border border-[#EAA48F]/40 bg-white p-4">
+          <motion.button
+            whileHover={{ opacity: 1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => coverImageInputRef.current?.click()}
+            className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center text-white opacity-0"
+          >
+            {uploadingImage === 'cover' ? (
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            ) : (
+              <>
+                <Camera className="w-6 h-6 mr-2" />
+                <span className="text-sm font-medium">Titelbild ändern</span>
+              </>
+            )}
+          </motion.button>
+          <input
+            ref={coverImageInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleImageUpload('cover', file);
+            }}
+          />
+        </div>
+
+        <div className="mt-6 rounded-xl border border-app-border bg-app-card p-4">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <div className="text-[#295B4D] font-semibold">Speicher</div>
-              <div className="text-sm text-[#295B4D]/70">
+              <div className="text-app-fg font-semibold">Speicher</div>
+              <div className="text-sm text-app-muted">
                 {usageLoading ? 'Lade…' : usageError ? 'Nicht verfügbar' : hasLimit ? 'Limit aktiv' : 'Kein Limit aktiv'}
               </div>
             </div>
             <button
               onClick={loadUsage}
-              className="px-3 py-2 rounded-lg bg-[#295B4D] text-white text-sm font-medium"
+              className="px-3 py-2 rounded-lg bg-tokens-brandGreen text-white text-sm font-medium hover:opacity-90"
             >
               Aktualisieren
             </button>
@@ -562,26 +595,26 @@ export default function EventDashboardPage() {
             </div>
           )}
 
-          <div className="mt-6 border-t border-[#EAA48F]/30 pt-4">
-            <div className="text-[#295B4D] font-semibold">Upgrade</div>
+          <div className="mt-6 border-t border-app-border pt-4">
+            <div className="text-app-fg font-semibold">Upgrade</div>
             <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
               <input
                 value={upgradeSku}
                 onChange={(e) => setUpgradeSku(e.target.value)}
                 placeholder="SKU (optional)"
-                className="w-full rounded-lg border border-[#EAA48F]/60 px-3 py-2 text-sm text-[#295B4D]"
+                className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
               />
               <input
                 value={upgradeProductId}
                 onChange={(e) => setUpgradeProductId(e.target.value)}
                 placeholder="ProductId (optional)"
-                className="w-full rounded-lg border border-[#EAA48F]/60 px-3 py-2 text-sm text-[#295B4D]"
+                className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
               />
             </div>
             <div className="mt-2 flex items-center gap-2 flex-wrap">
               <button
                 onClick={handleUpgrade}
-                className="px-4 py-2 rounded-lg bg-[#EAA48F] text-white text-sm font-semibold"
+                className="px-4 py-2 rounded-lg bg-tokens-brandGreen text-white text-sm font-semibold hover:opacity-90"
                 disabled={upgradeLoading}
               >
                 {upgradeLoading ? 'Erzeuge…' : 'Upgrade öffnen'}
@@ -591,7 +624,7 @@ export default function EventDashboardPage() {
                   onClick={async () => {
                     await navigator.clipboard.writeText(upgradeUrl);
                   }}
-                  className="px-3 py-2 rounded-lg border border-[#295B4D]/30 text-[#295B4D] text-sm font-medium"
+                  className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
                 >
                   Link kopieren
                 </button>
@@ -864,32 +897,6 @@ export default function EventDashboardPage() {
               })}
             </div>
           </div>
-        </div>
-          <motion.button
-            whileHover={{ opacity: 1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => coverImageInputRef.current?.click()}
-            className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center text-white opacity-0"
-          >
-            {uploadingImage === 'cover' ? (
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-            ) : (
-              <>
-                <Camera className="w-6 h-6 mr-2" />
-                <span className="text-sm font-medium">Titelbild ändern</span>
-              </>
-            )}
-          </motion.button>
-          <input
-            ref={coverImageInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleImageUpload('cover', file);
-            }}
-          />
         </div>
 
         {/* Profile Info */}
@@ -1559,7 +1566,7 @@ export default function EventDashboardPage() {
                     <ChevronRight className="w-5 h-5 text-gray-400" />
                   </motion.div>
                 </Link>
-                
+
                 <Link href={`/events/${eventId}/duplicates`}>
                   <motion.div
                     whileTap={{ scale: 0.98 }}
@@ -1575,8 +1582,8 @@ export default function EventDashboardPage() {
               </div>
             </motion.div>
           </motion.div>
-          )}
-        </AnimatePresence>
+        )}
+      </AnimatePresence>
 
       {/* Sticky Footer Navigation */}
       <DashboardFooter eventId={eventId} eventSlug={event.slug} />
