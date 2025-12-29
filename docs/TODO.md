@@ -39,14 +39,15 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 - ✅ Audit vs. Spec: Invitations/RSVP/Shortlinks/ICS (Code vs Doku) abgeglichen
 - ✅ Audit vs. Spec: Live Wall (Realtime/Polling/Socket Events) abgeglichen
 - ✅ Audit vs. Spec: Uploads (Guards/Limits/Offline Queue) abgeglichen
+- ✅ Audit vs. Spec: Admin (Dashboards/Tools/Endpoints) abgeglichen
 
 ## ⏳ In Progress
 
-- ⏳ Audit vs. Spec: Admin (Dashboards/Tools/Endpoints) abgleichen
+- ⏳ (leer)
 
 ## ❌ Next (Priorität hoch)
 
-- ❌ Audit vs. Spec: Restliche Bereiche (Admin finalisieren + ggf. weitere Spec-Punkte)
+- ❌ Pre-Launch: finaler System-Check (Smoke Tests, Monitoring, Rollback Plan)
 
 ## ❌ Later
 
