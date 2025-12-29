@@ -36,11 +36,21 @@ Quelle: `packages/backend/src/index.ts`
 
 - Backend: `POST /api/auth/wordpress-sso`
   - Code: `packages/backend/src/routes/auth.ts`
+  - Request body:
+    - `{ "wpUserId": number|string, "ssoSecret"?: string }`
   - Optional secret:
     - Env: `WORDPRESS_SSO_SECRET`
-    - Header: `x-gf-wp-sso-secret`
+    - Header: `x-gf-wp-sso-secret` (oder Body `ssoSecret`)
   - Rate limit:
     - `wordpressSsoLimiter` (60/15min) → `packages/backend/src/middleware/rateLimit.ts`
+  - Response (200):
+    - `{ "success": true, "redirectUrl": string, "token": string }`
+    - `redirectUrl` zeigt auf `/dashboard?token=...`
+  - Failure modes:
+    - `400` invalid payload / `wpUserId`
+    - `401` secret required but missing
+    - `403` secret present but incorrect
+    - `404` WordPress user not found
 
 ### WordPress Password Verify (App → WP)
 

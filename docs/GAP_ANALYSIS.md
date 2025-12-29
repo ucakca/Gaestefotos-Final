@@ -96,6 +96,10 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
       - `POST /api/auth/wordpress-sso`
   - **Notes**:
     - Rate limit: `wordpressSsoLimiter` (60/15min) in `packages/backend/src/middleware/rateLimit.ts`
+    - Secret handling:
+      - Env: `WORDPRESS_SSO_SECRET`
+      - Secret kann via Header `x-gf-wp-sso-secret` oder Body `ssoSecret` geliefert werden
+      - Statuscodes: `401` wenn Secret fehlt, `403` wenn Secret falsch ist
 
 - **WordPress Password Verify (REST /wp-json/gaestefotos/v1/verify-password)**
   - **Status**: vorhanden (als Login-Integration)
