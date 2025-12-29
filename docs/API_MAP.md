@@ -47,6 +47,9 @@ Quelle: `packages/backend/src/index.ts`
   - `WORDPRESS_DB_PASSWORD`
   - `WORDPRESS_DB_NAME`
   - `WORDPRESS_TABLE_PREFIX`
+- **Optional (Admin CMS Sync / WP Content Fetch)**
+  - `CMS_ALLOWED_HOSTS` (Whitelist für erlaubte WP Hosts; default: Host aus `WORDPRESS_URL`)
+  - `CMS_MAX_HTML_BYTES` (Limit für HTML Fetch beim Link-Fallback; default: 2MB)
 
 ### WordPress SSO (WP → App)
 

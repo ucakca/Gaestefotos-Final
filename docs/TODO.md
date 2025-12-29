@@ -35,10 +35,11 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 - ✅ WP Bridge: WooCommerce Webhook Contract (Payload/meta keys, signature, idempotency, upgrade/create) dokumentiert
 - ✅ WP Bridge: Admin Woo logs/replay endpoints dokumentiert + External Smoke (Prod: 401 ohne Auth)
 - ✅ Hard Constraints final alignment
+- ✅ Audit vs. Spec: WP Bridge v1 (Endpoints/Contracts) vollständig gegen Repo abgeglichen
 
 ## ⏳ In Progress
 
-- ⏳ Audit vs. Spec: WP Bridge v1 (Endpoints/Contracts) vollständig gegen Repo abgleichen
+- ⏳ Audit vs. Spec (laufend)
 
 ## ❌ Next (Priorität hoch)
 
