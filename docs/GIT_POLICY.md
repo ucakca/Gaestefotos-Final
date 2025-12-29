@@ -65,3 +65,12 @@ Das ist immer besser als ganze Verzeichnisse in `.git/info/exclude` zu verstecke
 - **Wenn plötzlich sehr viele untracked Files auftauchen**:
   - prüfen, ob vorher `.git/info/exclude` produktive Pfade enthalten hat
 
+## Git Hooks / E2E
+
+- Dieses Repo installiert optional einen `pre-push` Hook (`scripts/git-hooks/pre-push`).
+- Der Hook kann Playwright E2E Tests ausführen (`pnpm run e2e:stable`).
+- Auf Servern ohne installierte Playwright Browser wird der Hook automatisch übersprungen.
+- Overrides:
+  - `SKIP_E2E_HOOK=1 git push` (immer skip)
+  - `FORCE_E2E_HOOK=1 git push` (erzwingt E2E)
+

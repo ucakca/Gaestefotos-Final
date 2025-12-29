@@ -230,7 +230,7 @@ nano .env
 Quick smoke (local):
 
 ```bash
-curl -sS -X POST http://localhost:8002/api/woocommerce-webhooks/order-paid \
+curl -sS -X POST http://localhost:8002/api/webhooks/woocommerce/order-paid \
   -H 'Content-Type: application/json' \
   --data '{}' \
   -w "\nHTTP_STATUS=%{http_code}\n"

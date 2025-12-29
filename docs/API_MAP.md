@@ -28,6 +28,7 @@ Quelle: `packages/backend/src/index.ts`
 
 - Admin Dashboard UI: `packages/frontend/src/app/admin/dashboard/page.tsx`
 - Admin Routes (Backend): `packages/backend/src/routes/admin*`
+- Marketing / Stats (Admin): `GET /api/admin/marketing/stats` → `packages/backend/src/routes/adminMarketing.ts`
 
 ## QR / Print Export
 
