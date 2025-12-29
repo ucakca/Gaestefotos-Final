@@ -203,9 +203,9 @@ Legende:
 - **Rate Limiting (Basis + angewendet auf Auth/Passwort-Flows)**
   - Backend: `packages/backend/src/middleware/rateLimit.ts`
   - Applied:
-    - `POST /api/auth/login` (`packages/backend/src/routes/auth.ts`)
-    - `POST /api/auth/register` (`packages/backend/src/routes/auth.ts`)
-    - `POST /api/auth/wordpress-sso` (`packages/backend/src/routes/auth.ts`)
+    - `POST /api/auth/login` (`passwordLimiter`, 10/15min) (`packages/backend/src/routes/auth.ts`)
+    - `POST /api/auth/register` (`passwordLimiter`, 10/15min) (`packages/backend/src/routes/auth.ts`)
+    - `POST /api/auth/wordpress-sso` (`authLimiter`) (`packages/backend/src/routes/auth.ts`)
     - `GET /api/invitations/slug/:slug` (`packages/backend/src/routes/invitations.ts`)
     - `POST /api/invitations/slug/:slug/rsvp` (`packages/backend/src/routes/invitations.ts`)
     - `GET /api/invitations/slug/:slug/ics` (`packages/backend/src/routes/invitations.ts`)
