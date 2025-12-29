@@ -6,6 +6,12 @@
   --brand-green: #295B4D;
   --brand-light: #e8f5f0;
   --brand-dark: #18382f;
+  --app-bg: #F9F5F2;
+  --app-fg: #111827;
+  --app-card: #ffffff;
+  --app-border: #e5e7eb;
+  --app-muted: #6b7280;
+  --app-accent: #EAA48F;
 }
 
 * {
@@ -15,7 +21,7 @@
 }
 
 html {
-  background-color: #F9F5F2;
+  background-color: var(--app-bg);
   height: 100%;
 }
 
@@ -27,8 +33,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #F9F5F2 !important;
-  color: #295B4D !important;
+  background-color: var(--app-bg) !important;
+  color: var(--brand-green) !important;
   min-height: 100vh;
   height: 100%;
 }
