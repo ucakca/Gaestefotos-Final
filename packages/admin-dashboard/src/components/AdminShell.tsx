@@ -37,7 +37,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           </div>
         </header>
 
-        <main className="min-w-0 flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6">{children}</main>
+        <main className="min-w-0 flex-1 overflow-y-auto bg-app-bg p-4 sm:p-6">{children}</main>
       </div>
 
       <div className={cn('fixed inset-0 z-50 lg:hidden', mobileOpen ? '' : 'pointer-events-none')}>
@@ -51,16 +51,16 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
         <div
           className={cn(
-            'absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-gray-900 text-white shadow-xl transition-transform',
+            'absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-tokens-brandDark text-white shadow-xl transition-transform',
             mobileOpen ? 'translate-x-0' : '-translate-x-full'
           )}
         >
-          <div className="flex h-14 items-center justify-between border-b border-gray-800 px-3">
+          <div className="flex h-14 items-center justify-between border-b border-black/20 px-3">
             <div className="text-sm font-semibold">Admin Dashboard</div>
             <button
               type="button"
               onClick={() => setMobileOpen(false)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-800"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-white/10"
               aria-label="Menü schließen"
             >
               <X className="h-5 w-5" />
