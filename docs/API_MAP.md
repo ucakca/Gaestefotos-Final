@@ -71,6 +71,11 @@ Backend nutzt für Login optional WordPress-Verifikation.
   - Failure modes:
     - `400` → credentials ungültig (wird als normales Login-Fail behandelt)
     - `401/403/404`, Timeout oder Netzwerkfehler → WP auth unavailable → Backend antwortet `503`
+  - Fallback (optional, App-Seite):
+    - Wenn WordPress REST erreichbar ist, aber `verified=false`, wird **nur dann** ein DB/PHP-Fallback versucht,
+      wenn WP DB Credentials explizit gesetzt sind:
+      - `WORDPRESS_DB_HOST`, `WORDPRESS_DB_USER`, `WORDPRESS_DB_PASSWORD`, `WORDPRESS_DB_NAME`
+    - Wenn REST **unavailable** und **kein** DB-Fallback konfiguriert ist → Backend antwortet `503` (kein falsches `401`).
 
 ### WooCommerce Webhooks (Woo → App)
 

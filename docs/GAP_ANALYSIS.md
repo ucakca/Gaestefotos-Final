@@ -111,6 +111,8 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
   - **Notes**:
     - WP REST `400` wird als "invalid credentials" behandelt
     - WP REST unavailable → Backend antwortet `503` (damit gültige WP User nicht fälschlich `401` bekommen)
+    - DB/PHP Fallback wird nur versucht, wenn WP DB Credentials explizit konfiguriert sind:
+      - `WORDPRESS_DB_HOST`, `WORDPRESS_DB_USER`, `WORDPRESS_DB_PASSWORD`, `WORDPRESS_DB_NAME`
 
 - **WooCommerce Webhooks**
   - **Status**: vorhanden
