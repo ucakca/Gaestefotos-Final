@@ -85,6 +85,41 @@ const uploadIssuesQuerySchema = z.object({
   sinceHours: z.coerce.number().int().min(1).max(24 * 365).optional().default(72),
 });
 
+ const trafficSourceSchema = z
+   .string()
+   .trim()
+   .min(1)
+   .max(32)
+   .regex(/^[a-zA-Z0-9_-]+$/);
+
+ async function trackEventTrafficBySource(eventId: string, source: string) {
+   if (!eventId || !source) return;
+   try {
+     await prisma.eventTrafficStat.upsert({
+       where: {
+         eventId_source: {
+           eventId,
+           source,
+         },
+       },
+       create: {
+         eventId,
+         source,
+         count: 1,
+       },
+       update: {
+         count: { increment: 1 },
+       },
+     });
+   } catch (error) {
+     logger.error('trackEventTrafficBySource failed', {
+       message: (error as any)?.message || String(error),
+       eventId,
+       source,
+     });
+   }
+ }
+
 const qrExportSchema = z.object({
   format: z.enum(['A6', 'A5']),
   svg: z.string().min(1).max(800_000),
