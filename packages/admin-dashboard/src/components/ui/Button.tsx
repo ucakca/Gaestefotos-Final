@@ -3,7 +3,7 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
-type Variant = 'default' | 'secondary' | 'ghost' | 'destructive';
+type Variant = 'default' | 'secondary' | 'outline' | 'ghost' | 'destructive';
 
 type Size = 'sm' | 'md' | 'lg';
 
@@ -18,6 +18,7 @@ const base =
 const variants: Record<Variant, string> = {
   default: 'bg-black text-white hover:bg-black/90',
   secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200',
+  outline: 'border border-app-border bg-app-card text-app-fg hover:bg-app-bg',
   ghost: 'bg-transparent text-gray-900 hover:bg-gray-100',
   destructive: 'bg-red-600 text-white hover:bg-red-700',
 };

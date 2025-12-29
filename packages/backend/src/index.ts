@@ -40,6 +40,7 @@ import maintenanceRoutes from './routes/maintenance';
 import adminMaintenanceRoutes from './routes/adminMaintenance';
 import adminImpersonationRoutes from './routes/adminImpersonation';
 import adminMarketingRoutes from './routes/adminMarketing';
+import adminThemeRoutes from './routes/adminTheme';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -454,6 +455,7 @@ app.use('/api/admin/email-templates', adminEmailTemplatesRoutes);
 app.use('/api/admin/cms', adminCmsSyncRoutes);
 app.use('/api/cms', cmsPublicRoutes);
 app.use('/api/admin/maintenance', adminMaintenanceRoutes);
+app.use('/api/admin/theme', adminThemeRoutes);
 app.use('/api/admin/impersonation', adminImpersonationRoutes);
 app.use('/api/admin/marketing', adminMarketingRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
