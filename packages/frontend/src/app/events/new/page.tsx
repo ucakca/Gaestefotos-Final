@@ -37,7 +37,7 @@ export default function NewEventPage() {
         dateTime: formData.dateTime || undefined,
         locationName: formData.locationName?.trim() || undefined,
       });
-      router.push(`/events/${data.event.id}`);
+      router.push(`/events/${data.event.id}/design?wizard=1`);
     } catch (err: any) {
       console.error('Event creation error:', err);
       const errorData = err.response?.data;
