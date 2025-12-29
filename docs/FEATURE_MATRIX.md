@@ -99,10 +99,13 @@ Legende:
 - **Live Wall UI**
   - Frontend: `packages/frontend/src/app/live/[slug]/wall/page.tsx`
   - Backend realtime: Socket.io in `packages/backend/src/index.ts`
+  - Implementiert (Basis):
+    - Sort-Modi (Neueste/Zufall)
+    - Tiering/Fallback (Realtime vs Polling)
+    - Basis-Animations (Grid layout + Highlight bei neuen Items)
   - Fehlt:
-    - Tiering (Polling vs Premium)
-    - Sort-Modi
-    - Spezifizierte Animationen
+    - Premium/Free Plan-Policy (serverseitige Steuerung statt nur env/UI Toggle)
+    - Spezifizierte Animationen (finales Design/Timing)
 
 ---
 
