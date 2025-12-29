@@ -158,6 +158,10 @@ router.post(
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
+      const message = (error as any)?.message || String(error);
+      if (typeof message === 'string' && message.includes('Zeitfenster überschneidet sich')) {
+        return res.status(400).json({ error: message });
+      }
       logger.error('Fehler beim Erstellen der Kategorie', { message: (error as any)?.message || String(error) });
       res.status(500).json({ error: 'Interner Serverfehler' });
     }
@@ -241,6 +245,10 @@ router.put(
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
+      }
+      const message = (error as any)?.message || String(error);
+      if (typeof message === 'string' && message.includes('Zeitfenster überschneidet sich')) {
+        return res.status(400).json({ error: message });
       }
       logger.error('Fehler beim Aktualisieren der Kategorie', { message: (error as any)?.message || String(error), eventId: req.params.eventId, categoryId: req.params.categoryId });
       res.status(500).json({ error: 'Interner Serverfehler' });
