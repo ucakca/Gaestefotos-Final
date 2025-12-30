@@ -12,6 +12,8 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tokens, setTokens] = useState<Record<string, string>>({});
+  const [faceSearchNoticeText, setFaceSearchNoticeText] = useState('');
+  const [faceSearchCheckboxLabel, setFaceSearchCheckboxLabel] = useState('');
 
   const tokenEntries = useMemo(() => {
     const entries = Object.entries(tokens);
@@ -25,10 +27,18 @@ export default function SettingsPage() {
       try {
         setLoading(true);
         setError(null);
-        const res = await api.get('/admin/theme');
-        const nextTokens = (res.data?.tokens || {}) as Record<string, string>;
+        const [themeRes, faceSearchRes] = await Promise.all([
+          api.get('/admin/theme'),
+          api.get('/admin/face-search-consent'),
+        ]);
+
+        const nextTokens = (themeRes.data?.tokens || {}) as Record<string, string>;
+        const nextNoticeText = (faceSearchRes.data?.noticeText || '') as string;
+        const nextCheckboxLabel = (faceSearchRes.data?.checkboxLabel || '') as string;
         if (!mounted) return;
         setTokens(nextTokens);
+        setFaceSearchNoticeText(nextNoticeText);
+        setFaceSearchCheckboxLabel(nextCheckboxLabel);
       } catch (e: any) {
         if (!mounted) return;
         setError(e?.response?.data?.error || e?.message || 'Fehler beim Laden');
@@ -82,7 +92,13 @@ export default function SettingsPage() {
     try {
       setSaving(true);
       setError(null);
-      await api.put('/admin/theme', { tokens });
+      await Promise.all([
+        api.put('/admin/theme', { tokens }),
+        api.put('/admin/face-search-consent', {
+          noticeText: faceSearchNoticeText,
+          checkboxLabel: faceSearchCheckboxLabel,
+        }),
+      ]);
       toast.success('Theme gespeichert');
     } catch (e: any) {
       const msg = e?.response?.data?.error || e?.message || 'Speichern fehlgeschlagen';
@@ -178,6 +194,47 @@ export default function SettingsPage() {
                   <p className="text-sm text-app-muted">Noch keine Tokens gesetzt.</p>
                 </div>
               ) : null}
+            </div>
+          </Card>
+
+          <Card className="p-5 lg:col-span-2">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div className="text-xs text-app-muted">DSGVO</div>
+                <div className="mt-1 text-base font-medium text-app-fg">Face Search Einwilligung</div>
+                <div className="mt-2 text-sm text-app-muted">
+                  Systemweiter Hinweistext + Checkbox-Label für biometrische Suche.
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" onClick={save} disabled={saving}>
+                  {saving ? 'Speichern…' : 'Speichern'}
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-3">
+              <div>
+                <div className="text-sm font-medium text-app-fg">Hinweistext</div>
+                <div className="mt-1 text-sm text-app-muted">Wird im Frontend vor Face Search angezeigt.</div>
+                <textarea
+                  value={faceSearchNoticeText}
+                  onChange={(e) => setFaceSearchNoticeText(e.target.value)}
+                  rows={8}
+                  className="mt-3 w-full rounded-lg border border-app-border bg-app-card px-4 py-3 text-sm text-app-fg focus:outline-none focus:ring-1 focus:ring-app-fg/30"
+                  placeholder="z.B. Hinweis zu biometrischen Daten / Einwilligung (Art. 9 DSGVO)"
+                />
+              </div>
+
+              <div>
+                <div className="text-sm font-medium text-app-fg">Checkbox-Label</div>
+                <div className="mt-1 text-sm text-app-muted">Kurztext neben der Einwilligungs-Checkbox.</div>
+                <Input
+                  value={faceSearchCheckboxLabel}
+                  onChange={(e) => setFaceSearchCheckboxLabel(e.target.value)}
+                  placeholder="Ich willige ein, dass …"
+                />
+              </div>
             </div>
           </Card>
 

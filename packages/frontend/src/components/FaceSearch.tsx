@@ -5,6 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, X, Search, Image as ImageIcon, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
 
+const CONSENT_STORAGE_KEY = 'face_search_consent_accepted_v1';
+
+const DEFAULT_NOTICE_TEXT =
+  'Hinweis: Für die Funktion „Finde Bilder von mir“ wird ein Referenzfoto (Selfie) verarbeitet, um passende Fotos zu finden. Dabei können biometrische Daten (Gesichtsmerkmale) verarbeitet werden. Bitte nutze diese Funktion nur mit deiner ausdrücklichen Einwilligung.';
+
+const DEFAULT_CHECKBOX_LABEL =
+  'Ich willige ein, dass mein Referenzfoto zum Zweck der Gesichtssuche verarbeitet wird.';
+
 interface FaceSearchProps {
   eventId: string;
   onResults?: (results: any[]) => void;
@@ -27,12 +35,47 @@ interface SearchResult {
 
 export default function FaceSearch({ eventId, onResults, onClose, open, showButton = false }: FaceSearchProps) {
   const [showModal, setShowModal] = useState(open || false);
+  const [consentAccepted, setConsentAccepted] = useState(false);
+  const [consentNoticeText, setConsentNoticeText] = useState('');
+  const [consentCheckboxLabel, setConsentCheckboxLabel] = useState('');
   
   useEffect(() => {
     if (open !== undefined) {
       setShowModal(open);
     }
   }, [open]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = window.localStorage.getItem(CONSENT_STORAGE_KEY);
+      if (stored === 'true') setConsentAccepted(true);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    if (!showModal) return;
+    (async () => {
+      try {
+        const res = await api.get('/face-search-consent');
+        const noticeText = (res.data?.noticeText || '') as string;
+        const checkboxLabel = (res.data?.checkboxLabel || '') as string;
+        if (!mounted) return;
+        setConsentNoticeText(noticeText);
+        setConsentCheckboxLabel(checkboxLabel);
+      } catch {
+        // ignore
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [showModal]);
+
   const [capturing, setCapturing] = useState(false);
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -44,7 +87,22 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
   const fileInputRef = useRef<HTMLInputElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  const effectiveNoticeText = (consentNoticeText || '').trim() || DEFAULT_NOTICE_TEXT;
+  const effectiveCheckboxLabel = (consentCheckboxLabel || '').trim() || DEFAULT_CHECKBOX_LABEL;
+
+  const setConsent = (next: boolean) => {
+    setConsentAccepted(next);
+    if (typeof window === 'undefined') return;
+    try {
+      if (next) window.localStorage.setItem(CONSENT_STORAGE_KEY, 'true');
+      else window.localStorage.removeItem(CONSENT_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+  };
+
   const startCamera = async () => {
+    if (!consentAccepted) return;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: 'user' } 
@@ -69,6 +127,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
   };
 
   const capturePhoto = () => {
+    if (!consentAccepted) return;
     if (!videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
@@ -85,6 +144,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!consentAccepted) return;
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -96,6 +156,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
   };
 
   const searchPhotos = async () => {
+    if (!consentAccepted) return;
     if (!preview) return;
 
     setSearching(true);
@@ -151,7 +212,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowModal(true)}
-          className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium flex items-center gap-2"
+          className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg font-medium flex items-center gap-2 hover:opacity-90 transition-colors"
         >
           <Search className="w-5 h-5" />
           Finde Bilder von mir
@@ -165,30 +226,44 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeModal}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-app-fg/50 z-50 flex items-center justify-center p-4"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto"
+              className="bg-app-card border border-app-border rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-2xl font-bold text-app-fg">
                   Finde Bilder von mir
                 </h2>
                 <button
                   onClick={closeModal}
-                  className="p-2 hover:bg-gray-100 rounded-full"
+                  className="p-2 hover:bg-app-bg rounded-full"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
+              <div className="mb-4 rounded-lg border border-app-border bg-app-bg p-4">
+                <div className="text-sm font-medium text-app-fg">Einwilligung (biometrische Daten)</div>
+                <div className="mt-2 text-sm text-app-muted whitespace-pre-wrap">{effectiveNoticeText}</div>
+                <label className="mt-3 flex items-start gap-3 text-sm text-app-fg">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 rounded border border-app-border"
+                    checked={consentAccepted}
+                    onChange={(e) => setConsent(e.target.checked)}
+                  />
+                  <span>{effectiveCheckboxLabel}</span>
+                </label>
+              </div>
+
               {!preview ? (
                 <div className="space-y-4">
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-app-muted mb-4">
                     Mache ein Selfie oder lade ein Foto hoch, um alle Fotos zu finden, auf denen du zu sehen bist!
                   </p>
 
@@ -197,19 +272,24 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={startCamera}
-                      className="p-6 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors flex flex-col items-center gap-2"
+                      disabled={!consentAccepted}
+                      className="p-6 border-2 border-dashed border-app-border rounded-lg hover:border-tokens-brandGreen hover:bg-app-bg transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Camera className="w-8 h-8 text-gray-400" />
+                      <Camera className="w-8 h-8 text-app-muted" />
                       <span className="font-medium">Selfie aufnehmen</span>
                     </motion.button>
 
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => fileInputRef.current?.click()}
-                      className="p-6 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors flex flex-col items-center gap-2"
+                      onClick={() => {
+                        if (!consentAccepted) return;
+                        fileInputRef.current?.click();
+                      }}
+                      disabled={!consentAccepted}
+                      className="p-6 border-2 border-dashed border-app-border rounded-lg hover:border-tokens-brandGreen hover:bg-app-bg transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <ImageIcon className="w-8 h-8 text-gray-400" />
+                      <ImageIcon className="w-8 h-8 text-app-muted" />
                       <span className="font-medium">Foto hochladen</span>
                     </motion.button>
                   </div>
@@ -235,7 +315,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={capturePhoto}
-                          className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium"
+                          className="flex-1 px-4 py-3 bg-tokens-brandGreen text-app-bg rounded-lg font-medium hover:opacity-90 transition-colors"
                         >
                           Foto aufnehmen
                         </motion.button>
@@ -243,7 +323,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={stopCamera}
-                          className="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium"
+                          className="px-4 py-3 bg-app-bg text-app-fg rounded-lg font-medium hover:opacity-90 transition-colors"
                         >
                           Abbrechen
                         </motion.button>
@@ -261,7 +341,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                     />
                     <button
                       onClick={reset}
-                      className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100"
+                      className="absolute top-2 right-2 p-2 bg-app-card border border-app-border rounded-full shadow-md hover:bg-app-bg"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -286,7 +366,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                               alt="Gefundenes Foto"
                               className="w-full aspect-square object-cover rounded"
                             />
-                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-1 text-center">
+                            <div className="absolute bottom-0 left-0 right-0 bg-app-fg/60 text-app-bg text-xs p-1 text-center">
                               {Math.round(result.similarity * 100)}% ähnlich
                             </div>
                           </div>
@@ -300,8 +380,8 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={searchPhotos}
-                      disabled={searching}
-                      className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                      disabled={searching || !consentAccepted}
+                      className="flex-1 px-4 py-3 bg-tokens-brandGreen text-app-bg rounded-lg font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {searching ? (
                         <>
@@ -319,7 +399,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={reset}
-                      className="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium"
+                      className="px-4 py-3 bg-app-bg text-app-fg rounded-lg font-medium hover:opacity-90 transition-colors"
                     >
                       Neues Foto
                     </motion.button>

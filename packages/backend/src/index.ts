@@ -42,6 +42,8 @@ import adminImpersonationRoutes from './routes/adminImpersonation';
 import adminMarketingRoutes from './routes/adminMarketing';
 import adminThemeRoutes from './routes/adminTheme';
 import themeRoutes from './routes/theme';
+import faceSearchConsentRoutes from './routes/faceSearchConsent';
+import adminFaceSearchConsentRoutes from './routes/adminFaceSearchConsent';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -426,6 +428,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/auth', authRoutes);
 app.use('/api', maintenanceRoutes);
 app.use('/api/theme', themeRoutes);
+app.use('/api/face-search-consent', faceSearchConsentRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/events', guestRoutes);
 app.use('/api/events', photoRoutes); // Photo routes: /api/events/:eventId/photos/*
@@ -458,6 +461,7 @@ app.use('/api/admin/cms', adminCmsSyncRoutes);
 app.use('/api/cms', cmsPublicRoutes);
 app.use('/api/admin/maintenance', adminMaintenanceRoutes);
 app.use('/api/admin/theme', adminThemeRoutes);
+app.use('/api/admin/face-search-consent', adminFaceSearchConsentRoutes);
 app.use('/api/admin/impersonation', adminImpersonationRoutes);
 app.use('/api/admin/marketing', adminMarketingRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
