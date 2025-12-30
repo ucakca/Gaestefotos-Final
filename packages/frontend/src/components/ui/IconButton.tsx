@@ -13,12 +13,12 @@ export type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const base =
-  'inline-flex items-center justify-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-black/30 disabled:opacity-50 disabled:pointer-events-none';
+  'inline-flex items-center justify-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/30 disabled:opacity-50 disabled:pointer-events-none';
 
 const variantClasses: Record<Variant, string> = {
-  ghost: 'bg-transparent text-gray-900 hover:bg-gray-100',
-  glass: 'bg-white/10 text-white hover:bg-white/15',
-  danger: 'bg-red-600 text-white hover:bg-red-700',
+  ghost: 'bg-transparent text-app-fg hover:bg-app-bg',
+  glass: 'bg-app-card/10 text-app-bg hover:bg-app-card/15',
+  danger: 'bg-[var(--status-danger)] text-app-bg hover:opacity-90',
 };
 
 const sizeClasses: Record<Size, string> = {

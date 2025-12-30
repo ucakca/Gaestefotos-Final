@@ -18,7 +18,7 @@ const variantClasses: Record<Variant, string> = {
   primary: 'bg-tokens-brandGreen text-app-bg hover:opacity-90',
   secondary: 'bg-app-bg text-app-fg border border-app-border hover:bg-app-card',
   ghost: 'bg-transparent text-app-fg hover:bg-app-bg',
-  danger: 'bg-red-600 text-white hover:bg-red-700',
+  danger: 'bg-[var(--status-danger)] text-app-bg hover:opacity-90',
 };
 
 const sizeClasses: Record<Size, string> = {
