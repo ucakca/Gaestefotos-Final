@@ -67,22 +67,22 @@ export default function UploadModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={handleClose}
-        className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-app-fg/50 z-50 flex items-center justify-center p-4"
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-white rounded-lg max-w-md w-full p-6"
+          className="bg-app-card border border-app-border rounded-lg max-w-md w-full p-6"
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold" style={{ color: '#295B4D' }}>
+            <h2 className="text-xl font-bold text-app-fg">
               {title}
             </h2>
             <button
               onClick={handleClose}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-app-muted hover:text-app-fg"
             >
               <X className="w-5 h-5" />
             </button>
@@ -90,12 +90,12 @@ export default function UploadModal({
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-app-fg mb-2">
                 Datei auswählen
               </label>
-              <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#295B4D] transition-colors">
-                <Upload className="w-5 h-5 text-gray-400" />
-                <span className="text-sm text-gray-600">
+              <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-app-border rounded-lg cursor-pointer hover:border-tokens-brandGreen transition-colors">
+                <Upload className="w-5 h-5 text-app-muted" />
+                <span className="text-sm text-app-muted">
                   {selectedFile ? selectedFile.name : 'Klicken zum Auswählen'}
                 </span>
                 <input
@@ -110,13 +110,13 @@ export default function UploadModal({
 
             {categories.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-app-fg mb-2">
                   Album (optional)
                 </label>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white"
+                  className="w-full px-3 py-2 border border-app-border rounded-lg text-app-fg bg-app-card"
                 >
                   <option value="">Kein Album</option>
                   {categories.map((cat) => (
@@ -129,7 +129,7 @@ export default function UploadModal({
             )}
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-app-fg mb-2">
                 <input
                   type="checkbox"
                   checked={showNameField}
@@ -144,14 +144,14 @@ export default function UploadModal({
                   value={uploaderName}
                   onChange={(e) => setUploaderName(e.target.value)}
                   placeholder="Ihr Name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 bg-white mt-2"
+                  className="w-full px-3 py-2 border border-app-border rounded-lg text-app-fg bg-app-card mt-2"
                 />
               )}
             </div>
 
             {showGuestbookOption && (
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <label className="flex items-center gap-2 text-sm font-medium text-app-fg">
                   <input
                     type="checkbox"
                     checked={alsoInGuestbook}
@@ -161,7 +161,7 @@ export default function UploadModal({
                   <span>Auch im Gästebuch eintragen</span>
                 </label>
                 {alsoInGuestbook && (
-                  <p className="text-xs text-gray-500 mt-1 ml-6">
+                  <p className="text-xs text-app-muted mt-1 ml-6">
                     Das Foto wird auch als Gästebuch-Eintrag mit Sprechblase im Feed angezeigt
                   </p>
                 )}
@@ -172,14 +172,14 @@ export default function UploadModal({
               <button
                 type="button"
                 onClick={handleClose}
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex-1 px-4 py-2 bg-app-bg text-app-fg rounded-lg hover:opacity-90 transition-colors"
               >
                 Abbrechen
               </button>
               <button
                 type="submit"
                 disabled={!selectedFile}
-                className="flex-1 px-4 py-2 bg-[#295B4D] text-white rounded-lg hover:bg-[#204a3e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Hochladen
               </button>
