@@ -66,19 +66,19 @@ export default function NewEventPage() {
   };
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: '#F9F5F2' }}>
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-app-bg">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8" style={{ color: '#295B4D' }}>Neues Event erstellen</h1>
+        <h1 className="text-3xl font-bold mb-8 text-tokens-brandGreen">Neues Event erstellen</h1>
 
-        <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-lg p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="bg-app-card border border-app-border shadow-lg rounded-lg p-6 space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
+            <div className="bg-app-bg border border-[var(--status-danger)] text-[var(--status-danger)] px-4 py-3 rounded">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="title" className="block text-sm font-medium mb-1" style={{ color: '#295B4D' }}>
+            <label htmlFor="title" className="block text-sm font-medium mb-1 text-tokens-brandGreen">
               Event-Titel *
             </label>
             <input
@@ -87,17 +87,13 @@ export default function NewEventPage() {
               required
               value={formData.title}
               onChange={handleTitleChange}
-              className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition-all text-gray-900 bg-white"
-              style={{ 
-                borderColor: '#EAA48F',
-                color: '#295B4D',
-              }}
+              className="w-full px-4 py-3 border border-app-accent rounded-lg focus:ring-2 focus:outline-none transition-all text-tokens-brandGreen bg-app-card focus:ring-tokens-brandGreen/30"
               placeholder="z.B. Hochzeit von Maria und Max"
             />
           </div>
 
           <div>
-            <label htmlFor="slug" className="block text-sm font-medium mb-1" style={{ color: '#295B4D' }}>
+            <label htmlFor="slug" className="block text-sm font-medium mb-1 text-tokens-brandGreen">
               URL-Slug *
             </label>
             <input
@@ -106,14 +102,10 @@ export default function NewEventPage() {
               required
               value={formData.slug}
               onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-              className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition-all text-gray-900 bg-white"
-              style={{ 
-                borderColor: '#EAA48F',
-                color: '#295B4D',
-              }}
+              className="w-full px-4 py-3 border border-app-accent rounded-lg focus:ring-2 focus:outline-none transition-all text-tokens-brandGreen bg-app-card focus:ring-tokens-brandGreen/30"
               placeholder="hochzeit-maria-max"
             />
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-app-muted">
               Event-URL: /e2/{formData.slug || 'event-slug'}
             </p>
           </div>
@@ -125,7 +117,7 @@ export default function NewEventPage() {
           />
 
           <div>
-            <label htmlFor="locationName" className="block text-sm font-medium mb-1" style={{ color: '#295B4D' }}>
+            <label htmlFor="locationName" className="block text-sm font-medium mb-1 text-tokens-brandGreen">
               Veranstaltungsort / Adresse
             </label>
             <input
@@ -133,17 +125,13 @@ export default function NewEventPage() {
               type="text"
               value={formData.locationName}
               onChange={(e) => setFormData({ ...formData, locationName: e.target.value })}
-              className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition-all text-gray-900 bg-white"
-              style={{ 
-                borderColor: '#EAA48F',
-                color: '#295B4D',
-              }}
+              className="w-full px-4 py-3 border border-app-accent rounded-lg focus:ring-2 focus:outline-none transition-all text-tokens-brandGreen bg-app-card focus:ring-tokens-brandGreen/30"
               placeholder="z.B. Musterstraße 123, 12345 Musterstadt oder Hotel Beispiel, Berlin"
             />
           </div>
 
           <div>
-            <p className="text-sm" style={{ color: '#295B4D', opacity: 0.7 }}>
+            <p className="text-sm text-tokens-brandGreen/70">
               💡 Die Adresse wird automatisch verwendet, um einen Karten-Link zu generieren, 
               der mit Google Maps und Apple Maps funktioniert.
             </p>
@@ -153,22 +141,14 @@ export default function NewEventPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-4 py-2 border rounded-md font-medium transition-colors"
-              style={{ borderColor: '#EAA48F', color: '#295B4D' }}
+              className="px-4 py-2 border border-app-accent rounded-md font-medium transition-colors text-tokens-brandGreen bg-app-card hover:bg-app-bg"
             >
               Abbrechen
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 rounded-lg text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: '#295B4D' }}
-              onMouseEnter={(e) => {
-                if (!loading) e.currentTarget.style.backgroundColor = '#204a3e';
-              }}
-              onMouseLeave={(e) => {
-                if (!loading) e.currentTarget.style.backgroundColor = '#295B4D';
-              }}
+              className="px-6 py-3 rounded-lg text-app-bg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-tokens-brandGreen hover:opacity-90"
             >
               {loading ? 'Erstellen...' : 'Event erstellen'}
             </button>

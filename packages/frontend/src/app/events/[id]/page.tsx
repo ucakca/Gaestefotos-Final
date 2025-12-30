@@ -46,13 +46,13 @@ export default function EventDetailPage() {
   if (error || !event) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-red-600">{error || 'Event nicht gefunden'}</div>
+        <div className="text-[var(--status-danger)]">{error || 'Event nicht gefunden'}</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-app-bg">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -61,7 +61,7 @@ export default function EventDetailPage() {
         >
           <Link
             href="/dashboard"
-            className="text-primary-600 hover:text-primary-500"
+            className="text-tokens-brandGreen hover:opacity-90"
           >
             ← Zurück zum Dashboard
           </Link>
@@ -71,19 +71,19 @@ export default function EventDetailPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white shadow rounded-lg p-6 mb-6"
+          className="bg-app-card border border-app-border shadow rounded-lg p-6 mb-6"
         >
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{event.title}</h1>
-              <p className="text-gray-600">Slug: {event.slug}</p>
-              <p className="text-sm text-gray-500 mt-2">
+              <h1 className="text-3xl font-bold text-app-fg mb-2">{event.title}</h1>
+              <p className="text-app-muted">Slug: {event.slug}</p>
+              <p className="text-sm text-app-muted mt-2">
                 URL: /e/{event.slug}
               </p>
             </div>
             <Link
               href={`/events/${event.id}/edit`}
-              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+              className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90"
             >
               Bearbeiten
             </Link>
@@ -91,7 +91,7 @@ export default function EventDetailPage() {
 
           {event.dateTime && (
             <div className="mb-4">
-              <p className="text-gray-700">
+              <p className="text-app-fg">
                 <strong>Datum:</strong>{' '}
                 {new Date(event.dateTime).toLocaleString('de-DE')}
               </p>
@@ -100,7 +100,7 @@ export default function EventDetailPage() {
 
           {event.locationName && (
             <div className="mb-4">
-              <p className="text-gray-700">
+              <p className="text-app-fg">
                 <strong>Ort:</strong> {event.locationName}
               </p>
               <div className="mt-2">
@@ -117,30 +117,30 @@ export default function EventDetailPage() {
           >
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="bg-gradient-to-br from-primary-50 to-primary-100 p-4 rounded-lg"
+              className="bg-app-bg border border-app-border p-4 rounded-lg"
             >
-              <h3 className="font-semibold text-gray-700 mb-2">Fotos</h3>
-              <p className="text-2xl font-bold text-primary-600">
+              <h3 className="font-semibold text-app-fg mb-2">Fotos</h3>
+              <p className="text-2xl font-bold text-tokens-brandGreen">
                 {/* @ts-ignore */}
                 {event._count?.photos || 0}
               </p>
             </motion.div>
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg"
+              className="bg-app-bg border border-app-border p-4 rounded-lg"
             >
-              <h3 className="font-semibold text-gray-700 mb-2">Gäste</h3>
-              <p className="text-2xl font-bold text-green-600">
+              <h3 className="font-semibold text-app-fg mb-2">Gäste</h3>
+              <p className="text-2xl font-bold text-[var(--status-success)]">
                 {/* @ts-ignore */}
                 {event._count?.guests || 0}
               </p>
             </motion.div>
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg"
+              className="bg-app-bg border border-app-border p-4 rounded-lg"
             >
-              <h3 className="font-semibold text-gray-700 mb-2">Status</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-semibold text-app-fg mb-2">Status</h3>
+              <p className="text-sm text-app-muted">
                 {new Date(event.createdAt).toLocaleDateString('de-DE')}
               </p>
             </motion.div>
@@ -152,26 +152,26 @@ export default function EventDetailPage() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white shadow rounded-lg p-6"
+            className="bg-app-card border border-app-border shadow rounded-lg p-6"
           >
-            <h2 className="text-xl font-semibold mb-4">Aktionen</h2>
+            <h2 className="text-xl font-semibold mb-4 text-app-fg">Aktionen</h2>
             <div className="space-y-2">
               <Link
                 href={`/events/${event.id}/photos`}
-                className="block px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 text-center"
+                className="block px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90 text-center"
               >
                 Fotos verwalten
               </Link>
               <Link
                 href={`/events/${event.id}/guests`}
-                className="block px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-center"
+                className="block px-4 py-2 bg-[var(--status-neutral)] text-app-bg rounded-md hover:opacity-90 text-center"
               >
                 Gäste verwalten
               </Link>
               <Link
                 href={`/e/${event.slug}`}
                 target="_blank"
-                className="block px-4 py-2 border border-primary-600 text-primary-600 rounded-md hover:bg-primary-50 text-center"
+                className="block px-4 py-2 border border-tokens-brandGreen text-tokens-brandGreen rounded-md hover:bg-app-bg text-center"
               >
                 Öffentliche Seite ansehen
               </Link>
@@ -182,16 +182,16 @@ export default function EventDetailPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white shadow rounded-lg p-6"
+            className="bg-app-card border border-app-border shadow rounded-lg p-6"
           >
-            <h2 className="text-xl font-semibold mb-4">QR-Code</h2>
-            <p className="text-sm text-gray-600 mb-4">
+            <h2 className="text-xl font-semibold mb-4 text-app-fg">QR-Code</h2>
+            <p className="text-sm text-app-muted mb-4">
               Scannen für Foto-Upload
             </p>
             <div className="flex justify-center">
               <QRCode value={publicUrl} size={200} />
             </div>
-            <p className="text-xs text-gray-500 mt-4 text-center break-all">
+            <p className="text-xs text-app-muted mt-4 text-center break-all">
               {publicUrl}
             </p>
           </motion.div>

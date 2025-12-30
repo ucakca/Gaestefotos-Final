@@ -52,24 +52,24 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F9F5F2' }}>
-        <div className="text-lg" style={{ color: '#295B4D' }}>Lade...</div>
+      <div className="min-h-screen flex items-center justify-center bg-app-bg">
+        <div className="text-lg text-tokens-brandGreen">Lade...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F9F5F2' }}>
+    <div className="min-h-screen bg-app-bg">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div className="bg-app-card rounded-lg border border-app-border shadow-sm p-6 mb-8">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <Logo width={120} height={48} />
               <div>
-                <h1 className="text-2xl font-bold" style={{ color: '#295B4D' }}>Dashboard</h1>
+                <h1 className="text-2xl font-bold text-tokens-brandGreen">Dashboard</h1>
                 {user && (
-                  <p className="text-sm" style={{ color: '#295B4D' }}>{user.name || user.email}</p>
+                  <p className="text-sm text-tokens-brandGreen">{user.name || user.email}</p>
                 )}
               </div>
             </div>
@@ -78,33 +78,25 @@ export default function DashboardPage() {
                 href="https://xn--gstefotos-v2a.com/faq/"
                 target="_blank"
                 rel="noreferrer"
-                className="px-4 py-2 rounded-md border font-medium transition-colors"
-                style={{ borderColor: '#EAA48F', color: '#295B4D' }}
+                className="px-4 py-2 rounded-md border border-app-accent font-medium transition-colors text-tokens-brandGreen bg-app-card hover:bg-app-bg"
               >
                 FAQ
               </a>
               <Link
                 href="/moderation"
-                className="px-4 py-2 rounded-md text-white font-medium transition-colors"
-                style={{ backgroundColor: '#EAA48F' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#d89a87'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#EAA48F'}
+                className="px-4 py-2 rounded-md text-app-bg font-medium transition-colors bg-app-accent hover:opacity-90"
               >
                 Moderation
               </Link>
               <Link
                 href="/events/new"
-                className="px-4 py-2 rounded-md text-white font-medium transition-colors"
-                style={{ backgroundColor: '#295B4D' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#204a3e'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#295B4D'}
+                className="px-4 py-2 rounded-md text-app-bg font-medium transition-colors bg-tokens-brandGreen hover:opacity-90"
               >
                 Neues Event
               </Link>
               <button
                 onClick={logout}
-                className="px-4 py-2 rounded-md border font-medium transition-colors"
-                style={{ borderColor: '#EAA48F', color: '#295B4D' }}
+                className="px-4 py-2 rounded-md border border-app-accent font-medium transition-colors text-tokens-brandGreen bg-app-card hover:bg-app-bg"
               >
                 Abmelden
               </button>
@@ -113,7 +105,7 @@ export default function DashboardPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4">
+          <div className="bg-app-bg border border-[var(--status-danger)] text-[var(--status-danger)] px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
@@ -122,13 +114,12 @@ export default function DashboardPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center py-12 bg-white rounded-lg shadow-sm"
+            className="text-center py-12 bg-app-card rounded-lg border border-app-border shadow-sm"
           >
-            <p className="mb-4" style={{ color: '#295B4D' }}>Noch keine Events vorhanden</p>
+            <p className="mb-4 text-tokens-brandGreen">Noch keine Events vorhanden</p>
             <Link
               href="/events/new"
-              className="px-4 py-2 rounded-md text-white font-medium inline-block transition-colors"
-              style={{ backgroundColor: '#295B4D' }}
+              className="px-4 py-2 rounded-md text-app-bg font-medium inline-block transition-colors bg-tokens-brandGreen hover:opacity-90"
             >
               Erstelle dein erstes Event
             </Link>
@@ -144,15 +135,15 @@ export default function DashboardPage() {
               >
                 <Link
                   href={`/events/${event.id}`}
-                  className="bg-white rounded-lg shadow-sm p-6 hover:shadow-lg transition-all block"
+                  className="bg-app-card rounded-lg border border-app-border shadow-sm p-6 hover:shadow-lg transition-all block"
                 >
-                  <h2 className="text-xl font-semibold mb-2" style={{ color: '#295B4D' }}>
+                  <h2 className="text-xl font-semibold mb-2 text-tokens-brandGreen">
                     {event.title}
                   </h2>
-                  <p className="text-sm mb-4" style={{ color: '#295B4D', opacity: 0.7 }}>
+                  <p className="text-sm mb-4 text-tokens-brandGreen/70">
                     Slug: {event.slug}
                   </p>
-                  <div className="text-sm" style={{ color: '#295B4D', opacity: 0.6 }}>
+                  <div className="text-sm text-tokens-brandGreen/60">
                     Erstellt: {new Date(event.createdAt).toLocaleDateString('de-DE')}
                   </div>
                 </Link>
