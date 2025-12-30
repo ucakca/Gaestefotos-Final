@@ -75,8 +75,8 @@ export default async function ShortLinkResolvePageV2({ params }: { params: { cod
         <div className="text-lg font-semibold">Weiterleitung…</div>
         {initialTarget ? (
           <>
-            <p className="mt-3 text-sm text-gray-600">Bitte kurz warten.</p>
-            <a className="mt-3 inline-block text-sm text-[#295B4D] underline" href={initialTarget}>
+            <p className="mt-3 text-sm text-app-muted">Bitte kurz warten.</p>
+            <a className="mt-3 inline-block text-sm text-tokens-brandGreen underline" href={initialTarget}>
               Falls du nicht weitergeleitet wirst, klicke hier.
             </a>
             <ClientRedirect code={code} initialTarget={initialTarget} />

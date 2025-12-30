@@ -90,9 +90,13 @@ export default function InstagramUploadButton({
       const token = typeof window !== 'undefined'
         ? (sessionStorage.getItem('token') || localStorage.getItem('token'))
         : '';
-      const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001')
-        .replace(/\/+$/, '')
-        .replace(/\/api$/, '');
+
+      const apiBase =
+        process.env.NODE_ENV === 'production'
+          ? ''
+          : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001')
+              .replace(/\/+$/, '')
+              .replace(/\/api$/, '');
       const response = await fetch(
         `${apiBase}/api/events/${eventId}/photos/upload`,
         {
