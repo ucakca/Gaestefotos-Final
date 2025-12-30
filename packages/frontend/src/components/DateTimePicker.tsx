@@ -70,7 +70,7 @@ export default function DateTimePicker({
   return (
     <div className={className} ref={wrapperRef}>
       {label && (
-        <label className="block text-sm font-medium mb-2" style={{ color: '#295B4D' }}>
+        <label className="block text-sm font-medium mb-2 text-tokens-brandGreen">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -83,15 +83,7 @@ export default function DateTimePicker({
             value={selectedDate ? formatDisplayDate(selectedDate) : ''}
             onClick={() => setIsOpen(!isOpen)}
             placeholder="DD.MM.YYYY HH:MM auswählen"
-            className="w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:outline-none transition-all cursor-pointer text-gray-900 bg-white"
-            style={{ 
-              borderColor: '#EAA48F',
-              color: '#295B4D',
-            }}
-            onFocus={(e) => {
-              e.target.style.borderColor = '#EAA48F';
-              e.target.style.boxShadow = '0 0 0 2px rgba(234, 164, 143, 0.2)';
-            }}
+            className="w-full px-4 py-3 pr-12 border border-app-border rounded-lg focus:ring-2 focus:outline-none focus:ring-app-fg/30 focus:border-transparent transition-all cursor-pointer text-app-fg bg-app-card"
           />
           <button
             type="button"
@@ -100,8 +92,7 @@ export default function DateTimePicker({
               e.stopPropagation();
               setIsOpen(!isOpen);
             }}
-            className="absolute right-3 text-gray-500 hover:text-gray-700 focus:outline-none"
-            style={{ color: '#295B4D' }}
+            className="absolute right-3 text-tokens-brandGreen hover:opacity-80 focus:outline-none"
           >
             <Calendar className="w-5 h-5" />
           </button>
@@ -118,7 +109,7 @@ export default function DateTimePicker({
               locale="de"
               inline
               minDate={new Date()}
-              className="border rounded-lg bg-white"
+              className="border border-app-border rounded-lg bg-app-card"
             />
           </div>
         )}
