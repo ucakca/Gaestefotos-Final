@@ -77,10 +77,10 @@ export default function EventHeader({
     if (hasStories) {
       return {
         backgroundImage:
-          accentGradient || 'linear-gradient(135deg, #A855F7 0%, #EC4899 100%)',
+          accentGradient || 'linear-gradient(135deg, var(--tokens-brandGreen) 0%, var(--tokens-brandPeach) 100%)',
       };
     }
-    return { backgroundImage: 'linear-gradient(135deg, #D1D5DB 0%, #E5E7EB 100%)' };
+    return { backgroundImage: 'linear-gradient(135deg, var(--app-border) 0%, var(--app-bg) 100%)' };
   }, [accentGradient, hasStories]);
 
   const openStoryModal = () => {
@@ -200,8 +200,8 @@ export default function EventHeader({
             style={heroGradient ? { backgroundImage: heroGradient } : { backgroundColor: headerColor }}
           >
             <div className="absolute inset-0 opacity-25">
-              <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-white/40 blur-3xl" />
-              <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-black/25 blur-3xl" />
+              <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-app-bg/40 blur-3xl" />
+              <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-app-fg/25 blur-3xl" />
             </div>
 
             <div className="pt-safe-top" />
@@ -211,21 +211,21 @@ export default function EventHeader({
                 {logoUrl ? (
                   <img src={logoUrl} alt={appName} className="h-7 max-w-[160px] object-contain" />
                 ) : (
-                  <div className="text-white/90 text-xs font-semibold tracking-wide">{appName}</div>
+                  <div className="text-app-bg/90 text-xs font-semibold tracking-wide">{appName}</div>
                 )}
 
-                <div className="text-right text-white/90">
+                <div className="text-right text-app-bg/90">
                   <div className="text-xs font-semibold truncate">{event.title}</div>
-                  <div className="text-[11px] text-white/75 truncate">{hostName ? `von ${hostName}` : 'von Gastgeber'}</div>
+                  <div className="text-[11px] text-app-bg/75 truncate">{hostName ? `von ${hostName}` : 'von Gastgeber'}</div>
                 </div>
               </div>
             </div>
 
-            <div className="absolute left-0 right-0 -bottom-10 h-20 bg-white rounded-t-[48px]" />
+            <div className="absolute left-0 right-0 -bottom-10 h-20 bg-app-bg rounded-t-[48px]" />
           </motion.div>
         </div>
 
-        <div className="bg-white">
+        <div className="bg-app-bg">
           <div className="max-w-md mx-auto px-4 -mt-16 relative">
             <div className="flex flex-col items-center">
               <button
@@ -245,12 +245,12 @@ export default function EventHeader({
                   ) : (
                     <div className="absolute inset-0 rounded-full p-[3px]" style={storyRingStyle} />
                   )}
-                  <div className="absolute inset-[3px] rounded-full bg-white overflow-hidden flex items-center justify-center">
+                  <div className="absolute inset-[3px] rounded-full bg-app-bg overflow-hidden flex items-center justify-center">
                     {profileImage ? (
                       <img src={profileImage} alt={event.title} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                        <User className="w-10 h-10 text-gray-400" />
+                      <div className="w-full h-full bg-app-bg flex items-center justify-center">
+                        <User className="w-10 h-10 text-app-muted" />
                       </div>
                     )}
                   </div>
@@ -261,7 +261,7 @@ export default function EventHeader({
                 <button
                   type="button"
                   onClick={openStoryModal}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-white border border-gray-200 px-3 py-1.5 shadow-sm text-sm font-semibold text-gray-900"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-app-card border border-app-border px-3 py-1.5 shadow-sm text-sm font-semibold text-app-fg"
                 >
                   <Plus className="w-4 h-4" />
                   +Story
@@ -269,29 +269,29 @@ export default function EventHeader({
               </div>
 
               {!hasStories && (
-                <div className="mt-2 text-xs text-gray-500">Sei der Erste</div>
+                <div className="mt-2 text-xs text-app-muted">Sei der Erste</div>
               )}
 
-              <div className="mt-4 w-full rounded-2xl border border-gray-100 bg-white shadow-sm px-4 py-4">
-                <div className="text-base font-semibold text-gray-900 leading-snug">{event.title}</div>
+              <div className="mt-4 w-full rounded-2xl border border-app-border bg-app-card shadow-sm px-4 py-4">
+                <div className="text-base font-semibold text-app-fg leading-snug">{event.title}</div>
 
                 {((event as any)?.profileDescription || welcomeMessage) && (
-                  <div className="mt-2 text-sm text-gray-700 leading-relaxed">
+                  <div className="mt-2 text-sm text-app-fg leading-relaxed">
                     {(event as any)?.profileDescription || welcomeMessage}
                   </div>
                 )}
 
                 {(event.locationName || (event as any).locationGoogleMapsLink || event.dateTime) && (
-                  <div className="mt-3 text-xs text-gray-500">
+                  <div className="mt-3 text-xs text-app-muted">
                     {event.dateTime ? new Date(event.dateTime as any).toLocaleDateString('de-DE') : null}
                     {event.locationName ? ` · ${event.locationName}` : null}
                   </div>
                 )}
 
                 {isStorageLocked && (
-                  <div className="mt-4 rounded-2xl bg-gray-50 border border-gray-100 px-4 py-3">
-                    <p className="text-gray-900 text-sm font-semibold">Speicherzeit abgelaufen</p>
-                    <p className="text-gray-600 text-xs mt-0.5">
+                  <div className="mt-4 rounded-2xl bg-app-bg border border-app-border px-4 py-3">
+                    <p className="text-app-fg text-sm font-semibold">Speicherzeit abgelaufen</p>
+                    <p className="text-app-muted text-xs mt-0.5">
                       Fotos sind als Vorschau weiterhin sichtbar, aber unscharf.
                     </p>
                   </div>
@@ -308,34 +308,34 @@ export default function EventHeader({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeStoryModal}
-              className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center p-4"
+              className="fixed inset-0 bg-app-fg/50 z-50 flex items-end justify-center p-4"
             >
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 20, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-md rounded-2xl bg-white p-4 shadow-xl"
+                className="w-full max-w-md rounded-2xl bg-app-card border border-app-border p-4 shadow-xl"
               >
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm font-semibold text-gray-900">Story erstellen</div>
+                  <div className="text-sm font-semibold text-app-fg">Story erstellen</div>
                   <button
                     type="button"
                     onClick={closeStoryModal}
-                    className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
+                    className="w-9 h-9 rounded-full bg-app-bg hover:opacity-80 flex items-center justify-center"
                   >
-                    <X className="w-5 h-5 text-gray-700" />
+                    <X className="w-5 h-5 text-app-fg" />
                   </button>
                 </div>
 
                 <div className="mt-3">
-                  <label className="block text-xs font-semibold text-gray-700">Dein Name (optional)</label>
+                  <label className="block text-xs font-semibold text-app-fg">Dein Name (optional)</label>
                   <input
                     type="text"
                     value={storyUploaderName}
                     onChange={(e) => setStoryUploaderName(e.target.value)}
                     placeholder="z.B. Max"
-                    className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded-xl border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
                   />
                 </div>
 
@@ -344,9 +344,9 @@ export default function EventHeader({
                     type="button"
                     disabled={storyUploading}
                     onClick={() => pickFile('photo', true)}
-                    className="rounded-2xl border border-gray-200 bg-white px-3 py-3 text-left"
+                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left"
                   >
-                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-app-fg">
                       <Camera className="w-5 h-5" />
                       Foto aufnehmen
                     </div>
@@ -355,31 +355,31 @@ export default function EventHeader({
                     type="button"
                     disabled={storyUploading}
                     onClick={() => pickFile('video', true)}
-                    className="rounded-2xl border border-gray-200 bg-white px-3 py-3 text-left"
+                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left"
                   >
-                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-app-fg">
                       <Video className="w-5 h-5" />
                       Video aufnehmen
                     </div>
-                    <div className="mt-1 text-xs text-gray-500">max 15s</div>
+                    <div className="mt-1 text-xs text-app-muted">max 15s</div>
                   </button>
                   <button
                     type="button"
                     disabled={storyUploading}
                     onClick={() => pickFile('photo', false)}
-                    className="rounded-2xl border border-gray-200 bg-white px-3 py-3 text-left"
+                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left"
                   >
-                    <div className="text-sm font-semibold text-gray-900">Foto auswählen</div>
-                    <div className="mt-1 text-xs text-gray-500">Galerie</div>
+                    <div className="text-sm font-semibold text-app-fg">Foto auswählen</div>
+                    <div className="mt-1 text-xs text-app-muted">Galerie</div>
                   </button>
                   <button
                     type="button"
                     disabled={storyUploading}
                     onClick={() => pickFile('video', false)}
-                    className="rounded-2xl border border-gray-200 bg-white px-3 py-3 text-left"
+                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left"
                   >
-                    <div className="text-sm font-semibold text-gray-900">Video auswählen</div>
-                    <div className="mt-1 text-xs text-gray-500">Galerie · max 15s</div>
+                    <div className="text-sm font-semibold text-app-fg">Video auswählen</div>
+                    <div className="mt-1 text-xs text-app-muted">Galerie · max 15s</div>
                   </button>
                 </div>
 
@@ -389,7 +389,7 @@ export default function EventHeader({
                   </div>
                 )}
 
-                <div className="mt-4 text-xs text-gray-500">
+                <div className="mt-4 text-xs text-app-muted">
                   Hinweis: Videos in Stories sind auf maximal 15 Sekunden begrenzt.
                 </div>
               </motion.div>
@@ -404,17 +404,17 @@ export default function EventHeader({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeStoryDisabled}
-              className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center p-4"
+              className="fixed inset-0 bg-app-fg/50 z-50 flex items-end justify-center p-4"
             >
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 20, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-md rounded-2xl bg-white p-4 shadow-xl"
+                className="w-full max-w-md rounded-2xl bg-app-card border border-app-border p-4 shadow-xl"
               >
-                <div className="text-sm font-semibold text-gray-900">Story nicht möglich</div>
-                <div className="mt-1 text-sm text-gray-600">
+                <div className="text-sm font-semibold text-app-fg">Story nicht möglich</div>
+                <div className="mt-1 text-sm text-app-muted">
                   {isStorageLocked
                     ? 'Die Speicherzeit ist abgelaufen.'
                     : uploadDisabledReason || 'Uploads sind aktuell deaktiviert.'}
@@ -422,7 +422,7 @@ export default function EventHeader({
                 <button
                   type="button"
                   onClick={closeStoryDisabled}
-                  className="mt-4 w-full rounded-xl bg-gray-900 text-white py-2 text-sm font-semibold"
+                  className="mt-4 w-full rounded-xl bg-tokens-brandGreen text-app-bg py-2 text-sm font-semibold hover:opacity-90"
                 >
                   OK
                 </button>
@@ -444,28 +444,28 @@ export default function EventHeader({
               <img src={logoUrl} alt={appName} className="h-7 max-w-[180px] object-contain" />
             </div>
           ) : (
-            <h1 className="text-center text-white text-lg font-semibold tracking-wide">{appName}</h1>
+            <h1 className="text-center text-app-bg text-lg font-semibold tracking-wide">{appName}</h1>
           )}
         </div>
       </motion.div>
 
-      <div className="bg-gradient-to-b from-white to-gray-50">
+      <div className="bg-gradient-to-b from-app-bg to-app-bg">
         <div className="max-w-md mx-auto px-4 pt-4 pb-3">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="rounded-2xl border border-gray-100 bg-white/90 backdrop-blur shadow-sm px-4 py-4"
+            className="rounded-2xl border border-app-border bg-app-card/90 backdrop-blur shadow-sm px-4 py-4"
           >
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 flex-shrink-0">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 p-0.5">
-                  <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-tokens-brandGreen to-tokens-brandPeach p-0.5">
+                  <div className="w-full h-full rounded-full bg-app-bg flex items-center justify-center overflow-hidden">
                     {profileImage ? (
                       <img src={profileImage} alt={event.title} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-                        <User className="w-6 h-6 text-purple-400" />
+                      <div className="w-full h-full bg-app-bg flex items-center justify-center">
+                        <User className="w-6 h-6 text-app-muted" />
                       </div>
                     )}
                   </div>
@@ -473,13 +473,13 @@ export default function EventHeader({
               </div>
 
               <div className="min-w-0 flex-1">
-                <h2 className="text-base font-semibold text-gray-900 leading-snug truncate">{event.title}</h2>
-                <p className="text-xs text-gray-600 mt-0.5 truncate">{hostName ? `von ${hostName}` : 'von Gastgeber'}</p>
+                <h2 className="text-base font-semibold text-app-fg leading-snug truncate">{event.title}</h2>
+                <p className="text-xs text-app-muted mt-0.5 truncate">{hostName ? `von ${hostName}` : 'von Gastgeber'}</p>
               </div>
             </div>
 
             <div className="mt-3">
-              <p className="text-sm text-gray-700 leading-relaxed">{welcomeMessage}</p>
+              <p className="text-sm text-app-fg leading-relaxed">{welcomeMessage}</p>
             </div>
           </motion.div>
         </div>
