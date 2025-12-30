@@ -267,8 +267,8 @@ export default function UploadButton({
           title={disabled ? disabledReason : undefined}
           className={`w-14 h-14 rounded-full shadow-lg border flex items-center justify-center transition-colors ${
             disabled
-              ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-              : 'bg-white text-gray-900 border-gray-200 hover:bg-gray-50'
+              ? 'bg-app-bg text-app-muted border-app-border cursor-not-allowed'
+              : 'bg-app-card text-app-fg border-app-border hover:bg-app-bg'
           }`}
         >
           <Plus className="w-6 h-6" strokeWidth={3} />
@@ -287,8 +287,8 @@ export default function UploadButton({
           title={disabled ? disabledReason : undefined}
           className={`w-full rounded-2xl px-4 py-3 flex items-center justify-center gap-2 font-semibold shadow-sm border transition-colors ${
             disabled
-              ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-              : 'bg-white text-gray-900 border-gray-200 hover:bg-gray-50'
+              ? 'bg-app-bg text-app-muted border-app-border cursor-not-allowed'
+              : 'bg-app-card text-app-fg border-app-border hover:bg-app-bg'
           }`}
         >
           <Upload className="w-5 h-5" />
@@ -306,14 +306,14 @@ export default function UploadButton({
           }}
           disabled={disabled}
           className={`aspect-square rounded-sm overflow-hidden group relative ${
-            disabled ? 'bg-gray-200 cursor-not-allowed' : 'bg-gradient-to-br from-purple-500 to-pink-500'
+            disabled ? 'bg-app-border cursor-not-allowed' : 'bg-gradient-to-br from-tokens-brandGreen to-tokens-brandPeach'
           }`}
           title={disabled ? disabledReason : undefined}
         >
           <div className="w-full h-full flex items-center justify-center">
-            <Plus className={`w-8 h-8 ${disabled ? 'text-gray-500' : 'text-white'}`} strokeWidth={3} />
+            <Plus className={`w-8 h-8 ${disabled ? 'text-app-muted' : 'text-app-bg'}`} strokeWidth={3} />
           </div>
-          {!disabled && <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity" />}
+          {!disabled && <div className="absolute inset-0 bg-app-fg/0 group-hover:bg-app-fg/10 transition-opacity" />}
         </motion.button>
       )}
 
@@ -324,26 +324,26 @@ export default function UploadButton({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowModal(false)}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-app-fg/50 z-50 flex items-center justify-center p-4"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-lg max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto"
+            className="bg-app-card border border-app-border rounded-lg max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto"
           >
             <button
               onClick={() => {
                 setShowModal(false);
                 setUploaderName('');
               }}
-              className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-full"
+              className="absolute top-4 right-4 p-1 hover:bg-app-bg rounded-full"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 text-app-fg" />
             </button>
 
-              <h2 className="text-xl font-semibold mb-6">Foto/Video hochladen</h2>
+              <h2 className="text-xl font-semibold text-app-fg mb-6">Foto/Video hochladen</h2>
 
               {queueNotice && (
                 <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
@@ -364,7 +364,7 @@ export default function UploadButton({
                   animate={{ opacity: 1, y: 0 }}
                   className="space-y-2"
                 >
-                  <label className="block text-sm font-semibold text-gray-900">
+                  <label className="block text-sm font-semibold text-app-fg">
                     Dein Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -376,10 +376,10 @@ export default function UploadButton({
                     }}
                     placeholder="z.B. Max Mustermann"
                     required
-                    className="w-full px-4 py-3 border-2 border-[#295B4D] rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#295B4D] focus:border-[#295B4D] font-medium"
+                    className="w-full px-4 py-3 border-2 border-tokens-brandGreen rounded-lg text-app-fg bg-app-card focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen font-medium"
                   />
                   {uploaderNameError && <p className="text-xs text-red-700">{uploaderNameError}</p>}
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-app-muted">
                     Damit der Gastgeber weiß, wer die Fotos hochgeladen hat
                   </p>
                 </motion.div>
@@ -396,20 +396,20 @@ export default function UploadButton({
                   className={`
                     border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
                     ${isDragActive 
-                      ? 'border-purple-500 bg-purple-50' 
-                      : 'border-gray-300 hover:border-purple-400 hover:bg-gray-50'
+                      ? 'border-tokens-brandGreen bg-app-bg' 
+                      : 'border-app-border hover:border-tokens-brandGreen hover:bg-app-bg'
                     }
                   `}
                 >
-                  <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-sm font-medium text-gray-700 mb-2">
+                  <Upload className="w-12 h-12 mx-auto mb-4 text-app-muted" />
+                  <p className="text-sm font-medium text-app-fg mb-2">
                     {!nameOk
                       ? 'Bitte zuerst deinen Namen eingeben'
                       : isDragActive
                         ? 'Fotos hier ablegen'
                         : 'Fotos hochladen'}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-app-muted">
                     {!nameOk ? 'Dann kannst du Dateien auswählen' : 'Drag & Drop oder klicken'}
                   </p>
                 </motion.div>
@@ -422,7 +422,7 @@ export default function UploadButton({
                   onClick={capturePhoto}
                   disabled={!canPickFiles}
                   className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition-colors ${
-                    !canPickFiles ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-[#295B4D] text-white hover:bg-[#1f4438]'
+                    !canPickFiles ? 'bg-app-border text-app-muted cursor-not-allowed' : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
                   }`}
                 >
                   <Camera className="w-5 h-5" />
@@ -435,7 +435,7 @@ export default function UploadButton({
                   onClick={captureVideo}
                   disabled={!canPickFiles}
                   className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition-colors ${
-                    !canPickFiles ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gray-900 text-white hover:bg-black'
+                    !canPickFiles ? 'bg-app-border text-app-muted cursor-not-allowed' : 'bg-app-fg text-app-bg hover:opacity-90'
                   }`}
                 >
                   <Video className="w-5 h-5" />
@@ -457,9 +457,9 @@ export default function UploadButton({
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
-                        className="bg-gray-50 rounded-lg p-3 flex items-center gap-3"
+                        className="bg-app-bg border border-app-border rounded-lg p-3 flex items-center gap-3"
                       >
-                        <div className="w-12 h-12 rounded overflow-hidden bg-gray-200 flex-shrink-0">
+                        <div className="w-12 h-12 rounded overflow-hidden bg-app-card flex-shrink-0">
                           <img
                             src={file.preview}
                             alt="Preview"
@@ -468,13 +468,13 @@ export default function UploadButton({
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-gray-900 truncate">
+                          <p className="text-xs font-medium text-app-fg truncate">
                             {file.file.name}
                           </p>
                           {file.uploading && (
-                            <div className="mt-1 w-full bg-gray-200 rounded-full h-1.5">
+                            <div className="mt-1 w-full bg-app-border rounded-full h-1.5">
                               <motion.div
-                                className="bg-purple-500 h-1.5 rounded-full"
+                                className="bg-tokens-brandGreen h-1.5 rounded-full"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${file.progress}%` }}
                                 transition={{ duration: 0.3 }}
@@ -487,7 +487,7 @@ export default function UploadButton({
                               <button
                                 type="button"
                                 onClick={() => retryUpload(file.id)}
-                                className="mt-1 text-xs font-semibold text-[#295B4D] underline"
+                                className="mt-1 text-xs font-semibold text-tokens-brandGreen underline"
                               >
                                 Erneut versuchen
                               </button>
@@ -500,15 +500,15 @@ export default function UploadButton({
                             <motion.div
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
-                              className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center"
+                              className="w-6 h-6 rounded-full bg-tokens-brandGreen flex items-center justify-center"
                             >
-                              <Check className="w-4 h-4 text-white" />
+                              <Check className="w-4 h-4 text-app-bg" />
                             </motion.div>
                           )}
                           {!file.uploading && !file.success && (
                             <button
                               onClick={() => removeFile(index)}
-                              className="w-6 h-6 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center"
+                              className="w-6 h-6 rounded-full bg-app-card border border-app-border text-app-muted hover:opacity-80 flex items-center justify-center"
                             >
                               <X className="w-4 h-4" />
                             </button>
