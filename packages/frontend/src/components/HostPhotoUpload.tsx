@@ -174,7 +174,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setShowModal(true)}
-        className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium flex items-center gap-2"
+        className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg font-medium flex items-center gap-2 hover:opacity-90 transition-colors"
       >
         <Upload className="w-4 h-4" />
         <span>Foto hinzufügen</span>
@@ -187,14 +187,14 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowModal(false)}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-app-fg/50 z-50 flex items-center justify-center p-4"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto"
+              className="bg-app-card border border-app-border rounded-lg max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto"
             >
               <button
                 onClick={() => {
@@ -202,7 +202,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                   setFiles([]);
                   setDescription('');
                 }}
-                className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded-full"
+                className="absolute top-4 right-4 p-1 hover:bg-app-bg rounded-full"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -211,7 +211,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
 
               {/* Description with Emoji Picker */}
               <div className="mb-4 relative">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-app-fg mb-2">
                   Beschreibung (optional)
                 </label>
                 <div className="relative">
@@ -219,14 +219,14 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Füge eine Beschreibung hinzu... 😊"
-                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                    className="w-full px-3 py-2 pr-10 border border-app-border rounded-lg text-app-fg bg-app-card focus:outline-none focus:ring-2 focus:ring-app-fg/30 resize-none"
                     rows={3}
                   />
                   <button
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    className="absolute bottom-2 right-2 p-1 hover:bg-gray-100 rounded-full"
+                    className="absolute bottom-2 right-2 p-1 hover:bg-app-bg rounded-full"
                   >
-                    <Smile className="w-5 h-5 text-gray-400" />
+                    <Smile className="w-5 h-5 text-app-muted" />
                   </button>
                   {showEmojiPicker && (
                     <div ref={emojiPickerRef} className="absolute bottom-full right-0 mb-2 z-10">
@@ -250,16 +250,16 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                   className={`
                     border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
                     ${isDragActive 
-                      ? 'border-purple-500 bg-purple-50' 
-                      : 'border-gray-300 hover:border-purple-400 hover:bg-gray-50'
+                      ? 'border-tokens-brandGreen bg-app-bg' 
+                      : 'border-app-border hover:border-tokens-brandGreen hover:bg-app-bg'
                     }
                   `}
                 >
-                  <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-sm font-medium text-gray-700 mb-2">
+                  <Upload className="w-12 h-12 mx-auto mb-4 text-app-muted" />
+                  <p className="text-sm font-medium text-app-fg mb-2">
                     {isDragActive ? 'Fotos hier ablegen' : 'Fotos hochladen'}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-app-muted">
                     Drag & Drop oder klicken
                   </p>
                 </motion.div>
@@ -269,7 +269,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                 onClick={capturePhoto}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium mb-4"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-app-bg text-app-fg rounded-lg font-medium mb-4 hover:opacity-90 transition-colors"
               >
                 <Camera className="w-5 h-5" />
                 <span>Foto mit Kamera aufnehmen</span>
@@ -290,9 +290,9 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
-                        className="bg-gray-50 rounded-lg p-3 flex items-center gap-3"
+                        className="bg-app-bg rounded-lg p-3 flex items-center gap-3 border border-app-border"
                       >
-                        <div className="w-12 h-12 rounded overflow-hidden bg-gray-200 flex-shrink-0">
+                        <div className="w-12 h-12 rounded overflow-hidden bg-app-border flex-shrink-0">
                           <img
                             src={file.preview}
                             alt="Preview"
@@ -301,13 +301,13 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-gray-900 truncate">
+                          <p className="text-xs font-medium text-app-fg truncate">
                             {file.file.name}
                           </p>
                           {file.uploading && (
-                            <div className="mt-1 w-full bg-gray-200 rounded-full h-1.5">
+                            <div className="mt-1 w-full bg-app-border rounded-full h-1.5">
                               <motion.div
-                                className="bg-purple-500 h-1.5 rounded-full"
+                                className="bg-tokens-brandGreen h-1.5 rounded-full"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${file.progress}%` }}
                                 transition={{ duration: 0.3 }}
@@ -320,7 +320,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                               <button
                                 type="button"
                                 onClick={() => retryUpload(index)}
-                                className="mt-1 text-xs font-semibold text-purple-700 underline"
+                                className="mt-1 text-xs font-semibold text-tokens-brandGreen underline"
                               >
                                 Erneut versuchen
                               </button>
@@ -349,7 +349,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   disabled={files.some(f => f.uploading)}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 bg-tokens-brandGreen text-app-bg rounded-lg font-medium hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {files.some(f => f.uploading) ? 'Wird hochgeladen...' : `${files.length} Foto(s) hochladen`}
                 </motion.button>
