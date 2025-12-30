@@ -205,8 +205,8 @@ export default function ChallengeManagementPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Laden...</div>
+      <div className="min-h-screen flex items-center justify-center bg-app-bg">
+        <div className="text-lg text-app-fg">Laden...</div>
       </div>
     );
   }
@@ -228,10 +228,10 @@ export default function ChallengeManagementPage() {
         >
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl font-bold text-app-fg mb-2">
                 Challenges
               </h1>
-              <p className="text-gray-600">
+              <p className="text-app-muted">
                 {event?.title} • {challenges.length} Challenge{challenges.length !== 1 ? 's' : ''}
               </p>
             </div>
@@ -253,8 +253,8 @@ export default function ChallengeManagementPage() {
               disabled={!challengesEnabled}
               className={`px-4 py-2 rounded-md flex items-center gap-2 ${
                 challengesEnabled
-                  ? 'bg-[#295B4D] text-white hover:bg-[#1f4238]'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  ? 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
+                  : 'bg-app-border text-app-muted cursor-not-allowed'
               }`}
             >
               <Plus className="w-5 h-5" />
@@ -264,12 +264,12 @@ export default function ChallengeManagementPage() {
         </motion.div>
 
         {!challengesEnabled && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center gap-2 text-yellow-800">
+          <div className="bg-app-card border border-app-border rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-2 text-app-fg">
               <Trophy className="w-5 h-5" />
               <p className="font-medium">Challenges sind deaktiviert</p>
             </div>
-            <p className="text-sm text-yellow-700 mt-1">
+            <p className="text-sm text-app-muted mt-1">
               Aktiviere Challenges in den erweiterten Einstellungen, um sie zu verwenden.
             </p>
           </div>
@@ -282,14 +282,14 @@ export default function ChallengeManagementPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-white rounded-lg shadow p-6 mb-6"
+              className="bg-app-card rounded-lg shadow p-6 mb-6"
             >
               <h2 className="text-xl font-semibold mb-4">
                 {editingChallenge ? 'Challenge bearbeiten' : 'Neue Challenge'}
               </h2>
               <form onSubmit={editingChallenge ? handleUpdateChallenge : handleAddChallenge} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-app-fg mb-1">
                     Titel *
                   </label>
                   <input
@@ -297,30 +297,30 @@ export default function ChallengeManagementPage() {
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
                     placeholder="z.B. Bestes Paar-Foto"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-app-fg mb-1">
                     Beschreibung
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
                     rows={2}
                     placeholder="Optionale Beschreibung"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-app-fg mb-1">
                     Album zuweisen (leer = globale Challenge)
                   </label>
                   <select
                     value={formData.categoryId || ''}
                     onChange={(e) => setFormData({ ...formData, categoryId: e.target.value || null })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
                   >
                     <option value="">Globale Challenge</option>
                     {categories.map(cat => (
@@ -337,7 +337,7 @@ export default function ChallengeManagementPage() {
                         onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                         className="w-4 h-4"
                       />
-                      <span className="text-sm text-gray-700">Aktiv</span>
+                      <span className="text-sm text-app-fg">Aktiv</span>
                     </label>
                   </div>
                   <div>
@@ -348,11 +348,11 @@ export default function ChallengeManagementPage() {
                         onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
                         className="w-4 h-4"
                       />
-                      <span className="text-sm text-gray-700">Foto sichtbar</span>
+                      <span className="text-sm text-app-fg">Foto sichtbar</span>
                     </label>
                   </div>
                 </div>
-                <div className="flex gap-4 pt-4 border-t border-gray-200">
+                <div className="flex gap-4 pt-4 border-t border-app-border">
                   <motion.button
                     type="button"
                     whileHover={{ scale: 1.05 }}
@@ -361,7 +361,7 @@ export default function ChallengeManagementPage() {
                       setShowAddForm(false);
                       cancelEdit();
                     }}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                    className="px-4 py-2 border border-app-border rounded-md text-app-fg hover:bg-app-bg"
                   >
                     Abbrechen
                   </motion.button>
@@ -369,7 +369,7 @@ export default function ChallengeManagementPage() {
                     type="submit"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="px-4 py-2 bg-[#295B4D] text-white rounded-md hover:bg-[#1f4238] shadow-sm"
+                    className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90 shadow-sm"
                   >
                     {editingChallenge ? 'Speichern' : 'Hinzufügen'}
                   </motion.button>
@@ -381,43 +381,43 @@ export default function ChallengeManagementPage() {
 
         {/* Global Challenges */}
         {globalChallenges.length > 0 && (
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <div className="bg-app-card rounded-lg shadow p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Globe className="w-5 h-5 text-blue-500" />
+                <Globe className="w-5 h-5 text-tokens-brandGreen" />
                 Globale Challenges
               </h2>
             </div>
             <div className="space-y-3">
               {globalChallenges.map((challenge) => (
-                <div key={challenge.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div key={challenge.id} className="bg-app-bg rounded-lg p-4 border border-app-border">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <Trophy className="w-5 h-5 text-yellow-500" />
+                        <Trophy className="w-5 h-5 text-[var(--status-warning)]" />
                         <span className="font-semibold">{challenge.title}</span>
                         {!challenge.isActive && (
-                          <span className="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded">Inaktiv</span>
+                          <span className="text-xs text-app-muted bg-app-border px-2 py-0.5 rounded">Inaktiv</span>
                         )}
                       </div>
                       {challenge.description && (
-                        <p className="text-sm text-gray-600 mb-2">{challenge.description}</p>
+                        <p className="text-sm text-app-muted mb-2">{challenge.description}</p>
                       )}
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-app-muted">
                         {challenge.completions?.length || 0} Erfüllung(en)
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => startEdit(challenge)}
-                        className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded"
+                        className="p-2 text-tokens-brandGreen hover:opacity-90 hover:bg-app-card rounded"
                         title="Bearbeiten"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteChallenge(challenge.id)}
-                        className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded"
+                        className="p-2 text-[var(--status-danger)] hover:opacity-90 hover:bg-app-card rounded"
                         title="Löschen"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -432,7 +432,7 @@ export default function ChallengeManagementPage() {
 
         {/* Album Challenges */}
         {albumChallenges.length > 0 && (
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <div className="bg-app-card rounded-lg shadow p-6 mb-6">
             <h2 className="text-xl font-semibold mb-4">Album-Challenges</h2>
             <div className="space-y-4">
               {categories.map((category) => {
@@ -440,43 +440,43 @@ export default function ChallengeManagementPage() {
                 if (categoryChallenges.length === 0) return null;
                 
                 return (
-                  <div key={category.id} className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-gray-900 mb-3">{category.name}</h3>
+                  <div key={category.id} className="border border-app-border rounded-lg p-4">
+                    <h3 className="font-semibold text-app-fg mb-3">{category.name}</h3>
                     <div className="space-y-2">
                       {categoryChallenges.map((challenge) => (
-                        <div key={challenge.id} className="bg-gray-50 rounded p-3 flex items-center justify-between">
+                        <div key={challenge.id} className="bg-app-bg rounded p-3 flex items-center justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <Trophy className="w-4 h-4 text-yellow-500" />
+                              <Trophy className="w-4 h-4 text-[var(--status-warning)]" />
                               <span className="text-sm font-medium">{challenge.title}</span>
                               {!challenge.isActive && (
-                                <span className="text-xs text-gray-500">(Inaktiv)</span>
+                                <span className="text-xs text-app-muted">(Inaktiv)</span>
                               )}
                             </div>
                             {challenge.description && (
-                              <p className="text-xs text-gray-600 mt-1">{challenge.description}</p>
+                              <p className="text-xs text-app-muted mt-1">{challenge.description}</p>
                             )}
-                            <div className="text-xs text-gray-500 mt-1">
+                            <div className="text-xs text-app-muted mt-1">
                               {challenge.completions?.length || 0} Erfüllung(en)
                             </div>
                           </div>
                           <div className="flex gap-1">
                             <button
                               onClick={() => handleCopyChallenge(challenge.id)}
-                              className="p-1 text-blue-600 hover:text-blue-900"
+                              className="p-1 text-tokens-brandGreen hover:opacity-90"
                               title="Auf andere Alben kopieren"
                             >
                               <Copy className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => startEdit(challenge)}
-                              className="p-1 text-blue-600 hover:text-blue-900"
+                              className="p-1 text-tokens-brandGreen hover:opacity-90"
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteChallenge(challenge.id)}
-                              className="p-1 text-red-600 hover:text-red-900"
+                              className="p-1 text-[var(--status-danger)] hover:opacity-90"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -492,10 +492,10 @@ export default function ChallengeManagementPage() {
         )}
 
         {challenges.length === 0 && challengesEnabled && (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <Trophy className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Noch keine Challenges erstellt</p>
-            <p className="text-sm text-gray-400 mt-2">Erstelle deine erste Challenge!</p>
+          <div className="bg-app-card rounded-lg shadow p-12 text-center">
+            <Trophy className="w-16 h-16 text-app-border mx-auto mb-4" />
+            <p className="text-app-muted">Noch keine Challenges erstellt</p>
+            <p className="text-sm text-app-muted mt-2">Erstelle deine erste Challenge!</p>
           </div>
         )}
       </div>
