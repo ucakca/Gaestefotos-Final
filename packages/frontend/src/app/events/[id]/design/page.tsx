@@ -250,16 +250,16 @@ export default function DesignLiveBuilderPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+      <div className="min-h-screen flex items-center justify-center bg-app-bg">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-app-fg"></div>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-gray-600">Event nicht gefunden</div>
+      <div className="min-h-screen flex items-center justify-center bg-app-bg">
+        <div className="text-app-muted">Event nicht gefunden</div>
       </div>
     );
   }
@@ -277,9 +277,9 @@ export default function DesignLiveBuilderPage() {
 
   return (
     <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
-      <div className="bg-gray-50">
+      <div className="bg-app-bg">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
+        <div className="bg-app-card border-b border-app-border sticky top-16 z-30">
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h1 className="text-lg font-semibold">Design & Branding - Live Builder</h1>
@@ -287,10 +287,10 @@ export default function DesignLiveBuilderPage() {
             <div className="flex items-center gap-2">
               {wizardMode && (
                 <div className="hidden md:flex items-center gap-2 mr-2">
-                  <span className="text-xs font-semibold text-gray-500">Wizard:</span>
-                  <span className="text-xs font-semibold text-[#295B4D]">1/2 Design</span>
-                  <span className="text-xs text-gray-400">→</span>
-                  <span className="text-xs font-semibold text-gray-500">2/2 Alben</span>
+                  <span className="text-xs font-semibold text-app-muted">Wizard:</span>
+                  <span className="text-xs font-semibold text-tokens-brandGreen">1/2 Design</span>
+                  <span className="text-xs text-app-muted">→</span>
+                  <span className="text-xs font-semibold text-app-muted">2/2 Alben</span>
                 </div>
               )}
 
@@ -298,7 +298,7 @@ export default function DesignLiveBuilderPage() {
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={() => router.push(`/events/${eventId}/categories?wizard=1`)}
-                  className="px-3 py-2 rounded-lg bg-[#295B4D] text-white text-sm font-semibold"
+                  className="px-3 py-2 rounded-lg bg-tokens-brandGreen text-app-bg text-sm font-semibold"
                 >
                   Weiter
                 </motion.button>
@@ -308,7 +308,7 @@ export default function DesignLiveBuilderPage() {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setPreviewMode(previewMode === 'mobile' ? 'desktop' : 'mobile')}
                 className={`p-2 rounded-lg ${
-                  previewMode === 'mobile' ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'
+                  previewMode === 'mobile' ? 'bg-app-fg text-app-bg' : 'bg-app-bg text-app-muted'
                 }`}
               >
                 <Smartphone className="w-5 h-5" />
@@ -316,7 +316,7 @@ export default function DesignLiveBuilderPage() {
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowQRCode(!showQRCode)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-app-bg rounded-lg"
               >
                 <QrCode className="w-5 h-5" />
               </motion.button>
@@ -324,7 +324,7 @@ export default function DesignLiveBuilderPage() {
                 href={`/e2/${event.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-app-bg rounded-lg"
               >
                 <Eye className="w-5 h-5" />
               </a>
@@ -336,11 +336,11 @@ export default function DesignLiveBuilderPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Preview - Like Public Page */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-              <div className={`bg-gray-100 p-4 flex items-center justify-center ${
+            <div className="bg-app-card rounded-lg shadow-lg overflow-hidden">
+              <div className={`bg-app-bg p-4 flex items-center justify-center ${
                 previewMode === 'mobile' ? 'max-w-sm mx-auto' : 'w-full'
               }`}>
-                <div className={`bg-white rounded-lg shadow-xl overflow-hidden ${
+                <div className={`bg-app-card rounded-lg shadow-xl overflow-hidden ${
                   previewMode === 'mobile' ? 'w-full max-w-sm' : 'w-full'
                 }`}>
                   {/* Public Event Preview - Like /e/[slug] */}
@@ -358,15 +358,15 @@ export default function DesignLiveBuilderPage() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white opacity-50">
+                        <div className="w-full h-full flex items-center justify-center text-app-bg opacity-50">
                           <Camera className="w-12 h-12" />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <div className="absolute inset-0 bg-app-fg/0 group-hover:bg-app-fg/30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
                         {uploadingImage === 'cover' ? (
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-app-bg"></div>
                         ) : (
-                          <div className="text-white text-sm font-medium flex items-center gap-2">
+                          <div className="text-app-bg text-sm font-medium flex items-center gap-2">
                             <Edit2 className="w-4 h-4" />
                             Titelbild ändern
                           </div>
@@ -385,7 +385,7 @@ export default function DesignLiveBuilderPage() {
                     </div>
 
                     {/* Profile Section */}
-                    <div className="bg-gradient-to-b from-white to-gray-50 pb-6">
+                    <div className="bg-app-bg pb-6">
                       <div className="max-w-md mx-auto px-4 -mt-12">
                         {/* Profile Image */}
                         <div 
@@ -393,7 +393,7 @@ export default function DesignLiveBuilderPage() {
                           onClick={() => profileImageInputRef.current?.click()}
                         >
                           <div className="absolute inset-0 rounded-full p-1" style={{ backgroundImage: accentGradient }}>
-                            <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+                            <div className="w-full h-full rounded-full bg-app-card flex items-center justify-center overflow-hidden">
                               {profileImage ? (
                                 <img
                                   src={profileImage}
@@ -401,17 +401,17 @@ export default function DesignLiveBuilderPage() {
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-[#295B4D]/10 to-[#EAA48F]/10 flex items-center justify-center">
-                                  <Camera className="w-16 h-16 text-[#295B4D]" />
+                                <div className="w-full h-full bg-app-bg flex items-center justify-center">
+                                  <Camera className="w-16 h-16 text-tokens-brandGreen" />
                                 </div>
                               )}
                             </div>
                           </div>
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                          <div className="absolute inset-0 bg-app-fg/0 group-hover:bg-app-fg/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
                             {uploadingImage === 'profile' ? (
-                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-app-bg"></div>
                             ) : (
-                              <Edit2 className="w-6 h-6 text-white" />
+                              <Edit2 className="w-6 h-6 text-app-bg" />
                             )}
                           </div>
                           <input
@@ -437,13 +437,13 @@ export default function DesignLiveBuilderPage() {
                                 updateEventField('title', (e.target as HTMLInputElement).value);
                               }
                             }}
-                            className="w-full text-center text-2xl font-bold text-gray-900 mb-3 border-b-2 border-black focus:outline-none"
+                            className="w-full text-center text-2xl font-bold text-app-fg mb-3 border-b-2 border-app-fg focus:outline-none"
                             autoFocus
                           />
                         ) : (
                           <h2
                             onClick={() => setEditingField('title')}
-                            className="text-center text-2xl font-bold text-gray-900 mb-3 cursor-pointer hover:opacity-70 transition-opacity"
+                            className="text-center text-2xl font-bold text-app-fg mb-3 cursor-pointer hover:opacity-70 transition-opacity"
                           >
                             {event.title}
                           </h2>
@@ -455,7 +455,7 @@ export default function DesignLiveBuilderPage() {
                             defaultValue={welcomeMessage}
                             onBlur={(e) => updateDesignConfig({ welcomeMessage: e.target.value })}
                             placeholder="Schreibe eine Willkommensnachricht..."
-                            className="w-full text-center px-4 py-2 border-2 border-black rounded-lg focus:outline-none resize-none text-sm"
+                            className="w-full text-center px-4 py-2 border-2 border-app-fg rounded-lg focus:outline-none resize-none text-sm"
                             rows={3}
                             autoFocus
                           />
@@ -465,11 +465,11 @@ export default function DesignLiveBuilderPage() {
                             className="text-center px-4 cursor-pointer hover:opacity-70 transition-opacity min-h-[60px] flex items-center justify-center"
                           >
                             {welcomeMessage ? (
-                              <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                              <p className="text-app-fg text-sm leading-relaxed whitespace-pre-wrap">
                                 {welcomeMessage}
                               </p>
                             ) : (
-                              <p className="text-gray-400 italic text-sm">
+                              <p className="text-app-muted italic text-sm">
                                 Klicke hier, um eine Willkommensnachricht hinzuzufügen...
                               </p>
                             )}
@@ -485,10 +485,10 @@ export default function DesignLiveBuilderPage() {
 
           {/* Settings Panel */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-6 space-y-6 sticky top-24">
+            <div className="bg-app-card rounded-lg shadow-lg p-6 space-y-6 sticky top-24">
               <h2 className="text-xl font-semibold">Einstellungen</h2>
 
-              <div className="border-t border-gray-200 pt-6">
+              <div className="border-t border-app-border pt-6">
                 <h3 className="font-semibold mb-3">Design Preset</h3>
                 <div className="grid grid-cols-2 gap-2">
                   {DESIGN_PRESETS.map((p) => {
@@ -499,39 +499,39 @@ export default function DesignLiveBuilderPage() {
                         type="button"
                         onClick={() => updateDesignConfig({ designPresetKey: p.key })}
                         className={`rounded-lg border p-2 text-left transition-colors ${
-                          isSelected ? 'border-black' : 'border-gray-200 hover:border-gray-300'
+                          isSelected ? 'border-app-fg' : 'border-app-border hover:border-app-muted'
                         }`}
                       >
                         <div className="h-10 w-full rounded-md" style={{ backgroundImage: p.heroGradient }} />
-                        <div className="mt-2 text-xs font-semibold text-gray-900">{p.label}</div>
+                        <div className="mt-2 text-xs font-semibold text-app-fg">{p.label}</div>
                       </button>
                     );
                   })}
                 </div>
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-app-muted">
                   Presets beeinflussen den Hero-Hintergrund und Akzente (z.B. Story-Ring) auf der Gast-Seite.
                 </p>
               </div>
 
-              <div className="border-t border-gray-200 pt-6">
+              <div className="border-t border-app-border pt-6">
                 <h3 className="font-semibold mb-3">Branding</h3>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Logo</label>
+                    <label className="block text-sm font-medium text-app-fg mb-2">Logo</label>
                     <div className="flex items-center gap-3">
-                      <div className="h-12 w-28 rounded-lg border border-gray-200 bg-white flex items-center justify-center overflow-hidden">
+                      <div className="h-12 w-28 rounded-lg border border-app-border bg-app-card flex items-center justify-center overflow-hidden">
                         {logoUrl ? (
                           <img src={logoUrl} alt="Logo" className="max-h-10 max-w-[100px] object-contain" />
                         ) : (
-                          <span className="text-xs text-gray-400">Kein Logo</span>
+                          <span className="text-xs text-app-muted">Kein Logo</span>
                         )}
                       </div>
                       <motion.button
                         whileTap={{ scale: 0.95 }}
                         type="button"
                         onClick={() => logoImageInputRef.current?.click()}
-                        className="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-medium"
+                        className="px-3 py-2 rounded-lg bg-app-bg hover:opacity-90 text-sm font-medium"
                         disabled={uploadingImage === 'logo'}
                       >
                         {uploadingImage === 'logo' ? 'Lädt…' : 'Logo hochladen'}
@@ -550,57 +550,57 @@ export default function DesignLiveBuilderPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Farben</label>
+                    <label className="block text-sm font-medium text-app-fg mb-2">Farben</label>
                     <div className="grid grid-cols-1 gap-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-24 text-xs text-gray-500">Primary</div>
+                        <div className="w-24 text-xs text-app-muted">Primary</div>
                         <input
                           type="color"
                           value={colors.primary || '#8B1538'}
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, primary: e.target.value } })}
-                          className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                          className="w-12 h-10 rounded border border-app-border cursor-pointer"
                         />
                         <input
                           type="text"
                           value={colors.primary || '#8B1538'}
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, primary: e.target.value } })}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          className="flex-1 px-3 py-2 border border-app-border rounded-lg text-sm bg-app-card text-app-fg"
                         />
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <div className="w-24 text-xs text-gray-500">Secondary</div>
+                        <div className="w-24 text-xs text-app-muted">Secondary</div>
                         <input
                           type="color"
                           value={colors.secondary || '#FFFFFF'}
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, secondary: e.target.value } })}
-                          className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                          className="w-12 h-10 rounded border border-app-border cursor-pointer"
                         />
                         <input
                           type="text"
                           value={colors.secondary || '#FFFFFF'}
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, secondary: e.target.value } })}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          className="flex-1 px-3 py-2 border border-app-border rounded-lg text-sm bg-app-card text-app-fg"
                         />
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <div className="w-24 text-xs text-gray-500">Accent</div>
+                        <div className="w-24 text-xs text-app-muted">Accent</div>
                         <input
                           type="color"
                           value={colors.accent || '#EC4899'}
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, accent: e.target.value } })}
-                          className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                          className="w-12 h-10 rounded border border-app-border cursor-pointer"
                         />
                         <input
                           type="text"
                           value={colors.accent || '#EC4899'}
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, accent: e.target.value } })}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          className="flex-1 px-3 py-2 border border-app-border rounded-lg text-sm bg-app-card text-app-fg"
                         />
                       </div>
                     </div>
-                    <p className="mt-2 text-xs text-gray-500">
+                    <p className="mt-2 text-xs text-app-muted">
                       Primary beeinflusst z.B. die Kopfzeile der Gast-Seite.
                     </p>
                   </div>
@@ -613,12 +613,12 @@ export default function DesignLiveBuilderPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="border-t border-gray-200 pt-6"
+                  className="border-t border-app-border pt-6"
                 >
                   <h3 className="font-semibold mb-3">QR-Code Design</h3>
                   <div className="flex flex-col items-center gap-4">
                     {/* QR Code Preview */}
-                    <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
+                    <div className="bg-app-card p-4 rounded-lg border-2 border-app-border">
                       <QRCodeSVG 
                         id="qr-code-svg"
                         value={eventUrl} 
@@ -633,7 +633,7 @@ export default function DesignLiveBuilderPage() {
                     <div className="w-full space-y-4">
                       {/* Foreground Color */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-app-fg mb-2">
                           Vordergrundfarbe
                         </label>
                         <div className="flex gap-2">
@@ -641,13 +641,13 @@ export default function DesignLiveBuilderPage() {
                             type="color"
                             value={qrCodeConfig.fgColor}
                             onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, fgColor: e.target.value })}
-                            className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                            className="w-12 h-10 rounded border border-app-border cursor-pointer"
                           />
                           <input
                             type="text"
                             value={qrCodeConfig.fgColor}
                             onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, fgColor: e.target.value })}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            className="flex-1 px-3 py-2 border border-app-border rounded-lg text-sm bg-app-card text-app-fg"
                             placeholder="#000000"
                           />
                         </div>
@@ -655,7 +655,7 @@ export default function DesignLiveBuilderPage() {
 
                       {/* Background Color */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-app-fg mb-2">
                           Hintergrundfarbe
                         </label>
                         <div className="flex gap-2">
@@ -663,13 +663,13 @@ export default function DesignLiveBuilderPage() {
                             type="color"
                             value={qrCodeConfig.bgColor}
                             onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, bgColor: e.target.value })}
-                            className="w-12 h-10 rounded border border-gray-300 cursor-pointer"
+                            className="w-12 h-10 rounded border border-app-border cursor-pointer"
                           />
                           <input
                             type="text"
                             value={qrCodeConfig.bgColor}
                             onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, bgColor: e.target.value })}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            className="flex-1 px-3 py-2 border border-app-border rounded-lg text-sm bg-app-card text-app-fg"
                             placeholder="#FFFFFF"
                           />
                         </div>
@@ -677,7 +677,7 @@ export default function DesignLiveBuilderPage() {
 
                       {/* Size */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-app-fg mb-2">
                           Größe: {qrCodeConfig.size}px
                         </label>
                         <input
@@ -693,20 +693,20 @@ export default function DesignLiveBuilderPage() {
 
                       {/* Error Correction Level */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-app-fg mb-2">
                           Fehlerkorrektur
                         </label>
                         <select
                           value={qrCodeConfig.level}
                           onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, level: e.target.value as any })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          className="w-full px-3 py-2 border border-app-border rounded-lg text-sm bg-app-card text-app-fg"
                         >
                           <option value="L">Niedrig (L)</option>
                           <option value="M">Mittel (M)</option>
                           <option value="Q">Hoch (Q)</option>
                           <option value="H">Sehr hoch (H)</option>
                         </select>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-app-muted mt-1">
                           Höhere Stufen = mehr Fehlerkorrektur, aber größerer Code
                         </p>
                       </div>
@@ -715,7 +715,7 @@ export default function DesignLiveBuilderPage() {
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={downloadQRCode}
-                      className="w-full px-4 py-2 bg-black text-white rounded-lg flex items-center justify-center gap-2"
+                      className="w-full px-4 py-2 bg-app-fg text-app-bg rounded-lg flex items-center justify-center gap-2"
                     >
                       <Download className="w-4 h-4" />
                       QR-Code herunterladen
@@ -724,7 +724,7 @@ export default function DesignLiveBuilderPage() {
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={downloadA5StandeePdf}
-                      className="w-full px-4 py-2 bg-white border border-gray-300 text-gray-900 rounded-lg flex items-center justify-center gap-2"
+                      className="w-full px-4 py-2 bg-app-card border border-app-border text-app-fg rounded-lg flex items-center justify-center gap-2"
                     >
                       <Download className="w-4 h-4" />
                       Aufsteller (A5) als PDF
@@ -733,12 +733,12 @@ export default function DesignLiveBuilderPage() {
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={saveQrCodeConfig}
-                      className="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-lg flex items-center justify-center gap-2"
+                      className="w-full px-4 py-2 bg-app-bg hover:opacity-90 text-app-fg rounded-lg flex items-center justify-center gap-2"
                     >
                       <Save className="w-4 h-4" />
                       QR-Einstellungen speichern
                     </motion.button>
-                    <p className="text-xs text-gray-500 text-center">
+                    <p className="text-xs text-app-muted text-center">
                       Teilen Sie diesen QR-Code, damit Gäste direkt zum Event gelangen
                     </p>
                   </div>
@@ -746,14 +746,14 @@ export default function DesignLiveBuilderPage() {
               )}
 
               {/* Event URL */}
-              <div className="border-t border-gray-200 pt-6">
+              <div className="border-t border-app-border pt-6">
                 <h3 className="font-semibold mb-2">Event-URL</h3>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={eventUrl}
                     readOnly
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"
+                    className="flex-1 px-3 py-2 border border-app-border rounded-lg text-sm bg-app-bg text-app-fg"
                   />
                   <motion.button
                     whileTap={{ scale: 0.95 }}
@@ -761,7 +761,7 @@ export default function DesignLiveBuilderPage() {
                       navigator.clipboard.writeText(eventUrl);
                       showToast('URL kopiert', 'success');
                     }}
-                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                    className="px-3 py-2 bg-app-bg hover:opacity-90 rounded-lg"
                   >
                     Kopieren
                   </motion.button>
@@ -769,13 +769,13 @@ export default function DesignLiveBuilderPage() {
               </div>
 
               {/* Quick Actions */}
-              <div className="border-t border-gray-200 pt-6 space-y-2">
+              <div className="border-t border-app-border pt-6 space-y-2">
                 <h3 className="font-semibold mb-2">Schnellaktionen</h3>
                 <a
                   href={`/e2/${event.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-center text-sm font-medium"
+                  className="block w-full px-4 py-2 bg-app-bg hover:opacity-90 rounded-lg text-center text-sm font-medium"
                 >
                   Öffentliche Seite öffnen
                 </a>
