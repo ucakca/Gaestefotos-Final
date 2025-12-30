@@ -51,14 +51,13 @@ export default function LanguageSelector({
   return (
     <div className={`relative ${className}`}>
       {showLabel && (
-        <label className="block text-sm font-medium mb-2" style={{ color: '#295B4D' }}>
+        <label className="block text-sm font-medium mb-2 text-tokens-brandGreen">
           {t('select')}
         </label>
       )}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 border rounded-lg hover:bg-gray-50 transition-colors"
-        style={{ borderColor: '#EAA48F', color: '#295B4D' }}
+        className="flex items-center gap-2 px-3 py-2 border border-app-border rounded-lg hover:bg-app-bg transition-colors text-tokens-brandGreen"
       >
         <Globe className="w-4 h-4" />
         <span className="font-medium">{localeNames[currentLocale]}</span>
@@ -78,18 +77,19 @@ export default function LanguageSelector({
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full mt-2 right-0 bg-white border rounded-lg shadow-lg z-20 min-w-[150px]" style={{ borderColor: '#EAA48F' }}>
+          <div className="absolute top-full mt-2 right-0 bg-app-card border border-app-border rounded-lg shadow-lg z-20 min-w-[150px]">
             {locales.map((loc) => (
               <button
                 key={loc}
                 onClick={() => switchLocale(loc)}
-                className={`w-full text-left px-4 py-2 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors ${
+                className={`w-full text-left px-4 py-2 hover:bg-app-bg first:rounded-t-lg last:rounded-b-lg transition-colors ${
                   currentLocale === loc ? 'font-semibold' : ''
                 }`}
-                style={{
-                  color: currentLocale === loc ? '#295B4D' : '#666',
-                  backgroundColor: currentLocale === loc ? '#F9F5F2' : 'transparent',
-                }}
+                style={
+                  currentLocale === loc
+                    ? { color: 'var(--tokens-brandGreen)', backgroundColor: 'var(--app-bg)' }
+                    : { color: 'var(--app-muted)', backgroundColor: 'transparent' }
+                }
               >
                 {localeNames[loc]}
               </button>
