@@ -153,7 +153,7 @@ export default function InstagramUploadButton({
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
         disabled={disabled}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-lg flex items-center justify-center text-white z-40 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-tokens-brandGreen to-tokens-brandPeach rounded-full shadow-lg flex items-center justify-center text-app-bg z-40 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Camera className="w-6 h-6" />
       </motion.button>
@@ -166,23 +166,23 @@ export default function InstagramUploadButton({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsOpen(false)}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-app-fg/50 z-50 flex items-center justify-center p-4"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg max-w-md w-full p-6"
+              className="bg-app-card border border-app-border rounded-lg max-w-md w-full p-6"
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">Foto hochladen</h2>
+                <h2 className="text-xl font-semibold text-app-fg">Foto hochladen</h2>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1 hover:bg-gray-100 rounded"
+                  className="p-1 hover:bg-app-bg rounded"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5 text-app-fg" />
                 </button>
               </div>
 
@@ -195,16 +195,16 @@ export default function InstagramUploadButton({
                   className={`
                     border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
                     ${isDragActive 
-                      ? 'border-purple-500 bg-purple-50' 
-                      : 'border-gray-300 hover:border-purple-400 hover:bg-gray-50'
+                      ? 'border-tokens-brandGreen bg-app-bg' 
+                      : 'border-app-border hover:border-tokens-brandGreen hover:bg-app-bg'
                     }
                   `}
                 >
-                  <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-sm font-medium text-gray-700 mb-2">
+                  <Upload className="w-12 h-12 mx-auto mb-4 text-app-muted" />
+                  <p className="text-sm font-medium text-app-fg mb-2">
                     {isDragActive ? 'Fotos hier ablegen' : 'Fotos hochladen'}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-app-muted">
                     Drag & Drop oder klicken
                   </p>
                 </motion.div>
@@ -215,7 +215,7 @@ export default function InstagramUploadButton({
                 onClick={capturePhoto}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-medium mb-4"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-tokens-brandGreen to-tokens-brandPeach text-app-bg rounded-lg font-medium mb-4"
               >
                 <Camera className="w-5 h-5" />
                 <span>Foto mit Kamera aufnehmen</span>
@@ -236,9 +236,9 @@ export default function InstagramUploadButton({
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
-                        className="bg-gray-50 rounded-lg p-3 flex items-center gap-3"
+                        className="bg-app-bg border border-app-border rounded-lg p-3 flex items-center gap-3"
                       >
-                        <div className="w-12 h-12 rounded overflow-hidden bg-gray-200 flex-shrink-0">
+                        <div className="w-12 h-12 rounded overflow-hidden bg-app-card flex-shrink-0">
                           <img
                             src={file.preview}
                             alt="Preview"
@@ -247,13 +247,13 @@ export default function InstagramUploadButton({
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-gray-900 truncate">
+                          <p className="text-xs font-medium text-app-fg truncate">
                             {file.file.name}
                           </p>
                           {file.uploading && (
-                            <div className="mt-1 w-full bg-gray-200 rounded-full h-1.5">
+                            <div className="mt-1 w-full bg-app-border rounded-full h-1.5">
                               <motion.div
-                                className="bg-purple-500 h-1.5 rounded-full"
+                                className="bg-tokens-brandGreen h-1.5 rounded-full"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${file.progress}%` }}
                                 transition={{ duration: 0.3 }}
@@ -270,15 +270,15 @@ export default function InstagramUploadButton({
                             <motion.div
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
-                              className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center"
+                              className="w-6 h-6 rounded-full bg-tokens-brandGreen flex items-center justify-center"
                             >
-                              <Check className="w-4 h-4 text-white" />
+                              <Check className="w-4 h-4 text-app-bg" />
                             </motion.div>
                           )}
                           {!file.uploading && !file.success && (
                             <button
                               onClick={() => removeFile(index)}
-                              className="w-6 h-6 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center"
+                              className="w-6 h-6 rounded-full bg-app-card border border-app-border text-app-muted hover:opacity-80 flex items-center justify-center"
                             >
                               <X className="w-4 h-4" />
                             </button>
