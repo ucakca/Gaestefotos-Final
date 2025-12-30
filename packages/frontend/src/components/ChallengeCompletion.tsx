@@ -206,15 +206,15 @@ export default function ChallengeCompletion({
   }, []);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
+    <div className="bg-app-card rounded-lg shadow-sm p-4 border border-app-border">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <Trophy className="w-5 h-5 text-yellow-500" />
-            <h3 className="font-semibold text-gray-900">{challenge.title}</h3>
+            <h3 className="font-semibold text-app-fg">{challenge.title}</h3>
           </div>
           {challenge.description && (
-            <p className="text-sm text-gray-600 mb-3">{challenge.description}</p>
+            <p className="text-sm text-app-muted mb-3">{challenge.description}</p>
           )}
           
           {userCompletion ? (
@@ -225,14 +225,14 @@ export default function ChallengeCompletion({
                 <div className="flex items-center gap-1 ml-2">
                   <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   <span className="text-xs">{userCompletion.averageRating.toFixed(1)}</span>
-                  <span className="text-xs text-gray-500">({userCompletion.ratingCount})</span>
+                  <span className="text-xs text-app-muted">({userCompletion.ratingCount})</span>
                 </div>
               )}
             </div>
           ) : (
             <button
               onClick={() => setShowUploadModal(true)}
-              className="mt-2 px-4 py-2 bg-[#295B4D] text-white rounded-lg hover:bg-[#1f4238] flex items-center gap-2 text-sm font-medium transition-colors"
+              className="mt-2 px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 flex items-center gap-2 text-sm font-medium transition-colors"
             >
               <Trophy className="w-4 h-4" />
               Challenge erfüllen
@@ -248,7 +248,7 @@ export default function ChallengeCompletion({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-app-fg/75 z-50 flex items-center justify-center p-4"
             onClick={() => {
               if (!uploading) {
                 stopCamera();
@@ -262,7 +262,7 @@ export default function ChallengeCompletion({
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden relative"
+              className="bg-app-card border border-app-border rounded-lg max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden relative"
             >
               {/* Success Animation */}
               <AnimatePresence>
@@ -280,14 +280,14 @@ export default function ChallengeCompletion({
                       className="text-center"
                     >
                       <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-4" />
-                      <h3 className="text-2xl font-bold text-white mb-2">Challenge erfüllt!</h3>
-                      <p className="text-white">🎉</p>
+                      <h3 className="text-2xl font-bold text-app-bg mb-2">Challenge erfüllt!</h3>
+                      <p className="text-app-bg">🎉</p>
                     </motion.div>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <div className="flex justify-between items-center p-4 border-b border-gray-200 flex-shrink-0">
+              <div className="flex justify-between items-center p-4 border-b border-app-border flex-shrink-0">
                 <h3 className="text-lg font-semibold">Challenge erfüllen</h3>
                 <button
                   onClick={() => {
@@ -295,7 +295,7 @@ export default function ChallengeCompletion({
                     setShowUploadModal(false);
                     setCapturedImage(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-app-muted hover:text-app-fg"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -304,7 +304,7 @@ export default function ChallengeCompletion({
               <div className="flex-1 overflow-y-auto min-h-0 p-4 pb-20">
                 {/* Uploader Name Input - Auffällig als Pflichtfeld */}
                 <div className="mb-4">
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  <label className="block text-sm font-semibold text-app-fg mb-2">
                     Dein Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -313,7 +313,7 @@ export default function ChallengeCompletion({
                     onChange={(e) => setUploaderName(e.target.value)}
                     placeholder="z.B. Max Mustermann"
                     required
-                    className="w-full px-4 py-3 border-2 border-[#295B4D] rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#295B4D] focus:border-[#295B4D] font-medium"
+                    className="w-full px-4 py-3 border-2 border-tokens-brandGreen rounded-lg text-app-fg bg-app-card focus:outline-none focus:ring-2 focus:ring-app-fg/30 focus:border-transparent font-medium"
                   />
                 </div>
 
@@ -323,14 +323,14 @@ export default function ChallengeCompletion({
                       <button
                         onClick={startCamera}
                         disabled={usingCamera}
-                        className="flex-1 px-4 py-3 bg-[#295B4D] text-white rounded-lg hover:bg-[#1f4238] flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="flex-1 px-4 py-3 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         <Camera className="w-5 h-5" />
                         Kamera
                       </button>
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-3 bg-app-bg text-app-fg rounded-lg hover:opacity-90 flex items-center justify-center gap-2"
                       >
                         <Upload className="w-5 h-5" />
                         Galerie
@@ -362,7 +362,7 @@ export default function ChallengeCompletion({
                           </button>
                           <button
                             onClick={capturePhoto}
-                            className="w-16 h-16 bg-white rounded-full border-4 border-gray-300"
+                            className="w-16 h-16 bg-app-card rounded-full border-4 border-app-border"
                           />
                         </div>
                       </div>
@@ -371,7 +371,7 @@ export default function ChallengeCompletion({
                 ) : (
                   <div className="w-full">
                     {capturedImage ? (
-                      <div className="relative w-full flex items-center justify-center bg-gray-50 rounded-lg p-4 min-h-[200px]">
+                      <div className="relative w-full flex items-center justify-center bg-app-bg rounded-lg p-4 min-h-[200px]">
                         <img
                           src={capturedImage}
                           alt="Preview"
@@ -390,8 +390,8 @@ export default function ChallengeCompletion({
                         />
                       </div>
                     ) : (
-                      <div className="w-full flex items-center justify-center min-h-[200px] bg-gray-50 rounded-lg">
-                        <div className="text-gray-400 text-center">
+                      <div className="w-full flex items-center justify-center min-h-[200px] bg-app-bg rounded-lg">
+                        <div className="text-app-muted text-center">
                           <p>Kein Bild geladen</p>
                           <p className="text-xs mt-2">capturedImage: {capturedImage ? 'vorhanden' : 'null'}</p>
                         </div>
@@ -403,21 +403,21 @@ export default function ChallengeCompletion({
               
               {/* Buttons FIXIERT am unteren Rand - immer sichtbar wenn Bild vorhanden */}
               {capturedImage && (
-                <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 flex gap-3 flex-shrink-0 z-10">
+                <div className="sticky bottom-0 bg-app-card border-t border-app-border p-4 flex gap-3 flex-shrink-0 z-10">
                   <button
                     onClick={() => {
                       setCapturedImage(null);
                       if (usingCamera) startCamera();
                     }}
                     disabled={uploading}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    className="flex-1 px-4 py-2 border border-app-border rounded-lg text-app-fg hover:bg-app-bg disabled:opacity-50"
                   >
                     Neu aufnehmen
                   </button>
                   <button
                     onClick={handleUpload}
                     disabled={uploading || !uploaderName.trim()}
-                    className="flex-1 px-4 py-2 bg-[#295B4D] text-white rounded-lg hover:bg-[#1f4238] disabled:opacity-50"
+                    className="flex-1 px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 disabled:opacity-50"
                   >
                     {uploading ? 'Wird hochgeladen...' : 'Hochladen'}
                   </button>
