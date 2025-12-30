@@ -480,7 +480,7 @@ export default function PhotoManagementPage() {
               onClick={() => setShowFaceSearch(true)}
               disabled={viewMode === 'trash'}
             />
-            <Link href={`/events/${eventId}/duplicates`} className="flex items-center justify-center gap-2 px-3 py-2 bg-[#295B4D] text-white rounded-lg hover:bg-[#204a3e] transition-colors whitespace-nowrap">
+            <Link href={`/events/${eventId}/duplicates`} className="flex items-center justify-center gap-2 px-3 py-2 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 transition-colors whitespace-nowrap">
               <Copy className="w-5 h-5 flex-shrink-0" />
               <span className="text-xs sm:text-sm">Duplikate verwalten</span>
             </Link>
@@ -488,11 +488,11 @@ export default function PhotoManagementPage() {
         </PageHeader>
 
         {isStorageLocked && (
-          <div className="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+          <div className="mb-4 rounded-xl border border-app-border bg-app-card p-4">
             <div className="flex items-start gap-3">
               <div>
-                <p className="font-semibold text-sm text-yellow-900">Speicherperiode beendet</p>
-                <p className="text-xs text-yellow-900/80 mt-1">
+                <p className="font-semibold text-sm text-app-fg">Speicherperiode beendet</p>
+                <p className="text-xs text-app-muted mt-1">
                   Uploads und Downloads sind deaktiviert. Bitte verlängere das Paket, um wieder Zugriff zu erhalten.
                 </p>
               </div>
@@ -501,8 +501,8 @@ export default function PhotoManagementPage() {
         )}
 
         {uploading && (
-          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800">Foto wird hochgeladen...</p>
+          <div className="mb-4 p-4 bg-app-card border border-app-border rounded-lg">
+            <p className="text-app-fg">Foto wird hochgeladen...</p>
           </div>
         )}
 
@@ -556,7 +556,7 @@ export default function PhotoManagementPage() {
             <div className="relative uploader-menu">
               <button
                 onClick={() => setShowUploaderMenu(!showUploaderMenu)}
-                className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-3 py-2 bg-app-bg text-app-fg rounded-lg hover:opacity-90 transition-colors cursor-pointer"
               >
                 <span className="text-sm font-medium">
                   Hochgeladen von: {filter.startsWith('uploader-') 
@@ -568,7 +568,7 @@ export default function PhotoManagementPage() {
               
               {showUploaderMenu && (
                 <div 
-                  className="absolute left-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 py-2 min-w-[200px] z-50 max-h-[300px] overflow-y-auto"
+                  className="absolute left-0 top-full mt-2 bg-app-card rounded-lg shadow-xl border border-app-border py-2 min-w-[200px] z-50 max-h-[300px] overflow-y-auto"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
@@ -580,8 +580,8 @@ export default function PhotoManagementPage() {
                       }
                       setShowUploaderMenu(false);
                     }}
-                    className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 ${
-                      !filter.startsWith('uploader-') ? 'bg-gray-50 font-medium' : ''
+                    className={`w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 ${
+                      !filter.startsWith('uploader-') ? 'bg-app-bg font-medium' : ''
                     }`}
                   >
                     Alle Uploader
@@ -593,8 +593,8 @@ export default function PhotoManagementPage() {
                         setFilter(`uploader-${uploader}`);
                         setShowUploaderMenu(false);
                       }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 ${
-                        filter === `uploader-${uploader}` ? 'bg-gray-50 font-medium' : ''
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 ${
+                        filter === `uploader-${uploader}` ? 'bg-app-bg font-medium' : ''
                       }`}
                     >
                       {uploader}
@@ -613,7 +613,7 @@ export default function PhotoManagementPage() {
                 setShowActionsMenu(!showActionsMenu);
                 setShowMoveMenu(false);
               }}
-              className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-app-bg text-app-fg rounded-lg hover:opacity-90 transition-colors"
               disabled={viewMode === 'trash'}
             >
               <MoreVertical className="w-5 h-5" />
@@ -622,10 +622,10 @@ export default function PhotoManagementPage() {
             </button>
             
             {showActionsMenu && (
-              <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 py-2 min-w-[220px] z-50">
+              <div className="absolute right-0 top-full mt-2 bg-app-card rounded-lg shadow-xl border border-app-border py-2 min-w-[220px] z-50">
                 {selectedPhotos.size > 0 ? (
                   <>
-                    <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-200">
+                    <div className="px-4 py-2 text-xs text-app-muted border-b border-app-border">
                       {selectedPhotos.size} Foto(s) ausgewählt
                     </div>
                     
@@ -636,7 +636,7 @@ export default function PhotoManagementPage() {
                           e.stopPropagation();
                           setShowMoveMenu(!showMoveMenu);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between gap-2"
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center justify-between gap-2"
                       >
                         <div className="flex items-center gap-2">
                           <Folder className="w-4 h-4" />
@@ -645,7 +645,7 @@ export default function PhotoManagementPage() {
                         <ChevronDown className={`w-4 h-4 transition-transform ${showMoveMenu ? 'rotate-180' : ''}`} />
                       </button>
                       {showMoveMenu && (
-                        <div className="bg-gray-50 border-t border-gray-200">
+                        <div className="bg-app-bg border-t border-app-border">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -653,7 +653,7 @@ export default function PhotoManagementPage() {
                               setShowMoveMenu(false);
                               setShowActionsMenu(false);
                             }}
-                            className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                            className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-app-card flex items-center gap-2"
                           >
                             <Folder className="w-4 h-4" />
                             Kein Album
@@ -667,7 +667,7 @@ export default function PhotoManagementPage() {
                                 setShowMoveMenu(false);
                                 setShowActionsMenu(false);
                               }}
-                              className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                              className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-app-card flex items-center gap-2"
                             >
                               <Folder className="w-4 h-4" />
                               {category.name}
@@ -695,7 +695,7 @@ export default function PhotoManagementPage() {
                             const photo = photos.find(p => p.id === id);
                             return (photo?.status as string)?.toLowerCase() === 'pending' || (photo?.status as string) === 'PENDING';
                           })}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                          className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                         >
                           <Check className="w-4 h-4" />
                           Freigeben
@@ -716,7 +716,7 @@ export default function PhotoManagementPage() {
                             const photo = photos.find(p => p.id === id);
                             return (photo?.status as string)?.toLowerCase() === 'pending' || (photo?.status as string) === 'PENDING';
                           })}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                          className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                         >
                           <X className="w-4 h-4" />
                           Ablehnen
@@ -731,13 +731,13 @@ export default function PhotoManagementPage() {
                         setShowActionsMenu(false);
                       }}
                       disabled={isStorageLocked}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                     >
                       <Download className="w-4 h-4" />
                       Herunterladen
                     </button>
                     
-                    <div className="border-t border-gray-200 my-1"></div>
+                    <div className="border-t border-app-border my-1"></div>
                     
                     <button
                       onClick={(e) => {
@@ -751,7 +751,7 @@ export default function PhotoManagementPage() {
                       Löschen
                     </button>
                     
-                    <div className="border-t border-gray-200 my-1"></div>
+                    <div className="border-t border-app-border my-1"></div>
                   </>
                 ) : null}
                 
@@ -765,7 +765,7 @@ export default function PhotoManagementPage() {
                     }
                     setShowActionsMenu(false);
                   }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2"
                 >
                   <CheckSquare className="w-4 h-4" />
                   {selectedPhotos.size === photos.length ? 'Auswahl aufheben' : 'Alle auswählen'}
@@ -788,8 +788,8 @@ export default function PhotoManagementPage() {
 
         {photos.length === 0 ? (
           <div className="text-center py-12">
-            <ImageIcon className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">{viewMode === 'trash' ? 'Papierkorb ist leer' : 'Noch keine Fotos hochgeladen'}</p>
+            <ImageIcon className="w-16 h-16 mx-auto text-app-muted mb-4" />
+            <p className="text-app-muted">{viewMode === 'trash' ? 'Papierkorb ist leer' : 'Noch keine Fotos hochgeladen'}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3 md:gap-4">
@@ -799,8 +799,8 @@ export default function PhotoManagementPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.2 }}
-                className={`relative bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow ${
-                  selectedPhotos.has(photo.id) ? 'ring-2 ring-[#295B4D] shadow-lg' : ''
+                className={`relative bg-app-card rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow ${
+                  selectedPhotos.has(photo.id) ? 'ring-2 ring-tokens-brandGreen shadow-lg' : ''
                 }`}
                 onClick={(e) => {
                   if (viewMode === 'trash') return;
@@ -808,7 +808,7 @@ export default function PhotoManagementPage() {
                 }}
                 onContextMenu={(e) => e.preventDefault()}
               >
-                <div className="relative bg-gray-100 aspect-square">
+                <div className="relative bg-app-bg aspect-square">
                   {/* Checkbox always visible - top left */}
                   {viewMode === 'active' && (
                   <div 
@@ -820,13 +820,13 @@ export default function PhotoManagementPage() {
                   >
                     <div className={`p-1.5 rounded-full shadow-lg transition-colors ${
                       selectedPhotos.has(photo.id) 
-                        ? 'bg-[#295B4D]' 
-                        : 'bg-white bg-opacity-90 hover:bg-opacity-100'
+                        ? 'bg-tokens-brandGreen' 
+                        : 'bg-app-card/90 hover:bg-app-card'
                     }`}>
                       {selectedPhotos.has(photo.id) ? (
-                        <CheckSquare className="w-4 h-4 text-white" />
+                        <CheckSquare className="w-4 h-4 text-app-bg" />
                       ) : (
-                        <Square className="w-4 h-4 text-gray-600" />
+                        <Square className="w-4 h-4 text-app-muted" />
                       )}
                     </div>
                   </div>
@@ -839,7 +839,7 @@ export default function PhotoManagementPage() {
                           e.stopPropagation();
                           handleRestore(photo.id);
                         }}
-                        className="flex-1 px-2 py-1 text-xs bg-[#295B4D] text-white rounded-md hover:bg-[#204a3e]"
+                        className="flex-1 px-2 py-1 text-xs bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90"
                       >
                         Wiederherstellen
                       </button>
@@ -848,7 +848,7 @@ export default function PhotoManagementPage() {
                           e.stopPropagation();
                           handlePurge(photo.id);
                         }}
-                        className="px-2 py-1 text-xs bg-red-600 text-white rounded-md hover:bg-red-700"
+                        className="px-2 py-1 text-xs bg-[var(--status-danger)] text-app-bg rounded-md hover:opacity-90"
                       >
                         Endgültig
                       </button>
@@ -864,17 +864,17 @@ export default function PhotoManagementPage() {
                       draggable={false}
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <div className="w-full h-full flex items-center justify-center text-app-muted">
                       <ImageIcon className="w-8 h-8" />
                     </div>
                   )}
                   {((photo.status as string)?.toLowerCase() === 'pending' || (photo.status as string) === 'PENDING') && (
-                    <div className="absolute top-2 right-2 bg-yellow-500 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+                    <div className="absolute top-2 right-2 bg-[var(--status-warning)] text-app-bg px-1.5 py-0.5 rounded text-xs font-medium">
                       Ausstehend
                     </div>
                   )}
                   {((photo.status as string)?.toLowerCase() === 'rejected' || (photo.status as string) === 'REJECTED') && (
-                    <div className="absolute top-2 right-2 bg-red-500 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+                    <div className="absolute top-2 right-2 bg-[var(--status-danger)] text-app-bg px-1.5 py-0.5 rounded text-xs font-medium">
                       Abgelehnt
                     </div>
                   )}
@@ -887,17 +887,17 @@ export default function PhotoManagementPage() {
                         toggleStory(photo.id);
                       }}
                       disabled={togglingStoryPhotoId === photo.id}
-                      className="absolute bottom-2 right-2 z-10 p-2 rounded-full bg-white/90 hover:bg-white shadow disabled:opacity-50"
+                      className="absolute bottom-2 right-2 z-10 p-2 rounded-full bg-app-card/90 hover:bg-app-card shadow disabled:opacity-50"
                       title={storiesByPhotoId[photo.id]?.isActive ? 'Story deaktivieren' : 'Als Story markieren'}
                     >
                       <Star
-                        className={`w-4 h-4 ${storiesByPhotoId[photo.id]?.isActive ? 'text-yellow-500 fill-yellow-500' : 'text-gray-600'}`}
+                        className={`w-4 h-4 ${storiesByPhotoId[photo.id]?.isActive ? 'text-[var(--status-warning)] fill-[var(--status-warning)]' : 'text-app-muted'}`}
                       />
                     </button>
                   )}
                 </div>
-                <div className="p-2 bg-gray-50 border-t">
-                  <p className="text-xs text-gray-600 truncate">von {(photo as any).uploadedBy || 'Unbekannt'}</p>
+                <div className="p-2 bg-app-bg border-t border-app-border">
+                  <p className="text-xs text-app-muted truncate">von {(photo as any).uploadedBy || 'Unbekannt'}</p>
                 </div>
               </motion.div>
             ))}
@@ -941,7 +941,7 @@ export default function PhotoManagementPage() {
                 }
               }
             }}
-            className="fixed bottom-24 right-6 w-14 h-14 bg-[#295B4D] text-white rounded-full shadow-lg flex items-center justify-center z-40 hover:bg-[#204a3e] transition-colors"
+            className="fixed bottom-24 right-6 w-14 h-14 bg-tokens-brandGreen text-app-bg rounded-full shadow-lg flex items-center justify-center z-40 hover:opacity-90 transition-colors"
           >
             <FileDown className="w-6 h-6" />
           </motion.button>
@@ -955,16 +955,16 @@ export default function PhotoManagementPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedPhoto(null)}
-              className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+              className="fixed inset-0 bg-app-fg/75 z-50 flex items-center justify-center p-4"
             >
               <motion.div
                 initial={{ scale: 0.9 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.9 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6"
+                className="bg-app-card rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6"
               >
-                <div className="mb-4 flex justify-between items-center sticky top-0 bg-white z-10 pb-2 border-b">
+                <div className="mb-4 flex justify-between items-center sticky top-0 bg-app-card z-10 pb-2 border-b border-app-border">
                   <h2 className="text-lg font-semibold">Foto-Details</h2>
                   <div className="flex items-center gap-2">
                     {/* Photo Actions Menu */}
@@ -975,7 +975,7 @@ export default function PhotoManagementPage() {
                           setShowPhotoActionsMenu(!showPhotoActionsMenu);
                           setShowPhotoMoveMenu(false);
                         }}
-                        className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 bg-app-bg text-app-fg rounded-lg hover:opacity-90 transition-colors"
                       >
                         <MoreVertical className="w-5 h-5" />
                         <span className="text-sm font-medium">Aktionen</span>
@@ -983,7 +983,7 @@ export default function PhotoManagementPage() {
                       </button>
                       
                       {showPhotoActionsMenu && (
-                        <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 py-2 min-w-[220px] z-50">
+                        <div className="absolute right-0 top-full mt-2 bg-app-card rounded-lg shadow-xl border border-app-border py-2 min-w-[220px] z-50">
                           {/* Verschieben */}
                           <div className="relative">
                             <button
@@ -991,7 +991,7 @@ export default function PhotoManagementPage() {
                                 e.stopPropagation();
                                 setShowPhotoMoveMenu(!showPhotoMoveMenu);
                               }}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between gap-2"
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center justify-between gap-2"
                             >
                               <div className="flex items-center gap-2">
                                 <Folder className="w-4 h-4" />
@@ -1000,7 +1000,7 @@ export default function PhotoManagementPage() {
                               <ChevronDown className={`w-4 h-4 transition-transform ${showPhotoMoveMenu ? 'rotate-180' : ''}`} />
                             </button>
                             {showPhotoMoveMenu && (
-                              <div className="bg-gray-50 border-t border-gray-200">
+                              <div className="bg-app-bg border-t border-app-border">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -1016,7 +1016,7 @@ export default function PhotoManagementPage() {
                                       setShowPhotoActionsMenu(false);
                                     });
                                   }}
-                                  className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                                  className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-app-card flex items-center gap-2"
                                 >
                                   <Folder className="w-4 h-4" />
                                   Kein Album
@@ -1038,7 +1038,7 @@ export default function PhotoManagementPage() {
                                         setShowPhotoActionsMenu(false);
                                       });
                                     }}
-                                    className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                                    className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-app-card flex items-center gap-2"
                                   >
                                     <Folder className="w-4 h-4" />
                                     {category.name}
@@ -1055,7 +1055,7 @@ export default function PhotoManagementPage() {
                               setSelectedPhoto(null);
                               setShowPhotoActionsMenu(false);
                             }}
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                            className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2"
                           >
                             <Edit className="w-4 h-4" />
                             Bearbeiten
@@ -1072,7 +1072,7 @@ export default function PhotoManagementPage() {
                                   }
                                 }}
                                 disabled={!((selectedPhoto.status as string)?.toLowerCase() === 'pending' || (selectedPhoto.status as string) === 'PENDING')}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                               >
                                 <Check className="w-4 h-4" />
                                 Freigeben
@@ -1086,7 +1086,7 @@ export default function PhotoManagementPage() {
                                   }
                                 }}
                                 disabled={!((selectedPhoto.status as string)?.toLowerCase() === 'pending' || (selectedPhoto.status as string) === 'PENDING')}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                               >
                                 <X className="w-4 h-4" />
                                 Ablehnen
@@ -1105,13 +1105,13 @@ export default function PhotoManagementPage() {
                               window.open(url, '_blank', 'noopener,noreferrer');
                               setShowPhotoActionsMenu(false);
                             }}
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                            className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2"
                           >
                             <Download className="w-4 h-4" />
                             Herunterladen
                           </button>
                           
-                          <div className="border-t border-gray-200 my-1"></div>
+                          <div className="border-t border-app-border my-1"></div>
                           
                           <button
                             onClick={(e) => {
@@ -1130,7 +1130,7 @@ export default function PhotoManagementPage() {
                     
                     <button
                       onClick={() => setSelectedPhoto(null)}
-                      className="text-gray-500 hover:text-gray-700"
+                      className="text-app-muted hover:text-app-fg"
                     >
                       <X className="w-6 h-6" />
                     </button>
@@ -1146,15 +1146,15 @@ export default function PhotoManagementPage() {
                         className="w-full h-auto max-h-[70vh] object-contain rounded-lg"
                       />
                     ) : (
-                      <div className="w-full aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-                        <ImageIcon className="w-12 h-12 text-gray-400" />
+                      <div className="w-full aspect-square bg-app-bg rounded-lg flex items-center justify-center">
+                        <ImageIcon className="w-12 h-12 text-app-muted" />
                       </div>
                     )}
                   </div>
 
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm text-gray-500">Status</p>
+                      <p className="text-sm text-app-muted">Status</p>
                       <p className="font-medium">
                         {((selectedPhoto.status as string)?.toLowerCase() === 'pending' || (selectedPhoto.status as string) === 'PENDING') ? 'Ausstehend' : 
                          ((selectedPhoto.status as string)?.toLowerCase() === 'approved' || (selectedPhoto.status as string) === 'APPROVED') ? 'Freigegeben' : 
@@ -1163,42 +1163,42 @@ export default function PhotoManagementPage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Hochgeladen von</p>
+                      <p className="text-sm text-app-muted">Hochgeladen von</p>
                       <p className="font-medium">
                         {(selectedPhoto as any).uploadedBy || 'Unbekannt'}
                       </p>
                     </div>
                     {(selectedPhoto as any).guest && (
                       <div>
-                        <p className="text-sm text-gray-500">Gast</p>
+                        <p className="text-sm text-app-muted">Gast</p>
                         <p className="font-medium">
                           {(selectedPhoto as any).guest?.firstName} {(selectedPhoto as any).guest?.lastName}
                         </p>
                       </div>
                     )}
                     <div>
-                      <p className="text-sm text-gray-500">Hochgeladen</p>
+                      <p className="text-sm text-app-muted">Hochgeladen</p>
                       <p className="font-medium">
                         {new Date(selectedPhoto.createdAt).toLocaleString('de-DE')}
                       </p>
                     </div>
 
                     <div className="pt-4">
-                      <p className="text-sm text-gray-500 mb-2">Teilen & Download</p>
+                      <p className="text-sm text-app-muted mb-2">Teilen & Download</p>
                       <div className="flex gap-2">
-                        <a
-                          href={`/api/photos/${selectedPhoto.id}/download`}
-                          download
-                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-                        >
-                          <Download className="w-4 h-4" />
-                          Herunterladen
-                        </a>
-                        <SocialShare
-                          url={selectedPhoto.url || ''}
-                          title="Event Foto"
-                          imageUrl={selectedPhoto.url || undefined}
-                        />
+                      <a
+                        href={`/api/photos/${selectedPhoto.id}/download`}
+                        download
+                        className="px-4 py-2 bg-[var(--status-info)] text-app-bg rounded-md hover:opacity-90 flex items-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        Herunterladen
+                      </a>
+                      <SocialShare
+                        url={selectedPhoto.url || ''}
+                        title="Event Foto"
+                        imageUrl={selectedPhoto.url || undefined}
+                      />
                       </div>
                     </div>
 
@@ -1210,7 +1210,7 @@ export default function PhotoManagementPage() {
                           setEditingPhoto(selectedPhoto);
                           setSelectedPhoto(null);
                         }}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"
+                        className="px-4 py-2 bg-[var(--status-info)] text-app-bg rounded-md hover:opacity-90 flex items-center justify-center gap-2"
                       >
                         <Edit className="w-5 h-5" />
                         Bearbeiten
@@ -1221,7 +1221,7 @@ export default function PhotoManagementPage() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleApprove(selectedPhoto.id)}
-                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center justify-center gap-2"
+                            className="flex-1 px-4 py-2 bg-[var(--status-success)] text-app-bg rounded-md hover:opacity-90 flex items-center justify-center gap-2"
                           >
                             <Check className="w-5 h-5" />
                             Freigeben
@@ -1230,7 +1230,7 @@ export default function PhotoManagementPage() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleReject(selectedPhoto.id)}
-                            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center justify-center gap-2"
+                            className="flex-1 px-4 py-2 bg-[var(--status-danger)] text-app-bg rounded-md hover:opacity-90 flex items-center justify-center gap-2"
                           >
                             <X className="w-5 h-5" />
                             Ablehnen
@@ -1241,7 +1241,7 @@ export default function PhotoManagementPage() {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handleDelete(selectedPhoto.id)}
-                        className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 flex items-center justify-center gap-2"
+                        className="px-4 py-2 bg-[var(--status-neutral)] text-app-bg rounded-md hover:opacity-90 flex items-center justify-center gap-2"
                       >
                         <Trash2 className="w-5 h-5" />
                       </motion.button>

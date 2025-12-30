@@ -12,6 +12,11 @@
   --app-border: #e5e7eb;
   --app-muted: #6b7280;
   --app-accent: #EAA48F;
+  --status-danger: #DC2626;
+  --status-warning: #F59E0B;
+  --status-success: #16A34A;
+  --status-info: #2563EB;
+  --status-neutral: #4B5563;
 }
 
 * {
