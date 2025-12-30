@@ -12,12 +12,12 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const base =
-  'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-black/30 disabled:opacity-50 disabled:pointer-events-none';
+  'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/30 disabled:opacity-50 disabled:pointer-events-none';
 
 const variantClasses: Record<Variant, string> = {
-  primary: 'bg-black text-white hover:bg-black/90',
-  secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200',
-  ghost: 'bg-transparent text-gray-900 hover:bg-gray-100',
+  primary: 'bg-tokens-brandGreen text-app-bg hover:opacity-90',
+  secondary: 'bg-app-bg text-app-fg border border-app-border hover:bg-app-card',
+  ghost: 'bg-transparent text-app-fg hover:bg-app-bg',
   danger: 'bg-red-600 text-white hover:bg-red-700',
 };
 
