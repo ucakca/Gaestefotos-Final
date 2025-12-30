@@ -18,8 +18,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="de" data-app="gaestefotos" style={{ height: '100%', width: '100%' }}>
-      <body className={inter.className} style={{ margin: 0, padding: 0, height: '100%', width: '100%' }}>
+    <html lang="de" data-app="gaestefotos" className="h-full w-full">
+      <body className={`${inter.className} min-h-screen bg-app-bg text-app-fg`} style={{ margin: 0, padding: 0 }}>
         <ThemeLoader />
         <MaintenanceBanner />
         {children}
