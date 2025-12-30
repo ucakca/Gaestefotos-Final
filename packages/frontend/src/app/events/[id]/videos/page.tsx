@@ -444,8 +444,8 @@ export default function VideosPage() {
         )}
 
         {uploading && (
-          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800">Video wird hochgeladen...</p>
+          <div className="mb-4 p-4 bg-app-card border border-app-border rounded-lg">
+            <p className="text-app-fg">Video wird hochgeladen...</p>
           </div>
         )}
 
@@ -500,7 +500,7 @@ export default function VideosPage() {
               <button
                 onMouseEnter={() => setShowUploaderMenu(true)}
                 onMouseLeave={() => setShowUploaderMenu(false)}
-                className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 bg-app-bg text-app-fg rounded-lg hover:opacity-90 transition-colors"
               >
                 <span className="text-sm font-medium">
                   Hochgeladen von: {filter.startsWith('uploader-') 
@@ -512,7 +512,7 @@ export default function VideosPage() {
               
               {showUploaderMenu && (
                 <div 
-                  className="absolute left-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 py-2 min-w-[200px] z-50 max-h-[300px] overflow-y-auto"
+                  className="absolute left-0 top-full mt-2 bg-app-card rounded-lg shadow-xl border border-app-border py-2 min-w-[200px] z-50 max-h-[300px] overflow-y-auto"
                   onMouseEnter={() => setShowUploaderMenu(true)}
                   onMouseLeave={() => setShowUploaderMenu(false)}
                 >
@@ -525,8 +525,8 @@ export default function VideosPage() {
                       }
                       setShowUploaderMenu(false);
                     }}
-                    className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 ${
-                      !filter.startsWith('uploader-') ? 'bg-gray-50 font-medium' : ''
+                    className={`w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 ${
+                      !filter.startsWith('uploader-') ? 'bg-app-bg font-medium' : ''
                     }`}
                   >
                     Alle Uploader
@@ -538,8 +538,8 @@ export default function VideosPage() {
                         setFilter(`uploader-${uploader}`);
                         setShowUploaderMenu(false);
                       }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 ${
-                        filter === `uploader-${uploader}` ? 'bg-gray-50 font-medium' : ''
+                      className={`w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 ${
+                        filter === `uploader-${uploader}` ? 'bg-app-bg font-medium' : ''
                       }`}
                     >
                       {uploader}
@@ -558,7 +558,7 @@ export default function VideosPage() {
                 setShowActionsMenu(!showActionsMenu);
                 setShowMoveMenu(false);
               }}
-              className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-app-bg text-app-fg rounded-lg hover:opacity-90 transition-colors"
               disabled={viewMode === 'trash'}
             >
               <MoreVertical className="w-5 h-5" />
@@ -567,10 +567,10 @@ export default function VideosPage() {
             </button>
             
             {showActionsMenu && (
-              <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 py-2 min-w-[220px] z-50">
+              <div className="absolute right-0 top-full mt-2 bg-app-card rounded-lg shadow-xl border border-app-border py-2 min-w-[220px] z-50">
                 {selectedVideos.size > 0 ? (
                   <>
-                    <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-200">
+                    <div className="px-4 py-2 text-xs text-app-muted border-b border-app-border">
                       {selectedVideos.size} Video(s) ausgewählt
                     </div>
                     
@@ -581,7 +581,7 @@ export default function VideosPage() {
                           e.stopPropagation();
                           setShowMoveMenu(!showMoveMenu);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between gap-2"
+                        className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center justify-between gap-2"
                       >
                         <div className="flex items-center gap-2">
                           <Folder className="w-4 h-4" />
@@ -590,7 +590,7 @@ export default function VideosPage() {
                         <ChevronDown className={`w-4 h-4 transition-transform ${showMoveMenu ? 'rotate-180' : ''}`} />
                       </button>
                       {showMoveMenu && (
-                        <div className="bg-gray-50 border-t border-gray-200">
+                        <div className="bg-app-bg border-t border-app-border">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -598,7 +598,7 @@ export default function VideosPage() {
                               setShowMoveMenu(false);
                               setShowActionsMenu(false);
                             }}
-                            className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                            className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-app-card flex items-center gap-2"
                           >
                             <Folder className="w-4 h-4" />
                             Kein Album
@@ -612,7 +612,7 @@ export default function VideosPage() {
                                 setShowMoveMenu(false);
                                 setShowActionsMenu(false);
                               }}
-                              className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                              className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-app-card flex items-center gap-2"
                             >
                               <Folder className="w-4 h-4" />
                               {category.name}
@@ -640,7 +640,7 @@ export default function VideosPage() {
                             const video = videos.find(v => v.id === id);
                             return (video?.status as string)?.toLowerCase() === 'pending' || video?.status === 'PENDING';
                           })}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                          className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                         >
                           <Check className="w-4 h-4" />
                           Freigeben
@@ -661,7 +661,7 @@ export default function VideosPage() {
                             const video = videos.find(v => v.id === id);
                             return (video?.status as string)?.toLowerCase() === 'pending' || video?.status === 'PENDING';
                           })}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                          className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                         >
                           <X className="w-4 h-4" />
                           Ablehnen
@@ -676,13 +676,13 @@ export default function VideosPage() {
                         setShowActionsMenu(false);
                       }}
                       disabled={isStorageLocked}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                     >
                       <Download className="w-4 h-4" />
                       Herunterladen
                     </button>
                     
-                    <div className="border-t border-gray-200 my-1"></div>
+                    <div className="border-t border-app-border my-1"></div>
                     
                     <button
                       onClick={(e) => {
@@ -696,7 +696,7 @@ export default function VideosPage() {
                       Löschen
                     </button>
                     
-                    <div className="border-t border-gray-200 my-1"></div>
+                    <div className="border-t border-app-border my-1"></div>
                   </>
                 ) : null}
                 
@@ -710,7 +710,7 @@ export default function VideosPage() {
                     }
                     setShowActionsMenu(false);
                   }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2"
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2"
                 >
                   <CheckSquare className="w-4 h-4" />
                   {selectedVideos.size === videos.length ? 'Auswahl aufheben' : 'Alle auswählen'}
@@ -732,8 +732,8 @@ export default function VideosPage() {
 
         {videos.length === 0 ? (
           <div className="text-center py-12">
-            <Video className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">{viewMode === 'trash' ? 'Papierkorb ist leer' : 'Noch keine Videos hochgeladen'}</p>
+            <Video className="w-16 h-16 mx-auto text-app-muted mb-4" />
+            <p className="text-app-muted">{viewMode === 'trash' ? 'Papierkorb ist leer' : 'Noch keine Videos hochgeladen'}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -746,11 +746,11 @@ export default function VideosPage() {
                   if (viewMode === 'trash') return;
                   handleVideoClick(video, e);
                 }}
-                className={`relative bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow ${
-                  selectedVideos.has(video.id) ? 'ring-2 ring-[#295B4D] shadow-lg' : ''
+                className={`relative bg-app-card rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow ${
+                  selectedVideos.has(video.id) ? 'ring-2 ring-tokens-brandGreen shadow-lg' : ''
                 }`}
               >
-                <div className="relative bg-gray-100 rounded-lg overflow-hidden">
+                <div className="relative bg-app-bg rounded-lg overflow-hidden">
                   {/* Checkbox */}
                   {viewMode === 'active' && (
                     <div
@@ -762,13 +762,13 @@ export default function VideosPage() {
                     >
                       <div className={`p-1.5 rounded-full shadow-lg transition-colors ${
                         selectedVideos.has(video.id)
-                          ? 'bg-[#295B4D]'
-                          : 'bg-white bg-opacity-90 hover:bg-opacity-100'
+                          ? 'bg-tokens-brandGreen'
+                          : 'bg-app-card/90 hover:bg-app-card'
                       }`}>
                         {selectedVideos.has(video.id) ? (
-                          <CheckSquare className="w-4 h-4 text-white" />
+                          <CheckSquare className="w-4 h-4 text-app-bg" />
                         ) : (
-                          <Square className="w-4 h-4 text-gray-600" />
+                          <Square className="w-4 h-4 text-app-muted" />
                         )}
                       </div>
                     </div>
@@ -781,7 +781,7 @@ export default function VideosPage() {
                           e.stopPropagation();
                           handleRestore(video.id);
                         }}
-                        className="flex-1 px-2 py-1 text-xs bg-[#295B4D] text-white rounded-md hover:bg-[#204a3e]"
+                        className="flex-1 px-2 py-1 text-xs bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90"
                       >
                         Wiederherstellen
                       </button>
@@ -790,7 +790,7 @@ export default function VideosPage() {
                           e.stopPropagation();
                           handlePurge(video.id);
                         }}
-                        className="px-2 py-1 text-xs bg-red-600 text-white rounded-md hover:bg-red-700"
+                        className="px-2 py-1 text-xs bg-[var(--status-danger)] text-app-bg rounded-md hover:opacity-90"
                       >
                         Endgültig
                       </button>
@@ -806,23 +806,23 @@ export default function VideosPage() {
                       controlsList="nodownload"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <div className="w-full h-full flex items-center justify-center text-app-muted">
                       <Video className="w-8 h-8" />
                     </div>
                   )}
                   {video.status === 'PENDING' && (
-                    <div className="absolute top-2 right-2 bg-yellow-500 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+                    <div className="absolute top-2 right-2 bg-[var(--status-warning)] text-app-bg px-1.5 py-0.5 rounded text-xs font-medium">
                       Ausstehend
                     </div>
                   )}
                   {video.status === 'REJECTED' && (
-                    <div className="absolute top-2 right-2 bg-red-500 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+                    <div className="absolute top-2 right-2 bg-[var(--status-danger)] text-app-bg px-1.5 py-0.5 rounded text-xs font-medium">
                       Abgelehnt
                     </div>
                   )}
                 </div>
-                <div className="p-2 bg-gray-50 border-t">
-                  <p className="text-xs text-gray-600 truncate">von {(video as any).uploadedBy || 'Unbekannt'}</p>
+                <div className="p-2 bg-app-bg border-t border-app-border">
+                  <p className="text-xs text-app-muted truncate">von {(video as any).uploadedBy || 'Unbekannt'}</p>
                 </div>
               </motion.div>
             ))}
@@ -839,19 +839,19 @@ export default function VideosPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedVideo(null)}
-              className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+              className="fixed inset-0 bg-app-fg/75 z-50 flex items-center justify-center p-4"
             >
               <motion.div
                 initial={{ scale: 0.9 }}
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.9 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-white rounded-lg max-w-4xl w-full p-6"
+                className="bg-app-card rounded-lg max-w-4xl w-full p-6"
               >
                 <div className="mb-4">
                   <button
                     onClick={() => setSelectedVideo(null)}
-                    className="text-gray-500 hover:text-gray-700"
+                    className="text-app-muted hover:text-app-fg"
                   >
                     <X className="w-6 h-6" />
                   </button>
@@ -867,22 +867,22 @@ export default function VideosPage() {
                         autoPlay
                       />
                     ) : (
-                      <div className="w-full aspect-video bg-gray-200 rounded-lg flex items-center justify-center">
-                        <Video className="w-12 h-12 text-gray-400" />
+                      <div className="w-full aspect-video bg-app-bg rounded-lg flex items-center justify-center">
+                        <Video className="w-12 h-12 text-app-muted" />
                       </div>
                     )}
                   </div>
 
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm text-gray-500">Status</p>
+                      <p className="text-sm text-app-muted">Status</p>
                       <p className="font-medium">
                         {selectedVideo.status === 'PENDING' ? 'Ausstehend' : selectedVideo.status === 'APPROVED' ? 'Freigegeben' : 'Abgelehnt'}
                       </p>
                     </div>
                     {selectedVideo.guest && (
                       <div>
-                        <p className="text-sm text-gray-500">Gast</p>
+                        <p className="text-sm text-app-muted">Gast</p>
                         <p className="font-medium">
                           {selectedVideo.guest.firstName} {selectedVideo.guest.lastName}
                         </p>
@@ -890,14 +890,14 @@ export default function VideosPage() {
                     )}
                     {selectedVideo.category && (
                       <div>
-                        <p className="text-sm text-gray-500">Album</p>
+                        <p className="text-sm text-app-muted">Album</p>
                         <p className="font-medium">
                           {selectedVideo.category.name}
                         </p>
                       </div>
                     )}
                     <div>
-                      <p className="text-sm text-gray-500">Hochgeladen</p>
+                      <p className="text-sm text-app-muted">Hochgeladen</p>
                       <p className="font-medium">
                         {new Date(selectedVideo.createdAt).toLocaleString('de-DE')}
                       </p>
@@ -905,7 +905,7 @@ export default function VideosPage() {
 
                     {(selectedVideo as any).uploadedBy && (
                       <div>
-                        <p className="text-sm text-gray-500">Hochgeladen von</p>
+                        <p className="text-sm text-app-muted">Hochgeladen von</p>
                         <p className="font-medium">
                           {(selectedVideo as any).uploadedBy || 'Unbekannt'}
                         </p>
@@ -913,7 +913,7 @@ export default function VideosPage() {
                     )}
 
                     <div className="pt-4">
-                      <p className="text-sm text-gray-500 mb-2">Download</p>
+                      <p className="text-sm text-app-muted mb-2">Download</p>
                       <button
                         onClick={() => {
                           if (isStorageLocked) {
@@ -923,7 +923,7 @@ export default function VideosPage() {
                           const url = buildApiUrl(`/videos/${selectedVideo.id}/download`);
                           window.open(url, '_blank', 'noopener,noreferrer');
                         }}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                        className="px-4 py-2 bg-[var(--status-info)] text-app-bg rounded-md hover:opacity-90 flex items-center gap-2"
                       >
                         <Download className="w-4 h-4" />
                         Original herunterladen
@@ -972,7 +972,7 @@ export default function VideosPage() {
                 }
               }
             }}
-            className="fixed bottom-24 right-6 w-14 h-14 bg-[#295B4D] text-white rounded-full shadow-lg flex items-center justify-center z-40 hover:bg-[#204a3e] transition-colors"
+            className="fixed bottom-24 right-6 w-14 h-14 bg-tokens-brandGreen text-app-bg rounded-full shadow-lg flex items-center justify-center z-40 hover:opacity-90 transition-colors"
           >
             <FileDown className="w-6 h-6" />
           </motion.button>
