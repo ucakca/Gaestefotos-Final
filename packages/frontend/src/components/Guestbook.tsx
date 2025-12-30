@@ -392,43 +392,43 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
   return (
     <div className="flex flex-col" style={{ height: '100%', overflow: 'hidden' }}>
       {/* Scrollable Container with Sticky Host Message */}
-      <div className="flex-1 overflow-y-auto bg-gray-50" style={{ minHeight: 0, WebkitOverflowScrolling: 'touch' }}>
+      <div className="flex-1 overflow-y-auto bg-app-bg" style={{ minHeight: 0, WebkitOverflowScrolling: 'touch' }}>
         {/* Sticky Host Message */}
         {displayHostMessage && (
-          <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
+          <div className="sticky top-0 z-10 bg-app-card border-b border-app-border px-4 py-3 shadow-sm">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               className="flex items-start gap-3"
             >
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#295B4D] to-[#1f4238] flex items-center justify-center">
-                  <User className="w-5 h-5 text-white" />
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-tokens-brandGreen to-[var(--brand-dark)] flex items-center justify-center">
+                  <User className="w-5 h-5 text-app-bg" />
                 </div>
               </div>
               <div className="flex-1 max-w-[75%]">
-                <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm border border-gray-200">
+                <div className="bg-app-card rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm border border-app-border">
                   {isEditingHostMessage && isHost ? (
                     <div className="space-y-2">
                       <textarea
                         value={editedHostMessage}
                         onChange={(e) => setEditedHostMessage(e.target.value)}
                         rows={3}
-                        className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#295B4D] text-sm resize-none"
+                        className="w-full px-2 py-1 border border-app-border rounded-lg focus:outline-none focus:ring-2 focus:ring-app-fg/30 text-sm resize-none bg-app-card text-app-fg"
                         placeholder="Host-Nachricht..."
                         maxLength={2000}
                       />
                       <div className="flex gap-2">
                         <button
                           onClick={handleSaveHostMessage}
-                          className="px-3 py-1 bg-[#295B4D] text-white text-xs rounded-lg hover:bg-[#1f4238] flex items-center gap-1"
+                          className="px-3 py-1 bg-tokens-brandGreen text-app-bg text-xs rounded-lg hover:opacity-90 flex items-center gap-1"
                         >
                           <Check className="w-3 h-3" />
                           Speichern
                         </button>
                         <button
                           onClick={handleCancelEdit}
-                          className="px-3 py-1 border border-gray-300 text-gray-700 text-xs rounded-lg hover:bg-gray-50 flex items-center gap-1"
+                          className="px-3 py-1 border border-app-border text-app-fg text-xs rounded-lg hover:bg-app-bg flex items-center gap-1"
                         >
                           <X className="w-3 h-3" />
                           Abbrechen
@@ -437,7 +437,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                     </div>
                   ) : (
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm text-gray-800 whitespace-pre-wrap break-words flex-1">
+                      <p className="text-sm text-app-fg whitespace-pre-wrap break-words flex-1">
                         {displayHostMessage}
                       </p>
                       {isHost && (
@@ -446,16 +446,16 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                             console.log('Edit button clicked, isHost:', isHost);
                             setIsEditingHostMessage(true);
                           }}
-                          className="flex-shrink-0 p-2 hover:bg-gray-100 rounded-full transition-colors border border-gray-200"
+                          className="flex-shrink-0 p-2 hover:bg-app-bg rounded-full transition-colors border border-app-border"
                           title="Nachricht bearbeiten"
                         >
-                          <Edit2 className="w-4 h-4 text-[#295B4D]" />
+                          <Edit2 className="w-4 h-4 text-tokens-brandGreen" />
                         </button>
                       )}
                     </div>
                   )}
                 </div>
-                <span className="text-xs text-gray-500 mt-1 block">{eventTitle || 'Event'}</span>
+                <span className="text-xs text-app-muted mt-1 block">{eventTitle || 'Event'}</span>
               </div>
             </motion.div>
           </div>
@@ -465,14 +465,14 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
         <div className="p-4 space-y-4">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-app-fg"></div>
           </div>
         ) : (
           <>
 
             {/* Guest Entries - Right Side */}
             {entries.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-app-muted">
                 <Heart className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p className="text-sm mb-1">Noch keine Einträge</p>
                 <p className="text-xs opacity-70">Sei der Erste, der eine Nachricht hinterlässt!</p>
@@ -486,7 +486,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                   className="flex items-start gap-3 justify-end"
                 >
                   <div className="flex-1 max-w-[75%] flex flex-col items-end">
-                    <div className="bg-[#295B4D] text-white rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm">
+                    <div className="bg-tokens-brandGreen text-app-bg rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-semibold text-sm">
                           {entry.authorName}
@@ -530,13 +530,13 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                         </div>
                       )}
                     </div>
-                    <span className="text-xs text-gray-500 mt-1">
+                    <span className="text-xs text-app-muted mt-1">
                       {formatDate(entry.createdAt)}
                     </span>
                   </div>
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center">
-                      <User className="w-5 h-5 text-white" />
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-app-accent to-tokens-brandGreen flex items-center justify-center">
+                      <User className="w-5 h-5 text-app-bg" />
                     </div>
                   </div>
                 </motion.div>
@@ -549,7 +549,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       </div>
 
       {/* Input Form - Everyone can add messages - Fixed at bottom */}
-      <div className="border-t border-gray-200 p-4 bg-white flex-shrink-0">
+      <div className="border-t border-app-border p-4 bg-app-card flex-shrink-0">
           <form onSubmit={handleSubmit} className="space-y-3">
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3">
@@ -562,7 +562,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
               placeholder="Dein Name"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#295B4D] text-sm"
+              className="w-full px-4 py-2 border border-app-border rounded-lg focus:outline-none focus:ring-2 focus:ring-app-fg/30 text-sm bg-app-card text-app-fg"
               disabled={submitting}
               maxLength={100}
             />
@@ -572,13 +572,13 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Schreibe eine Nachricht..."
               rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#295B4D] text-sm resize-none"
+              className="w-full px-4 py-2 border border-app-border rounded-lg focus:outline-none focus:ring-2 focus:ring-app-fg/30 text-sm resize-none bg-app-card text-app-fg"
               disabled={submitting}
               maxLength={2000}
             />
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-app-fg mb-2">
                 Sprachnachricht (optional)
               </label>
 
@@ -589,11 +589,11 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                       type="button"
                       onClick={startRecording}
                       disabled={submitting || uploadingAudio}
-                      className="flex items-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center gap-2 px-4 py-3 border border-app-border rounded-lg hover:bg-app-bg disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Aufnahme starten"
                     >
-                      <Mic className="w-5 h-5 text-gray-700" />
-                      <span className="text-sm text-gray-700">Aufnehmen</span>
+                      <Mic className="w-5 h-5 text-app-fg" />
+                      <span className="text-sm text-app-fg">Aufnehmen</span>
                     </button>
                   ) : (
                     <button
@@ -609,24 +609,24 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                   )}
 
                   {uploadingAudio && (
-                    <div className="text-sm text-gray-600">Audio wird hochgeladen…</div>
+                    <div className="text-sm text-app-muted">Audio wird hochgeladen…</div>
                   )}
                 </div>
               ) : null}
             </div>
 
             {audioPreviewUrl && (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <div className="bg-app-bg border border-app-border rounded-lg p-3">
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="text-xs text-gray-600">Audio</div>
+                  <div className="text-xs text-app-muted">Audio</div>
                   <button
                     type="button"
                     onClick={removeAudio}
-                    className="p-2 hover:bg-white rounded-lg border border-gray-200"
+                    className="p-2 hover:bg-app-card rounded-lg border border-app-border"
                     disabled={submitting || uploadingAudio}
                     title="Audio entfernen"
                   >
-                    <Trash2 className="w-4 h-4 text-gray-700" />
+                    <Trash2 className="w-4 h-4 text-app-fg" />
                   </button>
                 </div>
                 <audio controls preload="none" className="w-full">
@@ -637,7 +637,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
 
             {/* Photo Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-app-fg mb-2">
                 Foto hinzufügen (optional)
               </label>
               {photoPreview ? (
@@ -657,9 +657,9 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                   </button>
                 </div>
               ) : (
-                <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#295B4D] transition-colors">
-                  <ImageIcon className="w-5 h-5 text-gray-400" />
-                  <span className="text-sm text-gray-600">
+                <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-app-border rounded-lg cursor-pointer hover:border-tokens-brandGreen transition-colors">
+                  <ImageIcon className="w-5 h-5 text-app-muted" />
+                  <span className="text-sm text-app-muted">
                     {uploadingPhoto ? 'Wird hochgeladen...' : 'Foto auswählen'}
                   </span>
                   <input
@@ -686,13 +686,13 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                 <div className="flex items-center gap-1">
                   {isPublic ? (
                     <>
-                      <Globe className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-700">Im Feed anzeigen</span>
+                      <Globe className="w-4 h-4 text-app-muted" />
+                      <span className="text-app-fg">Im Feed anzeigen</span>
                     </>
                   ) : (
                     <>
-                      <Lock className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-700">Nur im Gästebuch</span>
+                      <Lock className="w-4 h-4 text-app-muted" />
+                      <span className="text-app-fg">Nur im Gästebuch</span>
                     </>
                   )}
                 </div>
@@ -702,10 +702,10 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
             <button
               type="submit"
               disabled={submitting || uploadingPhoto || uploadingAudio || isRecording || !message.trim() || !authorName.trim()}
-              className="w-full bg-[#295B4D] text-white py-3 px-4 rounded-lg hover:bg-[#1f4238] transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-tokens-brandGreen text-app-bg py-3 px-4 rounded-lg hover:opacity-90 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-app-bg"></div>
               ) : (
                 <>
                   <Send className="w-5 h-5" />
@@ -719,7 +719,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       {/* Image Lightbox Modal */}
       {selectedImage && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-app-fg/75 z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedImage(null)}
         >
           <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center">
@@ -731,7 +731,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
             />
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-800 rounded-full p-2 shadow-lg transition-all"
+              className="absolute top-4 right-4 bg-app-card/90 hover:bg-app-card text-app-fg rounded-full p-2 shadow-lg transition-all border border-app-border"
             >
               <X className="w-6 h-6" />
             </button>
