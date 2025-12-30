@@ -160,7 +160,7 @@ export default function BottomNavigation({
       <motion.div
         initial={{ y: 100 }}
         animate={{ y: 0 }}
-        className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur border-t border-gray-200 z-50 safe-area-bottom shadow-[0_-6px_24px_rgba(0,0,0,0.06)]"
+        className="fixed bottom-0 left-0 right-0 bg-app-card/90 backdrop-blur border-t border-app-border z-50 safe-area-bottom shadow-[0_-6px_24px_rgba(0,0,0,0.06)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="max-w-4xl mx-auto px-2">
@@ -170,7 +170,7 @@ export default function BottomNavigation({
               whileTap={{ scale: 0.9 }}
               onClick={() => handleViewChange('feed')}
               className={`flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                activeView === 'feed' ? 'bg-gray-100 text-black' : 'text-gray-500'
+                activeView === 'feed' ? 'bg-app-bg text-app-fg' : 'text-app-muted'
               }`}
             >
               <Grid3x3 className="w-5 h-5" />
@@ -193,9 +193,9 @@ export default function BottomNavigation({
               className={`flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
                 (event?.featuresConfig as any)?.challengesEnabled === true
                   ? activeView === 'challenges'
-                    ? 'bg-gray-100 text-black'
-                    : 'text-gray-500'
-                  : 'text-gray-300 opacity-50'
+                    ? 'bg-app-bg text-app-fg'
+                    : 'text-app-muted'
+                  : 'text-app-muted opacity-50'
               }`}
             >
               <Trophy className="w-5 h-5" />
@@ -207,7 +207,7 @@ export default function BottomNavigation({
               whileTap={{ scale: 0.9 }}
               onClick={() => handleViewChange('guestbook')}
               className={`flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                activeView === 'guestbook' ? 'bg-gray-100 text-black' : 'text-gray-500'
+                activeView === 'guestbook' ? 'bg-app-bg text-app-fg' : 'text-app-muted'
               }`}
             >
               <BookOpen className="w-5 h-5" />
@@ -219,7 +219,7 @@ export default function BottomNavigation({
               whileTap={{ scale: 0.9 }}
               onClick={() => handleViewChange('info')}
               className={`flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                activeView === 'info' ? 'bg-gray-100 text-black' : 'text-gray-500'
+                activeView === 'info' ? 'bg-app-bg text-app-fg' : 'text-app-muted'
               }`}
             >
               <Info className="w-5 h-5" />
@@ -237,22 +237,22 @@ export default function BottomNavigation({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowAlbums(false)}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end"
+            className="fixed inset-0 bg-app-fg/50 z-50 flex items-end"
           >
             <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-t-2xl w-full max-h-[80vh] overflow-hidden"
+              className="bg-app-card border border-app-border rounded-t-2xl w-full max-h-[80vh] overflow-hidden"
             >
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Alben</h2>
+              <div className="sticky top-0 bg-app-card border-b border-app-border px-4 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-app-fg">Alben</h2>
                 <button
                   onClick={() => setShowAlbums(false)}
-                  className="p-1 hover:bg-gray-100 rounded-full"
+                  className="p-1 hover:bg-app-bg rounded-full"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5 text-app-fg" />
                 </button>
               </div>
               <div className="overflow-y-auto max-h-[calc(80vh-60px)] p-4">
@@ -266,8 +266,8 @@ export default function BottomNavigation({
                   }}
                   className={`w-full text-left p-4 rounded-lg mb-2 transition-colors ${
                     selectedAlbum === null
-                      ? 'bg-black text-white'
-                      : 'bg-gray-50 hover:bg-gray-100 text-gray-900'
+                      ? 'bg-tokens-brandGreen text-app-bg'
+                      : 'bg-app-bg hover:bg-app-card text-app-fg'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -281,7 +281,7 @@ export default function BottomNavigation({
 
                 {/* Kategorien/Alben */}
                 {categories.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-app-muted">
                     <Folder className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">Noch keine Alben vorhanden</p>
                   </div>
@@ -297,8 +297,8 @@ export default function BottomNavigation({
                       }}
                       className={`w-full text-left p-4 rounded-lg mb-2 transition-colors ${
                         selectedAlbum === category.id
-                          ? 'bg-black text-white'
-                          : 'bg-gray-50 hover:bg-gray-100 text-gray-900'
+                          ? 'bg-tokens-brandGreen text-app-bg'
+                          : 'bg-app-bg hover:bg-app-card text-app-fg'
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -327,36 +327,36 @@ export default function BottomNavigation({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-white z-50 flex flex-col"
+            className="fixed inset-0 bg-app-bg z-50 flex flex-col"
           >
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between z-10 flex-shrink-0">
-              <h2 className="text-lg font-semibold">Foto Challenges</h2>
+            <div className="sticky top-0 bg-app-card border-b border-app-border px-4 py-4 flex items-center justify-between z-10 flex-shrink-0">
+              <h2 className="text-lg font-semibold text-app-fg">Foto Challenges</h2>
               <button
                 onClick={() => {
                   setActiveView('feed');
                   setShowChallenges(false);
                 }}
-                className="p-1 hover:bg-gray-100 rounded-full"
+                className="p-1 hover:bg-app-bg rounded-full"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 text-app-fg" />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto min-h-0 p-4">
               {(event?.featuresConfig as any)?.challengesEnabled !== true ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-app-muted">
                   <Trophy className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm font-medium text-gray-700 mb-1">Challenges sind für dieses Event nicht aktiviert</p>
+                  <p className="text-sm font-medium text-app-fg mb-1">Challenges sind für dieses Event nicht aktiviert</p>
                   <p className="text-xs mt-2 opacity-70">
                     Der Gastgeber kann Challenges in den erweiterten Einstellungen aktivieren
                   </p>
                 </div>
               ) : loadingChallenges ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-                  <p className="text-sm text-gray-500 mt-2">Lade Challenges...</p>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-app-fg mx-auto"></div>
+                  <p className="text-sm text-app-muted mt-2">Lade Challenges...</p>
                 </div>
               ) : challenges.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-app-muted">
                   <Trophy className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">Noch keine Challenges vorhanden</p>
                   <p className="text-xs mt-2 opacity-70">
@@ -386,7 +386,7 @@ export default function BottomNavigation({
                       />
                     ))}
                   {challenges.filter((c: any) => c.isActive && (!selectedAlbum ? !c.categoryId : c.categoryId === selectedAlbum)).length === 0 && (
-                    <div className="text-center py-4 text-gray-500">
+                    <div className="text-center py-4 text-app-muted">
                       <p className="text-sm">Keine Challenges für das ausgewählte Album</p>
                     </div>
                   )}
@@ -399,14 +399,14 @@ export default function BottomNavigation({
 
       {/* Guestbook - Direct View (not modal) for guests */}
       {activeView === 'guestbook' && (
-        <div className="fixed inset-0 bg-white z-40 flex flex-col" style={{ paddingBottom: '80px' }}>
-          <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between z-20 flex-shrink-0">
-            <h2 className="text-lg font-semibold">Gästebuch</h2>
+        <div className="fixed inset-0 bg-app-bg z-40 flex flex-col" style={{ paddingBottom: '80px' }}>
+          <div className="sticky top-0 bg-app-card border-b border-app-border px-4 py-4 flex items-center justify-between z-20 flex-shrink-0">
+            <h2 className="text-lg font-semibold text-app-fg">Gästebuch</h2>
             <button
               onClick={() => setActiveView('feed')}
-              className="p-1 hover:bg-gray-100 rounded-full"
+              className="p-1 hover:bg-app-bg rounded-full"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 text-app-fg" />
             </button>
           </div>
           <div className="flex-1" style={{ display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
@@ -423,22 +423,22 @@ export default function BottomNavigation({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setActiveView('feed')}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end"
+            className="fixed inset-0 bg-app-fg/50 z-50 flex items-end"
           >
             <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-t-2xl w-full max-h-[80vh] overflow-hidden"
+              className="bg-app-card border border-app-border rounded-t-2xl w-full max-h-[80vh] overflow-hidden"
             >
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Info</h2>
+              <div className="sticky top-0 bg-app-card border-b border-app-border px-4 py-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-app-fg">Info</h2>
                 <button
                   onClick={() => setActiveView('feed')}
-                  className="p-1 hover:bg-gray-100 rounded-full"
+                  className="p-1 hover:bg-app-bg rounded-full"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5 text-app-fg" />
                 </button>
               </div>
               <div className="overflow-y-auto max-h-[calc(80vh-60px)] p-4 space-y-4">
@@ -479,7 +479,7 @@ export default function BottomNavigation({
                       router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
                     }
                   }}
-                  className="w-full bg-[#295B4D] hover:bg-[#1f4238] text-white rounded-lg p-4 flex items-center gap-3 transition-colors"
+                  className="w-full bg-tokens-brandGreen hover:opacity-90 text-app-bg rounded-lg p-4 flex items-center gap-3 transition-colors"
                 >
                   <LayoutDashboard className="w-5 h-5" />
                   <span className="font-medium">Zum Dashboard</span>
@@ -487,12 +487,12 @@ export default function BottomNavigation({
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   onClick={handleShare}
-                  className="w-full bg-gray-50 hover:bg-gray-100 rounded-lg p-4 flex items-center gap-3 transition-colors"
+                  className="w-full bg-app-bg hover:bg-app-card rounded-lg p-4 flex items-center gap-3 transition-colors"
                 >
                   <Share2 className="w-5 h-5" />
-                  <span className="font-medium">Event teilen</span>
+                  <span className="font-medium text-app-fg">Event teilen</span>
                 </motion.button>
-                <div className="text-sm text-gray-600 space-y-2">
+                <div className="text-sm text-app-muted space-y-2">
                   <p>
                     <strong>Event teilen:</strong> Lade deine Freunde ein, die Fotos zu sehen!
                   </p>
