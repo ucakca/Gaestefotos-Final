@@ -108,17 +108,17 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
           className={`
             border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors
             ${isDragActive 
-              ? 'border-primary-500 bg-primary-50' 
-              : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
+              ? 'border-tokens-brandGreen bg-app-bg' 
+              : 'border-app-border hover:border-tokens-brandGreen hover:bg-app-bg'
             }
           `}
         >
           <input {...getInputProps()} />
-          <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-          <p className="text-lg font-medium text-gray-700 mb-2">
+          <Upload className="w-12 h-12 mx-auto mb-4 text-app-muted" />
+          <p className="text-lg font-medium text-app-fg mb-2">
             {isDragActive ? 'Fotos hier ablegen' : 'Fotos hochladen'}
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-app-muted">
             Drag & Drop oder klicken zum Auswählen
           </p>
         </motion.div>
@@ -139,10 +139,10 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                className="bg-white rounded-lg p-4 shadow-sm border border-gray-200"
+                className="bg-app-card rounded-lg p-4 shadow-sm border border-app-border"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded overflow-hidden bg-gray-100 flex-shrink-0">
+                  <div className="w-16 h-16 rounded overflow-hidden bg-app-bg flex-shrink-0">
                     <img
                       src={file.preview}
                       alt="Preview"
@@ -151,18 +151,18 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-app-fg truncate">
                       {file.file.name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-app-muted">
                       {(file.file.size / 1024 / 1024).toFixed(2)} MB
                     </p>
 
                     {/* Progress Bar */}
                     {file.uploading && (
-                      <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+                      <div className="mt-2 w-full bg-app-border rounded-full h-2">
                         <motion.div
-                          className="bg-primary-600 h-2 rounded-full"
+                          className="bg-tokens-brandGreen h-2 rounded-full"
                           initial={{ width: 0 }}
                           animate={{ width: `${file.progress}%` }}
                           transition={{ duration: 0.3 }}
@@ -182,7 +182,7 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                         animate={{ scale: 1 }}
                         className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center"
                       >
-                        <Check className="w-5 h-5 text-white" />
+                        <Check className="w-5 h-5 text-app-bg" />
                       </motion.div>
                     )}
 
