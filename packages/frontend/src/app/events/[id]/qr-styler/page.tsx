@@ -479,18 +479,18 @@ export default function QrStylerPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-app-bg">
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <Link href={`/events/${eventId}/dashboard`} className="text-primary-600 hover:text-primary-500 flex items-center gap-2">
+              <Link href={`/events/${eventId}/dashboard`} className="text-tokens-brandGreen hover:opacity-90 flex items-center gap-2">
                 <ChevronLeft className="w-4 h-4" />
                 <span>Zurück</span>
               </Link>
-              <div className="text-gray-300">/</div>
+              <div className="text-app-muted">/</div>
               <div>
-                <div className="text-sm text-gray-500">QR-Aufsteller</div>
-                <h1 className="text-xl font-semibold text-gray-900">QR‑Styler</h1>
+                <div className="text-sm text-app-muted">QR-Aufsteller</div>
+                <h1 className="text-xl font-semibold text-app-fg">QR‑Styler</h1>
               </div>
             </div>
 
@@ -498,7 +498,7 @@ export default function QrStylerPage() {
               <button
                 type="button"
                 onClick={handleSaveConfig}
-                className="inline-flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-gray-50"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-app-border rounded-md bg-app-card hover:bg-app-bg"
                 disabled={loading || savingConfig}
               >
                 <Save className="w-4 h-4" />
@@ -507,7 +507,7 @@ export default function QrStylerPage() {
               <button
                 type="button"
                 onClick={handleResetDefaults}
-                className="inline-flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-gray-50"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-app-border rounded-md bg-app-card hover:bg-app-bg"
                 disabled={loading}
               >
                 <RotateCcw className="w-4 h-4" />
@@ -516,7 +516,7 @@ export default function QrStylerPage() {
               <button
                 type="button"
                 onClick={handleDownloadPng}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#295B4D] text-white rounded-md hover:bg-[#1f443a]"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90"
                 disabled={!computedSvg.svg || exportingPng}
               >
                 <ImageIcon className="w-4 h-4" />
@@ -525,7 +525,7 @@ export default function QrStylerPage() {
               <button
                 type="button"
                 onClick={handleDownloadPdf}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-black"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-app-fg text-app-bg rounded-md hover:opacity-90"
                 disabled={!computedSvg.svg || exportingPdf}
               >
                 <FileText className="w-4 h-4" />
@@ -534,7 +534,7 @@ export default function QrStylerPage() {
               <button
                 type="button"
                 onClick={downloadSvg}
-                className="inline-flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-gray-50"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-app-border rounded-md bg-app-card hover:bg-app-bg"
                 disabled={!computedSvg.svg}
               >
                 <Download className="w-4 h-4" />
@@ -544,13 +544,13 @@ export default function QrStylerPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-4 bg-white rounded-xl shadow p-4 space-y-4">
-              <div className="text-sm font-semibold text-gray-900">Inhalt</div>
+            <div className="lg:col-span-4 bg-app-card rounded-xl shadow p-4 space-y-4 border border-app-border">
+              <div className="text-sm font-semibold text-app-fg">Inhalt</div>
 
               <div className="space-y-2">
-                <label className="text-xs text-gray-500">Vorlage</label>
+                <label className="text-xs text-app-muted">Vorlage</label>
                 <select
-                  className="w-full border rounded-md px-3 py-2"
+                  className="w-full border border-app-border rounded-md px-3 py-2 bg-app-card text-app-fg"
                   value={templateSlug}
                   onChange={(e) => setTemplateSlug(e.target.value)}
                 >
@@ -563,8 +563,8 @@ export default function QrStylerPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs text-gray-500">Preset</label>
-                <select className="w-full border rounded-md px-3 py-2" defaultValue="" onChange={(e) => handleApplyPreset(e.target.value)}>
+                <label className="text-xs text-app-muted">Preset</label>
+                <select className="w-full border border-app-border rounded-md px-3 py-2 bg-app-card text-app-fg" defaultValue="" onChange={(e) => handleApplyPreset(e.target.value)}>
                   <option value="" disabled>
                     Preset auswählen…
                   </option>
@@ -577,76 +577,80 @@ export default function QrStylerPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs text-gray-500">Headline</label>
-                <input className="w-full border rounded-md px-3 py-2" value={headline} onChange={(e) => setHeadline(e.target.value)} />
+                <label className="text-xs text-app-muted">Headline</label>
+                <input className="w-full border border-app-border rounded-md px-3 py-2 bg-app-card text-app-fg" value={headline} onChange={(e) => setHeadline(e.target.value)} />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs text-gray-500">Subline</label>
-                <input className="w-full border rounded-md px-3 py-2" value={subline} onChange={(e) => setSubline(e.target.value)} />
+                <label className="text-xs text-app-muted">Subline</label>
+                <input className="w-full border border-app-border rounded-md px-3 py-2 bg-app-card text-app-fg" value={subline} onChange={(e) => setSubline(e.target.value)} />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs text-gray-500">Eventname</label>
-                <input className="w-full border rounded-md px-3 py-2" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder={eventTitle} />
+                <label className="text-xs text-app-muted">Eventname</label>
+                <input className="w-full border border-app-border rounded-md px-3 py-2 bg-app-card text-app-fg" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder={eventTitle} />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs text-gray-500">Call to Action</label>
-                <input className="w-full border rounded-md px-3 py-2" value={callToAction} onChange={(e) => setCallToAction(e.target.value)} />
+                <label className="text-xs text-app-muted">Call to Action</label>
+                <input className="w-full border border-app-border rounded-md px-3 py-2 bg-app-card text-app-fg" value={callToAction} onChange={(e) => setCallToAction(e.target.value)} />
               </div>
 
-              <div className="pt-2 border-t" />
+              <div className="pt-2 border-t border-app-border" />
 
-              <div className="text-sm font-semibold text-gray-900">Design</div>
+              <div className="text-sm font-semibold text-app-fg">Design</div>
 
               <div className="grid grid-cols-3 gap-3">
-                <label className="text-xs text-gray-500">
+                <label className="text-xs text-app-muted">
                   Background
                   <input type="color" className="w-full h-10 mt-1" value={bgColor} onChange={(e) => setBgColor(e.target.value)} />
                 </label>
-                <label className="text-xs text-gray-500">
+                <label className="text-xs text-app-muted">
                   Text
                   <input type="color" className="w-full h-10 mt-1" value={textColor} onChange={(e) => setTextColor(e.target.value)} />
                 </label>
-                <label className="text-xs text-gray-500">
+                <label className="text-xs text-app-muted">
                   Accent
                   <input type="color" className="w-full h-10 mt-1" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} />
                 </label>
               </div>
 
-              <div className="pt-2 border-t" />
+              <div className="pt-2 border-t border-app-border" />
 
-              <div className="text-sm font-semibold text-gray-900">Format</div>
+              <div className="text-sm font-semibold text-app-fg">Format</div>
               <div className="flex gap-2">
                 {(['A6', 'A5'] as const).map((f) => (
                   <button
                     key={f}
                     type="button"
                     onClick={() => setFormat(f)}
-                    className={`px-3 py-2 rounded-md border text-sm ${format === f ? 'bg-[#295B4D] text-white border-[#295B4D]' : 'bg-white'}`}
+                    className={`px-3 py-2 rounded-md border text-sm ${
+                      format === f
+                        ? 'bg-tokens-brandGreen text-app-bg border-tokens-brandGreen'
+                        : 'bg-app-card border-app-border text-app-fg'
+                    }`}
                   >
                     {f}
                   </button>
                 ))}
               </div>
 
-              {saveError && <div className="text-sm text-red-600">{saveError}</div>}
+              {saveError && <div className="text-sm text-[var(--status-danger)]">{saveError}</div>}
 
-              <div className="pt-2 border-t" />
+              <div className="pt-2 border-t border-app-border" />
 
-              <div className="text-sm font-semibold text-gray-900">QR Ziel</div>
-              <div className="text-xs text-gray-600 break-all">
+              <div className="text-sm font-semibold text-app-fg">QR Ziel</div>
+              <div className="text-xs text-app-muted break-all">
                 {loading ? 'Lade…' : publicUrl || 'Kein Public-Link verfügbar'}
               </div>
             </div>
 
             <div className="lg:col-span-8">
-              <div className="bg-white rounded-xl shadow p-4">
-                <div className="text-sm font-semibold text-gray-900 mb-4">Vorschau</div>
+              <div className="bg-app-card rounded-xl shadow p-4 border border-app-border">
+                <div className="text-sm font-semibold text-app-fg mb-4">Vorschau</div>
 
                 <div
-                  className="relative w-full overflow-hidden rounded-lg bg-gray-100"
+                  className="relative w-full overflow-hidden rounded-lg bg-app-bg"
                   style={{ paddingTop: `${aspect * 100}%` }}
                 >
                   <div
@@ -656,14 +660,14 @@ export default function QrStylerPage() {
 
                   {qrOverlayStyle && publicUrl && (
                     <div className="absolute" style={qrOverlayStyle}>
-                      <div className="w-full h-full bg-white" style={{ padding: '6%', borderRadius: 12 }}>
+                      <div className="w-full h-full bg-app-card" style={{ padding: '6%', borderRadius: 12 }}>
                         <QRCodeSVG value={publicUrl} level="H" includeMargin={true} className="w-full h-full" />
                       </div>
                     </div>
                   )}
                 </div>
 
-                {exportError && <div className="mt-3 text-sm text-red-600">{exportError}</div>}
+                {exportError && <div className="mt-3 text-sm text-[var(--status-danger)]">{exportError}</div>}
               </div>
             </div>
           </div>
