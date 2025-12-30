@@ -35,7 +35,7 @@ export default function AlbumNavigation({
   ];
 
   return (
-    <div className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-gray-100">
+    <div className="sticky top-0 z-30 bg-app-card/95 backdrop-blur border-b border-app-border">
       <div className="max-w-md mx-auto px-4 py-3">
         {/* Horizontal Scrollable Album Navigation */}
         <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
@@ -58,24 +58,24 @@ export default function AlbumNavigation({
                 <div
                   className={`relative w-14 h-14 rounded-full p-0.5 transition-all ${
                     isSelected
-                      ? 'bg-gradient-to-br from-purple-500 to-pink-500 scale-110'
-                      : 'bg-gray-200'
+                      ? 'bg-tokens-brandGreen scale-110'
+                      : 'bg-app-border'
                   }`}
                 >
-                  <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+                  <div className="w-full h-full rounded-full bg-app-card flex items-center justify-center overflow-hidden">
                     {album.id ? (
                       // Category with image or icon
-                      <div className="w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
+                      <div className="w-full h-full bg-app-bg flex items-center justify-center">
                         {(() => {
                           const IconComp = getIcon((album as any).iconKey);
-                          return <IconComp className="w-6 h-6 text-purple-500" />;
+                          return <IconComp className="w-6 h-6 text-tokens-brandGreen" />;
                         })()}
                       </div>
                     ) : (
                       // All Photos - Grid Icon
-                      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                      <div className="w-full h-full bg-app-bg flex items-center justify-center">
                         <svg
-                          className="w-6 h-6 text-gray-600"
+                          className="w-6 h-6 text-app-muted"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -96,8 +96,8 @@ export default function AlbumNavigation({
                 <span
                   className={`text-xs font-medium transition-colors ${
                     isSelected
-                      ? 'text-purple-600'
-                      : 'text-gray-600'
+                      ? 'text-tokens-brandGreen'
+                      : 'text-app-muted'
                   }`}
                 >
                   {album.name}
