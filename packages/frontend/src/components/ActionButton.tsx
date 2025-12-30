@@ -27,8 +27,8 @@ export default function ActionButton({
   const baseClasses = 'flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap';
   
   const variantClasses = {
-    primary: 'bg-[#295B4D] text-white hover:bg-[#204a3e]',
-    secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+    primary: 'bg-tokens-brandGreen text-app-bg hover:opacity-90',
+    secondary: 'bg-app-bg text-app-fg hover:opacity-90',
     danger: 'bg-red-100 text-red-700 hover:bg-red-200',
   };
 
