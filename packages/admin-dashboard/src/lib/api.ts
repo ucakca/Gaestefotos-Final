@@ -4,7 +4,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const getBaseUrl = () => {
   if (typeof window !== 'undefined') {
-    // Browser: same-origin in production; allow explicit override for local dev/E2E.
+    // Browser: always same-origin in production; allow explicit override only for local dev/E2E.
+    if (process.env.NODE_ENV === 'production') return '/api';
     return API_URL ? `${API_URL}/api` : '/api';
   }
 
