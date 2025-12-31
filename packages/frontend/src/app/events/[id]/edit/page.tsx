@@ -170,8 +170,8 @@ export default function EditEventPage() {
             <div className="border-t border-app-border pt-6">
               <h3 className="text-lg font-semibold mb-4 text-app-fg">Einstellungen</h3>
               
-              <div className="space-y-4 text-tokens-brandGreen">
-                <label className="flex items-center">
+              <div className="space-y-4">
+                <label className="flex items-center gap-2 text-app-fg">
                   <input
                     type="checkbox"
                     checked={formData.featuresConfig.showGuestlist}
@@ -179,12 +179,12 @@ export default function EditEventPage() {
                       ...formData,
                       featuresConfig: { ...formData.featuresConfig, showGuestlist: e.target.checked }
                     })}
-                    className="mr-2 accent-tokens-brandGreen"
+                    className="h-4 w-4 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                   />
                   <span>Gästeliste anzeigen</span>
                 </label>
 
-                <label className="flex items-center">
+                <label className="flex items-center gap-2 text-app-fg">
                   <input
                     type="checkbox"
                     checked={formData.featuresConfig.mysteryMode}
@@ -192,12 +192,12 @@ export default function EditEventPage() {
                       ...formData,
                       featuresConfig: { ...formData.featuresConfig, mysteryMode: e.target.checked }
                     })}
-                    className="mr-2 accent-tokens-brandGreen"
+                    className="h-4 w-4 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                   />
                   <span>Mystery Mode (Fotos erst später sichtbar)</span>
                 </label>
 
-                <label className="flex items-center">
+                <label className="flex items-center gap-2 text-app-fg">
                   <input
                     type="checkbox"
                     checked={formData.featuresConfig.allowUploads}
@@ -205,12 +205,12 @@ export default function EditEventPage() {
                       ...formData,
                       featuresConfig: { ...formData.featuresConfig, allowUploads: e.target.checked }
                     })}
-                    className="mr-2 accent-tokens-brandGreen"
+                    className="h-4 w-4 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                   />
                   <span>Foto-Uploads erlauben</span>
                 </label>
 
-                <label className="flex items-center">
+                <label className="flex items-center gap-2 text-app-fg">
                   <input
                     type="checkbox"
                     checked={formData.featuresConfig.moderationRequired}
@@ -218,12 +218,12 @@ export default function EditEventPage() {
                       ...formData,
                       featuresConfig: { ...formData.featuresConfig, moderationRequired: e.target.checked }
                     })}
-                    className="mr-2 accent-tokens-brandGreen"
+                    className="h-4 w-4 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                   />
                   <span>Moderation erforderlich</span>
                 </label>
 
-                <label className="flex items-center">
+                <label className="flex items-center gap-2 text-app-fg">
                   <input
                     type="checkbox"
                     checked={formData.featuresConfig.allowDownloads}
@@ -231,7 +231,7 @@ export default function EditEventPage() {
                       ...formData,
                       featuresConfig: { ...formData.featuresConfig, allowDownloads: e.target.checked }
                     })}
-                    className="mr-2 accent-tokens-brandGreen"
+                    className="h-4 w-4 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                   />
                   <span>Downloads erlauben</span>
                 </label>
