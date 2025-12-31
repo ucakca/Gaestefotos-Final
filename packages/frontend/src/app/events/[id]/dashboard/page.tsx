@@ -610,36 +610,37 @@ export default function EventDashboardPage() {
           <div className="mt-6 border-t border-app-border pt-4">
             <div className="text-app-fg font-semibold">Upgrade</div>
             <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <input
+              <Input
                 value={upgradeSku}
                 onChange={(e) => setUpgradeSku(e.target.value)}
                 placeholder="SKU (optional)"
-                className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
               />
-              <input
+              <Input
                 value={upgradeProductId}
                 onChange={(e) => setUpgradeProductId(e.target.value)}
                 placeholder="ProductId (optional)"
-                className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
               />
             </div>
             <div className="mt-2 flex items-center gap-2 flex-wrap">
-              <button
+              <Button
+                type="button"
                 onClick={handleUpgrade}
-                className="px-4 py-2 rounded-lg bg-tokens-brandGreen text-white text-sm font-semibold hover:opacity-90"
+                className="bg-tokens-brandGreen text-app-bg hover:opacity-90"
                 disabled={upgradeLoading}
               >
                 {upgradeLoading ? 'Erzeuge…' : 'Upgrade öffnen'}
-              </button>
+              </Button>
               {upgradeUrl && (
-                <button
+                <Button
+                  type="button"
+                  variant="secondary"
                   onClick={async () => {
                     await navigator.clipboard.writeText(upgradeUrl);
                   }}
-                  className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
+                  className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                 >
                   Link kopieren
-                </button>
+                </Button>
               )}
             </div>
             {upgradeError && <div className="mt-2 text-sm text-[var(--status-danger)]">{upgradeError}</div>}
@@ -651,22 +652,25 @@ export default function EventDashboardPage() {
           <div className="mt-6 border-t border-app-border pt-4">
             <div className="text-app-fg font-semibold">Share-Link</div>
             <div className="mt-2 flex items-center gap-2 flex-wrap">
-              <button
+              <Button
+                type="button"
                 onClick={handleGenerateShareLink}
-                className="px-4 py-2 rounded-lg bg-tokens-brandGreen text-white text-sm font-semibold hover:opacity-90"
+                className="bg-tokens-brandGreen text-app-bg hover:opacity-90"
                 disabled={shareLoading}
               >
                 {shareLoading ? 'Erzeuge…' : 'Link erzeugen'}
-              </button>
+              </Button>
               {shareUrl && (
-                <button
+                <Button
+                  type="button"
+                  variant="secondary"
                   onClick={async () => {
                     await navigator.clipboard.writeText(shareUrl);
                   }}
-                  className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
+                  className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                 >
                   Link kopieren
-                </button>
+                </Button>
               )}
             </div>
             {shareError && <div className="mt-2 text-sm text-[var(--status-danger)]">{shareError}</div>}
@@ -686,26 +690,29 @@ export default function EventDashboardPage() {
             )}
 
             <div className="mt-3 flex items-center gap-2 flex-wrap">
-              <input
+              <Input
                 value={newInvitationName}
                 onChange={(e) => setNewInvitationName(e.target.value)}
                 placeholder="Name (z.B. Familie)"
-                className="flex-1 min-w-[220px] rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
+                className="flex-1 min-w-[220px]"
               />
-              <button
+              <Button
+                type="button"
                 onClick={createInvitation}
-                className="px-4 py-2 rounded-lg bg-tokens-brandGreen text-white text-sm font-semibold hover:opacity-90"
+                className="bg-tokens-brandGreen text-app-bg hover:opacity-90"
                 disabled={creatingInvitation || newInvitationName.trim().length === 0}
               >
                 {creatingInvitation ? 'Erstelle…' : 'Neu erstellen'}
-              </button>
-              <button
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
                 onClick={loadInvitations}
-                className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
+                className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                 disabled={invitationsLoading}
               >
                 Aktualisieren
-              </button>
+              </Button>
             </div>
 
             {invitationsError && <div className="mt-2 text-sm text-[var(--status-danger)]">{invitationsError}</div>}
@@ -733,11 +740,10 @@ export default function EventDashboardPage() {
                       <div>
                         {isEditing ? (
                           <div className="space-y-2">
-                            <input
+                            <Input
                               value={editingInvitationName}
                               onChange={(e) => setEditingInvitationName(e.target.value)}
                               data-testid={`invitation-edit-name-${inv.id}`}
-                              className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
                               placeholder="Name"
                             />
                             <label className="flex items-center gap-2 text-sm text-app-fg">
@@ -746,6 +752,7 @@ export default function EventDashboardPage() {
                                 checked={editingInvitationIsActive}
                                 onChange={(e) => setEditingInvitationIsActive(e.target.checked)}
                                 data-testid={`invitation-edit-active-${inv.id}`}
+                                className="h-4 w-4 accent-tokens-brandGreen"
                               />
                               Aktiv
                             </label>
@@ -757,29 +764,31 @@ export default function EventDashboardPage() {
                                 checked={editingInvitationVisibility === 'PUBLIC'}
                                 onChange={(e) => setEditingInvitationVisibility(e.target.checked ? 'PUBLIC' : 'UNLISTED')}
                                 data-testid={`invitation-edit-visibility-${inv.id}`}
+                                className="h-4 w-4 accent-tokens-brandGreen"
                               />
                             </label>
 
                             <div>
                               <div className="text-xs text-app-muted">Passwort (optional)</div>
-                              <input
+                              <Input
                                 type="password"
                                 value={editingInvitationPassword}
                                 onChange={(e) => setEditingInvitationPassword(e.target.value)}
                                 data-testid={`invitation-edit-password-${inv.id}`}
-                                className="mt-1 w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
+                                className="mt-1"
                                 placeholder={editingInvitationHasPassword ? 'Neues Passwort setzen (leer = unverändert)' : 'Passwort setzen'}
                               />
                               {editingInvitationHasPassword && (
-                                <button
+                                <Button
                                   type="button"
                                   onClick={() => saveInvitation(inv.id, { removePassword: true })}
                                   disabled={isSaving}
                                   data-testid={`invitation-remove-password-${inv.id}`}
-                                  className="mt-2 px-3 py-2 rounded-lg border border-[var(--status-danger)] text-[var(--status-danger)] text-sm font-medium disabled:opacity-50"
+                                  variant="secondary"
+                                  className="mt-2 border border-[var(--status-danger)] text-[var(--status-danger)] disabled:opacity-50"
                                 >
                                   {isSaving ? 'Speichere…' : 'Passwort entfernen'}
-                                </button>
+                                </Button>
                               )}
                             </div>
                           </div>
@@ -816,91 +825,109 @@ export default function EventDashboardPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         {isEditing ? (
                           <>
-                            <button
+                            <Button
+                              type="button"
                               onClick={() => saveInvitation(inv.id)}
                               data-testid={`invitation-save-${inv.id}`}
-                              className="px-3 py-2 rounded-lg bg-tokens-brandGreen text-white text-sm font-semibold disabled:opacity-50 hover:opacity-90"
+                              className="bg-tokens-brandGreen text-app-bg hover:opacity-90 disabled:opacity-50"
                               disabled={isSaving || editingInvitationName.trim().length === 0}
                             >
                               {isSaving ? 'Speichere…' : 'Speichern'}
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="secondary"
                               onClick={cancelEditInvitation}
                               data-testid={`invitation-cancel-${inv.id}`}
-                              className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
+                              className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                               disabled={isSaving}
                             >
                               Abbrechen
-                            </button>
+                            </Button>
                           </>
                         ) : (
-                          <button
+                          <Button
+                            type="button"
+                            variant="secondary"
                             onClick={() => startEditInvitation(inv)}
                             data-testid={`invitation-edit-${inv.id}`}
-                            className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
+                            className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                           >
                             Bearbeiten
-                          </button>
+                          </Button>
                         )}
                         {shortUrl && (
-                          <button
+                          <Button
+                            type="button"
+                            variant="secondary"
                             onClick={async () => {
                               await copyToClipboard(shortUrl);
                             }}
-                            className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
+                            className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                           >
                             Link kopieren
-                          </button>
+                          </Button>
                         )}
 
-                        <button
+                        <Button
+                          type="button"
+                          variant="secondary"
                           onClick={() => generateNewInvitationShortLink(inv.id)}
-                          className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium disabled:opacity-50 hover:opacity-90"
+                          className="border border-app-border bg-app-bg text-app-fg hover:opacity-90 disabled:opacity-50"
                           disabled={isGeneratingShortLink}
                         >
                           {isGeneratingShortLink ? 'Erzeuge…' : 'Neuen Shortlink'}
-                        </button>
+                        </Button>
                         {inv?.visibility === 'PUBLIC' && (
-                          <button
+                          <Button
+                            type="button"
+                            variant="secondary"
                             onClick={async () => {
                               await copyToClipboard(publicUrl, 'Direkt-Link kopiert');
                             }}
-                            className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
+                            className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                           >
                             Direkt-Link kopieren
-                          </button>
+                          </Button>
                         )}
                         {shortUrl && (
-                          <button
+                          <Button
+                            type="button"
                             onClick={() => shareInvitation(shortUrl, 'whatsapp')}
-                            className="px-3 py-2 rounded-lg bg-tokens-brandPeach text-white text-sm font-semibold hover:opacity-90"
+                            className="bg-tokens-brandPeach text-app-bg hover:opacity-90"
                           >
                             WhatsApp
-                          </button>
+                          </Button>
                         )}
                         {shortUrl && (
-                          <button
+                          <Button
+                            type="button"
+                            variant="secondary"
                             onClick={() => shareInvitation(shortUrl, 'facebook')}
-                            className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
+                            className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                           >
                             Facebook
-                          </button>
+                          </Button>
                         )}
                         {shortUrl && (
-                          <button
+                          <Button
+                            type="button"
+                            variant="secondary"
                             onClick={() => shareInvitation(shortUrl, 'x')}
-                            className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
+                            className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                           >
                             X
-                          </button>
+                          </Button>
                         )}
                         {shortUrl && (
-                          <button
+                          <Button
+                            type="button"
+                            variant="secondary"
                             onClick={() => shareInvitation(shortUrl, 'linkedin')}
-                            className="px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-medium hover:opacity-90"
+                            className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                           >
                             LinkedIn
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </div>
