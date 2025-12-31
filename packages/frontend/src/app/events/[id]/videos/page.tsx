@@ -60,8 +60,6 @@ export default function VideosPage() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
   const [selectedVideos, setSelectedVideos] = useState<Set<string>>(new Set());
-  const [showVideoActionsMenu, setShowVideoActionsMenu] = useState(false);
-  const [showVideoMoveMenu, setShowVideoMoveMenu] = useState(false);
   const [viewMode, setViewMode] = useState<'active' | 'trash'>('active');
 
   useEffect(() => {
@@ -82,19 +80,6 @@ export default function VideosPage() {
     ).sort();
     setUploaders(uniqueUploaders);
   }, [videos]);
-
-  // Close menus when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (showVideoActionsMenu && !(e.target as HTMLElement).closest('.video-actions-menu')) {
-        setShowVideoActionsMenu(false);
-        setShowVideoMoveMenu(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [showVideoActionsMenu]);
-
 
   const loadEvent = async () => {
     try {
