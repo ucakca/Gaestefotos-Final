@@ -7,6 +7,8 @@ import { authApi } from '@/lib/auth';
 import api from '@/lib/api';
 import { User } from '@gaestefotos/shared';
 import HelpTooltip from '@/components/ui/HelpTooltip';
+import { Checkbox } from '@/components/ui/Checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -952,16 +954,21 @@ export default function AdminDashboardPage() {
                     <input value={newPkg.name} onChange={(e) => setNewPkg({ ...newPkg, name: e.target.value })} placeholder="Name" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
                     <HelpTooltip title="Name" content={'Interner Anzeigename.'} />
                   </div>
-                  <select value={newPkg.type} onChange={(e) => setNewPkg({ ...newPkg, type: e.target.value })} style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }}>
-                    <option value="BASE">BASE</option>
-                    <option value="UPGRADE">UPGRADE</option>
-                  </select>
+                  <Select value={newPkg.type} onValueChange={(value) => setNewPkg({ ...newPkg, type: value })}>
+                    <SelectTrigger className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
+                      <SelectValue placeholder="Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="BASE">BASE</SelectItem>
+                      <SelectItem value="UPGRADE">UPGRADE</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <input value={newPkg.resultingTier} onChange={(e) => setNewPkg({ ...newPkg, resultingTier: e.target.value })} placeholder="resultingTier" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
                   <input value={newPkg.upgradeFromTier} onChange={(e) => setNewPkg({ ...newPkg, upgradeFromTier: e.target.value })} placeholder="upgradeFromTier (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
                   <input value={newPkg.storageLimitBytes} onChange={(e) => setNewPkg({ ...newPkg, storageLimitBytes: e.target.value })} placeholder="storageLimitBytes (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
                   <input value={newPkg.storageDurationDays} onChange={(e) => setNewPkg({ ...newPkg, storageDurationDays: e.target.value })} placeholder="storageDurationDays (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-green)' }}>
-                    <input type="checkbox" checked={newPkg.isActive} onChange={(e) => setNewPkg({ ...newPkg, isActive: e.target.checked })} />
+                    <Checkbox checked={newPkg.isActive} onCheckedChange={(checked) => setNewPkg({ ...newPkg, isActive: checked })} />
                     aktiv
                   </label>
                 </div>
@@ -1010,16 +1017,21 @@ export default function AdminDashboardPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
                     <input value={editingPkg.sku} onChange={(e) => setEditingPkg({ ...editingPkg, sku: e.target.value })} placeholder="SKU" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
                     <input value={editingPkg.name} onChange={(e) => setEditingPkg({ ...editingPkg, name: e.target.value })} placeholder="Name" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
-                    <select value={editingPkg.type} onChange={(e) => setEditingPkg({ ...editingPkg, type: e.target.value })} style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }}>
-                      <option value="BASE">BASE</option>
-                      <option value="UPGRADE">UPGRADE</option>
-                    </select>
+                    <Select value={editingPkg.type} onValueChange={(value) => setEditingPkg({ ...editingPkg, type: value })}>
+                      <SelectTrigger className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
+                        <SelectValue placeholder="Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="BASE">BASE</SelectItem>
+                        <SelectItem value="UPGRADE">UPGRADE</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <input value={editingPkg.resultingTier} onChange={(e) => setEditingPkg({ ...editingPkg, resultingTier: e.target.value })} placeholder="resultingTier" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
                     <input value={editingPkg.upgradeFromTier || ''} onChange={(e) => setEditingPkg({ ...editingPkg, upgradeFromTier: e.target.value })} placeholder="upgradeFromTier (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
                     <input value={editingPkg.storageLimitBytes ?? ''} onChange={(e) => setEditingPkg({ ...editingPkg, storageLimitBytes: e.target.value })} placeholder="storageLimitBytes (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
                     <input value={editingPkg.storageDurationDays ?? ''} onChange={(e) => setEditingPkg({ ...editingPkg, storageDurationDays: e.target.value })} placeholder="storageDurationDays (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-green)' }}>
-                      <input type="checkbox" checked={!!editingPkg.isActive} onChange={(e) => setEditingPkg({ ...editingPkg, isActive: e.target.checked })} />
+                      <Checkbox checked={!!editingPkg.isActive} onCheckedChange={(checked) => setEditingPkg({ ...editingPkg, isActive: checked })} />
                       aktiv
                     </label>
                   </div>
@@ -1126,10 +1138,17 @@ export default function AdminDashboardPage() {
 
               <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <select value={cmsFaqKind} onChange={(e) => setCmsFaqKind(e.target.value as any)} style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }}>
-                  <option value="pages">pages</option>
-                  <option value="posts">posts</option>
-                  </select>
+                  <div style={{ flex: 1 }}>
+                    <Select value={cmsFaqKind} onValueChange={(value) => setCmsFaqKind(value as any)}>
+                      <SelectTrigger className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
+                        <SelectValue placeholder="WP Kind" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pages">pages</SelectItem>
+                        <SelectItem value="posts">posts</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <HelpTooltip title="WP Kind" content={'pages = normale Seiten (z.B. FAQ).\nposts = Blog-Beiträge.\n\nFür FAQ ist meist pages korrekt.'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -1353,11 +1372,18 @@ export default function AdminDashboardPage() {
 
               <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <select value={emailTplKind} onChange={(e) => setEmailTplKind(e.target.value as any)} style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }}>
-                    <option value="INVITATION">INVITATION</option>
-                    <option value="STORAGE_ENDS_REMINDER">STORAGE_ENDS_REMINDER</option>
-                    <option value="PHOTO_NOTIFICATION">PHOTO_NOTIFICATION</option>
-                  </select>
+                  <div style={{ flex: 1 }}>
+                    <Select value={emailTplKind} onValueChange={(value) => setEmailTplKind(value as any)}>
+                      <SelectTrigger className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
+                        <SelectValue placeholder="Kind" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="INVITATION">INVITATION</SelectItem>
+                        <SelectItem value="STORAGE_ENDS_REMINDER">STORAGE_ENDS_REMINDER</SelectItem>
+                        <SelectItem value="PHOTO_NOTIFICATION">PHOTO_NOTIFICATION</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <HelpTooltip title="Kind" content={'Welches Template du bearbeitest.'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -1366,7 +1392,7 @@ export default function AdminDashboardPage() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontWeight: 600, color: 'var(--brand-green)', margin: 0 }}>
-                    <input type="checkbox" checked={emailTplIsActive} onChange={(e) => setEmailTplIsActive(e.target.checked)} />
+                    <Checkbox checked={emailTplIsActive} onCheckedChange={(checked) => setEmailTplIsActive(checked)} />
                     Active
                   </label>
                   <HelpTooltip title="Active" content={'Wenn deaktiviert, wird dieses Template nicht verwendet.'} />
@@ -1469,11 +1495,7 @@ export default function AdminDashboardPage() {
 
               <div style={{ marginTop: '0.75rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontWeight: 600, color: 'var(--brand-green)' }}>
-                  <input
-                    type="checkbox"
-                    checked={maintenanceEnabled}
-                    onChange={(e) => setMaintenanceEnabled(e.target.checked)}
-                  />
+                  <Checkbox checked={maintenanceEnabled} onCheckedChange={(checked) => setMaintenanceEnabled(checked)} />
                   Wartungsmodus aktiv
                 </label>
                 <HelpTooltip title="Wartungsmodus" content={'Aktiv = Gäste werden blockiert und sehen den Hinweis.'} />
@@ -1642,17 +1664,24 @@ export default function AdminDashboardPage() {
               <div style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-green)' }}>
                   Format
-                  <select value={qrFormat} onChange={(e) => setQrFormat(e.target.value as any)} style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }}>
-                    <option value="A6">A6</option>
-                    <option value="A5">A5</option>
-                  </select>
+                  <div style={{ minWidth: 90 }}>
+                    <Select value={qrFormat} onValueChange={(value) => setQrFormat(value as any)}>
+                      <SelectTrigger className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
+                        <SelectValue placeholder="Format" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="A6">A6</SelectItem>
+                        <SelectItem value="A5">A5</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-green)' }}>
                   bleedMm
                   <input value={qrBleedMm} onChange={(e) => setQrBleedMm(e.target.value)} style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: 90, fontFamily: 'monospace' }} />
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-green)' }}>
-                  <input type="checkbox" checked={qrCropMarks} onChange={(e) => setQrCropMarks(e.target.checked)} />
+                  <Checkbox checked={qrCropMarks} onCheckedChange={(checked) => setQrCropMarks(checked)} />
                   cropMarks
                 </label>
                 <HelpTooltip title="PDF Export" content={'Erzeugt ein druckfertiges PDF (z.B. für Print‑Service).'} />
