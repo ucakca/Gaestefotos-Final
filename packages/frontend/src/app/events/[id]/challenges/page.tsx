@@ -320,7 +320,7 @@ export default function ChallengeManagementPage() {
                   <select
                     value={formData.categoryId || ''}
                     onChange={(e) => setFormData({ ...formData, categoryId: e.target.value || null })}
-                    className="w-full rounded-md border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tokens-brandGreen/30"
+                    className="w-full rounded-lg border border-app-border bg-app-card px-4 py-2.5 text-sm text-app-fg transition-colors focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen"
                   >
                     <option value="">Globale Challenge</option>
                     {categories.map(cat => (
@@ -335,7 +335,7 @@ export default function ChallengeManagementPage() {
                         type="checkbox"
                         checked={formData.isActive}
                         onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                        className="h-4 w-4 accent-tokens-brandGreen"
+                        className="h-4 w-4 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                       />
                       <span className="text-sm text-app-fg">Aktiv</span>
                     </label>
@@ -346,7 +346,7 @@ export default function ChallengeManagementPage() {
                         type="checkbox"
                         checked={formData.isVisible}
                         onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
-                        className="h-4 w-4 accent-tokens-brandGreen"
+                        className="h-4 w-4 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                       />
                       <span className="text-sm text-app-fg">Foto sichtbar</span>
                     </label>
