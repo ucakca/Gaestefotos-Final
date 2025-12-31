@@ -31,6 +31,12 @@ type Preset = {
   accentColor: string;
 };
 
+function resolveRootCssVar(name: string, fallback: string): string {
+  if (typeof window === 'undefined') return fallback;
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
+}
+
 const PRESETS: Preset[] = [
   { key: 'classic-green', label: 'Classic Green', bgColor: '#ffffff', textColor: '#1a1a1a', accentColor: '#295B4D' },
   { key: 'modern-blue', label: 'Modern Blue', bgColor: '#ffffff', textColor: '#111827', accentColor: '#2563eb' },
@@ -44,9 +50,9 @@ function getDefaultsForTemplate(templateSlug: string) {
       headline: 'Unsere Fotogalerie',
       subline: 'Fotos & Videos sammeln',
       callToAction: 'QR-Code scannen & los geht’s',
-      bgColor: '#ffffff',
-      textColor: '#111827',
-      accentColor: '#2563eb',
+      bgColor: resolveRootCssVar('--app-card', '#ffffff'),
+      textColor: resolveRootCssVar('--app-fg', '#111827'),
+      accentColor: resolveRootCssVar('--status-info', '#2563eb'),
     };
   }
   if (templateSlug === 'elegant-floral') {
@@ -73,9 +79,9 @@ function getDefaultsForTemplate(templateSlug: string) {
     headline: 'Unsere Fotogalerie',
     subline: 'Fotos & Videos sammeln',
     callToAction: 'QR-Code scannen & los geht’s',
-    bgColor: '#ffffff',
+    bgColor: resolveRootCssVar('--app-card', '#ffffff'),
     textColor: '#1a1a1a',
-    accentColor: '#295B4D',
+    accentColor: resolveRootCssVar('--brand-green', '#295B4D'),
   };
 }
 
