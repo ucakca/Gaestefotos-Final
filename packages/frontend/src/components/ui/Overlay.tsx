@@ -9,7 +9,7 @@ export function Overlay({ children }: { children: ReactNode }) {
 export function Backdrop({ onClick, className = '' }: { onClick?: () => void; className?: string }) {
   return (
     <div
-      className={`absolute inset-0 bg-black/60 ${className}`}
+      className={`absolute inset-0 bg-app-fg/60 ${className}`}
       onClick={onClick}
       role="presentation"
     />
