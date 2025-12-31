@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 interface UploadModalProps {
   open: boolean;
@@ -101,7 +102,7 @@ export default function UploadModal({
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-app-border rounded-lg text-app-fg bg-app-card"
+                className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tokens-brandGreen/30"
               >
                 <option value="">Kein Album</option>
                 {categories.map((cat) => (
@@ -119,17 +120,17 @@ export default function UploadModal({
                 type="checkbox"
                 checked={showNameField}
                 onChange={(e) => setShowNameField(e.target.checked)}
-                className="rounded"
+                className="h-4 w-4 accent-tokens-brandGreen"
               />
               <span>Meinen Namen angeben (optional)</span>
             </label>
             {showNameField && (
-              <input
+              <Input
                 type="text"
                 value={uploaderName}
                 onChange={(e) => setUploaderName(e.target.value)}
                 placeholder="Ihr Name"
-                className="w-full px-3 py-2 border border-app-border rounded-lg text-app-fg bg-app-card mt-2"
+                className="mt-2"
               />
             )}
           </div>
@@ -141,7 +142,7 @@ export default function UploadModal({
                   type="checkbox"
                   checked={alsoInGuestbook}
                   onChange={(e) => setAlsoInGuestbook(e.target.checked)}
-                  className="rounded"
+                  className="h-4 w-4 accent-tokens-brandGreen"
                 />
                 <span>Auch im Gästebuch eintragen</span>
               </label>
