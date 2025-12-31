@@ -19,6 +19,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -56,8 +60,6 @@ export default function VideosPage() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
   const [selectedVideos, setSelectedVideos] = useState<Set<string>>(new Set());
-  const [showActionsMenu, setShowActionsMenu] = useState(false);
-  const [showMoveMenu, setShowMoveMenu] = useState(false);
   const [showVideoActionsMenu, setShowVideoActionsMenu] = useState(false);
   const [showVideoMoveMenu, setShowVideoMoveMenu] = useState(false);
   const [viewMode, setViewMode] = useState<'active' | 'trash'>('active');
@@ -84,10 +86,6 @@ export default function VideosPage() {
   // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (showActionsMenu && !(e.target as HTMLElement).closest('.actions-menu')) {
-        setShowActionsMenu(false);
-        setShowMoveMenu(false);
-      }
       if (showVideoActionsMenu && !(e.target as HTMLElement).closest('.video-actions-menu')) {
         setShowVideoActionsMenu(false);
         setShowVideoMoveMenu(false);
@@ -95,7 +93,7 @@ export default function VideosPage() {
     };
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, [showActionsMenu, showVideoActionsMenu]);
+  }, [showVideoActionsMenu]);
 
 
   const loadEvent = async () => {
@@ -540,172 +538,136 @@ export default function VideosPage() {
           )}
           
           {/* Actions Menu - Right aligned */}
-          <div className="relative actions-menu ml-auto">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowActionsMenu(!showActionsMenu);
-                setShowMoveMenu(false);
-              }}
-              className="flex items-center gap-2 px-3 py-2 bg-app-bg text-app-fg rounded-lg hover:opacity-90 transition-colors"
-              disabled={viewMode === 'trash'}
-            >
-              <MoreVertical className="w-5 h-5" />
-              <span className="text-xs sm:text-sm font-medium">Aktionen</span>
-              <ChevronDown className={`w-4 h-4 transition-transform ${showActionsMenu ? 'rotate-180' : ''}`} />
-            </button>
-            
-            {showActionsMenu && (
-              <div className="absolute right-0 top-full mt-2 bg-app-card rounded-lg shadow-xl border border-app-border py-2 min-w-[220px] z-50">
+          <div className="ml-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="sm" className="gap-2 px-3 py-2" disabled={viewMode === 'trash'}>
+                  <MoreVertical className="h-5 w-5" />
+                  <span className="text-xs sm:text-sm font-medium">Aktionen</span>
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="end" className="min-w-[220px]">
                 {selectedVideos.size > 0 ? (
                   <>
-                    <div className="px-4 py-2 text-xs text-app-muted border-b border-app-border">
+                    <DropdownMenuItem disabled className="text-xs text-app-muted">
                       {selectedVideos.size} Video(s) ausgewählt
-                    </div>
-                    
-                    {/* Verschieben */}
-                    <div className="relative">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowMoveMenu(!showMoveMenu);
-                        }}
-                        className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center justify-between gap-2"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Folder className="w-4 h-4" />
-                          <span>Verschieben</span>
-                        </div>
-                        <ChevronDown className={`w-4 h-4 transition-transform ${showMoveMenu ? 'rotate-180' : ''}`} />
-                      </button>
-                      {showMoveMenu && (
-                        <div className="bg-app-bg border-t border-app-border">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleBulkMoveToAlbum(null);
-                              setShowMoveMenu(false);
-                              setShowActionsMenu(false);
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        <Folder className="mr-2 h-4 w-4" />
+                        <span>Verschieben</span>
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            handleBulkMoveToAlbum(null);
+                          }}
+                        >
+                          <Folder className="mr-2 h-4 w-4" />
+                          Kein Album
+                        </DropdownMenuItem>
+                        {categories.map((category) => (
+                          <DropdownMenuItem
+                            key={category.id}
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              handleBulkMoveToAlbum(category.id);
                             }}
-                            className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-app-card flex items-center gap-2"
                           >
-                            <Folder className="w-4 h-4" />
-                            Kein Album
-                          </button>
-                          {categories.map((category) => (
-                            <button
-                              key={category.id}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleBulkMoveToAlbum(category.id);
-                                setShowMoveMenu(false);
-                                setShowActionsMenu(false);
-                              }}
-                              className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-app-card flex items-center gap-2"
-                            >
-                              <Folder className="w-4 h-4" />
-                              {category.name}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    
+                            <Folder className="mr-2 h-4 w-4" />
+                            {category.name}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+
                     {moderationRequired && (
                       <>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const hasPending = Array.from(selectedVideos).some(id => {
-                              const video = videos.find(v => v.id === id);
+                        <DropdownMenuItem
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            const hasPending = Array.from(selectedVideos).some((id) => {
+                              const video = videos.find((v) => v.id === id);
                               return (video?.status as string)?.toLowerCase() === 'pending' || video?.status === 'PENDING';
                             });
-                            if (hasPending) {
-                              handleBulkApprove();
-                              setShowActionsMenu(false);
-                            }
+                            if (hasPending) handleBulkApprove();
                           }}
-                          disabled={!Array.from(selectedVideos).some(id => {
-                            const video = videos.find(v => v.id === id);
+                          disabled={!Array.from(selectedVideos).some((id) => {
+                            const video = videos.find((v) => v.id === id);
                             return (video?.status as string)?.toLowerCase() === 'pending' || video?.status === 'PENDING';
                           })}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                         >
-                          <Check className="w-4 h-4" />
+                          <Check className="mr-2 h-4 w-4" />
                           Freigeben
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const hasPending = Array.from(selectedVideos).some(id => {
-                              const video = videos.find(v => v.id === id);
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            const hasPending = Array.from(selectedVideos).some((id) => {
+                              const video = videos.find((v) => v.id === id);
                               return (video?.status as string)?.toLowerCase() === 'pending' || video?.status === 'PENDING';
                             });
-                            if (hasPending) {
-                              handleBulkReject();
-                              setShowActionsMenu(false);
-                            }
+                            if (hasPending) handleBulkReject();
                           }}
-                          disabled={!Array.from(selectedVideos).some(id => {
-                            const video = videos.find(v => v.id === id);
+                          disabled={!Array.from(selectedVideos).some((id) => {
+                            const video = videos.find((v) => v.id === id);
                             return (video?.status as string)?.toLowerCase() === 'pending' || video?.status === 'PENDING';
                           })}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="mr-2 h-4 w-4" />
                           Ablehnen
-                        </button>
+                        </DropdownMenuItem>
                       </>
                     )}
-                    
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
+
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault();
                         handleBulkDownload();
-                        setShowActionsMenu(false);
                       }}
                       disabled={isStorageLocked}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                     >
-                      <Download className="w-4 h-4" />
+                      <Download className="mr-2 h-4 w-4" />
                       Herunterladen
-                    </button>
-                    
-                    <div className="border-t border-app-border my-1"></div>
-                    
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault();
                         handleBulkDelete();
-                        setShowActionsMenu(false);
                       }}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg text-[var(--status-danger)] flex items-center gap-2"
+                      className="text-[var(--status-danger)] focus:text-[var(--status-danger)]"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="mr-2 h-4 w-4" />
                       Löschen
-                    </button>
-                    
-                    <div className="border-t border-app-border my-1"></div>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator />
                   </>
                 ) : null}
-                
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
+
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
                     if (selectedVideos.size === videos.length) {
                       deselectAll();
                     } else {
                       selectAll();
                     }
-                    setShowActionsMenu(false);
                   }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2"
                 >
-                  <CheckSquare className="w-4 h-4" />
+                  <CheckSquare className="mr-2 h-4 w-4" />
                   {selectedVideos.size === videos.length ? 'Auswahl aufheben' : 'Alle auswählen'}
-                </button>
-              </div>
-            )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
