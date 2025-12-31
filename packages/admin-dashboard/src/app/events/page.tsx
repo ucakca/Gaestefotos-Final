@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { Card } from '@/components/ui/Card';
+import FullPageLoader from '@/components/FullPageLoader';
 
 type EventListItem = {
   id: string;
@@ -47,11 +48,7 @@ export default function EventsPage() {
         <p className="mt-1 text-sm text-app-muted">Liste aller Events</p>
       </div>
 
-      {loading ? (
-        <Card className="p-5">
-          <p className="text-sm text-app-muted">Wird geladen...</p>
-        </Card>
-      ) : null}
+      {loading ? <FullPageLoader /> : null}
 
       {!loading && error ? (
         <Card className="p-5">

@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import FullPageLoader from '@/components/FullPageLoader';
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -116,11 +117,7 @@ export default function SettingsPage() {
         <p className="mt-1 text-sm text-app-muted">Systemweite Konfiguration</p>
       </div>
 
-      {loading ? (
-        <Card className="p-5">
-          <p className="text-sm text-app-muted">Wird geladen…</p>
-        </Card>
-      ) : null}
+      {loading ? <FullPageLoader label="Wird geladen…" /> : null}
 
       {!loading && error ? (
         <Card className="p-5">

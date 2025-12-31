@@ -5,6 +5,8 @@ import Link from 'next/link';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import FullPageLoader from '@/components/FullPageLoader';
 
 type UploadIssuesResponse = {
   ok: boolean;
@@ -271,11 +273,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
         </div>
       </div>
 
-      {loading && (
-        <Card className="p-5">
-          <p className="text-sm text-app-muted">Wird geladen...</p>
-        </Card>
-      )}
+      {loading ? <FullPageLoader /> : null}
 
       {!loading && error && (
         <Card className="p-5">
