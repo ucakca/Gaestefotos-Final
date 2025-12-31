@@ -39,6 +39,7 @@ import MapsLink from '@/components/MapsLink';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { Button } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { useToastStore } from '@/store/toastStore';
@@ -747,24 +748,20 @@ export default function EventDashboardPage() {
                               placeholder="Name"
                             />
                             <label className="flex items-center gap-2 text-sm text-app-fg">
-                              <input
-                                type="checkbox"
+                              <Checkbox
                                 checked={editingInvitationIsActive}
-                                onChange={(e) => setEditingInvitationIsActive(e.target.checked)}
+                                onCheckedChange={(checked) => setEditingInvitationIsActive(checked)}
                                 data-testid={`invitation-edit-active-${inv.id}`}
-                                className="h-4 w-4 accent-tokens-brandGreen"
                               />
                               Aktiv
                             </label>
 
                             <label className="flex items-center justify-between gap-2 text-sm text-app-fg">
                               <span>Öffentlich</span>
-                              <input
-                                type="checkbox"
+                              <Checkbox
                                 checked={editingInvitationVisibility === 'PUBLIC'}
-                                onChange={(e) => setEditingInvitationVisibility(e.target.checked ? 'PUBLIC' : 'UNLISTED')}
+                                onCheckedChange={(checked) => setEditingInvitationVisibility(checked ? 'PUBLIC' : 'UNLISTED')}
                                 data-testid={`invitation-edit-visibility-${inv.id}`}
-                                className="h-4 w-4 accent-tokens-brandGreen"
                               />
                             </label>
 
@@ -1264,12 +1261,11 @@ export default function EventDashboardPage() {
                         <Globe className="w-4 h-4 text-app-muted" />
                         <span className="text-sm text-app-fg">Event aktiv</span>
                       </div>
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={event ? (event as any).isActive !== false : true}
                         disabled={!event || togglingActive}
-                        onChange={(e) => updateEventActive(e.target.checked)}
-                        className="h-5 w-5 accent-tokens-brandGreen"
+                        onCheckedChange={(checked) => updateEventActive(checked)}
+                        className="h-5 w-5"
                       />
                     </label>
 
@@ -1315,11 +1311,10 @@ export default function EventDashboardPage() {
                         <EyeIcon className="w-4 h-4 text-app-muted" />
                         <span className="text-sm text-app-fg">Mystery Mode <span className="text-app-muted font-normal">(Überschreibt die Sichtbarkeitsregeln der Event-Modi - Fotos werden erst nach dem Event sichtbar)</span></span>
                       </div>
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={featuresConfig.mysteryMode === true}
-                        onChange={(e) => updateFeaturesConfig({ mysteryMode: e.target.checked })}
-                        className="h-5 w-5 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
+                        onCheckedChange={(checked) => updateFeaturesConfig({ mysteryMode: checked })}
+                        className="h-5 w-5"
                       />
                     </label>
                     
@@ -1329,12 +1324,11 @@ export default function EventDashboardPage() {
                         <Upload className="w-4 h-4 text-app-muted" />
                         <span className="text-sm text-app-fg">Foto-Uploads erlauben</span>
                       </div>
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={featuresConfig.allowUploads !== false}
-                        onChange={(e) => updateFeaturesConfig({ allowUploads: e.target.checked })}
+                        onCheckedChange={(checked) => updateFeaturesConfig({ allowUploads: checked })}
                         disabled={isStorageLocked}
-                        className="h-5 w-5 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
+                        className="h-5 w-5"
                       />
                     </label>
                     
@@ -1344,12 +1338,11 @@ export default function EventDashboardPage() {
                         <Download className="w-4 h-4 text-app-muted" />
                         <span className="text-sm text-app-fg">Downloads erlauben</span>
                       </div>
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={featuresConfig.allowDownloads !== false}
-                        onChange={(e) => updateFeaturesConfig({ allowDownloads: e.target.checked })}
+                        onCheckedChange={(checked) => updateFeaturesConfig({ allowDownloads: checked })}
                         disabled={isStorageLocked}
-                        className="h-5 w-5 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
+                        className="h-5 w-5"
                       />
                     </label>
                   </div>
@@ -1514,11 +1507,10 @@ export default function EventDashboardPage() {
                         <UserCheck className="w-4 h-4 text-app-muted" />
                         <span className="text-sm">Gästeliste anzeigen</span>
                       </div>
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={featuresConfig.showGuestlist !== false}
-                        onChange={(e) => updateFeaturesConfig({ showGuestlist: e.target.checked })}
-                        className="h-5 w-5 accent-tokens-brandGreen"
+                        onCheckedChange={(checked) => updateFeaturesConfig({ showGuestlist: checked })}
+                        className="h-5 w-5"
                       />
                     </label>
 
@@ -1527,11 +1519,10 @@ export default function EventDashboardPage() {
                         <Trophy className="w-4 h-4 text-app-muted" />
                         <span className="text-sm">Challenges aktivieren</span>
                       </div>
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={featuresConfig.challengesEnabled === true}
-                        onChange={(e) => updateFeaturesConfig({ challengesEnabled: e.target.checked })}
-                        className="h-5 w-5 accent-tokens-brandGreen"
+                        onCheckedChange={(checked) => updateFeaturesConfig({ challengesEnabled: checked })}
+                        className="h-5 w-5"
                       />
                     </label>
 
