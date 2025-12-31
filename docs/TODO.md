@@ -66,6 +66,20 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
     - `FullPageLoader` eingeführt und Loading-States (Events/Settings/Event Detail) vereinheitlicht
   - Verifikation: `pnpm type-check` + `pnpm lint` (repo-weit) erfolgreich
 
+- ✅ Media Pipeline/Downloads: Guest-Downloads nur wenn Host `allowDownloads`
+  - Backend: download endpoints prüfen `featuresConfig.allowDownloads` für Guests
+  - Frontend: `/e` + `/e2` defaulten `allowDownloads` korrekt auf `!== false`
+  - Verifikation: `pnpm type-check` + `pnpm lint` erfolgreich
+
+- ⏳ UI Redesign (alle Oberflächen): shadcn/ui + Tailwind, Apple-clean Basis + Theme-Welten
+  - Admin-Dashboard:
+    - shadcn Baseline Setup (deps + `tailwindcss-animate` + `components.json`)
+    - Primitives migriert: `Button`/`Input`/`Card` (cva + asChild + forwardRef)
+    - Shell-Navigation auf Primitives umgestellt (AdminShell/Sidebar)
+  - Frontend:
+    - shadcn Baseline Setup (deps + `tailwindcss-animate` + `components.json`)
+    - Primitives migriert: `Button`/`Input`/`Card`/`IconButton`
+
 ## ⏳ In Progress
 
  
@@ -73,7 +87,6 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 ## ❌ Next (Priorität hoch)
 
 - ❌ UI Redesign (alle Oberflächen): shadcn/ui + Tailwind, Apple-clean Basis + Theme-Welten
-- ❌ Media Pipeline/Downloads: Optimized Views für Guest/Host, aber Original Download für Host/Admin; Guest-Downloads nur bei Host `allowDownloads`
 - ❌ Pre-Launch: finaler System-Check (Smoke Tests, Monitoring, Rollback Plan)
 
 ## ❌ Later
