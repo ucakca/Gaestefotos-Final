@@ -8,6 +8,8 @@ import { Event as EventType } from '@gaestefotos/shared';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
+import { FullPageLoader } from '@/components/ui/FullPageLoader';
+import { ErrorState } from '@/components/ui/ErrorState';
 
 interface Statistics {
   photos: {
@@ -69,19 +71,11 @@ export default function StatisticsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Laden...</div>
-      </div>
-    );
+    return <FullPageLoader label="Laden..." />;
   }
 
   if (!statistics) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-[var(--status-danger)]">Fehler beim Laden der Statistiken</div>
-      </div>
-    );
+    return <ErrorState message="Fehler beim Laden der Statistiken" />;
   }
 
   // Prepare chart data

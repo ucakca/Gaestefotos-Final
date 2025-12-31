@@ -14,6 +14,7 @@ import AppLayout from '@/components/AppLayout';
 import FaceSearch from '@/components/FaceSearch';
 import PageHeader from '@/components/PageHeader';
 import ActionButton from '@/components/ActionButton';
+import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import FilterButtons from '@/components/FilterButtons';
 import UploadModal from '@/components/UploadModal';
 import Link from 'next/link';
@@ -421,9 +422,7 @@ export default function PhotoManagementPage() {
   if (loading && photos.length === 0) {
     return (
       <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
-        <div className="min-h-screen flex items-center justify-center bg-app-bg">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-app-border border-t-tokens-brandGreen" />
-        </div>
+        <FullPageLoader label="Laden..." />
       </AppLayout>
     );
   }

@@ -9,6 +9,7 @@ import AppLayout from '@/components/AppLayout';
 import DashboardFooter from '@/components/DashboardFooter';
 import { Video, Upload, Download, Trash2, Check, X, Square, CheckSquare, Folder, FileDown, MoreVertical, ChevronDown } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
+import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import PageHeader from '@/components/PageHeader';
 import ActionButton from '@/components/ActionButton';
 import FilterButtons from '@/components/FilterButtons';
@@ -392,9 +393,7 @@ export default function VideosPage() {
   if (loading && videos.length === 0) {
     return (
       <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
-        <div className="min-h-screen flex items-center justify-center bg-app-bg">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-app-border border-t-tokens-brandGreen" />
-        </div>
+        <FullPageLoader label="Laden..." />
       </AppLayout>
     );
   }

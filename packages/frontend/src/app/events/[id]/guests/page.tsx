@@ -7,6 +7,7 @@ import api from '@/lib/api';
 import { Guest, Event as EventType } from '@gaestefotos/shared';
 import { Trash2, Mail, UserPlus } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
+import { FullPageLoader } from '@/components/ui/FullPageLoader';
 
 export default function GuestManagementPage() {
   const params = useParams();
@@ -105,11 +106,7 @@ export default function GuestManagementPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Laden...</div>
-      </div>
-    );
+    return <FullPageLoader label="Laden..." />;
   }
 
   return (

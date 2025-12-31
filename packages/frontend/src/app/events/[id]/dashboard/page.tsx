@@ -33,6 +33,11 @@ import {
 } from 'lucide-react';
 import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
+import ActionButton from '@/components/ActionButton';
+import DateTimePicker from '@/components/DateTimePicker';
+import MapsLink from '@/components/MapsLink';
+import { FullPageLoader } from '@/components/ui/FullPageLoader';
+import { ErrorState } from '@/components/ui/ErrorState';
 
 interface PhotoStats {
   total: number;
@@ -406,9 +411,7 @@ export default function EventDashboardPage() {
   if (loading) {
     return (
       <AppLayout showBackButton backUrl="/dashboard">
-        <div className="min-h-screen flex items-center justify-center bg-app-bg">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-app-border border-t-tokens-brandGreen" />
-        </div>
+        <FullPageLoader label="Laden..." />
       </AppLayout>
     );
   }
@@ -416,11 +419,7 @@ export default function EventDashboardPage() {
   if (!event) {
     return (
       <AppLayout showBackButton backUrl="/dashboard">
-        <div className="min-h-screen flex items-center justify-center bg-app-bg">
-          <div className="rounded-xl border border-app-border bg-app-card p-6 text-center">
-            <div className="text-lg font-semibold text-app-fg">Event nicht gefunden</div>
-          </div>
-        </div>
+        <ErrorState message="Event nicht gefunden" />
       </AppLayout>
     );
   }

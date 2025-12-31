@@ -9,6 +9,7 @@ import { Trash2, Star, StarOff, X, Check } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
+import { FullPageLoader } from '@/components/ui/FullPageLoader';
 
 interface Photo {
   id: string;
@@ -101,11 +102,7 @@ export default function DuplicatesPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Laden...</div>
-      </div>
-    );
+    return <FullPageLoader label="Laden..." />;
   }
 
   return (

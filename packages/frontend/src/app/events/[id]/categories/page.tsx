@@ -11,6 +11,7 @@ import { useToastStore } from '@/store/toastStore';
 import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
 import FaceSearch from '@/components/FaceSearch';
+import { FullPageLoader } from '@/components/ui/FullPageLoader';
 
 function isWizardMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -267,9 +268,7 @@ export default function CategoryManagementPage() {
   if (loading) {
     return (
       <AppLayout showBackButton backUrl={wizardMode ? `/events/${eventId}/design?wizard=1` : `/events/${eventId}/dashboard`}>
-        <div className="min-h-screen flex items-center justify-center bg-app-bg">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-app-border border-t-tokens-brandGreen" />
-        </div>
+        <FullPageLoader label="Laden..." />
       </AppLayout>
     );
   }

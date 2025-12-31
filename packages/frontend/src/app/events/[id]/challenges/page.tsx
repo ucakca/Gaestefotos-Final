@@ -9,6 +9,7 @@ import { Plus, Trash2, Edit2, X, Trophy, Copy, ChevronDown, ChevronUp, Globe } f
 import { useToastStore } from '@/store/toastStore';
 import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
+import { FullPageLoader } from '@/components/ui/FullPageLoader';
 
 interface Category {
   id: string;
@@ -204,11 +205,7 @@ export default function ChallengeManagementPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-app-bg">
-        <div className="text-lg text-app-fg">Laden...</div>
-      </div>
-    );
+    return <FullPageLoader label="Laden..." />;
   }
 
   const featuresConfig = (event?.featuresConfig as any) || {};

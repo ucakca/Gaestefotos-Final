@@ -11,6 +11,8 @@ import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
 import dynamic from 'next/dynamic';
 import { DESIGN_PRESETS, getDesignPreset } from '@/lib/designPresets';
+import { FullPageLoader } from '@/components/ui/FullPageLoader';
+import { ErrorState } from '@/components/ui/ErrorState';
 
 function isWizardMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -249,19 +251,11 @@ export default function DesignLiveBuilderPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-app-bg">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-app-fg"></div>
-      </div>
-    );
+    return <FullPageLoader label="Laden..." />;
   }
 
   if (!event) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-app-bg">
-        <div className="text-app-muted">Event nicht gefunden</div>
-      </div>
-    );
+    return <ErrorState message="Event nicht gefunden" />;
   }
 
   const designConfig = (event.designConfig as any) || {};

@@ -8,6 +8,7 @@ import { Event as EventType } from '@gaestefotos/shared';
 import { slugify } from '@gaestefotos/shared';
 import { useToastStore } from '@/store/toastStore';
 import DateTimePicker from '@/components/DateTimePicker';
+import { FullPageLoader } from '@/components/ui/FullPageLoader';
 
 export default function EditEventPage() {
   const params = useParams();
@@ -95,11 +96,7 @@ export default function EditEventPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Laden...</div>
-      </div>
-    );
+    return <FullPageLoader label="Laden..." />;
   }
 
   return (
