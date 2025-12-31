@@ -1226,8 +1226,7 @@ export default function EventDashboardPage() {
                         checked={event ? (event as any).isActive !== false : true}
                         disabled={!event || togglingActive}
                         onChange={(e) => updateEventActive(e.target.checked)}
-                        className="w-5 h-5"
-                        style={{ accentColor: 'var(--tokens-brandGreen)' }}
+                        className="h-5 w-5 accent-tokens-brandGreen"
                       />
                     </label>
 
@@ -1246,8 +1245,7 @@ export default function EventDashboardPage() {
                           value={mode}
                           checked={featuresConfig.mode === mode}
                           onChange={(e) => updateFeaturesConfig({ mode: e.target.value })}
-                          className="mt-1 mr-3"
-                          style={{ accentColor: 'var(--tokens-brandGreen)' }}
+                          className="mt-1 mr-3 accent-tokens-brandGreen"
                         />
                         <div className="flex-1">
                           <div className="font-medium text-sm">
@@ -1278,8 +1276,7 @@ export default function EventDashboardPage() {
                         type="checkbox"
                         checked={featuresConfig.mysteryMode === true}
                         onChange={(e) => updateFeaturesConfig({ mysteryMode: e.target.checked })}
-                        className="w-5 h-5"
-                        style={{ accentColor: 'var(--tokens-brandGreen)' }}
+                        className="h-5 w-5 accent-tokens-brandGreen"
                       />
                     </label>
                     
@@ -1294,8 +1291,7 @@ export default function EventDashboardPage() {
                         checked={featuresConfig.allowUploads !== false}
                         onChange={(e) => updateFeaturesConfig({ allowUploads: e.target.checked })}
                         disabled={isStorageLocked}
-                        className="w-5 h-5"
-                        style={{ accentColor: 'var(--tokens-brandGreen)' }}
+                        className="h-5 w-5 accent-tokens-brandGreen"
                       />
                     </label>
                     
@@ -1310,8 +1306,7 @@ export default function EventDashboardPage() {
                         checked={featuresConfig.allowDownloads !== false}
                         onChange={(e) => updateFeaturesConfig({ allowDownloads: e.target.checked })}
                         disabled={isStorageLocked}
-                        className="w-5 h-5"
-                        style={{ accentColor: 'var(--tokens-brandGreen)' }}
+                        className="h-5 w-5 accent-tokens-brandGreen"
                       />
                     </label>
                   </div>
@@ -1480,8 +1475,7 @@ export default function EventDashboardPage() {
                         type="checkbox"
                         checked={featuresConfig.showGuestlist !== false}
                         onChange={(e) => updateFeaturesConfig({ showGuestlist: e.target.checked })}
-                        className="w-5 h-5"
-                        style={{ accentColor: 'var(--tokens-brandGreen)' }}
+                        className="h-5 w-5 accent-tokens-brandGreen"
                       />
                     </label>
 
@@ -1494,8 +1488,7 @@ export default function EventDashboardPage() {
                         type="checkbox"
                         checked={featuresConfig.challengesEnabled === true}
                         onChange={(e) => updateFeaturesConfig({ challengesEnabled: e.target.checked })}
-                        className="w-5 h-5"
-                        style={{ accentColor: 'var(--tokens-brandGreen)' }}
+                        className="h-5 w-5 accent-tokens-brandGreen"
                       />
                     </label>
 

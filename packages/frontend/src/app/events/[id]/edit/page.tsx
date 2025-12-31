@@ -9,6 +9,7 @@ import { slugify } from '@gaestefotos/shared';
 import { useToastStore } from '@/store/toastStore';
 import DateTimePicker from '@/components/DateTimePicker';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
+import { Input } from '@/components/ui/Input';
 
 export default function EditEventPage() {
   const params = useParams();
@@ -119,12 +120,12 @@ export default function EditEventPage() {
               <label className="block text-sm font-medium mb-1 text-tokens-brandGreen">
                 Event-Titel *
               </label>
-              <input
+              <Input
                 type="text"
                 required
                 value={formData.title}
                 onChange={handleTitleChange}
-                className="w-full px-4 py-3 border border-app-accent rounded-lg focus:ring-2 focus:outline-none transition-all text-tokens-brandGreen bg-app-card focus:ring-tokens-brandGreen/30"
+                className="px-4 py-3 text-tokens-brandGreen"
               />
             </div>
 
@@ -132,12 +133,12 @@ export default function EditEventPage() {
               <label className="block text-sm font-medium mb-1 text-tokens-brandGreen">
                 URL-Slug *
               </label>
-              <input
+              <Input
                 type="text"
                 required
                 value={formData.slug}
                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                className="w-full px-4 py-3 border border-app-accent rounded-lg focus:ring-2 focus:outline-none transition-all text-tokens-brandGreen bg-app-card focus:ring-tokens-brandGreen/30"
+                className="px-4 py-3 text-tokens-brandGreen"
               />
             </div>
 
@@ -151,12 +152,12 @@ export default function EditEventPage() {
               <label className="block text-sm font-medium mb-1 text-tokens-brandGreen">
                 Veranstaltungsort / Adresse
               </label>
-              <input
+              <Input
                 type="text"
                 value={formData.locationName}
                 onChange={(e) => setFormData({ ...formData, locationName: e.target.value })}
-                className="w-full px-4 py-3 border border-app-accent rounded-lg focus:ring-2 focus:outline-none transition-all text-tokens-brandGreen bg-app-card focus:ring-tokens-brandGreen/30"
                 placeholder="z.B. Musterstraße 123, 12345 Musterstadt oder Hotel Beispiel, Berlin"
+                className="px-4 py-3 text-tokens-brandGreen"
               />
               <p className="mt-2 text-sm text-tokens-brandGreen/70">
                 💡 Die Adresse wird automatisch verwendet, um einen Karten-Link zu generieren, 
@@ -177,8 +178,7 @@ export default function EditEventPage() {
                       ...formData,
                       featuresConfig: { ...formData.featuresConfig, showGuestlist: e.target.checked }
                     })}
-                    className="mr-2"
-                    style={{ accentColor: 'var(--app-accent)', borderColor: 'var(--app-accent)' }}
+                    className="mr-2 accent-tokens-brandGreen"
                   />
                   <span>Gästeliste anzeigen</span>
                 </label>
@@ -191,8 +191,7 @@ export default function EditEventPage() {
                       ...formData,
                       featuresConfig: { ...formData.featuresConfig, mysteryMode: e.target.checked }
                     })}
-                    className="mr-2"
-                    style={{ accentColor: 'var(--app-accent)', borderColor: 'var(--app-accent)' }}
+                    className="mr-2 accent-tokens-brandGreen"
                   />
                   <span>Mystery Mode (Fotos erst später sichtbar)</span>
                 </label>
@@ -205,8 +204,7 @@ export default function EditEventPage() {
                       ...formData,
                       featuresConfig: { ...formData.featuresConfig, allowUploads: e.target.checked }
                     })}
-                    className="mr-2"
-                    style={{ accentColor: 'var(--app-accent)', borderColor: 'var(--app-accent)' }}
+                    className="mr-2 accent-tokens-brandGreen"
                   />
                   <span>Foto-Uploads erlauben</span>
                 </label>
@@ -219,8 +217,7 @@ export default function EditEventPage() {
                       ...formData,
                       featuresConfig: { ...formData.featuresConfig, moderationRequired: e.target.checked }
                     })}
-                    className="mr-2"
-                    style={{ accentColor: 'var(--app-accent)', borderColor: 'var(--app-accent)' }}
+                    className="mr-2 accent-tokens-brandGreen"
                   />
                   <span>Moderation erforderlich</span>
                 </label>
@@ -233,8 +230,7 @@ export default function EditEventPage() {
                       ...formData,
                       featuresConfig: { ...formData.featuresConfig, allowDownloads: e.target.checked }
                     })}
-                    className="mr-2"
-                    style={{ accentColor: 'var(--app-accent)', borderColor: 'var(--app-accent)' }}
+                    className="mr-2 accent-tokens-brandGreen"
                   />
                   <span>Downloads erlauben</span>
                 </label>
