@@ -6,6 +6,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import FullPageLoader from '@/components/FullPageLoader';
 
 type UploadIssuesResponse = {
@@ -309,15 +310,13 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             </div>
 
             <div className="mt-6 flex items-center gap-3">
-              <button
+              <Button
                 onClick={saveVirusScanSettings}
                 disabled={savingVirusScan}
-                className={`rounded-lg px-4 py-2 text-sm font-medium text-white ${
-                  savingVirusScan ? 'bg-black/30' : 'bg-tokens-brandGreen hover:opacity-90'
-                }`}
+                className={savingVirusScan ? 'bg-black/30 text-white hover:opacity-100' : 'bg-tokens-brandGreen text-white hover:opacity-90'}
               >
                 {savingVirusScan ? 'Speichern…' : 'Speichern'}
-              </button>
+              </Button>
               <p className="text-sm text-app-muted">Speichert in: featuresConfig.virusScan.enforce</p>
             </div>
           </Card>
@@ -339,8 +338,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               </div>
               <div>
                 <label className="mb-1 block text-sm text-app-muted">Toleranz (Tage)</label>
-                <input
-                  className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
+                <Input
+                  className="px-3 py-2"
                   value={uploadDateToleranceDays}
                   onChange={(e) => setUploadDateToleranceDays(e.target.value)}
                   placeholder="Default: 1"
@@ -350,15 +349,13 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             </div>
 
             <div className="mt-6 flex items-center gap-3">
-              <button
+              <Button
                 onClick={saveUploadDatePolicy}
                 disabled={savingDatePolicy}
-                className={`rounded-lg px-4 py-2 text-sm font-medium text-white ${
-                  savingDatePolicy ? 'bg-black/30' : 'bg-tokens-brandGreen hover:opacity-90'
-                }`}
+                className={savingDatePolicy ? 'bg-black/30 text-white hover:opacity-100' : 'bg-tokens-brandGreen text-white hover:opacity-90'}
               >
                 {savingDatePolicy ? 'Speichern…' : 'Speichern'}
-              </button>
+              </Button>
               <p className="text-sm text-app-muted">Speichert in: featuresConfig.uploadDatePolicy</p>
             </div>
           </Card>
@@ -372,8 +369,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
               <div>
                 <label className="mb-1 block text-sm text-app-muted">Photo Uploads pro IP (5 min)</label>
-                <input
-                  className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
+                <Input
+                  className="px-3 py-2"
                   value={photoIpMax}
                   onChange={(e) => setPhotoIpMax(e.target.value)}
                   placeholder="Default: 120"
@@ -382,8 +379,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               </div>
               <div>
                 <label className="mb-1 block text-sm text-app-muted">Photo Uploads pro Event (5 min)</label>
-                <input
-                  className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
+                <Input
+                  className="px-3 py-2"
                   value={photoEventMax}
                   onChange={(e) => setPhotoEventMax(e.target.value)}
                   placeholder="Default: 1000"
@@ -392,8 +389,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               </div>
               <div>
                 <label className="mb-1 block text-sm text-app-muted">Video Uploads pro IP (10 min)</label>
-                <input
-                  className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
+                <Input
+                  className="px-3 py-2"
                   value={videoIpMax}
                   onChange={(e) => setVideoIpMax(e.target.value)}
                   placeholder="Default: 20"
@@ -402,8 +399,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               </div>
               <div>
                 <label className="mb-1 block text-sm text-app-muted">Video Uploads pro Event (10 min)</label>
-                <input
-                  className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
+                <Input
+                  className="px-3 py-2"
                   value={videoEventMax}
                   onChange={(e) => setVideoEventMax(e.target.value)}
                   placeholder="Default: 150"
@@ -413,15 +410,13 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             </div>
 
             <div className="mt-6 flex items-center gap-3">
-              <button
+              <Button
                 onClick={saveUploadRateLimits}
                 disabled={savingLimits}
-                className={`rounded-lg px-4 py-2 text-sm font-medium text-white ${
-                  savingLimits ? 'bg-black/30' : 'bg-tokens-brandGreen hover:opacity-90'
-                }`}
+                className={savingLimits ? 'bg-black/30 text-white hover:opacity-100' : 'bg-tokens-brandGreen text-white hover:opacity-90'}
               >
                 {savingLimits ? 'Speichern…' : 'Speichern'}
-              </button>
+              </Button>
               <p className="text-sm text-app-muted">Speichert in: featuresConfig.uploadRateLimits</p>
             </div>
           </Card>
