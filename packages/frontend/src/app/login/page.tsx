@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 import { authApi } from '@/lib/auth';
 import Logo from '@/components/Logo';
+import { Checkbox } from '@/components/ui/Checkbox';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -130,15 +131,7 @@ export default function LoginPage() {
 
           <div className="flex items-center justify-between">
             <label className="flex items-center text-tokens-brandGreen">
-              <input
-                id="rememberMe"
-                name="rememberMe"
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded"
-                style={{ accentColor: 'var(--app-accent)', borderColor: 'var(--app-accent)' }}
-              />
+              <Checkbox id="rememberMe" name="rememberMe" checked={rememberMe} onCheckedChange={(checked) => setRememberMe(checked)} />
               <span className="ml-2 text-sm">Angemeldet bleiben</span>
             </label>
             <a

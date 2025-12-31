@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, X, Search, Image as ImageIcon, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
+import { Checkbox } from '@/components/ui/Checkbox';
 
 const CONSENT_STORAGE_KEY = 'face_search_consent_accepted_v1';
 
@@ -251,12 +252,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                 <div className="text-sm font-medium text-app-fg">Einwilligung (biometrische Daten)</div>
                 <div className="mt-2 text-sm text-app-muted whitespace-pre-wrap">{effectiveNoticeText}</div>
                 <label className="mt-3 flex items-start gap-3 text-sm text-app-fg">
-                  <input
-                    type="checkbox"
-                    className="mt-1 h-4 w-4 rounded border border-app-border"
-                    checked={consentAccepted}
-                    onChange={(e) => setConsent(e.target.checked)}
-                  />
+                  <Checkbox checked={consentAccepted} onCheckedChange={(checked) => setConsent(checked)} className="mt-1" />
                   <span>{effectiveCheckboxLabel}</span>
                 </label>
               </div>

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Heart, User, Edit2, Check, X, Image as ImageIcon, Globe, Lock, Mic, Square, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
+import { Checkbox } from '@/components/ui/Checkbox';
 
 interface GuestbookEntry {
   id: string;
@@ -676,13 +677,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
             {/* Public/Private Toggle */}
             <div className="flex items-center gap-2">
               <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isPublic}
-                  onChange={(e) => setIsPublic(e.target.checked)}
-                  className="rounded"
-                  disabled={submitting}
-                />
+                <Checkbox checked={isPublic} onCheckedChange={(checked) => setIsPublic(checked)} disabled={submitting} />
                 <div className="flex items-center gap-1">
                   {isPublic ? (
                     <>
