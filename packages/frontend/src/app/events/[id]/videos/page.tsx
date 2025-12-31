@@ -25,6 +25,15 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface VideoItem {
   id: string;
@@ -49,6 +58,35 @@ export default function VideosPage() {
   const params = useParams();
   const eventId = params.id as string;
   const { showToast } = useToastStore();
+
+  const confirmResolveRef = useRef<((value: boolean) => void) | null>(null);
+  const [confirmState, setConfirmState] = useState<null | {
+    title: string;
+    description?: string;
+    confirmText?: string;
+    cancelText?: string;
+  }>(null);
+
+  const confirmOpen = confirmState !== null;
+
+  function requestConfirm(opts: {
+    title: string;
+    description?: string;
+    confirmText?: string;
+    cancelText?: string;
+  }) {
+    return new Promise<boolean>((resolve) => {
+      confirmResolveRef.current = resolve;
+      setConfirmState(opts);
+    });
+  }
+
+  function closeConfirm(result: boolean) {
+    const resolve = confirmResolveRef.current;
+    confirmResolveRef.current = null;
+    setConfirmState(null);
+    resolve?.(result);
+  }
   
   const [event, setEvent] = useState<any>(null);
   const [videos, setVideos] = useState<VideoItem[]>([]);
@@ -147,7 +185,12 @@ export default function VideosPage() {
   };
 
   const handlePurge = async (videoId: string) => {
-    if (!confirm('Video endgültig löschen? (Kann nicht rückgängig gemacht werden)')) return;
+    const ok = await requestConfirm({
+      title: 'Video endgültig löschen?',
+      description: 'Kann nicht rückgängig gemacht werden.',
+      confirmText: 'Endgültig löschen',
+    });
+    if (!ok) return;
     try {
       await api.delete(`/videos/${videoId}/purge`);
       showToast('Video endgültig gelöscht', 'success');
@@ -213,7 +256,12 @@ export default function VideosPage() {
   };
 
   const handleDelete = async (videoId: string) => {
-    if (!confirm('Möchten Sie dieses Video wirklich löschen? (30 Tage im Papierkorb)')) return;
+    const ok = await requestConfirm({
+      title: 'Video wirklich löschen?',
+      description: '30 Tage im Papierkorb.',
+      confirmText: 'Löschen',
+    });
+    if (!ok) return;
     
     try {
       await api.delete(`/videos/${videoId}`);
@@ -266,7 +314,11 @@ export default function VideosPage() {
 
   const handleBulkReject = async () => {
     if (selectedVideos.size === 0) return;
-    if (!confirm(`${selectedVideos.size} Video(s) wirklich ablehnen?`)) return;
+    const ok = await requestConfirm({
+      title: `${selectedVideos.size} Video(s) wirklich ablehnen?`,
+      confirmText: 'Ablehnen',
+    });
+    if (!ok) return;
     try {
       await api.post('/videos/bulk/reject', {
         videoIds: Array.from(selectedVideos),
@@ -282,7 +334,11 @@ export default function VideosPage() {
 
   const handleBulkDelete = async () => {
     if (selectedVideos.size === 0) return;
-    if (!confirm(`${selectedVideos.size} Video(s) wirklich löschen?`)) return;
+    const ok = await requestConfirm({
+      title: `${selectedVideos.size} Video(s) wirklich löschen?`,
+      confirmText: 'Löschen',
+    });
+    if (!ok) return;
     try {
       await api.post('/videos/bulk/delete', {
         videoIds: Array.from(selectedVideos),
@@ -389,6 +445,24 @@ export default function VideosPage() {
 
   return (
     <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
+      <Dialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{confirmState?.title}</DialogTitle>
+            {confirmState?.description ? <DialogDescription>{confirmState.description}</DialogDescription> : null}
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary" onClick={() => closeConfirm(false)}>
+                {confirmState?.cancelText || 'Abbrechen'}
+              </Button>
+            </DialogClose>
+            <Button variant="danger" onClick={() => closeConfirm(true)}>
+              {confirmState?.confirmText || 'Bestätigen'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24">
         <PageHeader
           title={viewMode === 'trash' ? 'Videos - Papierkorb' : 'Videos'}

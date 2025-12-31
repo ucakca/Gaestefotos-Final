@@ -28,6 +28,15 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import Link from 'next/link';
 import { buildApiUrl } from '@/lib/api';
 
@@ -35,6 +44,35 @@ export default function PhotoManagementPage() {
   const params = useParams();
   const eventId = params.id as string;
   const { showToast } = useToastStore();
+
+  const confirmResolveRef = useRef<((value: boolean) => void) | null>(null);
+  const [confirmState, setConfirmState] = useState<null | {
+    title: string;
+    description?: string;
+    confirmText?: string;
+    cancelText?: string;
+  }>(null);
+
+  const confirmOpen = confirmState !== null;
+
+  function requestConfirm(opts: {
+    title: string;
+    description?: string;
+    confirmText?: string;
+    cancelText?: string;
+  }) {
+    return new Promise<boolean>((resolve) => {
+      confirmResolveRef.current = resolve;
+      setConfirmState(opts);
+    });
+  }
+
+  function closeConfirm(result: boolean) {
+    const resolve = confirmResolveRef.current;
+    confirmResolveRef.current = null;
+    setConfirmState(null);
+    resolve?.(result);
+  }
 
   const [event, setEvent] = useState<EventType | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -176,7 +214,12 @@ export default function PhotoManagementPage() {
   };
 
   const handlePurge = async (photoId: string) => {
-    if (!confirm('Foto endgültig löschen? (Kann nicht rückgängig gemacht werden)')) return;
+    const ok = await requestConfirm({
+      title: 'Foto endgültig löschen?'
+    , description: 'Kann nicht rückgängig gemacht werden.'
+    , confirmText: 'Endgültig löschen'
+    });
+    if (!ok) return;
     try {
       await api.delete(`/photos/${photoId}/purge`);
       showToast('Foto endgültig gelöscht', 'success');
@@ -213,7 +256,12 @@ export default function PhotoManagementPage() {
   };
 
   const handleDelete = async (photoId: string) => {
-    if (!confirm('Foto wirklich löschen? (30 Tage im Papierkorb)')) return;
+    const ok = await requestConfirm({
+      title: 'Foto wirklich löschen?'
+    , description: '30 Tage im Papierkorb.'
+    , confirmText: 'Löschen'
+    });
+    if (!ok) return;
 
     try {
       await api.delete(`/photos/${photoId}`);
@@ -294,7 +342,11 @@ export default function PhotoManagementPage() {
 
   const handleBulkReject = async () => {
     if (selectedPhotos.size === 0) return;
-    if (!confirm(`${selectedPhotos.size} Foto(s) wirklich ablehnen?`)) return;
+    const ok = await requestConfirm({
+      title: `${selectedPhotos.size} Foto(s) wirklich ablehnen?`,
+      confirmText: 'Ablehnen',
+    });
+    if (!ok) return;
     try {
       await api.post('/photos/bulk/reject', {
         photoIds: Array.from(selectedPhotos),
@@ -309,7 +361,11 @@ export default function PhotoManagementPage() {
 
   const handleBulkDelete = async () => {
     if (selectedPhotos.size === 0) return;
-    if (!confirm(`${selectedPhotos.size} Foto(s) wirklich löschen?`)) return;
+    const ok = await requestConfirm({
+      title: `${selectedPhotos.size} Foto(s) wirklich löschen?`,
+      confirmText: 'Löschen',
+    });
+    if (!ok) return;
     try {
       await api.post('/photos/bulk/delete', {
         photoIds: Array.from(selectedPhotos),
@@ -415,6 +471,24 @@ export default function PhotoManagementPage() {
 
   return (
     <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
+      <Dialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{confirmState?.title}</DialogTitle>
+            {confirmState?.description ? <DialogDescription>{confirmState.description}</DialogDescription> : null}
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary" onClick={() => closeConfirm(false)}>
+                {confirmState?.cancelText || 'Abbrechen'}
+              </Button>
+            </DialogClose>
+            <Button variant="danger" onClick={() => closeConfirm(true)}>
+              {confirmState?.confirmText || 'Bestätigen'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24">
         <FaceSearch 
           eventId={eventId} 
