@@ -76,9 +76,17 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
     - shadcn Baseline Setup (deps + `tailwindcss-animate` + `components.json`)
     - Primitives migriert: `Button`/`Input`/`Card` (cva + asChild + forwardRef)
     - Shell-Navigation auf Primitives umgestellt (AdminShell/Sidebar)
+    - Primitives ergänzt: `DropdownMenu` + `Dialog` (Radix/shadcn wrapper)
+    - Echte Usage-Migrationen:
+      - Events List: Row Actions via `DropdownMenu` (Details + Slug kopieren)
+      - Event Detail: Confirm `Dialog` für „Freigeben (CLEAN)“ (Scan-Issues)
   - Frontend:
     - shadcn Baseline Setup (deps + `tailwindcss-animate` + `components.json`)
     - Primitives migriert: `Button`/`Input`/`Card`/`IconButton`
+    - Primitives ergänzt: `DropdownMenu` + `Dialog` (Radix/shadcn wrapper)
+    - Echte Usage-Migrationen:
+      - Uploader Filter: Photos + Videos via `DropdownMenu`
+      - Bulk Actions: Photos + Videos via `DropdownMenu` + Submenu „Verschieben"
 
 ## ⏳ In Progress
 
