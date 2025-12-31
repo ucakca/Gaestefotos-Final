@@ -11,6 +11,7 @@ import DateTimePicker from '@/components/DateTimePicker';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
 
 export default function EditEventPage() {
   const params = useParams();
@@ -172,66 +173,66 @@ export default function EditEventPage() {
               
               <div className="space-y-4">
                 <label className="flex items-center gap-2 text-app-fg">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={formData.featuresConfig.showGuestlist}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      featuresConfig: { ...formData.featuresConfig, showGuestlist: e.target.checked }
-                    })}
-                    className="h-4 w-4 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
+                    onCheckedChange={(checked) =>
+                      setFormData({
+                        ...formData,
+                        featuresConfig: { ...formData.featuresConfig, showGuestlist: checked },
+                      })
+                    }
                   />
                   <span>Gästeliste anzeigen</span>
                 </label>
 
                 <label className="flex items-center gap-2 text-app-fg">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={formData.featuresConfig.mysteryMode}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      featuresConfig: { ...formData.featuresConfig, mysteryMode: e.target.checked }
-                    })}
-                    className="h-4 w-4 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
+                    onCheckedChange={(checked) =>
+                      setFormData({
+                        ...formData,
+                        featuresConfig: { ...formData.featuresConfig, mysteryMode: checked },
+                      })
+                    }
                   />
                   <span>Mystery Mode (Fotos erst später sichtbar)</span>
                 </label>
 
                 <label className="flex items-center gap-2 text-app-fg">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={formData.featuresConfig.allowUploads}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      featuresConfig: { ...formData.featuresConfig, allowUploads: e.target.checked }
-                    })}
-                    className="h-4 w-4 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
+                    onCheckedChange={(checked) =>
+                      setFormData({
+                        ...formData,
+                        featuresConfig: { ...formData.featuresConfig, allowUploads: checked },
+                      })
+                    }
                   />
                   <span>Foto-Uploads erlauben</span>
                 </label>
 
                 <label className="flex items-center gap-2 text-app-fg">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={formData.featuresConfig.moderationRequired}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      featuresConfig: { ...formData.featuresConfig, moderationRequired: e.target.checked }
-                    })}
-                    className="h-4 w-4 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
+                    onCheckedChange={(checked) =>
+                      setFormData({
+                        ...formData,
+                        featuresConfig: { ...formData.featuresConfig, moderationRequired: checked },
+                      })
+                    }
                   />
                   <span>Moderation erforderlich</span>
                 </label>
 
                 <label className="flex items-center gap-2 text-app-fg">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={formData.featuresConfig.allowDownloads}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      featuresConfig: { ...formData.featuresConfig, allowDownloads: e.target.checked }
-                    })}
-                    className="h-4 w-4 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
+                    onCheckedChange={(checked) =>
+                      setFormData({
+                        ...formData,
+                        featuresConfig: { ...formData.featuresConfig, allowDownloads: checked },
+                      })
+                    }
                   />
                   <span>Downloads erlauben</span>
                 </label>
