@@ -4,6 +4,15 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal } from 'lucide-react';
 import FullPageLoader from '@/components/FullPageLoader';
 
 type EventListItem = {
@@ -116,9 +125,31 @@ export default function EventsPage() {
                         <td className="px-6 py-4 text-sm text-app-muted">{ev._count?.photos ?? '-'}</td>
                         <td className="px-6 py-4 text-sm text-app-muted">{ev._count?.guests ?? '-'}</td>
                         <td className="px-6 py-4 text-right text-sm">
-                          <Link href={`/events/${ev.id}`} className="font-medium text-tokens-brandGreen hover:opacity-90">
-                            Details
-                          </Link>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Aktionen">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/events/${ev.id}`}>Details</Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onSelect={(e) => {
+                                  e.preventDefault();
+                                  try {
+                                    navigator.clipboard.writeText(ev.slug);
+                                  } catch {
+                                    // ignore
+                                  }
+                                }}
+                              >
+                                Slug kopieren
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </td>
                       </tr>
                     ))}
