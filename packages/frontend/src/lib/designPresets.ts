@@ -24,7 +24,7 @@ export const DESIGN_PRESETS: DesignPreset[] = [
   {
     key: 'emerald_sand',
     label: 'Emerald & Sand',
-    heroGradient: 'linear-gradient(135deg, #295B4D 0%, #EAA48F 100%)',
+    heroGradient: 'linear-gradient(135deg, var(--brand-green) 0%, var(--app-accent) 100%)',
     accentGradient: 'linear-gradient(135deg, #10B981 0%, #F59E0B 100%)',
   },
   {
@@ -54,8 +54,8 @@ export const DESIGN_PRESETS: DesignPreset[] = [
   {
     key: 'mono',
     label: 'Mono',
-    heroGradient: 'linear-gradient(135deg, #111827 0%, #6B7280 100%)',
-    accentGradient: 'linear-gradient(135deg, #111827 0%, #9CA3AF 100%)',
+    heroGradient: 'linear-gradient(135deg, var(--app-fg) 0%, var(--app-muted) 100%)',
+    accentGradient: 'linear-gradient(135deg, var(--app-fg) 0%, var(--app-muted) 100%)',
   },
 ];
 
