@@ -67,7 +67,7 @@ export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterP
     <motion.div
       initial={{ y: 100 }}
       animate={{ y: 0 }}
-      className="fixed bottom-0 left-0 right-0 bg-app-card border-t border-app-border z-50 safe-area-bottom shadow-lg"
+      className="fixed bottom-0 left-0 right-0 bg-app-card/90 backdrop-blur border-t border-app-border z-50 safe-area-bottom shadow-[0_-6px_24px_color-mix(in_srgb,var(--app-fg)_6%,transparent)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {/* Horizontal Scrollable Menu */}
