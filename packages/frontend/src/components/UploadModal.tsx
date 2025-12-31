@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 
 interface UploadModalProps {
   open: boolean;
@@ -100,18 +101,19 @@ export default function UploadModal({
           {categories.length > 0 && (
             <div>
               <label className="block text-sm font-medium text-app-fg mb-2">Album (optional)</label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tokens-brandGreen/30"
-              >
-                <option value="">Kein Album</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+              <Select value={selectedCategory} onValueChange={(value) => setSelectedCategory(value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Kein Album" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Kein Album</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
