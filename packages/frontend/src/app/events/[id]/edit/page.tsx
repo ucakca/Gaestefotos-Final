@@ -10,6 +10,7 @@ import { useToastStore } from '@/store/toastStore';
 import DateTimePicker from '@/components/DateTimePicker';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 
 export default function EditEventPage() {
   const params = useParams();
@@ -238,24 +239,20 @@ export default function EditEventPage() {
             </div>
 
             <div className="flex justify-end space-x-4">
-              <motion.button
-                type="button"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => router.back()}
-                className="px-4 py-2 border border-app-accent rounded-md font-medium transition-colors text-tokens-brandGreen bg-app-card hover:bg-app-bg"
-              >
-                Abbrechen
-              </motion.button>
-              <motion.button
-                type="submit"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                disabled={saving}
-                className="px-6 py-3 rounded-lg text-app-bg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-tokens-brandGreen hover:opacity-90"
-              >
-                {saving ? 'Speichere...' : 'Speichern'}
-              </motion.button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="border border-app-accent bg-app-card text-tokens-brandGreen hover:bg-app-bg"
+                >
+                  Abbrechen
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button type="submit" disabled={saving} className="bg-tokens-brandGreen text-app-bg hover:opacity-90">
+                  {saving ? 'Speichere...' : 'Speichern'}
+                </Button>
+              </motion.div>
             </div>
           </form>
         </motion.div>
