@@ -12,6 +12,8 @@ import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
 import FaceSearch from '@/components/FaceSearch';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 
 function isWizardMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -359,12 +361,11 @@ export default function CategoryManagementPage() {
                     <label className="block text-sm font-medium text-app-muted mb-1">
                       Name *
                     </label>
-                    <input
+                    <Input
                       type="text"
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                     />
                   </div>
 
@@ -378,21 +379,19 @@ export default function CategoryManagementPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-0">
                     <div>
                       <label className="block text-sm font-medium text-app-muted mb-1">Start</label>
-                      <input
+                      <Input
                         type="datetime-local"
                         value={formData.startAt}
                         onChange={(e) => setFormData({ ...formData, startAt: e.target.value })}
-                        className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-app-muted mb-1">Ende</label>
-                      <input
+                      <Input
                         type="datetime-local"
                         value={formData.endAt}
                         onChange={(e) => setFormData({ ...formData, endAt: e.target.value })}
-                        className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                       />
                     </div>
                   </div>
@@ -438,11 +437,11 @@ export default function CategoryManagementPage() {
                       <div className="mt-3">
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted" />
-                          <input
+                          <Input
                             value={iconSearch}
                             onChange={(e) => setIconSearch(e.target.value)}
                             placeholder="Icon suchen… (z.B. Heart, Camera, Party)"
-                            className="w-full rounded-lg border border-app-border bg-app-card pl-9 pr-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
+                            className="pl-9"
                           />
                         </div>
                       </div>
@@ -526,11 +525,10 @@ export default function CategoryManagementPage() {
                     <label className="block text-sm font-medium text-app-muted mb-1">
                       Reihenfolge
                     </label>
-                    <input
+                    <Input
                       type="number"
                       value={formData.order}
                       onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                      className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                     />
                   </div>
                 </div>
@@ -542,7 +540,7 @@ export default function CategoryManagementPage() {
                       type="checkbox"
                       checked={formData.isVisible}
                       onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
-                      className="h-5 w-5 rounded border-app-border"
+                      className="h-5 w-5 accent-tokens-brandGreen"
                     />
                     <div className="flex items-center gap-2">
                       {formData.isVisible ? (
@@ -567,7 +565,7 @@ export default function CategoryManagementPage() {
                       type="checkbox"
                       checked={formData.uploadLocked}
                       onChange={(e) => setFormData({ ...formData, uploadLocked: e.target.checked })}
-                      className="h-5 w-5 rounded border-app-border"
+                      className="h-5 w-5 accent-tokens-brandGreen"
                     />
                     <div className="flex items-center gap-2">
                       {formData.uploadLocked ? (
@@ -585,17 +583,19 @@ export default function CategoryManagementPage() {
                       <label className="block text-sm font-medium text-app-muted mb-1">
                         Sperre bis (optional)
                       </label>
-                      <input
+                      <Input
                         type="datetime-local"
                         value={formData.uploadLockUntil}
                         onChange={(e) => setFormData({ ...formData, uploadLockUntil: e.target.value })}
                         disabled={!canScheduleUploadLock}
-                        className="w-full rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg disabled:opacity-60"
+                        className="disabled:opacity-60"
                       />
 
                       <div className="mt-2 flex items-center gap-2">
-                        <button
+                        <Button
                           type="button"
+                          size="sm"
+                          variant="secondary"
                           disabled={!canScheduleUploadLock || !(event as any)?.dateTime}
                           onClick={() => {
                             const dtRaw = (event as any)?.dateTime as any;
@@ -605,10 +605,9 @@ export default function CategoryManagementPage() {
                             d.setDate(d.getDate() + 1);
                             setFormData((prev) => ({ ...prev, uploadLockUntil: toLocalDateTimeInputValue(d) }));
                           }}
-                          className="rounded-lg border border-app-border bg-app-bg px-3 py-1.5 text-xs hover:opacity-90 disabled:opacity-50"
                         >
                           +1 Tag nach Event
-                        </button>
+                        </Button>
                         {!canScheduleUploadLock && (
                           <span className="text-xs text-app-muted">
                             Zeitplanung ist nur mit <strong>Unvergesslich</strong> verfügbar.
@@ -625,26 +624,24 @@ export default function CategoryManagementPage() {
 
                 {/* Actions */}
                 <div className="flex gap-4 pt-4 border-t border-app-border">
-                  <motion.button
-                    type="button"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setShowAddForm(false);
-                      cancelEdit();
-                    }}
-                    className="rounded-lg border border-app-border bg-app-bg px-4 py-2 text-app-fg hover:opacity-90"
-                  >
-                    Abbrechen
-                  </motion.button>
-                  <motion.button
-                    type="submit"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="rounded-lg bg-tokens-brandGreen px-4 py-2 text-app-bg hover:opacity-90"
-                  >
-                    {editingCategory ? 'Speichern' : 'Hinzufügen'}
-                  </motion.button>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => {
+                        setShowAddForm(false);
+                        cancelEdit();
+                      }}
+                      className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
+                    >
+                      Abbrechen
+                    </Button>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button type="submit" className="bg-tokens-brandGreen text-app-bg hover:opacity-90">
+                      {editingCategory ? 'Speichern' : 'Hinzufügen'}
+                    </Button>
+                  </motion.div>
                 </div>
               </form>
             </motion.div>
