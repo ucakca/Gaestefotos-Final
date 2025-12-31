@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/Button';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -49,19 +50,20 @@ export default function Sidebar({
         {navigation.map((item) => {
           const isActive = pathname === item.href;
           return (
-            <Link
+            <Button
               key={item.name}
-              href={item.href}
-              onClick={() => onNavigate?.()}
-              className={`flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-app-accent text-black'
-                  : 'text-white/80 hover:bg-white/10 hover:text-white'
-              }`}
+              asChild
+              variant="ghost"
+              className={cn(
+                'w-full justify-start px-3 py-2 text-sm font-medium transition-colors',
+                isActive ? 'bg-app-accent text-black hover:bg-app-accent/90' : 'text-white/80 hover:bg-white/10 hover:text-white'
+              )}
             >
-              <item.icon className="h-5 w-5" />
-              <span>{item.name}</span>
-            </Link>
+              <Link href={item.href} onClick={() => onNavigate?.()}>
+                <item.icon className="h-5 w-5" />
+                <span>{item.name}</span>
+              </Link>
+            </Button>
           );
         })}
       </nav>
@@ -72,13 +74,14 @@ export default function Sidebar({
             <p className="text-white/50">{admin.email}</p>
           </div>
         )}
-        <button
+        <Button
           onClick={handleLogout}
-          className="flex w-full items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white"
+          variant="ghost"
+          className="w-full justify-start px-3 py-2 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white"
         >
           <LogOut className="h-5 w-5" />
           <span>Abmelden</span>
-        </button>
+        </Button>
       </div>
     </div>
   );

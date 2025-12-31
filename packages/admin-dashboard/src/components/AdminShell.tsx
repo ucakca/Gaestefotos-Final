@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/Button';
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -22,14 +23,16 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-app-border bg-app-bg/90 px-4 backdrop-blur lg:hidden">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setMobileOpen(true)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-app-border bg-app-card"
+            className="h-10 w-10 p-0"
             aria-label="Menü öffnen"
           >
             <Menu className="h-5 w-5" />
-          </button>
+          </Button>
 
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-semibold">Admin</div>
@@ -57,14 +60,16 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         >
           <div className="flex h-14 items-center justify-between border-b border-black/20 px-3">
             <div className="text-sm font-semibold">Admin Dashboard</div>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setMobileOpen(false)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-white/10"
+              className="h-10 w-10 p-0 text-white hover:bg-white/10"
               aria-label="Menü schließen"
             >
               <X className="h-5 w-5" />
-            </button>
+            </Button>
           </div>
 
           <Sidebar className="h-[calc(100vh-3.5rem)]" onNavigate={() => setMobileOpen(false)} />
