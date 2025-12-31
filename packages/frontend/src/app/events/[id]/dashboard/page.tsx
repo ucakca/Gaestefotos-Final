@@ -38,6 +38,8 @@ import DateTimePicker from '@/components/DateTimePicker';
 import MapsLink from '@/components/MapsLink';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { Button } from '@/components/ui/Button';
+import { useToastStore } from '@/store/toastStore';
 
 interface PhotoStats {
   total: number;
@@ -63,6 +65,8 @@ export default function EventDashboardPage() {
   const params = useParams();
   const router = useRouter();
   const eventId = params.id as string;
+
+  const { showToast } = useToastStore();
   
   const [event, setEvent] = useState<EventType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -321,6 +325,7 @@ export default function EventDashboardPage() {
       });
     } catch (err) {
       console.error('Fehler beim Laden der Statistiken:', err);
+      showToast('Fehler beim Laden der Statistiken', 'error');
     }
   };
 
@@ -340,7 +345,7 @@ export default function EventDashboardPage() {
     } catch (err: any) {
       console.error('Fehler beim Hochladen:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Hochladen des Bildes';
-      alert(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
+      showToast(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), 'error');
       setUploadingImage(null);
     }
   };
@@ -353,7 +358,7 @@ export default function EventDashboardPage() {
     } catch (err: any) {
       console.error('Fehler beim Aktualisieren:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Aktualisieren';
-      alert(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
+      showToast(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), 'error');
     }
   };
 
@@ -371,7 +376,7 @@ export default function EventDashboardPage() {
     } catch (err: any) {
       console.error('Fehler beim Aktualisieren:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Aktualisieren';
-      alert(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
+      showToast(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), 'error');
     }
   };
 
@@ -388,7 +393,7 @@ export default function EventDashboardPage() {
     } catch (err: any) {
       console.error('Fehler beim Aktualisieren:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Aktualisieren';
-      alert(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
+      showToast(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), 'error');
     }
   };
 
@@ -400,7 +405,7 @@ export default function EventDashboardPage() {
     } catch (err: any) {
       console.error('Fehler beim Aktualisieren des Event-Status:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Aktualisieren des Event-Status';
-      alert(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage));
+      showToast(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), 'error');
     } finally {
       setTogglingActive(false);
     }
@@ -521,21 +526,30 @@ export default function EventDashboardPage() {
             </div>
           )}
 
-          <motion.button
+          <motion.div
             whileHover={{ opacity: 1 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => coverImageInputRef.current?.click()}
-            className="absolute inset-0 bg-app-fg/0 group-hover:bg-app-fg/30 transition-all flex items-center justify-center text-app-bg opacity-0"
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
           >
-            {uploadingImage === 'cover' ? (
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-app-bg"></div>
-            ) : (
-              <>
-                <Camera className="w-6 h-6 mr-2" />
-                <span className="text-sm font-medium">Titelbild ändern</span>
-              </>
-            )}
-          </motion.button>
+            <Button
+              asChild
+              variant="ghost"
+              className="h-full w-full bg-app-fg/0 hover:bg-app-fg/30 text-app-bg"
+            >
+              <button type="button" onClick={() => coverImageInputRef.current?.click()}>
+                <span className="flex h-full w-full items-center justify-center">
+                  {uploadingImage === 'cover' ? (
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-app-bg"></div>
+                  ) : (
+                    <>
+                      <Camera className="w-6 h-6 mr-2" />
+                      <span className="text-sm font-medium">Titelbild ändern</span>
+                    </>
+                  )}
+                </span>
+              </button>
+            </Button>
+          </motion.div>
           <input
             ref={coverImageInputRef}
             type="file"
@@ -915,18 +929,21 @@ export default function EventDashboardPage() {
                 </div>
               )}
             </div>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => profileImageInputRef.current?.click()}
-              className="absolute bottom-0 right-0 w-7 h-7 bg-app-fg rounded-full flex items-center justify-center text-app-bg shadow-lg border-2 border-app-bg"
-            >
-              {uploadingImage === 'profile' ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-app-bg"></div>
-              ) : (
-                <Camera className="w-4 h-4" />
-              )}
-            </motion.button>
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="absolute bottom-0 right-0">
+              <Button
+                asChild
+                variant="secondary"
+                className="h-7 w-7 rounded-full p-0 bg-app-fg text-app-bg border-2 border-app-bg shadow-lg hover:opacity-90"
+              >
+                <button type="button" onClick={() => profileImageInputRef.current?.click()}>
+                  {uploadingImage === 'profile' ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-app-bg"></div>
+                  ) : (
+                    <Camera className="w-4 h-4" />
+                  )}
+                </button>
+              </Button>
+            </motion.div>
             <input
               ref={profileImageInputRef}
               type="file"
@@ -1140,7 +1157,7 @@ export default function EventDashboardPage() {
                 onClick={() => {
                   const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/e2/${event.slug}`;
                   navigator.clipboard.writeText(url);
-                  alert('URL kopiert!');
+                  showToast('URL kopiert!', 'success');
                 }}
                 className="px-3 py-1 text-xs bg-tokens-brandGreen text-white rounded-lg hover:opacity-90 transition-opacity"
               >
@@ -1495,22 +1512,23 @@ export default function EventDashboardPage() {
                   </div>
                   
                   {/* Speichern Button */}
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    onClick={async () => {
-                      try {
-                        await loadEvent();
-                        alert('Änderungen gespeichert!');
-                      } catch (err) {
-                        console.error('Fehler beim Speichern:', err);
-                        alert('Fehler beim Speichern');
-                      }
-                    }}
-                    className="w-full mt-4 bg-tokens-brandGreen text-white rounded-xl p-4 font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                  >
-                    <Check className="w-5 h-5" />
-                    Speichern
-                  </motion.button>
+                  <motion.div whileTap={{ scale: 0.98 }} className="mt-4">
+                    <Button
+                      onClick={async () => {
+                        try {
+                          await loadEvent();
+                          showToast('Änderungen gespeichert!', 'success');
+                        } catch (err) {
+                          console.error('Fehler beim Speichern:', err);
+                          showToast('Fehler beim Speichern', 'error');
+                        }
+                      }}
+                      className="w-full rounded-xl p-4 font-semibold"
+                    >
+                      <Check className="h-5 w-5" />
+                      Speichern
+                    </Button>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
