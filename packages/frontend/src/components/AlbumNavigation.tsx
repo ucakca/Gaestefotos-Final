@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Category } from '@gaestefotos/shared';
 import * as LucideIcons from 'lucide-react';
-import { Folder } from 'lucide-react';
+import { Folder, Grid3x3 } from 'lucide-react';
 
 interface AlbumNavigationProps {
   categories: Category[];
@@ -74,19 +74,7 @@ export default function AlbumNavigation({
                     ) : (
                       // All Photos - Grid Icon
                       <div className="w-full h-full bg-app-bg flex items-center justify-center">
-                        <svg
-                          className="w-6 h-6 text-app-muted"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"
-                          />
-                        </svg>
+                        <Grid3x3 className="w-6 h-6 text-app-muted" />
                       </div>
                     )}
                   </div>
