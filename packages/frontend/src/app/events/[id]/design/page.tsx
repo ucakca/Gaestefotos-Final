@@ -15,6 +15,8 @@ import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
+import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
 
 function isWizardMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -291,31 +293,37 @@ export default function DesignLiveBuilderPage() {
               )}
 
               {wizardMode && (
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => router.push(`/events/${eventId}/categories?wizard=1`)}
-                  className="px-3 py-2 rounded-lg bg-tokens-brandGreen text-app-bg text-sm font-semibold"
-                >
-                  Weiter
-                </motion.button>
+                <motion.div whileTap={{ scale: 0.95 }}>
+                  <Button
+                    type="button"
+                    onClick={() => router.push(`/events/${eventId}/categories?wizard=1`)}
+                    className="bg-tokens-brandGreen text-app-bg hover:opacity-90"
+                  >
+                    Weiter
+                  </Button>
+                </motion.div>
               )}
 
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setPreviewMode(previewMode === 'mobile' ? 'desktop' : 'mobile')}
-                className={`p-2 rounded-lg ${
-                  previewMode === 'mobile' ? 'bg-app-fg text-app-bg' : 'bg-app-bg text-app-muted'
-                }`}
-              >
-                <Smartphone className="w-5 h-5" />
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowQRCode(!showQRCode)}
-                className="p-2 hover:bg-app-bg rounded-lg"
-              >
-                <QrCode className="w-5 h-5" />
-              </motion.button>
+              <motion.div whileTap={{ scale: 0.95 }}>
+                <IconButton
+                  icon={<Smartphone className="h-5 w-5" />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label={previewMode === 'mobile' ? 'Desktop-Vorschau' : 'Mobile Vorschau'}
+                  onClick={() => setPreviewMode(previewMode === 'mobile' ? 'desktop' : 'mobile')}
+                  className={previewMode === 'mobile' ? 'bg-app-fg text-app-bg' : 'bg-app-bg text-app-muted'}
+                />
+              </motion.div>
+              <motion.div whileTap={{ scale: 0.95 }}>
+                <IconButton
+                  icon={<QrCode className="h-5 w-5" />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label={showQRCode ? 'QR schließen' : 'QR anzeigen'}
+                  onClick={() => setShowQRCode(!showQRCode)}
+                  className="hover:bg-app-bg"
+                />
+              </motion.div>
               <a
                 href={`/e2/${event.slug}`}
                 target="_blank"
