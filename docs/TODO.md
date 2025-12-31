@@ -49,6 +49,10 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
   - Backend: Public API `GET /api/theme`
   - Admin UI: Theme Editor (live preview + save/load)
   - Auto-Apply: ThemeLoader in Frontend + Admin root layout
+- ✅ Frontend Color Tokenization Sweep (Hardcoded Colors → Tokens)
+  - Tokenisierung in `packages/frontend/src` (Pages + Components)
+  - Commit: `7ec7698` (pushed to `master`)
+  - Verifikation: `pnpm type-check` + `pnpm lint` (repo-weit) erfolgreich
 - ✅ Git Push “hang” Fix (Dev Workflow)
   - Ursache dokumentiert: pre-push Hook / E2E
   - IDE-safe Git Commands in `docs/INDEX.md`
