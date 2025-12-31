@@ -25,6 +25,7 @@ Ziel: Diese Dokumente sind die **Single Source of Truth** für Architektur, APIs
 - **QA / Test / Deploy**
   - Test Guide: `docs/TEST_GUIDE.md`
   - QA Checklist: `docs/QA_CHECKLIST.md`
+  - Pre-Launch Checklist: `docs/PRE_LAUNCH_CHECKLIST.md`
   - Deployment: `docs/DEPLOYMENT.md`
 
 ## Gap-Analyse (Feature Spec → Code)
