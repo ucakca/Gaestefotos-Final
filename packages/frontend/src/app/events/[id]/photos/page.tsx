@@ -48,8 +48,6 @@ export default function PhotoManagementPage() {
   const [showFaceSearch, setShowFaceSearch] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [showPhotoActionsMenu, setShowPhotoActionsMenu] = useState(false);
-  const [showPhotoMoveMenu, setShowPhotoMoveMenu] = useState(false);
   const [viewMode, setViewMode] = useState<'active' | 'trash'>('active');
 
   const [storiesByPhotoId, setStoriesByPhotoId] = useState<Record<string, any>>({});
@@ -97,18 +95,6 @@ export default function PhotoManagementPage() {
     loadPhotos();
     loadStories();
   }, [eventId, filter, viewMode]);
-
-  // Close menus when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (showPhotoActionsMenu && !(e.target as HTMLElement).closest('.photo-actions-menu')) {
-        setShowPhotoActionsMenu(false);
-        setShowPhotoMoveMenu(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [showPhotoActionsMenu]);
 
   useEffect(() => {
     // Extract unique uploaders from photos
@@ -917,165 +903,133 @@ export default function PhotoManagementPage() {
                   <h2 className="text-lg font-semibold">Foto-Details</h2>
                   <div className="flex items-center gap-2">
                     {/* Photo Actions Menu */}
-                    <div className="relative photo-actions-menu">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowPhotoActionsMenu(!showPhotoActionsMenu);
-                          setShowPhotoMoveMenu(false);
-                        }}
-                        className="flex items-center gap-2 px-3 py-2 bg-app-bg text-app-fg rounded-lg hover:opacity-90 transition-colors"
-                      >
-                        <MoreVertical className="w-5 h-5" />
-                        <span className="text-sm font-medium">Aktionen</span>
-                        <ChevronDown className={`w-4 h-4 transition-transform ${showPhotoActionsMenu ? 'rotate-180' : ''}`} />
-                      </button>
-                      
-                      {showPhotoActionsMenu && (
-                        <div className="absolute right-0 top-full mt-2 bg-app-card rounded-lg shadow-xl border border-app-border py-2 min-w-[220px] z-50">
-                          {/* Verschieben */}
-                          <div className="relative">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowPhotoMoveMenu(!showPhotoMoveMenu);
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="secondary" size="sm" className="gap-2 px-3 py-2">
+                          <MoreVertical className="h-5 w-5" />
+                          <span className="text-sm font-medium">Aktionen</span>
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent align="end" className="min-w-[220px]">
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>
+                            <Folder className="mr-2 h-4 w-4" />
+                            <span>Verschieben</span>
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent>
+                            <DropdownMenuItem
+                              onSelect={(e) => {
+                                e.preventDefault();
+                                const photoIds = [selectedPhoto.id];
+                                api
+                                  .post('/photos/bulk/move-to-album', {
+                                    photoIds,
+                                    categoryId: null,
+                                  })
+                                  .then(() => {
+                                    showToast('Foto verschoben', 'success');
+                                    loadPhotos();
+                                  });
                               }}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center justify-between gap-2"
                             >
-                              <div className="flex items-center gap-2">
-                                <Folder className="w-4 h-4" />
-                                <span>Verschieben</span>
-                              </div>
-                              <ChevronDown className={`w-4 h-4 transition-transform ${showPhotoMoveMenu ? 'rotate-180' : ''}`} />
-                            </button>
-                            {showPhotoMoveMenu && (
-                              <div className="bg-app-bg border-t border-app-border">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    // Move single photo
-                                    const photoIds = [selectedPhoto.id];
-                                    api.post('/photos/bulk/move-to-album', {
+                              <Folder className="mr-2 h-4 w-4" />
+                              Kein Album
+                            </DropdownMenuItem>
+                            {categories.map((category) => (
+                              <DropdownMenuItem
+                                key={category.id}
+                                onSelect={(e) => {
+                                  e.preventDefault();
+                                  const photoIds = [selectedPhoto.id];
+                                  api
+                                    .post('/photos/bulk/move-to-album', {
                                       photoIds,
-                                      categoryId: null,
-                                    }).then(() => {
+                                      categoryId: category.id,
+                                    })
+                                    .then(() => {
                                       showToast('Foto verschoben', 'success');
                                       loadPhotos();
-                                      setShowPhotoMoveMenu(false);
-                                      setShowPhotoActionsMenu(false);
                                     });
-                                  }}
-                                  className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-app-card flex items-center gap-2"
-                                >
-                                  <Folder className="w-4 h-4" />
-                                  Kein Album
-                                </button>
-                                {categories.map((category) => (
-                                  <button
-                                    key={category.id}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      // Move single photo
-                                      const photoIds = [selectedPhoto.id];
-                                      api.post('/photos/bulk/move-to-album', {
-                                        photoIds,
-                                        categoryId: category.id,
-                                      }).then(() => {
-                                        showToast('Foto verschoben', 'success');
-                                        loadPhotos();
-                                        setShowPhotoMoveMenu(false);
-                                        setShowPhotoActionsMenu(false);
-                                      });
-                                    }}
-                                    className="w-full px-4 py-2 pl-8 text-left text-sm hover:bg-app-card flex items-center gap-2"
-                                  >
-                                    <Folder className="w-4 h-4" />
-                                    {category.name}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                          
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingPhoto(selectedPhoto);
-                              setSelectedPhoto(null);
-                              setShowPhotoActionsMenu(false);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2"
-                          >
-                            <Edit className="w-4 h-4" />
-                            Bearbeiten
-                          </button>
-                          
-                          {moderationRequired && (
-                            <>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if ((selectedPhoto.status as string)?.toLowerCase() === 'pending' || (selectedPhoto.status as string) === 'PENDING') {
-                                    handleApprove(selectedPhoto.id);
-                                    setShowPhotoActionsMenu(false);
-                                  }
                                 }}
-                                disabled={!((selectedPhoto.status as string)?.toLowerCase() === 'pending' || (selectedPhoto.status as string) === 'PENDING')}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                               >
-                                <Check className="w-4 h-4" />
-                                Freigeben
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if ((selectedPhoto.status as string)?.toLowerCase() === 'pending' || (selectedPhoto.status as string) === 'PENDING') {
-                                    handleReject(selectedPhoto.id);
-                                    setShowPhotoActionsMenu(false);
-                                  }
-                                }}
-                                disabled={!((selectedPhoto.status as string)?.toLowerCase() === 'pending' || (selectedPhoto.status as string) === 'PENDING')}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-                              >
-                                <X className="w-4 h-4" />
-                                Ablehnen
-                              </button>
-                            </>
-                          )}
-                          
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (isStorageLocked) {
-                                showToast('Speicherperiode beendet – Download nicht mehr möglich', 'error');
-                                return;
-                              }
-                              const url = buildApiUrl(`/photos/${selectedPhoto.id}/download`);
-                              window.open(url, '_blank', 'noopener,noreferrer');
-                              setShowPhotoActionsMenu(false);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2"
-                          >
-                            <Download className="w-4 h-4" />
-                            Herunterladen
-                          </button>
-                          
-                          <div className="border-t border-app-border my-1"></div>
-                          
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(selectedPhoto.id);
-                              setShowPhotoActionsMenu(false);
-                            }}
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg text-[var(--status-danger)] flex items-center gap-2"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            Löschen
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                                <Folder className="mr-2 h-4 w-4" />
+                                {category.name}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+
+                        <DropdownMenuItem
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            setEditingPhoto(selectedPhoto);
+                            setSelectedPhoto(null);
+                          }}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Bearbeiten
+                        </DropdownMenuItem>
+
+                        {moderationRequired && (
+                          <>
+                            <DropdownMenuItem
+                              onSelect={(e) => {
+                                e.preventDefault();
+                                if ((selectedPhoto.status as string)?.toLowerCase() === 'pending' || (selectedPhoto.status as string) === 'PENDING') {
+                                  handleApprove(selectedPhoto.id);
+                                }
+                              }}
+                              disabled={!((selectedPhoto.status as string)?.toLowerCase() === 'pending' || (selectedPhoto.status as string) === 'PENDING')}
+                            >
+                              <Check className="mr-2 h-4 w-4" />
+                              Freigeben
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onSelect={(e) => {
+                                e.preventDefault();
+                                if ((selectedPhoto.status as string)?.toLowerCase() === 'pending' || (selectedPhoto.status as string) === 'PENDING') {
+                                  handleReject(selectedPhoto.id);
+                                }
+                              }}
+                              disabled={!((selectedPhoto.status as string)?.toLowerCase() === 'pending' || (selectedPhoto.status as string) === 'PENDING')}
+                            >
+                              <X className="mr-2 h-4 w-4" />
+                              Ablehnen
+                            </DropdownMenuItem>
+                          </>
+                        )}
+
+                        <DropdownMenuItem
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            if (isStorageLocked) {
+                              showToast('Speicherperiode beendet – Download nicht mehr möglich', 'error');
+                              return;
+                            }
+                            const url = buildApiUrl(`/photos/${selectedPhoto.id}/download`);
+                            window.open(url, '_blank', 'noopener,noreferrer');
+                          }}
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          Herunterladen
+                        </DropdownMenuItem>
+
+                        <DropdownMenuSeparator />
+
+                        <DropdownMenuItem
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            handleDelete(selectedPhoto.id);
+                          }}
+                          className="text-[var(--status-danger)] focus:text-[var(--status-danger)]"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Löschen
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                     
                     <button
                       onClick={() => setSelectedPhoto(null)}
