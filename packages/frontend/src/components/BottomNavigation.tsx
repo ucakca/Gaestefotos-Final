@@ -21,6 +21,7 @@ import Guestbook from './Guestbook';
 import ChallengeCompletion from './ChallengeCompletion';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
+import { IconButton } from '@/components/ui/IconButton';
 
 interface BottomNavigationProps {
   eventId: string;
@@ -248,12 +249,14 @@ export default function BottomNavigation({
             >
               <div className="sticky top-0 bg-app-card border-b border-app-border px-4 py-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-app-fg">Alben</h2>
-                <button
+                <IconButton
                   onClick={() => setShowAlbums(false)}
-                  className="p-1 hover:bg-app-bg rounded-full"
-                >
-                  <X className="w-5 h-5 text-app-fg" />
-                </button>
+                  icon={<X className="w-5 h-5" />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Schließen"
+                  title="Schließen"
+                />
               </div>
               <div className="overflow-y-auto max-h-[calc(80vh-60px)] p-4">
                 {/* Alle Fotos */}
@@ -331,15 +334,17 @@ export default function BottomNavigation({
           >
             <div className="sticky top-0 bg-app-card border-b border-app-border px-4 py-4 flex items-center justify-between z-10 flex-shrink-0">
               <h2 className="text-lg font-semibold text-app-fg">Foto Challenges</h2>
-              <button
+              <IconButton
                 onClick={() => {
                   setActiveView('feed');
                   setShowChallenges(false);
                 }}
-                className="p-1 hover:bg-app-bg rounded-full"
-              >
-                <X className="w-5 h-5 text-app-fg" />
-              </button>
+                icon={<X className="w-5 h-5" />}
+                variant="ghost"
+                size="sm"
+                aria-label="Schließen"
+                title="Schließen"
+              />
             </div>
             <div className="flex-1 overflow-y-auto min-h-0 p-4">
               {(event?.featuresConfig as any)?.challengesEnabled !== true ? (
@@ -402,12 +407,14 @@ export default function BottomNavigation({
         <div className="fixed inset-0 bg-app-bg z-40 flex flex-col" style={{ paddingBottom: '80px' }}>
           <div className="sticky top-0 bg-app-card border-b border-app-border px-4 py-4 flex items-center justify-between z-20 flex-shrink-0">
             <h2 className="text-lg font-semibold text-app-fg">Gästebuch</h2>
-            <button
+            <IconButton
               onClick={() => setActiveView('feed')}
-              className="p-1 hover:bg-app-bg rounded-full"
-            >
-              <X className="w-5 h-5 text-app-fg" />
-            </button>
+              icon={<X className="w-5 h-5" />}
+              variant="ghost"
+              size="sm"
+              aria-label="Schließen"
+              title="Schließen"
+            />
           </div>
           <div className="flex-1" style={{ display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
             <Guestbook eventId={eventId} eventTitle={event?.title} />
@@ -434,12 +441,14 @@ export default function BottomNavigation({
             >
               <div className="sticky top-0 bg-app-card border-b border-app-border px-4 py-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-app-fg">Info</h2>
-                <button
+                <IconButton
                   onClick={() => setActiveView('feed')}
-                  className="p-1 hover:bg-app-bg rounded-full"
-                >
-                  <X className="w-5 h-5 text-app-fg" />
-                </button>
+                  icon={<X className="w-5 h-5" />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Schließen"
+                  title="Schließen"
+                />
               </div>
               <div className="overflow-y-auto max-h-[calc(80vh-60px)] p-4 space-y-4">
                 {/* Zum Dashboard Button - Immer sichtbar, prüft Login beim Klick */}
