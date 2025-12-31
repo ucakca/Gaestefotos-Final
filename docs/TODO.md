@@ -105,6 +105,7 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
   - Fallback-Gradienten/Inline-Styles auf `var(--...)` Tokens umgestellt (u.a. `design` A5 PDF, Design fallback gradients)
   - QR-Styler Defaults via Root-CSS-Variablen aufgelöst (sichere Hex-Fallbacks)
   - Design Presets: globale Brand/Neutral-Fallbacks tokenisiert (Preset-Farben bewusst unangetastet)
+  - Frontend UI-Chrome: Overlay Backdrop + QR Container tokenisiert (kein `bg-black`/`bg-white` in Primitives)
   - Bewusst verbleibende Hex-Werte:
     - `globals.css` `:root` enthält die **Token-Quellen** (Hex ist hier ok, weil es die Definition der Tokens ist)
     - Presets/Templates (z.B. „Soft Floral“, „Elegant Rose“, Design Presets) bleiben bewusst **bunt** (intentional), damit sich das Design nicht verändert
@@ -113,6 +114,9 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
     - UI/„Shell“ Farben: **immer** Tokens/Utilities (`bg-app-*`, `text-app-*`, `border-app-*`, `var(--...)`)
     - Preset-Designs: dürfen Hex enthalten, wenn es **intentional** ist (Design darf nicht kippen)
     - Themeable-Presets (optional, später): Preset-Definition bleibt semantisch (z.B. `primary/secondary/accent`) und wird beim Rendern gegen Tokens aufgelöst
+  - Bewusst verbleibende `black/white` Klassen (Frontend):
+    - `app/ui/page.tsx` ist eine Design-System Demo/Preview und nutzt bewusst `white` als Demo-Surface
+    - `StoryViewer` ist bewusst „cinema-dark“ (Overlay/Controls mit `black/white` für maximalen Kontrast)
 
 ## ❌ Next (Priorität hoch)
 
