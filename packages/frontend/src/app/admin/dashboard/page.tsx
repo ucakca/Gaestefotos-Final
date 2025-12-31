@@ -371,15 +371,25 @@ export default function AdminDashboardPage() {
         return;
       }
 
+      const resolveRootCssVar = (name: string, fallback: string) => {
+        if (typeof window === 'undefined') return fallback;
+        const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        return v || fallback;
+      };
+
+      const svgBg = resolveRootCssVar('--app-card', '#ffffff');
+      const svgFg = resolveRootCssVar('--app-fg', '#111827');
+      const svgMuted = resolveRootCssVar('--app-muted', '#6B7280');
+
       setQrExporting(true);
 
       const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="105mm" height="148mm" viewBox="0 0 1050 1480">
-  <rect x="0" y="0" width="1050" height="1480" fill="#ffffff"/>
-  <text x="525" y="220" text-anchor="middle" font-size="52" fill="#111827">QR Aufsteller</text>
-  <text x="525" y="290" text-anchor="middle" font-size="28" fill="#111827">${(qrEventTitle || qrEventSlug || '').replace(/</g, '').replace(/>/g, '')}</text>
-  <text x="525" y="360" text-anchor="middle" font-size="24" fill="#374151">${guestEventUrl.replace(/</g, '').replace(/>/g, '')}</text>
-  <rect id="gf:qr" x="350" y="470" width="350" height="350" rx="18" fill="#ffffff" stroke="#111827"/>
+  <rect x="0" y="0" width="1050" height="1480" fill="${svgBg}"/>
+  <text x="525" y="220" text-anchor="middle" font-size="52" fill="${svgFg}">QR Aufsteller</text>
+  <text x="525" y="290" text-anchor="middle" font-size="28" fill="${svgFg}">${(qrEventTitle || qrEventSlug || '').replace(/</g, '').replace(/>/g, '')}</text>
+  <text x="525" y="360" text-anchor="middle" font-size="24" fill="${svgMuted}">${guestEventUrl.replace(/</g, '').replace(/>/g, '')}</text>
+  <rect id="gf:qr" x="350" y="470" width="350" height="350" rx="18" fill="${svgBg}" stroke="${svgFg}"/>
 </svg>`;
 
       const bleedMm = Number(qrBleedMm);
