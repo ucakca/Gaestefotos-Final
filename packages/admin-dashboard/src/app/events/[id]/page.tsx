@@ -373,7 +373,11 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               <Button
                 onClick={saveVirusScanSettings}
                 disabled={savingVirusScan}
-                className={savingVirusScan ? 'bg-black/30 text-white hover:opacity-100' : 'bg-tokens-brandGreen text-white hover:opacity-90'}
+                className={
+                  savingVirusScan
+                    ? 'bg-app-fg/30 text-app-bg hover:opacity-100'
+                    : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
+                }
               >
                 {savingVirusScan ? 'Speichern…' : 'Speichern'}
               </Button>
@@ -412,7 +416,11 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               <Button
                 onClick={saveUploadDatePolicy}
                 disabled={savingDatePolicy}
-                className={savingDatePolicy ? 'bg-black/30 text-white hover:opacity-100' : 'bg-tokens-brandGreen text-white hover:opacity-90'}
+                className={
+                  savingDatePolicy
+                    ? 'bg-app-fg/30 text-app-bg hover:opacity-100'
+                    : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
+                }
               >
                 {savingDatePolicy ? 'Speichern…' : 'Speichern'}
               </Button>
@@ -473,7 +481,11 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               <Button
                 onClick={saveUploadRateLimits}
                 disabled={savingLimits}
-                className={savingLimits ? 'bg-black/30 text-white hover:opacity-100' : 'bg-tokens-brandGreen text-white hover:opacity-90'}
+                className={
+                  savingLimits
+                    ? 'bg-app-fg/30 text-app-bg hover:opacity-100'
+                    : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
+                }
               >
                 {savingLimits ? 'Speichern…' : 'Speichern'}
               </Button>
@@ -578,7 +590,11 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                               size="sm"
                               onClick={() => setConfirmCleanAction({ kind: 'video', id: v.id })}
                               disabled={markingVideoClean === v.id}
-                              className={markingVideoClean === v.id ? 'bg-black/30 text-white hover:opacity-100' : 'bg-tokens-brandGreen text-white hover:opacity-90'}
+                              className={
+                                markingVideoClean === v.id
+                                  ? 'bg-app-fg/30 text-app-bg hover:opacity-100'
+                                  : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
+                              }
                             >
                               {markingVideoClean === v.id ? '…' : 'Freigeben'}
                             </Button>
@@ -622,7 +638,11 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                               size="sm"
                               onClick={() => setConfirmCleanAction({ kind: 'video', id: v.id })}
                               disabled={markingVideoClean === v.id}
-                              className={markingVideoClean === v.id ? 'bg-black/30 text-white hover:opacity-100' : 'bg-tokens-brandGreen text-white hover:opacity-90'}
+                              className={
+                                markingVideoClean === v.id
+                                  ? 'bg-app-fg/30 text-app-bg hover:opacity-100'
+                                  : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
+                              }
                             >
                               {markingVideoClean === v.id ? '…' : 'Freigeben'}
                             </Button>
@@ -668,7 +688,11 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                               size="sm"
                               onClick={() => setConfirmCleanAction({ kind: 'photo', id: p.id })}
                               disabled={markingClean === p.id}
-                              className={markingClean === p.id ? 'bg-black/30 text-white hover:opacity-100' : 'bg-tokens-brandGreen text-white hover:opacity-90'}
+                              className={
+                                markingClean === p.id
+                                  ? 'bg-app-fg/30 text-app-bg hover:opacity-100'
+                                  : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
+                              }
                             >
                               {markingClean === p.id ? '…' : 'Freigeben'}
                             </Button>
@@ -712,7 +736,11 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                               size="sm"
                               onClick={() => setConfirmCleanAction({ kind: 'photo', id: p.id })}
                               disabled={markingClean === p.id}
-                              className={markingClean === p.id ? 'bg-black/30 text-white hover:opacity-100' : 'bg-tokens-brandGreen text-white hover:opacity-90'}
+                              className={
+                                markingClean === p.id
+                                  ? 'bg-app-fg/30 text-app-bg hover:opacity-100'
+                                  : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
+                              }
                             >
                               {markingClean === p.id ? '…' : 'Freigeben'}
                             </Button>
