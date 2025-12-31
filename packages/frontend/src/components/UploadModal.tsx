@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 
 interface UploadModalProps {
@@ -116,12 +117,7 @@ export default function UploadModal({
 
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-app-fg mb-2">
-              <input
-                type="checkbox"
-                checked={showNameField}
-                onChange={(e) => setShowNameField(e.target.checked)}
-                className="h-4 w-4 accent-tokens-brandGreen"
-              />
+              <Checkbox checked={showNameField} onCheckedChange={(checked) => setShowNameField(checked)} />
               <span>Meinen Namen angeben (optional)</span>
             </label>
             {showNameField && (
@@ -138,12 +134,7 @@ export default function UploadModal({
           {showGuestbookOption && (
             <div>
               <label className="flex items-center gap-2 text-sm font-medium text-app-fg">
-                <input
-                  type="checkbox"
-                  checked={alsoInGuestbook}
-                  onChange={(e) => setAlsoInGuestbook(e.target.checked)}
-                  className="h-4 w-4 accent-tokens-brandGreen"
-                />
+                <Checkbox checked={alsoInGuestbook} onCheckedChange={(checked) => setAlsoInGuestbook(checked)} />
                 <span>Auch im Gästebuch eintragen</span>
               </label>
               {alsoInGuestbook && (

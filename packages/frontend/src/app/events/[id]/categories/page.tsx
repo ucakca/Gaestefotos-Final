@@ -14,6 +14,7 @@ import FaceSearch from '@/components/FaceSearch';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { IconButton } from '@/components/ui/IconButton';
 
 function isWizardMode(): boolean {
@@ -537,11 +538,10 @@ export default function CategoryManagementPage() {
                 {/* Visibility */}
                 <div className="border-t border-app-border pt-4">
                   <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={formData.isVisible}
-                      onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
-                      className="h-5 w-5 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
+                      onCheckedChange={(checked) => setFormData({ ...formData, isVisible: checked })}
+                      className="h-5 w-5"
                     />
                     <div className="flex items-center gap-2">
                       {formData.isVisible ? (
@@ -562,11 +562,10 @@ export default function CategoryManagementPage() {
                 {/* Upload Lock */}
                 <div className="border-t border-app-border pt-4 space-y-3">
                   <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={formData.uploadLocked}
-                      onChange={(e) => setFormData({ ...formData, uploadLocked: e.target.checked })}
-                      className="h-5 w-5 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
+                      onCheckedChange={(checked) => setFormData({ ...formData, uploadLocked: checked })}
+                      className="h-5 w-5"
                     />
                     <div className="flex items-center gap-2">
                       {formData.uploadLocked ? (
