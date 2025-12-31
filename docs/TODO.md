@@ -56,10 +56,7 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 - ✅ Git Push “hang” Fix (Dev Workflow)
   - Ursache dokumentiert: pre-push Hook / E2E
   - IDE-safe Git Commands in `docs/INDEX.md`
-
-## ⏳ In Progress
-
-- ⏳ Shared App Shell Refactor (Navigation/Layout/Auth gates/Loading/Error)
+- ✅ Shared App Shell Refactor (Navigation/Layout/Auth gates/Loading/Error)
   - Frontend:
     - `ProtectedRoute` eingeführt und `/dashboard` damit abgesichert
     - `/events/*` per `app/events/layout.tsx` zentral per Auth-Gate geschützt
@@ -67,6 +64,11 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
     - `Centered` Hintergrund auf `bg-app-bg` vereinheitlicht
   - Admin:
     - `FullPageLoader` eingeführt und Loading-States (Events/Settings/Event Detail) vereinheitlicht
+  - Verifikation: `pnpm type-check` + `pnpm lint` (repo-weit) erfolgreich
+
+## ⏳ In Progress
+
+ 
 
 ## ❌ Next (Priorität hoch)
 
