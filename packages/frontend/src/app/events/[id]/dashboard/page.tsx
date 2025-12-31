@@ -39,6 +39,7 @@ import MapsLink from '@/components/MapsLink';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { useToastStore } from '@/store/toastStore';
 
 interface PhotoStats {
@@ -570,12 +571,9 @@ export default function EventDashboardPage() {
                 {usageLoading ? 'Lade…' : usageError ? 'Nicht verfügbar' : hasLimit ? 'Limit aktiv' : 'Kein Limit aktiv'}
               </div>
             </div>
-            <button
-              onClick={loadUsage}
-              className="px-3 py-2 rounded-lg bg-tokens-brandGreen text-white text-sm font-medium hover:opacity-90"
-            >
+            <Button onClick={loadUsage} size="sm" className="rounded-lg">
               Aktualisieren
-            </button>
+            </Button>
           </div>
 
           {usageError && <div className="mt-3 text-sm text-[var(--status-danger)]">{usageError}</div>}
@@ -960,16 +958,16 @@ export default function EventDashboardPage() {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               {editingField === 'title' ? (
-                <input
+                <Input
                   type="text"
                   defaultValue={event.title}
                   onBlur={(e) => updateEventField('title', e.target.value)}
-                  onKeyPress={(e) => {
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       updateEventField('title', (e.target as HTMLInputElement).value);
                     }
                   }}
-                  className="text-xl font-semibold border-b-2 border-app-border focus:outline-none"
+                  className="h-auto border-x-0 border-t-0 border-b-2 border-app-border bg-transparent px-0 py-0 text-xl font-semibold shadow-none focus-visible:ring-0"
                   autoFocus
                 />
               ) : (
