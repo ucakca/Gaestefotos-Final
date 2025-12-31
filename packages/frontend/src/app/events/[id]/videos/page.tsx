@@ -14,6 +14,13 @@ import PageHeader from '@/components/PageHeader';
 import ActionButton from '@/components/ActionButton';
 import FilterButtons from '@/components/FilterButtons';
 import UploadModal from '@/components/UploadModal';
+import { Button } from '@/components/ui/Button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface VideoItem {
   id: string;
@@ -53,7 +60,6 @@ export default function VideosPage() {
   const [showMoveMenu, setShowMoveMenu] = useState(false);
   const [showVideoActionsMenu, setShowVideoActionsMenu] = useState(false);
   const [showVideoMoveMenu, setShowVideoMoveMenu] = useState(false);
-  const [showUploaderMenu, setShowUploaderMenu] = useState(false);
   const [viewMode, setViewMode] = useState<'active' | 'trash'>('active');
 
   useEffect(() => {
@@ -495,58 +501,42 @@ export default function VideosPage() {
         <div className="flex items-center gap-3 flex-wrap w-full mb-4">
           {/* Uploader Dropdown */}
           {viewMode === 'active' && uploaders.length > 0 && (
-            <div className="relative uploader-menu">
-              <button
-                onMouseEnter={() => setShowUploaderMenu(true)}
-                onMouseLeave={() => setShowUploaderMenu(false)}
-                className="flex items-center gap-2 px-3 py-2 bg-app-bg text-app-fg rounded-lg hover:opacity-90 transition-colors"
-              >
-                <span className="text-sm font-medium">
-                  Hochgeladen von: {filter.startsWith('uploader-') 
-                    ? uploaders.find(u => `uploader-${u}` === filter) || 'Alle Uploader'
-                    : 'Alle Uploader'}
-                </span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${showUploaderMenu ? 'rotate-180' : ''}`} />
-              </button>
-              
-              {showUploaderMenu && (
-                <div 
-                  className="absolute left-0 top-full mt-2 bg-app-card rounded-lg shadow-xl border border-app-border py-2 min-w-[200px] z-50 max-h-[300px] overflow-y-auto"
-                  onMouseEnter={() => setShowUploaderMenu(true)}
-                  onMouseLeave={() => setShowUploaderMenu(false)}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="sm" className="gap-2 px-3 py-2">
+                  <span className="text-sm font-medium">
+                    Hochgeladen von:{' '}
+                    {filter.startsWith('uploader-')
+                      ? uploaders.find((u) => `uploader-${u}` === filter) || 'Alle Uploader'
+                      : 'Alle Uploader'}
+                  </span>
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="max-h-[300px] min-w-[200px] overflow-y-auto" align="start">
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setFilter('all');
+                  }}
+                  className={!filter.startsWith('uploader-') ? 'bg-app-bg font-medium' : ''}
                 >
-                  <button
-                    onClick={() => {
-                      if (filter.startsWith('uploader-')) {
-                        setFilter('all');
-                      } else {
-                        setFilter('all-uploader');
-                      }
-                      setShowUploaderMenu(false);
+                  Alle Uploader
+                </DropdownMenuItem>
+                {uploaders.map((uploader) => (
+                  <DropdownMenuItem
+                    key={uploader}
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      setFilter(`uploader-${uploader}`);
                     }}
-                    className={`w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 ${
-                      !filter.startsWith('uploader-') ? 'bg-app-bg font-medium' : ''
-                    }`}
+                    className={filter === `uploader-${uploader}` ? 'bg-app-bg font-medium' : ''}
                   >
-                    Alle Uploader
-                  </button>
-                  {uploaders.map(uploader => (
-                    <button
-                      key={uploader}
-                      onClick={() => {
-                        setFilter(`uploader-${uploader}`);
-                        setShowUploaderMenu(false);
-                      }}
-                      className={`w-full px-4 py-2 text-left text-sm hover:bg-app-bg flex items-center gap-2 ${
-                        filter === `uploader-${uploader}` ? 'bg-app-bg font-medium' : ''
-                      }`}
-                    >
-                      {uploader}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+                    {uploader}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
           
           {/* Actions Menu - Right aligned */}
