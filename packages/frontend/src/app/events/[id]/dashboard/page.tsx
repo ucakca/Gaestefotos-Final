@@ -41,6 +41,7 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
+import { Radio } from '@/components/ui/Radio';
 import { Textarea } from '@/components/ui/Textarea';
 import { useToastStore } from '@/store/toastStore';
 
@@ -1278,13 +1279,12 @@ export default function EventDashboardPage() {
                             : 'border-app-border hover:opacity-90'
                         }`}
                       >
-                        <input
-                          type="radio"
+                        <Radio
                           name="mode"
                           value={mode}
                           checked={featuresConfig.mode === mode}
                           onChange={(e) => updateFeaturesConfig({ mode: e.target.value })}
-                          className="mt-1 mr-3 h-4 w-4 accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
+                          className="mt-1 mr-3"
                         />
                         <div className="flex-1">
                           <div className="font-medium text-sm">
