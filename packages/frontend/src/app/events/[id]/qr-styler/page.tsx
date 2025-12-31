@@ -552,7 +552,7 @@ export default function QrStylerPage() {
               <div className="space-y-2">
                 <label className="text-xs text-app-muted">Vorlage</label>
                 <select
-                  className="w-full rounded-md border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tokens-brandGreen/30"
+                  className="w-full rounded-lg border border-app-border bg-app-card px-4 py-2.5 text-sm text-app-fg transition-colors focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen"
                   value={templateSlug}
                   onChange={(e) => setTemplateSlug(e.target.value)}
                 >
@@ -567,7 +567,7 @@ export default function QrStylerPage() {
               <div className="space-y-2">
                 <label className="text-xs text-app-muted">Preset</label>
                 <select
-                  className="w-full rounded-md border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tokens-brandGreen/30"
+                  className="w-full rounded-lg border border-app-border bg-app-card px-4 py-2.5 text-sm text-app-fg transition-colors focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen"
                   defaultValue=""
                   onChange={(e) => handleApplyPreset(e.target.value)}
                 >
