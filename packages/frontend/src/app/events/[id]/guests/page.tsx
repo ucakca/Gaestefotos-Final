@@ -85,11 +85,11 @@ export default function GuestManagementPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'accepted':
-        return 'bg-green-100 text-green-800';
+        return 'border border-[var(--status-success)] bg-app-bg text-[var(--status-success)]';
       case 'declined':
-        return 'bg-red-100 text-red-800';
+        return 'border border-[var(--status-danger)] bg-app-bg text-[var(--status-danger)]';
       default:
-        return 'bg-yellow-100 text-yellow-800';
+        return 'border border-[var(--status-warning)] bg-app-bg text-[var(--status-warning)]';
     }
   };
 
@@ -113,7 +113,7 @@ export default function GuestManagementPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-app-bg">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -122,16 +122,16 @@ export default function GuestManagementPage() {
         >
           <button
             onClick={() => router.back()}
-            className="text-primary-600 hover:text-primary-500 mb-4"
+            className="text-tokens-brandGreen hover:opacity-90 mb-4"
           >
             ← Zurück
           </button>
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-app-fg mb-2">
                 Gäste-Verwaltung: {event?.title}
               </h1>
-              <p className="text-gray-600">
+              <p className="text-app-muted">
                 {guests.length} Gast{guests.length !== 1 ? 'e' : ''}
               </p>
             </div>
@@ -139,7 +139,7 @@ export default function GuestManagementPage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowAddForm(!showAddForm)}
-              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 flex items-center gap-2"
+              className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90 flex items-center gap-2"
             >
               <UserPlus className="w-5 h-5" />
               Gast hinzufügen
@@ -154,13 +154,13 @@ export default function GuestManagementPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-white rounded-lg shadow p-6 mb-6"
+              className="bg-app-card border border-app-border rounded-lg shadow p-6 mb-6"
             >
-              <h2 className="text-xl font-semibold mb-4">Neuer Gast</h2>
+              <h2 className="text-xl font-semibold mb-4 text-app-fg">Neuer Gast</h2>
               <form onSubmit={handleAddGuest} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-app-fg mb-1">
                       Vorname *
                     </label>
                     <input
@@ -168,11 +168,11 @@ export default function GuestManagementPage() {
                       required
                       value={formData.firstName}
                       onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                      className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-app-fg mb-1">
                       Nachname *
                     </label>
                     <input
@@ -180,29 +180,29 @@ export default function GuestManagementPage() {
                       required
                       value={formData.lastName}
                       onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                      className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-app-fg mb-1">
                     E-Mail
                   </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-app-fg mb-1">
                     Essenswünsche
                   </label>
                   <textarea
                     value={formData.dietaryRequirements}
                     onChange={(e) => setFormData({ ...formData, dietaryRequirements: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
                     rows={3}
                   />
                 </div>
@@ -212,7 +212,7 @@ export default function GuestManagementPage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setShowAddForm(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md"
+                    className="px-4 py-2 border border-app-border rounded-md bg-app-card hover:bg-app-bg"
                   >
                     Abbrechen
                   </motion.button>
@@ -220,7 +220,7 @@ export default function GuestManagementPage() {
                     type="submit"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                    className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90"
                   >
                     Hinzufügen
                   </motion.button>
@@ -231,28 +231,28 @@ export default function GuestManagementPage() {
         </AnimatePresence>
 
         {/* Guests List */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="bg-app-card border border-app-border rounded-lg shadow overflow-hidden">
+          <table className="min-w-full divide-y divide-app-border">
+            <thead className="bg-app-bg">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">
                   Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">
                   E-Mail
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">
                   Begleitung
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">
                   Aktionen
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-app-card divide-y divide-app-border">
               <AnimatePresence>
                 {guests.map((guest, index) => (
                   <motion.tr
@@ -263,25 +263,25 @@ export default function GuestManagementPage() {
                     transition={{ delay: index * 0.05 }}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-app-fg">
                         {guest.firstName} {guest.lastName}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{guest.email || '-'}</div>
+                      <div className="text-sm text-app-muted">{guest.email || '-'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(guest.status)}`}>
                         {getStatusText(guest.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-app-muted">
                       {guest.plusOneCount > 0 ? `+${guest.plusOneCount}` : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
                         onClick={() => handleDelete(guest.id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-[var(--status-danger)] hover:opacity-90"
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
@@ -294,7 +294,7 @@ export default function GuestManagementPage() {
 
           {guests.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-gray-500">Noch keine Gäste hinzugefügt</p>
+              <p className="text-app-muted">Noch keine Gäste hinzugefügt</p>
             </div>
           )}
         </div>

@@ -210,7 +210,7 @@ export default function ChallengeCompletion({
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <Trophy className="w-5 h-5 text-yellow-500" />
+            <Trophy className="w-5 h-5 text-[var(--status-warning)]" />
             <h3 className="font-semibold text-app-fg">{challenge.title}</h3>
           </div>
           {challenge.description && (
@@ -218,12 +218,12 @@ export default function ChallengeCompletion({
           )}
           
           {userCompletion ? (
-            <div className="flex items-center gap-2 text-green-600">
+            <div className="flex items-center gap-2 text-[var(--status-success)]">
               <Check className="w-5 h-5" />
               <span className="text-sm font-medium">Erfüllt!</span>
               {userCompletion.averageRating && (
                 <div className="flex items-center gap-1 ml-2">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="w-4 h-4 fill-[var(--status-warning)] text-[var(--status-warning)]" />
                   <span className="text-xs">{userCompletion.averageRating.toFixed(1)}</span>
                   <span className="text-xs text-app-muted">({userCompletion.ratingCount})</span>
                 </div>
@@ -271,7 +271,7 @@ export default function ChallengeCompletion({
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0, opacity: 0 }}
-                    className="absolute inset-0 bg-green-500 bg-opacity-90 flex items-center justify-center rounded-lg z-20"
+                    className="absolute inset-0 bg-[var(--status-success)]/90 flex items-center justify-center rounded-lg z-20"
                   >
                     <motion.div
                       initial={{ scale: 0 }}
@@ -279,7 +279,7 @@ export default function ChallengeCompletion({
                       transition={{ duration: 0.5 }}
                       className="text-center"
                     >
-                      <Trophy className="w-20 h-20 text-yellow-400 mx-auto mb-4" />
+                      <Trophy className="w-20 h-20 text-[var(--status-warning)] mx-auto mb-4" />
                       <h3 className="text-2xl font-bold text-app-bg mb-2">Challenge erfüllt!</h3>
                       <p className="text-app-bg">🎉</p>
                     </motion.div>
@@ -288,7 +288,7 @@ export default function ChallengeCompletion({
               </AnimatePresence>
 
               <div className="flex justify-between items-center p-4 border-b border-app-border flex-shrink-0">
-                <h3 className="text-lg font-semibold">Challenge erfüllen</h3>
+                <h3 className="text-lg font-semibold text-app-fg">Challenge erfüllen</h3>
                 <button
                   onClick={() => {
                     stopCamera();
@@ -305,7 +305,7 @@ export default function ChallengeCompletion({
                 {/* Uploader Name Input - Auffällig als Pflichtfeld */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-app-fg mb-2">
-                    Dein Name <span className="text-red-500">*</span>
+                    Dein Name <span className="text-[var(--status-danger)]">*</span>
                   </label>
                   <input
                     type="text"
@@ -356,7 +356,7 @@ export default function ChallengeCompletion({
                         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
                           <button
                             onClick={stopCamera}
-                            className="px-4 py-2 bg-red-500 text-white rounded-lg"
+                            className="px-4 py-2 bg-[var(--status-danger)] text-app-bg rounded-lg hover:opacity-90"
                           >
                             Abbrechen
                           </button>

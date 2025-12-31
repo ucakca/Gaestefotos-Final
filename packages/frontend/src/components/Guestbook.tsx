@@ -552,7 +552,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       <div className="border-t border-app-border p-4 bg-app-card flex-shrink-0">
           <form onSubmit={handleSubmit} className="space-y-3">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3">
+              <div className="bg-app-bg border border-[var(--status-danger)] text-[var(--status-danger)] text-sm rounded-lg p-3">
                 {error}
               </div>
             )}
@@ -600,7 +600,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                       type="button"
                       onClick={stopRecording}
                       disabled={submitting || uploadingAudio}
-                      className="flex items-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center gap-2 px-4 py-3 bg-[var(--status-danger)] text-app-bg rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Aufnahme stoppen"
                     >
                       <Square className="w-5 h-5" />
@@ -651,7 +651,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                   <button
                     type="button"
                     onClick={handleRemovePhoto}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-lg"
+                    className="absolute -top-2 -right-2 bg-[var(--status-danger)] text-app-bg rounded-full p-1 hover:opacity-90 shadow-lg"
                   >
                     <X className="w-3 h-3" />
                   </button>

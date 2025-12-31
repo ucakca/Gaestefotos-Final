@@ -72,7 +72,7 @@ export default function DateTimePicker({
       {label && (
         <label className="block text-sm font-medium mb-2 text-tokens-brandGreen">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="text-[var(--status-danger)] ml-1">*</span>}
         </label>
       )}
       <div className="relative">

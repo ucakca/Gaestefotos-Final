@@ -67,7 +67,7 @@ export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterP
     <motion.div
       initial={{ y: 100 }}
       animate={{ y: 0 }}
-      className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-area-bottom shadow-lg"
+      className="fixed bottom-0 left-0 right-0 bg-app-card border-t border-app-border z-50 safe-area-bottom shadow-lg"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {/* Horizontal Scrollable Menu */}
@@ -83,15 +83,15 @@ export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterP
                   whileTap={{ scale: 0.9 }}
                   className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[70px] ${
                     active
-                      ? 'bg-black text-white shadow-md'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      ? 'bg-tokens-brandGreen text-app-bg shadow-md'
+                      : 'text-app-muted hover:bg-app-bg'
                   }`}
                 >
                   <div className="relative">
-                    <Icon className={`w-5 h-5 ${active ? 'text-white' : 'text-gray-600'}`} />
+                    <Icon className={`w-5 h-5 ${active ? 'text-app-bg' : 'text-app-muted'}`} />
                   </div>
                   <span className={`text-xs font-medium whitespace-nowrap ${
-                    active ? 'text-white' : 'text-gray-600'
+                    active ? 'text-app-bg' : 'text-app-muted'
                   }`}>
                     {item.label}
                   </span>

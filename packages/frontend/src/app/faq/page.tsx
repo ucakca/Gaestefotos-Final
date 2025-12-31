@@ -10,9 +10,9 @@ export default function FaqPage() {
   }, []);
 
   return (
-    <div style={{ maxWidth: 980, margin: '0 auto', padding: '1.25rem' }}>
-      <h1 style={{ margin: 0, color: '#295B4D' }}>FAQ</h1>
-      <p style={{ marginTop: '0.75rem', color: '#666' }}>Weiterleitung…</p>
+    <div className="max-w-[980px] mx-auto p-5">
+      <h1 className="m-0 text-tokens-brandGreen">FAQ</h1>
+      <p className="mt-3 text-app-muted">Weiterleitung…</p>
     </div>
   );
 }

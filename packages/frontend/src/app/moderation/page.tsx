@@ -94,15 +94,15 @@ export default function ModerationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-app-bg">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Foto-Moderation</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-app-fg mb-2">Foto-Moderation</h1>
+          <p className="text-app-muted">
             {pendingPhotos.length} Foto{pendingPhotos.length !== 1 ? 's' : ''} wartet{pendingPhotos.length !== 1 ? 'en' : ''} auf Freigabe
           </p>
         </motion.div>
@@ -111,9 +111,9 @@ export default function ModerationPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-white rounded-lg shadow p-12 text-center"
+            className="bg-app-card border border-app-border rounded-lg shadow p-12 text-center"
           >
-            <p className="text-gray-500 text-lg">🎉 Alle Fotos wurden moderiert!</p>
+            <p className="text-app-muted text-lg">🎉 Alle Fotos wurden moderiert!</p>
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -126,13 +126,13 @@ export default function ModerationPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   onClick={() => setSelectedPhoto(photo)}
-                  className={`bg-white rounded-lg shadow cursor-pointer overflow-hidden border-2 transition-colors ${
+                  className={`bg-app-card rounded-lg shadow cursor-pointer overflow-hidden border-2 transition-colors ${
                     selectedPhoto?.id === photo.id
-                      ? 'border-primary-500'
-                      : 'border-transparent hover:border-gray-300'
+                      ? 'border-tokens-brandGreen'
+                      : 'border-transparent hover:border-app-border'
                   }`}
                 >
-                  <div className="aspect-square bg-gray-200 relative">
+                  <div className="aspect-square bg-app-bg relative">
                     {photo.url ? (
                       <img
                         src={photo.url}
@@ -140,19 +140,19 @@ export default function ModerationPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <div className="w-full h-full flex items-center justify-center text-app-muted">
                         Foto
                       </div>
                     )}
-                    <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded">
+                    <div className="absolute top-2 left-2 bg-[var(--status-warning)] text-app-bg text-xs px-2 py-1 rounded">
                       Ausstehend
                     </div>
                   </div>
                   <div className="p-3">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-app-fg truncate">
                       {photo.event.title}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-app-muted">
                       {new Date(photo.createdAt).toLocaleDateString('de-DE')}
                     </p>
                   </div>
@@ -167,19 +167,19 @@ export default function ModerationPage() {
                   key={selectedPhoto.id}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="bg-white rounded-lg shadow p-6"
+                  className="bg-app-card border border-app-border rounded-lg shadow p-6"
                 >
                   <div className="mb-6">
                     <h2 className="text-xl font-semibold mb-2">
                       {(selectedPhoto as any).event?.title || 'Foto'}
                     </h2>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-app-muted">
                       Hochgeladen: {new Date(selectedPhoto.createdAt).toLocaleString('de-DE')}
                     </p>
                   </div>
 
                   <div className="mb-6">
-                    <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden mb-4">
+                    <div className="aspect-video bg-app-bg rounded-lg overflow-hidden mb-4">
                       {selectedPhoto.url ? (
                         <img
                           src={selectedPhoto.url}
@@ -187,7 +187,7 @@ export default function ModerationPage() {
                           className="w-full h-full object-contain"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <div className="w-full h-full flex items-center justify-center text-app-muted">
                           Foto
                         </div>
                       )}
@@ -199,7 +199,7 @@ export default function ModerationPage() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleApprove(selectedPhoto.id)}
-                      className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium flex items-center justify-center gap-2"
+                      className="flex-1 px-6 py-3 bg-[var(--status-success)] text-app-bg rounded-lg hover:opacity-90 font-medium flex items-center justify-center gap-2"
                     >
                       <Check className="w-5 h-5" />
                       Freigeben
@@ -208,7 +208,7 @@ export default function ModerationPage() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleReject(selectedPhoto.id)}
-                      className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium flex items-center justify-center gap-2"
+                      className="flex-1 px-6 py-3 bg-[var(--status-danger)] text-app-bg rounded-lg hover:opacity-90 font-medium flex items-center justify-center gap-2"
                     >
                       <X className="w-5 h-5" />
                       Ablehnen
@@ -217,15 +217,15 @@ export default function ModerationPage() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleDelete(selectedPhoto.id)}
-                      className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium flex items-center justify-center gap-2"
+                      className="px-6 py-3 bg-[var(--status-neutral)] text-app-bg rounded-lg hover:opacity-90 font-medium flex items-center justify-center gap-2"
                     >
                       <Trash2 className="w-5 h-5" />
                     </motion.button>
                   </div>
                 </motion.div>
               ) : (
-                <div className="bg-white rounded-lg shadow p-12 text-center">
-                  <p className="text-gray-500">Wähle ein Foto aus, um es zu moderieren</p>
+                <div className="bg-app-card border border-app-border rounded-lg shadow p-12 text-center">
+                  <p className="text-app-muted">Wähle ein Foto aus, um es zu moderieren</p>
                 </div>
               )}
             </div>

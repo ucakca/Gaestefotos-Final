@@ -8,5 +8,5 @@ type CardProps = {
 };
 
 export function Card({ children, className }: CardProps) {
-  return <div className={`bg-white rounded-lg border border-gray-200${className ? ` ${className}` : ''}`}>{children}</div>;
+  return <div className={`bg-app-card rounded-lg border border-app-border${className ? ` ${className}` : ''}`}>{children}</div>;
 }

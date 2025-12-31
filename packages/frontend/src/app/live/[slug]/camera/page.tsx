@@ -109,20 +109,20 @@ export default function CameraPage() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white">Event nicht gefunden</div>
+      <div className="min-h-screen bg-app-fg flex items-center justify-center">
+        <div className="text-app-bg">Event nicht gefunden</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white relative">
+    <div className="min-h-screen bg-app-fg text-app-bg relative">
       {/* Back Button */}
       <motion.button
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         onClick={() => router.push(`/e/${slug}`)}
-        className="absolute top-4 left-4 z-20 p-2 bg-black bg-opacity-50 rounded-full"
+        className="absolute top-4 left-4 z-20 p-2 bg-app-fg/50 rounded-full"
       >
         <ArrowLeft className="w-6 h-6" />
       </motion.button>
@@ -138,12 +138,12 @@ export default function CameraPage() {
             className="relative w-full h-screen"
           >
             {/* Video Stream Placeholder */}
-            <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+            <div className="w-full h-full bg-app-fg flex items-center justify-center">
               <div className="text-center">
-                <Camera className="w-24 h-24 mx-auto mb-4 text-gray-600" />
-                <p className="text-gray-400 mb-4">Kamera-Stream</p>
+                <Camera className="w-24 h-24 mx-auto mb-4 text-app-bg/60" />
+                <p className="text-app-bg/70 mb-4">Kamera-Stream</p>
                 {uploadError && (
-                  <div className="mb-4 px-4 py-2 rounded-lg bg-red-900/40 border border-red-700 text-red-100 text-sm max-w-xs mx-auto">
+                  <div className="mb-4 px-4 py-2 rounded-lg bg-app-fg/50 border border-[var(--status-danger)] text-[var(--status-danger)] text-sm max-w-xs mx-auto">
                     Fehler beim Upload: {uploadError}
                     {canRetry && !uploading && capturedPhoto && (
                       <div className="mt-2">
@@ -161,10 +161,10 @@ export default function CameraPage() {
 
                 {uploading && uploadProgress > 0 && (
                   <div className="mb-4 max-w-xs mx-auto">
-                    <div className="text-xs text-gray-200 mb-2">Upload: {uploadProgress}%</div>
-                    <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div className="text-xs text-app-bg/80 mb-2">Upload: {uploadProgress}%</div>
+                    <div className="w-full bg-app-bg/20 rounded-full h-2">
                       <div
-                        className="bg-white h-2 rounded-full"
+                        className="bg-app-bg h-2 rounded-full"
                         style={{ width: `${uploadProgress}%` }}
                       />
                     </div>
@@ -183,7 +183,7 @@ export default function CameraPage() {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="px-6 py-3 bg-primary-600 rounded-lg hover:bg-primary-700"
+                  className="px-6 py-3 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90"
                 >
                   {uploading ? 'Hochladen…' : 'Foto auswählen'}
                 </motion.button>
@@ -195,9 +195,9 @@ export default function CameraPage() {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={capturePhoto}
-              className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-white rounded-full border-4 border-gray-300 shadow-lg z-10"
+              className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-app-bg rounded-full border-4 border-app-border shadow-lg z-10"
             >
-              <div className="w-full h-full bg-white rounded-full" />
+              <div className="w-full h-full bg-app-bg rounded-full" />
             </motion.button>
           </motion.div>
         ) : (
@@ -221,7 +221,7 @@ export default function CameraPage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setCapturedPhoto(null)}
-                className="px-6 py-3 bg-gray-700 rounded-lg hover:bg-gray-600"
+                className="px-6 py-3 bg-app-bg/20 text-app-bg rounded-lg hover:bg-app-bg/30"
               >
                 Neu aufnehmen
               </motion.button>
@@ -230,14 +230,14 @@ export default function CameraPage() {
                 whileTap={{ scale: 0.95 }}
                 onClick={handleCaptureAndUpload}
                 disabled={uploading}
-                className="px-6 py-3 bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-3 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
               >
                 {uploading ? (
                   <>
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ repeat: Infinity, duration: 1 }}
-                      className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                      className="w-5 h-5 border-2 border-app-bg border-t-transparent rounded-full"
                     />
                     Hochladen...
                   </>
@@ -264,9 +264,9 @@ export default function CameraPage() {
                     opacity: [1, 0.5, 0],
                   }}
                   transition={{ duration: 1, repeat: Infinity }}
-                  className="w-32 h-32 bg-green-500 rounded-full flex items-center justify-center"
+                  className="w-32 h-32 bg-[var(--status-success)] rounded-full flex items-center justify-center"
                 >
-                  <Upload className="w-16 h-16 text-white" />
+                  <Upload className="w-16 h-16 text-app-bg" />
                 </motion.div>
               </motion.div>
             )}

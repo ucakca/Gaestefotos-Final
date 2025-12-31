@@ -57,7 +57,7 @@ export default function EventHeader({
   const headerColor =
     designConfig?.colors?.primary ||
     designConfig.headerColor ||
-    '#8B1538'; // Dark magenta/burgundy
+    'var(--brand-green)';
   const appName = designConfig.appName || 'Gästefotos';
 
   const presetKey = designConfig.designPresetKey || 'classic';
@@ -384,7 +384,7 @@ export default function EventHeader({
                 </div>
 
                 {storyUploadError && (
-                  <div className="mt-4 rounded-xl bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+                  <div className="mt-4 rounded-xl bg-app-bg border border-[var(--status-danger)] px-3 py-2 text-sm text-[var(--status-danger)]">
                     {storyUploadError}
                   </div>
                 )}

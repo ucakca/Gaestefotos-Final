@@ -145,16 +145,16 @@ export default function LiveWallPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="text-white text-lg">Laden...</div>
+      <div className="min-h-screen flex items-center justify-center bg-app-fg">
+        <div className="text-app-bg text-lg">Laden...</div>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="text-white">Event nicht gefunden</div>
+      <div className="min-h-screen flex items-center justify-center bg-app-fg">
+        <div className="text-app-bg">Event nicht gefunden</div>
       </div>
     );
   }
@@ -164,29 +164,29 @@ export default function LiveWallPage() {
     : '';
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-app-fg text-app-bg">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 bg-black bg-opacity-50 p-4 flex justify-between items-center">
+      <div className="absolute top-0 left-0 right-0 z-10 bg-app-fg/50 p-4 flex justify-between items-center">
         <h1 className="text-2xl font-bold">{event.title}</h1>
         
         <div className="flex gap-4 items-center">
           <button
             onClick={() => setViewMode(viewMode === 'grid' ? 'slideshow' : 'grid')}
-            className="px-4 py-2 bg-white bg-opacity-20 rounded hover:bg-opacity-30"
+            className="px-4 py-2 bg-app-bg/20 rounded hover:bg-app-bg/30"
           >
             {viewMode === 'grid' ? 'Slideshow' : 'Grid'}
           </button>
 
           <button
             onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
-            className="px-4 py-2 bg-white bg-opacity-20 rounded hover:bg-opacity-30"
+            className="px-4 py-2 bg-app-bg/20 rounded hover:bg-app-bg/30"
           >
             {sortMode === 'newest' ? 'Neueste' : 'Zufall'}
           </button>
 
           <button
             onClick={() => setRealtimeEnabled((v) => !v)}
-            className="px-4 py-2 bg-white bg-opacity-20 rounded hover:bg-opacity-30"
+            className="px-4 py-2 bg-app-bg/20 rounded hover:bg-app-bg/30"
           >
             {realtimeEnabled ? 'Realtime' : 'Polling'}
           </button>
@@ -215,7 +215,7 @@ export default function LiveWallPage() {
                   }}
                   exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 0.25 }}
-                  className="aspect-square bg-gray-800 rounded overflow-hidden"
+                  className="aspect-square bg-app-bg/10 rounded overflow-hidden"
                 >
                   {photo.url ? (
                   <img
@@ -224,7 +224,7 @@ export default function LiveWallPage() {
                     className="w-full h-full object-cover"
                   />
                   ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-600">
+                  <div className="w-full h-full flex items-center justify-center text-app-bg/60">
                     Foto
                   </div>
                   )}
@@ -256,13 +256,13 @@ export default function LiveWallPage() {
 
           {displayPhotos.length === 0 && (
             <div className="text-center">
-              <p className="text-2xl text-gray-400">Noch keine Fotos</p>
+              <p className="text-2xl text-app-bg/70">Noch keine Fotos</p>
             </div>
           )}
 
           {/* Photo Counter */}
           {displayPhotos.length > 0 && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 px-4 py-2 rounded">
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-app-fg/50 px-4 py-2 rounded">
               {currentSlide + 1} / {displayPhotos.length}
             </div>
           )}

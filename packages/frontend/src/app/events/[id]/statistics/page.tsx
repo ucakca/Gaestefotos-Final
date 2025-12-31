@@ -32,7 +32,7 @@ interface Statistics {
   }>;
 }
 
-const COLORS = ['#295B4D', '#EAA48F', '#F9F5F2', '#8884d8'];
+const COLORS = ['var(--brand-green)', 'var(--app-accent)', 'var(--app-bg)', 'var(--status-info)'];
 
 export default function StatisticsPage() {
   const params = useParams();
@@ -79,22 +79,22 @@ export default function StatisticsPage() {
   if (!statistics) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-red-600">Fehler beim Laden der Statistiken</div>
+        <div className="text-[var(--status-danger)]">Fehler beim Laden der Statistiken</div>
       </div>
     );
   }
 
   // Prepare chart data
   const statusData = [
-    { name: 'Freigegeben', value: statistics.photos.approved, color: '#10b981' },
-    { name: 'Ausstehend', value: statistics.photos.pending, color: '#f59e0b' },
-    { name: 'Abgelehnt', value: statistics.photos.rejected, color: '#ef4444' },
+    { name: 'Freigegeben', value: statistics.photos.approved, color: 'var(--status-success)' },
+    { name: 'Ausstehend', value: statistics.photos.pending, color: 'var(--status-warning)' },
+    { name: 'Abgelehnt', value: statistics.photos.rejected, color: 'var(--status-danger)' },
   ];
 
   const guestStatusData = [
-    { name: 'Zugesagt', value: statistics.guests.accepted, color: '#10b981' },
-    { name: 'Ausstehend', value: statistics.guests.pending, color: '#f59e0b' },
-    { name: 'Abgesagt', value: statistics.guests.declined, color: '#ef4444' },
+    { name: 'Zugesagt', value: statistics.guests.accepted, color: 'var(--status-success)' },
+    { name: 'Ausstehend', value: statistics.guests.pending, color: 'var(--status-warning)' },
+    { name: 'Abgesagt', value: statistics.guests.declined, color: 'var(--status-danger)' },
   ];
 
   const trendData = Object.entries(statistics.uploadTrends)
@@ -118,10 +118,10 @@ export default function StatisticsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-app-fg mb-2">
             Statistiken
           </h1>
-          <p className="text-gray-600">{event?.title}</p>
+          <p className="text-app-muted">{event?.title}</p>
         </motion.div>
 
         {/* Summary Cards */}
@@ -129,37 +129,37 @@ export default function StatisticsPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-lg shadow p-6"
+            className="bg-app-card border border-app-border rounded-lg shadow p-6"
           >
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Fotos gesamt</h3>
-            <p className="text-3xl font-bold text-gray-900">{statistics.photos.total}</p>
+            <h3 className="text-sm font-medium text-app-muted mb-2">Fotos gesamt</h3>
+            <p className="text-3xl font-bold text-app-fg">{statistics.photos.total}</p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-lg shadow p-6"
+            className="bg-app-card border border-app-border rounded-lg shadow p-6"
           >
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Freigegeben</h3>
-            <p className="text-3xl font-bold text-green-600">{statistics.photos.approved}</p>
+            <h3 className="text-sm font-medium text-app-muted mb-2">Freigegeben</h3>
+            <p className="text-3xl font-bold text-[var(--status-success)]">{statistics.photos.approved}</p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-lg shadow p-6"
+            className="bg-app-card border border-app-border rounded-lg shadow p-6"
           >
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Gäste gesamt</h3>
-            <p className="text-3xl font-bold text-gray-900">{statistics.guests.total}</p>
+            <h3 className="text-sm font-medium text-app-muted mb-2">Gäste gesamt</h3>
+            <p className="text-3xl font-bold text-app-fg">{statistics.guests.total}</p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
-            className="bg-white rounded-lg shadow p-6"
+            className="bg-app-card border border-app-border rounded-lg shadow p-6"
           >
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Zugesagt</h3>
-            <p className="text-3xl font-bold text-green-600">{statistics.guests.accepted}</p>
+            <h3 className="text-sm font-medium text-app-muted mb-2">Zugesagt</h3>
+            <p className="text-3xl font-bold text-[var(--status-success)]">{statistics.guests.accepted}</p>
           </motion.div>
         </div>
 
@@ -169,9 +169,9 @@ export default function StatisticsPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-lg shadow p-6"
+            className="bg-app-card border border-app-border rounded-lg shadow p-6"
           >
-            <h2 className="text-xl font-semibold mb-4">Foto-Status</h2>
+            <h2 className="text-xl font-semibold mb-4 text-app-fg">Foto-Status</h2>
             <PieChart width={400} height={300}>
               <Pie
                 data={statusData}
@@ -180,7 +180,7 @@ export default function StatisticsPage() {
                 labelLine={false}
                 label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
                 outerRadius={80}
-                fill="#8884d8"
+                fill={COLORS[3]}
                 dataKey="value"
               >
                 {statusData.map((entry, index) => (
@@ -196,9 +196,9 @@ export default function StatisticsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-lg shadow p-6"
+            className="bg-app-card border border-app-border rounded-lg shadow p-6"
           >
-            <h2 className="text-xl font-semibold mb-4">Gäste-Status</h2>
+            <h2 className="text-xl font-semibold mb-4 text-app-fg">Gäste-Status</h2>
             <PieChart width={400} height={300}>
               <Pie
                 data={guestStatusData}
@@ -207,7 +207,7 @@ export default function StatisticsPage() {
                 labelLine={false}
                 label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
                 outerRadius={80}
-                fill="#8884d8"
+                fill={COLORS[3]}
                 dataKey="value"
               >
                 {guestStatusData.map((entry, index) => (
@@ -224,17 +224,17 @@ export default function StatisticsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white rounded-lg shadow p-6 lg:col-span-2"
+              className="bg-app-card border border-app-border rounded-lg shadow p-6 lg:col-span-2"
             >
-              <h2 className="text-xl font-semibold mb-4">Upload-Trends (letzte 7 Tage)</h2>
+              <h2 className="text-xl font-semibold mb-4 text-app-fg">Upload-Trends (letzte 7 Tage)</h2>
               <LineChart width={800} height={300} data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="Freigegeben" stroke="#10b981" />
-                <Line type="monotone" dataKey="Ausstehend" stroke="#f59e0b" />
+                <Line type="monotone" dataKey="Freigegeben" stroke="var(--status-success)" />
+                <Line type="monotone" dataKey="Ausstehend" stroke="var(--status-warning)" />
               </LineChart>
             </motion.div>
           )}
@@ -245,15 +245,15 @@ export default function StatisticsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-white rounded-lg shadow p-6 lg:col-span-2"
+              className="bg-app-card border border-app-border rounded-lg shadow p-6 lg:col-span-2"
             >
-              <h2 className="text-xl font-semibold mb-4">Fotos nach Kategorie</h2>
+              <h2 className="text-xl font-semibold mb-4 text-app-fg">Fotos nach Kategorie</h2>
               <BarChart width={800} height={300} data={categoryData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="Fotos" fill="#295B4D" />
+                <Bar dataKey="Fotos" fill="var(--brand-green)" />
               </BarChart>
             </motion.div>
           )}

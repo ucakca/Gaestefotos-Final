@@ -837,7 +837,7 @@ export default function ModernPhotoGrid({
                       </div>
                     )}
                     {commentError && (
-                      <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                      <div className="text-xs text-[var(--status-danger)] bg-app-bg border border-[var(--status-danger)] rounded-lg px-3 py-2">
                         {commentError}
                       </div>
                     )}

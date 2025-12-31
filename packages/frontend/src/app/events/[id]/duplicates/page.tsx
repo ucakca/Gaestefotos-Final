@@ -116,10 +116,10 @@ export default function DuplicatesPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-app-fg mb-2">
             Duplikat-Verwaltung
           </h1>
-          <p className="text-gray-600">
+          <p className="text-app-muted">
             {event?.title} • {duplicateGroups.length} Duplikat-Gruppe{duplicateGroups.length !== 1 ? 'n' : ''} gefunden
           </p>
         </motion.div>
@@ -130,11 +130,11 @@ export default function DuplicatesPage() {
             animate={{ opacity: 1 }}
             className="text-center py-20"
           >
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 mb-6">
-              <Check className="w-10 h-10 text-green-600" />
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-app-bg border border-app-border mb-6">
+              <Check className="w-10 h-10 text-[var(--status-success)]" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Keine Duplikate gefunden</h2>
-            <p className="text-gray-600">Alle Fotos sind einzigartig!</p>
+            <h2 className="text-2xl font-bold text-app-fg mb-2">Keine Duplikate gefunden</h2>
+            <p className="text-app-muted">Alle Fotos sind einzigartig!</p>
           </motion.div>
         ) : (
           <div className="space-y-6">
@@ -144,27 +144,27 @@ export default function DuplicatesPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: groupIndex * 0.05 }}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+                className="bg-app-card rounded-lg shadow-sm border border-app-border overflow-hidden"
               >
-                <div className="p-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                <div className="p-4 bg-app-bg border-b border-app-border flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="font-semibold text-app-fg">
                       Duplikat-Gruppe {groupIndex + 1}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-app-muted">
                       {group.count} ähnliche Foto{group.count !== 1 ? 's' : ''}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setSelectedGroup(selectedGroup === group.groupId ? null : group.groupId)}
-                      className="px-3 py-1.5 text-sm bg-[#295B4D] text-white rounded-md hover:bg-[#1f4238]"
+                      className="px-3 py-1.5 text-sm bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90"
                     >
                       {selectedGroup === group.groupId ? 'Ausblenden' : 'Details'}
                     </button>
                     <button
                       onClick={() => deleteDuplicates(group.groupId, group.bestPhoto.id)}
-                      className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-1"
+                      className="px-3 py-1.5 text-sm bg-[var(--status-danger)] text-app-bg rounded-md hover:opacity-90 flex items-center gap-1"
                     >
                       <Trash2 className="w-4 h-4" />
                       Duplikate löschen
@@ -188,8 +188,8 @@ export default function DuplicatesPage() {
                           transition={{ delay: photoIndex * 0.05 }}
                           className={`relative rounded-lg overflow-hidden border-2 ${
                             photo.isBestInGroup
-                              ? 'border-green-500 ring-2 ring-green-200'
-                              : 'border-gray-200'
+                              ? 'border-[var(--status-success)] ring-2 ring-[var(--status-success)]/30'
+                              : 'border-app-border'
                           }`}
                         >
                           {photo.url ? (
@@ -199,24 +199,24 @@ export default function DuplicatesPage() {
                               className="w-full aspect-square object-cover"
                             />
                           ) : (
-                            <div className="w-full aspect-square bg-gray-200 flex items-center justify-center">
-                              <span className="text-gray-400">Foto</span>
+                            <div className="w-full aspect-square bg-app-bg flex items-center justify-center">
+                              <span className="text-app-muted">Foto</span>
                             </div>
                           )}
 
                           {photo.isBestInGroup && (
-                            <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                            <div className="absolute top-2 left-2 bg-[var(--status-success)] text-app-bg text-xs px-2 py-1 rounded flex items-center gap-1">
                               <Star className="w-3 h-3" />
                               Bestes Foto
                             </div>
                           )}
 
-                          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white p-2 text-xs">
+                          <div className="absolute bottom-0 left-0 right-0 bg-app-fg/60 text-app-bg p-2 text-xs">
                             <div className="truncate">
                               {photo.uploadedBy || (photo.guest ? `${photo.guest.firstName} ${photo.guest.lastName}` : 'Unbekannt')}
                             </div>
                             {photo.qualityScore && (
-                              <div className="text-gray-300">
+                              <div className="text-app-bg/70">
                                 Qualität: {photo.qualityScore.toFixed(1)}
                               </div>
                             )}
@@ -226,10 +226,10 @@ export default function DuplicatesPage() {
                             {!photo.isBestInGroup && (
                               <button
                                 onClick={() => setBestPhoto(group.groupId, photo.id)}
-                                className="p-1.5 bg-white rounded-full shadow-md hover:bg-gray-100"
+                                className="p-1.5 bg-app-card rounded-full shadow-md hover:bg-app-bg"
                                 title="Als bestes Foto setzen"
                               >
-                                <StarOff className="w-4 h-4 text-gray-600" />
+                                <StarOff className="w-4 h-4 text-app-muted" />
                               </button>
                             )}
                           </div>
@@ -240,7 +240,7 @@ export default function DuplicatesPage() {
                 </AnimatePresence>
 
                 {/* Best Photo Preview (always visible) */}
-                <div className="p-4 border-t border-gray-200">
+                <div className="p-4 border-t border-app-border">
                   <div className="flex items-center gap-4">
                     <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
                       {group.bestPhoto.url ? (
@@ -250,24 +250,24 @@ export default function DuplicatesPage() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-gray-400 text-xs">Foto</span>
+                        <div className="w-full h-full bg-app-bg flex items-center justify-center">
+                          <span className="text-app-muted text-xs">Foto</span>
                         </div>
                       )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <Star className="w-4 h-4 text-green-600" />
-                        <span className="font-medium text-gray-900">Beste Foto (wird Gästen angezeigt)</span>
+                        <Star className="w-4 h-4 text-[var(--status-success)]" />
+                        <span className="font-medium text-app-fg">Beste Foto (wird Gästen angezeigt)</span>
                       </div>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-app-muted">
                         {group.bestPhoto.uploadedBy || 
                          (group.bestPhoto.guest 
                            ? `${group.bestPhoto.guest.firstName} ${group.bestPhoto.guest.lastName}` 
                            : 'Unbekannt')}
                       </p>
                       {group.bestPhoto.qualityScore && (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-app-muted">
                           Qualitäts-Score: {group.bestPhoto.qualityScore.toFixed(1)}
                         </p>
                       )}

@@ -316,7 +316,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                           )}
                           {file.error && (
                             <div className="mt-1">
-                              <p className="text-xs text-red-600">{file.error}</p>
+                              <p className="text-xs text-[var(--status-danger)]">{file.error}</p>
                               <button
                                 type="button"
                                 onClick={() => retryUpload(index)}
@@ -331,7 +331,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                         {!file.uploading && !file.success && (
                           <button
                             onClick={() => removeFile(index)}
-                            className="w-6 h-6 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center"
+                            className="w-6 h-6 rounded-full bg-app-bg text-[var(--status-danger)] border border-[var(--status-danger)] hover:opacity-90 flex items-center justify-center"
                           >
                             <X className="w-4 h-4" />
                           </button>

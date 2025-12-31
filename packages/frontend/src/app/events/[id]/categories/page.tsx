@@ -463,7 +463,7 @@ export default function CategoryManagementPage() {
                                 title={key}
                                 className={`h-10 w-10 rounded-md border flex items-center justify-center transition-colors ${
                                   isSelected
-                                    ? 'border-[#295B4D] bg-[#295B4D]/10'
+                                    ? 'border-tokens-brandGreen bg-tokens-brandGreen/10'
                                     : 'border-app-border bg-app-card hover:bg-app-bg'
                                 }`}
                               >
@@ -496,7 +496,7 @@ export default function CategoryManagementPage() {
                                     onClick={() => setFormData({ ...formData, iconKey: key })}
                                     className={`flex items-center gap-2 rounded-md border px-2 py-2 text-left text-xs transition-colors ${
                                       isSelected
-                                        ? 'border-[#295B4D] bg-[#295B4D]/10'
+                                        ? 'border-tokens-brandGreen bg-tokens-brandGreen/10'
                                         : 'border-app-border bg-app-card hover:bg-app-bg'
                                     }`}
                                   >
@@ -572,7 +572,7 @@ export default function CategoryManagementPage() {
                     />
                     <div className="flex items-center gap-2">
                       {formData.uploadLocked ? (
-                        <Lock className="w-5 h-5 text-red-600" />
+                        <Lock className="w-5 h-5 text-[var(--status-danger)]" />
                       ) : (
                         <Unlock className="w-5 h-5 text-app-muted" />
                       )}
@@ -642,7 +642,7 @@ export default function CategoryManagementPage() {
                     type="submit"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="rounded-lg bg-tokens-brandGreen px-4 py-2 text-white hover:opacity-90"
+                    className="rounded-lg bg-tokens-brandGreen px-4 py-2 text-app-bg hover:opacity-90"
                   >
                     {editingCategory ? 'Speichern' : 'Hinzufügen'}
                   </motion.button>
@@ -727,7 +727,7 @@ export default function CategoryManagementPage() {
                           )}
                         </div>
                         {category.uploadLocked && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-app-bg text-red-700 border border-app-border">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-app-bg text-[var(--status-danger)] border border-app-border">
                             <Lock className="w-3 h-3" />
                             Upload gesperrt
                           </span>
@@ -749,7 +749,7 @@ export default function CategoryManagementPage() {
                         </button>
                         <button
                           onClick={() => handleDelete(category.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-[var(--status-danger)] hover:opacity-90"
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>

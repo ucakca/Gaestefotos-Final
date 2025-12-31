@@ -35,21 +35,21 @@ export default function SocialShare({ url, title = 'Event Foto', imageUrl, class
     <div className={`flex gap-2 ${className}`}>
       <button
         onClick={() => handleShare('facebook')}
-        className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+        className="p-2 bg-[var(--status-info)] text-app-bg rounded-full hover:opacity-90 transition-colors"
         aria-label="Auf Facebook teilen"
       >
         <Facebook className="w-5 h-5" />
       </button>
       <button
         onClick={() => handleShare('whatsapp')}
-        className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors"
+        className="p-2 bg-[var(--status-success)] text-app-bg rounded-full hover:opacity-90 transition-colors"
         aria-label="Auf WhatsApp teilen"
       >
         <MessageCircle className="w-5 h-5" />
       </button>
       <button
         onClick={() => handleShare('copy')}
-        className="p-2 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition-colors"
+        className="p-2 bg-[var(--status-neutral)] text-app-bg rounded-full hover:opacity-90 transition-colors"
         aria-label="Link kopieren"
       >
         <Copy className="w-5 h-5" />

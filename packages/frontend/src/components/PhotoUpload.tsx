@@ -171,7 +171,7 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                     )}
 
                     {file.error && (
-                      <p className="text-xs text-red-600 mt-1">{file.error}</p>
+                      <p className="text-xs text-[var(--status-danger)] mt-1">{file.error}</p>
                     )}
                   </div>
 
@@ -180,7 +180,7 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center"
+                        className="w-8 h-8 rounded-full bg-[var(--status-success)] flex items-center justify-center"
                       >
                         <Check className="w-5 h-5 text-app-bg" />
                       </motion.div>
@@ -189,7 +189,7 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                     {!file.uploading && !file.success && (
                       <button
                         onClick={() => removeFile(index)}
-                        className="w-8 h-8 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center"
+                        className="w-8 h-8 rounded-full bg-app-bg text-[var(--status-danger)] border border-[var(--status-danger)] hover:opacity-90 flex items-center justify-center"
                       >
                         <X className="w-4 h-4" />
                       </button>

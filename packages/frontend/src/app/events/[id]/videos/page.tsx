@@ -690,7 +690,7 @@ export default function VideosPage() {
                         handleBulkDelete();
                         setShowActionsMenu(false);
                       }}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600 flex items-center gap-2"
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-app-bg text-[var(--status-danger)] flex items-center gap-2"
                     >
                       <Trash2 className="w-4 h-4" />
                       Löschen

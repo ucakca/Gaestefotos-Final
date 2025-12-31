@@ -565,7 +565,7 @@ export default function EventDashboardPage() {
             </button>
           </div>
 
-          {usageError && <div className="mt-3 text-sm text-red-700">{usageError}</div>}
+          {usageError && <div className="mt-3 text-sm text-[var(--status-danger)]">{usageError}</div>}
 
           {!usageLoading && usage && (
             <div className="mt-4">
@@ -630,7 +630,7 @@ export default function EventDashboardPage() {
                 </button>
               )}
             </div>
-            {upgradeError && <div className="mt-2 text-sm text-red-700">{upgradeError}</div>}
+            {upgradeError && <div className="mt-2 text-sm text-[var(--status-danger)]">{upgradeError}</div>}
             {upgradeUrl && (
               <div className="mt-2 text-xs text-app-muted break-all">{upgradeUrl}</div>
             )}
@@ -657,7 +657,7 @@ export default function EventDashboardPage() {
                 </button>
               )}
             </div>
-            {shareError && <div className="mt-2 text-sm text-red-700">{shareError}</div>}
+            {shareError && <div className="mt-2 text-sm text-[var(--status-danger)]">{shareError}</div>}
             {shareUrl && (
               <div className="mt-2 text-xs text-app-muted break-all">{shareUrl}</div>
             )}
@@ -696,7 +696,7 @@ export default function EventDashboardPage() {
               </button>
             </div>
 
-            {invitationsError && <div className="mt-2 text-sm text-red-700">{invitationsError}</div>}
+            {invitationsError && <div className="mt-2 text-sm text-[var(--status-danger)]">{invitationsError}</div>}
 
             <div className="mt-4 space-y-3">
               {invitationsLoading && (
@@ -764,7 +764,7 @@ export default function EventDashboardPage() {
                                   onClick={() => saveInvitation(inv.id, { removePassword: true })}
                                   disabled={isSaving}
                                   data-testid={`invitation-remove-password-${inv.id}`}
-                                  className="mt-2 px-3 py-2 rounded-lg border border-red-300 text-red-700 text-sm font-medium disabled:opacity-50"
+                                  className="mt-2 px-3 py-2 rounded-lg border border-[var(--status-danger)] text-[var(--status-danger)] text-sm font-medium disabled:opacity-50"
                                 >
                                   {isSaving ? 'Speichere…' : 'Passwort entfernen'}
                                 </button>
@@ -971,7 +971,7 @@ export default function EventDashboardPage() {
               <span><strong>{photoStats.total}</strong> Fotos</span>
               <span><strong>{photoStats.approved}</strong> Freigegeben</span>
               {photoStats.pending > 0 && (
-                <span className="text-orange-600"><strong>{photoStats.pending}</strong> Ausstehend</span>
+                <span className="text-[var(--status-warning)]"><strong>{photoStats.pending}</strong> Ausstehend</span>
               )}
             </div>
           </div>
@@ -1013,7 +1013,7 @@ export default function EventDashboardPage() {
             <div className="flex items-center gap-3 mb-2">
               <Calendar className="w-5 h-5 text-tokens-brandGreen" />
               <label className="text-sm font-medium text-app-fg">
-                Datum <span className="text-red-500">*</span>
+                Datum <span className="text-[var(--status-danger)]">*</span>
               </label>
             </div>
             {editingField === 'date' ? (
@@ -1046,7 +1046,7 @@ export default function EventDashboardPage() {
                     })}
                   </p>
                 ) : (
-                  <p className="text-red-400 italic">Bitte Datum auswählen *</p>
+                  <p className="text-[var(--status-danger)] italic">Bitte Datum auswählen *</p>
                 )}
               </div>
             )}
@@ -1057,7 +1057,7 @@ export default function EventDashboardPage() {
             <div className="flex items-center gap-3 mb-2">
               <Clock className="w-5 h-5 text-tokens-brandGreen" />
               <label className="text-sm font-medium text-app-fg">
-                Uhrzeit <span className="text-red-500">*</span>
+                Uhrzeit <span className="text-[var(--status-danger)]">*</span>
               </label>
             </div>
             {editingField === 'time' ? (
@@ -1089,7 +1089,7 @@ export default function EventDashboardPage() {
                     })}
                   </p>
                 ) : (
-                  <p className="text-red-400 italic">Bitte Uhrzeit auswählen *</p>
+                  <p className="text-[var(--status-danger)] italic">Bitte Uhrzeit auswählen *</p>
                 )}
               </div>
             )}
@@ -1413,8 +1413,8 @@ export default function EventDashboardPage() {
                   className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                      <Trophy className="w-5 h-5 text-yellow-600" />
+                    <div className="w-10 h-10 bg-app-bg border border-[var(--status-warning)] rounded-full flex items-center justify-center">
+                      <Trophy className="w-5 h-5 text-[var(--status-warning)]" />
                     </div>
                     <div>
                       <p className="font-semibold text-sm text-app-fg">Challenges</p>

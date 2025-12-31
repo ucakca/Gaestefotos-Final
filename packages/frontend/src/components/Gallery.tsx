@@ -73,7 +73,7 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
   if (photos.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">Noch keine Fotos vorhanden</p>
+        <p className="text-app-muted">Noch keine Fotos vorhanden</p>
       </div>
     );
   }
@@ -90,7 +90,7 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
             transition={{ delay: index * 0.05 }}
             whileHover={{ scale: 1.05 }}
             onClick={() => openLightbox(index)}
-            className="aspect-square bg-gray-200 rounded-lg overflow-hidden cursor-pointer group relative"
+            className="aspect-square bg-app-bg rounded-lg overflow-hidden cursor-pointer group relative"
           >
             {photo.url ? (
               <img
@@ -99,11 +99,11 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
                 className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <div className="w-full h-full flex items-center justify-center text-app-muted">
                 Foto
               </div>
             )}
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity" />
+            <div className="absolute inset-0 bg-app-fg/0 group-hover:bg-app-fg/20 transition-opacity" />
           </motion.div>
         ))}
       </div>
@@ -116,7 +116,7 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeLightbox}
-            className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-app-fg/90 z-50 flex items-center justify-center p-4"
           >
             {/* Close Button */}
             <motion.button
@@ -124,7 +124,7 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeLightbox}
-              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+              className="absolute top-4 right-4 text-app-bg hover:text-app-bg/70 z-10"
             >
               <X className="w-8 h-8" />
             </motion.button>
@@ -140,7 +140,7 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
                     e.stopPropagation();
                     prevPhoto();
                   }}
-                  className="absolute left-4 text-white hover:text-gray-300 z-10"
+                  className="absolute left-4 text-app-bg hover:text-app-bg/70 z-10"
                 >
                   <ChevronLeft className="w-12 h-12" />
                 </motion.button>
@@ -152,7 +152,7 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
                     e.stopPropagation();
                     nextPhoto();
                   }}
-                  className="absolute right-4 text-white hover:text-gray-300 z-10"
+                  className="absolute right-4 text-app-bg hover:text-app-bg/70 z-10"
                 >
                   <ChevronRight className="w-12 h-12" />
                 </motion.button>
@@ -188,7 +188,7 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
                   e.stopPropagation();
                   handleDownload(photos[selectedPhoto]);
                 }}
-                className="p-3 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70"
+                className="p-3 bg-app-fg/50 rounded-full text-app-bg hover:bg-app-fg/70"
               >
                 <Download className="w-6 h-6" />
               </motion.button>
@@ -199,7 +199,7 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
                   e.stopPropagation();
                   handleShare(photos[selectedPhoto]);
                 }}
-                className="p-3 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70"
+                className="p-3 bg-app-fg/50 rounded-full text-app-bg hover:bg-app-fg/70"
               >
                 <Share2 className="w-6 h-6" />
               </motion.button>
@@ -211,7 +211,7 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute bottom-32 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full bg-black bg-opacity-60 text-white text-sm"
+                  className="absolute bottom-32 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full bg-app-fg/60 text-app-bg text-sm"
                 >
                   {copyFeedback}
                 </motion.div>
@@ -223,7 +223,7 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm"
+              className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-app-bg text-sm"
             >
               {selectedPhoto + 1} / {photos.length}
             </motion.div>

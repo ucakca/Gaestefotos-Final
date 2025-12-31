@@ -247,7 +247,7 @@ export default function InstagramGallery({
                       <Heart
                         className={`w-6 h-6 ${
                           likedPhotos.has(photos[selectedPhoto]?.id || '')
-                            ? 'fill-red-500 text-red-500'
+                            ? 'fill-[var(--status-danger)] text-[var(--status-danger)]'
                             : 'text-app-fg'
                         }`}
                       />

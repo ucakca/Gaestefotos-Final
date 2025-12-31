@@ -29,7 +29,7 @@ export default function ActionButton({
   const variantClasses = {
     primary: 'bg-tokens-brandGreen text-app-bg hover:opacity-90',
     secondary: 'bg-app-bg text-app-fg hover:opacity-90',
-    danger: 'bg-red-100 text-red-700 hover:bg-red-200',
+    danger: 'bg-app-bg text-[var(--status-danger)] border border-[var(--status-danger)] hover:opacity-90',
   };
 
   const classes = `${baseClasses} ${variantClasses[variant]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`;

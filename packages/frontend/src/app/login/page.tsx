@@ -55,38 +55,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{
-        backgroundColor: '#295B4D',
-        minHeight: '100vh',
-        width: '100vw',
-        display: 'flex',
-        position: 'relative',
-        zIndex: 1,
-      }}
-    >
+    <div className="min-h-screen w-screen flex items-center justify-center p-4 bg-tokens-brandGreen">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl shadow-xl p-8 w-full max-w-md"
-        style={{
-          backgroundColor: '#F9F5F2',
-          width: '100%',
-          maxWidth: '28rem',
-        }}
+        className="rounded-2xl shadow-xl p-8 w-full max-w-md bg-app-bg"
       >
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4" style={{ display: 'flex', justifyContent: 'center' }}>
             <Logo width={180} height={72} />
           </div>
-          <h1
-            className="text-3xl font-bold mb-2"
-            style={{ color: '#295B4D', fontSize: '1.875rem', fontWeight: 'bold', marginBottom: '0.5rem' }}
-          >
+          <h1 className="text-3xl font-bold mb-2 text-tokens-brandGreen">
             Willkommen zurück
           </h1>
-          <p className="text-sm" style={{ color: '#295B4D' }}>
+          <p className="text-sm text-tokens-brandGreen">
             Melde dich an, um fortzufahren
           </p>
         </div>
@@ -96,14 +78,14 @@ export default function LoginPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-red-50 border-2 border-red-400 text-red-800 px-4 py-3 rounded-lg"
+              className="bg-app-bg border-2 border-[var(--status-danger)] text-[var(--status-danger)] px-4 py-3 rounded-lg"
             >
               {error}
             </motion.div>
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-2" style={{ color: '#295B4D' }}>
+            <label htmlFor="email" className="block text-sm font-medium mb-2 text-tokens-brandGreen">
               E-Mail
             </label>
             <input
@@ -113,27 +95,14 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition-all"
-              style={{
-                borderColor: '#EAA48F',
-                color: '#295B4D',
-                backgroundColor: '#ffffff',
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#EAA48F';
-                e.target.style.boxShadow = '0 0 0 2px rgba(234, 164, 143, 0.2)';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = '#EAA48F';
-                e.target.style.boxShadow = 'none';
-              }}
+              className="w-full px-4 py-3 border border-app-accent rounded-lg focus:ring-2 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen focus:outline-none transition-all text-app-fg bg-app-card"
               placeholder="deine@email.com"
               autoComplete="email"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-2" style={{ color: '#295B4D' }}>
+            <label htmlFor="password" className="block text-sm font-medium mb-2 text-tokens-brandGreen">
               Passwort
             </label>
             <div className="relative">
@@ -144,28 +113,14 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:outline-none transition-all"
-                style={{
-                  borderColor: '#EAA48F',
-                  color: '#295B4D',
-                  backgroundColor: '#ffffff',
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#EAA48F';
-                  e.target.style.boxShadow = '0 0 0 2px rgba(234, 164, 143, 0.2)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = '#EAA48F';
-                  e.target.style.boxShadow = 'none';
-                }}
+                className="w-full px-4 py-3 pr-12 border border-app-accent rounded-lg focus:ring-2 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen focus:outline-none transition-all text-app-fg bg-app-card"
                 placeholder="••••••••"
                 autoComplete="current-password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 focus:outline-none"
-                style={{ color: '#295B4D' }}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 focus:outline-none text-tokens-brandGreen"
                 aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -174,7 +129,7 @@ export default function LoginPage() {
           </div>
 
           <div className="flex items-center justify-between">
-            <label className="flex items-center" style={{ color: '#295B4D' }}>
+            <label className="flex items-center text-tokens-brandGreen">
               <input
                 id="rememberMe"
                 name="rememberMe"
@@ -182,16 +137,13 @@ export default function LoginPage() {
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="w-4 h-4 rounded"
-                style={{
-                  accentColor: '#EAA48F',
-                  borderColor: '#EAA48F',
-                }}
+                style={{ accentColor: 'var(--app-accent)', borderColor: 'var(--app-accent)' }}
               />
               <span className="ml-2 text-sm">Angemeldet bleiben</span>
             </label>
             <a
               className="text-sm hover:underline"
-              style={{ color: '#295B4D' }}
+              style={{ color: 'var(--brand-green)' }}
               href="https://gästefotos.com/wp-login.php?action=lostpassword"
               target="_blank"
               rel="noreferrer"
@@ -205,43 +157,25 @@ export default function LoginPage() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             disabled={loading}
-            className="w-full text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: '#EAA48F' }}
-            onMouseEnter={(e) => {
-              if (!loading) e.currentTarget.style.backgroundColor = '#d89a87';
-            }}
-            onMouseLeave={(e) => {
-              if (!loading) e.currentTarget.style.backgroundColor = '#EAA48F';
-            }}
+            className="w-full text-app-bg py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-app-accent hover:opacity-90"
           >
             {loading ? 'Anmelden...' : 'Anmelden'}
           </motion.button>
 
-          <div className="text-center text-sm" style={{ color: '#295B4D', opacity: 0.9 }}>
+          <div className="text-center text-sm text-tokens-brandGreen/90">
             Kein Konto? Bitte auf <strong>gästefotos.com</strong> anlegen.
           </div>
 
-          <div
-            className="text-center"
-            style={{
-              marginTop: '0.75rem',
-              paddingTop: '0.75rem',
-              borderTop: '1px solid rgba(41, 91, 77, 0.12)',
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '0.75rem',
-              flexWrap: 'wrap',
-            }}
-          >
-            <a className="text-sm hover:underline" style={{ color: '#295B4D' }} href="https://xn--gstefotos-v2a.com/faq/" target="_blank" rel="noreferrer">
+          <div className="mt-3 pt-3 border-t border-tokens-brandGreen/15 flex justify-center gap-3 flex-wrap text-center">
+            <a className="text-sm hover:underline text-tokens-brandGreen" href="https://xn--gstefotos-v2a.com/faq/" target="_blank" rel="noreferrer">
               Hilfe / FAQ
             </a>
-            <span style={{ color: 'rgba(41, 91, 77, 0.35)' }}>|</span>
-            <a className="text-sm hover:underline" style={{ color: '#295B4D' }} href="https://xn--gstefotos-v2a.com/datenschutz/" target="_blank" rel="noreferrer">
+            <span className="text-tokens-brandGreen/35">|</span>
+            <a className="text-sm hover:underline text-tokens-brandGreen" href="https://xn--gstefotos-v2a.com/datenschutz/" target="_blank" rel="noreferrer">
               Datenschutz
             </a>
-            <span style={{ color: 'rgba(41, 91, 77, 0.35)' }}>|</span>
-            <a className="text-sm hover:underline" style={{ color: '#295B4D' }} href="https://gästefotos.com/impressum" target="_blank" rel="noreferrer">
+            <span className="text-tokens-brandGreen/35">|</span>
+            <a className="text-sm hover:underline text-tokens-brandGreen" href="https://gästefotos.com/impressum" target="_blank" rel="noreferrer">
               Impressum
             </a>
           </div>

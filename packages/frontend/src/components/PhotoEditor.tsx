@@ -134,7 +134,7 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-app-fg/75 z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <motion.div
@@ -142,13 +142,13 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
         animate={{ scale: 1 }}
         exit={{ scale: 0.9 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-lg max-w-4xl w-full p-6"
+        className="bg-app-card border border-app-border rounded-lg max-w-4xl w-full p-6"
       >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Foto bearbeiten</h2>
+          <h2 className="text-2xl font-bold text-app-fg">Foto bearbeiten</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-app-muted hover:text-app-fg"
           >
             <X className="w-6 h-6" />
           </button>
@@ -159,7 +159,7 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleRotate}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+            className="px-4 py-2 bg-[var(--status-info)] text-app-bg rounded-md hover:opacity-90 flex items-center gap-2"
           >
             <RotateCw className="w-4 h-4" />
             Drehen ({rotation}°)
@@ -170,8 +170,8 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
             onClick={handleCropStart}
             className={`px-4 py-2 rounded-md flex items-center gap-2 ${
               isCropping
-                ? 'bg-green-600 text-white hover:bg-green-700'
-                : 'bg-gray-600 text-white hover:bg-gray-700'
+                ? 'bg-[var(--status-success)] text-app-bg hover:opacity-90'
+                : 'bg-[var(--status-neutral)] text-app-bg hover:opacity-90'
             }`}
           >
             <Crop className="w-4 h-4" />
@@ -180,7 +180,7 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
           {isCropping && (
             <button
               onClick={handleCancelCrop}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              className="px-4 py-2 bg-[var(--status-danger)] text-app-bg rounded-md hover:opacity-90"
             >
               Abbrechen
             </button>
@@ -189,7 +189,7 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
 
         <div
           ref={containerRef}
-          className="relative bg-gray-100 rounded-lg overflow-hidden mb-4"
+          className="relative bg-app-bg rounded-lg overflow-hidden mb-4"
           style={{ minHeight: '400px', maxHeight: '70vh' }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
@@ -209,7 +209,7 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
           
           {cropArea && (
             <div
-              className="absolute border-2 border-blue-500 bg-blue-500 bg-opacity-20 pointer-events-none"
+              className="absolute border-2 border-[var(--status-info)] bg-[var(--status-info)]/20 pointer-events-none"
               style={{
                 left: `${cropArea.x}px`,
                 top: `${cropArea.y}px`,
@@ -223,7 +223,7 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+            className="px-4 py-2 bg-app-bg text-app-fg border border-app-border rounded-md hover:bg-app-card"
           >
             Abbrechen
           </button>
@@ -232,7 +232,7 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
             whileTap={{ scale: 0.95 }}
             onClick={handleSave}
             disabled={isSaving}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-4 py-2 bg-[var(--status-success)] text-app-bg rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <Check className="w-4 h-4" />
             {isSaving ? 'Speichern...' : 'Speichern'}

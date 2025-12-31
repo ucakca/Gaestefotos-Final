@@ -608,43 +608,43 @@ export default function PublicEventPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-gray-500">Laden...</div>
+      <div className="min-h-screen flex items-center justify-center bg-app-bg">
+        <div className="text-app-muted">Laden...</div>
       </div>
     );
   }
 
   if (error || !event) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-red-600">{error || 'Event nicht gefunden'}</div>
+      <div className="min-h-screen flex items-center justify-center bg-app-bg">
+        <div className="text-[var(--status-danger)]">{error || 'Event nicht gefunden'}</div>
       </div>
     );
   }
 
   if (passwordRequired) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="bg-white rounded-lg border border-gray-200 p-8 max-w-md w-full mx-4">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-900">Event-Passwort</h2>
-          <p className="text-gray-600 mb-6 text-sm">Dieses Event ist passwortgeschützt.</p>
+      <div className="min-h-screen flex items-center justify-center bg-app-bg">
+        <div className="bg-app-card rounded-lg border border-app-border p-8 max-w-md w-full mx-4">
+          <h2 className="text-2xl font-semibold mb-4 text-app-fg">Event-Passwort</h2>
+          <p className="text-app-muted mb-6 text-sm">Dieses Event ist passwortgeschützt.</p>
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:ring-1 focus:ring-black focus:border-black text-gray-900 bg-white text-sm"
+                className="w-full px-4 py-2.5 border border-app-border rounded-md focus:ring-1 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen text-app-fg bg-app-card text-sm"
                 placeholder="Passwort eingeben"
                 required
               />
               {passwordError && (
-                <p className="mt-2 text-sm text-red-600">{passwordError}</p>
+                <p className="mt-2 text-sm text-[var(--status-danger)]">{passwordError}</p>
               )}
             </div>
             <button
               type="submit"
-              className="w-full px-4 py-2.5 bg-black text-white rounded-md hover:bg-gray-800 font-medium text-sm"
+              className="w-full px-4 py-2.5 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90 font-medium text-sm"
             >
               Zugriff erhalten
             </button>
@@ -712,7 +712,7 @@ export default function PublicEventPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-app-bg">
       {/* Modern Event Header with Profile */}
       <EventHeader event={event} hostName={hostName} />
 
@@ -728,10 +728,10 @@ export default function PublicEventPage() {
 
       {/* Challenge Hinweis - nur wenn Challenges aktiviert und vorhanden */}
       {featuresConfig?.challengesEnabled === true && challenges.filter((c: any) => c.isActive).length > 0 && (
-        <div className="px-4 py-3 bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-yellow-200">
+        <div className="px-4 py-3 bg-app-bg border-b border-[var(--status-warning)]">
           <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-yellow-500" />
-            <p className="text-sm text-gray-700">
+            <Trophy className="w-5 h-5 text-[var(--status-warning)]" />
+            <p className="text-sm text-app-fg">
               <strong>Tolle Challenges verfügbar!</strong> Klicke auf "Challenges" im Menü unten, um teilzunehmen.
             </p>
           </div>
@@ -740,7 +740,7 @@ export default function PublicEventPage() {
 
       {/* Face Search - Finde Bilder von mir */}
       {featuresConfig?.faceSearch !== false && (
-        <div className="px-4 py-3 border-b border-gray-100">
+        <div className="px-4 py-3 border-b border-app-border">
           <FaceSearch eventId={event.id} />
             </div>
           )}
@@ -760,10 +760,10 @@ export default function PublicEventPage() {
                       >
                         🎭
                       </motion.div>
-            <p className="text-xl text-gray-900 mb-2 font-semibold">
+            <p className="text-xl text-app-fg mb-2 font-semibold">
                         Mystery Mode aktiviert
                       </p>
-            <p className="text-gray-500 text-sm text-center max-w-sm">
+            <p className="text-app-muted text-sm text-center max-w-sm">
                         Die Fotos werden später veröffentlicht...
                       </p>
                     </motion.div>
@@ -787,7 +787,7 @@ export default function PublicEventPage() {
         {hasMore && (
           <div ref={loadMoreRef} className="py-8 flex justify-center">
             {loadingMore && (
-              <div className="text-gray-500 text-sm">Lade weitere Fotos...</div>
+              <div className="text-app-muted text-sm">Lade weitere Fotos...</div>
             )}
           </div>
         )}

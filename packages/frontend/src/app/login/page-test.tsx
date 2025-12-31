@@ -3,34 +3,15 @@
 // Einfache Test-Version ohne Framer Motion
 export default function LoginPageTest() {
   return (
-    <div 
-      style={{ 
-        backgroundColor: '#295B4D', 
-        minHeight: '100vh',
-        width: '100vw',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1rem'
-      }}
-    >
-      <div
-        style={{ 
-          backgroundColor: '#F9F5F2',
-          borderRadius: '1rem',
-          padding: '2rem',
-          width: '100%',
-          maxWidth: '28rem',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
-        }}
-      >
-        <h1 style={{ color: '#295B4D', fontSize: '1.875rem', fontWeight: 'bold', marginBottom: '1rem', textAlign: 'center' }}>
+    <div className="min-h-screen w-screen flex items-center justify-center p-4 bg-tokens-brandGreen">
+      <div className="w-full max-w-md rounded-2xl p-8 bg-app-bg shadow-xl">
+        <h1 className="text-3xl font-bold mb-4 text-center text-tokens-brandGreen">
           Willkommen zurück
         </h1>
-        <p style={{ color: '#295B4D', textAlign: 'center', marginBottom: '2rem' }}>
+        <p className="text-center mb-8 text-tokens-brandGreen">
           TEST - Login-Seite wird gerendert!
         </p>
-        <div style={{ backgroundColor: '#EAA48F', color: 'white', padding: '1rem', borderRadius: '0.5rem', textAlign: 'center' }}>
+        <div className="bg-app-accent text-app-bg p-4 rounded-lg text-center">
           Wenn du das siehst, funktioniert das Rendering!
         </div>
       </div>

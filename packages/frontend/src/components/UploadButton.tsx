@@ -346,13 +346,13 @@ export default function UploadButton({
               <h2 className="text-xl font-semibold text-app-fg mb-6">Foto/Video hochladen</h2>
 
               {queueNotice && (
-                <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+                <div className="mb-4 rounded-lg border border-[var(--status-success)] bg-app-bg px-3 py-2 text-sm text-[var(--status-success)]">
                   {queueNotice}
                 </div>
               )}
 
               {disabled && disabledReason && (
-                <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                <div className="mb-4 rounded-lg border border-[var(--status-warning)] bg-app-bg px-3 py-2 text-sm text-[var(--status-warning)]">
                   {disabledReason}
                 </div>
               )}
@@ -365,7 +365,7 @@ export default function UploadButton({
                   className="space-y-2"
                 >
                   <label className="block text-sm font-semibold text-app-fg">
-                    Dein Name <span className="text-red-500">*</span>
+                    Dein Name <span className="text-[var(--status-danger)]">*</span>
                   </label>
                   <input
                     type="text"
@@ -378,7 +378,7 @@ export default function UploadButton({
                     required
                     className="w-full px-4 py-3 border-2 border-tokens-brandGreen rounded-lg text-app-fg bg-app-card focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen font-medium"
                   />
-                  {uploaderNameError && <p className="text-xs text-red-700">{uploaderNameError}</p>}
+                  {uploaderNameError && <p className="text-xs text-[var(--status-danger)]">{uploaderNameError}</p>}
                   <p className="text-xs text-app-muted">
                     Damit der Gastgeber weiß, wer die Fotos hochgeladen hat
                   </p>
@@ -483,7 +483,7 @@ export default function UploadButton({
                           )}
                           {file.error && (
                             <div className="mt-1">
-                              <p className="text-xs text-red-700">{file.error}</p>
+                              <p className="text-xs text-[var(--status-danger)]">{file.error}</p>
                               <button
                                 type="button"
                                 onClick={() => retryUpload(file.id)}

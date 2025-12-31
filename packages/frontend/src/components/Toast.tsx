@@ -27,15 +27,15 @@ function ToastItem({ toast, onRemove }: ToastProps) {
   }, [toast.id, onRemove]);
 
   const icons = {
-    success: <CheckCircle className="w-5 h-5 text-green-500" />,
-    error: <AlertCircle className="w-5 h-5 text-red-500" />,
-    info: <Info className="w-5 h-5 text-blue-500" />,
+    success: <CheckCircle className="w-5 h-5 text-[var(--status-success)]" />,
+    error: <AlertCircle className="w-5 h-5 text-[var(--status-danger)]" />,
+    info: <Info className="w-5 h-5 text-[var(--status-info)]" />,
   };
 
   const bgColors = {
-    success: 'bg-green-50 border-green-200',
-    error: 'bg-red-50 border-red-200',
-    info: 'bg-blue-50 border-blue-200',
+    success: 'bg-app-bg border-[var(--status-success)]',
+    error: 'bg-app-bg border-[var(--status-danger)]',
+    info: 'bg-app-bg border-[var(--status-info)]',
   };
 
   return (
@@ -47,11 +47,11 @@ function ToastItem({ toast, onRemove }: ToastProps) {
     >
       {icons[toast.type]}
       <div className="flex-1">
-        <p className="text-sm font-medium text-gray-900">{toast.message}</p>
+        <p className="text-sm font-medium text-app-fg">{toast.message}</p>
       </div>
       <button
         onClick={() => onRemove(toast.id)}
-        className="text-gray-400 hover:text-gray-600"
+        className="text-app-muted hover:text-app-fg"
       >
         <X className="w-4 h-4" />
       </button>

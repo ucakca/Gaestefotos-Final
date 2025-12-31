@@ -82,7 +82,7 @@ export default async function ShortLinkResolvePageV2({ params }: { params: { cod
             <ClientRedirect code={code} initialTarget={initialTarget} />
           </>
         ) : (
-          <div className="mt-3 text-sm text-red-700">Link konnte nicht aufgelöst werden</div>
+          <div className="mt-3 text-sm text-[var(--status-danger)]">Link konnte nicht aufgelöst werden</div>
         )}
       </div>
     </div>

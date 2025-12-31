@@ -348,7 +348,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                   </div>
 
                   {error && (
-                    <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                    <div className="p-3 bg-app-bg border border-[var(--status-danger)] text-[var(--status-danger)] rounded-lg text-sm">
                       {error}
                     </div>
                   )}

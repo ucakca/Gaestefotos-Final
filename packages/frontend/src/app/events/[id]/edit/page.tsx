@@ -103,23 +103,23 @@ export default function EditEventPage() {
   }
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: '#F9F5F2' }}>
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-app-bg">
       <div className="max-w-2xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl font-bold mb-8" style={{ color: '#295B4D' }}>Event bearbeiten</h1>
+          <h1 className="text-3xl font-bold mb-8 text-tokens-brandGreen">Event bearbeiten</h1>
 
-          <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-lg p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="bg-app-card border border-app-border shadow-lg rounded-lg p-6 space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
+              <div className="bg-app-bg border border-[var(--status-danger)] text-[var(--status-danger)] px-4 py-3 rounded">
                 {error}
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: '#295B4D' }}>
+              <label className="block text-sm font-medium mb-1 text-tokens-brandGreen">
                 Event-Titel *
               </label>
               <input
@@ -127,16 +127,12 @@ export default function EditEventPage() {
                 required
                 value={formData.title}
                 onChange={handleTitleChange}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition-all text-gray-900 bg-white"
-                style={{ 
-                  borderColor: '#EAA48F',
-                  color: '#295B4D',
-                }}
+                className="w-full px-4 py-3 border border-app-accent rounded-lg focus:ring-2 focus:outline-none transition-all text-tokens-brandGreen bg-app-card focus:ring-tokens-brandGreen/30"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: '#295B4D' }}>
+              <label className="block text-sm font-medium mb-1 text-tokens-brandGreen">
                 URL-Slug *
               </label>
               <input
@@ -144,11 +140,7 @@ export default function EditEventPage() {
                 required
                 value={formData.slug}
                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition-all text-gray-900 bg-white"
-                style={{ 
-                  borderColor: '#EAA48F',
-                  color: '#295B4D',
-                }}
+                className="w-full px-4 py-3 border border-app-accent rounded-lg focus:ring-2 focus:outline-none transition-all text-tokens-brandGreen bg-app-card focus:ring-tokens-brandGreen/30"
               />
             </div>
 
@@ -159,31 +151,27 @@ export default function EditEventPage() {
             />
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: '#295B4D' }}>
+              <label className="block text-sm font-medium mb-1 text-tokens-brandGreen">
                 Veranstaltungsort / Adresse
               </label>
               <input
                 type="text"
                 value={formData.locationName}
                 onChange={(e) => setFormData({ ...formData, locationName: e.target.value })}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition-all text-gray-900 bg-white"
-                style={{ 
-                  borderColor: '#EAA48F',
-                  color: '#295B4D',
-                }}
+                className="w-full px-4 py-3 border border-app-accent rounded-lg focus:ring-2 focus:outline-none transition-all text-tokens-brandGreen bg-app-card focus:ring-tokens-brandGreen/30"
                 placeholder="z.B. Musterstraße 123, 12345 Musterstadt oder Hotel Beispiel, Berlin"
               />
-              <p className="mt-2 text-sm" style={{ color: '#295B4D', opacity: 0.7 }}>
+              <p className="mt-2 text-sm text-tokens-brandGreen/70">
                 💡 Die Adresse wird automatisch verwendet, um einen Karten-Link zu generieren, 
                 der mit Google Maps und Apple Maps funktioniert.
               </p>
             </div>
 
             {/* Feature Settings */}
-            <div className="border-t pt-6">
-              <h3 className="text-lg font-semibold mb-4">Einstellungen</h3>
+            <div className="border-t border-app-border pt-6">
+              <h3 className="text-lg font-semibold mb-4 text-app-fg">Einstellungen</h3>
               
-              <div className="space-y-4" style={{ color: '#295B4D' }}>
+              <div className="space-y-4 text-tokens-brandGreen">
                 <label className="flex items-center">
                   <input
                     type="checkbox"
@@ -193,7 +181,7 @@ export default function EditEventPage() {
                       featuresConfig: { ...formData.featuresConfig, showGuestlist: e.target.checked }
                     })}
                     className="mr-2"
-                    style={{ accentColor: '#EAA48F', borderColor: '#EAA48F' }}
+                    style={{ accentColor: 'var(--app-accent)', borderColor: 'var(--app-accent)' }}
                   />
                   <span>Gästeliste anzeigen</span>
                 </label>
@@ -207,7 +195,7 @@ export default function EditEventPage() {
                       featuresConfig: { ...formData.featuresConfig, mysteryMode: e.target.checked }
                     })}
                     className="mr-2"
-                    style={{ accentColor: '#EAA48F', borderColor: '#EAA48F' }}
+                    style={{ accentColor: 'var(--app-accent)', borderColor: 'var(--app-accent)' }}
                   />
                   <span>Mystery Mode (Fotos erst später sichtbar)</span>
                 </label>
@@ -221,7 +209,7 @@ export default function EditEventPage() {
                       featuresConfig: { ...formData.featuresConfig, allowUploads: e.target.checked }
                     })}
                     className="mr-2"
-                    style={{ accentColor: '#EAA48F', borderColor: '#EAA48F' }}
+                    style={{ accentColor: 'var(--app-accent)', borderColor: 'var(--app-accent)' }}
                   />
                   <span>Foto-Uploads erlauben</span>
                 </label>
@@ -235,7 +223,7 @@ export default function EditEventPage() {
                       featuresConfig: { ...formData.featuresConfig, moderationRequired: e.target.checked }
                     })}
                     className="mr-2"
-                    style={{ accentColor: '#EAA48F', borderColor: '#EAA48F' }}
+                    style={{ accentColor: 'var(--app-accent)', borderColor: 'var(--app-accent)' }}
                   />
                   <span>Moderation erforderlich</span>
                 </label>
@@ -249,7 +237,7 @@ export default function EditEventPage() {
                       featuresConfig: { ...formData.featuresConfig, allowDownloads: e.target.checked }
                     })}
                     className="mr-2"
-                    style={{ accentColor: '#EAA48F', borderColor: '#EAA48F' }}
+                    style={{ accentColor: 'var(--app-accent)', borderColor: 'var(--app-accent)' }}
                   />
                   <span>Downloads erlauben</span>
                 </label>
@@ -262,8 +250,7 @@ export default function EditEventPage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => router.back()}
-                className="px-4 py-2 border rounded-md font-medium transition-colors"
-                style={{ borderColor: '#EAA48F', color: '#295B4D' }}
+                className="px-4 py-2 border border-app-accent rounded-md font-medium transition-colors text-tokens-brandGreen bg-app-card hover:bg-app-bg"
               >
                 Abbrechen
               </motion.button>
@@ -272,14 +259,7 @@ export default function EditEventPage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 disabled={saving}
-                className="px-6 py-3 rounded-lg text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: '#295B4D' }}
-                onMouseEnter={(e) => {
-                  if (!saving) e.currentTarget.style.backgroundColor = '#204a3e';
-                }}
-                onMouseLeave={(e) => {
-                  if (!saving) e.currentTarget.style.backgroundColor = '#295B4D';
-                }}
+                className="px-6 py-3 rounded-lg text-app-bg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-tokens-brandGreen hover:opacity-90"
               >
                 {saving ? 'Speichere...' : 'Speichern'}
               </motion.button>

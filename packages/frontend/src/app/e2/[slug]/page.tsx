@@ -112,7 +112,7 @@ export default function PublicEventPageV2() {
   const totalPhotos = filteredPhotos.length;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-app-bg">
       <EventHeader
         event={event}
         hostName={hostName}
@@ -144,11 +144,11 @@ export default function PublicEventPageV2() {
       />
 
       {featuresConfig?.challengesEnabled === true && Array.isArray(challenges) && challenges.filter((c: any) => c?.isActive).length > 0 && (
-        <Section borderColorClassName="border-yellow-200">
-          <Alert className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200 text-gray-900">
+        <Section borderColorClassName="border-[var(--status-warning)]">
+          <Alert className="bg-app-bg border-[var(--status-warning)] text-app-fg">
             <div className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-500" />
-              <p className="text-sm text-gray-700">
+              <Trophy className="w-5 h-5 text-[var(--status-warning)]" />
+              <p className="text-sm text-app-fg">
                 <strong>Tolle Challenges verfügbar!</strong> Klicke auf "Challenges" im Menü unten, um teilzunehmen.
               </p>
             </div>
@@ -157,7 +157,7 @@ export default function PublicEventPageV2() {
       )}
 
       {featuresConfig?.faceSearch !== false && (
-        <Section borderColorClassName="border-gray-100">
+        <Section>
           <FaceSearch eventId={event.id} />
         </Section>
       )}

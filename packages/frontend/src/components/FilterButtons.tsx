@@ -18,7 +18,7 @@ export default function FilterButtons({ options, selected, onSelect, label }: Fi
   return (
     <div className="mb-6">
       {label && (
-        <p className="text-sm text-gray-600 mb-2 w-full">{label}</p>
+        <p className="text-sm text-app-muted mb-2 w-full">{label}</p>
       )}
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
@@ -27,8 +27,8 @@ export default function FilterButtons({ options, selected, onSelect, label }: Fi
             onClick={() => onSelect(option.id)}
             className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
               selected === option.id
-                ? 'bg-[#295B4D] text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-tokens-brandGreen text-app-bg'
+                : 'bg-app-bg text-app-fg hover:bg-app-card'
             }`}
           >
             {option.label}

@@ -261,7 +261,7 @@ export default function InstagramUploadButton({
                             </div>
                           )}
                           {file.error && (
-                            <p className="text-xs text-red-600 mt-1">{file.error}</p>
+                            <p className="text-xs text-[var(--status-danger)] mt-1">{file.error}</p>
                           )}
                         </div>
 

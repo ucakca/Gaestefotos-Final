@@ -14,7 +14,7 @@ export default function PageHeader({ title, children, bulkMode, bulkModeContent 
     <div className="mb-6">
       {/* Mobile: Stacked Layout */}
       <div className="block md:hidden space-y-4">
-        <h1 className="text-xl font-bold" style={{ color: '#295B4D' }}>
+        <h1 className="text-xl font-bold text-tokens-brandGreen">
           {title}
         </h1>
         {bulkMode && bulkModeContent ? (
@@ -30,7 +30,7 @@ export default function PageHeader({ title, children, bulkMode, bulkModeContent 
 
       {/* Desktop: Horizontal Layout */}
       <div className="hidden md:flex items-center justify-between">
-        <h1 className="text-2xl font-bold" style={{ color: '#295B4D' }}>
+        <h1 className="text-2xl font-bold text-tokens-brandGreen">
           {title}
         </h1>
         <div className="flex items-center gap-2 flex-wrap">
