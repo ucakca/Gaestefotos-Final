@@ -211,7 +211,9 @@ export default function LiveWallPage() {
                   animate={{
                     opacity: 1,
                     scale: 1,
-                    boxShadow: newIds.has(photo.id) ? '0 0 0 3px rgba(255,255,255,0.65)' : '0 0 0 0px rgba(255,255,255,0)',
+                    boxShadow: newIds.has(photo.id)
+                      ? '0 0 0 3px color-mix(in_srgb,var(--app-bg) 65%, transparent)'
+                      : '0 0 0 0px color-mix(in_srgb,var(--app-bg) 0%, transparent)',
                   }}
                   exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 0.25 }}
