@@ -64,7 +64,7 @@ export default function LoginPage() {
         <Card className="p-6 sm:p-8">
           <form className="space-y-5" onSubmit={handleSubmit}>
             {error ? (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+              <div className="rounded-lg border border-[var(--status-danger)] bg-app-bg px-4 py-3 text-sm text-[var(--status-danger)]">
                 {error}
               </div>
             ) : null}

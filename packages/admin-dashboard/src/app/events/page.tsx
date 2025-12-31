@@ -55,7 +55,7 @@ export default function EventsPage() {
 
       {!loading && error ? (
         <Card className="p-5">
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm text-[var(--status-danger)]">{error}</p>
         </Card>
       ) : null}
 

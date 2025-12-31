@@ -279,7 +279,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
 
       {!loading && error && (
         <Card className="p-5">
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm text-[var(--status-danger)]">{error}</p>
         </Card>
       )}
 
@@ -487,7 +487,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
 
             <div className="mt-6">
               {loadingIssues && <p className="text-sm text-app-muted">Issues werden geladen...</p>}
-              {!loadingIssues && errorIssues && <p className="text-sm text-red-700">{errorIssues}</p>}
+              {!loadingIssues && errorIssues && <p className="text-sm text-[var(--status-danger)]">{errorIssues}</p>}
               {!loadingIssues && !errorIssues && issues && (
                 <p className="text-sm text-app-muted">
                   Gesamt: <span className="font-medium text-app-fg">{totalIssues}</span>
