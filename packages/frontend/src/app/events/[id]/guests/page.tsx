@@ -8,6 +8,10 @@ import { Guest, Event as EventType } from '@gaestefotos/shared';
 import { Trash2, Mail, UserPlus } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
+import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 
 export default function GuestManagementPage() {
   const params = useParams();
@@ -117,12 +121,9 @@ export default function GuestManagementPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <button
-            onClick={() => router.back()}
-            className="text-tokens-brandGreen hover:opacity-90 mb-4"
-          >
+          <Button type="button" variant="ghost" onClick={() => router.back()} className="mb-4 text-tokens-brandGreen">
             ← Zurück
-          </button>
+          </Button>
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-app-fg mb-2">
@@ -132,15 +133,16 @@ export default function GuestManagementPage() {
                 {guests.length} Gast{guests.length !== 1 ? 'e' : ''}
               </p>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90 flex items-center gap-2"
-            >
-              <UserPlus className="w-5 h-5" />
-              Gast hinzufügen
-            </motion.button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                type="button"
+                onClick={() => setShowAddForm(!showAddForm)}
+                className="bg-tokens-brandGreen text-app-bg hover:opacity-90"
+              >
+                <UserPlus className="h-5 w-5" />
+                Gast hinzufügen
+              </Button>
+            </motion.div>
           </div>
         </motion.div>
 
@@ -160,24 +162,22 @@ export default function GuestManagementPage() {
                     <label className="block text-sm font-medium text-app-fg mb-1">
                       Vorname *
                     </label>
-                    <input
+                    <Input
                       type="text"
                       required
                       value={formData.firstName}
                       onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                      className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-app-fg mb-1">
                       Nachname *
                     </label>
-                    <input
+                    <Input
                       type="text"
                       required
                       value={formData.lastName}
                       onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                      className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
                     />
                   </div>
                 </div>
@@ -185,42 +185,33 @@ export default function GuestManagementPage() {
                   <label className="block text-sm font-medium text-app-fg mb-1">
                     E-Mail
                   </label>
-                  <input
+                  <Input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-app-fg mb-1">
                     Essenswünsche
                   </label>
-                  <textarea
+                  <Textarea
                     value={formData.dietaryRequirements}
                     onChange={(e) => setFormData({ ...formData, dietaryRequirements: e.target.value })}
-                    className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
                     rows={3}
                   />
                 </div>
                 <div className="flex gap-4">
-                  <motion.button
-                    type="button"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setShowAddForm(false)}
-                    className="px-4 py-2 border border-app-border rounded-md bg-app-card hover:bg-app-bg"
-                  >
-                    Abbrechen
-                  </motion.button>
-                  <motion.button
-                    type="submit"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90"
-                  >
-                    Hinzufügen
-                  </motion.button>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button type="button" variant="secondary" onClick={() => setShowAddForm(false)}>
+                      Abbrechen
+                    </Button>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button type="submit" className="bg-tokens-brandGreen text-app-bg hover:opacity-90">
+                      Hinzufügen
+                    </Button>
+                  </motion.div>
                 </div>
               </form>
             </motion.div>
@@ -276,12 +267,14 @@ export default function GuestManagementPage() {
                       {guest.plusOneCount > 0 ? `+${guest.plusOneCount}` : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
+                      <IconButton
+                        icon={<Trash2 className="h-5 w-5" />}
+                        variant="ghost"
+                        size="sm"
+                        aria-label="Gast löschen"
                         onClick={() => handleDelete(guest.id)}
-                        className="text-[var(--status-danger)] hover:opacity-90"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                        className="text-[var(--status-danger)]"
+                      />
                     </td>
                   </motion.tr>
                 ))}
