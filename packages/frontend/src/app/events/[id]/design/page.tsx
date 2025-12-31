@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Slider } from '@/components/ui/Slider';
 
 function isWizardMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -690,14 +691,12 @@ export default function DesignLiveBuilderPage() {
                         <label className="block text-sm font-medium text-app-fg mb-2">
                           Größe: {qrCodeConfig.size}px
                         </label>
-                        <input
-                          type="range"
-                          min="100"
-                          max="400"
-                          step="10"
-                          value={qrCodeConfig.size}
-                          onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, size: parseInt(e.target.value) })}
-                          className="w-full accent-tokens-brandGreen"
+                        <Slider
+                          min={100}
+                          max={400}
+                          step={10}
+                          value={[qrCodeConfig.size]}
+                          onValueChange={([value]) => setQrCodeConfig({ ...qrCodeConfig, size: value ?? 100 })}
                         />
                       </div>
 
