@@ -7,6 +7,15 @@ import toast from 'react-hot-toast';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import FullPageLoader from '@/components/FullPageLoader';
 
 type UploadIssuesResponse = {
@@ -63,6 +72,14 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   const [virusScanAutoClean, setVirusScanAutoClean] = useState(false);
   const [markingClean, setMarkingClean] = useState<string | null>(null);
   const [markingVideoClean, setMarkingVideoClean] = useState<string | null>(null);
+
+  const [confirmCleanAction, setConfirmCleanAction] = useState<
+    | null
+    | {
+        kind: 'photo' | 'video';
+        id: string;
+      }
+  >(null);
 
   const totalIssues = useMemo(() => {
     if (!issues) return 0;
@@ -154,6 +171,28 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
       toast.error(e?.response?.data?.error || e?.message || 'Aktion fehlgeschlagen');
     } finally {
       setMarkingVideoClean(null);
+    }
+  }
+
+  const confirmOpen = confirmCleanAction !== null;
+  const confirmBusy =
+    confirmCleanAction?.kind === 'photo'
+      ? markingClean === confirmCleanAction.id
+      : confirmCleanAction?.kind === 'video'
+        ? markingVideoClean === confirmCleanAction.id
+        : false;
+
+  async function runConfirmCleanAction() {
+    if (!confirmCleanAction) return;
+    const action = confirmCleanAction;
+    try {
+      if (action.kind === 'photo') {
+        await markPhotoClean(action.id);
+      } else {
+        await markVideoClean(action.id);
+      }
+    } finally {
+      setConfirmCleanAction(null);
     }
   }
 
@@ -284,6 +323,27 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
 
       {!loading && !error && (
         <div className="space-y-6">
+          <Dialog open={confirmOpen} onOpenChange={(open) => setConfirmCleanAction(open ? confirmCleanAction : null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Freigeben (CLEAN) bestätigen</DialogTitle>
+                <DialogDescription>
+                  Diese Aktion gibt {confirmCleanAction?.kind === 'video' ? 'ein Video' : 'ein Foto'} frei.
+                  Fortfahren?
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="secondary" disabled={confirmBusy}>
+                    Abbrechen
+                  </Button>
+                </DialogClose>
+                <Button onClick={runConfirmCleanAction} disabled={confirmBusy}>
+                  {confirmBusy ? '…' : 'Freigeben'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <Card className="p-6">
             <h2 className="text-lg font-semibold text-app-fg">Virus Scan</h2>
             <p className="mt-1 text-sm text-app-muted">
@@ -514,15 +574,14 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                           <td className="px-6 py-4 text-sm text-app-muted font-mono">{v.uploadedBy || '-'}</td>
                           <td className="px-6 py-4 text-sm text-app-muted font-mono">{v.scanError || '-'}</td>
                           <td className="px-6 py-4 text-right text-sm">
-                            <button
-                              onClick={() => markVideoClean(v.id)}
+                            <Button
+                              size="sm"
+                              onClick={() => setConfirmCleanAction({ kind: 'video', id: v.id })}
                               disabled={markingVideoClean === v.id}
-                              className={`rounded-lg px-3 py-2 text-xs font-medium text-white ${
-                                markingVideoClean === v.id ? 'bg-black/30' : 'bg-tokens-brandGreen hover:opacity-90'
-                              }`}
+                              className={markingVideoClean === v.id ? 'bg-black/30 text-white hover:opacity-100' : 'bg-tokens-brandGreen text-white hover:opacity-90'}
                             >
                               {markingVideoClean === v.id ? '…' : 'Freigeben'}
-                            </button>
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -559,15 +618,14 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                           <td className="px-6 py-4 text-sm text-app-muted font-mono">{new Date(v.createdAt).toLocaleString('de-DE')}</td>
                           <td className="px-6 py-4 text-sm text-app-muted font-mono">{v.uploadedBy || '-'}</td>
                           <td className="px-6 py-4 text-right text-sm">
-                            <button
-                              onClick={() => markVideoClean(v.id)}
+                            <Button
+                              size="sm"
+                              onClick={() => setConfirmCleanAction({ kind: 'video', id: v.id })}
                               disabled={markingVideoClean === v.id}
-                              className={`rounded-lg px-3 py-2 text-xs font-medium text-white ${
-                                markingVideoClean === v.id ? 'bg-black/30' : 'bg-tokens-brandGreen hover:opacity-90'
-                              }`}
+                              className={markingVideoClean === v.id ? 'bg-black/30 text-white hover:opacity-100' : 'bg-tokens-brandGreen text-white hover:opacity-90'}
                             >
                               {markingVideoClean === v.id ? '…' : 'Freigeben'}
-                            </button>
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -606,15 +664,14 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                           <td className="px-6 py-4 text-sm text-app-muted font-mono">{p.uploadedBy || '-'}</td>
                           <td className="px-6 py-4 text-sm text-app-muted font-mono">{p.scanError || '-'}</td>
                           <td className="px-6 py-4 text-right text-sm">
-                            <button
-                              onClick={() => markPhotoClean(p.id)}
+                            <Button
+                              size="sm"
+                              onClick={() => setConfirmCleanAction({ kind: 'photo', id: p.id })}
                               disabled={markingClean === p.id}
-                              className={`rounded-lg px-3 py-2 text-xs font-medium text-white ${
-                                markingClean === p.id ? 'bg-black/30' : 'bg-tokens-brandGreen hover:opacity-90'
-                              }`}
+                              className={markingClean === p.id ? 'bg-black/30 text-white hover:opacity-100' : 'bg-tokens-brandGreen text-white hover:opacity-90'}
                             >
                               {markingClean === p.id ? '…' : 'Freigeben'}
-                            </button>
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -651,15 +708,14 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                           <td className="px-6 py-4 text-sm text-app-muted font-mono">{new Date(p.createdAt).toLocaleString('de-DE')}</td>
                           <td className="px-6 py-4 text-sm text-app-muted font-mono">{p.uploadedBy || '-'}</td>
                           <td className="px-6 py-4 text-right text-sm">
-                            <button
-                              onClick={() => markPhotoClean(p.id)}
+                            <Button
+                              size="sm"
+                              onClick={() => setConfirmCleanAction({ kind: 'photo', id: p.id })}
                               disabled={markingClean === p.id}
-                              className={`rounded-lg px-3 py-2 text-xs font-medium text-white ${
-                                markingClean === p.id ? 'bg-black/30' : 'bg-tokens-brandGreen hover:opacity-90'
-                              }`}
+                              className={markingClean === p.id ? 'bg-black/30 text-white hover:opacity-100' : 'bg-tokens-brandGreen text-white hover:opacity-90'}
                             >
                               {markingClean === p.id ? '…' : 'Freigeben'}
-                            </button>
+                            </Button>
                           </td>
                         </tr>
                       ))}
