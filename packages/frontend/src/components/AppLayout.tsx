@@ -5,9 +5,11 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
 import { 
+  ArrowLeft,
   LogOut, 
   Home
 } from 'lucide-react';
+import { IconButton } from '@/components/ui/IconButton';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -37,23 +39,28 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
             {/* Left: Back Button */}
             <div className="flex items-center gap-4 flex-1">
               {showBackButton && backUrl ? (
-                <Link
-                  href={backUrl}
-                  className="rounded-lg p-2 text-app-muted transition-colors hover:bg-app-bg hover:text-app-fg"
+                <IconButton
+                  asChild
+                  icon={<ArrowLeft className="w-5 h-5" />}
+                  variant="ghost"
+                  size="md"
+                  aria-label="Zurück"
+                  title="Zurück"
                 >
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </Link>
+                  <Link href={backUrl} />
+                </IconButton>
               ) : (
                 pathname !== '/dashboard' && (
-                  <Link
-                    href="/dashboard"
-                    className="rounded-lg p-2 text-app-muted transition-colors hover:bg-app-bg hover:text-app-fg"
+                  <IconButton
+                    asChild
+                    icon={<Home className="w-5 h-5" />}
+                    variant="ghost"
+                    size="md"
+                    aria-label="Zur Übersicht"
                     title="Zur Übersicht"
                   >
-                    <Home className="w-5 h-5" />
-                  </Link>
+                    <Link href="/dashboard" />
+                  </IconButton>
                 )
               )}
               
@@ -89,13 +96,14 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
                     <p className="text-xs text-app-muted">Angemeldet als</p>
                     <p className="text-sm font-medium text-app-fg">{user.name || user.email}</p>
                   </div>
-                  <button
+                  <IconButton
                     onClick={logout}
-                    className="rounded-lg p-2 text-app-muted transition-colors hover:bg-app-bg hover:text-app-fg"
+                    icon={<LogOut className="w-5 h-5" />}
+                    variant="ghost"
+                    size="md"
+                    aria-label="Abmelden"
                     title="Abmelden"
-                  >
-                    <LogOut className="w-5 h-5" />
-                  </button>
+                  />
                 </div>
               )}
             </div>
