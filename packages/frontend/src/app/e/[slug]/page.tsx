@@ -770,7 +770,7 @@ export default function PublicEventPage() {
                   ) : (
           <ModernPhotoGrid
                       photos={photos} 
-                      allowDownloads={featuresConfig?.allowDownloads}
+                      allowDownloads={featuresConfig?.allowDownloads !== false}
                       allowComments={featuresConfig?.allowComments}
                       eventSlug={slug}
             eventTitle={event.title}
