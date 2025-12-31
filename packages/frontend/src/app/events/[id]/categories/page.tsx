@@ -297,7 +297,7 @@ export default function CategoryManagementPage() {
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={() => router.push(`/events/${eventId}/dashboard`)}
-                className="rounded-lg bg-tokens-brandGreen px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
+                className="rounded-lg bg-tokens-brandGreen px-3 py-2 text-sm font-semibold text-app-bg hover:opacity-90"
               >
                 Fertig
               </motion.button>
@@ -336,7 +336,7 @@ export default function CategoryManagementPage() {
                   endAt: '',
                 });
               }}
-              className="flex items-center gap-2 rounded-lg bg-tokens-brandGreen px-4 py-2 text-white hover:opacity-90"
+              className="flex items-center gap-2 rounded-lg bg-tokens-brandGreen px-4 py-2 text-app-bg hover:opacity-90"
             >
               <Plus className="w-5 h-5" />
               Album hinzufügen

@@ -160,7 +160,7 @@ export default function BottomNavigation({
       <motion.div
         initial={{ y: 100 }}
         animate={{ y: 0 }}
-        className="fixed bottom-0 left-0 right-0 bg-app-card/90 backdrop-blur border-t border-app-border z-50 safe-area-bottom shadow-[0_-6px_24px_rgba(0,0,0,0.06)]"
+        className="fixed bottom-0 left-0 right-0 bg-app-card/90 backdrop-blur border-t border-app-border z-50 safe-area-bottom shadow-[0_-6px_24px_color-mix(in_srgb,var(--app-fg)_6%,transparent)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="max-w-4xl mx-auto px-2">

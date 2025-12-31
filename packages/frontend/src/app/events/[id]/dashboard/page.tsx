@@ -1183,7 +1183,7 @@ export default function EventDashboardPage() {
                   navigator.clipboard.writeText(url);
                   showToast('URL kopiert!', 'success');
                 }}
-                className="px-3 py-1 text-xs bg-tokens-brandGreen text-white rounded-lg hover:opacity-90 transition-opacity"
+                className="px-3 py-1 text-xs bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 transition-opacity"
               >
                 Kopieren
               </button>
