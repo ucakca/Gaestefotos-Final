@@ -43,7 +43,7 @@ export default function Sidebar({
 
   return (
     <div className={cn('flex w-64 flex-col bg-tokens-brandDark text-white', className)}>
-      <div className="flex h-16 items-center justify-center border-b border-black/20">
+      <div className="flex h-16 items-center justify-center border-b border-app-border/40">
         <h1 className="text-xl font-bold">Admin Dashboard</h1>
       </div>
       <nav className="flex-1 space-y-1 px-2 py-4">
@@ -56,7 +56,7 @@ export default function Sidebar({
               variant="ghost"
               className={cn(
                 'w-full justify-start px-3 py-2 text-sm font-medium transition-colors',
-                isActive ? 'bg-app-accent text-black hover:bg-app-accent/90' : 'text-white/80 hover:bg-white/10 hover:text-white'
+                isActive ? 'bg-app-accent text-app-fg hover:bg-app-accent/90' : 'text-white/80 hover:bg-app-card/10 hover:text-white'
               )}
             >
               <Link href={item.href} onClick={() => onNavigate?.()}>
@@ -67,7 +67,7 @@ export default function Sidebar({
           );
         })}
       </nav>
-      <div className="border-t border-black/20 p-4">
+      <div className="border-t border-app-border/40 p-4">
         {admin && (
           <div className="mb-2 px-3 py-2 text-xs text-white/60">
             <p className="font-medium text-white/80">{admin.name}</p>
@@ -77,7 +77,7 @@ export default function Sidebar({
         <Button
           onClick={handleLogout}
           variant="ghost"
-          className="w-full justify-start px-3 py-2 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white"
+          className="w-full justify-start px-3 py-2 text-sm font-medium text-white/80 hover:bg-app-card/10 hover:text-white"
         >
           <LogOut className="h-5 w-5" />
           <span>Abmelden</span>

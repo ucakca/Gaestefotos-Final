@@ -46,7 +46,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       <div className={cn('fixed inset-0 z-50 lg:hidden', mobileOpen ? '' : 'pointer-events-none')}>
         <div
           className={cn(
-            'absolute inset-0 bg-black/40 transition-opacity',
+            'absolute inset-0 bg-app-fg/40 transition-opacity',
             mobileOpen ? 'opacity-100' : 'opacity-0'
           )}
           onClick={() => setMobileOpen(false)}
@@ -58,14 +58,14 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             mobileOpen ? 'translate-x-0' : '-translate-x-full'
           )}
         >
-          <div className="flex h-14 items-center justify-between border-b border-black/20 px-3">
+          <div className="flex h-14 items-center justify-between border-b border-app-border/40 px-3">
             <div className="text-sm font-semibold">Admin Dashboard</div>
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => setMobileOpen(false)}
-              className="h-10 w-10 p-0 text-white hover:bg-white/10"
+              className="h-10 w-10 p-0 text-white hover:bg-app-card/10"
               aria-label="Menü schließen"
             >
               <X className="h-5 w-5" />
