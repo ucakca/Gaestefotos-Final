@@ -14,6 +14,7 @@ import FaceSearch from '@/components/FaceSearch';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
 
 function isWizardMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -680,16 +681,22 @@ export default function CategoryManagementPage() {
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setExpandedCategory(expandedCategory === category.id ? null : category.id)}
+                        <IconButton
+                          icon={
+                            expandedCategory === category.id ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )
+                          }
+                          variant="ghost"
+                          size="sm"
+                          aria-label={expandedCategory === category.id ? 'Details schließen' : 'Details öffnen'}
+                          onClick={() =>
+                            setExpandedCategory(expandedCategory === category.id ? null : category.id)
+                          }
                           className="text-app-muted hover:text-app-fg"
-                        >
-                          {expandedCategory === category.id ? (
-                            <ChevronUp className="w-4 h-4" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4" />
-                          )}
-                        </button>
+                        />
                         <div>
                           <div className="text-sm font-medium text-app-fg">
                             {category.name}
@@ -737,18 +744,22 @@ export default function CategoryManagementPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex gap-2">
-                        <button
+                        <IconButton
+                          icon={<Edit2 className="h-5 w-5" />}
+                          variant="ghost"
+                          size="sm"
+                          aria-label="Album bearbeiten"
                           onClick={() => startEdit(category)}
-                          className="text-tokens-brandGreen hover:opacity-90"
-                        >
-                          <Edit2 className="w-5 h-5" />
-                        </button>
-                        <button
+                          className="text-tokens-brandGreen"
+                        />
+                        <IconButton
+                          icon={<Trash2 className="h-5 w-5" />}
+                          variant="ghost"
+                          size="sm"
+                          aria-label="Album löschen"
                           onClick={() => handleDelete(category.id)}
-                          className="text-[var(--status-danger)] hover:opacity-90"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+                          className="text-[var(--status-danger)]"
+                        />
                       </div>
                     </td>
                   </motion.tr>
