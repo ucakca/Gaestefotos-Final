@@ -1288,7 +1288,7 @@ export default function EventDashboardPage() {
                           value={mode}
                           checked={featuresConfig.mode === mode}
                           onChange={(e) => updateFeaturesConfig({ mode: e.target.value })}
-                          className="mt-1 mr-3 accent-tokens-brandGreen"
+                          className="mt-1 mr-3 h-4 w-4 accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                         />
                         <div className="flex-1">
                           <div className="font-medium text-sm">
@@ -1319,7 +1319,7 @@ export default function EventDashboardPage() {
                         type="checkbox"
                         checked={featuresConfig.mysteryMode === true}
                         onChange={(e) => updateFeaturesConfig({ mysteryMode: e.target.checked })}
-                        className="h-5 w-5 accent-tokens-brandGreen"
+                        className="h-5 w-5 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                       />
                     </label>
                     
@@ -1334,7 +1334,7 @@ export default function EventDashboardPage() {
                         checked={featuresConfig.allowUploads !== false}
                         onChange={(e) => updateFeaturesConfig({ allowUploads: e.target.checked })}
                         disabled={isStorageLocked}
-                        className="h-5 w-5 accent-tokens-brandGreen"
+                        className="h-5 w-5 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                       />
                     </label>
                     
@@ -1349,7 +1349,7 @@ export default function EventDashboardPage() {
                         checked={featuresConfig.allowDownloads !== false}
                         onChange={(e) => updateFeaturesConfig({ allowDownloads: e.target.checked })}
                         disabled={isStorageLocked}
-                        className="h-5 w-5 accent-tokens-brandGreen"
+                        className="h-5 w-5 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                       />
                     </label>
                   </div>
