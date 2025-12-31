@@ -221,12 +221,12 @@ export default function DesignLiveBuilderPage() {
       .page { box-sizing: border-box; width: 148mm; height: 210mm; padding: 12mm; display: flex; flex-direction: column; justify-content: space-between; }
       .header { text-align: center; }
       .title { font-size: 18pt; font-weight: 800; margin: 0; }
-      .subtitle { font-size: 11pt; margin: 6mm 0 0 0; color: #374151; }
+      .subtitle { font-size: 11pt; margin: 6mm 0 0 0; color: var(--app-muted); }
       .qrWrap { display: flex; align-items: center; justify-content: center; margin: 10mm 0; }
-      .qr { width: 92mm; height: 92mm; border: 2mm solid #111827; border-radius: 6mm; padding: 4mm; background: #fff; box-sizing: border-box; }
+      .qr { width: 92mm; height: 92mm; border: 2mm solid var(--app-fg); border-radius: 6mm; padding: 4mm; background: var(--app-card); box-sizing: border-box; }
       .qr img { width: 100%; height: 100%; object-fit: contain; }
-      .footer { text-align: center; font-size: 9pt; color: #6B7280; }
-      .url { margin-top: 3mm; font-size: 9pt; word-break: break-all; color: #111827; }
+      .footer { text-align: center; font-size: 9pt; color: var(--app-muted); }
+      .url { margin-top: 3mm; font-size: 9pt; word-break: break-all; color: var(--app-fg); }
     </style>
   </head>
   <body>
