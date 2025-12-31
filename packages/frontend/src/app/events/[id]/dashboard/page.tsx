@@ -40,6 +40,7 @@ import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 import { useToastStore } from '@/store/toastStore';
 
 interface PhotoStats {
@@ -994,7 +995,7 @@ export default function EventDashboardPage() {
         {/* Welcome Message */}
         <div className="mb-6">
           {editingField === 'welcomeMessage' ? (
-            <textarea
+            <Textarea
               defaultValue={welcomeMessage}
               onBlur={(e) => {
                 updateDesignConfig({
@@ -1002,7 +1003,7 @@ export default function EventDashboardPage() {
                 });
               }}
               placeholder="Schreibe eine Willkommensnachricht..."
-              className="w-full p-3 border-2 border-app-border rounded-lg focus:outline-none resize-none"
+              className="resize-none"
               rows={3}
               autoFocus
             />
