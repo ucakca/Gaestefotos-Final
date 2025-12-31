@@ -109,6 +109,10 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
     - `globals.css` `:root` enthält die **Token-Quellen** (Hex ist hier ok, weil es die Definition der Tokens ist)
     - Presets/Templates (z.B. „Soft Floral“, „Elegant Rose“, Design Presets) bleiben bewusst **bunt** (intentional), damit sich das Design nicht verändert
     - In `resolveRootCssVar(..., '#...')` verbleiben **sichere Fallbacks** für den Fall, dass CSS-Variablen nicht verfügbar sind
+  - Policy (künftig):
+    - UI/„Shell“ Farben: **immer** Tokens/Utilities (`bg-app-*`, `text-app-*`, `border-app-*`, `var(--...)`)
+    - Preset-Designs: dürfen Hex enthalten, wenn es **intentional** ist (Design darf nicht kippen)
+    - Themeable-Presets (optional, später): Preset-Definition bleibt semantisch (z.B. `primary/secondary/accent`) und wird beim Rendern gegen Tokens aufgelöst
 
 ## ❌ Next (Priorität hoch)
 
