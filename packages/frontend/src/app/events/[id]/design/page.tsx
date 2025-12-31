@@ -498,17 +498,20 @@ export default function DesignLiveBuilderPage() {
                   {DESIGN_PRESETS.map((p) => {
                     const isSelected = (designConfig.designPresetKey || 'classic') === p.key;
                     return (
-                      <button
+                      <Button
                         key={p.key}
                         type="button"
+                        variant="secondary"
                         onClick={() => updateDesignConfig({ designPresetKey: p.key })}
-                        className={`rounded-lg border p-2 text-left transition-colors ${
-                          isSelected ? 'border-app-fg' : 'border-app-border hover:border-app-muted'
+                        className={`h-auto w-full rounded-lg border p-2 text-left transition-colors ${
+                          isSelected
+                            ? 'border-app-fg bg-app-bg text-app-fg'
+                            : 'border-app-border bg-app-card text-app-fg hover:border-app-muted'
                         }`}
                       >
                         <div className="h-10 w-full rounded-md" style={{ backgroundImage: p.heroGradient }} />
                         <div className="mt-2 text-xs font-semibold text-app-fg">{p.label}</div>
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -531,15 +534,17 @@ export default function DesignLiveBuilderPage() {
                           <span className="text-xs text-app-muted">Kein Logo</span>
                         )}
                       </div>
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        type="button"
-                        onClick={() => logoImageInputRef.current?.click()}
-                        className="px-3 py-2 rounded-lg bg-app-bg hover:opacity-90 text-sm font-medium"
-                        disabled={uploadingImage === 'logo'}
-                      >
-                        {uploadingImage === 'logo' ? 'Lädt…' : 'Logo hochladen'}
-                      </motion.button>
+                      <motion.div whileTap={{ scale: 0.95 }}>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => logoImageInputRef.current?.click()}
+                          className="bg-app-bg hover:opacity-90"
+                          disabled={uploadingImage === 'logo'}
+                        >
+                          {uploadingImage === 'logo' ? 'Lädt…' : 'Logo hochladen'}
+                        </Button>
+                      </motion.div>
                       <input
                         ref={logoImageInputRef}
                         type="file"
@@ -564,11 +569,11 @@ export default function DesignLiveBuilderPage() {
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, primary: e.target.value } })}
                           className="w-12 h-10 rounded border border-app-border cursor-pointer"
                         />
-                        <input
+                        <Input
                           type="text"
                           value={colors.primary || '#8B1538'}
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, primary: e.target.value } })}
-                          className="flex-1 px-3 py-2 border border-app-border rounded-lg text-sm bg-app-card text-app-fg"
+                          className="flex-1"
                         />
                       </div>
 
@@ -580,11 +585,11 @@ export default function DesignLiveBuilderPage() {
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, secondary: e.target.value } })}
                           className="w-12 h-10 rounded border border-app-border cursor-pointer"
                         />
-                        <input
+                        <Input
                           type="text"
                           value={colors.secondary || '#FFFFFF'}
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, secondary: e.target.value } })}
-                          className="flex-1 px-3 py-2 border border-app-border rounded-lg text-sm bg-app-card text-app-fg"
+                          className="flex-1"
                         />
                       </div>
 
@@ -596,11 +601,11 @@ export default function DesignLiveBuilderPage() {
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, accent: e.target.value } })}
                           className="w-12 h-10 rounded border border-app-border cursor-pointer"
                         />
-                        <input
+                        <Input
                           type="text"
                           value={colors.accent || '#EC4899'}
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, accent: e.target.value } })}
-                          className="flex-1 px-3 py-2 border border-app-border rounded-lg text-sm bg-app-card text-app-fg"
+                          className="flex-1"
                         />
                       </div>
                     </div>
@@ -647,11 +652,11 @@ export default function DesignLiveBuilderPage() {
                             onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, fgColor: e.target.value })}
                             className="w-12 h-10 rounded border border-app-border cursor-pointer"
                           />
-                          <input
+                          <Input
                             type="text"
                             value={qrCodeConfig.fgColor}
                             onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, fgColor: e.target.value })}
-                            className="flex-1 px-3 py-2 border border-app-border rounded-lg text-sm bg-app-card text-app-fg"
+                            className="flex-1"
                             placeholder="#000000"
                           />
                         </div>
@@ -669,11 +674,11 @@ export default function DesignLiveBuilderPage() {
                             onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, bgColor: e.target.value })}
                             className="w-12 h-10 rounded border border-app-border cursor-pointer"
                           />
-                          <input
+                          <Input
                             type="text"
                             value={qrCodeConfig.bgColor}
                             onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, bgColor: e.target.value })}
-                            className="flex-1 px-3 py-2 border border-app-border rounded-lg text-sm bg-app-card text-app-fg"
+                            className="flex-1"
                             placeholder="#FFFFFF"
                           />
                         </div>
@@ -716,32 +721,40 @@ export default function DesignLiveBuilderPage() {
                       </div>
                     </div>
 
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      onClick={downloadQRCode}
-                      className="w-full px-4 py-2 bg-app-fg text-app-bg rounded-lg flex items-center justify-center gap-2"
-                    >
-                      <Download className="w-4 h-4" />
-                      QR-Code herunterladen
-                    </motion.button>
+                    <motion.div whileTap={{ scale: 0.95 }} className="w-full">
+                      <Button
+                        type="button"
+                        onClick={downloadQRCode}
+                        className="w-full bg-app-fg text-app-bg hover:opacity-90"
+                      >
+                        <Download className="w-4 h-4" />
+                        QR-Code herunterladen
+                      </Button>
+                    </motion.div>
 
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      onClick={downloadA5StandeePdf}
-                      className="w-full px-4 py-2 bg-app-card border border-app-border text-app-fg rounded-lg flex items-center justify-center gap-2"
-                    >
-                      <Download className="w-4 h-4" />
-                      Aufsteller (A5) als PDF
-                    </motion.button>
+                    <motion.div whileTap={{ scale: 0.95 }} className="w-full">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={downloadA5StandeePdf}
+                        className="w-full border border-app-border bg-app-card text-app-fg hover:opacity-90"
+                      >
+                        <Download className="w-4 h-4" />
+                        Aufsteller (A5) als PDF
+                      </Button>
+                    </motion.div>
 
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      onClick={saveQrCodeConfig}
-                      className="w-full px-4 py-2 bg-app-bg hover:opacity-90 text-app-fg rounded-lg flex items-center justify-center gap-2"
-                    >
-                      <Save className="w-4 h-4" />
-                      QR-Einstellungen speichern
-                    </motion.button>
+                    <motion.div whileTap={{ scale: 0.95 }} className="w-full">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={saveQrCodeConfig}
+                        className="w-full bg-app-bg text-app-fg hover:opacity-90"
+                      >
+                        <Save className="w-4 h-4" />
+                        QR-Einstellungen speichern
+                      </Button>
+                    </motion.div>
                     <p className="text-xs text-app-muted text-center">
                       Teilen Sie diesen QR-Code, damit Gäste direkt zum Event gelangen
                     </p>
@@ -754,30 +767,30 @@ export default function DesignLiveBuilderPage() {
                 <h3 className="font-semibold mb-2">Event-URL</h3>
                 <div className="flex gap-2">
                   <Input type="text" value={eventUrl} readOnly className="flex-1 bg-app-bg" />
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      navigator.clipboard.writeText(eventUrl);
-                      showToast('URL kopiert', 'success');
-                    }}
-                    className="px-3 py-2 bg-app-bg hover:opacity-90 rounded-lg"
-                  >
-                    Kopieren
-                  </motion.button>
+                  <motion.div whileTap={{ scale: 0.95 }}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => {
+                        navigator.clipboard.writeText(eventUrl);
+                        showToast('URL kopiert', 'success');
+                      }}
+                      className="bg-app-bg hover:opacity-90"
+                    >
+                      Kopieren
+                    </Button>
+                  </motion.div>
                 </div>
               </div>
 
               {/* Quick Actions */}
               <div className="border-t border-app-border pt-6 space-y-2">
                 <h3 className="font-semibold mb-2">Schnellaktionen</h3>
-                <a
-                  href={`/e2/${event.slug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full px-4 py-2 bg-app-bg hover:opacity-90 rounded-lg text-center text-sm font-medium"
-                >
-                  Öffentliche Seite öffnen
-                </a>
+                <Button asChild type="button" variant="secondary" className="w-full bg-app-bg hover:opacity-90">
+                  <a href={`/e2/${event.slug}`} target="_blank" rel="noopener noreferrer">
+                    Öffentliche Seite öffnen
+                  </a>
+                </Button>
               </div>
             </div>
           </div>
