@@ -60,8 +60,13 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 ## ⏳ In Progress
 
 - ⏳ Shared App Shell Refactor (Navigation/Layout/Auth gates/Loading/Error)
-  - Frontend: token-based AppLayout + zentrale States vereinheitlichen
-  - Admin: weitere Konsolidierung folgt
+  - Frontend:
+    - `ProtectedRoute` eingeführt und `/dashboard` damit abgesichert
+    - `/events/*` per `app/events/layout.tsx` zentral per Auth-Gate geschützt
+    - `FullPageLoader` (UI) ergänzt und `/e2` + `/events/[id]` Loading/Error vereinheitlicht
+    - `Centered` Hintergrund auf `bg-app-bg` vereinheitlicht
+  - Admin:
+    - `FullPageLoader` eingeführt und Loading-States (Events/Settings/Event Detail) vereinheitlicht
 
 ## ❌ Next (Priorität hoch)
 
