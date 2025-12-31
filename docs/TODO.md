@@ -87,6 +87,8 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
     - Echte Usage-Migrationen:
       - Uploader Filter: Photos + Videos via `DropdownMenu`
       - Bulk Actions: Photos + Videos via `DropdownMenu` + Submenu „Verschieben"
+      - Confirm-Dialog statt `confirm(...)`: Photos + Videos (Bulk Reject/Delete + Delete/Purge)
+      - `UploadModal` migriert: Custom Overlay → `Dialog`
 
 ## ⏳ In Progress
 
