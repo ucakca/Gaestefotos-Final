@@ -13,6 +13,8 @@ import dynamic from 'next/dynamic';
 import { DESIGN_PRESETS, getDesignPreset } from '@/lib/designPresets';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 
 function isWizardMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -422,16 +424,16 @@ export default function DesignLiveBuilderPage() {
 
                         {/* Event Title */}
                         {editingField === 'title' ? (
-                          <input
+                          <Input
                             type="text"
                             defaultValue={event.title}
                             onBlur={(e) => updateEventField('title', e.target.value)}
-                            onKeyPress={(e) => {
+                            onKeyDown={(e) => {
                               if (e.key === 'Enter') {
                                 updateEventField('title', (e.target as HTMLInputElement).value);
                               }
                             }}
-                            className="w-full text-center text-2xl font-bold text-app-fg mb-3 border-b-2 border-app-fg focus:outline-none"
+                            className="mb-3 h-auto border-x-0 border-t-0 border-b-2 border-app-fg bg-transparent px-0 py-0 text-center text-2xl font-bold text-app-fg shadow-none focus-visible:ring-0"
                             autoFocus
                           />
                         ) : (
@@ -445,11 +447,11 @@ export default function DesignLiveBuilderPage() {
 
                         {/* Welcome Message */}
                         {editingField === 'welcomeMessage' ? (
-                          <textarea
+                          <Textarea
                             defaultValue={welcomeMessage}
                             onBlur={(e) => updateDesignConfig({ welcomeMessage: e.target.value })}
                             placeholder="Schreibe eine Willkommensnachricht..."
-                            className="w-full text-center px-4 py-2 border-2 border-app-fg rounded-lg focus:outline-none resize-none text-sm"
+                            className="min-h-0 resize-none border-2 border-app-fg bg-transparent text-center text-sm focus-visible:ring-0"
                             rows={3}
                             autoFocus
                           />
@@ -743,12 +745,7 @@ export default function DesignLiveBuilderPage() {
               <div className="border-t border-app-border pt-6">
                 <h3 className="font-semibold mb-2">Event-URL</h3>
                 <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={eventUrl}
-                    readOnly
-                    className="flex-1 px-3 py-2 border border-app-border rounded-lg text-sm bg-app-bg text-app-fg"
-                  />
+                  <Input type="text" value={eventUrl} readOnly className="flex-1 bg-app-bg" />
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={() => {
