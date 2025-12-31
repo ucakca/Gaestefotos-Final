@@ -62,12 +62,12 @@ export default function StoryViewer({
           exit={{ opacity: 0 }}
           onClick={onClose}
           data-testid="story-viewer"
-          className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center"
+          className="fixed inset-0 bg-app-fg/95 z-50 flex items-center justify-center"
         >
           <div className="absolute inset-0" onClick={onClose} />
 
           <div
-            className="absolute top-0 left-0 right-0 z-30 px-4 pt-4 pb-5 bg-gradient-to-b from-black/80 via-black/50 to-transparent"
+            className="absolute top-0 left-0 right-0 z-30 px-4 pt-4 pb-5 bg-gradient-to-b from-app-fg/80 via-app-fg/50 to-transparent"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mx-auto w-full max-w-md">
@@ -82,15 +82,15 @@ export default function StoryViewer({
                           ? storyProgress
                           : 0;
                   return (
-                    <div key={idx} className="h-1 flex-1 rounded bg-white/25 overflow-hidden">
-                      <div className="h-full bg-white" style={{ width: `${Math.max(0, Math.min(1, fill)) * 100}%` }} />
+                    <div key={idx} className="h-1 flex-1 rounded bg-app-bg/25 overflow-hidden">
+                      <div className="h-full bg-app-bg" style={{ width: `${Math.max(0, Math.min(1, fill)) * 100}%` }} />
                     </div>
                   );
                 })}
               </div>
 
               <div className="mt-3 flex items-center justify-between">
-                <div className="min-w-0 text-white/90 text-sm font-medium truncate">
+                <div className="min-w-0 text-app-bg/90 text-sm font-medium truncate">
                   ((selectedStory?.photo?.uploadedBy as string) ||
                     (selectedStory?.video?.uploadedBy as string) ||
                     'Story')
@@ -102,7 +102,7 @@ export default function StoryViewer({
                     onClose();
                   }}
                   data-testid="story-close"
-                  className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/10 hover:bg-white/15 text-white"
+                  className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-app-bg/10 hover:bg-app-bg/15 text-app-bg"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -119,7 +119,7 @@ export default function StoryViewer({
                   onPrev();
                 }}
                 data-testid="story-prev"
-                className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/10 hover:bg-white/15 text-white flex items-center justify-center"
+                className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-app-bg/10 hover:bg-app-bg/15 text-app-bg flex items-center justify-center"
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
@@ -130,7 +130,7 @@ export default function StoryViewer({
                   onNext();
                 }}
                 data-testid="story-next"
-                className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white/10 hover:bg-white/15 text-white flex items-center justify-center"
+                className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-app-bg/10 hover:bg-app-bg/15 text-app-bg flex items-center justify-center"
               >
                 <ChevronRight className="w-6 h-6" />
               </button>
