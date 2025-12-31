@@ -1,6 +1,7 @@
 'use client';
 
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
@@ -33,21 +34,23 @@ const iconButtonVariants = cva(
 export type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof iconButtonVariants> & {
     icon: ReactNode;
+    asChild?: boolean;
   };
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
-  { className, icon, variant, size, type = 'button', ...props },
+  { className, icon, variant, size, asChild = false, type = 'button', ...props },
   ref
 ) {
+  const Comp = asChild ? Slot : 'button';
   return (
-    <button
+    <Comp
       ref={ref}
-      type={type}
+      {...(!asChild ? { type } : {})}
       className={cn(iconButtonVariants({ variant, size, className }))}
       {...props}
     >
       {icon}
-    </button>
+    </Comp>
   );
 });
 
