@@ -541,7 +541,7 @@ export default function CategoryManagementPage() {
                       type="checkbox"
                       checked={formData.isVisible}
                       onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
-                      className="h-5 w-5 accent-tokens-brandGreen"
+                      className="h-5 w-5 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                     />
                     <div className="flex items-center gap-2">
                       {formData.isVisible ? (
@@ -566,7 +566,7 @@ export default function CategoryManagementPage() {
                       type="checkbox"
                       checked={formData.uploadLocked}
                       onChange={(e) => setFormData({ ...formData, uploadLocked: e.target.checked })}
-                      className="h-5 w-5 accent-tokens-brandGreen"
+                      className="h-5 w-5 rounded border border-app-border bg-app-card accent-tokens-brandGreen focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30"
                     />
                     <div className="flex items-center gap-2">
                       {formData.uploadLocked ? (
