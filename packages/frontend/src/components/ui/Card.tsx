@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
+import { forwardRef, type HTMLAttributes } from 'react';
+import { cn } from '@/lib/utils';
 
-type CardProps = {
-  children: React.ReactNode;
-  className?: string;
-};
+export type CardProps = HTMLAttributes<HTMLDivElement>;
 
-export function Card({ children, className }: CardProps) {
-  return <div className={`bg-app-card rounded-lg border border-app-border${className ? ` ${className}` : ''}`}>{children}</div>;
-}
+export const Card = forwardRef<HTMLDivElement, CardProps>(function Card({ className, ...props }, ref) {
+  return <div ref={ref} className={cn('bg-app-card rounded-lg border border-app-border', className)} {...props} />;
+});
+
+Card.displayName = 'Card';
