@@ -696,7 +696,7 @@ export default function DesignLiveBuilderPage() {
                           step="10"
                           value={qrCodeConfig.size}
                           onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, size: parseInt(e.target.value) })}
-                          className="w-full"
+                          className="w-full accent-tokens-brandGreen"
                         />
                       </div>
 
@@ -708,7 +708,7 @@ export default function DesignLiveBuilderPage() {
                         <select
                           value={qrCodeConfig.level}
                           onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, level: e.target.value as any })}
-                          className="w-full px-3 py-2 border border-app-border rounded-lg text-sm bg-app-card text-app-fg"
+                          className="w-full rounded-lg border border-app-border bg-app-card px-4 py-2.5 text-sm text-app-fg transition-colors focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen"
                         >
                           <option value="L">Niedrig (L)</option>
                           <option value="M">Mittel (M)</option>
