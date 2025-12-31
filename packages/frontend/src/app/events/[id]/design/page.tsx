@@ -569,7 +569,7 @@ export default function DesignLiveBuilderPage() {
                           type="color"
                           value={colors.primary || '#8B1538'}
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, primary: e.target.value } })}
-                          className="w-12 h-10 rounded border border-app-border cursor-pointer"
+                          className="w-12 h-10 rounded border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
                         />
                         <Input
                           type="text"
@@ -585,7 +585,7 @@ export default function DesignLiveBuilderPage() {
                           type="color"
                           value={colors.secondary || '#FFFFFF'}
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, secondary: e.target.value } })}
-                          className="w-12 h-10 rounded border border-app-border cursor-pointer"
+                          className="w-12 h-10 rounded border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
                         />
                         <Input
                           type="text"
@@ -601,7 +601,7 @@ export default function DesignLiveBuilderPage() {
                           type="color"
                           value={colors.accent || '#EC4899'}
                           onChange={(e) => updateDesignConfig({ colors: { ...colors, accent: e.target.value } })}
-                          className="w-12 h-10 rounded border border-app-border cursor-pointer"
+                          className="w-12 h-10 rounded border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
                         />
                         <Input
                           type="text"
@@ -652,7 +652,7 @@ export default function DesignLiveBuilderPage() {
                             type="color"
                             value={qrCodeConfig.fgColor}
                             onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, fgColor: e.target.value })}
-                            className="w-12 h-10 rounded border border-app-border cursor-pointer"
+                            className="w-12 h-10 rounded border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
                           />
                           <Input
                             type="text"
@@ -674,7 +674,7 @@ export default function DesignLiveBuilderPage() {
                             type="color"
                             value={qrCodeConfig.bgColor}
                             onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, bgColor: e.target.value })}
-                            className="w-12 h-10 rounded border border-app-border cursor-pointer"
+                            className="w-12 h-10 rounded border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
                           />
                           <Input
                             type="text"
