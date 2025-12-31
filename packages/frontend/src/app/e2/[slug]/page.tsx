@@ -14,11 +14,10 @@ import { Centered } from '@/components/ui/Centered';
 import { Container } from '@/components/ui/Container';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { LoadMoreIndicator } from '@/components/ui/LoadMoreIndicator';
-import { LoadingRow } from '@/components/ui/LoadingRow';
 import { PasswordGate } from '@/components/ui/PasswordGate';
 import { Section } from '@/components/ui/Section';
-import { Spinner } from '@/components/ui/Spinner';
 import { Trophy } from 'lucide-react';
 import { useGuestEventData } from '@/hooks/useGuestEventData';
 import { useStoriesViewer } from '@/hooks/useStoriesViewer';
@@ -85,11 +84,7 @@ export default function PublicEventPageV2() {
   }, [hasMore, loadingMore, loadMore]);
 
   if (loading) {
-    return (
-      <Centered>
-        <LoadingRow text="Laden..." size="md" />
-      </Centered>
-    );
+    return <FullPageLoader label="Laden..." />;
   }
 
   if (error || !event) {
