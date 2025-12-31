@@ -1059,7 +1059,7 @@ export default function EventDashboardPage() {
               </label>
             </div>
             {editingField === 'date' ? (
-              <input
+              <Input
                 type="date"
                 required
                 defaultValue={event.dateTime ? new Date(event.dateTime).toISOString().split('T')[0] : ''}
@@ -1071,7 +1071,7 @@ export default function EventDashboardPage() {
                     updateEventField('dateTime', combinedDateTime.toISOString());
                   }
                 }}
-                className="w-full px-3 py-2 border-2 border-app-border rounded-lg bg-app-card text-app-fg focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen"
+                className="border-2"
                 autoFocus
               />
             ) : (
@@ -1103,7 +1103,7 @@ export default function EventDashboardPage() {
               </label>
             </div>
             {editingField === 'time' ? (
-              <input
+              <Input
                 type="time"
                 required
                 defaultValue={event.dateTime ? new Date(event.dateTime).toTimeString().slice(0, 5) : '00:00'}
@@ -1115,7 +1115,7 @@ export default function EventDashboardPage() {
                     updateEventField('dateTime', combinedDateTime.toISOString());
                   }
                 }}
-                className="w-full px-3 py-2 border-2 border-app-border rounded-lg bg-app-card text-app-fg focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen"
+                className="border-2"
                 autoFocus
               />
             ) : (
