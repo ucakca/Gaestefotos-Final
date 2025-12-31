@@ -33,6 +33,12 @@ const QRCodeSVG = dynamic(() => import('qrcode.react').then(mod => mod.QRCodeSVG
   ssr: false,
 });
 
+function resolveRootCssVar(name: string, fallback: string): string {
+  if (typeof window === 'undefined') return fallback;
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
+}
+
 export default function DesignLiveBuilderPage() {
   const params = useParams();
   const router = useRouter();
@@ -49,8 +55,8 @@ export default function DesignLiveBuilderPage() {
   const [showQRCode, setShowQRCode] = useState(false);
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
   const [qrCodeConfig, setQrCodeConfig] = useState({
-    fgColor: '#000000',
-    bgColor: '#FFFFFF',
+    fgColor: resolveRootCssVar('--app-fg', '#000000'),
+    bgColor: resolveRootCssVar('--app-card', '#FFFFFF'),
     size: 200,
     level: 'M' as 'L' | 'M' | 'Q' | 'H',
   });
@@ -659,7 +665,7 @@ export default function DesignLiveBuilderPage() {
                             value={qrCodeConfig.fgColor}
                             onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, fgColor: e.target.value })}
                             className="flex-1"
-                            placeholder="#000000"
+                            placeholder={resolveRootCssVar('--app-fg', '#000000')}
                           />
                         </div>
                       </div>
@@ -681,7 +687,7 @@ export default function DesignLiveBuilderPage() {
                             value={qrCodeConfig.bgColor}
                             onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, bgColor: e.target.value })}
                             className="flex-1"
-                            placeholder="#FFFFFF"
+                            placeholder={resolveRootCssVar('--app-card', '#FFFFFF')}
                           />
                         </div>
                       </div>
