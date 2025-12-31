@@ -8,6 +8,8 @@ import AppLayout from '@/components/AppLayout';
 import { QRCodeSVG } from 'qrcode.react';
 import { Download, ChevronLeft, Image as ImageIcon, Save, FileText, RotateCcw } from 'lucide-react';
 import { createRoot } from 'react-dom/client';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 type Format = 'A6' | 'A5';
 
@@ -495,51 +497,51 @@ export default function QrStylerPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={handleSaveConfig}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-app-border rounded-md bg-app-card hover:bg-app-bg"
+                className="border border-app-border bg-app-card hover:bg-app-bg"
                 disabled={loading || savingConfig}
               >
-                <Save className="w-4 h-4" />
+                <Save className="h-4 w-4" />
                 {savingConfig ? 'Speichere…' : saveOk || 'Speichern'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleResetDefaults}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-app-border rounded-md bg-app-card hover:bg-app-bg"
+                className="border border-app-border bg-app-card hover:bg-app-bg"
                 disabled={loading}
               >
-                <RotateCcw className="w-4 h-4" />
+                <RotateCcw className="h-4 w-4" />
                 Reset
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleDownloadPng}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90"
+                className="bg-tokens-brandGreen text-app-bg hover:opacity-90"
                 disabled={!computedSvg.svg || exportingPng}
               >
-                <ImageIcon className="w-4 h-4" />
+                <ImageIcon className="h-4 w-4" />
                 {exportingPng ? 'Export…' : 'PNG (Print)'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleDownloadPdf}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-app-fg text-app-bg rounded-md hover:opacity-90"
+                className="bg-app-fg text-app-bg hover:opacity-90"
                 disabled={!computedSvg.svg || exportingPdf}
               >
-                <FileText className="w-4 h-4" />
+                <FileText className="h-4 w-4" />
                 {exportingPdf ? 'Export…' : 'PDF (Print)'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={downloadSvg}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-app-border rounded-md bg-app-card hover:bg-app-bg"
+                className="border border-app-border bg-app-card hover:bg-app-bg"
                 disabled={!computedSvg.svg}
               >
-                <Download className="w-4 h-4" />
+                <Download className="h-4 w-4" />
                 SVG
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -550,7 +552,7 @@ export default function QrStylerPage() {
               <div className="space-y-2">
                 <label className="text-xs text-app-muted">Vorlage</label>
                 <select
-                  className="w-full border border-app-border rounded-md px-3 py-2 bg-app-card text-app-fg"
+                  className="w-full rounded-md border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tokens-brandGreen/30"
                   value={templateSlug}
                   onChange={(e) => setTemplateSlug(e.target.value)}
                 >
@@ -564,7 +566,11 @@ export default function QrStylerPage() {
 
               <div className="space-y-2">
                 <label className="text-xs text-app-muted">Preset</label>
-                <select className="w-full border border-app-border rounded-md px-3 py-2 bg-app-card text-app-fg" defaultValue="" onChange={(e) => handleApplyPreset(e.target.value)}>
+                <select
+                  className="w-full rounded-md border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tokens-brandGreen/30"
+                  defaultValue=""
+                  onChange={(e) => handleApplyPreset(e.target.value)}
+                >
                   <option value="" disabled>
                     Preset auswählen…
                   </option>
@@ -578,22 +584,22 @@ export default function QrStylerPage() {
 
               <div className="space-y-2">
                 <label className="text-xs text-app-muted">Headline</label>
-                <input className="w-full border border-app-border rounded-md px-3 py-2 bg-app-card text-app-fg" value={headline} onChange={(e) => setHeadline(e.target.value)} />
+                <Input value={headline} onChange={(e) => setHeadline(e.target.value)} />
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs text-app-muted">Subline</label>
-                <input className="w-full border border-app-border rounded-md px-3 py-2 bg-app-card text-app-fg" value={subline} onChange={(e) => setSubline(e.target.value)} />
+                <Input value={subline} onChange={(e) => setSubline(e.target.value)} />
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs text-app-muted">Eventname</label>
-                <input className="w-full border border-app-border rounded-md px-3 py-2 bg-app-card text-app-fg" value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder={eventTitle} />
+                <Input value={eventName} onChange={(e) => setEventName(e.target.value)} placeholder={eventTitle} />
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs text-app-muted">Call to Action</label>
-                <input className="w-full border border-app-border rounded-md px-3 py-2 bg-app-card text-app-fg" value={callToAction} onChange={(e) => setCallToAction(e.target.value)} />
+                <Input value={callToAction} onChange={(e) => setCallToAction(e.target.value)} />
               </div>
 
               <div className="pt-2 border-t border-app-border" />
@@ -620,18 +626,18 @@ export default function QrStylerPage() {
               <div className="text-sm font-semibold text-app-fg">Format</div>
               <div className="flex gap-2">
                 {(['A6', 'A5'] as const).map((f) => (
-                  <button
+                  <Button
                     key={f}
                     type="button"
                     onClick={() => setFormat(f)}
-                    className={`px-3 py-2 rounded-md border text-sm ${
+                    className={
                       format === f
-                        ? 'bg-tokens-brandGreen text-app-bg border-tokens-brandGreen'
-                        : 'bg-app-card border-app-border text-app-fg'
-                    }`}
+                        ? 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
+                        : 'border border-app-border bg-app-card text-app-fg hover:bg-app-bg'
+                    }
                   >
                     {f}
-                  </button>
+                  </Button>
                 ))}
               </div>
 
