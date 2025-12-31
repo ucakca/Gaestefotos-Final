@@ -65,11 +65,13 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
   - Admin:
     - `FullPageLoader` eingeführt und Loading-States (Events/Settings/Event Detail) vereinheitlicht
   - Verifikation: `pnpm type-check` + `pnpm lint` (repo-weit) erfolgreich
-
 - ✅ Media Pipeline/Downloads: Guest-Downloads nur wenn Host `allowDownloads`
   - Backend: download endpoints prüfen `featuresConfig.allowDownloads` für Guests
   - Frontend: `/e` + `/e2` defaulten `allowDownloads` korrekt auf `!== false`
   - Verifikation: `pnpm type-check` + `pnpm lint` erfolgreich
+- ✅ Pre-Launch: finaler System-Check (Smoke Tests, Monitoring, Rollback Plan)
+
+## ⏳ In Progress
 
 - ⏳ UI Redesign (alle Oberflächen): shadcn/ui + Tailwind, Apple-clean Basis + Theme-Welten
   - Admin-Dashboard:
@@ -84,22 +86,20 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
     - shadcn Baseline Setup (deps + `tailwindcss-animate` + `components.json`)
     - Primitives migriert: `Button`/`Input`/`Card`/`IconButton`
     - Primitives ergänzt: `DropdownMenu` + `Dialog` (Radix/shadcn wrapper)
+    - Primitives ergänzt: `Textarea`
     - Echte Usage-Migrationen:
       - Uploader Filter: Photos + Videos via `DropdownMenu`
       - Bulk Actions: Photos + Videos via `DropdownMenu` + Submenu „Verschieben"
       - Confirm-Dialog statt `confirm(...)`: Photos + Videos (Bulk Reject/Delete + Delete/Purge)
       - `UploadModal` migriert: Custom Overlay → `Dialog`
-
-## ⏳ In Progress
-
- 
+      - Event Settings Controls tokenisiert: `accent-*` statt inline `accentColor` + Inputs via `Input`
+      - Dashboard: `alert(...)` → `showToast(...)` + Buttons/Inline-Edits auf Primitives
 
 ## ❌ Next (Priorität hoch)
 
-- ❌ UI Redesign (alle Oberflächen): shadcn/ui + Tailwind, Apple-clean Basis + Theme-Welten
-- ❌ Pre-Launch: finaler System-Check (Smoke Tests, Monitoring, Rollback Plan)
+- ❌ Design Polish
+- ❌ Big end-to-end Testlauf vor Launch
 
 ## ❌ Later
 
-- ❌ Design Polish
-- ❌ Big end-to-end Testlauf vor Launch
+

@@ -56,12 +56,16 @@ Legende:
 - **Photos/Videos Upload + Moderation (Basis)**
   - Backend: `packages/backend/src/routes/photos.ts`, `packages/backend/src/routes/videos.ts`
 
-- **Downloads (Optimized Views vs Original Downloads)**
-  - Requirement:
-    - Guest/Host UI darf für Performance optimierte/komprimierte Derivate anzeigen (thumbnails/optimized sizes)
-    - Host/Admin muss immer das Originalfile (uncompressed) herunterladen können
-    - Guest darf Original-Downloads nur, wenn Host Feature-Flag/Checkbox `allowDownloads` (oder äquivalent) aktiviert
-  - Status: ◐ (Requirement festgelegt; Contract/Endpoints/UX sind zu verifizieren/zu implementieren)
+- ✅ **Downloads (Guests gated via `allowDownloads`)**
+  - Backend:
+    - Photos: `GET /api/photos/:photoId/download` (Guest nur wenn `featuresConfig.allowDownloads !== false` und Photo `APPROVED`)
+      - Code: `packages/backend/src/routes/photos.ts`
+    - Videos: `GET /api/videos/:videoId/download` (Guest nur wenn `featuresConfig.allowDownloads !== false` und Video `APPROVED`)
+      - Code: `packages/backend/src/routes/videos.ts`
+  - Doku:
+    - `docs/API_MAP.md` (ACL/Guards)
+    - `docs/DB_FIELD_MEANINGS.md` (`Event.featuresConfig.allowDownloads`)
+  - Hinweis (weiter offen): „Optimized Views vs Original Downloads“ Contract/UX (Derivate vs Originalfile) ist als eigenes Thema noch zu verifizieren.
 
 - ✅ **Theme System v1 (Design Tokens, system-wide)**
   - Backend (Admin): `packages/backend/src/routes/adminTheme.ts`

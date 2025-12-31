@@ -16,6 +16,9 @@
 - **Downloads**
   - Einzel-Downloads
   - Bulk/ZIP Downloads
+  - Policy:
+    - Host/Admin: erlaubt (solange Storage nicht gelocked)
+    - Gast: nur wenn Host `featuresConfig.allowDownloads !== false` und Media `APPROVED`
 - **Lifecycle Regeln (UI/Policy)**
   - Upload-Fenster: `event.dateTime ± 1 Tag`
   - Storage-Lock nach `storageEndsAt` (berechnet: `event.dateTime + package duration`)
