@@ -609,15 +609,30 @@ export default function QrStylerPage() {
               <div className="grid grid-cols-3 gap-3">
                 <label className="text-xs text-app-muted">
                   Background
-                  <input type="color" className="w-full h-10 mt-1" value={bgColor} onChange={(e) => setBgColor(e.target.value)} />
+                  <input
+                    type="color"
+                    className="w-full h-10 mt-1 rounded-lg border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                  />
                 </label>
                 <label className="text-xs text-app-muted">
                   Text
-                  <input type="color" className="w-full h-10 mt-1" value={textColor} onChange={(e) => setTextColor(e.target.value)} />
+                  <input
+                    type="color"
+                    className="w-full h-10 mt-1 rounded-lg border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
+                    value={textColor}
+                    onChange={(e) => setTextColor(e.target.value)}
+                  />
                 </label>
                 <label className="text-xs text-app-muted">
                   Accent
-                  <input type="color" className="w-full h-10 mt-1" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} />
+                  <input
+                    type="color"
+                    className="w-full h-10 mt-1 rounded-lg border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
+                    value={accentColor}
+                    onChange={(e) => setAccentColor(e.target.value)}
+                  />
                 </label>
               </div>
 
