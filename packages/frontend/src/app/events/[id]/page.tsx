@@ -8,6 +8,8 @@ import { Event as EventType } from '@gaestefotos/shared';
 import Link from 'next/link';
 import QRCode from '@/components/QRCode';
 import MapsLink from '@/components/MapsLink';
+import { FullPageLoader } from '@/components/ui/FullPageLoader';
+import { ErrorState } from '@/components/ui/ErrorState';
 
 export default function EventDetailPage() {
   const params = useParams();
@@ -36,19 +38,11 @@ export default function EventDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Laden...</div>
-      </div>
-    );
+    return <FullPageLoader label="Laden..." />;
   }
 
   if (error || !event) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-[var(--status-danger)]">{error || 'Event nicht gefunden'}</div>
-      </div>
-    );
+    return <ErrorState message={error || 'Event nicht gefunden'} />;
   }
 
   return (
