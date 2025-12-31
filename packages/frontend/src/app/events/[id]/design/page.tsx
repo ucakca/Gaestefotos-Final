@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 
 function isWizardMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -705,16 +706,20 @@ export default function DesignLiveBuilderPage() {
                         <label className="block text-sm font-medium text-app-fg mb-2">
                           Fehlerkorrektur
                         </label>
-                        <select
+                        <Select
                           value={qrCodeConfig.level}
-                          onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, level: e.target.value as any })}
-                          className="w-full rounded-lg border border-app-border bg-app-card px-4 py-2.5 text-sm text-app-fg transition-colors focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen"
+                          onValueChange={(value) => setQrCodeConfig({ ...qrCodeConfig, level: value as any })}
                         >
-                          <option value="L">Niedrig (L)</option>
-                          <option value="M">Mittel (M)</option>
-                          <option value="Q">Hoch (Q)</option>
-                          <option value="H">Sehr hoch (H)</option>
-                        </select>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="L">Niedrig (L)</SelectItem>
+                            <SelectItem value="M">Mittel (M)</SelectItem>
+                            <SelectItem value="Q">Hoch (Q)</SelectItem>
+                            <SelectItem value="H">Sehr hoch (H)</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <p className="text-xs text-app-muted mt-1">
                           Höhere Stufen = mehr Fehlerkorrektur, aber größerer Code
                         </p>

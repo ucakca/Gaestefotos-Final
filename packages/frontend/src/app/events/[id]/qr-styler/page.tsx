@@ -10,6 +10,7 @@ import { Download, ChevronLeft, Image as ImageIcon, Save, FileText, RotateCcw } 
 import { createRoot } from 'react-dom/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 
 type Format = 'A6' | 'A5';
 
@@ -551,35 +552,34 @@ export default function QrStylerPage() {
 
               <div className="space-y-2">
                 <label className="text-xs text-app-muted">Vorlage</label>
-                <select
-                  className="w-full rounded-lg border border-app-border bg-app-card px-4 py-2.5 text-sm text-app-fg transition-colors focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen"
-                  value={templateSlug}
-                  onChange={(e) => setTemplateSlug(e.target.value)}
-                >
-                  {TEMPLATES.map((t) => (
-                    <option key={t.slug} value={t.slug}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
+                <Select value={templateSlug} onValueChange={setTemplateSlug}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TEMPLATES.map((t) => (
+                      <SelectItem key={t.slug} value={t.slug}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs text-app-muted">Preset</label>
-                <select
-                  className="w-full rounded-lg border border-app-border bg-app-card px-4 py-2.5 text-sm text-app-fg transition-colors focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen"
-                  defaultValue=""
-                  onChange={(e) => handleApplyPreset(e.target.value)}
-                >
-                  <option value="" disabled>
-                    Preset auswählen…
-                  </option>
-                  {PRESETS.map((p) => (
-                    <option key={p.key} value={p.key}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
+                <Select onValueChange={handleApplyPreset}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Preset auswählen…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRESETS.map((p) => (
+                      <SelectItem key={p.key} value={p.key}>
+                        {p.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
