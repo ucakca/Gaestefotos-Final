@@ -10,6 +10,10 @@ import { useToastStore } from '@/store/toastStore';
 import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
+import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 
 interface Category {
   id: string;
@@ -232,31 +236,32 @@ export default function ChallengeManagementPage() {
                 {event?.title} • {challenges.length} Challenge{challenges.length !== 1 ? 's' : ''}
               </p>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                setShowAddForm(!showAddForm);
-                setEditingChallenge(null);
-                setFormData({
-                  title: '',
-                  description: '',
-                  order: 0,
-                  isActive: true,
-                  isVisible: true,
-                  categoryId: null,
-                });
-              }}
-              disabled={!challengesEnabled}
-              className={`px-4 py-2 rounded-md flex items-center gap-2 ${
-                challengesEnabled
-                  ? 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
-                  : 'bg-app-border text-app-muted cursor-not-allowed'
-              }`}
-            >
-              <Plus className="w-5 h-5" />
-              Challenge hinzufügen
-            </motion.button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                type="button"
+                onClick={() => {
+                  setShowAddForm(!showAddForm);
+                  setEditingChallenge(null);
+                  setFormData({
+                    title: '',
+                    description: '',
+                    order: 0,
+                    isActive: true,
+                    isVisible: true,
+                    categoryId: null,
+                  });
+                }}
+                disabled={!challengesEnabled}
+                className={
+                  challengesEnabled
+                    ? 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
+                    : 'bg-app-border text-app-muted cursor-not-allowed'
+                }
+              >
+                <Plus className="h-5 w-5" />
+                Challenge hinzufügen
+              </Button>
+            </motion.div>
           </div>
         </motion.div>
 
@@ -289,12 +294,11 @@ export default function ChallengeManagementPage() {
                   <label className="block text-sm font-medium text-app-fg mb-1">
                     Titel *
                   </label>
-                  <input
+                  <Input
                     type="text"
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
                     placeholder="z.B. Bestes Paar-Foto"
                   />
                 </div>
@@ -302,10 +306,9 @@ export default function ChallengeManagementPage() {
                   <label className="block text-sm font-medium text-app-fg mb-1">
                     Beschreibung
                   </label>
-                  <textarea
+                  <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
                     rows={2}
                     placeholder="Optionale Beschreibung"
                   />
@@ -317,7 +320,7 @@ export default function ChallengeManagementPage() {
                   <select
                     value={formData.categoryId || ''}
                     onChange={(e) => setFormData({ ...formData, categoryId: e.target.value || null })}
-                    className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
+                    className="w-full rounded-md border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tokens-brandGreen/30"
                   >
                     <option value="">Globale Challenge</option>
                     {categories.map(cat => (
@@ -332,7 +335,7 @@ export default function ChallengeManagementPage() {
                         type="checkbox"
                         checked={formData.isActive}
                         onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                        className="w-4 h-4"
+                        className="h-4 w-4 accent-tokens-brandGreen"
                       />
                       <span className="text-sm text-app-fg">Aktiv</span>
                     </label>
@@ -343,33 +346,31 @@ export default function ChallengeManagementPage() {
                         type="checkbox"
                         checked={formData.isVisible}
                         onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
-                        className="w-4 h-4"
+                        className="h-4 w-4 accent-tokens-brandGreen"
                       />
                       <span className="text-sm text-app-fg">Foto sichtbar</span>
                     </label>
                   </div>
                 </div>
                 <div className="flex gap-4 pt-4 border-t border-app-border">
-                  <motion.button
-                    type="button"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setShowAddForm(false);
-                      cancelEdit();
-                    }}
-                    className="px-4 py-2 border border-app-border rounded-md text-app-fg hover:bg-app-bg"
-                  >
-                    Abbrechen
-                  </motion.button>
-                  <motion.button
-                    type="submit"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90 shadow-sm"
-                  >
-                    {editingChallenge ? 'Speichern' : 'Hinzufügen'}
-                  </motion.button>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => {
+                        setShowAddForm(false);
+                        cancelEdit();
+                      }}
+                      className="border border-app-border bg-app-card hover:bg-app-bg"
+                    >
+                      Abbrechen
+                    </Button>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button type="submit" className="bg-tokens-brandGreen text-app-bg hover:opacity-90 shadow-sm">
+                      {editingChallenge ? 'Speichern' : 'Hinzufügen'}
+                    </Button>
+                  </motion.div>
                 </div>
               </form>
             </motion.div>
@@ -405,20 +406,22 @@ export default function ChallengeManagementPage() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button
+                      <IconButton
+                        icon={<Edit2 className="h-4 w-4" />}
+                        variant="ghost"
+                        size="sm"
+                        aria-label="Challenge bearbeiten"
                         onClick={() => startEdit(challenge)}
-                        className="p-2 text-tokens-brandGreen hover:opacity-90 hover:bg-app-card rounded"
-                        title="Bearbeiten"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
+                        className="text-tokens-brandGreen"
+                      />
+                      <IconButton
+                        icon={<Trash2 className="h-4 w-4" />}
+                        variant="ghost"
+                        size="sm"
+                        aria-label="Challenge löschen"
                         onClick={() => handleDeleteChallenge(challenge.id)}
-                        className="p-2 text-[var(--status-danger)] hover:opacity-90 hover:bg-app-card rounded"
-                        title="Löschen"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                        className="text-[var(--status-danger)]"
+                      />
                     </div>
                   </div>
                 </div>
@@ -458,25 +461,30 @@ export default function ChallengeManagementPage() {
                             </div>
                           </div>
                           <div className="flex gap-1">
-                            <button
+                            <IconButton
+                              icon={<Copy className="h-4 w-4" />}
+                              variant="ghost"
+                              size="sm"
+                              aria-label="Auf andere Alben kopieren"
                               onClick={() => handleCopyChallenge(challenge.id)}
-                              className="p-1 text-tokens-brandGreen hover:opacity-90"
-                              title="Auf andere Alben kopieren"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </button>
-                            <button
+                              className="text-tokens-brandGreen"
+                            />
+                            <IconButton
+                              icon={<Edit2 className="h-4 w-4" />}
+                              variant="ghost"
+                              size="sm"
+                              aria-label="Challenge bearbeiten"
                               onClick={() => startEdit(challenge)}
-                              className="p-1 text-tokens-brandGreen hover:opacity-90"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
+                              className="text-tokens-brandGreen"
+                            />
+                            <IconButton
+                              icon={<Trash2 className="h-4 w-4" />}
+                              variant="ghost"
+                              size="sm"
+                              aria-label="Challenge löschen"
                               onClick={() => handleDeleteChallenge(challenge.id)}
-                              className="p-1 text-[var(--status-danger)] hover:opacity-90"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                              className="text-[var(--status-danger)]"
+                            />
                           </div>
                         </div>
                       ))}
