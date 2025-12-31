@@ -69,6 +69,11 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
   - Backend: download endpoints prüfen `featuresConfig.allowDownloads` für Guests
   - Frontend: `/e` + `/e2` defaulten `allowDownloads` korrekt auf `!== false`
   - Verifikation: `pnpm type-check` + `pnpm lint` erfolgreich
+- ✅ Frontend: Sweep remaining raw form controls in Event Flows (TODO 203)
+  - `Select` Primitive (Radix) ergänzt + native `<select>` migriert (u.a. `design`, `challenges`, `qr-styler`)
+  - `Slider` Primitive (Radix) ergänzt + QR-Größe in `design` migriert
+  - Checkbox/Inputs in `edit`/`dashboard`/`categories` token-konform vereinheitlicht
+  - Verifikation: `pnpm type-check` + `pnpm lint` erfolgreich
 - ✅ Pre-Launch: finaler System-Check (Smoke Tests, Monitoring, Rollback Plan)
 
 ## ⏳ In Progress
@@ -87,6 +92,7 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
     - Primitives migriert: `Button`/`Input`/`Card`/`IconButton`
     - Primitives ergänzt: `DropdownMenu` + `Dialog` (Radix/shadcn wrapper)
     - Primitives ergänzt: `Textarea`
+    - Primitives ergänzt: `Select` + `Slider` (Radix/shadcn wrapper)
     - Echte Usage-Migrationen:
       - Uploader Filter: Photos + Videos via `DropdownMenu`
       - Bulk Actions: Photos + Videos via `DropdownMenu` + Submenu „Verschieben"
@@ -94,6 +100,11 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
       - `UploadModal` migriert: Custom Overlay → `Dialog`
       - Event Settings Controls tokenisiert: `accent-*` statt inline `accentColor` + Inputs via `Input`
       - Dashboard: `alert(...)` → `showToast(...)` + Buttons/Inline-Edits auf Primitives
+
+- ⏳ Hardcoded Color Sweep (TODO 171)
+  - Fallback-Gradienten/Inline-Styles auf `var(--...)` Tokens umgestellt (u.a. `design` A5 PDF, Design fallback gradients)
+  - QR-Styler Defaults via Root-CSS-Variablen aufgelöst (sichere Hex-Fallbacks)
+  - Design Presets: globale Brand/Neutral-Fallbacks tokenisiert (Preset-Farben bewusst unangetastet)
 
 ## ❌ Next (Priorität hoch)
 
