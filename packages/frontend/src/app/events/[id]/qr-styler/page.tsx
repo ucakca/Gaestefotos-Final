@@ -38,8 +38,20 @@ function resolveRootCssVar(name: string, fallback: string): string {
 }
 
 const PRESETS: Preset[] = [
-  { key: 'classic-green', label: 'Classic Green', bgColor: '#ffffff', textColor: '#1a1a1a', accentColor: '#295B4D' },
-  { key: 'modern-blue', label: 'Modern Blue', bgColor: '#ffffff', textColor: '#111827', accentColor: '#2563eb' },
+  {
+    key: 'classic-green',
+    label: 'Classic Green',
+    bgColor: resolveRootCssVar('--app-card', '#ffffff'),
+    textColor: resolveRootCssVar('--app-fg', '#111827'),
+    accentColor: resolveRootCssVar('--brand-green', '#295B4D'),
+  },
+  {
+    key: 'modern-blue',
+    label: 'Modern Blue',
+    bgColor: resolveRootCssVar('--app-card', '#ffffff'),
+    textColor: resolveRootCssVar('--app-fg', '#111827'),
+    accentColor: resolveRootCssVar('--status-info', '#2563eb'),
+  },
   { key: 'soft-floral', label: 'Soft Floral', bgColor: '#fbf7f1', textColor: '#2b2b2b', accentColor: '#6c7a5f' },
   { key: 'elegant-rose', label: 'Elegant Rose', bgColor: '#fffaf7', textColor: '#2a2220', accentColor: '#b7798a' },
 ];
@@ -80,7 +92,7 @@ function getDefaultsForTemplate(templateSlug: string) {
     subline: 'Fotos & Videos sammeln',
     callToAction: 'QR-Code scannen & los geht’s',
     bgColor: resolveRootCssVar('--app-card', '#ffffff'),
-    textColor: '#1a1a1a',
+    textColor: resolveRootCssVar('--app-fg', '#111827'),
     accentColor: resolveRootCssVar('--brand-green', '#295B4D'),
   };
 }
@@ -88,7 +100,7 @@ function getDefaultsForTemplate(templateSlug: string) {
 function clampColor(input: string): string {
   const v = input.trim();
   if (/^#[0-9a-fA-F]{6}$/.test(v)) return v;
-  return '#000000';
+  return resolveRootCssVar('--app-fg', '#000000');
 }
 
 function getAttrNumber(el: Element | null, name: string): number | null {
@@ -241,9 +253,9 @@ export default function QrStylerPage() {
   const [eventName, setEventName] = useState('');
   const [callToAction, setCallToAction] = useState('QR-Code scannen & los geht’s');
 
-  const [bgColor, setBgColor] = useState('#ffffff');
-  const [textColor, setTextColor] = useState('#1a1a1a');
-  const [accentColor, setAccentColor] = useState('#295B4D');
+  const [bgColor, setBgColor] = useState(() => resolveRootCssVar('--app-card', '#ffffff'));
+  const [textColor, setTextColor] = useState(() => resolveRootCssVar('--app-fg', '#111827'));
+  const [accentColor, setAccentColor] = useState(() => resolveRootCssVar('--brand-green', '#295B4D'));
 
   const [templateSvg, setTemplateSvg] = useState<string>('');
   const [qrBox, setQrBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
