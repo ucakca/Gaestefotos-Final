@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { buildApiUrl } from '@/lib/api';
 
 export default function MaintenanceBanner() {
   const [enabled, setEnabled] = useState(false);
@@ -11,7 +12,7 @@ export default function MaintenanceBanner() {
 
     const load = async () => {
       try {
-        const res = await fetch('/api/maintenance', { credentials: 'include' });
+        const res = await fetch(buildApiUrl('/maintenance'), { credentials: 'include' });
         if (!res.ok) return;
         const data = (await res.json()) as any;
         if (cancelled) return;

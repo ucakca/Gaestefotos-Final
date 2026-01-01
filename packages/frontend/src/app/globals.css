@@ -101,7 +101,8 @@ textarea::placeholder {
 input:focus,
 textarea:focus,
 select:focus {
-  @apply border-tokens-brandGreen ring-tokens-brandGreen/30;
+  border-color: var(--tokens-brandGreen) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tokens-brandGreen) 30%, transparent) !important;
   outline: none;
 }
 

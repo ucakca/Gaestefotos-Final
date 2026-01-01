@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { buildApiUrl } from '@/lib/api';
 
 export default function ThemeLoader() {
   useEffect(() => {
@@ -8,7 +9,7 @@ export default function ThemeLoader() {
 
     (async () => {
       try {
-        const res = await fetch('/api/theme', { credentials: 'include' });
+        const res = await fetch(buildApiUrl('/theme'), { credentials: 'include' });
         if (!res.ok) return;
         const data = (await res.json()) as any;
         const tokens = (data?.tokens || {}) as Record<string, string>;
