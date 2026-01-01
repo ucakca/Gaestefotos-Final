@@ -7,6 +7,7 @@ import api from '@/lib/api';
 import { Event as EventType, Photo } from '@gaestefotos/shared';
 import { useEventRealtime } from '@/hooks/useEventRealtime';
 import QRCode from '@/components/QRCode';
+import { Button } from '@/components/ui/Button';
 
 export default function LiveWallPage() {
   const params = useParams();
@@ -170,26 +171,26 @@ export default function LiveWallPage() {
         <h1 className="text-2xl font-bold">{event.title}</h1>
         
         <div className="flex gap-4 items-center">
-          <button
+          <Button
             onClick={() => setViewMode(viewMode === 'grid' ? 'slideshow' : 'grid')}
             className="px-4 py-2 bg-app-bg/20 rounded hover:bg-app-bg/30"
           >
             {viewMode === 'grid' ? 'Slideshow' : 'Grid'}
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
             className="px-4 py-2 bg-app-bg/20 rounded hover:bg-app-bg/30"
           >
             {sortMode === 'newest' ? 'Neueste' : 'Zufall'}
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => setRealtimeEnabled((v) => !v)}
             className="px-4 py-2 bg-app-bg/20 rounded hover:bg-app-bg/30"
           >
             {realtimeEnabled ? 'Realtime' : 'Polling'}
-          </button>
+          </Button>
           
           {/* QR Code */}
           <div className="hidden lg:block">

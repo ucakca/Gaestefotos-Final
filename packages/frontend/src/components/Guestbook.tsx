@@ -1,10 +1,28 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Send, Heart, User, Edit2, Check, X, Image as ImageIcon, Globe, Lock, Mic, Square, Trash2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Camera,
+  Check,
+  Edit2,
+  Heart,
+  Image as ImageIcon,
+  Globe,
+  Lock,
+  Mic,
+  Send,
+  Square,
+  Trash2,
+  User,
+  X,
+} from 'lucide-react';
 import api from '@/lib/api';
 import { Checkbox } from '@/components/ui/Checkbox';
+import { IconButton } from '@/components/ui/IconButton';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 
 interface GuestbookEntry {
   id: string;
@@ -411,7 +429,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                 <div className="bg-app-card rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm border border-app-border">
                   {isEditingHostMessage && isHost ? (
                     <div className="space-y-2">
-                      <textarea
+                      <Textarea
                         value={editedHostMessage}
                         onChange={(e) => setEditedHostMessage(e.target.value)}
                         rows={3}
@@ -420,20 +438,25 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                         maxLength={2000}
                       />
                       <div className="flex gap-2">
-                        <button
+                        <Button
+                          type="button"
                           onClick={handleSaveHostMessage}
+                          size="sm"
                           className="px-3 py-1 bg-tokens-brandGreen text-app-bg text-xs rounded-lg hover:opacity-90 flex items-center gap-1"
                         >
                           <Check className="w-3 h-3" />
                           Speichern
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="secondary"
                           onClick={handleCancelEdit}
+                          size="sm"
                           className="px-3 py-1 border border-app-border text-app-fg text-xs rounded-lg hover:bg-app-bg flex items-center gap-1"
                         >
                           <X className="w-3 h-3" />
                           Abbrechen
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ) : (
@@ -442,16 +465,18 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                         {displayHostMessage}
                       </p>
                       {isHost && (
-                        <button
+                        <IconButton
                           onClick={() => {
                             console.log('Edit button clicked, isHost:', isHost);
                             setIsEditingHostMessage(true);
                           }}
-                          className="flex-shrink-0 p-2 hover:bg-app-bg rounded-full transition-colors border border-app-border"
+                          icon={<Edit2 className="w-4 h-4 text-tokens-brandGreen" />}
+                          variant="ghost"
+                          size="sm"
+                          className="flex-shrink-0 border border-app-border"
+                          aria-label="Nachricht bearbeiten"
                           title="Nachricht bearbeiten"
-                        >
-                          <Edit2 className="w-4 h-4 text-tokens-brandGreen" />
-                        </button>
+                        />
                       )}
                     </div>
                   )}
@@ -558,22 +583,22 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
               </div>
             )}
             
-            <input
+            <Input
               type="text"
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
               placeholder="Dein Name"
-              className="w-full px-4 py-2 border border-app-border rounded-lg focus:outline-none focus:ring-2 focus:ring-app-fg/30 text-sm bg-app-card text-app-fg"
+              className="w-full px-4 py-2 text-sm"
               disabled={submitting}
               maxLength={100}
             />
             
-            <textarea
+            <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Schreibe eine Nachricht..."
               rows={3}
-              className="w-full px-4 py-2 border border-app-border rounded-lg focus:outline-none focus:ring-2 focus:ring-app-fg/30 text-sm resize-none bg-app-card text-app-fg"
+              className="w-full px-4 py-2 text-sm resize-none"
               disabled={submitting}
               maxLength={2000}
             />
@@ -586,27 +611,31 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
               {!audioPreviewUrl ? (
                 <div className="flex items-center gap-2">
                   {!isRecording ? (
-                    <button
+                    <Button
                       type="button"
                       onClick={startRecording}
                       disabled={submitting || uploadingAudio}
+                      variant="ghost"
+                      size="sm"
                       className="flex items-center gap-2 px-4 py-3 border border-app-border rounded-lg hover:bg-app-bg disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Aufnahme starten"
                     >
                       <Mic className="w-5 h-5 text-app-fg" />
                       <span className="text-sm text-app-fg">Aufnehmen</span>
-                    </button>
+                    </Button>
                   ) : (
-                    <button
+                    <Button
                       type="button"
                       onClick={stopRecording}
                       disabled={submitting || uploadingAudio}
+                      variant="ghost"
+                      size="sm"
                       className="flex items-center gap-2 px-4 py-3 bg-[var(--status-danger)] text-app-bg rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Aufnahme stoppen"
                     >
                       <Square className="w-5 h-5" />
                       <span className="text-sm">Stop</span>
-                    </button>
+                    </Button>
                   )}
 
                   {uploadingAudio && (
@@ -620,15 +649,17 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
               <div className="bg-app-bg border border-app-border rounded-lg p-3">
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="text-xs text-app-muted">Audio</div>
-                  <button
+                  <IconButton
                     type="button"
                     onClick={removeAudio}
-                    className="p-2 hover:bg-app-card rounded-lg border border-app-border"
+                    icon={<Trash2 className="w-4 h-4" />}
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-lg border border-app-border"
                     disabled={submitting || uploadingAudio}
+                    aria-label="Audio entfernen"
                     title="Audio entfernen"
-                  >
-                    <Trash2 className="w-4 h-4 text-app-fg" />
-                  </button>
+                  />
                 </div>
                 <audio controls preload="none" className="w-full">
                   <source src={audioPreviewUrl} />
@@ -649,13 +680,18 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                     className="w-24 h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => setSelectedImage(photoPreview)}
                   />
-                  <button
-                    type="button"
-                    onClick={handleRemovePhoto}
-                    className="absolute -top-2 -right-2 bg-[var(--status-danger)] text-app-bg rounded-full p-1 hover:opacity-90 shadow-lg"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
+                  <div className="absolute -top-2 -right-2">
+                    <IconButton
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      icon={<X className="w-3 h-3" />}
+                      variant="danger"
+                      size="sm"
+                      className="shadow-lg"
+                      aria-label="Foto entfernen"
+                      title="Foto entfernen"
+                    />
+                  </div>
                 </div>
               ) : (
                 <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-app-border rounded-lg cursor-pointer hover:border-tokens-brandGreen transition-colors">
@@ -694,9 +730,11 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
               </label>
             </div>
             
-            <button
+            <Button
               type="submit"
               disabled={submitting || uploadingPhoto || uploadingAudio || isRecording || !message.trim() || !authorName.trim()}
+              variant="ghost"
+              size="sm"
               className="w-full bg-tokens-brandGreen text-app-bg py-3 px-4 rounded-lg hover:opacity-90 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (
@@ -707,7 +745,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                   Nachricht senden
                 </>
               )}
-            </button>
+            </Button>
           </form>
         </div>
 
@@ -724,12 +762,17 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
               className="max-w-full max-h-full object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
             />
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 bg-app-card/90 hover:bg-app-card text-app-fg rounded-full p-2 shadow-lg transition-all border border-app-border"
-            >
-              <X className="w-6 h-6" />
-            </button>
+            <div className="absolute top-4 right-4">
+              <IconButton
+                onClick={() => setSelectedImage(null)}
+                icon={<X className="w-6 h-6" />}
+                variant="ghost"
+                size="md"
+                className="bg-app-card/90 hover:bg-app-card shadow-lg border border-app-border"
+                aria-label="Schließen"
+                title="Schließen"
+              />
+            </div>
           </div>
         </div>
       )}

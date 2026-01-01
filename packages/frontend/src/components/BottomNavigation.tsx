@@ -22,6 +22,7 @@ import ChallengeCompletion from './ChallengeCompletion';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { IconButton } from '@/components/ui/IconButton';
+import { Button } from '@/components/ui/Button';
 
 interface BottomNavigationProps {
   eventId: string;
@@ -41,6 +42,8 @@ interface FeedEntry {
   photoUrl: string | null;
   createdAt: string;
 }
+
+const MotionButton = motion(Button);
 
 export default function BottomNavigation({
   eventId,
@@ -167,65 +170,75 @@ export default function BottomNavigation({
         <div className="max-w-4xl mx-auto px-2">
           <div className="flex items-center justify-around py-2">
             {/* Feed */}
-            <motion.button
+            <MotionButton
               whileTap={{ scale: 0.9 }}
               onClick={() => handleViewChange('feed')}
-              className={`flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                activeView === 'feed' ? 'bg-app-bg text-app-fg' : 'text-app-muted'
+              variant="ghost"
+              size="sm"
+              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
+                activeView === 'feed'
+                  ? 'bg-tokens-brandGreen text-app-bg'
+                  : 'text-app-muted hover:bg-app-bg'
               }`}
             >
               <Grid3x3 className="w-5 h-5" />
               <span className="text-xs font-medium">Feed</span>
-            </motion.button>
+            </MotionButton>
 
 
             {/* Challenges */}
-            <motion.button
+            <MotionButton
               whileTap={{ scale: 0.9 }}
               onClick={() => {
                 const featuresConfig = event?.featuresConfig as any;
-                if (featuresConfig?.challengesEnabled === true) {
-                  handleViewChange('challenges');
-                } else {
-                  // Zeige Hinweis-Modal wenn Challenges deaktiviert
-                  setShowChallenges(true);
+                if (featuresConfig?.enableChallenges === false) {
+                  return;
                 }
+                handleViewChange('challenges');
               }}
-              className={`flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                (event?.featuresConfig as any)?.challengesEnabled === true
-                  ? activeView === 'challenges'
-                    ? 'bg-app-bg text-app-fg'
-                    : 'text-app-muted'
-                  : 'text-app-muted opacity-50'
+              variant="ghost"
+              size="sm"
+              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
+                activeView === 'challenges'
+                  ? 'bg-tokens-brandGreen text-app-bg'
+                  : 'text-app-muted hover:bg-app-bg'
               }`}
             >
               <Trophy className="w-5 h-5" />
               <span className="text-xs font-medium">Challenges</span>
-            </motion.button>
+            </MotionButton>
 
             {/* Gästebuch */}
-            <motion.button
+            <MotionButton
               whileTap={{ scale: 0.9 }}
               onClick={() => handleViewChange('guestbook')}
-              className={`flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                activeView === 'guestbook' ? 'bg-app-bg text-app-fg' : 'text-app-muted'
+              variant="ghost"
+              size="sm"
+              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
+                activeView === 'guestbook'
+                  ? 'bg-tokens-brandGreen text-app-bg'
+                  : 'text-app-muted hover:bg-app-bg'
               }`}
             >
               <BookOpen className="w-5 h-5" />
               <span className="text-xs font-medium">Gästebuch</span>
-            </motion.button>
+            </MotionButton>
 
             {/* Info/Share */}
-            <motion.button
+            <MotionButton
               whileTap={{ scale: 0.9 }}
               onClick={() => handleViewChange('info')}
-              className={`flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                activeView === 'info' ? 'bg-app-bg text-app-fg' : 'text-app-muted'
+              variant="ghost"
+              size="sm"
+              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
+                activeView === 'info'
+                  ? 'bg-tokens-brandGreen text-app-bg'
+                  : 'text-app-muted hover:bg-app-bg'
               }`}
             >
               <Info className="w-5 h-5" />
               <span className="text-xs font-medium">Info</span>
-            </motion.button>
+            </MotionButton>
           </div>
         </div>
       </motion.div>
@@ -260,27 +273,25 @@ export default function BottomNavigation({
               </div>
               <div className="overflow-y-auto max-h-[calc(80vh-60px)] p-4">
                 {/* Alle Fotos */}
-                <motion.button
+                <MotionButton
                   whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     onAlbumSelect?.(null);
                     setShowAlbums(false);
                     setActiveView('feed');
                   }}
-                  className={`w-full text-left p-4 rounded-lg mb-2 transition-colors ${
-                    selectedAlbum === null
-                      ? 'bg-tokens-brandGreen text-app-bg'
-                      : 'bg-app-bg hover:bg-app-card text-app-fg'
-                  }`}
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto w-full bg-app-bg hover:bg-app-card rounded-lg p-4 flex items-center gap-3 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <Grid3x3 className="w-5 h-5" />
-                    <div className="flex-1">
-                      <p className="font-medium">Alle Fotos</p>
-                      <p className="text-sm opacity-70">Komplette Galerie</p>
-                    </div>
+                  <div className="w-10 h-10 rounded-full bg-tokens-brandGreen flex items-center justify-center">
+                    <Grid3x3 className="w-5 h-5 text-app-bg" />
                   </div>
-                </motion.button>
+                  <div>
+                    <p className="font-medium text-app-fg">Alle Fotos</p>
+                    <p className="text-sm opacity-70">Komplette Galerie</p>
+                  </div>
+                </MotionButton>
 
                 {/* Kategorien/Alben */}
                 {categories.length === 0 ? (
@@ -290,7 +301,7 @@ export default function BottomNavigation({
                   </div>
                 ) : (
                   categories.map((category) => (
-                    <motion.button
+                    <MotionButton
                       key={category.id}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
@@ -298,11 +309,9 @@ export default function BottomNavigation({
                         setShowAlbums(false);
                         setActiveView('feed');
                       }}
-                      className={`w-full text-left p-4 rounded-lg mb-2 transition-colors ${
-                        selectedAlbum === category.id
-                          ? 'bg-tokens-brandGreen text-app-bg'
-                          : 'bg-app-bg hover:bg-app-card text-app-fg'
-                      }`}
+                      variant="ghost"
+                      size="sm"
+                      className="h-auto w-full bg-app-bg hover:bg-app-card rounded-lg p-4 flex items-center gap-3 transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         <Folder className="w-5 h-5" />
@@ -314,7 +323,7 @@ export default function BottomNavigation({
                           </p>
                         </div>
                       </div>
-                    </motion.button>
+                    </MotionButton>
                   ))
                 )}
               </div>
@@ -347,7 +356,7 @@ export default function BottomNavigation({
               />
             </div>
             <div className="flex-1 overflow-y-auto min-h-0 p-4">
-              {(event?.featuresConfig as any)?.challengesEnabled !== true ? (
+              {(event?.featuresConfig as any)?.enableChallenges !== true ? (
                 <div className="text-center py-8 text-app-muted">
                   <Trophy className="w-12 h-12 mx-auto mb-2 opacity-30" />
                   <p className="text-sm font-medium text-app-fg mb-1">Challenges sind für dieses Event nicht aktiviert</p>
@@ -452,7 +461,7 @@ export default function BottomNavigation({
               </div>
               <div className="overflow-y-auto max-h-[calc(80vh-60px)] p-4 space-y-4">
                 {/* Zum Dashboard Button - Immer sichtbar, prüft Login beim Klick */}
-                <motion.button
+                <MotionButton
                   whileTap={{ scale: 0.98 }}
                   onClick={async () => {
                     // Prüfe zuerst ob Token vorhanden ist (auch wenn isAuthenticated noch false ist)
@@ -488,19 +497,23 @@ export default function BottomNavigation({
                       router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
                     }
                   }}
-                  className="w-full bg-tokens-brandGreen hover:opacity-90 text-app-bg rounded-lg p-4 flex items-center gap-3 transition-colors"
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto w-full bg-app-bg hover:bg-app-card rounded-lg p-4 flex items-center gap-3 transition-colors"
                 >
                   <LayoutDashboard className="w-5 h-5" />
                   <span className="font-medium">Zum Dashboard</span>
-                </motion.button>
-                <motion.button
+                </MotionButton>
+                <MotionButton
                   whileTap={{ scale: 0.98 }}
                   onClick={handleShare}
-                  className="w-full bg-app-bg hover:bg-app-card rounded-lg p-4 flex items-center gap-3 transition-colors"
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto w-full bg-app-bg hover:bg-app-card rounded-lg p-4 flex items-center gap-3 transition-colors"
                 >
                   <Share2 className="w-5 h-5" />
                   <span className="font-medium text-app-fg">Event teilen</span>
-                </motion.button>
+                </MotionButton>
                 <div className="text-sm text-app-muted space-y-2">
                   <p>
                     <strong>Event teilen:</strong> Lade deine Freunde ein, die Fotos zu sehen!

@@ -9,6 +9,9 @@ import { User } from '@gaestefotos/shared';
 import HelpTooltip from '@/components/ui/HelpTooltip';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import { Button } from '@/components/ui/Button';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -60,7 +63,7 @@ export default function AdminDashboardPage() {
           ? 'var(--status-danger)'
           : 'var(--app-accent)';
     return (
-      <button
+      <Button
         type="button"
         onClick={onClick}
         disabled={disabled}
@@ -77,7 +80,7 @@ export default function AdminDashboardPage() {
         }}
       >
         {children}
-      </button>
+      </Button>
     );
   };
 
@@ -794,7 +797,7 @@ export default function AdminDashboardPage() {
           <span style={{ color: 'var(--app-muted)', fontSize: '0.875rem' }}>
             {user.name} ({user.email})
           </span>
-          <button
+          <Button
             onClick={() => {
               authApi.logout();
               router.push('/login');
@@ -811,7 +814,7 @@ export default function AdminDashboardPage() {
             }}
           >
             Abmelden
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -839,12 +842,12 @@ export default function AdminDashboardPage() {
             <div style={{ marginTop: '0.5rem', color: 'var(--app-muted)', fontSize: '0.85rem' }}>{user.email}</div>
 
             <div style={{ marginTop: '0.9rem', display: 'grid', gap: '0.5rem' }}>
-              <button type="button" onClick={() => setActiveSection('packages')} style={navBtnStyle(activeSection === 'packages')}>Commerce (Pakete)</button>
-              <button type="button" onClick={() => setActiveSection('cms')} style={navBtnStyle(activeSection === 'cms')}>CMS (WordPress)</button>
-              <button type="button" onClick={() => setActiveSection('apiKeys')} style={navBtnStyle(activeSection === 'apiKeys')}>API Keys</button>
-              <button type="button" onClick={() => setActiveSection('emailTemplates')} style={navBtnStyle(activeSection === 'emailTemplates')}>E-Mail Templates</button>
-              <button type="button" onClick={() => setActiveSection('maintenance')} style={navBtnStyle(activeSection === 'maintenance')}>Maintenance</button>
-              <button type="button" onClick={() => setActiveSection('more')} style={navBtnStyle(activeSection === 'more')}>Weitere Tools</button>
+              <Button type="button" onClick={() => setActiveSection('packages')} style={navBtnStyle(activeSection === 'packages')}>Commerce (Pakete)</Button>
+              <Button type="button" onClick={() => setActiveSection('cms')} style={navBtnStyle(activeSection === 'cms')}>CMS (WordPress)</Button>
+              <Button type="button" onClick={() => setActiveSection('apiKeys')} style={navBtnStyle(activeSection === 'apiKeys')}>API Keys</Button>
+              <Button type="button" onClick={() => setActiveSection('emailTemplates')} style={navBtnStyle(activeSection === 'emailTemplates')}>E-Mail Templates</Button>
+              <Button type="button" onClick={() => setActiveSection('maintenance')} style={navBtnStyle(activeSection === 'maintenance')}>Maintenance</Button>
+              <Button type="button" onClick={() => setActiveSection('more')} style={navBtnStyle(activeSection === 'more')}>Weitere Tools</Button>
             </div>
           </aside>
 
@@ -947,11 +950,11 @@ export default function AdminDashboardPage() {
                 <h3 style={{ color: 'var(--brand-green)', fontSize: '1rem', fontWeight: 'bold', marginBottom: '0.75rem' }}>Neues Paket</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <input value={newPkg.sku} onChange={(e) => setNewPkg({ ...newPkg, sku: e.target.value })} placeholder="SKU" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1, fontFamily: 'monospace' }} />
+                    <Input value={newPkg.sku} onChange={(e) => setNewPkg({ ...newPkg, sku: e.target.value })} placeholder="SKU" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1, fontFamily: 'monospace' }} />
                     <HelpTooltip title="SKU" content={'Produkt-SKU aus WooCommerce. Muss eindeutig sein.'} />
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <input value={newPkg.name} onChange={(e) => setNewPkg({ ...newPkg, name: e.target.value })} placeholder="Name" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+                    <Input value={newPkg.name} onChange={(e) => setNewPkg({ ...newPkg, name: e.target.value })} placeholder="Name" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
                     <HelpTooltip title="Name" content={'Interner Anzeigename.'} />
                   </div>
                   <Select value={newPkg.type} onValueChange={(value) => setNewPkg({ ...newPkg, type: value })}>
@@ -963,10 +966,10 @@ export default function AdminDashboardPage() {
                       <SelectItem value="UPGRADE">UPGRADE</SelectItem>
                     </SelectContent>
                   </Select>
-                  <input value={newPkg.resultingTier} onChange={(e) => setNewPkg({ ...newPkg, resultingTier: e.target.value })} placeholder="resultingTier" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
-                  <input value={newPkg.upgradeFromTier} onChange={(e) => setNewPkg({ ...newPkg, upgradeFromTier: e.target.value })} placeholder="upgradeFromTier (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
-                  <input value={newPkg.storageLimitBytes} onChange={(e) => setNewPkg({ ...newPkg, storageLimitBytes: e.target.value })} placeholder="storageLimitBytes (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
-                  <input value={newPkg.storageDurationDays} onChange={(e) => setNewPkg({ ...newPkg, storageDurationDays: e.target.value })} placeholder="storageDurationDays (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
+                  <Input value={newPkg.resultingTier} onChange={(e) => setNewPkg({ ...newPkg, resultingTier: e.target.value })} placeholder="resultingTier" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
+                  <Input value={newPkg.upgradeFromTier} onChange={(e) => setNewPkg({ ...newPkg, upgradeFromTier: e.target.value })} placeholder="upgradeFromTier (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
+                  <Input value={newPkg.storageLimitBytes} onChange={(e) => setNewPkg({ ...newPkg, storageLimitBytes: e.target.value })} placeholder="storageLimitBytes (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
+                  <Input value={newPkg.storageDurationDays} onChange={(e) => setNewPkg({ ...newPkg, storageDurationDays: e.target.value })} placeholder="storageDurationDays (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-green)' }}>
                     <Checkbox checked={newPkg.isActive} onCheckedChange={(checked) => setNewPkg({ ...newPkg, isActive: checked })} />
                     aktiv
@@ -1015,8 +1018,8 @@ export default function AdminDashboardPage() {
                     Paket bearbeiten: <span style={{ fontFamily: 'monospace' }}>{editingPkg.sku}</span>
                   </h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                    <input value={editingPkg.sku} onChange={(e) => setEditingPkg({ ...editingPkg, sku: e.target.value })} placeholder="SKU" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
-                    <input value={editingPkg.name} onChange={(e) => setEditingPkg({ ...editingPkg, name: e.target.value })} placeholder="Name" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
+                    <Input value={editingPkg.sku} onChange={(e) => setEditingPkg({ ...editingPkg, sku: e.target.value })} placeholder="SKU" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
+                    <Input value={editingPkg.name} onChange={(e) => setEditingPkg({ ...editingPkg, name: e.target.value })} placeholder="Name" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
                     <Select value={editingPkg.type} onValueChange={(value) => setEditingPkg({ ...editingPkg, type: value })}>
                       <SelectTrigger className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
                         <SelectValue placeholder="Type" />
@@ -1026,10 +1029,10 @@ export default function AdminDashboardPage() {
                         <SelectItem value="UPGRADE">UPGRADE</SelectItem>
                       </SelectContent>
                     </Select>
-                    <input value={editingPkg.resultingTier} onChange={(e) => setEditingPkg({ ...editingPkg, resultingTier: e.target.value })} placeholder="resultingTier" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
-                    <input value={editingPkg.upgradeFromTier || ''} onChange={(e) => setEditingPkg({ ...editingPkg, upgradeFromTier: e.target.value })} placeholder="upgradeFromTier (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
-                    <input value={editingPkg.storageLimitBytes ?? ''} onChange={(e) => setEditingPkg({ ...editingPkg, storageLimitBytes: e.target.value })} placeholder="storageLimitBytes (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
-                    <input value={editingPkg.storageDurationDays ?? ''} onChange={(e) => setEditingPkg({ ...editingPkg, storageDurationDays: e.target.value })} placeholder="storageDurationDays (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
+                    <Input value={editingPkg.resultingTier} onChange={(e) => setEditingPkg({ ...editingPkg, resultingTier: e.target.value })} placeholder="resultingTier" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
+                    <Input value={editingPkg.upgradeFromTier || ''} onChange={(e) => setEditingPkg({ ...editingPkg, upgradeFromTier: e.target.value })} placeholder="upgradeFromTier (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
+                    <Input value={editingPkg.storageLimitBytes ?? ''} onChange={(e) => setEditingPkg({ ...editingPkg, storageLimitBytes: e.target.value })} placeholder="storageLimitBytes (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
+                    <Input value={editingPkg.storageDurationDays ?? ''} onChange={(e) => setEditingPkg({ ...editingPkg, storageDurationDays: e.target.value })} placeholder="storageDurationDays (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
                     <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-green)' }}>
                       <Checkbox checked={!!editingPkg.isActive} onCheckedChange={(checked) => setEditingPkg({ ...editingPkg, isActive: checked })} />
                       aktiv
@@ -1073,7 +1076,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
                     {(cmsSnapshots || []).slice(0, 20).map((it: any) => (
-                      <button
+                      <Button
                         key={String(it?.id)}
                         onClick={() => {
                           if (it?.kind) setCmsFaqKind(String(it.kind) as any);
@@ -1094,7 +1097,7 @@ export default function AdminDashboardPage() {
                           {String(it?.kind || '')}:{String(it?.slug || '')}
                         </div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--app-muted)' }}>{it?.fetchedAt ? String(it.fetchedAt).replace('T', ' ').replace('Z', '') : ''}</div>
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -1152,14 +1155,14 @@ export default function AdminDashboardPage() {
                   <HelpTooltip title="WP Kind" content={'pages = normale Seiten (z.B. FAQ).\nposts = Blog-Beiträge.\n\nFür FAQ ist meist pages korrekt.'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={cmsFaqSlug} onChange={(e) => setCmsFaqSlug(e.target.value)} placeholder="slug (e.g. faq)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+                  <Input value={cmsFaqSlug} onChange={(e) => setCmsFaqSlug(e.target.value)} placeholder="slug (e.g. faq)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
                   <HelpTooltip title="WP Slug" content={'Der Slug ist der URL-Teil (z.B. /faq → slug=faq).\n\nTipp: Nutze Search/Recent und klicke einen Treffer.'} />
                 </div>
               </div>
 
               <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={cmsSearchQuery} onChange={(e) => setCmsSearchQuery(e.target.value)} placeholder="Search WP (e.g. faq)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', minWidth: '320px' }} />
+                  <Input value={cmsSearchQuery} onChange={(e) => setCmsSearchQuery(e.target.value)} placeholder="Search WP (e.g. faq)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', minWidth: '320px' }} />
                   <HelpTooltip title="Search" content={'Sucht im WordPress nach Titel/Slug. Klick auf Treffer setzt den slug.'} />
                 </div>
                 <ActionButton variant="secondary" onClick={searchCmsWp} disabled={cmsSearchLoading}>
@@ -1181,7 +1184,7 @@ export default function AdminDashboardPage() {
                   </div>
                   <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
                     {(cmsSearchResult?.items || []).map((it: any) => (
-                      <button
+                      <Button
                         key={String(it?.id || it?.slug)}
                         onClick={() => setCmsFaqSlug(String(it?.slug || ''))}
                         style={{
@@ -1196,7 +1199,7 @@ export default function AdminDashboardPage() {
                       >
                         <div style={{ fontWeight: 700, color: 'var(--brand-green)' }}>{String(it?.title || '')}</div>
                         <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--app-muted)' }}>{String(it?.slug || '')}</div>
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -1272,15 +1275,15 @@ export default function AdminDashboardPage() {
 
               <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={newApiKeyName} onChange={(e) => setNewApiKeyName(e.target.value)} placeholder="Name" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+                  <Input value={newApiKeyName} onChange={(e) => setNewApiKeyName(e.target.value)} placeholder="Name" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
                   <HelpTooltip title="Name" content={'Interner Anzeigename für den Key (z.B. "Zapier" oder "Invoice Export").'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={newApiKeyScopes} onChange={(e) => setNewApiKeyScopes(e.target.value)} placeholder="Scopes (comma separated)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                  <Input value={newApiKeyScopes} onChange={(e) => setNewApiKeyScopes(e.target.value)} placeholder="Scopes (comma separated)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
                   <HelpTooltip title="Scopes" content={'Komma-getrennte Liste von Berechtigungen (z.B. "events:read, photos:read").\n\nLeer = je nach Backend-Konfiguration evtl. Full Access (nur wenn du das bewusst willst).'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={newApiKeyExpiresAt} onChange={(e) => setNewApiKeyExpiresAt(e.target.value)} placeholder="expiresAt (YYYY-MM-DD or ISO)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                  <Input value={newApiKeyExpiresAt} onChange={(e) => setNewApiKeyExpiresAt(e.target.value)} placeholder="expiresAt (YYYY-MM-DD or ISO)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
                   <HelpTooltip title="expiresAt" content={'Optional. Beispiele:\n- 2030-01-01\n- 2030-01-01T00:00:00.000Z\n\nLeer = läuft nie ab.'} />
                 </div>
               </div>
@@ -1387,7 +1390,7 @@ export default function AdminDashboardPage() {
                   <HelpTooltip title="Kind" content={'Welches Template du bearbeitest.'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={emailTplName} onChange={(e) => setEmailTplName(e.target.value)} placeholder="Name" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+                  <Input value={emailTplName} onChange={(e) => setEmailTplName(e.target.value)} placeholder="Name" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
                   <HelpTooltip title="Name" content={'Interner Name/Label für das Template.'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -1400,19 +1403,19 @@ export default function AdminDashboardPage() {
               </div>
 
               <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <input value={emailTplSubject} onChange={(e) => setEmailTplSubject(e.target.value)} placeholder="Subject (supports {{variables}})" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: '100%', fontFamily: 'monospace', flex: 1 }} />
+                <Input value={emailTplSubject} onChange={(e) => setEmailTplSubject(e.target.value)} placeholder="Subject (supports {{variables}})" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: '100%', fontFamily: 'monospace', flex: 1 }} />
                 <HelpTooltip title="Subject" content={'Betreff der E-Mail. Unterstützt {{variablen}}.'} />
               </div>
 
               <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                  <textarea value={emailTplHtml} onChange={(e) => setEmailTplHtml(e.target.value)} placeholder="HTML (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: '100%', minHeight: '160px', fontFamily: 'monospace' }} />
+                  <Textarea value={emailTplHtml} onChange={(e) => setEmailTplHtml(e.target.value)} placeholder="HTML (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: '100%', minHeight: '160px', fontFamily: 'monospace' }} />
                   <div style={{ paddingTop: '0.35rem' }}>
                     <HelpTooltip title="HTML" content={'HTML-Version der Mail (optional).'} />
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                  <textarea value={emailTplText} onChange={(e) => setEmailTplText(e.target.value)} placeholder="Text (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: '100%', minHeight: '160px', fontFamily: 'monospace' }} />
+                  <Textarea value={emailTplText} onChange={(e) => setEmailTplText(e.target.value)} placeholder="Text (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: '100%', minHeight: '160px', fontFamily: 'monospace' }} />
                   <div style={{ paddingTop: '0.35rem' }}>
                     <HelpTooltip title="Text" content={'Plaintext-Version der Mail (optional).'} />
                   </div>
@@ -1430,7 +1433,7 @@ export default function AdminDashboardPage() {
               </div>
 
               <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                <textarea value={emailTplVarsJson} onChange={(e) => setEmailTplVarsJson(e.target.value)} placeholder="Variables JSON" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: '100%', minHeight: '160px', fontFamily: 'monospace' }} />
+                <Textarea value={emailTplVarsJson} onChange={(e) => setEmailTplVarsJson(e.target.value)} placeholder="Variables JSON" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: '100%', minHeight: '160px', fontFamily: 'monospace' }} />
                 <div style={{ paddingTop: '0.35rem' }}>
                   <HelpTooltip title="Variables JSON" content={'Beispielwerte zum Rendern der Template-Vorschau.\n\nTipp: Muss gültiges JSON sein.'} />
                 </div>
@@ -1438,7 +1441,7 @@ export default function AdminDashboardPage() {
 
               <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={emailTplTestTo} onChange={(e) => setEmailTplTestTo(e.target.value)} placeholder="Test-Send to (email)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', minWidth: '320px' }} />
+                  <Input value={emailTplTestTo} onChange={(e) => setEmailTplTestTo(e.target.value)} placeholder="Test-Send to (email)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', minWidth: '320px' }} />
                   <HelpTooltip title="Test-Empfänger" content={'E-Mail Adresse für den Testversand.'} />
                 </div>
                 <ActionButton onClick={testSendEmailTemplate} disabled={emailTplTestSending}>
@@ -1506,7 +1509,7 @@ export default function AdminDashboardPage() {
               </div>
 
               <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <input
+                <Input
                   value={maintenanceMessage}
                   onChange={(e) => setMaintenanceMessage(e.target.value)}
                   placeholder="Banner-Text (optional)"
@@ -1536,7 +1539,7 @@ export default function AdminDashboardPage() {
 
               <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
+                  <Input
                     value={impersonateUserId}
                     onChange={(e) => setImpersonateUserId(e.target.value)}
                     placeholder="userId (UUID)"
@@ -1545,7 +1548,7 @@ export default function AdminDashboardPage() {
                   <HelpTooltip title="userId" content={'Interne User-ID (UUID) aus der DB / Logs.'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
+                  <Input
                     value={impersonateReason}
                     onChange={(e) => setImpersonateReason(e.target.value)}
                     placeholder="reason (optional)"
@@ -1582,19 +1585,19 @@ export default function AdminDashboardPage() {
 
               <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={invoiceStatus} onChange={(e) => setInvoiceStatus(e.target.value)} placeholder="status (OPEN/PAID/VOID/REFUNDED)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+                  <Input value={invoiceStatus} onChange={(e) => setInvoiceStatus(e.target.value)} placeholder="status (OPEN/PAID/VOID/REFUNDED)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
                   <HelpTooltip title="status" content={'Optionaler Filter. Leer = alle.'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={invoiceEventId} onChange={(e) => setInvoiceEventId(e.target.value)} placeholder="eventId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                  <Input value={invoiceEventId} onChange={(e) => setInvoiceEventId(e.target.value)} placeholder="eventId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
                   <HelpTooltip title="eventId" content={'Optionaler Filter nach Event.'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={invoiceWcOrderId} onChange={(e) => setInvoiceWcOrderId(e.target.value)} placeholder="wcOrderId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                  <Input value={invoiceWcOrderId} onChange={(e) => setInvoiceWcOrderId(e.target.value)} placeholder="wcOrderId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
                   <HelpTooltip title="wcOrderId" content={'Optionaler Filter nach WooCommerce Order ID.'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={invoiceWpUserId} onChange={(e) => setInvoiceWpUserId(e.target.value)} placeholder="wpUserId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                  <Input value={invoiceWpUserId} onChange={(e) => setInvoiceWpUserId(e.target.value)} placeholder="wpUserId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
                   <HelpTooltip title="wpUserId" content={'Optionaler Filter nach WordPress User ID.'} />
                 </div>
               </div>
@@ -1612,7 +1615,7 @@ export default function AdminDashboardPage() {
 
               <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
+                  <Input
                     value={qrEventId}
                     onChange={(e) => setQrEventId(e.target.value)}
                     placeholder="eventId"
@@ -1678,7 +1681,7 @@ export default function AdminDashboardPage() {
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-green)' }}>
                   bleedMm
-                  <input value={qrBleedMm} onChange={(e) => setQrBleedMm(e.target.value)} style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: 90, fontFamily: 'monospace' }} />
+                  <Input value={qrBleedMm} onChange={(e) => setQrBleedMm(e.target.value)} style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: 90, fontFamily: 'monospace' }} />
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-green)' }}>
                   <Checkbox checked={qrCropMarks} onCheckedChange={(checked) => setQrCropMarks(checked)} />
@@ -1727,7 +1730,7 @@ export default function AdminDashboardPage() {
 
               <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
+                  <Input
                     value={usageEventId}
                     onChange={(e) => setUsageEventId(e.target.value)}
                     placeholder="eventId"
@@ -1788,15 +1791,15 @@ export default function AdminDashboardPage() {
               />
               <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={upgradeEventId} onChange={(e) => setUpgradeEventId(e.target.value)} placeholder="eventId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                  <Input value={upgradeEventId} onChange={(e) => setUpgradeEventId(e.target.value)} placeholder="eventId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
                   <HelpTooltip title="eventId" content={'Event-ID, für die das Upgrade gelten soll.'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={upgradeSku} onChange={(e) => setUpgradeSku(e.target.value)} placeholder="sku (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+                  <Input value={upgradeSku} onChange={(e) => setUpgradeSku(e.target.value)} placeholder="sku (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
                   <HelpTooltip title="sku" content={'Optional. Wenn gesetzt, wird darüber das Produkt gefunden.'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={upgradeProductId} onChange={(e) => setUpgradeProductId(e.target.value)} placeholder="productId (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+                  <Input value={upgradeProductId} onChange={(e) => setUpgradeProductId(e.target.value)} placeholder="productId (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
                   <HelpTooltip title="productId" content={'Optional. Alternative zu sku.'} />
                 </div>
               </div>
@@ -1861,15 +1864,15 @@ export default function AdminDashboardPage() {
 
               <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={wooFilterStatus} onChange={(e) => setWooFilterStatus(e.target.value)} placeholder="status (z.B. PROCESSED/IGNORED/FAILED/FORBIDDEN)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+                  <Input value={wooFilterStatus} onChange={(e) => setWooFilterStatus(e.target.value)} placeholder="status (z.B. PROCESSED/IGNORED/FAILED/FORBIDDEN)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
                   <HelpTooltip title="status" content={'Optionaler Filter nach Status.'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={wooFilterOrderId} onChange={(e) => setWooFilterOrderId(e.target.value)} placeholder="wcOrderId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                  <Input value={wooFilterOrderId} onChange={(e) => setWooFilterOrderId(e.target.value)} placeholder="wcOrderId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
                   <HelpTooltip title="wcOrderId" content={'Optionaler Filter nach WooCommerce Order ID.'} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input value={wooFilterEventId} onChange={(e) => setWooFilterEventId(e.target.value)} placeholder="eventId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                  <Input value={wooFilterEventId} onChange={(e) => setWooFilterEventId(e.target.value)} placeholder="eventId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
                   <HelpTooltip title="eventId" content={'Optionaler Filter nach Event.'} />
                 </div>
               </div>

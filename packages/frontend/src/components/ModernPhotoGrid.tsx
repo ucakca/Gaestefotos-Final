@@ -7,6 +7,12 @@ import { Photo } from '@gaestefotos/shared';
 import UploadButton from './UploadButton';
 import api from '@/lib/api';
 import { buildApiUrl } from '@/lib/api';
+import { IconButton } from '@/components/ui/IconButton';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+
+const MotionIconButton = motion(IconButton);
+const MotionButton = motion(Button);
 
 interface ModernPhotoGridProps {
   photos: Photo[];
@@ -336,13 +342,15 @@ export default function ModernPhotoGrid({
               <div className="mt-1 text-sm text-app-muted">
                 {isStorageLocked ? 'Die Speicherzeit ist abgelaufen.' : uploadDisabledReason || 'Uploads sind aktuell deaktiviert.'}
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowUploadDisabled(false)}
+                variant="ghost"
+                size="sm"
                 className="mt-4 w-full rounded-xl bg-app-fg text-app-bg py-2 text-sm font-semibold"
               >
                 OK
-              </button>
+              </Button>
             </motion.div>
           </motion.div>
         )}
@@ -474,20 +482,23 @@ export default function ModernPhotoGrid({
             className="fixed inset-0 bg-app-fg z-50 flex items-center justify-center"
           >
             {/* Close Button */}
-            <motion.button
+            <MotionIconButton
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closePost}
+              icon={<X className="w-6 h-6" />}
+              variant="ghost"
+              size="sm"
+              aria-label="Schließen"
+              title="Schließen"
               className="absolute top-4 right-4 text-app-bg hover:opacity-80 z-10 p-2"
-            >
-              <X className="w-6 h-6" />
-            </motion.button>
+            />
 
             {/* Navigation Buttons */}
             {photos.length > 1 && (
               <>
-                <motion.button
+                <MotionIconButton
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -495,11 +506,14 @@ export default function ModernPhotoGrid({
                     e.stopPropagation();
                     prevPhoto();
                   }}
+                  icon={<ChevronLeft className="w-6 h-6" />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Vorheriges Foto"
+                  title="Vorheriges Foto"
                   className="absolute left-4 text-app-bg hover:opacity-80 z-10 p-2 bg-app-fg/50 rounded-full"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </motion.button>
-                <motion.button
+                />
+                <MotionIconButton
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -507,10 +521,13 @@ export default function ModernPhotoGrid({
                     e.stopPropagation();
                     nextPhoto();
                   }}
+                  icon={<ChevronRight className="w-6 h-6" />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Nächstes Foto"
+                  title="Nächstes Foto"
                   className="absolute right-4 text-app-bg hover:opacity-80 z-10 p-2 bg-app-fg/50 rounded-full"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </motion.button>
+                />
               </>
             )}
 
@@ -656,20 +673,27 @@ export default function ModernPhotoGrid({
                         : eventTitle}
                     </span>
                   </div>
-                  <button className="p-1 hover:bg-app-bg rounded">
-                    <MoreHorizontal className="w-5 h-5 text-app-muted" />
-                  </button>
+                  <IconButton
+                    icon={<MoreHorizontal className="w-5 h-5" />}
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Mehr"
+                    title="Mehr"
+                    className="p-1 hover:bg-app-bg rounded text-app-muted"
+                  />
                 </div>
 
                 {/* Actions */}
                 <div className="p-4 border-b border-app-border">
                   <div className="flex items-center gap-4 mb-3">
-                    <motion.button
+                    <MotionButton
                       whileTap={{ scale: 0.9 }}
                       onClick={() => {
                         const id = getUnderlyingPhotoId(photos[selectedPhoto]);
                         if (id) toggleLike(id, 'heart');
                       }}
+                      variant="ghost"
+                      size="sm"
                       className="p-1 flex items-center gap-2"
                     >
                       <Heart
@@ -684,22 +708,26 @@ export default function ModernPhotoGrid({
                           {likeCounts[getUnderlyingPhotoId(photos[selectedPhoto]) || '']}
                         </span>
                       )}
-                    </motion.button>
-                    <motion.button
+                    </MotionButton>
+                    <MotionButton
                       whileTap={{ scale: 0.9 }}
                       onClick={() => handleShare(photos[selectedPhoto])}
+                      variant="ghost"
+                      size="sm"
                       className="p-1"
                     >
                       <Share2 className="w-6 h-6 text-app-fg" />
-                    </motion.button>
+                    </MotionButton>
                     {downloadsEnabled && (
-                      <motion.button
+                      <MotionButton
                         whileTap={{ scale: 0.9 }}
                         onClick={() => handleDownload(photos[selectedPhoto])}
+                        variant="ghost"
+                        size="sm"
                         className="p-1"
                       >
                         <Download className="w-6 h-6 text-app-fg" />
-                      </motion.button>
+                      </MotionButton>
                     )}
                   </div>
                   
@@ -728,56 +756,62 @@ export default function ModernPhotoGrid({
                           const c = counts?.[r.key] || 0;
                           const active = myReactions[pid] === r.key;
                           return (
-                            <button
+                            <Button
                               key={r.key}
                               type="button"
                               onClick={() => toggleLike(pid, r.key)}
+                              variant="ghost"
+                              size="sm"
                               className={`px-2 py-1 rounded-full border text-sm ${
                                 active ? 'border-app-fg bg-app-bg' : 'border-app-border bg-app-card'
                               }`}
                             >
                               <span className="mr-1">{r.label}</span>
                               {c > 0 ? <span className="text-app-fg">{c}</span> : <span className="text-app-muted">0</span>}
-                            </button>
+                            </Button>
                           );
                         })}
 
                         {customEntries.map(([key, c]) => {
                           const active = myReactions[pid] === key;
                           return (
-                            <button
+                            <Button
                               key={key}
                               type="button"
                               onClick={() => toggleLike(pid, key)}
+                              variant="ghost"
+                              size="sm"
                               className={`px-2 py-1 rounded-full border text-sm ${
                                 active ? 'border-app-fg bg-app-bg' : 'border-app-border bg-app-card'
                               }`}
                             >
                               <span className="mr-1">{key}</span>
                               {c > 0 ? <span className="text-app-fg">{c}</span> : <span className="text-app-muted">0</span>}
-                            </button>
+                            </Button>
                           );
                         })}
 
                         <div className="flex items-center gap-2">
-                          <input
+                          <Input
                             value={customReactionInput}
                             onChange={(e) => setCustomReactionInput(e.target.value)}
                             placeholder="Emoji…"
                             className="px-2 py-1 border border-app-border bg-app-card text-app-fg rounded-full text-sm w-24"
                             inputMode="text"
                           />
-                          <button
+                          <Button
                             type="button"
                             onClick={() => {
                               const v = customReactionInput.trim();
                               if (!v) return;
                               void toggleLike(pid, v);
                             }}
+                            variant="ghost"
+                            size="sm"
                             className="px-2 py-1 rounded-full border border-app-border bg-app-card text-sm"
                           >
                             +
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     );
@@ -841,22 +875,22 @@ export default function ModernPhotoGrid({
                         {commentError}
                       </div>
                     )}
-                    <input
+                    <Input
                       type="text"
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
                       placeholder="Dein Name"
-                      className="w-full px-3 py-2 border border-app-border bg-app-card text-app-fg rounded-lg focus:outline-none focus:ring-2 focus:ring-app-fg/30 focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 text-sm"
                       disabled={submittingComment || !allowComments}
                       maxLength={100}
                     />
                     <div className="flex gap-2">
-                      <input
+                      <Input
                         type="text"
                         value={commentText}
                         onChange={(e) => setCommentText(e.target.value)}
                         placeholder="Schreibe einen Kommentar..."
-                        className="flex-1 px-3 py-2 border border-app-border bg-app-card text-app-fg rounded-lg focus:outline-none focus:ring-2 focus:ring-app-fg/30 focus:border-transparent text-sm"
+                        className="flex-1 px-3 py-2 text-sm"
                         disabled={submittingComment || !allowComments}
                         maxLength={1000}
                         onKeyPress={(e) => {
@@ -867,7 +901,7 @@ export default function ModernPhotoGrid({
                           }
                         }}
                       />
-                      <motion.button
+                      <MotionButton
                         whileTap={{ scale: 0.95 }}
                         onClick={() => {
                           const id = getUnderlyingPhotoId(photos[selectedPhoto]);
@@ -880,6 +914,8 @@ export default function ModernPhotoGrid({
                           !authorName.trim() ||
                           !getUnderlyingPhotoId(photos[selectedPhoto])
                         }
+                        variant="ghost"
+                        size="sm"
                         className="px-4 py-2 bg-app-fg text-app-bg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {submittingComment ? (
@@ -887,7 +923,7 @@ export default function ModernPhotoGrid({
                         ) : (
                           <Send className="w-4 h-4" />
                         )}
-                      </motion.button>
+                      </MotionButton>
                     </div>
                   </div>
                 </div>

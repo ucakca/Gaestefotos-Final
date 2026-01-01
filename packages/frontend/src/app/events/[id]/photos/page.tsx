@@ -18,6 +18,7 @@ import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import FilterButtons from '@/components/FilterButtons';
 import UploadModal from '@/components/UploadModal';
 import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -843,7 +844,7 @@ export default function PhotoManagementPage() {
 
                   {viewMode === 'trash' && (
                     <div className="absolute top-2 left-2 right-2 z-10 flex items-center justify-between gap-2">
-                      <button
+                      <Button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleRestore(photo.id);
@@ -851,8 +852,8 @@ export default function PhotoManagementPage() {
                         className="flex-1 px-2 py-1 text-xs bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90"
                       >
                         Wiederherstellen
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={(e) => {
                           e.stopPropagation();
                           handlePurge(photo.id);
@@ -860,7 +861,7 @@ export default function PhotoManagementPage() {
                         className="px-2 py-1 text-xs bg-[var(--status-danger)] text-app-bg rounded-md hover:opacity-90"
                       >
                         Endgültig
-                      </button>
+                      </Button>
                     </div>
                   )}
                   {photo.url ? (
@@ -889,20 +890,24 @@ export default function PhotoManagementPage() {
                   )}
 
                   {viewMode === 'active' && (
-                    <button
-                      type="button"
+                    <IconButton
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleStory(photo.id);
                       }}
+                      icon={
+                        <Star
+                          className={`w-4 h-4 ${storiesByPhotoId[photo.id]?.isActive ? 'text-[var(--status-warning)] fill-[var(--status-warning)]' : 'text-app-muted'}`}
+                        />
+                      }
+                      type="button"
                       disabled={togglingStoryPhotoId === photo.id}
-                      className="absolute bottom-2 right-2 z-10 p-2 rounded-full bg-app-card/90 hover:bg-app-card shadow disabled:opacity-50"
+                      variant="ghost"
+                      size="sm"
+                      aria-label={storiesByPhotoId[photo.id]?.isActive ? 'Story deaktivieren' : 'Als Story markieren'}
                       title={storiesByPhotoId[photo.id]?.isActive ? 'Story deaktivieren' : 'Als Story markieren'}
-                    >
-                      <Star
-                        className={`w-4 h-4 ${storiesByPhotoId[photo.id]?.isActive ? 'text-[var(--status-warning)] fill-[var(--status-warning)]' : 'text-app-muted'}`}
-                      />
-                    </button>
+                      className="absolute bottom-2 right-2 z-10 p-2 rounded-full bg-app-card/90 hover:bg-app-card shadow disabled:opacity-50"
+                    />
                   )}
                 </div>
                 <div className="p-2 bg-app-bg border-t border-app-border">
@@ -1105,12 +1110,15 @@ export default function PhotoManagementPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                     
-                    <button
+                    <IconButton
                       onClick={() => setSelectedPhoto(null)}
+                      icon={<X className="w-6 h-6" />}
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Schließen"
+                      title="Schließen"
                       className="text-app-muted hover:text-app-fg"
-                    >
-                      <X className="w-6 h-6" />
-                    </button>
+                    />
                   </div>
                 </div>
 

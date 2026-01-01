@@ -10,6 +10,7 @@ import Logo from '@/components/Logo';
 import { useAuthStore } from '@/store/authStore';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
+import { Button } from '@/components/ui/Button';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -93,12 +94,12 @@ export default function DashboardPage() {
                 >
                   Neues Event
                 </Link>
-                <button
+                <Button
                   onClick={logout}
                   className="px-4 py-2 rounded-md border border-app-accent font-medium transition-colors text-tokens-brandGreen bg-app-card hover:bg-app-bg"
                 >
                   Abmelden
-                </button>
+                </Button>
               </div>
             </div>
           </div>

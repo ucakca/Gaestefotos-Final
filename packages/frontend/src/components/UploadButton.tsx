@@ -6,6 +6,9 @@ import { Plus, X, Upload, Check, Camera, Video } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import api, { formatApiError, isRetryableUploadError } from '@/lib/api';
 import { enqueueUpload, processUploadQueue } from '@/lib/uploadQueue';
+import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
+import { Input } from '@/components/ui/Input';
 
 interface UploadButtonProps {
   eventId: string;
@@ -33,6 +36,8 @@ function createUploadId() {
     return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
 }
+
+ const MotionButton = motion(Button);
 
 export default function UploadButton({
   eventId,
@@ -255,7 +260,7 @@ export default function UploadButton({
   return (
     <>
       {variant === 'fab' ? (
-        <motion.button
+        <MotionButton
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           whileTap={{ scale: disabled ? 1 : 0.96 }}
@@ -265,16 +270,18 @@ export default function UploadButton({
           }}
           disabled={disabled}
           title={disabled ? disabledReason : undefined}
+          variant="ghost"
+          size="sm"
           className={`w-14 h-14 rounded-full shadow-lg border flex items-center justify-center transition-colors ${
             disabled
               ? 'bg-app-bg text-app-muted border-app-border cursor-not-allowed'
               : 'bg-app-card text-app-fg border-app-border hover:bg-app-bg'
-          }`}
+          } p-0`}
         >
           <Plus className="w-6 h-6" strokeWidth={3} />
-        </motion.button>
+        </MotionButton>
       ) : variant === 'button' ? (
-        <motion.button
+        <MotionButton
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           whileHover={{ scale: disabled ? 1 : 1.01 }}
@@ -285,17 +292,19 @@ export default function UploadButton({
           }}
           disabled={disabled}
           title={disabled ? disabledReason : undefined}
+          variant="ghost"
+          size="sm"
           className={`w-full rounded-2xl px-4 py-3 flex items-center justify-center gap-2 font-semibold shadow-sm border transition-colors ${
             disabled
               ? 'bg-app-bg text-app-muted border-app-border cursor-not-allowed'
               : 'bg-app-card text-app-fg border-app-border hover:bg-app-bg'
-          }`}
+          } h-auto`}
         >
           <Upload className="w-5 h-5" />
           <span className="truncate">{buttonLabel}</span>
-        </motion.button>
+        </MotionButton>
       ) : (
-        <motion.button
+        <MotionButton
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           whileHover={{ scale: 1.05 }}
@@ -305,16 +314,18 @@ export default function UploadButton({
             setShowModal(true);
           }}
           disabled={disabled}
+          variant="ghost"
+          size="sm"
           className={`aspect-square rounded-sm overflow-hidden group relative ${
             disabled ? 'bg-app-border cursor-not-allowed' : 'bg-gradient-to-br from-tokens-brandGreen to-tokens-brandPeach'
-          }`}
+          } p-0 h-auto`}
           title={disabled ? disabledReason : undefined}
         >
           <div className="w-full h-full flex items-center justify-center">
             <Plus className={`w-8 h-8 ${disabled ? 'text-app-muted' : 'text-app-bg'}`} strokeWidth={3} />
           </div>
           {!disabled && <div className="absolute inset-0 bg-app-fg/0 group-hover:bg-app-fg/10 transition-opacity" />}
-        </motion.button>
+        </MotionButton>
       )}
 
       <AnimatePresence>
@@ -333,15 +344,18 @@ export default function UploadButton({
             onClick={(e) => e.stopPropagation()}
             className="bg-app-card border border-app-border rounded-lg max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto"
           >
-            <button
+            <IconButton
               onClick={() => {
                 setShowModal(false);
                 setUploaderName('');
               }}
+              icon={<X className="w-5 h-5 text-app-fg" />}
+              variant="ghost"
+              size="sm"
+              aria-label="Schließen"
+              title="Schließen"
               className="absolute top-4 right-4 p-1 hover:bg-app-bg rounded-full"
-            >
-              <X className="w-5 h-5 text-app-fg" />
-            </button>
+            />
 
               <h2 className="text-xl font-semibold text-app-fg mb-6">Foto/Video hochladen</h2>
 
@@ -367,7 +381,7 @@ export default function UploadButton({
                   <label className="block text-sm font-semibold text-app-fg">
                     Dein Name <span className="text-[var(--status-danger)]">*</span>
                   </label>
-                  <input
+                  <Input
                     type="text"
                     value={uploaderName}
                     onChange={(e) => {
@@ -416,31 +430,35 @@ export default function UploadButton({
               </div>
 
               <div className="space-y-3">
-                <motion.button
+                <MotionButton
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={capturePhoto}
                   disabled={!canPickFiles}
+                  variant="ghost"
+                  size="sm"
                   className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition-colors ${
                     !canPickFiles ? 'bg-app-border text-app-muted cursor-not-allowed' : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
-                  }`}
+                  } h-auto`}
                 >
                   <Camera className="w-5 h-5" />
                   Foto aufnehmen
-                </motion.button>
+                </MotionButton>
 
-                <motion.button
+                <MotionButton
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={captureVideo}
                   disabled={!canPickFiles}
+                  variant="ghost"
+                  size="sm"
                   className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition-colors ${
                     !canPickFiles ? 'bg-app-border text-app-muted cursor-not-allowed' : 'bg-app-fg text-app-bg hover:opacity-90'
-                  }`}
+                  } h-auto`}
                 >
                   <Video className="w-5 h-5" />
                   Video aufnehmen
-                </motion.button>
+                </MotionButton>
               </div>
 
               <AnimatePresence>
@@ -484,13 +502,15 @@ export default function UploadButton({
                           {file.error && (
                             <div className="mt-1">
                               <p className="text-xs text-[var(--status-danger)]">{file.error}</p>
-                              <button
+                              <Button
                                 type="button"
                                 onClick={() => retryUpload(file.id)}
+                                variant="ghost"
+                                size="sm"
                                 className="mt-1 text-xs font-semibold text-tokens-brandGreen underline"
                               >
                                 Erneut versuchen
-                              </button>
+                              </Button>
                             </div>
                           )}
                         </div>
@@ -506,12 +526,15 @@ export default function UploadButton({
                             </motion.div>
                           )}
                           {!file.uploading && !file.success && (
-                            <button
+                            <IconButton
                               onClick={() => removeFile(index)}
-                              className="w-6 h-6 rounded-full bg-app-card border border-app-border text-app-muted hover:opacity-80 flex items-center justify-center"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
+                              icon={<X className="w-4 h-4" />}
+                              variant="ghost"
+                              size="sm"
+                              aria-label="Entfernen"
+                              title="Entfernen"
+                              className="w-6 h-6 rounded-full bg-app-card border border-app-border text-app-muted hover:opacity-80"
+                            />
                           )}
                         </div>
                       </motion.div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { Share2, Facebook, Instagram, MessageCircle, Copy } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 interface SocialShareProps {
   url: string;
@@ -33,27 +34,33 @@ export default function SocialShare({ url, title = 'Event Foto', imageUrl, class
 
   return (
     <div className={`flex gap-2 ${className}`}>
-      <button
+      <Button
         onClick={() => handleShare('facebook')}
+        variant="ghost"
+        size="sm"
         className="p-2 bg-[var(--status-info)] text-app-bg rounded-full hover:opacity-90 transition-colors"
         aria-label="Auf Facebook teilen"
       >
         <Facebook className="w-5 h-5" />
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() => handleShare('whatsapp')}
+        variant="ghost"
+        size="sm"
         className="p-2 bg-[var(--status-success)] text-app-bg rounded-full hover:opacity-90 transition-colors"
         aria-label="Auf WhatsApp teilen"
       >
         <MessageCircle className="w-5 h-5" />
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() => handleShare('copy')}
+        variant="ghost"
+        size="sm"
         className="p-2 bg-[var(--status-neutral)] text-app-bg rounded-full hover:opacity-90 transition-colors"
         aria-label="Link kopieren"
       >
         <Copy className="w-5 h-5" />
-      </button>
+      </Button>
     </div>
   );
 }

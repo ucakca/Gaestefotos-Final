@@ -2,9 +2,12 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Check } from 'lucide-react';
+import { X, Send } from 'lucide-react';
 import api from '@/lib/api';
 import { useToastStore } from '@/store/toastStore';
+import { IconButton } from '@/components/ui/IconButton';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 
 interface InviteModalProps {
   eventId: string;
@@ -63,12 +66,15 @@ export default function InviteModal({
         >
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-app-fg">Einladung versenden</h2>
-            <button
+            <IconButton
               onClick={onClose}
+              icon={<X className="w-6 h-6" />}
+              variant="ghost"
+              size="sm"
+              aria-label="Schließen"
+              title="Schließen"
               className="text-app-muted hover:text-app-fg"
-            >
-              <X className="w-6 h-6" />
-            </button>
+            />
           </div>
 
           <div className="mb-4">
@@ -76,24 +82,22 @@ export default function InviteModal({
             <label className="block text-sm font-medium text-app-fg mb-2">
               E-Mail-Adresse *
             </label>
-            <input
+            <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-app-border rounded-md text-app-fg bg-app-card"
+              className="w-full px-3 py-2 rounded-md"
               placeholder="gast@example.com"
               required
             />
           </div>
 
           <div className="flex gap-3 justify-end">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 border border-app-border rounded-md text-app-fg bg-app-card hover:bg-app-bg"
-            >
+            <Button type="button" variant="secondary" onClick={onClose} className="px-4 py-2 rounded-md">
               Abbrechen
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
               onClick={handleSend}
               disabled={sending || !email.trim()}
               className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
@@ -109,7 +113,7 @@ export default function InviteModal({
                   Versenden
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </motion.div>
       </div>

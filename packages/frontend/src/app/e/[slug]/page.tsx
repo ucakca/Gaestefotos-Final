@@ -14,6 +14,8 @@ import FaceSearch from '@/components/FaceSearch';
 import StoriesBar from '@/components/guest/StoriesBar';
 import StoryViewer from '@/components/guest/StoryViewer';
 import { Trophy } from 'lucide-react';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
 
 type Category = {
   id: string;
@@ -630,11 +632,11 @@ export default function PublicEventPage() {
           <p className="text-app-muted mb-6 text-sm">Dieses Event ist passwortgeschützt.</p>
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div>
-              <input
+              <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2.5 border border-app-border rounded-md focus:ring-1 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen text-app-fg bg-app-card text-sm"
+                className="w-full px-4 py-2.5 rounded-md text-sm"
                 placeholder="Passwort eingeben"
                 required
               />
@@ -642,12 +644,12 @@ export default function PublicEventPage() {
                 <p className="mt-2 text-sm text-[var(--status-danger)]">{passwordError}</p>
               )}
             </div>
-            <button
+            <Button
               type="submit"
               className="w-full px-4 py-2.5 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90 font-medium text-sm"
             >
               Zugriff erhalten
-            </button>
+            </Button>
           </form>
         </div>
       </div>

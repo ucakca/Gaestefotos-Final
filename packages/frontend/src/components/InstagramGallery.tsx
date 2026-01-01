@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronLeft, ChevronRight, Heart, Share2, Download, MoreHorizontal, MessageCircle } from 'lucide-react';
+import { Heart, MessageCircle, Share2, X, ChevronLeft, ChevronRight, Send, MoreHorizontal, Download } from 'lucide-react';
+import api from '@/lib/api';
+import { IconButton } from '@/components/ui/IconButton';
 import { Photo } from '@gaestefotos/shared';
 import { buildApiUrl } from '@/lib/api';
 
@@ -12,6 +14,8 @@ interface InstagramGalleryProps {
   eventSlug?: string;
   eventTitle?: string;
 }
+
+const MotionIconButton = motion(IconButton);
 
 export default function InstagramGallery({ 
   photos, 
@@ -155,20 +159,23 @@ export default function InstagramGallery({
             className="fixed inset-0 bg-app-fg z-50 flex items-center justify-center"
           >
             {/* Close Button */}
-            <motion.button
+            <MotionIconButton
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closePost}
+              icon={<X className="w-6 h-6" />}
+              variant="ghost"
+              size="sm"
+              aria-label="Schließen"
+              title="Schließen"
               className="absolute top-4 right-4 text-app-bg hover:opacity-80 z-10 p-2"
-            >
-              <X className="w-6 h-6" />
-            </motion.button>
+            />
 
             {/* Navigation Buttons */}
             {photos.length > 1 && (
               <>
-                <motion.button
+                <MotionIconButton
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -176,11 +183,14 @@ export default function InstagramGallery({
                     e.stopPropagation();
                     prevPhoto();
                   }}
+                  icon={<ChevronLeft className="w-6 h-6" />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Vorheriges Foto"
+                  title="Vorheriges Foto"
                   className="absolute left-4 text-app-bg hover:opacity-80 z-10 p-2 bg-app-fg/50 rounded-full"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </motion.button>
-                <motion.button
+                />
+                <MotionIconButton
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -188,10 +198,13 @@ export default function InstagramGallery({
                     e.stopPropagation();
                     nextPhoto();
                   }}
+                  icon={<ChevronRight className="w-6 h-6" />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Nächstes Foto"
+                  title="Nächstes Foto"
                   className="absolute right-4 text-app-bg hover:opacity-80 z-10 p-2 bg-app-fg/50 rounded-full"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </motion.button>
+                />
               </>
             )}
 
@@ -231,9 +244,14 @@ export default function InstagramGallery({
                     </div>
                     <span className="font-semibold text-sm">{eventTitle}</span>
                   </div>
-                  <button className="p-1 hover:bg-app-bg rounded">
-                    <MoreHorizontal className="w-5 h-5 text-app-muted" />
-                  </button>
+                  <IconButton
+                    icon={<MoreHorizontal className="w-5 h-5" />}
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Mehr"
+                    title="Mehr"
+                    className="p-1 hover:bg-app-bg rounded text-app-muted"
+                  />
                 </div>
 
                 {/* Actions */}

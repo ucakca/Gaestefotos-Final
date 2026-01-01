@@ -40,6 +40,7 @@ import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
+import { IconButton } from '@/components/ui/IconButton';
 import { Input } from '@/components/ui/Input';
 import { Radio } from '@/components/ui/Radio';
 import { Textarea } from '@/components/ui/Textarea';
@@ -536,22 +537,21 @@ export default function EventDashboardPage() {
             className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
           >
             <Button
-              asChild
+              type="button"
+              onClick={() => coverImageInputRef.current?.click()}
               variant="ghost"
               className="h-full w-full bg-app-fg/0 hover:bg-app-fg/30 text-app-bg"
             >
-              <button type="button" onClick={() => coverImageInputRef.current?.click()}>
-                <span className="flex h-full w-full items-center justify-center">
-                  {uploadingImage === 'cover' ? (
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-app-bg"></div>
-                  ) : (
-                    <>
-                      <Camera className="w-6 h-6 mr-2" />
-                      <span className="text-sm font-medium">Titelbild ändern</span>
-                    </>
-                  )}
-                </span>
-              </button>
+              <span className="flex h-full w-full items-center justify-center">
+                {uploadingImage === 'cover' ? (
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-app-bg"></div>
+                ) : (
+                  <>
+                    <Camera className="w-6 h-6 mr-2" />
+                    <span className="text-sm font-medium">Titelbild ändern</span>
+                  </>
+                )}
+              </span>
             </Button>
           </motion.div>
           <input
@@ -954,19 +954,21 @@ export default function EventDashboardPage() {
               )}
             </div>
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="absolute bottom-0 right-0">
-              <Button
-                asChild
-                variant="secondary"
-                className="h-7 w-7 rounded-full p-0 bg-app-fg text-app-bg border-2 border-app-bg shadow-lg hover:opacity-90"
-              >
-                <button type="button" onClick={() => profileImageInputRef.current?.click()}>
-                  {uploadingImage === 'profile' ? (
+              <IconButton
+                onClick={() => profileImageInputRef.current?.click()}
+                icon={
+                  uploadingImage === 'profile' ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-app-bg"></div>
                   ) : (
                     <Camera className="w-4 h-4" />
-                  )}
-                </button>
-              </Button>
+                  )
+                }
+                variant="ghost"
+                size="sm"
+                aria-label="Profilbild ändern"
+                title="Profilbild ändern"
+                className="h-7 w-7 rounded-full p-0 bg-app-fg text-app-bg border-2 border-app-bg shadow-lg hover:opacity-90"
+              />
             </motion.div>
             <input
               ref={profileImageInputRef}
@@ -1142,14 +1144,14 @@ export default function EventDashboardPage() {
               <label className="text-sm font-medium text-app-fg">Veranstaltungsort</label>
             </div>
             {editingField === 'locationName' ? (
-              <input
+              <Input
                 type="text"
                 defaultValue={event.locationName || ''}
                 onBlur={(e) => {
                   updateEventField('locationName', e.target.value || null);
                 }}
                 placeholder="z.B. Musterstraße 123, 12345 Musterstadt"
-                className="w-full px-3 py-2 border border-app-border rounded-lg bg-app-card text-app-fg focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen"
+                className="w-full px-3 py-2"
                 autoFocus
               />
             ) : (
@@ -1177,16 +1179,18 @@ export default function EventDashboardPage() {
                 <p className="text-app-fg font-mono text-sm">/e2/{event.slug}</p>
                 <p className="text-xs text-app-muted mt-1">Automatisch generiert, nicht bearbeitbar</p>
               </div>
-              <button
+              <Button
+                type="button"
                 onClick={() => {
                   const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/e2/${event.slug}`;
                   navigator.clipboard.writeText(url);
                   showToast('URL kopiert!', 'success');
                 }}
+                size="sm"
                 className="px-3 py-1 text-xs bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 transition-opacity"
               >
                 Kopieren
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -1198,13 +1202,13 @@ export default function EventDashboardPage() {
             </div>
             {editingField === 'password' ? (
               <div className="space-y-2">
-                <input
+                <Input
                   type="password"
                   placeholder="Neues Passwort eingeben (leer lassen zum Entfernen)"
                   onBlur={(e) => {
                     updateEventField('password', e.target.value || null);
                   }}
-                  className="w-full px-3 py-2 border border-app-border rounded-lg bg-app-card text-app-fg focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen"
+                  className="w-full px-3 py-2"
                   autoFocus
                 />
                 <p className="text-xs text-app-muted">
@@ -1573,12 +1577,15 @@ export default function EventDashboardPage() {
             >
               <div className="sticky top-0 bg-app-card border-b border-app-border px-4 py-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-app-fg">Einstellungen</h2>
-                <button
+                <IconButton
                   onClick={() => setShowSettings(false)}
-                  className="p-1 hover:opacity-80 rounded-full"
-                >
-                  <X className="w-5 h-5 text-app-fg" />
-                </button>
+                  icon={<X className="w-5 h-5" />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Schließen"
+                  title="Schließen"
+                  className="p-1 hover:opacity-80 rounded-full text-app-fg"
+                />
               </div>
               <div className="overflow-y-auto max-h-[calc(80vh-60px)] p-4 space-y-2">
                 <Link href={`/events/${eventId}`}>

@@ -427,13 +427,15 @@ export default function CategoryManagementPage() {
                           <div className="text-xs text-app-muted">Lucide Icon Name</div>
                         </div>
 
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={() => setFormData({ ...formData, iconKey: '' })}
                           className="text-sm text-app-muted hover:text-app-fg"
                         >
                           Entfernen
-                        </button>
+                        </Button>
                       </div>
 
                       <div className="mt-3">
@@ -456,19 +458,21 @@ export default function CategoryManagementPage() {
                             if (!IconComp) return null;
                             const isSelected = formData.iconKey === key;
                             return (
-                              <button
+                              <IconButton
                                 key={key}
                                 type="button"
                                 onClick={() => setFormData({ ...formData, iconKey: key })}
+                                icon={<IconComp className="w-5 h-5 text-app-fg" />}
+                                aria-label={key}
                                 title={key}
+                                variant="ghost"
+                                size="sm"
                                 className={`h-10 w-10 rounded-md border flex items-center justify-center transition-colors ${
                                   isSelected
                                     ? 'border-tokens-brandGreen bg-tokens-brandGreen/10'
                                     : 'border-app-border bg-app-card hover:bg-app-bg'
                                 }`}
-                              >
-                                <IconComp className="w-5 h-5 text-app-fg" />
-                              </button>
+                              />
                             );
                           })}
                         </div>
@@ -490,7 +494,7 @@ export default function CategoryManagementPage() {
                                 if (!IconComp) return null;
                                 const isSelected = formData.iconKey === key;
                                 return (
-                                  <button
+                                  <Button
                                     key={key}
                                     type="button"
                                     onClick={() => setFormData({ ...formData, iconKey: key })}
@@ -502,7 +506,7 @@ export default function CategoryManagementPage() {
                                   >
                                     <IconComp className="w-4 h-4 text-app-fg" />
                                     <span className="truncate">{key}</span>
-                                  </button>
+                                  </Button>
                                 );
                               })}
                           </div>

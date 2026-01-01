@@ -6,6 +6,11 @@ import { X, Upload, Camera, Smile } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import api, { formatApiError, isRetryableUploadError } from '@/lib/api';
+import { IconButton } from '@/components/ui/IconButton';
+import { Button } from '@/components/ui/Button';
+import { Textarea } from '@/components/ui/Textarea';
+
+const MotionButton = motion(Button);
 
 interface HostPhotoUploadProps {
   eventId: string;
@@ -168,17 +173,19 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
 
   return (
     <>
-      <motion.button
+      <MotionButton
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setShowModal(true)}
+        variant="ghost"
+        size="sm"
         className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg font-medium flex items-center gap-2 hover:opacity-90 transition-colors"
       >
         <Upload className="w-4 h-4" />
         <span>Foto hinzufügen</span>
-      </motion.button>
+      </MotionButton>
 
       <AnimatePresence>
         {showModal && (
@@ -196,16 +203,19 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
               onClick={(e) => e.stopPropagation()}
               className="bg-app-card border border-app-border rounded-lg max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto"
             >
-              <button
+              <IconButton
                 onClick={() => {
                   setShowModal(false);
                   setFiles([]);
                   setDescription('');
                 }}
+                icon={<X className="w-5 h-5" />}
+                variant="ghost"
+                size="sm"
+                aria-label="Schließen"
+                title="Schließen"
                 className="absolute top-4 right-4 p-1 hover:bg-app-bg rounded-full"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              />
 
               <h2 className="text-xl font-semibold mb-6">Foto hinzufügen</h2>
 
@@ -215,19 +225,23 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                   Beschreibung (optional)
                 </label>
                 <div className="relative">
-                  <textarea
+                  <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Füge eine Beschreibung hinzu... 😊"
-                    className="w-full px-3 py-2 pr-10 border border-app-border rounded-lg text-app-fg bg-app-card focus:outline-none focus:ring-2 focus:ring-app-fg/30 resize-none"
+                    className="w-full px-3 py-2 pr-10 resize-none"
                     rows={3}
                   />
-                  <button
+                  <IconButton
+                    type="button"
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    icon={<Smile className="w-5 h-5 text-app-muted" />}
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Emoji Picker"
+                    title="Emoji Picker"
                     className="absolute bottom-2 right-2 p-1 hover:bg-app-bg rounded-full"
-                  >
-                    <Smile className="w-5 h-5 text-app-muted" />
-                  </button>
+                  />
                   {showEmojiPicker && (
                     <div ref={emojiPickerRef} className="absolute bottom-full right-0 mb-2 z-10">
                       <EmojiPicker
@@ -265,15 +279,17 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                 </motion.div>
               </div>
 
-              <motion.button
+              <MotionButton
                 onClick={capturePhoto}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                variant="ghost"
+                size="sm"
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-app-bg text-app-fg rounded-lg font-medium mb-4 hover:opacity-90 transition-colors"
               >
                 <Camera className="w-5 h-5" />
                 <span>Foto mit Kamera aufnehmen</span>
-              </motion.button>
+              </MotionButton>
 
               {/* File List */}
               <AnimatePresence>
@@ -317,24 +333,29 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                           {file.error && (
                             <div className="mt-1">
                               <p className="text-xs text-[var(--status-danger)]">{file.error}</p>
-                              <button
+                              <Button
                                 type="button"
                                 onClick={() => retryUpload(index)}
+                                variant="ghost"
+                                size="sm"
                                 className="mt-1 text-xs font-semibold text-tokens-brandGreen underline"
                               >
                                 Erneut versuchen
-                              </button>
+                              </Button>
                             </div>
                           )}
                         </div>
 
                         {!file.uploading && !file.success && (
-                          <button
+                          <IconButton
                             onClick={() => removeFile(index)}
-                            className="w-6 h-6 rounded-full bg-app-bg text-[var(--status-danger)] border border-[var(--status-danger)] hover:opacity-90 flex items-center justify-center"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
+                            icon={<X className="w-4 h-4" />}
+                            variant="ghost"
+                            size="sm"
+                            aria-label="Entfernen"
+                            title="Entfernen"
+                            className="w-6 h-6 rounded-full bg-app-bg text-[var(--status-danger)] border border-[var(--status-danger)] hover:opacity-90"
+                          />
                         )}
                       </motion.div>
                     ))}
@@ -344,15 +365,17 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
 
               {/* Upload Button */}
               {files.length > 0 && (
-                <motion.button
+                <MotionButton
                   onClick={uploadPhotos}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   disabled={files.some(f => f.uploading)}
+                  variant="ghost"
+                  size="sm"
                   className="w-full px-4 py-3 bg-tokens-brandGreen text-app-bg rounded-lg font-medium hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {files.some(f => f.uploading) ? 'Wird hochgeladen...' : `${files.length} Foto(s) hochladen`}
-                </motion.button>
+                </MotionButton>
               )}
             </motion.div>
           </motion.div>

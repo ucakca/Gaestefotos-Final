@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import { LucideIcon } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 interface ActionButtonProps {
   icon: LucideIcon;
@@ -52,13 +53,15 @@ export default function ActionButton({
   }
 
   return (
-    <button
+    <Button
       onClick={onClick}
       disabled={disabled}
+      variant="ghost"
+      size="sm"
       className={classes}
     >
       {content}
-    </button>
+    </Button>
   );
 }
 

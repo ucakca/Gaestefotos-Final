@@ -10,6 +10,8 @@ import { useToastStore } from '@/store/toastStore';
 import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
+import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
 
 interface Photo {
   id: string;
@@ -153,19 +155,19 @@ export default function DuplicatesPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button
                       onClick={() => setSelectedGroup(selectedGroup === group.groupId ? null : group.groupId)}
                       className="px-3 py-1.5 text-sm bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90"
                     >
                       {selectedGroup === group.groupId ? 'Ausblenden' : 'Details'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => deleteDuplicates(group.groupId, group.bestPhoto.id)}
                       className="px-3 py-1.5 text-sm bg-[var(--status-danger)] text-app-bg rounded-md hover:opacity-90 flex items-center gap-1"
                     >
                       <Trash2 className="w-4 h-4" />
                       Duplikate löschen
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -221,13 +223,15 @@ export default function DuplicatesPage() {
 
                           <div className="absolute top-2 right-2 flex gap-1">
                             {!photo.isBestInGroup && (
-                              <button
+                              <IconButton
                                 onClick={() => setBestPhoto(group.groupId, photo.id)}
-                                className="p-1.5 bg-app-card rounded-full shadow-md hover:bg-app-bg"
+                                icon={<StarOff className="w-4 h-4 text-app-muted" />}
+                                variant="ghost"
+                                size="sm"
+                                aria-label="Als bestes Foto setzen"
                                 title="Als bestes Foto setzen"
-                              >
-                                <StarOff className="w-4 h-4 text-app-muted" />
-                              </button>
+                                className="p-1.5 bg-app-card rounded-full shadow-md hover:bg-app-bg"
+                              />
                             )}
                           </div>
                         </motion.div>

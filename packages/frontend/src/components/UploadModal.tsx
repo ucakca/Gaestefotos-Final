@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { IconButton } from '@/components/ui/IconButton';
 
 interface UploadModalProps {
   open: boolean;
@@ -75,9 +76,16 @@ export default function UploadModal({
           <div className="flex items-center justify-between mb-4">
             <DialogTitle className="text-xl font-bold text-app-fg">{title}</DialogTitle>
             <DialogClose asChild>
-              <button onClick={handleClose} className="text-app-muted hover:text-app-fg" type="button">
-                <X className="w-5 h-5" />
-              </button>
+              <IconButton
+                onClick={handleClose}
+                icon={<X className="w-5 h-5" />}
+                variant="ghost"
+                size="sm"
+                aria-label="Schließen"
+                title="Schließen"
+                className="text-app-muted hover:text-app-fg"
+                type="button"
+              />
             </DialogClose>
           </div>
         </DialogHeader>

@@ -1,5 +1,7 @@
 'use client';
 
+ import { Button } from '@/components/ui/Button';
+
 interface FilterOption {
   id: string;
   label: string;
@@ -22,9 +24,11 @@ export default function FilterButtons({ options, selected, onSelect, label }: Fi
       )}
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
-          <button
+          <Button
             key={option.id}
             onClick={() => onSelect(option.id)}
+            variant="ghost"
+            size="sm"
             className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
               selected === option.id
                 ? 'bg-tokens-brandGreen text-app-bg'
@@ -32,7 +36,7 @@ export default function FilterButtons({ options, selected, onSelect, label }: Fi
             }`}
           >
             {option.label}
-          </button>
+          </Button>
         ))}
       </div>
     </div>

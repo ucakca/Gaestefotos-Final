@@ -6,6 +6,9 @@ import { Camera, Upload, X, Trophy, Check, Star } from 'lucide-react';
 import api from '@/lib/api';
 import { formatApiError } from '@/lib/api';
 import { useToastStore } from '@/store/toastStore';
+import { IconButton } from '@/components/ui/IconButton';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 interface Challenge {
   id: string;
@@ -230,13 +233,15 @@ export default function ChallengeCompletion({
               )}
             </div>
           ) : (
-            <button
+            <Button
               onClick={() => setShowUploadModal(true)}
+              variant="ghost"
+              size="sm"
               className="mt-2 px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 flex items-center gap-2 text-sm font-medium transition-colors"
             >
               <Trophy className="w-4 h-4" />
               Challenge erfüllen
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -289,16 +294,19 @@ export default function ChallengeCompletion({
 
               <div className="flex justify-between items-center p-4 border-b border-app-border flex-shrink-0">
                 <h3 className="text-lg font-semibold text-app-fg">Challenge erfüllen</h3>
-                <button
+                <IconButton
                   onClick={() => {
                     stopCamera();
                     setShowUploadModal(false);
                     setCapturedImage(null);
                   }}
+                  icon={<X className="w-5 h-5" />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Schließen"
+                  title="Schließen"
                   className="text-app-muted hover:text-app-fg"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                />
               </div>
 
               <div className="flex-1 overflow-y-auto min-h-0 p-4 pb-20">
@@ -307,7 +315,7 @@ export default function ChallengeCompletion({
                   <label className="block text-sm font-semibold text-app-fg mb-2">
                     Dein Name <span className="text-[var(--status-danger)]">*</span>
                   </label>
-                  <input
+                  <Input
                     type="text"
                     value={uploaderName}
                     onChange={(e) => setUploaderName(e.target.value)}
@@ -320,21 +328,25 @@ export default function ChallengeCompletion({
                 {!capturedImage ? (
                   <div className="space-y-4">
                     <div className="flex gap-3">
-                      <button
+                      <Button
                         onClick={startCamera}
                         disabled={usingCamera}
+                        variant="ghost"
+                        size="sm"
                         className="flex-1 px-4 py-3 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         <Camera className="w-5 h-5" />
                         Kamera
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => fileInputRef.current?.click()}
+                        variant="ghost"
+                        size="sm"
                         className="flex-1 px-4 py-3 bg-app-bg text-app-fg rounded-lg hover:opacity-90 flex items-center justify-center gap-2"
                       >
                         <Upload className="w-5 h-5" />
                         Galerie
-                      </button>
+                      </Button>
                     </div>
                     <input
                       ref={fileInputRef}
@@ -354,14 +366,20 @@ export default function ChallengeCompletion({
                           style={{ transform: 'scaleX(-1)' }} // Mirror for selfie
                         />
                         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
-                          <button
+                          <Button
                             onClick={stopCamera}
+                            variant="ghost"
+                            size="sm"
                             className="px-4 py-2 bg-[var(--status-danger)] text-app-bg rounded-lg hover:opacity-90"
                           >
                             Abbrechen
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={capturePhoto}
+                            variant="ghost"
+                            size="sm"
+                            aria-label="Foto aufnehmen"
+                            title="Foto aufnehmen"
                             className="w-16 h-16 bg-app-card rounded-full border-4 border-app-border"
                           />
                         </div>
@@ -404,23 +422,27 @@ export default function ChallengeCompletion({
               {/* Buttons FIXIERT am unteren Rand - immer sichtbar wenn Bild vorhanden */}
               {capturedImage && (
                 <div className="sticky bottom-0 bg-app-card border-t border-app-border p-4 flex gap-3 flex-shrink-0 z-10">
-                  <button
+                  <Button
                     onClick={() => {
                       setCapturedImage(null);
                       if (usingCamera) startCamera();
                     }}
                     disabled={uploading}
+                    variant="ghost"
+                    size="sm"
                     className="flex-1 px-4 py-2 border border-app-border rounded-lg text-app-fg hover:bg-app-bg disabled:opacity-50"
                   >
                     Neu aufnehmen
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={handleUpload}
                     disabled={uploading || !uploaderName.trim()}
+                    variant="ghost"
+                    size="sm"
                     className="flex-1 px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 disabled:opacity-50"
                   >
                     {uploading ? 'Wird hochgeladen...' : 'Hochladen'}
-                  </button>
+                  </Button>
                 </div>
               )}
             </motion.div>

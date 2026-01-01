@@ -5,6 +5,10 @@ import { RotateCw, Crop, X, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { useToastStore } from '@/store/toastStore';
+import { IconButton } from '@/components/ui/IconButton';
+import { Button } from '@/components/ui/Button';
+
+const MotionButton = motion(Button);
 
 interface PhotoEditorProps {
   photoId: string;
@@ -20,7 +24,7 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
   const [cropArea, setCropArea] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -146,28 +150,35 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
       >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-app-fg">Foto bearbeiten</h2>
-          <button
+          <IconButton
             onClick={onClose}
+            icon={<X className="w-6 h-6" />}
+            variant="ghost"
+            size="sm"
+            aria-label="Schließen"
+            title="Schließen"
             className="text-app-muted hover:text-app-fg"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          />
         </div>
 
         <div className="mb-4 flex gap-2">
-          <motion.button
+          <MotionButton
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleRotate}
+            variant="ghost"
+            size="sm"
             className="px-4 py-2 bg-[var(--status-info)] text-app-bg rounded-md hover:opacity-90 flex items-center gap-2"
           >
             <RotateCw className="w-4 h-4" />
             Drehen ({rotation}°)
-          </motion.button>
-          <motion.button
+          </MotionButton>
+          <MotionButton
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleCropStart}
+            variant="ghost"
+            size="sm"
             className={`px-4 py-2 rounded-md flex items-center gap-2 ${
               isCropping
                 ? 'bg-[var(--status-success)] text-app-bg hover:opacity-90'
@@ -176,14 +187,16 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
           >
             <Crop className="w-4 h-4" />
             {isCropping ? 'Zuschneiden...' : 'Zuschneiden'}
-          </motion.button>
+          </MotionButton>
           {isCropping && (
-            <button
+            <Button
               onClick={handleCancelCrop}
+              variant="ghost"
+              size="sm"
               className="px-4 py-2 bg-[var(--status-danger)] text-app-bg rounded-md hover:opacity-90"
             >
               Abbrechen
-            </button>
+            </Button>
           )}
         </div>
 
@@ -221,22 +234,26 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
         </div>
 
         <div className="flex justify-end gap-2">
-          <button
+          <Button
             onClick={onClose}
+            variant="ghost"
+            size="sm"
             className="px-4 py-2 bg-app-bg text-app-fg border border-app-border rounded-md hover:bg-app-card"
           >
             Abbrechen
-          </button>
-          <motion.button
+          </Button>
+          <MotionButton
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleSave}
             disabled={isSaving}
+            variant="ghost"
+            size="sm"
             className="px-4 py-2 bg-[var(--status-success)] text-app-bg rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <Check className="w-4 h-4" />
             {isSaving ? 'Speichern...' : 'Speichern'}
-          </motion.button>
+          </MotionButton>
         </div>
       </motion.div>
     </motion.div>

@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Clock } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
+import { Input } from '@/components/ui/Input';
 
 interface TimeInput24hProps {
   id?: string;
@@ -171,7 +174,7 @@ export default function TimeInput24h({
   return (
     <div ref={containerRef} className="relative">
       <div className="relative">
-        <input
+        <Input
           id={id}
           type="text"
           inputMode="numeric"
@@ -182,13 +185,16 @@ export default function TimeInput24h({
           className={`${className} bg-app-card text-app-fg pr-10`}
           style={style}
         />
-        <button
+        <IconButton
           type="button"
           onClick={() => setShowPicker(!showPicker)}
+          icon={<Clock className="w-5 h-5 text-tokens-brandGreen" />}
+          variant="ghost"
+          size="sm"
+          aria-label="Uhrzeit auswählen"
+          title="Uhrzeit auswählen"
           className="absolute right-3 top-1/2 -translate-y-1/2"
-        >
-          <Clock className="w-5 h-5 text-tokens-brandGreen" />
-        </button>
+        />
       </div>
 
       {showPicker && (
@@ -199,13 +205,15 @@ export default function TimeInput24h({
               <div className="text-xs font-semibold text-app-muted mb-2 text-center">Stunden</div>
               <div className="border border-app-border rounded-lg overflow-hidden max-h-48 overflow-y-auto">
                 {Array.from({ length: 24 }, (_, i) => (
-                  <button
+                  <Button
                     key={i}
                     type="button"
                     onClick={() => {
                       selectHour(i);
                       setShowPicker(false);
                     }}
+                    variant="ghost"
+                    size="sm"
                     className={`w-full px-3 py-2 text-sm hover:bg-app-bg transition-colors ${
                       parseInt(displayHours) === i
                         ? 'bg-tokens-brandGreen text-app-bg'
@@ -213,7 +221,7 @@ export default function TimeInput24h({
                     }`}
                   >
                     {i.toString().padStart(2, '0')}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -223,13 +231,15 @@ export default function TimeInput24h({
               <div className="text-xs font-semibold text-app-muted mb-2 text-center">Minuten</div>
               <div className="border border-app-border rounded-lg overflow-hidden max-h-48 overflow-y-auto">
                 {Array.from({ length: 60 }, (_, i) => (
-                  <button
+                  <Button
                     key={i}
                     type="button"
                     onClick={() => {
                       selectMinute(i);
                       setShowPicker(false);
                     }}
+                    variant="ghost"
+                    size="sm"
                     className={`w-full px-3 py-2 text-sm hover:bg-app-bg transition-colors ${
                       parseInt(displayMinutes) === i
                         ? 'bg-tokens-brandGreen text-app-bg'
@@ -237,7 +247,7 @@ export default function TimeInput24h({
                     }`}
                   >
                     {i.toString().padStart(2, '0')}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -246,7 +256,7 @@ export default function TimeInput24h({
           {/* Manual Input */}
           <div className="mt-4 pt-4 border-t border-app-border">
             <div className="flex gap-2 items-center">
-              <input
+              <Input
                 type="number"
                 min="0"
                 max="23"
@@ -257,7 +267,7 @@ export default function TimeInput24h({
                 style={{ maxWidth: '80px' }}
               />
               <span className="text-app-muted font-semibold">:</span>
-              <input
+              <Input
                 type="number"
                 min="0"
                 max="59"
@@ -267,13 +277,15 @@ export default function TimeInput24h({
                 className="flex-1 px-3 py-2 border border-app-border bg-app-card text-app-fg rounded-lg text-center text-sm focus:ring-2 focus:outline-none focus:ring-app-fg/30"
                 style={{ maxWidth: '80px' }}
               />
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowPicker(false)}
+                variant="ghost"
+                size="sm"
                 className="px-3 py-2 bg-tokens-brandGreen text-app-bg rounded-lg text-sm hover:opacity-90 transition-colors"
               >
                 OK
-              </button>
+              </Button>
             </div>
           </div>
         </div>

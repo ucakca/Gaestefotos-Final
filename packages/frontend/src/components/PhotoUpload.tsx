@@ -5,6 +5,7 @@ import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, X, Check } from 'lucide-react';
 import api, { formatApiError } from '@/lib/api';
+import { IconButton } from '@/components/ui/IconButton';
 
 interface PhotoUploadProps {
   eventId: string;
@@ -187,12 +188,15 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                     )}
 
                     {!file.uploading && !file.success && (
-                      <button
+                      <IconButton
                         onClick={() => removeFile(index)}
-                        className="w-8 h-8 rounded-full bg-app-bg text-[var(--status-danger)] border border-[var(--status-danger)] hover:opacity-90 flex items-center justify-center"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                        icon={<X className="w-4 h-4" />}
+                        variant="ghost"
+                        size="sm"
+                        aria-label="Entfernen"
+                        title="Entfernen"
+                        className="w-8 h-8 rounded-full bg-app-bg text-[var(--status-danger)] border border-[var(--status-danger)] hover:opacity-90"
+                      />
                     )}
                   </div>
                 </div>

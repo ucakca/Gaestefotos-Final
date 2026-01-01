@@ -5,6 +5,8 @@ import DatePicker, { registerLocale } from 'react-datepicker';
 import { de } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Calendar } from 'lucide-react';
+import { IconButton } from '@/components/ui/IconButton';
+import { Input } from '@/components/ui/Input';
 
 registerLocale('de', de);
 
@@ -77,7 +79,7 @@ export default function DateTimePicker({
       )}
       <div className="relative">
         <div className="flex items-center">
-          <input
+          <Input
             type="text"
             readOnly
             value={selectedDate ? formatDisplayDate(selectedDate) : ''}
@@ -85,17 +87,19 @@ export default function DateTimePicker({
             placeholder="DD.MM.YYYY HH:MM auswählen"
             className="w-full px-4 py-3 pr-12 border border-app-border rounded-lg focus:ring-2 focus:outline-none focus:ring-app-fg/30 focus:border-transparent transition-all cursor-pointer text-app-fg bg-app-card"
           />
-          <button
-            type="button"
+          <IconButton
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               setIsOpen(!isOpen);
             }}
+            icon={<Calendar className="w-5 h-5" />}
+            variant="ghost"
+            size="sm"
+            aria-label="Kalender öffnen"
+            title="Kalender öffnen"
             className="absolute right-3 text-tokens-brandGreen hover:opacity-80 focus:outline-none"
-          >
-            <Calendar className="w-5 h-5" />
-          </button>
+          />
         </div>
         {isOpen && (
           <div className="absolute z-50 mt-2 shadow-2xl">

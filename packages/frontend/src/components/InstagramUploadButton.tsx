@@ -4,6 +4,8 @@ import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, X, Upload, Check } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
+import { IconButton } from '@/components/ui/IconButton';
+import { Button } from '@/components/ui/Button';
 
 interface InstagramUploadButtonProps {
   eventId: string;
@@ -19,6 +21,9 @@ interface UploadFile {
   error?: string;
   success?: boolean;
 }
+
+const MotionIconButton = motion(IconButton);
+const MotionButton = motion(Button);
 
 export default function InstagramUploadButton({ 
   eventId, 
@@ -148,15 +153,17 @@ export default function InstagramUploadButton({
   return (
     <>
       {/* Floating Action Button - Instagram Style */}
-      <motion.button
+      <MotionButton
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
         disabled={disabled}
+        variant="ghost"
+        size="sm"
         className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-tokens-brandGreen to-tokens-brandPeach rounded-full shadow-lg flex items-center justify-center text-app-bg z-40 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Camera className="w-6 h-6" />
-      </motion.button>
+      </MotionButton>
 
       {/* Upload Modal */}
       <AnimatePresence>
@@ -178,12 +185,15 @@ export default function InstagramUploadButton({
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-app-fg">Foto hochladen</h2>
-                <button
+                <MotionIconButton
                   onClick={() => setIsOpen(false)}
-                  className="p-1 hover:bg-app-bg rounded"
-                >
-                  <X className="w-5 h-5 text-app-fg" />
-                </button>
+                  icon={<X className="w-5 h-5" />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Schließen"
+                  title="Schließen"
+                  className="p-1 hover:bg-app-bg rounded text-app-fg"
+                />
               </div>
 
               {/* Dropzone */}
@@ -211,15 +221,17 @@ export default function InstagramUploadButton({
               </div>
 
               {/* Camera Button */}
-              <motion.button
+              <MotionButton
                 onClick={capturePhoto}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                variant="ghost"
+                size="sm"
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-tokens-brandGreen to-tokens-brandPeach text-app-bg rounded-lg font-medium mb-4"
               >
                 <Camera className="w-5 h-5" />
                 <span>Foto mit Kamera aufnehmen</span>
-              </motion.button>
+              </MotionButton>
 
               {/* Upload Progress */}
               <AnimatePresence>
@@ -276,12 +288,15 @@ export default function InstagramUploadButton({
                             </motion.div>
                           )}
                           {!file.uploading && !file.success && (
-                            <button
+                            <IconButton
                               onClick={() => removeFile(index)}
-                              className="w-6 h-6 rounded-full bg-app-card border border-app-border text-app-muted hover:opacity-80 flex items-center justify-center"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
+                              icon={<X className="w-4 h-4" />}
+                              variant="ghost"
+                              size="sm"
+                              aria-label="Entfernen"
+                              title="Entfernen"
+                              className="w-6 h-6 rounded-full bg-app-card border border-app-border text-app-muted hover:opacity-80"
+                            />
                           )}
                         </div>
                       </motion.div>

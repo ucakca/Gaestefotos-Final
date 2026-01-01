@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { IconButton } from '@/components/ui/IconButton';
 
 export type ToastType = 'success' | 'error' | 'info';
 
@@ -49,12 +50,15 @@ function ToastItem({ toast, onRemove }: ToastProps) {
       <div className="flex-1">
         <p className="text-sm font-medium text-app-fg">{toast.message}</p>
       </div>
-      <button
+      <IconButton
         onClick={() => onRemove(toast.id)}
+        icon={<X className="w-4 h-4" />}
+        variant="ghost"
+        size="sm"
+        aria-label="Schließen"
+        title="Schließen"
         className="text-app-muted hover:text-app-fg"
-      >
-        <X className="w-4 h-4" />
-      </button>
+      />
     </motion.div>
   );
 }

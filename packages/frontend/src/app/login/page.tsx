@@ -7,6 +7,9 @@ import { Eye, EyeOff } from 'lucide-react';
 import { authApi } from '@/lib/auth';
 import Logo from '@/components/Logo';
 import { Checkbox } from '@/components/ui/Checkbox';
+import { Input } from '@/components/ui/Input';
+import { IconButton } from '@/components/ui/IconButton';
+import { Button } from '@/components/ui/Button';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -89,7 +92,7 @@ export default function LoginPage() {
             <label htmlFor="email" className="block text-sm font-medium mb-2 text-tokens-brandGreen">
               E-Mail
             </label>
-            <input
+            <Input
               id="email"
               name="email"
               type="email"
@@ -107,7 +110,7 @@ export default function LoginPage() {
               Passwort
             </label>
             <div className="relative">
-              <input
+              <Input
                 id="password"
                 name="password"
                 type={showPassword ? 'text' : 'password'}
@@ -118,14 +121,15 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 autoComplete="current-password"
               />
-              <button
+              <IconButton
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 focus:outline-none text-tokens-brandGreen"
+                icon={showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                variant="ghost"
+                size="sm"
                 aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-tokens-brandGreen"
+              />
             </div>
           </div>
 
@@ -145,15 +149,15 @@ export default function LoginPage() {
             </a>
           </div>
 
-          <motion.button
+          <Button
             type="submit"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
             disabled={loading}
             className="w-full text-app-bg py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-app-accent hover:opacity-90"
           >
-            {loading ? 'Anmelden...' : 'Anmelden'}
-          </motion.button>
+            <motion.span whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="block">
+              {loading ? 'Anmelden...' : 'Anmelden'}
+            </motion.span>
+          </Button>
 
           <div className="text-center text-sm text-tokens-brandGreen/90">
             Kein Konto? Bitte auf <strong>gästefotos.com</strong> anlegen.

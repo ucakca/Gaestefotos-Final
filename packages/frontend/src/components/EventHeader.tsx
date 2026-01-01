@@ -6,6 +6,9 @@ import { Camera, Plus, User, Video, X } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import api from '@/lib/api';
 import { getDesignPreset } from '@/lib/designPresets';
+import { IconButton } from '@/components/ui/IconButton';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 interface EventHeaderProps {
   event: EventType;
@@ -228,11 +231,13 @@ export default function EventHeader({
         <div className="bg-app-bg">
           <div className="max-w-md mx-auto px-4 -mt-16 relative">
             <div className="flex flex-col items-center">
-              <button
+              <Button
                 type="button"
                 onClick={onProfileClick}
                 disabled={!onProfileClick}
-                className="relative"
+                variant="ghost"
+                size="sm"
+                className="relative p-0 h-auto w-auto"
               >
                 <div className="relative w-28 h-28">
                   {hasStories ? (
@@ -255,17 +260,19 @@ export default function EventHeader({
                     )}
                   </div>
                 </div>
-              </button>
+              </Button>
 
               <div className="mt-3 flex items-center gap-2">
-                <button
+                <Button
                   type="button"
                   onClick={openStoryModal}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-app-card border border-app-border px-3 py-1.5 shadow-sm text-sm font-semibold text-app-fg"
+                  variant="ghost"
+                  size="sm"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-app-card border border-app-border px-3 py-1.5 shadow-sm text-sm font-semibold text-app-fg h-auto"
                 >
                   <Plus className="w-4 h-4" />
                   +Story
-                </button>
+                </Button>
               </div>
 
               {!hasStories && (
@@ -319,68 +326,78 @@ export default function EventHeader({
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-sm font-semibold text-app-fg">Story erstellen</div>
-                  <button
-                    type="button"
+                  <IconButton
                     onClick={closeStoryModal}
-                    className="w-9 h-9 rounded-full bg-app-bg hover:opacity-80 flex items-center justify-center"
-                  >
-                    <X className="w-5 h-5 text-app-fg" />
-                  </button>
+                    icon={<X className="w-5 h-5" />}
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Schließen"
+                    title="Schließen"
+                    className="w-9 h-9 bg-app-bg hover:bg-app-bg/80"
+                  />
                 </div>
 
                 <div className="mt-3">
                   <label className="block text-xs font-semibold text-app-fg">Dein Name (optional)</label>
-                  <input
+                  <Input
                     type="text"
                     value={storyUploaderName}
                     onChange={(e) => setStoryUploaderName(e.target.value)}
                     placeholder="z.B. Max"
-                    className="mt-1 w-full rounded-xl border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
+                    className="mt-1 w-full rounded-xl px-3 py-2"
                   />
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-3">
-                  <button
+                  <Button
                     type="button"
                     disabled={storyUploading}
                     onClick={() => pickFile('photo', true)}
-                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left"
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left h-auto"
                   >
                     <div className="flex items-center gap-2 text-sm font-semibold text-app-fg">
                       <Camera className="w-5 h-5" />
                       Foto aufnehmen
                     </div>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     disabled={storyUploading}
                     onClick={() => pickFile('video', true)}
-                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left"
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left h-auto"
                   >
                     <div className="flex items-center gap-2 text-sm font-semibold text-app-fg">
                       <Video className="w-5 h-5" />
                       Video aufnehmen
                     </div>
                     <div className="mt-1 text-xs text-app-muted">max 15s</div>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     disabled={storyUploading}
                     onClick={() => pickFile('photo', false)}
-                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left"
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left h-auto"
                   >
                     <div className="text-sm font-semibold text-app-fg">Foto auswählen</div>
                     <div className="mt-1 text-xs text-app-muted">Galerie</div>
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     disabled={storyUploading}
                     onClick={() => pickFile('video', false)}
-                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left"
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left h-auto"
                   >
                     <div className="text-sm font-semibold text-app-fg">Video auswählen</div>
                     <div className="mt-1 text-xs text-app-muted">Galerie · max 15s</div>
-                  </button>
+                  </Button>
                 </div>
 
                 {storyUploadError && (
@@ -419,13 +436,15 @@ export default function EventHeader({
                     ? 'Die Speicherzeit ist abgelaufen.'
                     : uploadDisabledReason || 'Uploads sind aktuell deaktiviert.'}
                 </div>
-                <button
+                <Button
                   type="button"
                   onClick={closeStoryDisabled}
-                  className="mt-4 w-full rounded-xl bg-tokens-brandGreen text-app-bg py-2 text-sm font-semibold hover:opacity-90"
+                  variant="ghost"
+                  size="sm"
+                  className="mt-4 w-full rounded-xl bg-tokens-brandGreen text-app-bg py-2 text-sm font-semibold hover:opacity-90 h-auto"
                 >
                   OK
-                </button>
+                </Button>
               </motion.div>
             </motion.div>
           )}

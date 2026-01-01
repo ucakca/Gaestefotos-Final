@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Globe } from 'lucide-react';
 import { locales, type Locale } from '../../i18n/config';
+import { Button } from '@/components/ui/Button';
 
 const localeNames: Record<Locale, string> = {
   de: 'Deutsch',
@@ -55,8 +56,10 @@ export default function LanguageSelector({
           {t('select')}
         </label>
       )}
-      <button
+      <Button
         onClick={() => setIsOpen(!isOpen)}
+        variant="ghost"
+        size="sm"
         className="flex items-center gap-2 px-3 py-2 border border-app-border rounded-lg hover:bg-app-bg transition-colors text-tokens-brandGreen"
       >
         <Globe className="w-4 h-4" />
@@ -69,7 +72,7 @@ export default function LanguageSelector({
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
-      </button>
+      </Button>
 
       {isOpen && (
         <>
@@ -79,9 +82,11 @@ export default function LanguageSelector({
           />
           <div className="absolute top-full mt-2 right-0 bg-app-card border border-app-border rounded-lg shadow-lg z-20 min-w-[150px]">
             {locales.map((loc) => (
-              <button
+              <Button
                 key={loc}
                 onClick={() => switchLocale(loc)}
+                variant="ghost"
+                size="sm"
                 className={`w-full text-left px-4 py-2 hover:bg-app-bg first:rounded-t-lg last:rounded-b-lg transition-colors ${
                   currentLocale === loc ? 'font-semibold' : ''
                 }`}
@@ -92,7 +97,7 @@ export default function LanguageSelector({
                 }
               >
                 {localeNames[loc]}
-              </button>
+              </Button>
             ))}
           </div>
         </>

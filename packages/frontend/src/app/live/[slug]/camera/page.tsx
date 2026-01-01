@@ -6,6 +6,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import api, { formatApiError, isRetryableUploadError } from '@/lib/api';
 import { Event as EventType } from '@gaestefotos/shared';
 import { Camera, Upload, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
+
+const MotionIconButton = motion(IconButton);
+const MotionButton = motion(Button);
 
 export default function CameraPage() {
   const params = useParams();
@@ -118,14 +123,16 @@ export default function CameraPage() {
   return (
     <div className="min-h-screen bg-app-fg text-app-bg relative">
       {/* Back Button */}
-      <motion.button
+      <MotionIconButton
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         onClick={() => router.push(`/e/${slug}`)}
+        icon={<ArrowLeft className="w-6 h-6" />}
+        variant="ghost"
+        size="lg"
+        aria-label="Zurück"
         className="absolute top-4 left-4 z-20 p-2 bg-app-fg/50 rounded-full"
-      >
-        <ArrowLeft className="w-6 h-6" />
-      </motion.button>
+      />
 
       {/* Camera View */}
       <AnimatePresence mode="wait">
@@ -147,13 +154,14 @@ export default function CameraPage() {
                     Fehler beim Upload: {uploadError}
                     {canRetry && !uploading && capturedPhoto && (
                       <div className="mt-2">
-                        <button
+                        <Button
                           type="button"
+                          variant="secondary"
                           onClick={handleCaptureAndUpload}
-                          className="text-xs font-semibold underline"
+                          className="h-auto p-0 text-xs font-semibold underline bg-transparent hover:bg-transparent"
                         >
                           Erneut versuchen
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -178,7 +186,7 @@ export default function CameraPage() {
                   onChange={handleFileSelect}
                   className="hidden"
                 />
-                <motion.button
+                <MotionButton
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => fileInputRef.current?.click()}
@@ -186,7 +194,7 @@ export default function CameraPage() {
                   className="px-6 py-3 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90"
                 >
                   {uploading ? 'Hochladen…' : 'Foto auswählen'}
-                </motion.button>
+                </MotionButton>
               </div>
             </div>
 
@@ -217,15 +225,15 @@ export default function CameraPage() {
 
             {/* Action Buttons */}
             <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-4 px-4">
-              <motion.button
+              <MotionButton
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setCapturedPhoto(null)}
                 className="px-6 py-3 bg-app-bg/20 text-app-bg rounded-lg hover:bg-app-bg/30"
               >
                 Neu aufnehmen
-              </motion.button>
-              <motion.button
+              </MotionButton>
+              <MotionButton
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleCaptureAndUpload}
@@ -247,7 +255,7 @@ export default function CameraPage() {
                     Hochladen
                   </>
                 )}
-              </motion.button>
+              </MotionButton>
             </div>
 
             {/* Upload Success Animation */}

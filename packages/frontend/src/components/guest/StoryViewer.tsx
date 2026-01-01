@@ -3,6 +3,8 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
 
 type Story = any;
 
@@ -95,45 +97,45 @@ export default function StoryViewer({
                     (selectedStory?.video?.uploadedBy as string) ||
                     'Story')
                 </div>
-                <button
-                  type="button"
+                <IconButton
                   onClick={(e) => {
                     e.stopPropagation();
                     onClose();
                   }}
+                  icon={<X className="w-5 h-5" />}
+                  variant="glass"
+                  size="sm"
                   data-testid="story-close"
                   className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-app-bg/10 hover:bg-app-bg/15 text-app-bg"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                />
               </div>
             </div>
           </div>
 
           {stories.length > 1 && (
             <>
-              <button
-                type="button"
+              <IconButton
                 onClick={(e) => {
                   e.stopPropagation();
                   onPrev();
                 }}
+                icon={<ChevronLeft className="w-6 h-6" />}
+                variant="glass"
+                size="lg"
                 data-testid="story-prev"
                 className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-app-bg/10 hover:bg-app-bg/15 text-app-bg flex items-center justify-center"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <button
-                type="button"
+              />
+              <IconButton
                 onClick={(e) => {
                   e.stopPropagation();
                   onNext();
                 }}
+                icon={<ChevronRight className="w-6 h-6" />}
+                variant="glass"
+                size="lg"
                 data-testid="story-next"
                 className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-app-bg/10 hover:bg-app-bg/15 text-app-bg flex items-center justify-center"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
+              />
             </>
           )}
 
@@ -171,22 +173,26 @@ export default function StoryViewer({
 
             {stories.length > 1 && (
               <>
-                <button
+                <Button
                   type="button"
                   aria-label="Vorherige Story"
                   onClick={(e) => {
                     e.stopPropagation();
                     onPrev();
                   }}
+                  variant="ghost"
+                  size="sm"
                   className="absolute inset-y-0 left-0 w-1/2 z-20"
                 />
-                <button
+                <Button
                   type="button"
                   aria-label="Nächste Story"
                   onClick={(e) => {
                     e.stopPropagation();
                     onNext();
                   }}
+                  variant="ghost"
+                  size="sm"
                   className="absolute inset-y-0 right-0 w-1/2 z-20"
                 />
               </>

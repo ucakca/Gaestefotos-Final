@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { slugify } from '@gaestefotos/shared';
 import DateTimePicker from '@/components/DateTimePicker';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 export default function NewEventPage() {
   const router = useRouter();
@@ -81,7 +83,7 @@ export default function NewEventPage() {
             <label htmlFor="title" className="block text-sm font-medium mb-1 text-tokens-brandGreen">
               Event-Titel *
             </label>
-            <input
+            <Input
               id="title"
               type="text"
               required
@@ -96,7 +98,7 @@ export default function NewEventPage() {
             <label htmlFor="slug" className="block text-sm font-medium mb-1 text-tokens-brandGreen">
               URL-Slug *
             </label>
-            <input
+            <Input
               id="slug"
               type="text"
               required
@@ -120,7 +122,7 @@ export default function NewEventPage() {
             <label htmlFor="locationName" className="block text-sm font-medium mb-1 text-tokens-brandGreen">
               Veranstaltungsort / Adresse
             </label>
-            <input
+            <Input
               id="locationName"
               type="text"
               value={formData.locationName}
@@ -138,20 +140,20 @@ export default function NewEventPage() {
           </div>
 
           <div className="flex justify-end space-x-4">
-            <button
+            <Button
               type="button"
               onClick={() => router.back()}
               className="px-4 py-2 border border-app-accent rounded-md font-medium transition-colors text-tokens-brandGreen bg-app-card hover:bg-app-bg"
             >
               Abbrechen
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={loading}
               className="px-6 py-3 rounded-lg text-app-bg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-tokens-brandGreen hover:opacity-90"
             >
               {loading ? 'Erstellen...' : 'Event erstellen'}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

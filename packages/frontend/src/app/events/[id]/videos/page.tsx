@@ -15,6 +15,7 @@ import ActionButton from '@/components/ActionButton';
 import FilterButtons from '@/components/FilterButtons';
 import UploadModal from '@/components/UploadModal';
 import { Button } from '@/components/ui/Button';
+import { IconButton } from '@/components/ui/IconButton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -786,7 +787,7 @@ export default function VideosPage() {
 
                   {viewMode === 'trash' && (
                     <div className="absolute top-2 left-2 right-2 z-10 flex items-center justify-between gap-2">
-                      <button
+                      <Button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleRestore(video.id);
@@ -794,8 +795,8 @@ export default function VideosPage() {
                         className="flex-1 px-2 py-1 text-xs bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90"
                       >
                         Wiederherstellen
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={(e) => {
                           e.stopPropagation();
                           handlePurge(video.id);
@@ -803,7 +804,7 @@ export default function VideosPage() {
                         className="px-2 py-1 text-xs bg-[var(--status-danger)] text-app-bg rounded-md hover:opacity-90"
                       >
                         Endgültig
-                      </button>
+                      </Button>
                     </div>
                   )}
                   {video.url ? (
@@ -859,12 +860,15 @@ export default function VideosPage() {
                 className="bg-app-card rounded-lg max-w-4xl w-full p-6"
               >
                 <div className="mb-4">
-                  <button
+                  <IconButton
                     onClick={() => setSelectedVideo(null)}
+                    icon={<X className="w-6 h-6" />}
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Schließen"
+                    title="Schließen"
                     className="text-app-muted hover:text-app-fg"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -924,7 +928,7 @@ export default function VideosPage() {
 
                     <div className="pt-4">
                       <p className="text-sm text-app-muted mb-2">Download</p>
-                      <button
+                      <Button
                         onClick={() => {
                           if (isStorageLocked) {
                             showToast('Speicherperiode beendet – Download nicht mehr möglich', 'error');
@@ -937,7 +941,7 @@ export default function VideosPage() {
                       >
                         <Download className="w-4 h-4" />
                         Original herunterladen
-                      </button>
+                      </Button>
                     </div>
                     
                     {/* Actions are now in the header dropdown - keeping this section for additional info if needed */}

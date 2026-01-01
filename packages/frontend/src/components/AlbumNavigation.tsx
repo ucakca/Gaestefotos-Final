@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Category } from '@gaestefotos/shared';
 import * as LucideIcons from 'lucide-react';
 import { Folder, Grid3x3 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 interface AlbumNavigationProps {
   categories: Category[];
@@ -11,6 +12,8 @@ interface AlbumNavigationProps {
   onAlbumSelect: (categoryId: string | null) => void;
   totalPhotos?: number;
 }
+
+const MotionButton = motion(Button);
 
 export default function AlbumNavigation({
   categories,
@@ -43,14 +46,16 @@ export default function AlbumNavigation({
             const isSelected = selectedAlbum === album.id;
             
             return (
-              <motion.button
+              <MotionButton
                 key={album.id || 'all'}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onAlbumSelect(album.id)}
-                className={`flex flex-col items-center gap-1.5 flex-shrink-0 min-w-[64px] ${
+                variant="ghost"
+                size="sm"
+                className={`h-auto p-0 flex flex-col items-center gap-1.5 flex-shrink-0 min-w-[64px] ${
                   isSelected ? 'opacity-100' : 'opacity-70'
                 }`}
               >
@@ -90,7 +95,7 @@ export default function AlbumNavigation({
                 >
                   {album.name}
                 </span>
-              </motion.button>
+              </MotionButton>
             );
           })}
         </div>

@@ -5,6 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, X, Search, Image as ImageIcon, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
 import { Checkbox } from '@/components/ui/Checkbox';
+import { IconButton } from '@/components/ui/IconButton';
+import { Button } from '@/components/ui/Button';
+
+const MotionButton = motion(Button);
 
 const CONSENT_STORAGE_KEY = 'face_search_consent_accepted_v1';
 
@@ -209,15 +213,17 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
   return (
     <>
       {showButton && (
-        <motion.button
+        <MotionButton
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowModal(true)}
+          variant="ghost"
+          size="sm"
           className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg font-medium flex items-center gap-2 hover:opacity-90 transition-colors"
         >
           <Search className="w-5 h-5" />
           Finde Bilder von mir
-        </motion.button>
+        </MotionButton>
       )}
 
       <AnimatePresence>
@@ -240,12 +246,15 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                 <h2 className="text-2xl font-bold text-app-fg">
                   Finde Bilder von mir
                 </h2>
-                <button
+                <IconButton
                   onClick={closeModal}
-                  className="p-2 hover:bg-app-bg rounded-full"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                  icon={<X className="w-5 h-5" />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Schließen"
+                  title="Schließen"
+                  className="p-2 hover:bg-app-bg"
+                />
               </div>
 
               <div className="mb-4 rounded-lg border border-app-border bg-app-bg p-4">
@@ -264,18 +273,20 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                   </p>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <motion.button
+                    <MotionButton
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={startCamera}
                       disabled={!consentAccepted}
+                      variant="ghost"
+                      size="sm"
                       className="p-6 border-2 border-dashed border-app-border rounded-lg hover:border-tokens-brandGreen hover:bg-app-bg transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Camera className="w-8 h-8 text-app-muted" />
                       <span className="font-medium">Selfie aufnehmen</span>
-                    </motion.button>
+                    </MotionButton>
 
-                    <motion.button
+                    <MotionButton
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
@@ -283,11 +294,13 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                         fileInputRef.current?.click();
                       }}
                       disabled={!consentAccepted}
+                      variant="ghost"
+                      size="sm"
                       className="p-6 border-2 border-dashed border-app-border rounded-lg hover:border-tokens-brandGreen hover:bg-app-bg transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <ImageIcon className="w-8 h-8 text-app-muted" />
                       <span className="font-medium">Foto hochladen</span>
-                    </motion.button>
+                    </MotionButton>
                   </div>
 
                   <input
@@ -307,22 +320,26 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                         className="w-full rounded-lg"
                       />
                       <div className="mt-4 flex gap-2">
-                        <motion.button
+                        <MotionButton
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={capturePhoto}
+                          variant="ghost"
+                          size="sm"
                           className="flex-1 px-4 py-3 bg-tokens-brandGreen text-app-bg rounded-lg font-medium hover:opacity-90 transition-colors"
                         >
                           Foto aufnehmen
-                        </motion.button>
-                        <motion.button
+                        </MotionButton>
+                        <MotionButton
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={stopCamera}
+                          variant="ghost"
+                          size="sm"
                           className="px-4 py-3 bg-app-bg text-app-fg rounded-lg font-medium hover:opacity-90 transition-colors"
                         >
                           Abbrechen
-                        </motion.button>
+                        </MotionButton>
                       </div>
                     </div>
                   )}
@@ -335,12 +352,15 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                       alt="Referenzbild"
                       className="w-full rounded-lg"
                     />
-                    <button
+                    <IconButton
                       onClick={reset}
-                      className="absolute top-2 right-2 p-2 bg-app-card border border-app-border rounded-full shadow-md hover:bg-app-bg"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                      icon={<X className="w-4 h-4" />}
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Zurücksetzen"
+                      title="Zurücksetzen"
+                      className="absolute top-2 right-2 bg-app-card border border-app-border shadow-md hover:bg-app-bg"
+                    />
                   </div>
 
                   {error && (
@@ -372,11 +392,13 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                   )}
 
                   <div className="flex gap-2">
-                    <motion.button
+                    <MotionButton
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={searchPhotos}
                       disabled={searching || !consentAccepted}
+                      variant="ghost"
+                      size="sm"
                       className="flex-1 px-4 py-3 bg-tokens-brandGreen text-app-bg rounded-lg font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {searching ? (
@@ -390,15 +412,17 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                           Fotos suchen
                         </>
                       )}
-                    </motion.button>
-                    <motion.button
+                    </MotionButton>
+                    <MotionButton
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={reset}
+                      variant="ghost"
+                      size="sm"
                       className="px-4 py-3 bg-app-bg text-app-fg rounded-lg font-medium hover:opacity-90 transition-colors"
                     >
                       Neues Foto
-                    </motion.button>
+                    </MotionButton>
                   </div>
                 </div>
               )}
