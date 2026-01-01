@@ -100,6 +100,10 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
       - `UploadModal` migriert: Custom Overlay → `Dialog`
       - Event Settings Controls tokenisiert: `accent-*` statt inline `accentColor` + Inputs via `Input`
       - Dashboard: `alert(...)` → `showToast(...)` + Buttons/Inline-Edits auf Primitives
+      - ✅ Remaining native controls migration (Frontend, `packages/frontend/src/components`, exkl. `/components/ui`):
+        - `SocialShare`, `LanguageSelector`, `FilterButtons`, `ActionButton`, `DateTimePicker`, `TimeInput24h`
+        - `HostPhotoUpload`, `PhotoUpload`, `FaceSearch`, `guest/StoriesBar`, `guest/StoryViewer`
+        - Policy: `type="file"` bleibt bewusst **native**
 
 - ⏳ Hardcoded Color Sweep (TODO 171)
   - Fallback-Gradienten/Inline-Styles auf `var(--...)` Tokens umgestellt (u.a. `design` A5 PDF, Design fallback gradients)
@@ -116,7 +120,7 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
     - Themeable-Presets (optional, später): Preset-Definition bleibt semantisch (z.B. `primary/secondary/accent`) und wird beim Rendern gegen Tokens aufgelöst
   - Bewusst verbleibende `black/white` Klassen (Frontend):
     - `app/ui/page.tsx` ist eine Design-System Demo/Preview und nutzt bewusst `white` als Demo-Surface
-    - `StoryViewer` ist bewusst „cinema-dark“ (Overlay/Controls mit `black/white` für maximalen Kontrast)
+    - `StoryViewer` ist bewusst „cinema-dark“ (Overlay/Controls), aber token-basiert (`bg-app-fg`, `text-app-bg`)
 
 ## ❌ Next (Priorität hoch)
 
