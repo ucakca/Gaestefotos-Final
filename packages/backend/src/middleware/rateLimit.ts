@@ -189,6 +189,8 @@ export const passwordLimiter: any = rateLimit({
   message: 'Zu viele Passwort-Versuche, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
+  // Skip in development/E2E to avoid test flakiness and to keep local dev convenient.
+  skip: (req: Request) => process.env.NODE_ENV === 'development' || process.env.E2E === 'true',
 });
 
 // Less strict limiter for admin login (more attempts allowed)

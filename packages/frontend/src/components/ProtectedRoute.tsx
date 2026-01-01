@@ -9,7 +9,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   const router = useRouter();
   const didInitRef = useRef(false);
 
-  const { isAuthenticated, loading, loadUser } = useAuthStore();
+  const { isAuthenticated, loading, loadUser, hasCheckedAuth } = useAuthStore();
 
   useEffect(() => {
     if (didInitRef.current) return;
@@ -19,12 +19,12 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   }, []);
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (hasCheckedAuth && !loading && !isAuthenticated) {
       router.push('/login');
     }
-  }, [loading, isAuthenticated, router]);
+  }, [hasCheckedAuth, loading, isAuthenticated, router]);
 
-  if (loading || !isAuthenticated) {
+  if (!hasCheckedAuth || loading || !isAuthenticated) {
     return <FullPageLoader label="Wird geladen..." />;
   }
 

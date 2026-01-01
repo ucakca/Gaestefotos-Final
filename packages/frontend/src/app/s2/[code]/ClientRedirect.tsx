@@ -13,7 +13,22 @@ export default function ClientRedirect({ code, initialTarget }: { code: string; 
       if (!initialTarget) return;
 
       try {
-        const res = await fetch(`/api/shortlinks/${encodeURIComponent(code)}`, {
+        const buildShortlinkUrl = (): string => {
+          // Production: always same-origin.
+          if (process.env.NODE_ENV === 'production') {
+            return `/api/shortlinks/${encodeURIComponent(code)}`;
+          }
+
+          // Dev/E2E: call the backend explicitly so it can set cookies.
+          const raw = (process.env.NEXT_PUBLIC_API_URL || '').trim();
+          const trimmed = raw.replace(/\/+$/, '');
+          const base = trimmed ? (trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`) : '/api';
+          return `${base}/shortlinks/${encodeURIComponent(code)}`;
+        };
+
+        const url = buildShortlinkUrl();
+
+        const res = await fetch(url, {
           credentials: 'include',
           cache: 'no-store',
         });

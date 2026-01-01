@@ -302,6 +302,14 @@ app.use((req, res, next) => {
     return next();
   }
 
+  // Dev/E2E: allow any localhost origin regardless of port.
+  // This avoids CSRF issues when the frontend runs on 3000/3001/3002/... while backend is on 8002/8001/...
+  if (process.env.NODE_ENV !== 'production') {
+    if (effectiveOrigin.startsWith('http://localhost:') || effectiveOrigin.startsWith('http://127.0.0.1:')) {
+      return next();
+    }
+  }
+
   if (allowedOrigins.includes(effectiveOrigin)) {
     return next();
   }
@@ -589,8 +597,8 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // Start server - listen on all interfaces for external access
-server = httpServer.listen(Number(PORT), '0.0.0.0', () => {
-  logger.info(`Server running on http://0.0.0.0:${PORT}`);
+server = httpServer.listen(Number(PORT), '::', () => {
+  logger.info(`Server running on http://[::]:${PORT}`);
   logger.info(`WebSocket server ready`);
   logger.info(`API Documentation: http://localhost:${PORT}/api-docs`);
   logger.info(`Accessible from: http://localhost:${PORT} and external IPs`);

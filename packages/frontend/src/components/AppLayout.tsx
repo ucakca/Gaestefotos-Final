@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
@@ -19,11 +19,16 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children, showBackButton, backUrl }: AppLayoutProps) {
   const pathname = usePathname();
-  const { user, logout, loadUser } = useAuthStore();
+  const didInitRef = useRef(false);
+  const { user, logout, loadUser, hasCheckedAuth } = useAuthStore();
 
   useEffect(() => {
-    // Cookie-based session: load user once so UI (e.g. admin button) can render based on role.
-    loadUser();
+    if (didInitRef.current) return;
+    didInitRef.current = true;
+    // Load user once so UI (e.g. admin button) can render based on role.
+    if (!hasCheckedAuth) {
+      loadUser();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
