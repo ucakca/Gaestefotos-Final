@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
@@ -16,6 +16,15 @@ import { IconButton } from '@/components/ui/IconButton';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface Category {
   id: string;
@@ -56,6 +65,35 @@ export default function ChallengeManagementPage() {
   const router = useRouter();
   const eventId = params.id as string;
   const { showToast } = useToastStore();
+
+  const confirmResolveRef = useRef<((value: boolean) => void) | null>(null);
+  const [confirmState, setConfirmState] = useState<null | {
+    title: string;
+    description?: string;
+    confirmText?: string;
+    cancelText?: string;
+  }>(null);
+
+  const confirmOpen = confirmState !== null;
+
+  function requestConfirm(opts: {
+    title: string;
+    description?: string;
+    confirmText?: string;
+    cancelText?: string;
+  }) {
+    return new Promise<boolean>((resolve) => {
+      confirmResolveRef.current = resolve;
+      setConfirmState(opts);
+    });
+  }
+
+  function closeConfirm(result: boolean) {
+    const resolve = confirmResolveRef.current;
+    confirmResolveRef.current = null;
+    setConfirmState(null);
+    resolve?.(result);
+  }
 
   const [event, setEvent] = useState<EventType | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -154,7 +192,13 @@ export default function ChallengeManagementPage() {
   };
 
   const handleDeleteChallenge = async (challengeId: string) => {
-    if (!confirm('Challenge wirklich löschen?')) return;
+    const ok = await requestConfirm({
+      title: 'Challenge wirklich löschen?',
+      description: 'Kann nicht rückgängig gemacht werden.',
+      confirmText: 'Löschen',
+      cancelText: 'Abbrechen',
+    });
+    if (!ok) return;
     try {
       await api.delete(`/events/${eventId}/challenges/${challengeId}`);
       showToast('Challenge gelöscht', 'success');
@@ -223,7 +267,25 @@ export default function ChallengeManagementPage() {
 
   return (
     <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <Dialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{confirmState?.title}</DialogTitle>
+            {confirmState?.description ? <DialogDescription>{confirmState.description}</DialogDescription> : null}
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary" onClick={() => closeConfirm(false)}>
+                {confirmState?.cancelText || 'Abbrechen'}
+              </Button>
+            </DialogClose>
+            <Button variant="danger" onClick={() => closeConfirm(true)}>
+              {confirmState?.confirmText || 'Bestätigen'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -508,6 +570,7 @@ export default function ChallengeManagementPage() {
           </div>
         )}
       </div>
+      </Dialog>
 
       {/* Sticky Footer Navigation */}
       <DashboardFooter eventId={eventId} />

@@ -2,6 +2,7 @@
 
 import { Share2, Facebook, Instagram, MessageCircle, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useToastStore } from '@/store/toastStore';
 
 interface SocialShareProps {
   url: string;
@@ -11,6 +12,7 @@ interface SocialShareProps {
 }
 
 export default function SocialShare({ url, title = 'Event Foto', imageUrl, className = '' }: SocialShareProps) {
+  const { showToast } = useToastStore();
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
 
@@ -23,9 +25,14 @@ export default function SocialShare({ url, title = 'Event Foto', imageUrl, class
 
   const handleShare = (type: 'facebook' | 'whatsapp' | 'copy') => {
     if (type === 'copy') {
-      navigator.clipboard.writeText(url).then(() => {
-        alert('Link in Zwischenablage kopiert!');
-      });
+      navigator.clipboard
+        .writeText(url)
+        .then(() => {
+          showToast('Link kopiert', 'success');
+        })
+        .catch(() => {
+          showToast('Kopieren fehlgeschlagen', 'error');
+        });
       return;
     }
 

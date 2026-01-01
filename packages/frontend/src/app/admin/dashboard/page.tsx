@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Logo from '@/components/Logo';
 import { authApi } from '@/lib/auth';
@@ -12,11 +12,49 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const confirmResolveRef = useRef<((value: boolean) => void) | null>(null);
+  const [confirmState, setConfirmState] = useState<null | {
+    title: string;
+    description?: string;
+    confirmText?: string;
+    cancelText?: string;
+  }>(null);
+
+  const confirmOpen = confirmState !== null;
+
+  function requestConfirm(opts: {
+    title: string;
+    description?: string;
+    confirmText?: string;
+    cancelText?: string;
+  }) {
+    return new Promise<boolean>((resolve) => {
+      confirmResolveRef.current = resolve;
+      setConfirmState(opts);
+    });
+  }
+
+  function closeConfirm(result: boolean) {
+    const resolve = confirmResolveRef.current;
+    confirmResolveRef.current = null;
+    setConfirmState(null);
+    resolve?.(result);
+  }
 
   const sectionCardClass = 'bg-app-card rounded-2xl border border-app-border shadow-sm p-6';
 
@@ -774,10 +812,28 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div style={{ 
-      minHeight: '100vh',
-      backgroundColor: 'var(--app-bg)'
-    }}>
+    <Dialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{confirmState?.title}</DialogTitle>
+          {confirmState?.description ? <DialogDescription>{confirmState.description}</DialogDescription> : null}
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="secondary" onClick={() => closeConfirm(false)}>
+              {confirmState?.cancelText || 'Abbrechen'}
+            </Button>
+          </DialogClose>
+          <Button variant="danger" onClick={() => closeConfirm(true)}>
+            {confirmState?.confirmText || 'Bestätigen'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+
+      <div style={{ 
+        minHeight: '100vh',
+        backgroundColor: 'var(--app-bg)'
+      }}>
       {/* Header */}
       <header style={{
         borderBottom: '1px solid var(--app-border)',
@@ -925,7 +981,13 @@ export default function AdminDashboardPage() {
                             <ActionButton
                               variant="danger"
                               onClick={async () => {
-                                if (!confirm(`Paket deaktivieren? ${p.sku}`)) return;
+                                const ok = await requestConfirm({
+                                  title: `Paket deaktivieren? ${p.sku}`,
+                                  description: 'Das Paket wird deaktiviert und ist nicht mehr kaufbar.',
+                                  confirmText: 'Deaktivieren',
+                                  cancelText: 'Abbrechen',
+                                });
+                                if (!ok) return;
                                 setPackagesError(null);
                                 try {
                                   await api.delete(`/admin/package-definitions/${p.id}`);
@@ -1919,6 +1981,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </main>
-    </div>
+      </div>
+    </Dialog>
   );
 }

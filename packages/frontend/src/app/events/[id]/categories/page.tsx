@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
@@ -16,6 +16,15 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { IconButton } from '@/components/ui/IconButton';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 function isWizardMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -86,6 +95,35 @@ export default function CategoryManagementPage() {
   const router = useRouter();
   const eventId = params.id as string;
   const { showToast } = useToastStore();
+
+  const confirmResolveRef = useRef<((value: boolean) => void) | null>(null);
+  const [confirmState, setConfirmState] = useState<null | {
+    title: string;
+    description?: string;
+    confirmText?: string;
+    cancelText?: string;
+  }>(null);
+
+  const confirmOpen = confirmState !== null;
+
+  function requestConfirm(opts: {
+    title: string;
+    description?: string;
+    confirmText?: string;
+    cancelText?: string;
+  }) {
+    return new Promise<boolean>((resolve) => {
+      confirmResolveRef.current = resolve;
+      setConfirmState(opts);
+    });
+  }
+
+  function closeConfirm(result: boolean) {
+    const resolve = confirmResolveRef.current;
+    confirmResolveRef.current = null;
+    setConfirmState(null);
+    resolve?.(result);
+  }
 
   const wizardMode = isWizardMode();
 
@@ -226,7 +264,13 @@ export default function CategoryManagementPage() {
   };
 
   const handleDelete = async (categoryId: string) => {
-    if (!confirm('Album wirklich löschen?')) return;
+    const ok = await requestConfirm({
+      title: 'Album wirklich löschen?',
+      description: 'Alle Inhalte bleiben erhalten, aber das Album wird entfernt.',
+      confirmText: 'Löschen',
+      cancelText: 'Abbrechen',
+    });
+    if (!ok) return;
 
     try {
       await api.delete(`/events/${eventId}/categories/${categoryId}`);
@@ -279,7 +323,25 @@ export default function CategoryManagementPage() {
 
   return (
     <AppLayout showBackButton backUrl={wizardMode ? `/events/${eventId}/design?wizard=1` : `/events/${eventId}/dashboard`}>
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <Dialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{confirmState?.title}</DialogTitle>
+            {confirmState?.description ? <DialogDescription>{confirmState.description}</DialogDescription> : null}
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary" onClick={() => closeConfirm(false)}>
+                {confirmState?.cancelText || 'Abbrechen'}
+              </Button>
+            </DialogClose>
+            <Button variant="danger" onClick={() => closeConfirm(true)}>
+              {confirmState?.confirmText || 'Bestätigen'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {wizardMode && (
           <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-app-border bg-app-card p-4">
             <div className="min-w-0">
@@ -778,6 +840,7 @@ export default function CategoryManagementPage() {
           )}
         </div>
       </div>
+      </Dialog>
 
       {/* Sticky Footer Navigation */}
       <DashboardFooter eventId={eventId} />
@@ -787,9 +850,6 @@ export default function CategoryManagementPage() {
     </AppLayout>
   );
 }
-
-
-
 
 
 

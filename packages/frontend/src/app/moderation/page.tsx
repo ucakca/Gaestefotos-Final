@@ -1,12 +1,53 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { Photo, Event as EventType } from '@gaestefotos/shared';
 import { Check, X, Trash2 } from 'lucide-react';
+import { useToastStore } from '@/store/toastStore';
+import { Button } from '@/components/ui/Button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function ModerationPage() {
+  const { showToast } = useToastStore();
+  const confirmResolveRef = useRef<((value: boolean) => void) | null>(null);
+  const [confirmState, setConfirmState] = useState<null | {
+    title: string;
+    description?: string;
+    confirmText?: string;
+    cancelText?: string;
+  }>(null);
+
+  const confirmOpen = confirmState !== null;
+
+  function requestConfirm(opts: {
+    title: string;
+    description?: string;
+    confirmText?: string;
+    cancelText?: string;
+  }) {
+    return new Promise<boolean>((resolve) => {
+      confirmResolveRef.current = resolve;
+      setConfirmState(opts);
+    });
+  }
+
+  function closeConfirm(result: boolean) {
+    const resolve = confirmResolveRef.current;
+    confirmResolveRef.current = null;
+    setConfirmState(null);
+    resolve?.(result);
+  }
+
   const [pendingPhotos, setPendingPhotos] = useState<(Photo & { event: EventType })[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
@@ -54,8 +95,9 @@ export default function ModerationPage() {
       if (selectedPhoto?.id === photoId) {
         setSelectedPhoto(null);
       }
+      showToast('Foto freigegeben', 'success');
     } catch (err: any) {
-      alert('Fehler: ' + (err.response?.data?.error || 'Unbekannter Fehler'));
+      showToast(String(err.response?.data?.error || 'Unbekannter Fehler'), 'error');
     }
   };
 
@@ -66,13 +108,20 @@ export default function ModerationPage() {
       if (selectedPhoto?.id === photoId) {
         setSelectedPhoto(null);
       }
+      showToast('Foto abgelehnt', 'success');
     } catch (err: any) {
-      alert('Fehler: ' + (err.response?.data?.error || 'Unbekannter Fehler'));
+      showToast(String(err.response?.data?.error || 'Unbekannter Fehler'), 'error');
     }
   };
 
   const handleDelete = async (photoId: string) => {
-    if (!confirm('Foto wirklich löschen?')) return;
+    const ok = await requestConfirm({
+      title: 'Foto wirklich löschen?',
+      description: 'Das Foto wird gelöscht und ist nicht mehr moderierbar.',
+      confirmText: 'Löschen',
+      cancelText: 'Abbrechen',
+    });
+    if (!ok) return;
 
     try {
       await api.delete(`/photos/${photoId}`);
@@ -80,8 +129,9 @@ export default function ModerationPage() {
       if (selectedPhoto?.id === photoId) {
         setSelectedPhoto(null);
       }
+      showToast('Foto gelöscht', 'success');
     } catch (err: any) {
-      alert('Fehler: ' + (err.response?.data?.error || 'Unbekannter Fehler'));
+      showToast(String(err.response?.data?.error || 'Unbekannter Fehler'), 'error');
     }
   };
 
@@ -94,7 +144,25 @@ export default function ModerationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-app-bg">
+    <Dialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{confirmState?.title}</DialogTitle>
+          {confirmState?.description ? <DialogDescription>{confirmState.description}</DialogDescription> : null}
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="secondary" onClick={() => closeConfirm(false)}>
+              {confirmState?.cancelText || 'Abbrechen'}
+            </Button>
+          </DialogClose>
+          <Button variant="danger" onClick={() => closeConfirm(true)}>
+            {confirmState?.confirmText || 'Bestätigen'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+
+      <div className="min-h-screen bg-app-bg">
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -232,7 +300,8 @@ export default function ModerationPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </Dialog>
   );
 }
 
