@@ -142,6 +142,13 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 
 - ✅ Big end-to-end Testlauf vor Launch
 
+- ❌ Security Hardening: 2FA (TOTP)
+  - Ziel: **ADMIN/SUPERADMIN verpflichtend**, HOST optional (Opt-in)
+  - Backend: Setup/Verify/Disable Endpoints + Recovery Codes (One-Time)
+  - DB: `twoFactorEnabled`, `twoFactorSecretEncrypted`, `twoFactorRecoveryCodesHashed` (oder äquivalent)
+  - UX: QR Setup + Code Verify + “Recovery Codes speichern” + Reauth fürs Deaktivieren
+  - Policy: Rate-Limits + Lockout/Delay bei falschen Codes
+
 ## ❌ Later
 
 
