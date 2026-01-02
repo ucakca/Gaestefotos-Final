@@ -644,7 +644,7 @@ export default function ModernPhotoGrid({
                     size="sm"
                     aria-label="Mehr"
                     title="Mehr"
-                    className="p-1 hover:bg-app-bg rounded text-app-muted"
+                    className="p-1 text-app-muted"
                   />
                 </div>
 
