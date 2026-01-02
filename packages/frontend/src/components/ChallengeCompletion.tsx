@@ -239,9 +239,9 @@ export default function ChallengeCompletion({
           ) : (
             <Button
               onClick={() => setShowUploadModal(true)}
-              variant="ghost"
+              variant="primary"
               size="sm"
-              className="mt-2 px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 flex items-center gap-2 text-sm font-medium transition-colors"
+              className="mt-2 gap-2 text-sm font-medium"
             >
               <Trophy className="w-4 h-4" />
               Challenge erfüllen
@@ -329,9 +329,9 @@ export default function ChallengeCompletion({
                       <Button
                         onClick={startCamera}
                         disabled={usingCamera}
-                        variant="ghost"
+                        variant="primary"
                         size="sm"
-                        className="flex-1 px-4 py-3 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="flex-1 gap-2 disabled:opacity-50"
                       >
                         <Camera className="w-5 h-5" />
                         Kamera
@@ -357,9 +357,8 @@ export default function ChallengeCompletion({
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4">
                       <Button
                         onClick={capturePhoto}
-                        variant="ghost"
+                        variant="primary"
                         size="sm"
-                        className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90"
                       >
                         Foto aufnehmen
                       </Button>
@@ -396,9 +395,9 @@ export default function ChallengeCompletion({
                   <Button
                     onClick={handleUpload}
                     disabled={uploading || !uploaderName.trim()}
-                    variant="ghost"
+                    variant="primary"
                     size="sm"
-                    className="flex-1 px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 disabled:opacity-50"
+                    className="flex-1 disabled:opacity-50"
                   >
                     {uploading ? 'Wird hochgeladen...' : 'Hochladen'}
                   </Button>
