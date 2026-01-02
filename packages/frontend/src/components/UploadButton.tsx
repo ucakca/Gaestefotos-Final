@@ -305,10 +305,10 @@ export default function UploadButton({
             setShowModal(true);
           }}
           disabled={disabled}
-          variant="ghost"
+          variant="primary"
           size="sm"
           className={`aspect-square rounded-sm overflow-hidden group relative ${
-            disabled ? 'bg-app-border cursor-not-allowed' : 'bg-gradient-to-br from-tokens-brandGreen to-tokens-brandPeach'
+            disabled ? 'bg-app-border cursor-not-allowed' : ''
           } p-0 h-auto`}
           title={disabled ? disabledReason : undefined}
         >
