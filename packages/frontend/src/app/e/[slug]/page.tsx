@@ -646,7 +646,8 @@ export default function PublicEventPage() {
             </div>
             <Button
               type="submit"
-              className="w-full px-4 py-2.5 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90 font-medium text-sm"
+              variant="primary"
+              className="w-full px-4 py-2.5 font-medium text-sm"
             >
               Zugriff erhalten
             </Button>

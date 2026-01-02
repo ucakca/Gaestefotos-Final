@@ -315,12 +315,9 @@ export default function ChallengeManagementPage() {
                     categoryId: null,
                   });
                 }}
+                variant="primary"
                 disabled={!challengesEnabled}
-                className={
-                  challengesEnabled
-                    ? 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
-                    : 'bg-app-border text-app-muted cursor-not-allowed'
-                }
+                className={challengesEnabled ? '' : 'bg-app-border text-app-muted cursor-not-allowed'}
               >
                 <Plus className="h-5 w-5" />
                 Challenge hinzufügen
@@ -427,13 +424,12 @@ export default function ChallengeManagementPage() {
                         setShowAddForm(false);
                         cancelEdit();
                       }}
-                      className="border border-app-border bg-app-card hover:bg-app-bg"
                     >
                       Abbrechen
                     </Button>
                   </motion.div>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button type="submit" className="bg-tokens-brandGreen text-app-bg hover:opacity-90 shadow-sm">
+                    <Button type="submit" variant="primary" className="shadow-sm">
                       {editingChallenge ? 'Speichern' : 'Hinzufügen'}
                     </Button>
                   </motion.div>

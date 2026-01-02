@@ -538,7 +538,7 @@ export default function QrStylerPage() {
               <Button
                 type="button"
                 onClick={handleDownloadPng}
-                className="bg-tokens-brandGreen text-app-bg hover:opacity-90"
+                variant="primary"
                 disabled={!computedSvg.svg || exportingPng}
               >
                 <ImageIcon className="h-4 w-4" />
@@ -649,11 +649,7 @@ export default function QrStylerPage() {
                     key={f}
                     type="button"
                     onClick={() => setFormat(f)}
-                    className={
-                      format === f
-                        ? 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
-                        : 'border border-app-border bg-app-card text-app-fg hover:bg-app-bg'
-                    }
+                    variant={format === f ? 'primary' : 'secondary'}
                   >
                     {f}
                   </Button>

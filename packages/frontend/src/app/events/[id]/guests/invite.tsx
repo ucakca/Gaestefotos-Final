@@ -96,7 +96,8 @@ export default function InviteModal({
             type="button"
             onClick={handleSend}
             disabled={sending || !email.trim()}
-            className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            variant="primary"
+            className="px-4 py-2 rounded-md disabled:cursor-not-allowed flex items-center gap-2"
           >
             {sending ? (
               <>

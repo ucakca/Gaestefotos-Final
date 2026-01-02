@@ -150,7 +150,8 @@ export default function NewEventPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 rounded-lg text-app-bg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-tokens-brandGreen hover:opacity-90"
+              variant="primary"
+              className="px-6 py-3 rounded-lg font-medium transition-colors disabled:cursor-not-allowed"
             >
               {loading ? 'Erstellen...' : 'Event erstellen'}
             </Button>
