@@ -56,7 +56,7 @@ export default function AlbumNavigation({
                 variant="ghost"
                 size="sm"
                 className={`h-auto p-0 flex flex-col items-center gap-1.5 flex-shrink-0 min-w-[64px] ${
-                  isSelected ? 'opacity-100' : 'opacity-70'
+                  isSelected ? '' : 'text-app-muted'
                 }`}
               >
                 {/* Album Icon - Instagram Stories Style */}
