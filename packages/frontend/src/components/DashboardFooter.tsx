@@ -11,6 +11,7 @@ import {
   Palette,
   Video,
 } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 interface DashboardFooterProps {
   eventId: string;
@@ -19,6 +20,8 @@ interface DashboardFooterProps {
 
 export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterProps) {
   const pathname = usePathname();
+
+  const MotionButton = motion(Button);
 
   const menuItems = [
     {
@@ -77,25 +80,25 @@ export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterP
             const active = isActive(item.path);
             
             return (
-              <Link key={item.id} href={item.path} className="flex-shrink-0">
-                <motion.div
-                  whileTap={{ scale: 0.9 }}
-                  className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[70px] ${
-                    active
-                      ? 'bg-tokens-brandGreen text-app-bg shadow-md'
-                      : 'text-app-muted hover:bg-app-bg'
-                  }`}
-                >
+              <MotionButton
+                key={item.id}
+                asChild
+                whileTap={{ scale: 0.9 }}
+                variant={active ? 'primary' : 'ghost'}
+                size="sm"
+                className={`h-auto flex-shrink-0 flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[70px] ${
+                  active ? 'shadow-md' : 'text-app-muted'
+                }`}
+              >
+                <Link href={item.path}>
                   <div className="relative">
-                    <Icon className={`w-5 h-5 ${active ? 'text-app-bg' : 'text-app-muted'}`} />
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <span className={`text-xs font-medium whitespace-nowrap ${
-                    active ? 'text-app-bg' : 'text-app-muted'
-                  }`}>
+                  <span className="text-xs font-medium whitespace-nowrap">
                     {item.label}
                   </span>
-                </motion.div>
-              </Link>
+                </Link>
+              </MotionButton>
             );
           })}
         </div>

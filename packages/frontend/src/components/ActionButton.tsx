@@ -25,15 +25,8 @@ export default function ActionButton({
   children,
   disabled = false,
 }: ActionButtonProps) {
-  const baseClasses = 'flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors whitespace-nowrap';
-  
-  const variantClasses = {
-    primary: 'bg-tokens-brandGreen text-app-bg hover:opacity-90',
-    secondary: 'bg-app-bg text-app-fg hover:opacity-90',
-    danger: 'bg-app-bg text-[var(--status-danger)] border border-[var(--status-danger)] hover:opacity-90',
-  };
-
-  const classes = `${baseClasses} ${variantClasses[variant]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`;
+  const baseClasses = 'flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-medium whitespace-nowrap';
+  const classes = `${baseClasses} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`;
 
   // Always show text (responsive with smaller text on mobile)
   const content = (
@@ -56,7 +49,7 @@ export default function ActionButton({
     <Button
       onClick={onClick}
       disabled={disabled}
-      variant="ghost"
+      variant={variant}
       size="sm"
       className={classes}
     >
