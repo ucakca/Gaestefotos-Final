@@ -639,7 +639,6 @@ export default function EventDashboardPage() {
                   onClick={async () => {
                     await navigator.clipboard.writeText(upgradeUrl);
                   }}
-                  className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                 >
                   Link kopieren
                 </Button>
@@ -669,7 +668,6 @@ export default function EventDashboardPage() {
                   onClick={async () => {
                     await navigator.clipboard.writeText(shareUrl);
                   }}
-                  className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                 >
                   Link kopieren
                 </Button>
@@ -710,7 +708,6 @@ export default function EventDashboardPage() {
                 type="button"
                 variant="secondary"
                 onClick={loadInvitations}
-                className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                 disabled={invitationsLoading}
               >
                 Aktualisieren
