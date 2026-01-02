@@ -35,6 +35,8 @@ export type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof iconButtonVariants> & {
     icon: ReactNode;
     asChild?: boolean;
+    'aria-label': string;
+    title: string;
   };
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(

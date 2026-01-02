@@ -131,6 +131,7 @@ export default function CameraPage() {
         variant="ghost"
         size="lg"
         aria-label="Zurück"
+        title="Zurück"
         className="absolute top-4 left-4 z-20 p-2 bg-app-fg/50 rounded-full"
       />
 

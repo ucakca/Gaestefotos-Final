@@ -334,6 +334,7 @@ export default function GuestManagementPage() {
                         variant="ghost"
                         size="sm"
                         aria-label="Gast löschen"
+                        title="Gast löschen"
                         onClick={() => handleDelete(guest.id)}
                         className="text-[var(--status-danger)]"
                       />
