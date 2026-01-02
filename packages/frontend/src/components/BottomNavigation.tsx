@@ -173,12 +173,10 @@ export default function BottomNavigation({
             <MotionButton
               whileTap={{ scale: 0.9 }}
               onClick={() => handleViewChange('feed')}
-              variant="ghost"
+              variant={activeView === 'feed' ? 'primary' : 'ghost'}
               size="sm"
               className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                activeView === 'feed'
-                  ? 'bg-tokens-brandGreen text-app-bg'
-                  : 'text-app-muted hover:bg-app-bg'
+                activeView === 'feed' ? '' : 'text-app-muted hover:bg-app-bg'
               }`}
             >
               <Grid3x3 className="w-5 h-5" />
@@ -195,12 +193,10 @@ export default function BottomNavigation({
                 }
                 handleViewChange('challenges');
               }}
-              variant="ghost"
+              variant={activeView === 'challenges' ? 'primary' : 'ghost'}
               size="sm"
               className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                activeView === 'challenges'
-                  ? 'bg-tokens-brandGreen text-app-bg'
-                  : 'text-app-muted hover:bg-app-bg'
+                activeView === 'challenges' ? '' : 'text-app-muted hover:bg-app-bg'
               }`}
             >
               <Trophy className="w-5 h-5" />
@@ -211,12 +207,10 @@ export default function BottomNavigation({
             <MotionButton
               whileTap={{ scale: 0.9 }}
               onClick={() => handleViewChange('guestbook')}
-              variant="ghost"
+              variant={activeView === 'guestbook' ? 'primary' : 'ghost'}
               size="sm"
               className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                activeView === 'guestbook'
-                  ? 'bg-tokens-brandGreen text-app-bg'
-                  : 'text-app-muted hover:bg-app-bg'
+                activeView === 'guestbook' ? '' : 'text-app-muted hover:bg-app-bg'
               }`}
             >
               <BookOpen className="w-5 h-5" />
@@ -227,12 +221,10 @@ export default function BottomNavigation({
             <MotionButton
               whileTap={{ scale: 0.9 }}
               onClick={() => handleViewChange('info')}
-              variant="ghost"
+              variant={activeView === 'info' ? 'primary' : 'ghost'}
               size="sm"
               className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                activeView === 'info'
-                  ? 'bg-tokens-brandGreen text-app-bg'
-                  : 'text-app-muted hover:bg-app-bg'
+                activeView === 'info' ? '' : 'text-app-muted hover:bg-app-bg'
               }`}
             >
               <Info className="w-5 h-5" />

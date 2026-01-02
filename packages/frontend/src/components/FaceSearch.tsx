@@ -218,9 +218,9 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowModal(true)}
-          variant="ghost"
+          variant="primary"
           size="sm"
-          className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg font-medium flex items-center gap-2 hover:opacity-90 transition-colors"
+          className="px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
         >
           <Search className="w-5 h-5" />
           Finde Bilder von mir
@@ -313,9 +313,9 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={capturePhoto}
-                          variant="ghost"
+                          variant="primary"
                           size="sm"
-                          className="flex-1 px-4 py-3 bg-tokens-brandGreen text-app-bg rounded-lg font-medium hover:opacity-90 transition-colors"
+                          className="flex-1 px-4 py-3 rounded-lg font-medium transition-colors"
                         >
                           Foto aufnehmen
                         </MotionButton>
@@ -386,9 +386,9 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                       whileTap={{ scale: 0.95 }}
                       onClick={searchPhotos}
                       disabled={searching || !consentAccepted}
-                      variant="ghost"
+                      variant="primary"
                       size="sm"
-                      className="flex-1 px-4 py-3 bg-tokens-brandGreen text-app-bg rounded-lg font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {searching ? (
                         <>

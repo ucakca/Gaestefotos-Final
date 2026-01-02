@@ -439,10 +439,10 @@ export default function UploadButton({
                   whileTap={{ scale: 0.98 }}
                   onClick={capturePhoto}
                   disabled={!canPickFiles}
-                  variant="ghost"
+                  variant={canPickFiles ? 'primary' : 'secondary'}
                   size="sm"
                   className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition-colors ${
-                    !canPickFiles ? 'bg-app-border text-app-muted cursor-not-allowed' : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
+                    !canPickFiles ? 'cursor-not-allowed opacity-60' : ''
                   } h-auto`}
                 >
                   <Camera className="w-5 h-5" />

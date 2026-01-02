@@ -181,9 +181,9 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setShowModal(true)}
-        variant="ghost"
+        variant="primary"
         size="sm"
-        className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg font-medium flex items-center gap-2 hover:opacity-90 transition-colors"
+        className="px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
       >
         <Upload className="w-4 h-4" />
         <span>Foto hinzufügen</span>
@@ -374,9 +374,9 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   disabled={files.some(f => f.uploading)}
-                  variant="ghost"
+                  variant="primary"
                   size="sm"
-                  className="w-full px-4 py-3 bg-tokens-brandGreen text-app-bg rounded-lg font-medium hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Hochladen
                 </MotionButton>
