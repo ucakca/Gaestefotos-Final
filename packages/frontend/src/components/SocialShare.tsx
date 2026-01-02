@@ -47,6 +47,7 @@ export default function SocialShare({ url, title = 'Event Foto', imageUrl: _imag
         size="sm"
         className="border border-app-border bg-app-card hover:bg-app-bg"
         aria-label="Auf Facebook teilen"
+        title="Auf Facebook teilen"
         icon={<Facebook className="h-5 w-5" />}
       />
       <IconButton
@@ -55,6 +56,7 @@ export default function SocialShare({ url, title = 'Event Foto', imageUrl: _imag
         size="sm"
         className="border border-app-border bg-app-card hover:bg-app-bg"
         aria-label="Auf WhatsApp teilen"
+        title="Auf WhatsApp teilen"
         icon={<MessageCircle className="h-5 w-5" />}
       />
       <IconButton
@@ -63,6 +65,7 @@ export default function SocialShare({ url, title = 'Event Foto', imageUrl: _imag
         size="sm"
         className="border border-app-border bg-app-card hover:bg-app-bg"
         aria-label="Link kopieren"
+        title="Link kopieren"
         icon={<Copy className="h-5 w-5" />}
       />
     </div>

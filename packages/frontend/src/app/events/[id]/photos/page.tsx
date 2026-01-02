@@ -981,6 +981,8 @@ export default function PhotoManagementPage() {
                 }
               }
             }}
+            aria-label="Alle Fotos herunterladen (ZIP)"
+            title="Alle Fotos herunterladen (ZIP)"
             className="fixed bottom-24 right-6 w-14 h-14 bg-tokens-brandGreen text-app-bg rounded-full shadow-lg flex items-center justify-center z-40 hover:opacity-90 transition-colors"
           >
             <FileDown className="w-6 h-6" />
