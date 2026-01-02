@@ -159,9 +159,9 @@ export default function InstagramUploadButton({
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
         disabled={disabled}
-        variant="ghost"
+        variant="primary"
         size="sm"
-        className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-tokens-brandGreen to-tokens-brandPeach rounded-full shadow-lg flex items-center justify-center text-app-bg z-40 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center z-40 disabled:opacity-50 disabled:cursor-not-allowed p-0"
       >
         <Camera className="w-6 h-6" />
       </MotionButton>
@@ -223,9 +223,9 @@ export default function InstagramUploadButton({
             onClick={capturePhoto}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            variant="ghost"
+            variant="primary"
             size="sm"
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-tokens-brandGreen to-tokens-brandPeach text-app-bg rounded-lg font-medium mb-4"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium mb-4 h-auto"
           >
             <Camera className="w-5 h-5" />
             <span>Foto mit Kamera aufnehmen</span>
