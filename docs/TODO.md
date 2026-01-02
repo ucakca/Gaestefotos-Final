@@ -148,6 +148,13 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
   - Optionaler Fallback (wenn nötig): **E-Mail One-Time-Code** (nur als Backup, nicht als Primary)
   - HOST (psychologischer Trigger / low-friction): **Code per E-Mail** (default) + optional **SMS/WhatsApp**
     - SMS/WhatsApp nur, wenn Provider/Integration vorhanden ist (z.B. Twilio/Vonage/WhatsApp Business) + Abuse-Prevention
+  - Provider-Vorbereitung (SMS/WhatsApp/E-Mail Codes)
+    - Interface/Service: `OtpDeliveryProvider` (send OTP, status, provider name)
+    - Secrets/Config: ENVs + Secret-Store (API Keys), Provider-Auswahl per Feature-Flag/Config
+    - Templates: transaktionale Text-Vorlagen (DE/EN), keine sensiblen Daten loggen
+    - Abuse-Prevention: Rate-Limits pro User/IP, Cooldowns, Max-Attempts, Replay-Schutz
+    - Audit/Observability: Audit-Events (OTP angefordert/gesendet/verifiziert), Metriken + Alerts
+    - Fallback-Policy: wenn Provider down → E-Mail/Recovery Codes/Support Flow
   - Backend: Setup/Verify/Disable Endpoints + Recovery Codes (One-Time)
   - DB: `twoFactorEnabled`, `twoFactorSecretEncrypted`, `twoFactorRecoveryCodesHashed` (oder äquivalent)
   - UX: QR Setup + Code Verify + “Recovery Codes speichern” + Reauth fürs Deaktivieren
