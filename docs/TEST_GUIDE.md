@@ -99,3 +99,55 @@ curl -fsS http://localhost:8002/api/health
 ```bash
 curl -I http://localhost:3002
 ```
+
+---
+
+## Produktiv Smoke (Prod)
+
+Hinweis: In der Server-Umgebung ist „localhost im Browser“ oft nicht sinnvoll. Für Prod-Checks nutze eine **echte, öffentliche URL** (oder eine interne Domain/Ingress-URL).
+
+### 1) Verfügbarkeit (HTTP)
+
+- Frontend (HTML)
+  - Beispiel:
+
+    ```bash
+    curl -I https://<FRONTEND_DOMAIN>/
+    ```
+
+- Backend Health (falls öffentlich erreichbar)
+  - Beispiel:
+
+    ```bash
+    curl -fsS https://<FRONTEND_DOMAIN>/api/health
+    ```
+
+### 2) Smoke: Host (A) – kritische Wege
+
+- Login
+- Dashboard lädt
+- Event-Dashboard lädt
+- Share/Invite Link erzeugen + kopieren
+- Upload Foto/Video (mind. 1x)
+- Moderation (falls aktiv): approve/reject
+- Download (Einzel + ZIP, wenn Storage nicht locked)
+
+### 3) Smoke: Guest (B) – kritische Wege
+
+- Öffnen per `/e/<slug>` oder `/e2/<slug>` (je nach kanonischer URL im Projekt)
+- Upload (Name, optional Album)
+- Gästebuch: Text-Eintrag + optional Foto/Audio
+- Stories/Photo-Viewer Navigation (falls vorhanden)
+
+### 4) Storage-Lock Szenario
+
+- Gelocktes Event:
+  - Blur/Preview sichtbar
+  - Upload CTA disabled + Reason
+  - Download deaktiviert
+
+### 5) Monitoring / Logs (nach Smoke)
+
+- Backend Logs: 5xx, Upload/Storage-Lock Errors
+- Frontend Browser-Konsole: ChunkLoadError / React Errors
+- Server Metrics (falls vorhanden): CPU/Mem, 5xx Rate

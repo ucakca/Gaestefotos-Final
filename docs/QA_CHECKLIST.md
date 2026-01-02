@@ -15,6 +15,35 @@ Diese Checklist ist zum schnellen „Abhaken“ gedacht. Details & Setup siehe `
 - [ ] Backend Health ok: `curl -fsS http://localhost:8002/api/health`
 - [ ] Frontend erreichbar: `curl -I http://localhost:3002`
 
+---
+
+## Produktiv Smoke (Prod)
+
+Siehe Details: `docs/TEST_GUIDE.md` → „Produktiv Smoke (Prod)“.
+
+- [ ] Frontend erreichbar (HTTP 200/30x): `curl -I https://<FRONTEND_DOMAIN>/`
+- [ ] Backend Health ok (falls exposed): `curl -fsS https://<FRONTEND_DOMAIN>/api/health`
+
+### Host (A)
+
+- [ ] Login
+- [ ] Dashboard lädt
+- [ ] Event Dashboard lädt
+- [ ] Invite/Share-Link erzeugen + öffnen
+- [ ] Upload Foto/Video (1x)
+- [ ] Download (Einzel + ZIP) wenn nicht gelockt
+
+### Guest (B)
+
+- [ ] Guest-Seite öffnet (`/e/<slug>` oder `/e2/<slug>`)
+- [ ] Upload (Name + optional Album)
+- [ ] Gästebuch Eintrag (Text, optional Foto/Audio)
+
+### Monitoring
+
+- [ ] Server/Backend Logs: keine 5xx-Spikes
+- [ ] Browser-Konsole: keine ChunkLoadErrors
+
 ## Host Tests (A)
 
 ### Login / Dashboard
