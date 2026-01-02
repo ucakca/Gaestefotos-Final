@@ -766,6 +766,7 @@ export default function CategoryManagementPage() {
                           variant="ghost"
                           size="sm"
                           aria-label={expandedCategory === category.id ? 'Details schließen' : 'Details öffnen'}
+                          title={expandedCategory === category.id ? 'Details schließen' : 'Details öffnen'}
                           onClick={() =>
                             setExpandedCategory(expandedCategory === category.id ? null : category.id)
                           }
@@ -823,6 +824,7 @@ export default function CategoryManagementPage() {
                           variant="ghost"
                           size="sm"
                           aria-label="Album bearbeiten"
+                          title="Album bearbeiten"
                           onClick={() => startEdit(category)}
                           className="text-app-fg"
                         />
@@ -831,6 +833,7 @@ export default function CategoryManagementPage() {
                           variant="ghost"
                           size="sm"
                           aria-label="Album löschen"
+                          title="Album löschen"
                           onClick={() => handleDelete(category.id)}
                           className="text-[var(--status-danger)]"
                         />

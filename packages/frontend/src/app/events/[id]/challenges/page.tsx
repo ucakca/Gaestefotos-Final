@@ -477,6 +477,7 @@ export default function ChallengeManagementPage() {
                         variant="ghost"
                         size="sm"
                         aria-label="Challenge bearbeiten"
+                        title="Challenge bearbeiten"
                         onClick={() => startEdit(challenge)}
                         className="text-tokens-brandGreen"
                       />
@@ -485,6 +486,7 @@ export default function ChallengeManagementPage() {
                         variant="ghost"
                         size="sm"
                         aria-label="Challenge löschen"
+                        title="Challenge löschen"
                         onClick={() => handleDeleteChallenge(challenge.id)}
                         className="text-[var(--status-danger)]"
                       />
@@ -532,6 +534,7 @@ export default function ChallengeManagementPage() {
                               variant="ghost"
                               size="sm"
                               aria-label="Auf andere Alben kopieren"
+                              title="Auf andere Alben kopieren"
                               onClick={() => handleCopyChallenge(challenge.id)}
                               className="text-tokens-brandGreen"
                             />
@@ -540,6 +543,7 @@ export default function ChallengeManagementPage() {
                               variant="ghost"
                               size="sm"
                               aria-label="Challenge bearbeiten"
+                              title="Challenge bearbeiten"
                               onClick={() => startEdit(challenge)}
                               className="text-tokens-brandGreen"
                             />
@@ -548,6 +552,7 @@ export default function ChallengeManagementPage() {
                               variant="ghost"
                               size="sm"
                               aria-label="Challenge löschen"
+                              title="Challenge löschen"
                               onClick={() => handleDeleteChallenge(challenge.id)}
                               className="text-[var(--status-danger)]"
                             />
