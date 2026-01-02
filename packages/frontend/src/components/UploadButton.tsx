@@ -261,13 +261,11 @@ export default function UploadButton({
           }}
           disabled={disabled}
           title={disabled ? disabledReason : undefined}
-          variant="ghost"
+          variant="secondary"
           size="sm"
-          className={`w-14 h-14 rounded-full shadow-lg border flex items-center justify-center transition-colors ${
-            disabled
-              ? 'bg-app-bg text-app-muted border-app-border cursor-not-allowed'
-              : 'bg-app-card text-app-fg border-app-border hover:bg-app-bg'
-          } p-0`}
+          className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center p-0 ${
+            disabled ? 'cursor-not-allowed' : ''
+          }`}
         >
           <Plus className="w-6 h-6" strokeWidth={3} />
         </MotionButton>
@@ -283,13 +281,11 @@ export default function UploadButton({
           }}
           disabled={disabled}
           title={disabled ? disabledReason : undefined}
-          variant="ghost"
+          variant="secondary"
           size="sm"
-          className={`w-full rounded-2xl px-4 py-3 flex items-center justify-center gap-2 font-semibold shadow-sm border transition-colors ${
-            disabled
-              ? 'bg-app-bg text-app-muted border-app-border cursor-not-allowed'
-              : 'bg-app-card text-app-fg border-app-border hover:bg-app-bg'
-          } h-auto`}
+          className={`w-full rounded-2xl px-4 py-3 flex items-center justify-center gap-2 font-semibold shadow-sm h-auto ${
+            disabled ? 'cursor-not-allowed' : ''
+          }`}
         >
           <Upload className="w-5 h-5" />
           <span className="truncate">{buttonLabel}</span>
