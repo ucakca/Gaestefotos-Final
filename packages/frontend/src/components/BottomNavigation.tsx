@@ -175,8 +175,8 @@ export default function BottomNavigation({
               onClick={() => handleViewChange('feed')}
               variant={activeView === 'feed' ? 'primary' : 'ghost'}
               size="sm"
-              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                activeView === 'feed' ? '' : 'text-app-muted hover:bg-app-bg'
+              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full ${
+                activeView === 'feed' ? '' : 'text-app-muted'
               }`}
             >
               <Grid3x3 className="w-5 h-5" />
@@ -195,8 +195,8 @@ export default function BottomNavigation({
               }}
               variant={activeView === 'challenges' ? 'primary' : 'ghost'}
               size="sm"
-              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                activeView === 'challenges' ? '' : 'text-app-muted hover:bg-app-bg'
+              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full ${
+                activeView === 'challenges' ? '' : 'text-app-muted'
               }`}
             >
               <Trophy className="w-5 h-5" />
@@ -209,8 +209,8 @@ export default function BottomNavigation({
               onClick={() => handleViewChange('guestbook')}
               variant={activeView === 'guestbook' ? 'primary' : 'ghost'}
               size="sm"
-              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                activeView === 'guestbook' ? '' : 'text-app-muted hover:bg-app-bg'
+              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full ${
+                activeView === 'guestbook' ? '' : 'text-app-muted'
               }`}
             >
               <BookOpen className="w-5 h-5" />
@@ -223,8 +223,8 @@ export default function BottomNavigation({
               onClick={() => handleViewChange('info')}
               variant={activeView === 'info' ? 'primary' : 'ghost'}
               size="sm"
-              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full transition-colors ${
-                activeView === 'info' ? '' : 'text-app-muted hover:bg-app-bg'
+              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full ${
+                activeView === 'info' ? '' : 'text-app-muted'
               }`}
             >
               <Info className="w-5 h-5" />
