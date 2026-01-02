@@ -149,9 +149,17 @@ Diese Flags sind in `featuresConfig` bereits im Code vorgesehen, aber nicht (ode
 
 ## Defaults (wo festgelegt?)
 
-- Beim Event Create/Init:
+- Beim Event Create:
   - `packages/backend/src/routes/events.ts`
-    - Default Object enthält: `showGuestlist`, `mysteryMode`, `allowUploads`, `moderationRequired`, `allowDownloads`
+    - `featuresConfig` wird via `normalizeEventFeaturesConfig(...)` gespeichert.
+    - Default Object enthält (mindestens): `showGuestlist`, `mysteryMode`, `allowUploads`, `moderationRequired`, `allowDownloads`
+
+- Bei Event Updates (PATCH/PUT):
+  - `packages/backend/src/routes/events.ts`
+    - Wenn `featuresConfig` im Request enthalten ist, wird **merge + normalize** angewendet:
+      - `merged = { ...existingEvent.featuresConfig, ...incomingPartialFeaturesConfig }`
+      - `featuresConfig = normalizeEventFeaturesConfig(merged)`
+    - Ergebnis: Partial Updates überschreiben nur die mitgesendeten Keys, fehlende Keys bleiben stabil/valid.
 
 ---
 
