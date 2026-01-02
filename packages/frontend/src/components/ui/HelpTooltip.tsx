@@ -34,6 +34,7 @@ export default function HelpTooltip({ title, content, className }: HelpTooltipPr
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={title ? `Hilfe: ${title}` : 'Hilfe'}
+        title={title ? `Hilfe: ${title}` : 'Hilfe'}
         className="inline-flex items-center justify-center w-[22px] h-[22px] rounded-full border border-app-border bg-app-card text-tokens-brandGreen font-extrabold text-[12px] leading-[20px]"
       >
         ?
