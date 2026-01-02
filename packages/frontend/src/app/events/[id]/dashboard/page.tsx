@@ -837,7 +837,6 @@ export default function EventDashboardPage() {
                               variant="secondary"
                               onClick={cancelEditInvitation}
                               data-testid={`invitation-cancel-${inv.id}`}
-                              className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                               disabled={isSaving}
                             >
                               Abbrechen
@@ -849,7 +848,6 @@ export default function EventDashboardPage() {
                             variant="secondary"
                             onClick={() => startEditInvitation(inv)}
                             data-testid={`invitation-edit-${inv.id}`}
-                            className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                           >
                             Bearbeiten
                           </Button>
@@ -861,7 +859,6 @@ export default function EventDashboardPage() {
                             onClick={async () => {
                               await copyToClipboard(shortUrl);
                             }}
-                            className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                           >
                             Link kopieren
                           </Button>
@@ -871,7 +868,6 @@ export default function EventDashboardPage() {
                           type="button"
                           variant="secondary"
                           onClick={() => generateNewInvitationShortLink(inv.id)}
-                          className="border border-app-border bg-app-bg text-app-fg hover:opacity-90 disabled:opacity-50"
                           disabled={isGeneratingShortLink}
                         >
                           {isGeneratingShortLink ? 'Erzeuge…' : 'Neuen Shortlink'}
@@ -883,7 +879,6 @@ export default function EventDashboardPage() {
                             onClick={async () => {
                               await copyToClipboard(publicUrl, 'Direkt-Link kopiert');
                             }}
-                            className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                           >
                             Direkt-Link kopieren
                           </Button>
@@ -902,7 +897,6 @@ export default function EventDashboardPage() {
                             type="button"
                             variant="secondary"
                             onClick={() => shareInvitation(shortUrl, 'facebook')}
-                            className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                           >
                             Facebook
                           </Button>
@@ -912,7 +906,6 @@ export default function EventDashboardPage() {
                             type="button"
                             variant="secondary"
                             onClick={() => shareInvitation(shortUrl, 'x')}
-                            className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                           >
                             X
                           </Button>
@@ -922,7 +915,6 @@ export default function EventDashboardPage() {
                             type="button"
                             variant="secondary"
                             onClick={() => shareInvitation(shortUrl, 'linkedin')}
-                            className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                           >
                             LinkedIn
                           </Button>
