@@ -328,9 +328,9 @@ export default function ModernPhotoGrid({
           <Button
             type="button"
             onClick={() => setShowUploadDisabled(false)}
-            variant="ghost"
+            variant="primary"
             size="sm"
-            className="mt-4 w-full rounded-xl bg-app-fg text-app-bg py-2 text-sm font-semibold"
+            className="mt-4 w-full rounded-xl py-2 text-sm font-semibold"
           >
             OK
           </Button>
@@ -885,11 +885,11 @@ export default function ModernPhotoGrid({
                           !authorName.trim() ||
                           !getUnderlyingPhotoId(photos[selectedPhoto])
                         }
-                        variant="ghost"
+                        variant="primary"
                         size="sm"
                         aria-label="Kommentar senden"
                         title="Kommentar senden"
-                        className="px-4 py-2 bg-app-fg text-app-bg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {submittingComment ? (
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-app-bg"></div>
