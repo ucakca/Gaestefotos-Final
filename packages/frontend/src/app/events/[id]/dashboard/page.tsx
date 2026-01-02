@@ -132,10 +132,11 @@ export default function EventDashboardPage() {
 
   const loadEvent = async () => {
     try {
+      setLoading(true);
       const { data } = await api.get(`/events/${eventId}`);
       setEvent(data.event);
     } catch (err: any) {
-      console.error('Fehler beim Laden des Events:', err);
+      void err;
     } finally {
       setLoading(false);
     }
@@ -328,8 +329,7 @@ export default function EventDashboardPage() {
         pending: loadedPhotos.filter((p: any) => p.status === 'PENDING').length,
         rejected: loadedPhotos.filter((p: any) => p.status === 'REJECTED').length,
       });
-    } catch (err) {
-      console.error('Fehler beim Laden der Statistiken:', err);
+    } catch (err: any) {
       showToast('Fehler beim Laden der Statistiken', 'error');
     }
   };
@@ -348,7 +348,6 @@ export default function EventDashboardPage() {
       await loadEvent();
       setUploadingImage(null);
     } catch (err: any) {
-      console.error('Fehler beim Hochladen:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Hochladen des Bildes';
       showToast(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), 'error');
       setUploadingImage(null);
@@ -361,7 +360,6 @@ export default function EventDashboardPage() {
       await loadEvent();
       setEditingField(null);
     } catch (err: any) {
-      console.error('Fehler beim Aktualisieren:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Aktualisieren';
       showToast(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), 'error');
     }
@@ -379,7 +377,6 @@ export default function EventDashboardPage() {
       await loadEvent();
       setEditingField(null);
     } catch (err: any) {
-      console.error('Fehler beim Aktualisieren:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Aktualisieren';
       showToast(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), 'error');
     }
@@ -396,7 +393,6 @@ export default function EventDashboardPage() {
       });
       await loadEvent();
     } catch (err: any) {
-      console.error('Fehler beim Aktualisieren:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Aktualisieren';
       showToast(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), 'error');
     }
@@ -408,7 +404,6 @@ export default function EventDashboardPage() {
       await api.put(`/events/${eventId}/active`, { isActive });
       await loadEvent();
     } catch (err: any) {
-      console.error('Fehler beim Aktualisieren des Event-Status:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Aktualisieren des Event-Status';
       showToast(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), 'error');
     } finally {
@@ -1530,7 +1525,6 @@ export default function EventDashboardPage() {
                           await loadEvent();
                           showToast('Änderungen gespeichert!', 'success');
                         } catch (err) {
-                          console.error('Fehler beim Speichern:', err);
                           showToast('Fehler beim Speichern', 'error');
                         }
                       }}

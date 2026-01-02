@@ -124,7 +124,7 @@ export default function VideosPage() {
       const { data } = await api.get(`/events/${eventId}`);
       setEvent(data.event);
     } catch (err) {
-      console.error('Fehler beim Laden des Events:', err);
+      void err;
     }
   };
 
@@ -133,7 +133,7 @@ export default function VideosPage() {
       const { data } = await api.get(`/events/${eventId}/categories`);
       setCategories(data.categories || []);
     } catch (err) {
-      console.error('Fehler beim Laden der Kategorien:', err);
+      void err;
     }
   };
 
@@ -168,7 +168,7 @@ export default function VideosPage() {
       const { data } = await api.get(`/events/${eventId}/videos`, { params });
       setVideos(data.videos || []);
     } catch (err: any) {
-      console.error('Fehler beim Laden der Videos:', err);
+      void err;
     } finally {
       setLoading(false);
     }
@@ -219,7 +219,6 @@ export default function VideosPage() {
       showToast('Video erfolgreich hochgeladen', 'success');
       await loadVideos();
     } catch (err: any) {
-      console.error('Fehler beim Hochladen:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Hochladen';
       showToast(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), 'error');
     } finally {
@@ -236,7 +235,6 @@ export default function VideosPage() {
         setSelectedVideo(null);
       }
     } catch (err: any) {
-      console.error('Fehler beim Freigeben:', err);
       showToast('Fehler beim Freigeben des Videos', 'error');
     }
   };
@@ -250,7 +248,6 @@ export default function VideosPage() {
         setSelectedVideo(null);
       }
     } catch (err: any) {
-      console.error('Fehler beim Ablehnen:', err);
       showToast('Fehler beim Ablehnen des Videos', 'error');
     }
   };
@@ -271,7 +268,6 @@ export default function VideosPage() {
         setSelectedVideo(null);
       }
     } catch (err: any) {
-      console.error('Fehler beim Löschen:', err);
       showToast('Fehler beim Löschen des Videos', 'error');
     }
   };
@@ -307,7 +303,6 @@ export default function VideosPage() {
       setSelectedVideos(new Set());
       await loadVideos();
     } catch (err: any) {
-      console.error('Fehler bei Bulk-Freigabe:', err);
       showToast('Fehler bei Bulk-Freigabe der Videos', 'error');
     }
   };
@@ -327,7 +322,6 @@ export default function VideosPage() {
       setSelectedVideos(new Set());
       await loadVideos();
     } catch (err: any) {
-      console.error('Fehler bei Bulk-Ablehnung:', err);
       showToast('Fehler bei Bulk-Ablehnung der Videos', 'error');
     }
   };
@@ -347,7 +341,6 @@ export default function VideosPage() {
       setSelectedVideos(new Set());
       await loadVideos();
     } catch (err: any) {
-      console.error('Fehler bei Bulk-Löschung:', err);
       showToast('Fehler bei Bulk-Löschung der Videos', 'error');
     }
   };
