@@ -449,7 +449,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                           variant="secondary"
                           onClick={handleCancelEdit}
                           size="sm"
-                          className="px-3 py-1 border border-app-border text-app-fg text-xs rounded-lg hover:bg-app-bg flex items-center gap-1"
+                          className="text-xs gap-1"
                         >
                           <X className="w-3 h-3" />
                           Abbrechen
