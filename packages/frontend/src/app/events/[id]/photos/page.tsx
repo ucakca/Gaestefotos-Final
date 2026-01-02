@@ -1248,6 +1248,8 @@ export default function PhotoManagementPage() {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handleDelete(selectedPhoto.id)}
+                        aria-label="Löschen"
+                        title="Löschen"
                         className="px-4 py-2 bg-[var(--status-neutral)] text-app-bg rounded-md hover:opacity-90 flex items-center justify-center gap-2"
                       >
                         <Trash2 className="w-5 h-5" />
