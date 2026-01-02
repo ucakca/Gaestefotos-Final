@@ -438,8 +438,9 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                         <Button
                           type="button"
                           onClick={handleSaveHostMessage}
+                          variant="primary"
                           size="sm"
-                          className="px-3 py-1 bg-tokens-brandGreen text-app-bg text-xs rounded-lg hover:opacity-90 flex items-center gap-1"
+                          className="text-xs gap-1"
                         >
                           <Check className="w-3 h-3" />
                           Speichern
@@ -729,9 +730,9 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
             <Button
               type="submit"
               disabled={submitting || uploadingPhoto || uploadingAudio || isRecording || !message.trim() || !authorName.trim()}
-              variant="ghost"
+              variant="primary"
               size="sm"
-              className="w-full bg-tokens-brandGreen text-app-bg py-3 px-4 rounded-lg hover:opacity-90 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 font-medium flex items-center justify-center gap-2 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-app-bg"></div>

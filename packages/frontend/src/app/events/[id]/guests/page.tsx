@@ -199,7 +199,7 @@ export default function GuestManagementPage() {
               <Button
                 type="button"
                 onClick={() => setShowAddForm(!showAddForm)}
-                className="bg-tokens-brandGreen text-app-bg hover:opacity-90"
+                variant="primary"
               >
                 <UserPlus className="h-5 w-5" />
                 Gast hinzufügen
@@ -270,7 +270,7 @@ export default function GuestManagementPage() {
                     </Button>
                   </motion.div>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button type="submit" className="bg-tokens-brandGreen text-app-bg hover:opacity-90">
+                    <Button type="submit" variant="primary">
                       Hinzufügen
                     </Button>
                   </motion.div>
