@@ -97,7 +97,7 @@ export default function BottomNavigation({
       const { data } = await api.get(`/events/${eventId}/feed`);
       setFeedEntries(data.entries || []);
     } catch (err) {
-      console.error('Fehler beim Laden des Feeds:', err);
+      // ignore
     } finally {
       setLoadingFeed(false);
     }
@@ -111,7 +111,7 @@ export default function BottomNavigation({
       });
       setChallenges(data.challenges || []);
     } catch (err) {
-      console.error('Fehler beim Laden der Challenges:', err);
+      // ignore
     } finally {
       setLoadingChallenges(false);
     }

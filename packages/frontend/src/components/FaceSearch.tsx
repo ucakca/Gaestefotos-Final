@@ -192,7 +192,6 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Fehler bei der Suche');
-      console.error('Search error:', err);
     } finally {
       setSearching(false);
     }

@@ -50,7 +50,6 @@ export default function LoginPage() {
         router.push(isAdmin ? '/admin/dashboard' : '/dashboard');
       }
     } catch (err: any) {
-      console.error('Login error:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Login fehlgeschlagen';
       setError(Array.isArray(errorMessage) ? errorMessage[0]?.message || 'Login fehlgeschlagen' : errorMessage);
     } finally {
