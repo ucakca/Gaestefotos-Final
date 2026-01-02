@@ -978,6 +978,8 @@ export default function VideosPage() {
                 }
               }
             }}
+            aria-label="Alle Videos herunterladen (ZIP)"
+            title="Alle Videos herunterladen (ZIP)"
             className="fixed bottom-24 right-6 w-14 h-14 bg-tokens-brandGreen text-app-bg rounded-full shadow-lg flex items-center justify-center z-40 hover:opacity-90 transition-colors"
           >
             <FileDown className="w-6 h-6" />

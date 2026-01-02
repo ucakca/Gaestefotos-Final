@@ -203,6 +203,8 @@ export default function CameraPage() {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={capturePhoto}
+              aria-label="Foto aufnehmen"
+              title="Foto aufnehmen"
               className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-app-bg rounded-full border-4 border-app-border shadow-lg z-10"
             >
               <div className="w-full h-full bg-app-bg rounded-full" />

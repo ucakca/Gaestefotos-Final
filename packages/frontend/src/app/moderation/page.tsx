@@ -285,6 +285,8 @@ export default function ModerationPage() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleDelete(selectedPhoto.id)}
+                      aria-label="Löschen"
+                      title="Löschen"
                       className="px-6 py-3 bg-[var(--status-neutral)] text-app-bg rounded-lg hover:opacity-90 font-medium flex items-center justify-center gap-2"
                     >
                       <Trash2 className="w-5 h-5" />
