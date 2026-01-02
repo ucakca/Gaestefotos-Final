@@ -61,6 +61,15 @@ export async function middleware(request: NextRequest) {
   
   const { pathname } = request.nextUrl;
 
+  // Hard-disable legacy /admin UI on the public app domain.
+  // Admin/host operations live on the dedicated dash domain.
+  const host = (request.headers.get('host') || '').toLowerCase();
+  if (pathname.startsWith('/admin') && host.includes('app.')) {
+    const url = new URL(request.url);
+    url.hostname = host.replace(/^app\./, 'dash.');
+    return NextResponse.redirect(url);
+  }
+
   // Admin-only routes
   if (pathname.startsWith('/admin')) {
     const token = request.cookies.get('auth_token')?.value;

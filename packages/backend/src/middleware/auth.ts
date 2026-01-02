@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import prisma from '../config/database';
 
 export interface AuthRequest extends Request {
   userId?: string;
@@ -128,7 +129,17 @@ export const authMiddleware = async (
     };
 
     req.userId = decoded.userId;
-    req.userRole = decoded.role;
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { role: true },
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized: User not found' });
+    }
+
+    req.userRole = user.role;
 
     next();
   } catch (error) {
@@ -154,7 +165,15 @@ export const optionalAuthMiddleware = async (
     };
 
     req.userId = decoded.userId;
-    req.userRole = decoded.role;
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { role: true },
+    });
+
+    if (user) {
+      req.userRole = user.role;
+    }
   } catch {
     // Ignore invalid token for optional auth
   }
