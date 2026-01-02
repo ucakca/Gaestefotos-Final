@@ -1008,11 +1008,20 @@ router.patch(
       const data = createEventSchema.partial().parse(req.body);
       const { categories: _categories, ...eventData } = data as any;
 
+      const nextFeaturesConfig =
+        eventData.featuresConfig && typeof eventData.featuresConfig === 'object'
+          ? normalizeEventFeaturesConfig({
+              ...((existingEvent as any)?.featuresConfig || {}),
+              ...(eventData.featuresConfig as any),
+            })
+          : undefined;
+
       const event = await prisma.event.update({
         where: { id: req.params.id },
         data: {
           ...eventData,
           dateTime: eventData.dateTime ? new Date(eventData.dateTime) : undefined,
+          ...(nextFeaturesConfig ? { featuresConfig: nextFeaturesConfig } : {}),
         },
         include: {
           host: {
@@ -1374,11 +1383,20 @@ router.put(
       // Categories are managed via dedicated category endpoints, not via event update.
       const { categories: _categories, ...eventData } = data as any;
 
+      const nextFeaturesConfig =
+        eventData.featuresConfig && typeof eventData.featuresConfig === 'object'
+          ? normalizeEventFeaturesConfig({
+              ...((existingEvent as any)?.featuresConfig || {}),
+              ...(eventData.featuresConfig as any),
+            })
+          : undefined;
+
       const event = await prisma.event.update({
         where: { id: req.params.id },
         data: {
           ...eventData,
           dateTime: eventData.dateTime ? new Date(eventData.dateTime) : undefined,
+          ...(nextFeaturesConfig ? { featuresConfig: nextFeaturesConfig } : {}),
         },
         include: {
           host: {
