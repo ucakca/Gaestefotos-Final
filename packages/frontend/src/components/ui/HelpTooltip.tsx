@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/Button';
 
 type HelpTooltipProps = {
   title?: string;
@@ -51,13 +52,15 @@ export default function HelpTooltip({ title, content, className }: HelpTooltipPr
           ) : null}
           <div className="text-[13px] leading-[1.35] text-app-fg whitespace-pre-wrap">{content}</div>
           <div className="mt-2.5 flex justify-end">
-            <button
+            <Button
               type="button"
               onClick={() => setOpen(false)}
-              className="px-2.5 py-1.5 bg-tokens-brandGreen text-app-bg rounded-[10px] text-[12px] font-semibold hover:opacity-90"
+              variant="primary"
+              size="sm"
+              className="px-2.5 py-1.5 rounded-[10px] text-[12px] font-semibold"
             >
               Schließen
-            </button>
+            </Button>
           </div>
         </div>
       )}

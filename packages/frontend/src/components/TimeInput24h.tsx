@@ -212,13 +212,9 @@ export default function TimeInput24h({
                       selectHour(i);
                       setShowPicker(false);
                     }}
-                    variant="ghost"
+                    variant={parseInt(displayHours) === i ? 'primary' : 'ghost'}
                     size="sm"
-                    className={`w-full px-3 py-2 text-sm hover:bg-app-bg transition-colors ${
-                      parseInt(displayHours) === i
-                        ? 'bg-tokens-brandGreen text-app-bg'
-                        : 'text-app-fg'
-                    }`}
+                    className="w-full px-3 py-2 text-sm hover:bg-app-bg transition-colors"
                   >
                     {i.toString().padStart(2, '0')}
                   </Button>
@@ -238,13 +234,9 @@ export default function TimeInput24h({
                       selectMinute(i);
                       setShowPicker(false);
                     }}
-                    variant="ghost"
+                    variant={parseInt(displayMinutes) === i ? 'primary' : 'ghost'}
                     size="sm"
-                    className={`w-full px-3 py-2 text-sm hover:bg-app-bg transition-colors ${
-                      parseInt(displayMinutes) === i
-                        ? 'bg-tokens-brandGreen text-app-bg'
-                        : 'text-app-fg'
-                    }`}
+                    className="w-full px-3 py-2 text-sm hover:bg-app-bg transition-colors"
                   >
                     {i.toString().padStart(2, '0')}
                   </Button>
@@ -278,9 +270,9 @@ export default function TimeInput24h({
               <Button
                 type="button"
                 onClick={() => setShowPicker(false)}
-                variant="ghost"
+                variant="primary"
                 size="sm"
-                className="px-3 py-2 bg-tokens-brandGreen text-app-bg rounded-lg text-sm hover:opacity-90 transition-colors"
+                className="px-3 py-2 rounded-lg text-sm transition-colors"
               >
                 OK
               </Button>

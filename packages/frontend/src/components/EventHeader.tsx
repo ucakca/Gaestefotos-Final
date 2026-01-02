@@ -435,9 +435,9 @@ export default function EventHeader({
                   <Button
                     type="button"
                     onClick={closeStoryDisabled}
-                    variant="ghost"
+                    variant="primary"
                     size="sm"
-                    className="mt-4 w-full rounded-xl bg-tokens-brandGreen text-app-bg py-2 text-sm font-semibold hover:opacity-90 h-auto"
+                    className="mt-4 w-full rounded-xl py-2 text-sm font-semibold h-auto"
                   >
                     OK
                   </Button>

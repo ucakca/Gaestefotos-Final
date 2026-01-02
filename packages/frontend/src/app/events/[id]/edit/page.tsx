@@ -239,7 +239,7 @@ export default function EditEventPage() {
                 </Button>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button type="submit" disabled={saving} className="bg-tokens-brandGreen text-app-bg hover:opacity-90">
+                <Button type="submit" variant="primary" disabled={saving}>
                   {saving ? 'Speichere...' : 'Speichern'}
                 </Button>
               </motion.div>

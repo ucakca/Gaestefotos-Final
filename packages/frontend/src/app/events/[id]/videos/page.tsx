@@ -797,22 +797,28 @@ export default function VideosPage() {
                   {viewMode === 'trash' && (
                     <div className="absolute top-2 left-2 right-2 z-10 flex items-center justify-between gap-2">
                       <Button
+                        type="button"
+                        variant="primary"
+                        size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleRestore(video.id);
                         }}
-                        className="flex-1 px-2 py-1 text-xs bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90"
+                        className="flex-1 px-2 py-1 text-xs"
                       >
                         Wiederherstellen
                       </Button>
                       <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           handlePurge(video.id);
                         }}
-                        className="px-2 py-1 text-xs bg-[var(--status-danger)] text-app-bg rounded-md hover:opacity-90"
+                        className="flex-1 px-2 py-1 text-xs"
                       >
-                        Endgültig
+                        Löschen
                       </Button>
                     </div>
                   )}

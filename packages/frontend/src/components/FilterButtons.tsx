@@ -27,13 +27,9 @@ export default function FilterButtons({ options, selected, onSelect, label }: Fi
           <Button
             key={option.id}
             onClick={() => onSelect(option.id)}
-            variant="ghost"
+            variant={selected === option.id ? 'primary' : 'secondary'}
             size="sm"
-            className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
-              selected === option.id
-                ? 'bg-tokens-brandGreen text-app-bg'
-                : 'bg-app-bg text-app-fg hover:bg-app-card'
-            }`}
+            className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
           >
             {option.label}
           </Button>
