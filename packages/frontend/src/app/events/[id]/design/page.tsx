@@ -319,6 +319,7 @@ export default function DesignLiveBuilderPage() {
                   variant="ghost"
                   size="sm"
                   aria-label={previewMode === 'mobile' ? 'Desktop-Vorschau' : 'Mobile Vorschau'}
+                  title={previewMode === 'mobile' ? 'Desktop-Vorschau' : 'Mobile Vorschau'}
                   onClick={() => setPreviewMode(previewMode === 'mobile' ? 'desktop' : 'mobile')}
                   className={previewMode === 'mobile' ? 'bg-app-fg text-app-bg' : 'bg-app-bg text-app-muted'}
                 />
@@ -329,6 +330,7 @@ export default function DesignLiveBuilderPage() {
                   variant="ghost"
                   size="sm"
                   aria-label={showQRCode ? 'QR schließen' : 'QR anzeigen'}
+                  title={showQRCode ? 'QR schließen' : 'QR anzeigen'}
                   onClick={() => setShowQRCode(!showQRCode)}
                   className="hover:bg-app-bg"
                 />
