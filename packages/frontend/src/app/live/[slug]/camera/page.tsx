@@ -191,7 +191,8 @@ export default function CameraPage() {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="px-6 py-3 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90"
+                  variant="primary"
+                  className="px-6 py-3 rounded-lg"
                 >
                   {uploading ? 'Hochladen…' : 'Foto auswählen'}
                 </MotionButton>
@@ -240,7 +241,8 @@ export default function CameraPage() {
                 whileTap={{ scale: 0.95 }}
                 onClick={handleCaptureAndUpload}
                 disabled={uploading}
-                className="px-6 py-3 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
+                variant="primary"
+                className="px-6 py-3 rounded-lg flex items-center gap-2"
               >
                 {uploading ? (
                   <>

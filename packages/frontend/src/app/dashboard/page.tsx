@@ -88,12 +88,9 @@ export default function DashboardPage() {
                 >
                   Moderation
                 </Link>
-                <Link
-                  href="/events/new"
-                  className="px-4 py-2 rounded-md text-app-bg font-medium transition-colors bg-tokens-brandGreen hover:opacity-90"
-                >
-                  Neues Event
-                </Link>
+                <Button asChild variant="primary" size="sm" className="px-4 py-2 rounded-md font-medium">
+                  <Link href="/events/new">Neues Event</Link>
+                </Button>
                 <Button
                   onClick={logout}
                   className="px-4 py-2 rounded-md border border-app-accent font-medium transition-colors text-tokens-brandGreen bg-app-card hover:bg-app-bg"
@@ -117,12 +114,9 @@ export default function DashboardPage() {
               className="text-center py-12 bg-app-card rounded-lg border border-app-border shadow-sm"
             >
               <p className="mb-4 text-tokens-brandGreen">Noch keine Events vorhanden</p>
-              <Link
-                href="/events/new"
-                className="px-4 py-2 rounded-md text-app-bg font-medium inline-block transition-colors bg-tokens-brandGreen hover:opacity-90"
-              >
-                Erstelle dein erstes Event
-              </Link>
+              <Button asChild variant="primary" size="sm" className="px-4 py-2 rounded-md font-medium inline-block">
+                <Link href="/events/new">Erstelle dein erstes Event</Link>
+              </Button>
             </motion.div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

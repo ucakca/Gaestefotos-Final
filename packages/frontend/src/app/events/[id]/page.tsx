@@ -10,6 +10,7 @@ import QRCode from '@/components/QRCode';
 import MapsLink from '@/components/MapsLink';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { Button } from '@/components/ui/Button';
 
 export default function EventDetailPage() {
   const params = useParams();
@@ -75,12 +76,9 @@ export default function EventDetailPage() {
                 URL: /e/{event.slug}
               </p>
             </div>
-            <Link
-              href={`/events/${event.id}/edit`}
-              className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90"
-            >
-              Bearbeiten
-            </Link>
+            <Button asChild variant="primary" size="sm" className="px-4 py-2 rounded-md">
+              <Link href={`/events/${event.id}/edit`}>Bearbeiten</Link>
+            </Button>
           </div>
 
           {event.dateTime && (
@@ -150,12 +148,9 @@ export default function EventDetailPage() {
           >
             <h2 className="text-xl font-semibold mb-4 text-app-fg">Aktionen</h2>
             <div className="space-y-2">
-              <Link
-                href={`/events/${event.id}/photos`}
-                className="block px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90 text-center"
-              >
-                Fotos verwalten
-              </Link>
+              <Button asChild variant="primary" size="sm" className="w-full px-4 py-2 rounded-md text-center">
+                <Link href={`/events/${event.id}/photos`}>Fotos verwalten</Link>
+              </Button>
               <Link
                 href={`/events/${event.id}/guests`}
                 className="block px-4 py-2 bg-[var(--status-neutral)] text-app-bg rounded-md hover:opacity-90 text-center"
