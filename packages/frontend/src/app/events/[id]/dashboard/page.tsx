@@ -883,8 +883,8 @@ export default function EventDashboardPage() {
                         {shortUrl && (
                           <Button
                             type="button"
+                            variant="secondary"
                             onClick={() => shareInvitation(shortUrl, 'whatsapp')}
-                            className="bg-tokens-brandPeach text-app-bg hover:opacity-90"
                           >
                             WhatsApp
                           </Button>
