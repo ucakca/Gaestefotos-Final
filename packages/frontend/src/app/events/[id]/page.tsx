@@ -151,19 +151,14 @@ export default function EventDetailPage() {
               <Button asChild variant="primary" size="sm" className="w-full px-4 py-2 rounded-md text-center">
                 <Link href={`/events/${event.id}/photos`}>Fotos verwalten</Link>
               </Button>
-              <Link
-                href={`/events/${event.id}/guests`}
-                className="block px-4 py-2 bg-[var(--status-neutral)] text-app-bg rounded-md hover:opacity-90 text-center"
-              >
-                Gäste verwalten
-              </Link>
-              <Link
-                href={`/e/${event.slug}`}
-                target="_blank"
-                className="block px-4 py-2 border border-tokens-brandGreen text-tokens-brandGreen rounded-md hover:bg-app-bg text-center"
-              >
-                Öffentliche Seite ansehen
-              </Link>
+              <Button asChild variant="secondary" size="sm" className="w-full px-4 py-2 rounded-md text-center">
+                <Link href={`/events/${event.id}/guests`}>Gäste verwalten</Link>
+              </Button>
+              <Button asChild variant="secondary" size="sm" className="w-full px-4 py-2 rounded-md text-center">
+                <Link href={`/e/${event.slug}`} target="_blank" rel="noreferrer">
+                  Öffentliche Seite ansehen
+                </Link>
+              </Button>
             </div>
           </motion.div>
 
