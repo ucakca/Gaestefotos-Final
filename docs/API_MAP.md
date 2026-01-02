@@ -65,6 +65,16 @@ Admin endpoints (Backend mounts in `packages/backend/src/index.ts`):
   - `GET /api/admin/maintenance` → `packages/backend/src/routes/adminMaintenance.ts`
   - `PUT /api/admin/maintenance`
 
+- Theme / UI Tokens (Admin):
+  - `GET /api/admin/theme` → `packages/backend/src/routes/adminTheme.ts`
+  - `PUT /api/admin/theme`
+  - Zweck: systemweite CSS-Variablen (Theme Tokens) verwalten (persistiert in `AppSetting.key='theme_tokens_v1'`).
+
+- Face Search Consent (Admin):
+  - `GET /api/admin/face-search-consent` → `packages/backend/src/routes/adminFaceSearchConsent.ts`
+  - `PUT /api/admin/face-search-consent`
+  - Zweck: systemweiten Hinweistext + Checkbox-Label für biometrische Face Search verwalten (persistiert in `AppSetting.key='face_search_consent_v1'`).
+
 - Impersonation:
   - `POST /api/admin/impersonation/token` → `packages/backend/src/routes/adminImpersonation.ts`
 

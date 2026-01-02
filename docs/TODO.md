@@ -75,10 +75,13 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
   - Checkbox/Inputs in `edit`/`dashboard`/`categories` token-konform vereinheitlicht
   - Verifikation: `pnpm type-check` + `pnpm lint` erfolgreich
 - ✅ Pre-Launch: finaler System-Check (Smoke Tests, Monitoring, Rollback Plan)
+- ✅ Prod Smoke: `app` Root `200` + `/_next/static/*` Asset `200` (Chunk-500 via sauberem stop→build→start behoben)
+- ✅ Prod Smoke: `dash` DNS + TLS + Routing ok (`dash.xn--gstefotos-v2a.com` → Next.js, Root `30x` ok + `/_next/static/*` Asset `200`)
+- ✅ Ops/Health (Admin): Backend endpoint `GET /api/admin/ops/health` + Admin UI `/system` (Smoke Checks: app/dash root + _next asset + API health)
+- ✅ Prod Fix: `dash` Admin API Routing: Nginx `location ^~ /api/` proxied → Backend (`127.0.0.1:8001`) + Backend CORS erlaubt `dash.*` Origins (Login funktioniert)
+- ✅ Prod Fix: `dash` `GET /favicon.ico` liefert `204` (kein 404/500 in Browser-Konsole)
 
-## ⏳ In Progress
-
-- ⏳ UI Redesign (alle Oberflächen): shadcn/ui + Tailwind, Apple-clean Basis + Theme-Welten
+- ✅ UI Redesign (alle Oberflächen): shadcn/ui + Tailwind, Apple-clean Basis + Theme-Welten
   - Admin-Dashboard:
     - shadcn Baseline Setup (deps + `tailwindcss-animate` + `components.json`)
     - Primitives migriert: `Button`/`Input`/`Card` (cva + asChild + forwardRef)
@@ -98,18 +101,31 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
       - Bulk Actions: Photos + Videos via `DropdownMenu` + Submenu „Verschieben"
       - Confirm-Dialog statt `confirm(...)`: Photos + Videos (Bulk Reject/Delete + Delete/Purge)
       - `UploadModal` migriert: Custom Overlay → `Dialog`
-      - Event Settings Controls tokenisiert: `accent-*` statt inline `accentColor` + Inputs via `Input`
+      - Eventweite Settings Controls tokenisiert: `accent-*` statt inline `accentColor` + Inputs via `Input`
       - Dashboard: `alert(...)` → `showToast(...)` + Buttons/Inline-Edits auf Primitives
       - ✅ Remaining native controls migration (Frontend, `packages/frontend/src/components`, exkl. `/components/ui`):
-        - `SocialShare`, `LanguageSelector`, `FilterButtons`, `ActionButton`, `DateTimePicker`, `TimeInput24h`
-        - `HostPhotoUpload`, `PhotoUpload`, `FaceSearch`, `guest/StoriesBar`, `guest/StoryViewer`
+        - ✅ `SocialShare`
+        - ✅ `LanguageSelector`
+        - ✅ `FilterButtons`
+        - ✅ `ActionButton`
+        - ✅ `DateTimePicker`
+        - ✅ `TimeInput24h`
+        - ✅ `HostPhotoUpload`, `PhotoUpload`, `FaceSearch`, `guest/StoriesBar`, `guest/StoryViewer`
         - Policy: `type="file"` bleibt bewusst **native**
 
-- ⏳ Hardcoded Color Sweep (TODO 171)
+## ⏳ In Progress
+
+- ⏳ Design Polish
+  - A11y: Icon-only Buttons mit `aria-label`/`title` ergänzt (u.a. `Gallery` Lightbox, `ModernPhotoGrid` Actions)
+  - Cleanup: Debug-`console.log` entfernt (u.a. `Guestbook`, `ChallengeCompletion`)
+  - Konsistenz: einzelne Labels vereinheitlicht (z.B. „Emoji auswählen")
+
+- ✅ Hardcoded Color Sweep (TODO 171)
   - Fallback-Gradienten/Inline-Styles auf `var(--...)` Tokens umgestellt (u.a. `design` A5 PDF, Design fallback gradients)
   - QR-Styler Defaults via Root-CSS-Variablen aufgelöst (sichere Hex-Fallbacks)
   - Design Presets: globale Brand/Neutral-Fallbacks tokenisiert (Preset-Farben bewusst unangetastet)
   - Frontend UI-Chrome: Overlay Backdrop + QR Container tokenisiert (kein `bg-black`/`bg-white` in Primitives)
+  - Admin Dashboard: `text-white`-Hardcodes entfernt via Token `--app-on-dark` (Sidebar + Sheet)
   - Bewusst verbleibende Hex-Werte:
     - `globals.css` `:root` enthält die **Token-Quellen** (Hex ist hier ok, weil es die Definition der Tokens ist)
     - Presets/Templates (z.B. „Soft Floral“, „Elegant Rose“, Design Presets) bleiben bewusst **bunt** (intentional), damit sich das Design nicht verändert
@@ -124,8 +140,7 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 
 ## ❌ Next (Priorität hoch)
 
-- ❌ Design Polish
-- ❌ Big end-to-end Testlauf vor Launch
+- ✅ Big end-to-end Testlauf vor Launch
 
 ## ❌ Later
 

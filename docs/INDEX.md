@@ -21,6 +21,9 @@ Ziel: Diese Dokumente sind die **Single Source of Truth** für Architektur, APIs
   - Storage/Blur/Lock: `docs/STORAGE_AND_BLUR_POLICY.md`
   - Stories: `docs/STORIES.md`
   - QR Templates + Export: `docs/QR_TEMPLATES.md`
+  - Theme Tokens (Admin Settings): `docs/THEME_TOKENS_AND_ADMIN_SETTINGS.md`
+  - Event DesignConfig + QR Template Config: `docs/EVENT_DESIGNCONFIG_AND_QR_TEMPLATE_CONFIG.md`
+  - Event FeaturesConfig (Guest UX Flags): `docs/EVENT_FEATURES_CONFIG.md`
 
 - **QA / Test / Deploy**
   - Test Guide: `docs/TEST_GUIDE.md`

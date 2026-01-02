@@ -59,9 +59,22 @@ Ziel: Dieses Dokument ist die **Single Source of Truth**, welche DB-Felder was b
     - `moderationRequired`
     - `mysteryMode`
     - `showGuestlist`
+  - Details/Schema/Enforcement: `docs/EVENT_FEATURES_CONFIG.md`
 
 - `Event.designConfig` (JSON)
-  - Design/Branding (Farben, Logo, etc.).
+  - Design/Branding (Farben, Logo, QR, etc.).
+  - **Zweck (laiensicher):**
+    - Steuert das Aussehen des Events (Farben, Bilder, ggf. QR‑Darstellung).
+    - Wird im Event-Dashboard unter „Design“ gepflegt.
+  - **Zweck (technisch):**
+    - Flexibles JSON Feld, das UI-/Branding-Parameter pro Event speichert.
+    - Enthält u.a. (je nach Feature/Editor):
+      - `colors` (primary/secondary/accent)
+      - `fonts`
+      - `coverImageUrl` (bzw. weitere Asset-URLs)
+      - `qrCodeConfig` (QR-Code Darstellung in der Design-Seite)
+      - `qrTemplateConfig` (Persistenz des QR‑Styler Templates)
+  - Details/Schema/API: `docs/EVENT_DESIGNCONFIG_AND_QR_TEMPLATE_CONFIG.md`
 
 - `Event.designAssetsBytes`
   - Aggregat/Accounting für Design-Uploads.
@@ -285,6 +298,64 @@ Siehe Details: `docs/STORAGE_AND_BLUR_POLICY.md`.
 
 - In Event API enthalten als:
   - `event.effectivePackage`
+
+---
+
+## App Settings (Systemweite Konfiguration)
+
+### AppSetting (`app_settings`)
+
+- **Zweck (laiensicher):**
+  - Speichert zentrale, systemweite Einstellungen (z.B. Theme-Farben) in der Datenbank.
+  - Vorteil: Änderungen wirken sofort, ohne dass man Code deployen muss.
+
+- **Zweck (technisch):**
+  - Key/Value Store für globale Konfiguration.
+  - Prisma Model: `packages/backend/prisma/schema.prisma` → `model AppSetting`.
+
+#### Felder
+
+- `AppSetting.key`
+  - Primärschlüssel.
+  - Beispiele: `theme_tokens_v1`, `face_search_consent_v1`.
+
+- `AppSetting.value` (JSON)
+  - Struktur hängt vom `key` ab.
+
+#### Keys & Value Schema
+
+- `theme_tokens_v1`
+  - **Wofür:** Systemweite CSS Custom Properties (Theme Tokens).
+  - **Value Schema:**
+
+    ```json
+    {
+      "tokens": {
+        "--app-bg": "#ffffff",
+        "--app-fg": "#111827"
+      }
+    }
+    ```
+
+  - **Code:**
+    - Admin API: `packages/backend/src/routes/adminTheme.ts`
+    - Public Read API: `packages/backend/src/routes/theme.ts`
+    - Admin UI: `packages/admin-dashboard/src/app/settings/page.tsx`
+
+- `face_search_consent_v1`
+  - **Wofür:** Systemweiter Hinweistext + Checkbox-Label für Face Search Consent.
+  - **Value Schema:**
+
+    ```json
+    {
+      "noticeText": "…",
+      "checkboxLabel": "…"
+    }
+    ```
+
+  - **Code:**
+    - Admin API: `packages/backend/src/routes/adminFaceSearchConsent.ts`
+    - Admin UI: `packages/admin-dashboard/src/app/settings/page.tsx`
 
 ---
 
