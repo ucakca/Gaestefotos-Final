@@ -67,6 +67,8 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/admin') && host.includes('app.')) {
     const url = new URL(request.url);
     url.hostname = host.replace(/^app\./, 'dash.');
+    // The dash app does not use /admin routes; it uses /dashboard.
+    url.pathname = '/dashboard';
     return NextResponse.redirect(url);
   }
 
