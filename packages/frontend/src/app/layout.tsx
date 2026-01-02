@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de" data-app="gaestefotos" className="h-full w-full">
-      <body className={`${inter.className} min-h-screen bg-app-bg text-app-fg`} style={{ margin: 0, padding: 0 }}>
+      <body className={`${inter.className} min-h-screen bg-app-bg text-app-fg m-0 p-0`}>
         <ThemeLoader />
         <MaintenanceBanner />
         {children}

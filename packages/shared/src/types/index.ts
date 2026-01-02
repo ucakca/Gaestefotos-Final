@@ -45,6 +45,32 @@ export interface EventFeaturesConfig {
   allowDownloads: boolean;
 }
 
+export const DEFAULT_EVENT_FEATURES_CONFIG: EventFeaturesConfig = {
+  showGuestlist: true,
+  mysteryMode: false,
+  allowUploads: true,
+  moderationRequired: false,
+  allowDownloads: true,
+};
+
+export function normalizeEventFeaturesConfig(input: unknown): Record<string, any> {
+  const raw = input && typeof input === 'object' ? (input as Record<string, any>) : {};
+
+  return {
+    ...raw,
+    showGuestlist:
+      typeof raw.showGuestlist === 'boolean' ? raw.showGuestlist : DEFAULT_EVENT_FEATURES_CONFIG.showGuestlist,
+    mysteryMode: typeof raw.mysteryMode === 'boolean' ? raw.mysteryMode : DEFAULT_EVENT_FEATURES_CONFIG.mysteryMode,
+    allowUploads: typeof raw.allowUploads === 'boolean' ? raw.allowUploads : DEFAULT_EVENT_FEATURES_CONFIG.allowUploads,
+    moderationRequired:
+      typeof raw.moderationRequired === 'boolean'
+        ? raw.moderationRequired
+        : DEFAULT_EVENT_FEATURES_CONFIG.moderationRequired,
+    allowDownloads:
+      typeof raw.allowDownloads === 'boolean' ? raw.allowDownloads : DEFAULT_EVENT_FEATURES_CONFIG.allowDownloads,
+  };
+}
+
 // Guest Types
 export interface Guest {
   id: string;

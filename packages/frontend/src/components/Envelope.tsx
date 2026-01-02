@@ -36,10 +36,9 @@ export default function Envelope({ children, onOpen }: EnvelopeProps) {
               
               {/* Flap */}
               <motion.div
-                className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-tokens-brandPeach to-tokens-brandGreen rounded-t-lg origin-top"
+                className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-tokens-brandPeach to-tokens-brandGreen rounded-t-lg origin-top [transform-style:preserve-3d]"
                 animate={{ rotateX: isOpen ? -180 : 0 }}
                 transition={{ duration: 0.6, ease: 'easeInOut' }}
-                style={{ transformStyle: 'preserve-3d' }}
               >
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-16 h-16 border-4 border-app-fg/50 rounded-full opacity-50" />

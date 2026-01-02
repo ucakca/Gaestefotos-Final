@@ -47,15 +47,9 @@ export default function WpConsentBanner() {
       title="Cookie Consent"
       src="/api/wp-consent/frame"
       sandbox="allow-scripts allow-same-origin"
+      className="fixed left-0 bottom-0 w-full border-0 bg-transparent z-[2147483647]"
       style={{
-        position: 'fixed',
-        left: 0,
-        bottom: 0,
-        width: '100%',
         height: `${height}px`,
-        border: 'none',
-        zIndex: 2147483647,
-        background: 'transparent',
         pointerEvents: height > 0 ? 'auto' : 'none',
       }}
     />

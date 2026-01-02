@@ -3,10 +3,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, MessageCircle, Share2, X, ChevronLeft, ChevronRight, Send, MoreHorizontal, Download } from 'lucide-react';
-import api from '@/lib/api';
 import { IconButton } from '@/components/ui/IconButton';
 import { Photo } from '@gaestefotos/shared';
-import { buildApiUrl } from '@/lib/api';
+import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
 
 interface InstagramGalleryProps {
   photos: Photo[];
@@ -28,8 +27,7 @@ export default function InstagramGallery({
 
   const handleDownload = (photo: Photo) => {
     if (!allowDownloads) return;
-    const url = buildApiUrl(`/photos/${photo.id}/download`);
-    window.open(url, '_blank', 'noopener,noreferrer');
+    window.open(`/api/photos/${photo.id}/download`, '_blank', 'noopener,noreferrer');
   };
 
   const handleShare = async (photo: Photo) => {
@@ -149,16 +147,10 @@ export default function InstagramGallery({
       </div>
 
       {/* Instagram-like Post Modal */}
-      <AnimatePresence>
-        {selectedPhoto !== null && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={closePost}
-            className="fixed inset-0 bg-app-fg z-50 flex items-center justify-center"
-          >
-            {/* Close Button */}
+      <Dialog open={selectedPhoto !== null} onOpenChange={(open) => (open ? null : closePost())}>
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row bg-app-card border border-app-border rounded-lg p-0">
+          {/* Close Button */}
+          <DialogClose asChild>
             <MotionIconButton
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -171,69 +163,62 @@ export default function InstagramGallery({
               title="Schließen"
               className="absolute top-4 right-4 text-app-bg hover:opacity-80 z-10 p-2"
             />
+          </DialogClose>
 
-            {/* Navigation Buttons */}
-            {photos.length > 1 && (
-              <>
-                <MotionIconButton
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    prevPhoto();
-                  }}
-                  icon={<ChevronLeft className="w-6 h-6" />}
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Vorheriges Foto"
-                  title="Vorheriges Foto"
-                  className="absolute left-4 text-app-bg hover:opacity-80 z-10 p-2 bg-app-fg/50 rounded-full"
-                />
-                <MotionIconButton
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    nextPhoto();
-                  }}
-                  icon={<ChevronRight className="w-6 h-6" />}
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Nächstes Foto"
-                  title="Nächstes Foto"
-                  className="absolute right-4 text-app-bg hover:opacity-80 z-10 p-2 bg-app-fg/50 rounded-full"
-                />
-              </>
-            )}
+          {/* Navigation Buttons */}
+          {photos.length > 1 && (
+            <>
+              <MotionIconButton
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prevPhoto();
+                }}
+                icon={<ChevronLeft className="w-6 h-6" />}
+                variant="ghost"
+                size="sm"
+                aria-label="Vorheriges Foto"
+                title="Vorheriges Foto"
+                className="absolute left-4 text-app-bg hover:opacity-80 z-10 p-2 bg-app-fg/50 rounded-full"
+              />
+              <MotionIconButton
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextPhoto();
+                }}
+                icon={<ChevronRight className="w-6 h-6" />}
+                variant="ghost"
+                size="sm"
+                aria-label="Nächstes Foto"
+                title="Nächstes Foto"
+                className="absolute right-4 text-app-bg hover:opacity-80 z-10 p-2 bg-app-fg/50 rounded-full"
+              />
+            </>
+          )}
 
-            {/* Post Content - Instagram Style */}
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-app-card border border-app-border rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row"
-            >
-              {/* Image Section */}
-              <div className="relative bg-app-fg flex-1 flex items-center justify-center min-h-[400px] md:min-h-[600px]">
-                <AnimatePresence mode="wait">
-                  <motion.img
-                    key={selectedPhoto}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    src={photos[selectedPhoto]?.url || ''}
-                    alt="Event Foto"
-                    className="max-w-full max-h-full object-contain"
-                  />
-                </AnimatePresence>
-              </div>
+          {/* Image Section */}
+          <div className="relative bg-app-fg flex-1 flex items-center justify-center min-h-[400px] md:min-h-[600px]">
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={selectedPhoto}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                src={selectedPhoto !== null ? (photos[selectedPhoto]?.url || '') : ''}
+                alt="Event Foto"
+                className="max-w-full max-h-full object-contain"
+              />
+            </AnimatePresence>
+          </div>
 
-              {/* Sidebar - Instagram Style */}
-              <div className="w-full md:w-80 flex flex-col bg-app-card border-t md:border-t-0 md:border-l border-app-border">
+          {/* Sidebar - Instagram Style */}
+          <div className="w-full md:w-80 flex flex-col bg-app-card border-t md:border-t-0 md:border-l border-app-border">
                 {/* Header */}
                 <div className="p-4 border-b border-app-border flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -259,12 +244,14 @@ export default function InstagramGallery({
                   <div className="flex items-center gap-4">
                     <motion.button
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => toggleLike(photos[selectedPhoto]?.id || '')}
+                      onClick={() => toggleLike(selectedPhoto !== null ? (photos[selectedPhoto]?.id || '') : '')}
                       className="p-1"
+                      aria-label="Gefällt mir"
+                      title="Gefällt mir"
                     >
                       <Heart
                         className={`w-6 h-6 ${
-                          likedPhotos.has(photos[selectedPhoto]?.id || '')
+                          likedPhotos.has(selectedPhoto !== null ? (photos[selectedPhoto]?.id || '') : '')
                             ? 'fill-[var(--status-danger)] text-[var(--status-danger)]'
                             : 'text-app-fg'
                         }`}
@@ -272,16 +259,20 @@ export default function InstagramGallery({
                     </motion.button>
                     <motion.button
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => handleShare(photos[selectedPhoto])}
+                      onClick={() => (selectedPhoto !== null ? handleShare(photos[selectedPhoto]) : null)}
                       className="p-1"
+                      aria-label="Teilen"
+                      title="Teilen"
                     >
                       <Share2 className="w-6 h-6 text-app-fg" />
                     </motion.button>
                     {allowDownloads && (
                       <motion.button
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => handleDownload(photos[selectedPhoto])}
+                        onClick={() => (selectedPhoto !== null ? handleDownload(photos[selectedPhoto]) : null)}
                         className="p-1"
+                        aria-label="Download"
+                        title="Download"
                       >
                         <Download className="w-6 h-6 text-app-fg" />
                       </motion.button>
@@ -291,13 +282,11 @@ export default function InstagramGallery({
 
                 {/* Photo Counter */}
                 <div className="p-4 text-center text-sm text-app-muted border-t border-app-border mt-auto">
-                  {selectedPhoto + 1} / {photos.length}
+                  {selectedPhoto !== null ? selectedPhoto + 1 : 0} / {photos.length}
                 </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

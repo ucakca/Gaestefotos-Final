@@ -9,6 +9,7 @@ import api, { formatApiError, isRetryableUploadError } from '@/lib/api';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 
 const MotionButton = motion(Button);
 
@@ -33,6 +34,8 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
+  const capturePhotoInputRef = useRef<HTMLInputElement>(null);
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map(file => ({
       file,
@@ -52,21 +55,20 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
     multiple: true,
   });
 
-  const capturePhoto = useCallback(() => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    if ('capture' in input) {
-      (input as any).capture = 'environment';
-    }
-    input.onchange = (e: any) => {
+  const onCaptureFileSelected = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (file) {
-        onDrop([file]);
-      }
-    };
-    input.click();
-  }, [onDrop]);
+      // allow selecting the same file again
+      e.target.value = '';
+      if (!file) return;
+      onDrop([file]);
+    },
+    [onDrop]
+  );
+
+  const capturePhoto = useCallback(() => {
+    capturePhotoInputRef.current?.click();
+  }, []);
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     setDescription(prev => prev + emojiData.emoji);
@@ -187,97 +189,99 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
         <span>Foto hinzufügen</span>
       </MotionButton>
 
-      <AnimatePresence>
-        {showModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowModal(false)}
-            className="fixed inset-0 bg-app-fg/50 z-50 flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-app-card border border-app-border rounded-lg max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto"
-            >
+      <Dialog
+        open={showModal}
+        onOpenChange={(open) => {
+          if (open) return;
+          setShowModal(false);
+          setFiles([]);
+          setDescription('');
+          setShowEmojiPicker(false);
+        }}
+      >
+        <DialogContent className="max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
+          <input
+            ref={capturePhotoInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={onCaptureFileSelected}
+          />
+          <DialogClose asChild>
+            <IconButton
+              onClick={() => {
+                setShowModal(false);
+                setFiles([]);
+                setDescription('');
+                setShowEmojiPicker(false);
+              }}
+              icon={<X className="w-5 h-5" />}
+              variant="ghost"
+              size="sm"
+              aria-label="Schließen"
+              title="Schließen"
+              className="absolute top-4 right-4 p-1 hover:bg-app-bg rounded-full"
+            />
+          </DialogClose>
+
+          <h2 className="text-xl font-semibold mb-6">Foto hinzufügen</h2>
+
+          {/* Description with Emoji Picker */}
+          <div className="mb-4 relative">
+            <label className="block text-sm font-medium text-app-fg mb-2">Beschreibung (optional)</label>
+            <div className="relative">
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Füge eine Beschreibung hinzu... 😊"
+                className="w-full px-3 py-2 pr-10 resize-none"
+                rows={3}
+              />
               <IconButton
-                onClick={() => {
-                  setShowModal(false);
-                  setFiles([]);
-                  setDescription('');
-                }}
-                icon={<X className="w-5 h-5" />}
+                type="button"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                icon={<Smile className="w-5 h-5 text-app-muted" />}
                 variant="ghost"
                 size="sm"
-                aria-label="Schließen"
-                title="Schließen"
-                className="absolute top-4 right-4 p-1 hover:bg-app-bg rounded-full"
+                aria-label="Emoji auswählen"
+                title="Emoji auswählen"
+                className="absolute bottom-2 right-2 p-1 hover:bg-app-bg rounded-full"
               />
-
-              <h2 className="text-xl font-semibold mb-6">Foto hinzufügen</h2>
-
-              {/* Description with Emoji Picker */}
-              <div className="mb-4 relative">
-                <label className="block text-sm font-medium text-app-fg mb-2">
-                  Beschreibung (optional)
-                </label>
-                <div className="relative">
-                  <Textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Füge eine Beschreibung hinzu... 😊"
-                    className="w-full px-3 py-2 pr-10 resize-none"
-                    rows={3}
+              {showEmojiPicker && (
+                <div ref={emojiPickerRef} className="absolute bottom-full right-0 mb-2 z-10">
+                  <EmojiPicker
+                    onEmojiClick={handleEmojiClick}
+                    width={350}
+                    height={400}
+                    previewConfig={{ showPreview: false }}
                   />
-                  <IconButton
-                    type="button"
-                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    icon={<Smile className="w-5 h-5 text-app-muted" />}
-                    variant="ghost"
-                    size="sm"
-                    aria-label="Emoji Picker"
-                    title="Emoji Picker"
-                    className="absolute bottom-2 right-2 p-1 hover:bg-app-bg rounded-full"
-                  />
-                  {showEmojiPicker && (
-                    <div ref={emojiPickerRef} className="absolute bottom-full right-0 mb-2 z-10">
-                      <EmojiPicker
-                        onEmojiClick={handleEmojiClick}
-                        width={350}
-                        height={400}
-                        previewConfig={{ showPreview: false }}
-                      />
-                    </div>
-                  )}
                 </div>
-              </div>
+              )}
+            </div>
+          </div>
 
-              {/* Dropzone */}
-              <div {...getRootProps()} className="mb-4">
-                <input {...getInputProps()} />
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`
-                    border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-                    ${isDragActive 
-                      ? 'border-tokens-brandGreen bg-app-bg' 
-                      : 'border-app-border hover:border-tokens-brandGreen hover:bg-app-bg'
-                    }
-                  `}
-                >
-                  <Upload className="w-12 h-12 mx-auto mb-4 text-app-muted" />
-                  <p className="text-sm font-medium text-app-fg mb-2">
-                    {isDragActive ? 'Fotos hier ablegen' : 'Fotos hochladen'}
-                  </p>
-                  <p className="text-xs text-app-muted">
-                    Drag & Drop oder klicken
-                  </p>
-                </motion.div>
-              </div>
+          {/* Dropzone */}
+          <div {...getRootProps()} className="mb-4">
+            <input {...getInputProps()} />
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`
+                border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
+                ${isDragActive
+                  ? 'border-tokens-brandGreen bg-app-bg'
+                  : 'border-app-border hover:border-tokens-brandGreen hover:bg-app-bg'
+                }
+              `}
+            >
+              <Upload className="w-12 h-12 mx-auto mb-4 text-app-muted" />
+              <p className="text-sm font-medium text-app-fg mb-2">
+                {isDragActive ? 'Fotos hier ablegen' : 'Fotos hochladen'}
+              </p>
+              <p className="text-xs text-app-muted">Drag & Drop oder klicken</p>
+            </motion.div>
+          </div>
 
               <MotionButton
                 onClick={capturePhoto}
@@ -374,14 +378,11 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                   size="sm"
                   className="w-full px-4 py-3 bg-tokens-brandGreen text-app-bg rounded-lg font-medium hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {files.some(f => f.uploading) ? 'Wird hochgeladen...' : `${files.length} Foto(s) hochladen`}
+                  Hochladen
                 </MotionButton>
               )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
-

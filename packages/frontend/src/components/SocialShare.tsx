@@ -1,7 +1,7 @@
 'use client';
 
-import { Share2, Facebook, Instagram, MessageCircle, Copy } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Facebook, MessageCircle, Copy } from 'lucide-react';
+import { IconButton } from '@/components/ui/IconButton';
 import { useToastStore } from '@/store/toastStore';
 
 interface SocialShareProps {
@@ -11,7 +11,7 @@ interface SocialShareProps {
   className?: string;
 }
 
-export default function SocialShare({ url, title = 'Event Foto', imageUrl, className = '' }: SocialShareProps) {
+export default function SocialShare({ url, title = 'Event Foto', imageUrl: _imageUrl, className = '' }: SocialShareProps) {
   const { showToast } = useToastStore();
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
@@ -41,33 +41,30 @@ export default function SocialShare({ url, title = 'Event Foto', imageUrl, class
 
   return (
     <div className={`flex gap-2 ${className}`}>
-      <Button
+      <IconButton
         onClick={() => handleShare('facebook')}
         variant="ghost"
         size="sm"
-        className="p-2 bg-[var(--status-info)] text-app-bg rounded-full hover:opacity-90 transition-colors"
+        className="border border-app-border bg-app-card hover:bg-app-bg"
         aria-label="Auf Facebook teilen"
-      >
-        <Facebook className="w-5 h-5" />
-      </Button>
-      <Button
+        icon={<Facebook className="h-5 w-5" />}
+      />
+      <IconButton
         onClick={() => handleShare('whatsapp')}
         variant="ghost"
         size="sm"
-        className="p-2 bg-[var(--status-success)] text-app-bg rounded-full hover:opacity-90 transition-colors"
+        className="border border-app-border bg-app-card hover:bg-app-bg"
         aria-label="Auf WhatsApp teilen"
-      >
-        <MessageCircle className="w-5 h-5" />
-      </Button>
-      <Button
+        icon={<MessageCircle className="h-5 w-5" />}
+      />
+      <IconButton
         onClick={() => handleShare('copy')}
         variant="ghost"
         size="sm"
-        className="p-2 bg-[var(--status-neutral)] text-app-bg rounded-full hover:opacity-90 transition-colors"
+        className="border border-app-border bg-app-card hover:bg-app-bg"
         aria-label="Link kopieren"
-      >
-        <Copy className="w-5 h-5" />
-      </Button>
+        icon={<Copy className="h-5 w-5" />}
+      />
     </div>
   );
 }

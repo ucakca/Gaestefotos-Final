@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import {
   Dialog,
   DialogClose,
@@ -503,16 +504,17 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               </div>
               <div className="flex items-center gap-3">
                 <label className="text-sm text-app-muted">Zeitraum</label>
-                <select
-                  className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg"
-                  value={sinceHours}
-                  onChange={(e) => setSinceHours(parseInt(e.target.value, 10))}
-                >
-                  <option value={24}>24h</option>
-                  <option value={72}>72h</option>
-                  <option value={168}>7 Tage</option>
-                  <option value={720}>30 Tage</option>
-                </select>
+                <Select value={String(sinceHours)} onValueChange={(v) => setSinceHours(parseInt(v, 10))}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="24">24h</SelectItem>
+                    <SelectItem value="72">72h</SelectItem>
+                    <SelectItem value="168">7 Tage</SelectItem>
+                    <SelectItem value="720">30 Tage</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

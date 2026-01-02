@@ -72,7 +72,7 @@ export default function DateTimePicker({
   return (
     <div className={className} ref={wrapperRef}>
       {label && (
-        <label className="block text-sm font-medium mb-2 text-tokens-brandGreen">
+        <label className="mb-2 block text-sm font-medium text-app-fg">
           {label}
           {required && <span className="text-[var(--status-danger)] ml-1">*</span>}
         </label>
@@ -85,7 +85,7 @@ export default function DateTimePicker({
             value={selectedDate ? formatDisplayDate(selectedDate) : ''}
             onClick={() => setIsOpen(!isOpen)}
             placeholder="DD.MM.YYYY HH:MM auswählen"
-            className="w-full px-4 py-3 pr-12 border border-app-border rounded-lg focus:ring-2 focus:outline-none focus:ring-app-fg/30 focus:border-transparent transition-all cursor-pointer text-app-fg bg-app-card"
+            className="pr-12 cursor-pointer"
           />
           <IconButton
             onClick={(e) => {
@@ -98,7 +98,7 @@ export default function DateTimePicker({
             size="sm"
             aria-label="Kalender öffnen"
             title="Kalender öffnen"
-            className="absolute right-3 text-tokens-brandGreen hover:opacity-80 focus:outline-none"
+            className="absolute right-3 text-app-muted hover:text-app-fg"
           />
         </div>
         {isOpen && (
@@ -113,7 +113,7 @@ export default function DateTimePicker({
               locale="de"
               inline
               minDate={new Date()}
-              className="border border-app-border rounded-lg bg-app-card"
+              className="rounded-lg border border-app-border bg-app-card"
             />
           </div>
         )}

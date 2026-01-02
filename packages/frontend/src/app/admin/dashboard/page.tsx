@@ -72,17 +72,6 @@ export default function AdminDashboardPage() {
     setOpenPanels((prev) => ({ ...prev, [key]: prev[key] === false }));
   };
 
-  const navBtnStyle = (isActive: boolean) => ({
-    padding: '0.65rem 0.75rem',
-    borderRadius: '0.75rem',
-    border: isActive ? '1px solid var(--brand-green)' : '1px solid var(--app-border)',
-    background: isActive ? 'var(--brand-green)' : 'var(--app-card)',
-    cursor: 'pointer',
-    color: isActive ? 'var(--app-card)' : 'var(--brand-green)',
-    fontWeight: 800,
-    textAlign: 'left' as const,
-  });
-
   const ActionButton = ({
     children,
     onClick,
@@ -94,28 +83,16 @@ export default function AdminDashboardPage() {
     variant?: 'primary' | 'secondary' | 'danger';
     disabled?: boolean;
   }) => {
-    const bg =
-      variant === 'primary'
-        ? 'var(--brand-green)'
-        : variant === 'danger'
-          ? 'var(--status-danger)'
-          : 'var(--app-accent)';
+    const mappedVariant: 'primary' | 'secondary' | 'danger' =
+      variant === 'danger' ? 'danger' : variant === 'secondary' ? 'secondary' : 'primary';
     return (
       <Button
         type="button"
         onClick={onClick}
         disabled={disabled}
-        style={{
-          padding: '0.5rem 0.75rem',
-          backgroundColor: bg,
-          color: 'var(--app-card)',
-          border: 'none',
-          borderRadius: '0.5rem',
-          cursor: disabled ? 'default' : 'pointer',
-          fontSize: '0.875rem',
-          opacity: disabled ? 0.8 : 1,
-          fontWeight: 700,
-        }}
+        variant={mappedVariant}
+        size="sm"
+        className="font-semibold"
       >
         {children}
       </Button>
@@ -133,12 +110,12 @@ export default function AdminDashboardPage() {
     helpContent: string;
     actions?: React.ReactNode;
   }) => (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: 0 }}>
-        <h2 style={{ color: 'var(--brand-green)', fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>{title}</h2>
+    <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex min-w-0 items-center gap-2">
+        <h2 className="text-lg font-semibold text-app-fg">{title}</h2>
         <HelpTooltip title={helpTitle || title} content={helpContent} />
       </div>
-      {actions ? <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
     </div>
   );
 
@@ -778,31 +755,11 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        backgroundColor: 'var(--app-bg)'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ 
-            width: '48px', 
-            height: '48px', 
-            border: '4px solid var(--app-accent)',
-            borderTop: '4px solid var(--brand-green)',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto'
-          }}></div>
-          <p style={{ marginTop: '1rem', color: 'var(--brand-green)' }}>Lade Dashboard...</p>
+      <div className="flex min-h-screen items-center justify-center bg-app-bg">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-app-border border-t-tokens-brandGreen" />
+          <p className="mt-4 text-sm font-medium text-app-fg">Lade Dashboard...</p>
         </div>
-        <style jsx>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
       </div>
     );
   }
@@ -830,88 +787,106 @@ export default function AdminDashboardPage() {
         </DialogFooter>
       </DialogContent>
 
-      <div style={{ 
-        minHeight: '100vh',
-        backgroundColor: 'var(--app-bg)'
-      }}>
-      {/* Header */}
-      <header style={{
-        borderBottom: '1px solid var(--app-border)',
-        padding: '1rem 2rem',
-        backgroundColor: 'var(--app-card)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 2px 4px color-mix(in srgb, var(--app-fg) 10%, transparent)'
-      }}>
-        <Logo width={150} height={60} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ fontWeight: 600, color: 'var(--brand-green)' }}>Admin Dashboard</span>
-          <span style={{ color: 'var(--app-muted)', fontSize: '0.875rem' }}>
-            {user.name} ({user.email})
-          </span>
-          <Button
-            onClick={() => {
-              authApi.logout();
-              router.push('/login');
-            }}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: 'var(--app-accent)',
-              color: 'var(--app-card)',
-              border: 'none',
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: '500'
-            }}
-          >
-            Abmelden
-          </Button>
-        </div>
-      </header>
+      <div className="min-h-screen bg-app-bg">
+        <header className="sticky top-0 z-10 border-b border-app-border bg-app-card/95 backdrop-blur">
+          <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-6 py-4">
+            <Logo width={150} height={60} />
+            <div className="flex items-center gap-4">
+              <span className="hidden text-sm font-semibold text-app-fg sm:inline">Admin Dashboard</span>
+              <span className="text-sm text-app-muted">
+                {user.name} ({user.email})
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  authApi.logout();
+                  router.push('/login');
+                }}
+              >
+                Abmelden
+              </Button>
+            </div>
+          </div>
+        </header>
 
-      {/* Main Content */}
-      <main style={{ padding: '1.5rem', maxWidth: '1400px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-          <aside
-            style={{
-              width: 300,
-              position: 'sticky',
-              top: '1.5rem',
-              borderRadius: '1rem',
-              border: '1px solid var(--app-border)',
-              backgroundColor: 'color-mix(in srgb, var(--app-card) 75%, transparent)',
-              padding: '1rem',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
-              <div style={{ fontWeight: 900, color: 'var(--brand-green)' }}>Admin Navigation</div>
+        <main className="mx-auto max-w-[1400px] px-6 py-6">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+            <aside className="w-full shrink-0 rounded-2xl border border-app-border bg-app-card p-4 lg:sticky lg:top-24 lg:w-[300px]">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-sm font-semibold text-app-fg">Admin Navigation</div>
               <HelpTooltip
                 title="Navigation"
                 content={'Links springst du direkt zu den Admin-Bereichen.\n\nTipp: So bleibt das Dashboard übersichtlich, auch wenn es viele Tools gibt.'}
               />
             </div>
-            <div style={{ marginTop: '0.5rem', color: 'var(--app-muted)', fontSize: '0.85rem' }}>{user.email}</div>
+              <div className="mt-2 text-xs text-app-muted">{user.email}</div>
 
-            <div style={{ marginTop: '0.9rem', display: 'grid', gap: '0.5rem' }}>
-              <Button type="button" onClick={() => setActiveSection('packages')} style={navBtnStyle(activeSection === 'packages')}>Commerce (Pakete)</Button>
-              <Button type="button" onClick={() => setActiveSection('cms')} style={navBtnStyle(activeSection === 'cms')}>CMS (WordPress)</Button>
-              <Button type="button" onClick={() => setActiveSection('apiKeys')} style={navBtnStyle(activeSection === 'apiKeys')}>API Keys</Button>
-              <Button type="button" onClick={() => setActiveSection('emailTemplates')} style={navBtnStyle(activeSection === 'emailTemplates')}>E-Mail Templates</Button>
-              <Button type="button" onClick={() => setActiveSection('maintenance')} style={navBtnStyle(activeSection === 'maintenance')}>Maintenance</Button>
-              <Button type="button" onClick={() => setActiveSection('more')} style={navBtnStyle(activeSection === 'more')}>Weitere Tools</Button>
-            </div>
-          </aside>
+              <div className="mt-4 grid gap-2">
+                <Button
+                  type="button"
+                  onClick={() => setActiveSection('packages')}
+                  variant={activeSection === 'packages' ? 'primary' : 'secondary'}
+                  size="sm"
+                  className="w-full justify-start font-semibold"
+                >
+                  Commerce (Pakete)
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setActiveSection('cms')}
+                  variant={activeSection === 'cms' ? 'primary' : 'secondary'}
+                  size="sm"
+                  className="w-full justify-start font-semibold"
+                >
+                  CMS (WordPress)
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setActiveSection('apiKeys')}
+                  variant={activeSection === 'apiKeys' ? 'primary' : 'secondary'}
+                  size="sm"
+                  className="w-full justify-start font-semibold"
+                >
+                  API Keys
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setActiveSection('emailTemplates')}
+                  variant={activeSection === 'emailTemplates' ? 'primary' : 'secondary'}
+                  size="sm"
+                  className="w-full justify-start font-semibold"
+                >
+                  E-Mail Templates
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setActiveSection('maintenance')}
+                  variant={activeSection === 'maintenance' ? 'primary' : 'secondary'}
+                  size="sm"
+                  className="w-full justify-start font-semibold"
+                >
+                  Maintenance
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setActiveSection('more')}
+                  variant={activeSection === 'more' ? 'primary' : 'secondary'}
+                  size="sm"
+                  className="w-full justify-start font-semibold"
+                >
+                  Weitere Tools
+                </Button>
+              </div>
+            </aside>
 
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h1 style={{ color: 'var(--brand-green)', fontSize: '2rem', fontWeight: 900, marginBottom: '0.75rem' }}>Admin Dashboard</h1>
-            <div style={{ color: 'var(--app-muted)', marginBottom: '1.25rem' }}>Aufgeräumt: Nutze links die Navigation, um schnell zum richtigen Bereich zu springen.</div>
+            <div className="min-w-0 flex-1">
+              <h1 className="mb-2 text-2xl font-semibold tracking-tight text-app-fg">Admin Dashboard</h1>
+              <p className="mb-6 text-sm text-app-muted">
+                Aufgeräumt: Nutze links die Navigation, um schnell zum richtigen Bereich zu springen.
+              </p>
 
-            <div style={{ display: 'grid', gap: '1.5rem' }}>
+              <div className="grid gap-6">
             {activeSection === 'packages' && (
             <section id="admin-packages" className={sectionCardClass}>
               <SectionHeader
@@ -932,39 +907,43 @@ export default function AdminDashboardPage() {
                 <>
 
               {packagesError && (
-                <p style={{ marginTop: '0.75rem', color: 'var(--status-danger)' }}>{packagesError}</p>
+                <p className="mt-3 text-sm text-[var(--status-danger)]">{packagesError}</p>
               )}
 
-              <div style={{ marginTop: '1rem', overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full border-collapse text-sm">
                   <thead>
-                    <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--app-border)' }}>
-                      <th style={{ padding: '0.5rem' }}>SKU</th>
-                      <th style={{ padding: '0.5rem' }}>Name</th>
-                      <th style={{ padding: '0.5rem' }}>Typ</th>
-                      <th style={{ padding: '0.5rem' }}>Tier</th>
-                      <th style={{ padding: '0.5rem' }}>From</th>
-                      <th style={{ padding: '0.5rem' }}>Limit (Bytes)</th>
-                      <th style={{ padding: '0.5rem' }}>Dauer (Tage)</th>
-                      <th style={{ padding: '0.5rem' }}>Aktiv</th>
-                      <th style={{ padding: '0.5rem' }}></th>
+                    <tr className="border-b border-app-border text-left">
+                      <th className="p-2 font-semibold text-app-fg">SKU</th>
+                      <th className="p-2 font-semibold text-app-fg">Name</th>
+                      <th className="p-2 font-semibold text-app-fg">Typ</th>
+                      <th className="p-2 font-semibold text-app-fg">Tier</th>
+                      <th className="p-2 font-semibold text-app-fg">From</th>
+                      <th className="p-2 font-semibold text-app-fg">Limit (Bytes)</th>
+                      <th className="p-2 font-semibold text-app-fg">Dauer (Tage)</th>
+                      <th className="p-2 font-semibold text-app-fg">Aktiv</th>
+                      <th className="p-2 font-semibold text-app-fg"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {packagesLoading ? (
-                      <tr><td colSpan={9} style={{ padding: '0.75rem', color: 'var(--app-muted)' }}>Lade…</td></tr>
+                      <tr>
+                        <td colSpan={9} className="p-3 text-sm text-app-muted">
+                          Lade…
+                        </td>
+                      </tr>
                     ) : (
                       packages.map((p) => (
-                        <tr key={p.id} style={{ borderBottom: '1px solid var(--app-border)' }}>
-                        <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{p.sku}</td>
-                        <td style={{ padding: '0.5rem' }}>{p.name}</td>
-                        <td style={{ padding: '0.5rem' }}>{p.type}</td>
-                        <td style={{ padding: '0.5rem' }}>{p.resultingTier}</td>
-                        <td style={{ padding: '0.5rem' }}>{p.upgradeFromTier || '-'}</td>
-                        <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{p.storageLimitBytes ?? '-'}</td>
-                        <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{p.storageDurationDays ?? '-'}</td>
-                        <td style={{ padding: '0.5rem' }}>{p.isActive ? 'ja' : 'nein'}</td>
-                        <td style={{ padding: '0.5rem', whiteSpace: 'nowrap' }}>
+                        <tr key={p.id} className="border-b border-app-border">
+                        <td className="p-2 font-mono">{p.sku}</td>
+                        <td className="p-2">{p.name}</td>
+                        <td className="p-2">{p.type}</td>
+                        <td className="p-2">{p.resultingTier}</td>
+                        <td className="p-2">{p.upgradeFromTier || '-'}</td>
+                        <td className="p-2 font-mono">{p.storageLimitBytes ?? '-'}</td>
+                        <td className="p-2 font-mono">{p.storageDurationDays ?? '-'}</td>
+                        <td className="p-2">{p.isActive ? 'ja' : 'nein'}</td>
+                        <td className="p-2 whitespace-nowrap">
                             <ActionButton
                               variant="secondary"
                               onClick={() =>
@@ -977,7 +956,7 @@ export default function AdminDashboardPage() {
                             >
                               Bearbeiten
                             </ActionButton>
-                            <span style={{ display: 'inline-block', width: 8 }} />
+                            <span className="inline-block w-2" />
                             <ActionButton
                               variant="danger"
                               onClick={async () => {
@@ -1008,15 +987,24 @@ export default function AdminDashboardPage() {
             </div>
 
               {/* Create */}
-              <div style={{ marginTop: '1.25rem', borderTop: '1px solid var(--app-border)', paddingTop: '1rem' }}>
-                <h3 style={{ color: 'var(--brand-green)', fontSize: '1rem', fontWeight: 'bold', marginBottom: '0.75rem' }}>Neues Paket</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Input value={newPkg.sku} onChange={(e) => setNewPkg({ ...newPkg, sku: e.target.value })} placeholder="SKU" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1, fontFamily: 'monospace' }} />
+              <div className="mt-5 border-t border-app-border pt-4">
+                <h3 className="mb-3 text-sm font-semibold text-app-fg">Neues Paket</h3>
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={newPkg.sku}
+                      onChange={(e) => setNewPkg({ ...newPkg, sku: e.target.value })}
+                      placeholder="SKU"
+                      className="font-mono"
+                    />
                     <HelpTooltip title="SKU" content={'Produkt-SKU aus WooCommerce. Muss eindeutig sein.'} />
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Input value={newPkg.name} onChange={(e) => setNewPkg({ ...newPkg, name: e.target.value })} placeholder="Name" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={newPkg.name}
+                      onChange={(e) => setNewPkg({ ...newPkg, name: e.target.value })}
+                      placeholder="Name"
+                    />
                     <HelpTooltip title="Name" content={'Interner Anzeigename.'} />
                   </div>
                   <Select value={newPkg.type} onValueChange={(value) => setNewPkg({ ...newPkg, type: value })}>
@@ -1028,16 +1016,34 @@ export default function AdminDashboardPage() {
                       <SelectItem value="UPGRADE">UPGRADE</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Input value={newPkg.resultingTier} onChange={(e) => setNewPkg({ ...newPkg, resultingTier: e.target.value })} placeholder="resultingTier" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
-                  <Input value={newPkg.upgradeFromTier} onChange={(e) => setNewPkg({ ...newPkg, upgradeFromTier: e.target.value })} placeholder="upgradeFromTier (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
-                  <Input value={newPkg.storageLimitBytes} onChange={(e) => setNewPkg({ ...newPkg, storageLimitBytes: e.target.value })} placeholder="storageLimitBytes (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
-                  <Input value={newPkg.storageDurationDays} onChange={(e) => setNewPkg({ ...newPkg, storageDurationDays: e.target.value })} placeholder="storageDurationDays (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-green)' }}>
+                  <Input
+                    value={newPkg.resultingTier}
+                    onChange={(e) => setNewPkg({ ...newPkg, resultingTier: e.target.value })}
+                    placeholder="resultingTier"
+                  />
+                  <Input
+                    value={newPkg.upgradeFromTier}
+                    onChange={(e) => setNewPkg({ ...newPkg, upgradeFromTier: e.target.value })}
+                    placeholder="upgradeFromTier (optional)"
+                  />
+                  <Input
+                    value={newPkg.storageLimitBytes}
+                    onChange={(e) => setNewPkg({ ...newPkg, storageLimitBytes: e.target.value })}
+                    placeholder="storageLimitBytes (optional)"
+                    className="font-mono"
+                  />
+                  <Input
+                    value={newPkg.storageDurationDays}
+                    onChange={(e) => setNewPkg({ ...newPkg, storageDurationDays: e.target.value })}
+                    placeholder="storageDurationDays (optional)"
+                    className="font-mono"
+                  />
+                  <label className="flex items-center gap-2 text-sm text-app-fg">
                     <Checkbox checked={newPkg.isActive} onCheckedChange={(checked) => setNewPkg({ ...newPkg, isActive: checked })} />
                     aktiv
                   </label>
                 </div>
-                <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
                   <ActionButton
                     onClick={async () => {
                       setPackagesError(null);
@@ -1075,13 +1081,18 @@ export default function AdminDashboardPage() {
 
               {/* Edit */}
               {editingPkg && (
-                <div style={{ marginTop: '1.25rem', borderTop: '1px solid var(--app-border)', paddingTop: '1rem' }}>
-                  <h3 style={{ color: 'var(--brand-green)', fontSize: '1rem', fontWeight: 'bold', marginBottom: '0.75rem' }}>
-                    Paket bearbeiten: <span style={{ fontFamily: 'monospace' }}>{editingPkg.sku}</span>
+                <div className="mt-5 border-t border-app-border pt-4">
+                  <h3 className="mb-3 text-sm font-semibold text-app-fg">
+                    Paket bearbeiten: <span className="font-mono">{editingPkg.sku}</span>
                   </h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                    <Input value={editingPkg.sku} onChange={(e) => setEditingPkg({ ...editingPkg, sku: e.target.value })} placeholder="SKU" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
-                    <Input value={editingPkg.name} onChange={(e) => setEditingPkg({ ...editingPkg, name: e.target.value })} placeholder="Name" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
+                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    <Input
+                      value={editingPkg.sku}
+                      onChange={(e) => setEditingPkg({ ...editingPkg, sku: e.target.value })}
+                      placeholder="SKU"
+                      className="font-mono"
+                    />
+                    <Input value={editingPkg.name} onChange={(e) => setEditingPkg({ ...editingPkg, name: e.target.value })} placeholder="Name" />
                     <Select value={editingPkg.type} onValueChange={(value) => setEditingPkg({ ...editingPkg, type: value })}>
                       <SelectTrigger className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
                         <SelectValue placeholder="Type" />
@@ -1091,16 +1102,34 @@ export default function AdminDashboardPage() {
                         <SelectItem value="UPGRADE">UPGRADE</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Input value={editingPkg.resultingTier} onChange={(e) => setEditingPkg({ ...editingPkg, resultingTier: e.target.value })} placeholder="resultingTier" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
-                    <Input value={editingPkg.upgradeFromTier || ''} onChange={(e) => setEditingPkg({ ...editingPkg, upgradeFromTier: e.target.value })} placeholder="upgradeFromTier (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)' }} />
-                    <Input value={editingPkg.storageLimitBytes ?? ''} onChange={(e) => setEditingPkg({ ...editingPkg, storageLimitBytes: e.target.value })} placeholder="storageLimitBytes (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
-                    <Input value={editingPkg.storageDurationDays ?? ''} onChange={(e) => setEditingPkg({ ...editingPkg, storageDurationDays: e.target.value })} placeholder="storageDurationDays (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace' }} />
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-green)' }}>
+                    <Input
+                      value={editingPkg.resultingTier}
+                      onChange={(e) => setEditingPkg({ ...editingPkg, resultingTier: e.target.value })}
+                      placeholder="resultingTier"
+                    />
+                    <Input
+                      value={editingPkg.upgradeFromTier || ''}
+                      onChange={(e) => setEditingPkg({ ...editingPkg, upgradeFromTier: e.target.value })}
+                      placeholder="upgradeFromTier (optional)"
+                    />
+                    <Input
+                      value={editingPkg.storageLimitBytes ?? ''}
+                      onChange={(e) => setEditingPkg({ ...editingPkg, storageLimitBytes: e.target.value })}
+                      placeholder="storageLimitBytes (optional)"
+                      className="font-mono"
+                    />
+                    <Input
+                      value={editingPkg.storageDurationDays ?? ''}
+                      onChange={(e) => setEditingPkg({ ...editingPkg, storageDurationDays: e.target.value })}
+                      placeholder="storageDurationDays (optional)"
+                      className="font-mono"
+                    />
+                    <label className="flex items-center gap-2 text-sm text-app-fg">
                       <Checkbox checked={!!editingPkg.isActive} onCheckedChange={(checked) => setEditingPkg({ ...editingPkg, isActive: checked })} />
                       aktiv
                     </label>
                   </div>
-                  <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+                  <div className="mt-3 flex flex-wrap gap-2">
                     <ActionButton
                       onClick={async () => {
                         setPackagesError(null);
@@ -1132,11 +1161,11 @@ export default function AdminDashboardPage() {
               )}
 
               {(cmsSnapshots || []).length ? (
-                <div style={{ marginTop: '0.75rem', border: '1px solid var(--app-border)', borderRadius: '0.75rem', overflow: 'hidden' }}>
-                  <div style={{ padding: '0.75rem', background: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)', fontSize: '0.875rem', color: 'var(--app-muted)' }}>
+                <div className="mt-3 overflow-hidden rounded-xl border border-app-border">
+                  <div className="border-b border-app-border bg-app-bg p-3 text-sm text-app-muted">
                     Letzte Snapshots:
                   </div>
-                  <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                  <div className="max-h-[220px] overflow-y-auto">
                     {(cmsSnapshots || []).slice(0, 20).map((it: any) => (
                       <Button
                         key={String(it?.id)}
@@ -1144,21 +1173,16 @@ export default function AdminDashboardPage() {
                           if (it?.kind) setCmsFaqKind(String(it.kind) as any);
                           if (it?.slug) setCmsFaqSlug(String(it.slug));
                         }}
-                        style={{
-                          width: '100%',
-                          textAlign: 'left',
-                          padding: '0.75rem',
-                          border: 'none',
-                          borderBottom: '1px solid var(--app-border)',
-                          background: 'var(--app-card)',
-                          cursor: 'pointer'
-                        }}
+                        variant="ghost"
+                        className="h-auto w-full justify-start rounded-none border-b border-app-border bg-app-card p-3 text-left"
                       >
-                        <div style={{ fontWeight: 700, color: 'var(--brand-green)' }}>{String(it?.title || '')}</div>
-                        <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--app-muted)' }}>
+                        <div className="font-semibold text-app-fg">{String(it?.title || '')}</div>
+                        <div className="font-mono text-xs text-app-muted">
                           {String(it?.kind || '')}:{String(it?.slug || '')}
                         </div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--app-muted)' }}>{it?.fetchedAt ? String(it.fetchedAt).replace('T', ' ').replace('Z', '') : ''}</div>
+                        <div className="text-xs text-app-muted">
+                          {it?.fetchedAt ? String(it.fetchedAt).replace('T', ' ').replace('Z', '') : ''}
+                        </div>
                       </Button>
                     ))}
                   </div>
@@ -1201,9 +1225,9 @@ export default function AdminDashboardPage() {
               {openPanels.cms && (
                 <>
 
-              <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div style={{ flex: 1 }}>
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
                     <Select value={cmsFaqKind} onValueChange={(value) => setCmsFaqKind(value as any)}>
                       <SelectTrigger className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
                         <SelectValue placeholder="WP Kind" />
@@ -1216,15 +1240,15 @@ export default function AdminDashboardPage() {
                   </div>
                   <HelpTooltip title="WP Kind" content={'pages = normale Seiten (z.B. FAQ).\nposts = Blog-Beiträge.\n\nFür FAQ ist meist pages korrekt.'} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={cmsFaqSlug} onChange={(e) => setCmsFaqSlug(e.target.value)} placeholder="slug (e.g. faq)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+                <div className="flex items-center gap-2">
+                  <Input value={cmsFaqSlug} onChange={(e) => setCmsFaqSlug(e.target.value)} placeholder="slug (e.g. faq)" />
                   <HelpTooltip title="WP Slug" content={'Der Slug ist der URL-Teil (z.B. /faq → slug=faq).\n\nTipp: Nutze Search/Recent und klicke einen Treffer.'} />
                 </div>
               </div>
 
-              <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={cmsSearchQuery} onChange={(e) => setCmsSearchQuery(e.target.value)} placeholder="Search WP (e.g. faq)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', minWidth: '320px' }} />
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Input value={cmsSearchQuery} onChange={(e) => setCmsSearchQuery(e.target.value)} placeholder="Search WP (e.g. faq)" className="min-w-[320px]" />
                   <HelpTooltip title="Search" content={'Sucht im WordPress nach Titel/Slug. Klick auf Treffer setzt den slug.'} />
                 </div>
                 <ActionButton variant="secondary" onClick={searchCmsWp} disabled={cmsSearchLoading}>
@@ -1236,31 +1260,24 @@ export default function AdminDashboardPage() {
               </div>
 
               {cmsSearchError && (
-                <p style={{ marginTop: '0.75rem', color: 'var(--status-danger)' }}>{cmsSearchError}</p>
+                <p className="mt-3 text-sm text-[var(--status-danger)]">{cmsSearchError}</p>
               )}
 
               {cmsSearchResult?.items?.length ? (
-                <div style={{ marginTop: '0.75rem', border: '1px solid var(--app-border)', borderRadius: '0.75rem', overflow: 'hidden' }}>
-                  <div style={{ padding: '0.75rem', background: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)', fontSize: '0.875rem', color: 'var(--app-muted)' }}>
+                <div className="mt-3 overflow-hidden rounded-xl border border-app-border">
+                  <div className="border-b border-app-border bg-app-bg p-3 text-sm text-app-muted">
                     Treffer (klick setzt slug):
                   </div>
-                  <div style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                  <div className="max-h-[220px] overflow-y-auto">
                     {(cmsSearchResult?.items || []).map((it: any) => (
                       <Button
                         key={String(it?.id || it?.slug)}
                         onClick={() => setCmsFaqSlug(String(it?.slug || ''))}
-                        style={{
-                          width: '100%',
-                          textAlign: 'left',
-                          padding: '0.75rem',
-                          border: 'none',
-                          borderBottom: '1px solid var(--app-border)',
-                          background: 'var(--app-card)',
-                          cursor: 'pointer'
-                        }}
+                        variant="ghost"
+                        className="h-auto w-full justify-start rounded-none border-b border-app-border bg-app-card p-3 text-left"
                       >
-                        <div style={{ fontWeight: 700, color: 'var(--brand-green)' }}>{String(it?.title || '')}</div>
-                        <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--app-muted)' }}>{String(it?.slug || '')}</div>
+                        <div className="font-semibold text-app-fg">{String(it?.title || '')}</div>
+                        <div className="font-mono text-xs text-app-muted">{String(it?.slug || '')}</div>
                       </Button>
                     ))}
                   </div>
@@ -1268,11 +1285,11 @@ export default function AdminDashboardPage() {
               ) : null}
 
               {cmsFaqError && (
-                <p style={{ marginTop: '0.75rem', color: 'var(--status-danger)' }}>{cmsFaqError}</p>
+                <p className="mt-3 text-sm text-[var(--status-danger)]">{cmsFaqError}</p>
               )}
 
               {cmsLastSync?.extraction && (
-                <pre style={{ marginTop: '0.75rem', whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.8rem', background: 'var(--app-bg)', border: '1px solid var(--app-border)', borderRadius: '0.75rem', padding: '0.75rem' }}>
+                <pre className="mt-3 whitespace-pre-wrap rounded-xl border border-app-border bg-app-bg p-3 font-mono text-xs">
                   {JSON.stringify({
                     kind: cmsFaqKind,
                     slug: cmsFaqSlug,
@@ -1283,12 +1300,12 @@ export default function AdminDashboardPage() {
               )}
 
               {cmsFaqResult && (
-                <div style={{ marginTop: '0.75rem' }}>
-                  <p style={{ margin: 0, color: 'var(--app-muted)', fontSize: '0.875rem' }}>
-                    Source: <span style={{ fontFamily: 'monospace' }}>{String(cmsFaqResult?.source?.url || '')}</span>
+                <div className="mt-3">
+                  <p className="m-0 text-sm text-app-muted">
+                    Source: <span className="font-mono">{String(cmsFaqResult?.source?.url || '')}</span>
                   </p>
 
-                  <pre style={{ marginTop: '0.75rem', whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.8rem', background: 'var(--app-bg)', border: '1px solid var(--app-border)', borderRadius: '0.75rem', padding: '0.75rem' }}>
+                  <pre className="mt-3 whitespace-pre-wrap rounded-xl border border-app-border bg-app-bg p-3 font-mono text-xs">
                     {JSON.stringify({
                       count: cmsFaqResult?.count,
                       items: (cmsFaqResult?.items || []).map((i: any) => ({
@@ -1303,8 +1320,12 @@ export default function AdminDashboardPage() {
                   </pre>
 
                   {(cmsFaqResult?.items?.[0]?.html || '') && (
-                    <div style={{ marginTop: '0.75rem', border: '1px solid var(--app-border)', borderRadius: '0.75rem', overflow: 'hidden' }}>
-                      <iframe title="cms-faq-preview" style={{ width: '100%', height: '320px', border: 'none' }} srcDoc={String(cmsFaqResult?.items?.[0]?.html || '')} />
+                    <div className="mt-3 overflow-hidden rounded-xl border border-app-border">
+                      <iframe
+                        title="cms-faq-preview"
+                        className="h-[320px] w-full border-0"
+                        srcDoc={String(cmsFaqResult?.items?.[0]?.html || '')}
+                      />
                     </div>
                   )}
                 </div>
@@ -1335,33 +1356,33 @@ export default function AdminDashboardPage() {
               {openPanels.apiKeys && (
                 <>
 
-              <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={newApiKeyName} onChange={(e) => setNewApiKeyName(e.target.value)} placeholder="Name" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
-                  <HelpTooltip title="Name" content={'Interner Anzeigename für den Key (z.B. "Zapier" oder "Invoice Export").'} />
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="flex items-center gap-2">
+                  <Input value={newApiKeyName} onChange={(e) => setNewApiKeyName(e.target.value)} placeholder="Name" />
+                  <HelpTooltip title="Name" content={'Interner Anzeigenname für den Key (z.B. "Zapier" oder "Invoice Export").'} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={newApiKeyScopes} onChange={(e) => setNewApiKeyScopes(e.target.value)} placeholder="Scopes (comma separated)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                <div className="flex items-center gap-2">
+                  <Input value={newApiKeyScopes} onChange={(e) => setNewApiKeyScopes(e.target.value)} placeholder="Scopes (comma separated)" className="font-mono" />
                   <HelpTooltip title="Scopes" content={'Komma-getrennte Liste von Berechtigungen (z.B. "events:read, photos:read").\n\nLeer = je nach Backend-Konfiguration evtl. Full Access (nur wenn du das bewusst willst).'} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={newApiKeyExpiresAt} onChange={(e) => setNewApiKeyExpiresAt(e.target.value)} placeholder="expiresAt (YYYY-MM-DD or ISO)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                <div className="flex items-center gap-2">
+                  <Input value={newApiKeyExpiresAt} onChange={(e) => setNewApiKeyExpiresAt(e.target.value)} placeholder="expiresAt (YYYY-MM-DD or ISO)" className="font-mono" />
                   <HelpTooltip title="expiresAt" content={'Optional. Beispiele:\n- 2030-01-01\n- 2030-01-01T00:00:00.000Z\n\nLeer = läuft nie ab.'} />
                 </div>
               </div>
 
-              <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
                 <ActionButton onClick={createApiKey} disabled={createApiKeyLoading}>
                   {createApiKeyLoading ? 'Erstelle…' : 'API Key erstellen'}
                 </ActionButton>
-                {apiKeysError && <span style={{ color: 'var(--status-danger)' }}>{apiKeysError}</span>}
+                {apiKeysError && <span className="text-sm text-[var(--status-danger)]">{apiKeysError}</span>}
               </div>
 
               {createdApiKeyRaw && (
-                <div style={{ marginTop: '0.75rem', padding: '0.75rem', border: '1px solid var(--app-accent)', borderRadius: '0.75rem', background: 'var(--app-bg)' }}>
-                  <p style={{ margin: 0, color: 'var(--brand-green)', fontWeight: 700 }}>Neuer API Key (nur jetzt sichtbar):</p>
-                  <p style={{ marginTop: '0.5rem', fontFamily: 'monospace', wordBreak: 'break-all' }}>{createdApiKeyRaw}</p>
-                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <div className="mt-3 rounded-xl border border-app-border bg-app-bg p-3">
+                  <p className="m-0 text-sm font-semibold text-app-fg">Neuer API Key (nur jetzt sichtbar):</p>
+                  <p className="mt-2 break-all font-mono text-sm text-app-fg">{createdApiKeyRaw}</p>
+                  <div className="flex flex-wrap items-center gap-2">
                     <ActionButton
                       onClick={async () => {
                         await navigator.clipboard.writeText(createdApiKeyRaw);
@@ -1369,35 +1390,39 @@ export default function AdminDashboardPage() {
                     >
                       Copy
                     </ActionButton>
-                    <span style={{ color: 'var(--brand-green)', fontSize: '0.875rem' }}>Prefix: {createdApiKeyMeta?.prefix || '-'}</span>
+                    <span className="text-sm text-app-muted">Prefix: {createdApiKeyMeta?.prefix || '-'}</span>
                   </div>
                 </div>
               )}
 
-              <div style={{ marginTop: '1rem', overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full border-collapse text-sm">
                   <thead>
-                    <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--app-border)' }}>
-                      <th style={{ padding: '0.5rem' }}>Name</th>
-                      <th style={{ padding: '0.5rem' }}>Status</th>
-                      <th style={{ padding: '0.5rem' }}>Prefix</th>
-                      <th style={{ padding: '0.5rem' }}>Scopes</th>
-                      <th style={{ padding: '0.5rem' }}>Last used</th>
-                      <th style={{ padding: '0.5rem' }}></th>
+                    <tr className="border-b border-app-border text-left">
+                      <th className="p-2 font-semibold text-app-fg">Name</th>
+                      <th className="p-2 font-semibold text-app-fg">Status</th>
+                      <th className="p-2 font-semibold text-app-fg">Prefix</th>
+                      <th className="p-2 font-semibold text-app-fg">Scopes</th>
+                      <th className="p-2 font-semibold text-app-fg">Last used</th>
+                      <th className="p-2 font-semibold text-app-fg"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {apiKeysLoading ? (
-                      <tr><td colSpan={6} style={{ padding: '0.75rem', color: 'var(--app-muted)' }}>Lade…</td></tr>
+                      <tr>
+                        <td colSpan={6} className="p-3 text-sm text-app-muted">
+                          Lade…
+                        </td>
+                      </tr>
                     ) : (
                       (apiKeys || []).slice(0, 100).map((k: any) => (
-                        <tr key={k.id} style={{ borderBottom: '1px solid var(--app-border)' }}>
-                          <td style={{ padding: '0.5rem' }}>{k.name}</td>
-                          <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{k.status}</td>
-                          <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{k.prefix}</td>
-                          <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{Array.isArray(k.scopes) ? k.scopes.join(',') : ''}</td>
-                          <td style={{ padding: '0.5rem', whiteSpace: 'nowrap' }}>{k.lastUsedAt ? String(k.lastUsedAt).replace('T', ' ').replace('Z', '') : '-'}</td>
-                          <td style={{ padding: '0.5rem' }}>
+                        <tr key={k.id} className="border-b border-app-border">
+                          <td className="p-2">{k.name}</td>
+                          <td className="p-2 font-mono">{k.status}</td>
+                          <td className="p-2 font-mono">{k.prefix}</td>
+                          <td className="p-2 font-mono">{Array.isArray(k.scopes) ? k.scopes.join(',') : ''}</td>
+                          <td className="whitespace-nowrap p-2">{k.lastUsedAt ? String(k.lastUsedAt).replace('T', ' ').replace('Z', '') : '-'}</td>
+                          <td className="p-2">
                             <ActionButton variant="danger" onClick={() => revokeApiKey(k.id)} disabled={k.status !== 'ACTIVE'}>
                               Revoke
                             </ActionButton>
@@ -1435,9 +1460,9 @@ export default function AdminDashboardPage() {
               {openPanels.emailTemplates && (
                 <>
 
-              <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div style={{ flex: 1 }}>
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
                     <Select value={emailTplKind} onValueChange={(value) => setEmailTplKind(value as any)}>
                       <SelectTrigger className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
                         <SelectValue placeholder="Kind" />
@@ -1451,12 +1476,12 @@ export default function AdminDashboardPage() {
                   </div>
                   <HelpTooltip title="Kind" content={'Welches Template du bearbeitest.'} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={emailTplName} onChange={(e) => setEmailTplName(e.target.value)} placeholder="Name" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+                <div className="flex items-center gap-2">
+                  <Input value={emailTplName} onChange={(e) => setEmailTplName(e.target.value)} placeholder="Name" />
                   <HelpTooltip title="Name" content={'Interner Name/Label für das Template.'} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontWeight: 600, color: 'var(--brand-green)', margin: 0 }}>
+                <div className="flex items-center gap-2">
+                  <label className="m-0 flex items-center gap-2 text-sm font-semibold text-app-fg">
                     <Checkbox checked={emailTplIsActive} onCheckedChange={(checked) => setEmailTplIsActive(checked)} />
                     Active
                   </label>
@@ -1464,46 +1489,51 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Input value={emailTplSubject} onChange={(e) => setEmailTplSubject(e.target.value)} placeholder="Subject (supports {{variables}})" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: '100%', fontFamily: 'monospace', flex: 1 }} />
+              <div className="mt-3 flex items-center gap-2">
+                <Input
+                  value={emailTplSubject}
+                  onChange={(e) => setEmailTplSubject(e.target.value)}
+                  placeholder="Subject (supports {{variables}})"
+                  className="flex-1 font-mono"
+                />
                 <HelpTooltip title="Subject" content={'Betreff der E-Mail. Unterstützt {{variablen}}.'} />
               </div>
 
-              <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                  <Textarea value={emailTplHtml} onChange={(e) => setEmailTplHtml(e.target.value)} placeholder="HTML (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: '100%', minHeight: '160px', fontFamily: 'monospace' }} />
-                  <div style={{ paddingTop: '0.35rem' }}>
+              <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                <div className="flex items-start gap-2">
+                  <Textarea value={emailTplHtml} onChange={(e) => setEmailTplHtml(e.target.value)} placeholder="HTML (optional)" className="min-h-[160px] flex-1 font-mono" />
+                  <div className="pt-1">
                     <HelpTooltip title="HTML" content={'HTML-Version der Mail (optional).'} />
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                  <Textarea value={emailTplText} onChange={(e) => setEmailTplText(e.target.value)} placeholder="Text (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: '100%', minHeight: '160px', fontFamily: 'monospace' }} />
-                  <div style={{ paddingTop: '0.35rem' }}>
+                <div className="flex items-start gap-2">
+                  <Textarea value={emailTplText} onChange={(e) => setEmailTplText(e.target.value)} placeholder="Text (optional)" className="min-h-[160px] flex-1 font-mono" />
+                  <div className="pt-1">
                     <HelpTooltip title="Text" content={'Plaintext-Version der Mail (optional).'} />
                   </div>
                 </div>
               </div>
 
-              <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
                 <ActionButton onClick={saveEmailTemplate} disabled={emailTplSaving}>
                   {emailTplSaving ? 'Speichere…' : 'Speichern'}
                 </ActionButton>
                 <ActionButton variant="secondary" onClick={previewEmailTemplate} disabled={emailTplPreviewLoading}>
                   {emailTplPreviewLoading ? 'Preview…' : 'Preview'}
                 </ActionButton>
-                {emailTplError && <span style={{ color: 'var(--status-danger)' }}>{emailTplError}</span>}
+                {emailTplError && <span className="text-sm text-[var(--status-danger)]">{emailTplError}</span>}
               </div>
 
-              <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                <Textarea value={emailTplVarsJson} onChange={(e) => setEmailTplVarsJson(e.target.value)} placeholder="Variables JSON" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: '100%', minHeight: '160px', fontFamily: 'monospace' }} />
-                <div style={{ paddingTop: '0.35rem' }}>
+              <div className="mt-3 flex items-start gap-2">
+                <Textarea value={emailTplVarsJson} onChange={(e) => setEmailTplVarsJson(e.target.value)} placeholder="Variables JSON" className="min-h-[160px] flex-1 font-mono" />
+                <div className="pt-1">
                   <HelpTooltip title="Variables JSON" content={'Beispielwerte zum Rendern der Template-Vorschau.\n\nTipp: Muss gültiges JSON sein.'} />
                 </div>
               </div>
 
-              <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={emailTplTestTo} onChange={(e) => setEmailTplTestTo(e.target.value)} placeholder="Test-Send to (email)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', minWidth: '320px' }} />
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Input value={emailTplTestTo} onChange={(e) => setEmailTplTestTo(e.target.value)} placeholder="Test-Send to (email)" className="min-w-[320px]" />
                   <HelpTooltip title="Test-Empfänger" content={'E-Mail Adresse für den Testversand.'} />
                 </div>
                 <ActionButton onClick={testSendEmailTemplate} disabled={emailTplTestSending}>
@@ -1512,20 +1542,20 @@ export default function AdminDashboardPage() {
               </div>
 
               {emailTplPreview && (
-                <div style={{ marginTop: '0.75rem', padding: '0.75rem', border: '1px solid var(--app-border)', borderRadius: '0.75rem' }}>
-                  <p style={{ margin: 0, color: 'var(--brand-green)', fontWeight: 700 }}>Preview Subject:</p>
-                  <p style={{ marginTop: '0.5rem', fontFamily: 'monospace' }}>{String(emailTplPreview?.subject || '')}</p>
+                <div className="mt-3 rounded-xl border border-app-border p-3">
+                  <p className="m-0 text-sm font-semibold text-app-fg">Preview Subject:</p>
+                  <p className="mt-2 font-mono text-sm">{String(emailTplPreview?.subject || '')}</p>
                   {emailTplPreview?.text && (
                     <>
-                      <p style={{ margin: 0, color: 'var(--brand-green)', fontWeight: 700 }}>Preview Text:</p>
-                      <pre style={{ whiteSpace: 'pre-wrap', marginTop: '0.5rem', fontFamily: 'monospace' }}>{String(emailTplPreview?.text || '')}</pre>
+                      <p className="m-0 text-sm font-semibold text-app-fg">Preview Text:</p>
+                      <pre className="mt-2 whitespace-pre-wrap font-mono text-sm">{String(emailTplPreview?.text || '')}</pre>
                     </>
                   )}
                   {emailTplPreview?.html && (
                     <>
-                      <p style={{ margin: 0, color: 'var(--brand-green)', fontWeight: 700 }}>Preview HTML:</p>
-                      <div style={{ marginTop: '0.5rem', border: '1px solid var(--app-border)', borderRadius: '0.5rem', overflow: 'hidden' }}>
-                        <iframe title="email-preview" style={{ width: '100%', height: '260px', border: 'none' }} srcDoc={String(emailTplPreview?.html || '')} />
+                      <p className="m-0 text-sm font-semibold text-app-fg">Preview HTML:</p>
+                      <div className="mt-2 overflow-hidden rounded-lg border border-app-border">
+                        <iframe title="email-preview" className="h-[260px] w-full border-0" srcDoc={String(emailTplPreview?.html || '')} />
                       </div>
                     </>
                   )}
@@ -1558,8 +1588,8 @@ export default function AdminDashboardPage() {
               {openPanels.maintenance && (
                 <>
 
-              <div style={{ marginTop: '0.75rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontWeight: 600, color: 'var(--brand-green)' }}>
+              <div className="mt-3 flex flex-wrap items-center gap-4">
+                <label className="flex items-center gap-2 text-sm font-semibold text-app-fg">
                   <Checkbox checked={maintenanceEnabled} onCheckedChange={(checked) => setMaintenanceEnabled(checked)} />
                   Wartungsmodus aktiv
                 </label>
@@ -1567,15 +1597,15 @@ export default function AdminDashboardPage() {
                 <ActionButton onClick={saveMaintenance} disabled={maintenanceSaving}>
                   {maintenanceSaving ? 'Speichere…' : 'Speichern'}
                 </ActionButton>
-                {maintenanceError && <span style={{ color: 'var(--status-danger)' }}>{maintenanceError}</span>}
+                {maintenanceError && <span className="text-sm text-[var(--status-danger)]">{maintenanceError}</span>}
               </div>
 
-              <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div className="mt-3 flex items-center gap-2">
                 <Input
                   value={maintenanceMessage}
                   onChange={(e) => setMaintenanceMessage(e.target.value)}
                   placeholder="Banner-Text (optional)"
-                  style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: '100%', flex: 1 }}
+                  className="flex-1"
                 />
                 <HelpTooltip title="Banner-Text" content={'Optionaler Hinweistext, der Gästen im Wartungsmodus angezeigt wird.'} />
               </div>
@@ -1599,33 +1629,33 @@ export default function AdminDashboardPage() {
                 }
               />
 
-              <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div className="flex items-center gap-2">
                   <Input
                     value={impersonateUserId}
                     onChange={(e) => setImpersonateUserId(e.target.value)}
                     placeholder="userId (UUID)"
-                    style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }}
+                    className="flex-1 font-mono"
                   />
                   <HelpTooltip title="userId" content={'Interne User-ID (UUID) aus der DB / Logs.'} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div className="flex items-center gap-2">
                   <Input
                     value={impersonateReason}
                     onChange={(e) => setImpersonateReason(e.target.value)}
                     placeholder="reason (optional)"
-                    style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }}
+                    className="flex-1"
                   />
                   <HelpTooltip title="reason" content={'Optionaler Grund (z.B. Ticket/Support-Fall). Wird im Token mitgeführt.'} />
                 </div>
               </div>
 
               {impersonateError && (
-                <p style={{ marginTop: '0.75rem', color: 'var(--status-danger)' }}>{impersonateError}</p>
+                <p className="mt-3 text-sm text-[var(--status-danger)]">{impersonateError}</p>
               )}
 
               {impersonateResult && (
-                <pre style={{ marginTop: '0.75rem', whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.8rem', background: 'var(--app-bg)', border: '1px solid var(--app-border)', borderRadius: '0.75rem', padding: '0.75rem' }}>
+                <pre className="mt-3 whitespace-pre-wrap rounded-xl border border-app-border bg-app-bg p-3 font-mono text-xs">
                   {JSON.stringify({
                     expiresInSeconds: impersonateResult?.expiresInSeconds,
                     user: impersonateResult?.user,
@@ -1645,27 +1675,27 @@ export default function AdminDashboardPage() {
                 }
               />
 
-              <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={invoiceStatus} onChange={(e) => setInvoiceStatus(e.target.value)} placeholder="status (OPEN/PAID/VOID/REFUNDED)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <div className="flex items-center gap-2">
+                  <Input value={invoiceStatus} onChange={(e) => setInvoiceStatus(e.target.value)} placeholder="status (OPEN/PAID/VOID/REFUNDED)" />
                   <HelpTooltip title="status" content={'Optionaler Filter. Leer = alle.'} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={invoiceEventId} onChange={(e) => setInvoiceEventId(e.target.value)} placeholder="eventId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                <div className="flex items-center gap-2">
+                  <Input value={invoiceEventId} onChange={(e) => setInvoiceEventId(e.target.value)} placeholder="eventId" className="font-mono" />
                   <HelpTooltip title="eventId" content={'Optionaler Filter nach Event.'} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={invoiceWcOrderId} onChange={(e) => setInvoiceWcOrderId(e.target.value)} placeholder="wcOrderId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                <div className="flex items-center gap-2">
+                  <Input value={invoiceWcOrderId} onChange={(e) => setInvoiceWcOrderId(e.target.value)} placeholder="wcOrderId" className="font-mono" />
                   <HelpTooltip title="wcOrderId" content={'Optionaler Filter nach WooCommerce Order ID.'} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={invoiceWpUserId} onChange={(e) => setInvoiceWpUserId(e.target.value)} placeholder="wpUserId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                <div className="flex items-center gap-2">
+                  <Input value={invoiceWpUserId} onChange={(e) => setInvoiceWpUserId(e.target.value)} placeholder="wpUserId" className="font-mono" />
                   <HelpTooltip title="wpUserId" content={'Optionaler Filter nach WordPress User ID.'} />
                 </div>
               </div>
 
               {invoiceExportError && (
-                <p style={{ marginTop: '0.75rem', color: 'var(--status-danger)' }}>{invoiceExportError}</p>
+                <p className="mt-3 text-sm text-[var(--status-danger)]">{invoiceExportError}</p>
               )}
             </section>
 
@@ -1675,19 +1705,13 @@ export default function AdminDashboardPage() {
                 helpContent={'Generiert ein druckfertiges PDF (optional Beschnitt/Schnittmarken) für Dienstleister.'}
               />
 
-              <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2">
                   <Input
                     value={qrEventId}
                     onChange={(e) => setQrEventId(e.target.value)}
                     placeholder="eventId"
-                    style={{
-                      padding: '0.6rem',
-                      borderRadius: '0.5rem',
-                      border: '1px solid var(--app-border)',
-                      minWidth: '360px',
-                      fontFamily: 'monospace'
-                    }}
+                    className="min-w-[360px] font-mono"
                   />
                   <HelpTooltip title="eventId" content={'Event-ID, für den du die QR-Links und das Provider-PDF erzeugen willst.'} />
                 </div>
@@ -1699,26 +1723,26 @@ export default function AdminDashboardPage() {
                 </ActionButton>
               </div>
 
-              {qrEventError && <p style={{ marginTop: '0.75rem', color: 'var(--status-danger)' }}>{qrEventError}</p>}
-              {qrTrafficError && <p style={{ marginTop: '0.75rem', color: 'var(--status-danger)' }}>{qrTrafficError}</p>}
+              {qrEventError && <p className="mt-3 text-sm text-[var(--status-danger)]">{qrEventError}</p>}
+              {qrTrafficError && <p className="mt-3 text-sm text-[var(--status-danger)]">{qrTrafficError}</p>}
 
               {(hostEventUrl || guestEventUrl) && (
-                <div style={{ marginTop: '0.75rem', display: 'grid', gap: '0.5rem' }}>
+                <div className="mt-3 grid gap-2">
                   {qrEventTitle && (
-                    <div style={{ color: 'var(--brand-green)', fontWeight: 600 }}>{qrEventTitle}</div>
+                    <div className="text-sm font-semibold text-app-fg">{qrEventTitle}</div>
                   )}
                   {hostEventUrl && (
-                    <div style={{ fontSize: '0.875rem' }}>
-                      <div style={{ color: 'var(--app-muted)' }}>Host-Link:</div>
-                      <a href={hostEventUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--brand-green)', textDecoration: 'underline', wordBreak: 'break-all' }}>
+                    <div className="text-sm">
+                      <div className="text-app-muted">Host-Link:</div>
+                      <a href={hostEventUrl} target="_blank" rel="noreferrer" className="break-all text-app-fg underline">
                         {hostEventUrl}
                       </a>
                     </div>
                   )}
                   {guestEventUrl && (
-                    <div style={{ fontSize: '0.875rem' }}>
-                      <div style={{ color: 'var(--app-muted)' }}>Gast-Link:</div>
-                      <a href={guestEventUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--brand-green)', textDecoration: 'underline', wordBreak: 'break-all' }}>
+                    <div className="text-sm">
+                      <div className="text-app-muted">Gast-Link:</div>
+                      <a href={guestEventUrl} target="_blank" rel="noreferrer" className="break-all text-app-fg underline">
                         {guestEventUrl}
                       </a>
                     </div>
@@ -1726,10 +1750,10 @@ export default function AdminDashboardPage() {
                 </div>
               )}
 
-              <div style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-green)' }}>
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <label className="flex items-center gap-2 text-sm font-semibold text-app-fg">
                   Format
-                  <div style={{ minWidth: 90 }}>
+                  <div className="min-w-[90px]">
                     <Select value={qrFormat} onValueChange={(value) => setQrFormat(value as any)}>
                       <SelectTrigger className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
                         <SelectValue placeholder="Format" />
@@ -1741,11 +1765,11 @@ export default function AdminDashboardPage() {
                     </Select>
                   </div>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-green)' }}>
+                <label className="flex items-center gap-2 text-sm font-semibold text-app-fg">
                   bleedMm
-                  <Input value={qrBleedMm} onChange={(e) => setQrBleedMm(e.target.value)} style={{ padding: '0.5rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', width: 90, fontFamily: 'monospace' }} />
+                  <Input value={qrBleedMm} onChange={(e) => setQrBleedMm(e.target.value)} className="w-[90px] font-mono" />
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--brand-green)' }}>
+                <label className="flex items-center gap-2 text-sm font-semibold text-app-fg">
                   <Checkbox checked={qrCropMarks} onCheckedChange={(checked) => setQrCropMarks(checked)} />
                   cropMarks
                 </label>
@@ -1755,24 +1779,24 @@ export default function AdminDashboardPage() {
                 </ActionButton>
               </div>
 
-              {qrExportError && <p style={{ marginTop: '0.75rem', color: 'var(--status-danger)' }}>{qrExportError}</p>}
+              {qrExportError && <p className="mt-3 text-sm text-[var(--status-danger)]">{qrExportError}</p>}
 
-              <div style={{ marginTop: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div style={{ color: 'var(--brand-green)', fontWeight: 800 }}>Views by source</div>
+              <div className="mt-4">
+                <div className="flex items-center gap-2">
+                  <div className="text-sm font-semibold text-app-fg">Views by source</div>
                   <HelpTooltip title="Views by source" content={'Zeigt die gezählten Aufrufe pro Quelle (z.B. source=qr).'} />
                 </div>
 
                 {qrTrafficStats && (
-                  <div style={{ marginTop: '0.5rem', display: 'grid', gap: '0.25rem', fontSize: '0.9rem' }}>
+                  <div className="mt-2 grid gap-1 text-sm">
                     {qrTrafficStats.length === 0 ? (
-                      <div style={{ color: 'var(--app-muted)' }}>Noch keine Views (oder Migration noch nicht deployed).</div>
+                      <div className="text-app-muted">Noch keine Views (oder Migration noch nicht deployed).</div>
                     ) : (
                       qrTrafficStats.map((s: any) => (
-                        <div key={String(s?.source || '')} style={{ display: 'flex', gap: '0.75rem', alignItems: 'baseline' }}>
-                          <div style={{ fontFamily: 'monospace', minWidth: 120 }}>{String(s?.source || '')}</div>
-                          <div style={{ fontWeight: 800 }}>{Number(s?.count || 0)}</div>
-                          <div style={{ color: 'var(--app-muted)' }}>
+                        <div key={String(s?.source || '')} className="flex items-baseline gap-3">
+                          <div className="min-w-[120px] font-mono">{String(s?.source || '')}</div>
+                          <div className="font-semibold">{Number(s?.count || 0)}</div>
+                          <div className="text-app-muted">
                             {s?.lastSeenAt ? `last: ${new Date(s.lastSeenAt).toLocaleString()}` : ''}
                           </div>
                         </div>
@@ -1790,19 +1814,13 @@ export default function AdminDashboardPage() {
                 helpContent={'Debug-Tool: zeigt aktuelle Usage/Storage Daten eines Events.'}
               />
 
-              <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <div className="flex items-center gap-2">
                   <Input
                     value={usageEventId}
                     onChange={(e) => setUsageEventId(e.target.value)}
                     placeholder="eventId"
-                    style={{
-                      padding: '0.6rem',
-                      borderRadius: '0.5rem',
-                      border: '1px solid var(--app-border)',
-                      minWidth: '320px',
-                      fontFamily: 'monospace'
-                    }}
+                    className="min-w-[320px] font-mono"
                   />
                   <HelpTooltip title="eventId" content={'Event-ID, dessen Usage du abrufen willst.'} />
                 </div>
@@ -1830,16 +1848,9 @@ export default function AdminDashboardPage() {
                   {usageLoading ? 'Lade…' : 'Abrufen'}
                 </ActionButton>
               </div>
-              {usageError && <p style={{ marginTop: '0.75rem', color: 'var(--status-danger)' }}>{usageError}</p>}
+              {usageError && <p className="mt-3 text-sm text-[var(--status-danger)]">{usageError}</p>}
               {usageResult && (
-                <pre style={{
-                  marginTop: '0.75rem',
-                  padding: '0.75rem',
-                  background: 'var(--app-bg)',
-                  borderRadius: '0.5rem',
-                  overflowX: 'auto',
-                  fontSize: '0.8rem'
-                }}>
+                <pre className="mt-3 overflow-x-auto rounded-lg bg-app-bg p-3 text-xs">
                   {JSON.stringify(usageResult, null, 2)}
                 </pre>
               )}
@@ -1851,21 +1862,21 @@ export default function AdminDashboardPage() {
                 title="Upgrade-Link Generator"
                 helpContent={'Generiert einen WooCommerce Add-to-Cart Link inkl. eventCode.'}
               />
-              <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={upgradeEventId} onChange={(e) => setUpgradeEventId(e.target.value)} placeholder="eventId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="flex items-center gap-2">
+                  <Input value={upgradeEventId} onChange={(e) => setUpgradeEventId(e.target.value)} placeholder="eventId" className="flex-1 font-mono" />
                   <HelpTooltip title="eventId" content={'Event-ID, für die das Upgrade gelten soll.'} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={upgradeSku} onChange={(e) => setUpgradeSku(e.target.value)} placeholder="sku (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+                <div className="flex items-center gap-2">
+                  <Input value={upgradeSku} onChange={(e) => setUpgradeSku(e.target.value)} placeholder="sku (optional)" className="flex-1" />
                   <HelpTooltip title="sku" content={'Optional. Wenn gesetzt, wird darüber das Produkt gefunden.'} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={upgradeProductId} onChange={(e) => setUpgradeProductId(e.target.value)} placeholder="productId (optional)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+                <div className="flex items-center gap-2">
+                  <Input value={upgradeProductId} onChange={(e) => setUpgradeProductId(e.target.value)} placeholder="productId (optional)" className="flex-1" />
                   <HelpTooltip title="productId" content={'Optional. Alternative zu sku.'} />
                 </div>
               </div>
-              <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
                 <ActionButton
                   variant="secondary"
                   onClick={async () => {
@@ -1895,12 +1906,12 @@ export default function AdminDashboardPage() {
                 </ActionButton>
                 <HelpTooltip title="Upgrade-Link" content={'Erzeugt einen Add-to-Cart Link. Danach kannst du ihn kopieren und weitergeben.'} />
               </div>
-              {upgradeError && <p style={{ marginTop: '0.75rem', color: 'var(--status-danger)' }}>{upgradeError}</p>}
+              {upgradeError && <p className="mt-3 text-sm text-[var(--status-danger)]">{upgradeError}</p>}
               {upgradeUrl ? (
-                <div style={{ marginTop: '0.75rem' }}>
-                  <p style={{ color: 'var(--brand-green)', fontWeight: '500' }}>Link:</p>
-                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                    <a href={upgradeUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--brand-green)', textDecoration: 'underline', wordBreak: 'break-all' }}>{upgradeUrl}</a>
+                <div className="mt-3">
+                  <p className="text-sm font-medium text-app-fg">Link:</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <a href={upgradeUrl} target="_blank" rel="noreferrer" className="break-all text-app-fg underline">{upgradeUrl}</a>
                     <ActionButton
                       onClick={async () => {
                         await navigator.clipboard.writeText(upgradeUrl);
@@ -1924,49 +1935,53 @@ export default function AdminDashboardPage() {
                 }
               />
 
-              <div style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={wooFilterStatus} onChange={(e) => setWooFilterStatus(e.target.value)} placeholder="status (z.B. PROCESSED/IGNORED/FAILED/FORBIDDEN)" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', flex: 1 }} />
+              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="flex items-center gap-2">
+                  <Input value={wooFilterStatus} onChange={(e) => setWooFilterStatus(e.target.value)} placeholder="status (z.B. PROCESSED/IGNORED/FAILED/FORBIDDEN)" />
                   <HelpTooltip title="status" content={'Optionaler Filter nach Status.'} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={wooFilterOrderId} onChange={(e) => setWooFilterOrderId(e.target.value)} placeholder="wcOrderId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                <div className="flex items-center gap-2">
+                  <Input value={wooFilterOrderId} onChange={(e) => setWooFilterOrderId(e.target.value)} placeholder="wcOrderId" className="font-mono" />
                   <HelpTooltip title="wcOrderId" content={'Optionaler Filter nach WooCommerce Order ID.'} />
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Input value={wooFilterEventId} onChange={(e) => setWooFilterEventId(e.target.value)} placeholder="eventId" style={{ padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--app-border)', fontFamily: 'monospace', flex: 1 }} />
+                <div className="flex items-center gap-2">
+                  <Input value={wooFilterEventId} onChange={(e) => setWooFilterEventId(e.target.value)} placeholder="eventId" className="font-mono" />
                   <HelpTooltip title="eventId" content={'Optionaler Filter nach Event.'} />
                 </div>
               </div>
 
               {wooLogsError && (
-                <p style={{ marginTop: '0.75rem', color: 'var(--status-danger)' }}>{wooLogsError}</p>
+                <p className="mt-3 text-sm text-[var(--status-danger)]">{wooLogsError}</p>
               )}
 
-              <div style={{ marginTop: '1rem', overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full border-collapse text-sm">
                   <thead>
-                    <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--app-border)' }}>
-                      <th style={{ padding: '0.5rem' }}>Zeit</th>
-                      <th style={{ padding: '0.5rem' }}>Status</th>
-                      <th style={{ padding: '0.5rem' }}>wcOrderId</th>
-                      <th style={{ padding: '0.5rem' }}>eventId</th>
-                      <th style={{ padding: '0.5rem' }}>SKU</th>
-                      <th style={{ padding: '0.5rem' }}>Reason</th>
+                    <tr className="border-b border-app-border text-left">
+                      <th className="p-2 font-semibold text-app-fg">Zeit</th>
+                      <th className="p-2 font-semibold text-app-fg">Status</th>
+                      <th className="p-2 font-semibold text-app-fg">wcOrderId</th>
+                      <th className="p-2 font-semibold text-app-fg">eventId</th>
+                      <th className="p-2 font-semibold text-app-fg">SKU</th>
+                      <th className="p-2 font-semibold text-app-fg">Reason</th>
                     </tr>
                   </thead>
                   <tbody>
                     {wooLogsLoading ? (
-                      <tr><td colSpan={6} style={{ padding: '0.75rem', color: 'var(--app-muted)' }}>Lade…</td></tr>
+                      <tr>
+                        <td colSpan={6} className="p-3 text-sm text-app-muted">
+                          Lade…
+                        </td>
+                      </tr>
                     ) : (
                       (wooLogs || []).slice(0, 50).map((l: any) => (
-                        <tr key={l.id} style={{ borderBottom: '1px solid var(--app-border)' }}>
-                          <td style={{ padding: '0.5rem', whiteSpace: 'nowrap' }}>{String(l.createdAt || '').replace('T', ' ').replace('Z', '')}</td>
-                          <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{l.status}</td>
-                          <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{l.wcOrderId || '-'}</td>
-                          <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{l.eventId || '-'}</td>
-                          <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>{l.wcSku || '-'}</td>
-                          <td style={{ padding: '0.5rem' }}>{l.reason || '-'}</td>
+                        <tr key={l.id} className="border-b border-app-border">
+                          <td className="whitespace-nowrap p-2">{String(l.createdAt || '').replace('T', ' ').replace('Z', '')}</td>
+                          <td className="p-2 font-mono">{l.status}</td>
+                          <td className="p-2 font-mono">{l.wcOrderId || '-'}</td>
+                          <td className="p-2 font-mono">{l.eventId || '-'}</td>
+                          <td className="p-2 font-mono">{l.wcSku || '-'}</td>
+                          <td className="p-2">{l.reason || '-'}</td>
                         </tr>
                       ))
                     )}

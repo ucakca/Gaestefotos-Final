@@ -44,6 +44,7 @@ import adminThemeRoutes from './routes/adminTheme';
 import themeRoutes from './routes/theme';
 import faceSearchConsentRoutes from './routes/faceSearchConsent';
 import adminFaceSearchConsentRoutes from './routes/adminFaceSearchConsent';
+import adminOpsRoutes from './routes/adminOps';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -82,17 +83,33 @@ if (process.env.SENTRY_DSN) {
 }
 
 // CORS Configuration - Must be defined before use
-const allowedOrigins = process.env.FRONTEND_URL?.split(',').map(url => url.trim()) || [
-  'http://localhost:3002',
-];
-
 const CANONICAL_APP_HOST_UNICODE = 'app.gästefotos.com';
 const CANONICAL_WP_HOST_UNICODE = 'gästefotos.com';
+const CANONICAL_DASH_HOST_UNICODE = 'dash.gästefotos.com';
+
+const allowedOriginsFromEnv = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map((url) => url.trim())
+  .filter(Boolean);
 
 const canonicalAppOriginsAscii = [
   `https://${domainToASCII(CANONICAL_APP_HOST_UNICODE)}`,
   `http://${domainToASCII(CANONICAL_APP_HOST_UNICODE)}`,
 ];
+
+const canonicalDashOriginsAscii = [
+  `https://${domainToASCII(CANONICAL_DASH_HOST_UNICODE)}`,
+  `http://${domainToASCII(CANONICAL_DASH_HOST_UNICODE)}`,
+];
+
+const allowedOrigins = Array.from(
+  new Set([
+    ...allowedOriginsFromEnv,
+    'http://localhost:3002',
+    ...canonicalAppOriginsAscii,
+    ...canonicalDashOriginsAscii,
+  ])
+);
 
 const toAsciiOrigin = (origin: string): string => {
   try {
@@ -470,6 +487,7 @@ app.use('/api/cms', cmsPublicRoutes);
 app.use('/api/admin/maintenance', adminMaintenanceRoutes);
 app.use('/api/admin/theme', adminThemeRoutes);
 app.use('/api/admin/face-search-consent', adminFaceSearchConsentRoutes);
+app.use('/api/admin/ops', adminOpsRoutes);
 app.use('/api/admin/impersonation', adminImpersonationRoutes);
 app.use('/api/admin/marketing', adminMarketingRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);

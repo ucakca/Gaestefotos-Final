@@ -9,6 +9,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Download, ChevronLeft, Image as ImageIcon, Save, FileText, RotateCcw } from 'lucide-react';
 import { createRoot } from 'react-dom/client';
 import { Button } from '@/components/ui/Button';
+import { ColorInput } from '@/components/ui/ColorInput';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 
@@ -627,30 +628,15 @@ export default function QrStylerPage() {
               <div className="grid grid-cols-3 gap-3">
                 <label className="text-xs text-app-muted">
                   Background
-                  <input
-                    type="color"
-                    className="w-full h-10 mt-1 rounded-lg border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
-                    value={bgColor}
-                    onChange={(e) => setBgColor(e.target.value)}
-                  />
+                  <ColorInput value={bgColor} onChange={setBgColor} className="mt-1 w-full" />
                 </label>
                 <label className="text-xs text-app-muted">
                   Text
-                  <input
-                    type="color"
-                    className="w-full h-10 mt-1 rounded-lg border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
-                    value={textColor}
-                    onChange={(e) => setTextColor(e.target.value)}
-                  />
+                  <ColorInput value={textColor} onChange={setTextColor} className="mt-1 w-full" />
                 </label>
                 <label className="text-xs text-app-muted">
                   Accent
-                  <input
-                    type="color"
-                    className="w-full h-10 mt-1 rounded-lg border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
-                    value={accentColor}
-                    onChange={(e) => setAccentColor(e.target.value)}
-                  />
+                  <ColorInput value={accentColor} onChange={setAccentColor} className="mt-1 w-full" />
                 </label>
               </div>
 
@@ -699,7 +685,7 @@ export default function QrStylerPage() {
 
                   {qrOverlayStyle && publicUrl && (
                     <div className="absolute" style={qrOverlayStyle}>
-                      <div className="w-full h-full bg-app-card" style={{ padding: '6%', borderRadius: 12 }}>
+                      <div className="w-full h-full bg-app-card p-[6%] rounded-[12px]">
                         <QRCodeSVG value={publicUrl} level="H" includeMargin={true} className="w-full h-full" />
                       </div>
                     </div>

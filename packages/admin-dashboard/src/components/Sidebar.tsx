@@ -42,7 +42,7 @@ export default function Sidebar({
   };
 
   return (
-    <div className={cn('flex w-64 flex-col bg-tokens-brandDark text-white', className)}>
+    <div className={cn('flex w-64 flex-col bg-tokens-brandDark text-[var(--app-on-dark)]', className)}>
       <div className="flex h-16 items-center justify-center border-b border-app-border/40">
         <h1 className="text-xl font-bold">Admin Dashboard</h1>
       </div>
@@ -56,7 +56,9 @@ export default function Sidebar({
               variant="ghost"
               className={cn(
                 'w-full justify-start px-3 py-2 text-sm font-medium transition-colors',
-                isActive ? 'bg-app-accent text-app-fg hover:bg-app-accent/90' : 'text-white/80 hover:bg-app-card/10 hover:text-white'
+                isActive
+                  ? 'bg-app-accent text-app-fg hover:bg-app-accent/90'
+                  : 'text-[color-mix(in_srgb,var(--app-on-dark)_80%,transparent)] hover:bg-app-card/10 hover:text-[var(--app-on-dark)]'
               )}
             >
               <Link href={item.href} onClick={() => onNavigate?.()}>
@@ -69,15 +71,15 @@ export default function Sidebar({
       </nav>
       <div className="border-t border-app-border/40 p-4">
         {admin && (
-          <div className="mb-2 px-3 py-2 text-xs text-white/60">
-            <p className="font-medium text-white/80">{admin.name}</p>
-            <p className="text-white/50">{admin.email}</p>
+          <div className="mb-2 px-3 py-2 text-xs text-[color-mix(in_srgb,var(--app-on-dark)_60%,transparent)]">
+            <p className="font-medium text-[color-mix(in_srgb,var(--app-on-dark)_80%,transparent)]">{admin.name}</p>
+            <p className="text-[color-mix(in_srgb,var(--app-on-dark)_50%,transparent)]">{admin.email}</p>
           </div>
         )}
         <Button
           onClick={handleLogout}
           variant="ghost"
-          className="w-full justify-start px-3 py-2 text-sm font-medium text-white/80 hover:bg-app-card/10 hover:text-white"
+          className="w-full justify-start px-3 py-2 text-sm font-medium text-[color-mix(in_srgb,var(--app-on-dark)_80%,transparent)] hover:bg-app-card/10 hover:text-[var(--app-on-dark)]"
         >
           <LogOut className="h-5 w-5" />
           <span>Abmelden</span>

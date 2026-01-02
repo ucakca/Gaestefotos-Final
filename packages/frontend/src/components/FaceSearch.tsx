@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Camera, X, Search, Image as ImageIcon, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 
 const MotionButton = motion(Button);
 
@@ -226,35 +227,23 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
         </MotionButton>
       )}
 
-      <AnimatePresence>
-        {showModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={closeModal}
-            className="fixed inset-0 bg-app-fg/50 z-50 flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-app-card border border-app-border rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto"
-            >
+      <Dialog open={showModal} onOpenChange={(open) => (open ? null : closeModal())}>
+        <DialogContent className="max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-app-fg">
                   Finde Bilder von mir
                 </h2>
-                <IconButton
-                  onClick={closeModal}
-                  icon={<X className="w-5 h-5" />}
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Schließen"
-                  title="Schließen"
-                  className="p-2 hover:bg-app-bg"
-                />
+                <DialogClose asChild>
+                  <IconButton
+                    onClick={closeModal}
+                    icon={<X className="w-5 h-5" />}
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Schließen"
+                    title="Schließen"
+                    className="p-2 hover:bg-app-bg"
+                  />
+                </DialogClose>
               </div>
 
               <div className="mb-4 rounded-lg border border-app-border bg-app-bg p-4">
@@ -428,10 +417,8 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
               )}
 
               <canvas ref={canvasRef} className="hidden" />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

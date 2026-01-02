@@ -9,6 +9,11 @@ import { useToastStore } from '@/store/toastStore';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+} from '@/components/ui/dialog';
 
 interface Challenge {
   id: string;
@@ -98,19 +103,16 @@ export default function ChallengeCompletion({
         if (ctx) {
           ctx.drawImage(videoRef.current, 0, 0);
           const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-          console.log('Photo captured, data URL length:', dataUrl.length);
           if (dataUrl && dataUrl.length > 0) {
             setCapturedImage(dataUrl);
             stopCamera();
           } else {
-            console.error('Canvas toDataURL returned empty string');
             showToast('Fehler beim Aufnehmen des Fotos', 'error');
           }
         } else {
           showToast('Fehler beim Aufnehmen des Fotos', 'error');
         }
       } catch (error) {
-        console.error('Capture error:', error);
         showToast('Fehler beim Aufnehmen des Fotos', 'error');
       }
     }
@@ -127,16 +129,12 @@ export default function ChallengeCompletion({
       
       const reader = new FileReader();
       reader.onerror = () => {
-        console.error('FileReader error');
         showToast('Fehler beim Laden des Bildes', 'error');
       };
       reader.onload = (event) => {
         if (event.target?.result) {
           const dataUrl = event.target.result as string;
-          console.log('FileReader loaded, data URL length:', dataUrl.length);
           setCapturedImage(dataUrl);
-        } else {
-          console.error('FileReader result is null');
         }
       };
       reader.readAsDataURL(file);
@@ -208,6 +206,12 @@ export default function ChallengeCompletion({
     };
   }, []);
 
+  const closeUploadModal = () => {
+    stopCamera();
+    setShowUploadModal(false);
+    setCapturedImage(null);
+  };
+
   return (
     <div className="bg-app-card rounded-lg shadow-sm p-4 border border-app-border">
       <div className="flex items-start justify-between">
@@ -247,28 +251,21 @@ export default function ChallengeCompletion({
       </div>
 
       {/* Upload Modal */}
-      <AnimatePresence>
-        {showUploadModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-app-fg/75 z-50 flex items-center justify-center p-4"
-            onClick={() => {
-              if (!uploading) {
-                stopCamera();
-                setShowUploadModal(false);
-                setCapturedImage(null);
-              }
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-app-card border border-app-border rounded-lg max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden relative"
-            >
+      <Dialog
+        open={showUploadModal}
+        onOpenChange={(open) => {
+          if (open) {
+            setShowUploadModal(true);
+            return;
+          }
+
+          if (uploading) return;
+          closeUploadModal();
+        }}
+      >
+        {showUploadModal ? (
+          <DialogContent className="bg-app-card border border-app-border rounded-lg max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden relative">
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}>
               {/* Success Animation */}
               <AnimatePresence>
                 {showSuccessAnimation && (
@@ -294,19 +291,20 @@ export default function ChallengeCompletion({
 
               <div className="flex justify-between items-center p-4 border-b border-app-border flex-shrink-0">
                 <h3 className="text-lg font-semibold text-app-fg">Challenge erfüllen</h3>
-                <IconButton
-                  onClick={() => {
-                    stopCamera();
-                    setShowUploadModal(false);
-                    setCapturedImage(null);
-                  }}
-                  icon={<X className="w-5 h-5" />}
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Schließen"
-                  title="Schließen"
-                  className="text-app-muted hover:text-app-fg"
-                />
+                <DialogClose asChild>
+                  <IconButton
+                    onClick={() => {
+                      if (uploading) return;
+                      closeUploadModal();
+                    }}
+                    icon={<X className="w-5 h-5" />}
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Schließen"
+                    title="Schließen"
+                    className="text-app-muted hover:text-app-fg"
+                  />
+                </DialogClose>
               </div>
 
               <div className="flex-1 overflow-y-auto min-h-0 p-4 pb-20">
@@ -348,73 +346,34 @@ export default function ChallengeCompletion({
                         Galerie
                       </Button>
                     </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-                    
                     {usingCamera && (
-                      <div className="relative">
-                        <video
-                          ref={videoRef}
-                          autoPlay
-                          playsInline
-                          className="w-full rounded-lg"
-                          style={{ transform: 'scaleX(-1)' }} // Mirror for selfie
-                        />
-                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
-                          <Button
-                            onClick={stopCamera}
-                            variant="ghost"
-                            size="sm"
-                            className="px-4 py-2 bg-[var(--status-danger)] text-app-bg rounded-lg hover:opacity-90"
-                          >
-                            Abbrechen
-                          </Button>
-                          <Button
-                            onClick={capturePhoto}
-                            variant="ghost"
-                            size="sm"
-                            aria-label="Foto aufnehmen"
-                            title="Foto aufnehmen"
-                            className="w-16 h-16 bg-app-card rounded-full border-4 border-app-border"
-                          />
-                        </div>
-                      </div>
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        className="w-full rounded-lg -scale-x-100" // Mirror for selfie
+                      />
                     )}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4">
+                      <Button
+                        onClick={capturePhoto}
+                        variant="ghost"
+                        size="sm"
+                        className="px-4 py-2 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90"
+                      >
+                        Foto aufnehmen
+                      </Button>
+                    </div>
                   </div>
                 ) : (
-                  <div className="w-full">
-                    {capturedImage ? (
-                      <div className="relative w-full flex items-center justify-center bg-app-bg rounded-lg p-4 min-h-[200px]">
-                        <img
-                          src={capturedImage}
-                          alt="Preview"
-                          className="max-w-full max-h-[50vh] w-auto h-auto object-contain rounded-lg shadow-lg"
-                          style={{ display: 'block' }}
-                          onLoad={() => {
-                            console.log('✅ Preview image loaded successfully');
-                          }}
-                          onError={(e) => {
-                            console.error('❌ Error loading preview image:', e);
-                            console.error('Image source length:', capturedImage?.length);
-                            console.error('Image source preview:', capturedImage?.substring(0, 50));
-                            const img = e.target as HTMLImageElement;
-                            console.error('Current img.src:', img.src);
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-full flex items-center justify-center min-h-[200px] bg-app-bg rounded-lg">
-                        <div className="text-app-muted text-center">
-                          <p>Kein Bild geladen</p>
-                          <p className="text-xs mt-2">capturedImage: {capturedImage ? 'vorhanden' : 'null'}</p>
-                        </div>
-                      </div>
-                    )}
+                  <div className="space-y-4">
+                    <div className="rounded-lg overflow-hidden border border-app-border bg-app-bg">
+                      <img
+                        src={capturedImage}
+                        alt="Preview"
+                        className="block w-full max-h-[50vh] object-contain"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -446,9 +405,9 @@ export default function ChallengeCompletion({
                 </div>
               )}
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </DialogContent>
+        ) : null}
+      </Dialog>
     </div>
   );
 }

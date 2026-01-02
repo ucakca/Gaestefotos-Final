@@ -33,7 +33,6 @@ import {
 } from 'lucide-react';
 import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
-import ActionButton from '@/components/ActionButton';
 import DateTimePicker from '@/components/DateTimePicker';
 import MapsLink from '@/components/MapsLink';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
@@ -44,6 +43,7 @@ import { IconButton } from '@/components/ui/IconButton';
 import { Input } from '@/components/ui/Input';
 import { Radio } from '@/components/ui/Radio';
 import { Textarea } from '@/components/ui/Textarea';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 import { useToastStore } from '@/store/toastStore';
 
 interface PhotoStats {
@@ -627,7 +627,7 @@ export default function EventDashboardPage() {
               <Button
                 type="button"
                 onClick={handleUpgrade}
-                className="bg-tokens-brandGreen text-app-bg hover:opacity-90"
+                variant="primary"
                 disabled={upgradeLoading}
               >
                 {upgradeLoading ? 'Erzeuge…' : 'Upgrade öffnen'}
@@ -657,7 +657,7 @@ export default function EventDashboardPage() {
               <Button
                 type="button"
                 onClick={handleGenerateShareLink}
-                className="bg-tokens-brandGreen text-app-bg hover:opacity-90"
+                variant="primary"
                 disabled={shareLoading}
               >
                 {shareLoading ? 'Erzeuge…' : 'Link erzeugen'}
@@ -701,7 +701,7 @@ export default function EventDashboardPage() {
               <Button
                 type="button"
                 onClick={createInvitation}
-                className="bg-tokens-brandGreen text-app-bg hover:opacity-90"
+                variant="primary"
                 disabled={creatingInvitation || newInvitationName.trim().length === 0}
               >
                 {creatingInvitation ? 'Erstelle…' : 'Neu erstellen'}
@@ -827,7 +827,7 @@ export default function EventDashboardPage() {
                               type="button"
                               onClick={() => saveInvitation(inv.id)}
                               data-testid={`invitation-save-${inv.id}`}
-                              className="bg-tokens-brandGreen text-app-bg hover:opacity-90 disabled:opacity-50"
+                              variant="primary"
                               disabled={isSaving || editingInvitationName.trim().length === 0}
                             >
                               {isSaving ? 'Speichere…' : 'Speichern'}
@@ -1053,7 +1053,7 @@ export default function EventDashboardPage() {
           {/* Date - Required */}
           <div className="bg-app-card border border-app-border rounded-xl p-4">
             <div className="flex items-center gap-3 mb-2">
-              <Calendar className="w-5 h-5 text-tokens-brandGreen" />
+              <Calendar className="w-5 h-5 text-app-fg" />
               <label className="text-sm font-medium text-app-fg">
                 Datum <span className="text-[var(--status-danger)]">*</span>
               </label>
@@ -1097,7 +1097,7 @@ export default function EventDashboardPage() {
           {/* Time - Required */}
           <div className="bg-app-card border border-app-border rounded-xl p-4">
             <div className="flex items-center gap-3 mb-2">
-              <Clock className="w-5 h-5 text-tokens-brandGreen" />
+              <Clock className="w-5 h-5 text-app-fg" />
               <label className="text-sm font-medium text-app-fg">
                 Uhrzeit <span className="text-[var(--status-danger)]">*</span>
               </label>
@@ -1140,7 +1140,7 @@ export default function EventDashboardPage() {
           {/* Location */}
           <div className="bg-app-card border border-app-border rounded-xl p-4">
             <div className="flex items-center gap-3 mb-2">
-              <MapPin className="w-5 h-5 text-tokens-brandGreen" />
+              <MapPin className="w-5 h-5 text-app-fg" />
               <label className="text-sm font-medium text-app-fg">Veranstaltungsort</label>
             </div>
             {editingField === 'locationName' ? (
@@ -1171,7 +1171,7 @@ export default function EventDashboardPage() {
           {/* Event URL/Slug - Read-only */}
           <div className="bg-app-card border border-app-border rounded-xl p-4">
             <div className="flex items-center gap-3 mb-2">
-              <Globe className="w-5 h-5 text-tokens-brandGreen" />
+              <Globe className="w-5 h-5 text-app-fg" />
               <label className="text-sm font-medium text-app-fg">Event-URL</label>
             </div>
             <div className="flex items-center justify-between">
@@ -1187,7 +1187,8 @@ export default function EventDashboardPage() {
                   showToast('URL kopiert!', 'success');
                 }}
                 size="sm"
-                className="px-3 py-1 text-xs bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 transition-opacity"
+                variant="primary"
+                className="h-7 px-3 text-xs"
               >
                 Kopieren
               </Button>
@@ -1197,7 +1198,7 @@ export default function EventDashboardPage() {
           {/* Password */}
           <div className="bg-app-card border border-app-border rounded-xl p-4">
             <div className="flex items-center gap-3 mb-2">
-              <Lock className="w-5 h-5 text-tokens-brandGreen" />
+              <Lock className="w-5 h-5 text-app-fg" />
               <label className="text-sm font-medium text-app-fg">Event-Passwort</label>
             </div>
             {editingField === 'password' ? (
@@ -1242,8 +1243,8 @@ export default function EventDashboardPage() {
               onClick={() => setShowEventMode(!showEventMode)}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-tokens-brandGreen/10 rounded-full flex items-center justify-center">
-                  <Settings className="w-5 h-5 text-tokens-brandGreen" />
+                <div className="w-10 h-10 rounded-full bg-app-bg flex items-center justify-center">
+                  <Settings className="w-5 h-5 text-app-fg" />
                 </div>
                 <div>
                   <p className="font-semibold text-sm text-app-fg">Event-Modus</p>
@@ -1279,7 +1280,7 @@ export default function EventDashboardPage() {
                         key={mode}
                         className={`flex items-start p-3 border-2 rounded-lg cursor-pointer transition-all ${
                           featuresConfig.mode === mode
-                            ? 'border-tokens-brandGreen bg-app-bg'
+                            ? 'border-app-border bg-app-bg'
                             : 'border-app-border hover:opacity-90'
                         }`}
                       >
@@ -1363,8 +1364,8 @@ export default function EventDashboardPage() {
                 className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-tokens-brandGreen/10 rounded-full flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-tokens-brandGreen" />
+                  <div className="w-10 h-10 rounded-full bg-app-bg flex items-center justify-center">
+                    <Sparkles className="w-5 h-5 text-app-fg" />
                   </div>
                   <div>
                     <p className="font-semibold text-sm text-app-fg">QR‑Aufsteller</p>
@@ -1395,8 +1396,8 @@ export default function EventDashboardPage() {
                   className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-tokens-brandGreen/10 rounded-full flex items-center justify-center">
-                      <Users className="w-5 h-5 text-tokens-brandGreen" />
+                    <div className="w-10 h-10 rounded-full bg-app-bg flex items-center justify-center">
+                      <Users className="w-5 h-5 text-app-fg" />
                     </div>
                     <div>
                       <p className="font-semibold text-sm text-app-fg">Gäste</p>
@@ -1415,8 +1416,8 @@ export default function EventDashboardPage() {
                 className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-tokens-brandPeach/10 rounded-full flex items-center justify-center">
-                    <ImageIcon className="w-5 h-5 text-tokens-brandPeach" />
+                  <div className="w-10 h-10 rounded-full bg-app-bg flex items-center justify-center">
+                    <ImageIcon className="w-5 h-5 text-app-fg" />
                   </div>
                   <div>
                     <p className="font-semibold text-sm text-app-fg">Alben</p>
@@ -1447,8 +1448,8 @@ export default function EventDashboardPage() {
                   className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-app-bg border border-[var(--status-warning)] rounded-full flex items-center justify-center">
-                      <Trophy className="w-5 h-5 text-[var(--status-warning)]" />
+                    <div className="w-10 h-10 rounded-full bg-app-bg flex items-center justify-center">
+                      <Trophy className="w-5 h-5 text-app-fg" />
                     </div>
                     <div>
                       <p className="font-semibold text-sm text-app-fg">Challenges</p>
@@ -1467,8 +1468,8 @@ export default function EventDashboardPage() {
               className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
             >
               <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-tokens-brandGreen/10 rounded-full flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-tokens-brandGreen" />
+                <div className="w-10 h-10 rounded-full bg-app-bg flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5 text-app-fg" />
                 </div>
                 <div>
                   <p className="font-semibold text-sm text-app-fg">Statistiken</p>
@@ -1487,8 +1488,8 @@ export default function EventDashboardPage() {
               onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-tokens-brandGreen/10 rounded-full flex items-center justify-center">
-                  <Settings className="w-5 h-5 text-tokens-brandGreen" />
+                <div className="w-10 h-10 rounded-full bg-app-bg flex items-center justify-center">
+                  <Settings className="w-5 h-5 text-app-fg" />
                 </div>
                 <div>
                   <p className="font-semibold text-sm text-app-fg">Erweiterte Einstellungen</p>
@@ -1559,65 +1560,53 @@ export default function EventDashboardPage() {
       </div>
 
       {/* Settings Modal */}
-      <AnimatePresence>
-        {showSettings && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowSettings(false)}
-            className="fixed inset-0 bg-app-fg/50 z-50 flex items-end"
-          >
-            <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-app-card rounded-t-3xl w-full max-h-[80vh] overflow-hidden"
-            >
-              <div className="sticky top-0 bg-app-card border-b border-app-border px-4 py-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-app-fg">Einstellungen</h2>
-                <IconButton
-                  onClick={() => setShowSettings(false)}
-                  icon={<X className="w-5 h-5" />}
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Schließen"
-                  title="Schließen"
-                  className="p-1 hover:opacity-80 rounded-full text-app-fg"
-                />
-              </div>
-              <div className="overflow-y-auto max-h-[calc(80vh-60px)] p-4 space-y-2">
-                <Link href={`/events/${eventId}`}>
-                  <motion.div
-                    whileTap={{ scale: 0.98 }}
-                    className="bg-app-bg rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Eye className="w-5 h-5 text-app-muted" />
-                      <span className="font-medium text-app-fg">Event ansehen</span>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-app-muted" />
-                  </motion.div>
-                </Link>
+      <Dialog open={showSettings} onOpenChange={(open) => (open ? null : setShowSettings(false))}>
+        <DialogContent
+          className="bottom-0 top-auto left-0 right-0 translate-x-0 translate-y-0 rounded-t-3xl w-full max-w-none max-h-[80vh] overflow-hidden p-0"
+        >
+          <div className="sticky top-0 bg-app-card border-b border-app-border px-4 py-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-app-fg">Einstellungen</h2>
+            <DialogClose asChild>
+              <IconButton
+                onClick={() => setShowSettings(false)}
+                icon={<X className="w-5 h-5" />}
+                variant="ghost"
+                size="sm"
+                aria-label="Schließen"
+                title="Schließen"
+                className="p-1 hover:opacity-80 rounded-full text-app-fg"
+              />
+            </DialogClose>
+          </div>
+          <div className="overflow-y-auto max-h-[calc(80vh-60px)] p-4 space-y-2">
+            <Link href={`/events/${eventId}`}>
+              <motion.div
+                whileTap={{ scale: 0.98 }}
+                className="bg-app-bg rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
+              >
+                <div className="flex items-center gap-3">
+                  <Eye className="w-5 h-5 text-app-muted" />
+                  <span className="font-medium text-app-fg">Event ansehen</span>
+                </div>
+                <ChevronRight className="w-5 h-5 text-app-muted" />
+              </motion.div>
+            </Link>
 
-                <Link href={`/events/${eventId}/duplicates`}>
-                  <motion.div
-                    whileTap={{ scale: 0.98 }}
-                    className="bg-app-bg rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
-                  >
-                    <div className="flex items-center gap-3">
-                      <ImageIcon className="w-5 h-5 text-app-muted" />
-                      <span className="font-medium text-app-fg">Duplikate verwalten</span>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-app-muted" />
-                  </motion.div>
-                </Link>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <Link href={`/events/${eventId}/duplicates`}>
+              <motion.div
+                whileTap={{ scale: 0.98 }}
+                className="bg-app-bg rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
+              >
+                <div className="flex items-center gap-3">
+                  <ImageIcon className="w-5 h-5 text-app-muted" />
+                  <span className="font-medium text-app-fg">Duplikate verwalten</span>
+                </div>
+                <ChevronRight className="w-5 h-5 text-app-muted" />
+              </motion.div>
+            </Link>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Sticky Footer Navigation */}
       <DashboardFooter eventId={eventId} eventSlug={event.slug} />

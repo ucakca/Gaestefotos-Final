@@ -11,7 +11,6 @@ import { Video, Upload, Download, Trash2, Check, X, Square, CheckSquare, Folder,
 import { useToastStore } from '@/store/toastStore';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import PageHeader from '@/components/PageHeader';
-import ActionButton from '@/components/ActionButton';
 import FilterButtons from '@/components/FilterButtons';
 import UploadModal from '@/components/UploadModal';
 import { Button } from '@/components/ui/Button';
@@ -469,18 +468,25 @@ export default function VideosPage() {
           title={viewMode === 'trash' ? 'Videos - Papierkorb' : 'Videos'}
         >
           <div className="flex items-center gap-2 flex-wrap">
-            <ActionButton
-              icon={Trash2}
-              label={viewMode === 'trash' ? 'Zurück' : 'Papierkorb'}
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="gap-2"
               onClick={() => {
                 setSelectedVideos(new Set());
                 setSelectedVideo(null);
                 setViewMode(viewMode === 'trash' ? 'active' : 'trash');
               }}
-            />
-            <ActionButton
-              icon={Upload}
-              label="Video hochladen"
+            >
+              <Trash2 className="h-5 w-5 flex-shrink-0" />
+              <span className="text-xs sm:text-sm">{viewMode === 'trash' ? 'Zurück' : 'Papierkorb'}</span>
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              className="gap-2"
               onClick={() => {
                 if (uploadDisabled) {
                   showToast(uploadDisabledReason, 'error');
@@ -489,7 +495,10 @@ export default function VideosPage() {
                 setShowUploadModal(true);
               }}
               disabled={viewMode === 'trash' || uploadDisabled}
-            />
+            >
+              <Upload className="h-5 w-5 flex-shrink-0" />
+              <span className="text-xs sm:text-sm">Video hochladen</span>
+            </Button>
           </div>
         </PageHeader>
 
@@ -843,43 +852,28 @@ export default function VideosPage() {
         {/* Bulk Actions Bar removed - now handled by actions menu in header */}
 
         {/* Video Detail Modal */}
-        <AnimatePresence>
-          {selectedVideo && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedVideo(null)}
-              className="fixed inset-0 bg-app-fg/75 z-50 flex items-center justify-center p-4"
-            >
-              <motion.div
-                initial={{ scale: 0.9 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.9 }}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-app-card rounded-lg max-w-4xl w-full p-6"
-              >
+        <Dialog open={selectedVideo !== null} onOpenChange={(open) => (open ? null : setSelectedVideo(null))}>
+          {selectedVideo !== null && (
+            <DialogContent className="bg-app-card rounded-lg max-w-4xl w-full p-6">
+              <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}>
                 <div className="mb-4">
-                  <IconButton
-                    onClick={() => setSelectedVideo(null)}
-                    icon={<X className="w-6 h-6" />}
-                    variant="ghost"
-                    size="sm"
-                    aria-label="Schließen"
-                    title="Schließen"
-                    className="text-app-muted hover:text-app-fg"
-                  />
+                  <DialogClose asChild>
+                    <IconButton
+                      onClick={() => setSelectedVideo(null)}
+                      icon={<X className="w-6 h-6" />}
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Schließen"
+                      title="Schließen"
+                      className="text-app-muted hover:text-app-fg"
+                    />
+                  </DialogClose>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     {selectedVideo.url ? (
-                      <video
-                        src={selectedVideo.url}
-                        className="w-full rounded-lg"
-                        controls
-                        autoPlay
-                      />
+                      <video src={selectedVideo.url} className="w-full rounded-lg" controls autoPlay />
                     ) : (
                       <div className="w-full aspect-video bg-app-bg rounded-lg flex items-center justify-center">
                         <Video className="w-12 h-12 text-app-muted" />
@@ -891,7 +885,11 @@ export default function VideosPage() {
                     <div>
                       <p className="text-sm text-app-muted">Status</p>
                       <p className="font-medium">
-                        {selectedVideo.status === 'PENDING' ? 'Ausstehend' : selectedVideo.status === 'APPROVED' ? 'Freigegeben' : 'Abgelehnt'}
+                        {selectedVideo.status === 'PENDING'
+                          ? 'Ausstehend'
+                          : selectedVideo.status === 'APPROVED'
+                          ? 'Freigegeben'
+                          : 'Abgelehnt'}
                       </p>
                     </div>
                     {selectedVideo.guest && (
@@ -905,24 +903,18 @@ export default function VideosPage() {
                     {selectedVideo.category && (
                       <div>
                         <p className="text-sm text-app-muted">Album</p>
-                        <p className="font-medium">
-                          {selectedVideo.category.name}
-                        </p>
+                        <p className="font-medium">{selectedVideo.category.name}</p>
                       </div>
                     )}
                     <div>
                       <p className="text-sm text-app-muted">Hochgeladen</p>
-                      <p className="font-medium">
-                        {new Date(selectedVideo.createdAt).toLocaleString('de-DE')}
-                      </p>
+                      <p className="font-medium">{new Date(selectedVideo.createdAt).toLocaleString('de-DE')}</p>
                     </div>
 
                     {(selectedVideo as any).uploadedBy && (
                       <div>
                         <p className="text-sm text-app-muted">Hochgeladen von</p>
-                        <p className="font-medium">
-                          {(selectedVideo as any).uploadedBy || 'Unbekannt'}
-                        </p>
+                        <p className="font-medium">{(selectedVideo as any).uploadedBy || 'Unbekannt'}</p>
                       </div>
                     )}
 
@@ -943,14 +935,14 @@ export default function VideosPage() {
                         Original herunterladen
                       </Button>
                     </div>
-                    
+
                     {/* Actions are now in the header dropdown - keeping this section for additional info if needed */}
                   </div>
                 </div>
               </motion.div>
-            </motion.div>
+            </DialogContent>
           )}
-        </AnimatePresence>
+        </Dialog>
 
         {/* Floating Action Button for ZIP Download */}
         {videos.length > 0 && !isStorageLocked && (

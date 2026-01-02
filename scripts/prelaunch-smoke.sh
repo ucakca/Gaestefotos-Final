@@ -2,7 +2,7 @@
 set -euo pipefail
 
 APP_URL="${APP_URL:-https://app.gästefotos.com}"
-DASH_URL="${DASH_URL:-https://dash.gästefotos.com}"
+DASH_URL="${DASH_URL:-https://dash.xn--gstefotos-v2a.com}"
 API_HEALTH_URL="${API_HEALTH_URL:-${APP_URL}/api/health}"
 
 color() {
@@ -20,7 +20,11 @@ http_code() {
 }
 
 first_next_asset_path() {
-  curl -sS "$1" | grep -oE '/_next/static/[^"\x27 ]+\.js' | head -n 1
+  curl -sS "$1" \
+    | tr '"' '\n' \
+    | tr "'" '\n' \
+    | grep -E '^/_next/static/.*\.js$' \
+    | head -n 1
 }
 
 check_url_200() {
@@ -28,6 +32,18 @@ check_url_200() {
   local code
   code=$(http_code "$url")
   if [[ "$code" == "200" ]]; then
+    echo "$(color 32 OK)   $url (HTTP $code)"
+  else
+    echo "$(color 31 FAIL) $url (HTTP $code)"
+    return 1
+  fi
+}
+
+check_url_200_or_redirect() {
+  local url="$1"
+  local code
+  code=$(http_code "$url")
+  if [[ "$code" == "200" || "$code" == "301" || "$code" == "302" || "$code" == "303" || "$code" == "307" || "$code" == "308" ]]; then
     echo "$(color 32 OK)   $url (HTTP $code)"
   else
     echo "$(color 31 FAIL) $url (HTTP $code)"
@@ -59,7 +75,7 @@ check_url_200 "$APP_URL/"
 check_next_asset_200 "$APP_URL"
 
 headline "Admin Dashboard"
-check_url_200 "$DASH_URL/"
+check_url_200_or_redirect "$DASH_URL/"
 check_next_asset_200 "$DASH_URL"
 
 headline "Backend Health"

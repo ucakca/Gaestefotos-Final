@@ -66,7 +66,7 @@ export default function LoginPage() {
         className="rounded-2xl shadow-xl p-8 w-full max-w-md bg-app-bg"
       >
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-4" style={{ display: 'flex', justifyContent: 'center' }}>
+          <div className="flex justify-center mb-4">
             <Logo width={180} height={72} />
           </div>
           <h1 className="text-3xl font-bold mb-2 text-tokens-brandGreen">
@@ -139,8 +139,7 @@ export default function LoginPage() {
               <span className="ml-2 text-sm">Angemeldet bleiben</span>
             </label>
             <a
-              className="text-sm hover:underline"
-              style={{ color: 'var(--brand-green)' }}
+              className="text-sm text-tokens-brandGreen hover:underline"
               href="https://gästefotos.com/wp-login.php?action=lostpassword"
               target="_blank"
               rel="noreferrer"

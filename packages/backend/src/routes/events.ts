@@ -5,7 +5,7 @@ import archiver from 'archiver';
 import multer from 'multer';
 import prisma from '../config/database';
 import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie, optionalAuthMiddleware, hasEventAccess } from '../middleware/auth';
-import { randomString, slugify } from '@gaestefotos/shared';
+import { DEFAULT_EVENT_FEATURES_CONFIG, normalizeEventFeaturesConfig, randomString, slugify } from '@gaestefotos/shared';
 import { logger } from '../utils/logger';
 import { getActiveEventEntitlement, getEffectiveEventPackage, getEventUsageBreakdown, bigintToString } from '../services/packageLimits';
 import { getEventStorageEndsAt } from '../services/storagePolicy';
@@ -956,13 +956,7 @@ router.post(
           locationName: data.locationName,
           locationGoogleMapsLink: data.locationGoogleMapsLink,
           designConfig: data.designConfig || {},
-          featuresConfig: data.featuresConfig || {
-            showGuestlist: true,
-            mysteryMode: false,
-            allowUploads: true,
-            moderationRequired: false,
-            allowDownloads: true,
-          },
+          featuresConfig: normalizeEventFeaturesConfig(data.featuresConfig || DEFAULT_EVENT_FEATURES_CONFIG),
           ...(categoriesCreate.length > 0
             ? {
                 categories: {

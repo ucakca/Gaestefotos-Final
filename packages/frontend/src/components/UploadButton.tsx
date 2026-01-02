@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Upload, Check, Camera, Video } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
@@ -9,6 +9,7 @@ import { enqueueUpload, processUploadQueue } from '@/lib/uploadQueue';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { Input } from '@/components/ui/Input';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 
 interface UploadButtonProps {
   eventId: string;
@@ -124,26 +125,28 @@ export default function UploadButton({
     disabled: !canPickFiles,
   });
 
+  const capturePhotoInputRef = useRef<HTMLInputElement>(null);
+  const captureVideoInputRef = useRef<HTMLInputElement>(null);
+
+  const onCaptureFileSelected = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      // allow selecting the same file again
+      e.target.value = '';
+      if (!file) return;
+      onDrop([file]);
+    },
+    [onDrop]
+  );
+
   const capturePhoto = useCallback(() => {
     const name = uploaderName.trim();
     if (!name) {
       setUploaderNameError('Bitte zuerst deinen Namen eingeben.');
       return;
     }
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    if ('capture' in input) {
-      (input as any).capture = 'environment';
-    }
-    input.onchange = (e: any) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        onDrop([file]);
-      }
-    };
-    input.click();
-  }, [onDrop, uploaderName]);
+    capturePhotoInputRef.current?.click();
+  }, [uploaderName]);
 
   const captureVideo = useCallback(() => {
     const name = uploaderName.trim();
@@ -151,20 +154,8 @@ export default function UploadButton({
       setUploaderNameError('Bitte zuerst deinen Namen eingeben.');
       return;
     }
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'video/*';
-    if ('capture' in input) {
-      (input as any).capture = 'environment';
-    }
-    input.onchange = (e: any) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        onDrop([file]);
-      }
-    };
-    input.click();
-  }, [onDrop, uploaderName]);
+    captureVideoInputRef.current?.click();
+  }, [uploaderName]);
 
   const uploadMedia = async (uploadId: string, file: File) => {
     setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, uploading: true, progress: 0 } : f)));
@@ -328,26 +319,38 @@ export default function UploadButton({
         </MotionButton>
       )}
 
-      <AnimatePresence>
-        {showModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowModal(false)}
-            className="fixed inset-0 bg-app-fg/50 z-50 flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-app-card border border-app-border rounded-lg max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto"
-          >
+      <Dialog
+        open={showModal}
+        onOpenChange={(open) => {
+          if (open) return;
+          setShowModal(false);
+          setUploaderName('');
+          setUploaderNameError(null);
+        }}
+      >
+        <DialogContent className="max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
+          <input
+            ref={capturePhotoInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={onCaptureFileSelected}
+          />
+          <input
+            ref={captureVideoInputRef}
+            type="file"
+            accept="video/*"
+            capture="environment"
+            className="hidden"
+            onChange={onCaptureFileSelected}
+          />
+          <DialogClose asChild>
             <IconButton
               onClick={() => {
                 setShowModal(false);
                 setUploaderName('');
+                setUploaderNameError(null);
               }}
               icon={<X className="w-5 h-5 text-app-fg" />}
               variant="ghost"
@@ -356,6 +359,7 @@ export default function UploadButton({
               title="Schließen"
               className="absolute top-4 right-4 p-1 hover:bg-app-bg rounded-full"
             />
+          </DialogClose>
 
               <h2 className="text-xl font-semibold text-app-fg mb-6">Foto/Video hochladen</h2>
 
@@ -542,10 +546,9 @@ export default function UploadButton({
                   </motion.div>
                 )}
               </AnimatePresence>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

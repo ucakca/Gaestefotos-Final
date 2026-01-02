@@ -246,7 +246,7 @@ export default function SettingsPage() {
               <div className="rounded-lg border border-app-border bg-app-bg p-4">
                 <div className="text-sm text-app-fg">Background / Border / Text Tokens</div>
               </div>
-              <div className="rounded-lg bg-tokens-brandGreen px-4 py-2 text-sm font-medium text-white">
+              <div className="rounded-lg bg-tokens-brandGreen px-4 py-2 text-sm font-medium text-[var(--app-on-dark)]">
                 Brand Button
               </div>
             </div>

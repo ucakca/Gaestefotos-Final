@@ -2,11 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { RotateCw, Crop, X, Check } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import api from '@/lib/api';
 import { useToastStore } from '@/store/toastStore';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 
 const MotionButton = motion(Button);
 
@@ -134,32 +135,23 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-app-fg/75 z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9 }}
-        animate={{ scale: 1 }}
-        exit={{ scale: 0.9 }}
-        onClick={(e) => e.stopPropagation()}
-        className="bg-app-card border border-app-border rounded-lg max-w-4xl w-full p-6"
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-app-fg">Foto bearbeiten</h2>
-          <IconButton
-            onClick={onClose}
-            icon={<X className="w-6 h-6" />}
-            variant="ghost"
-            size="sm"
-            aria-label="Schließen"
-            title="Schließen"
-            className="text-app-muted hover:text-app-fg"
-          />
-        </div>
+    <Dialog open={true} onOpenChange={(open) => (open ? null : onClose())}>
+      <DialogContent className="bg-app-card border border-app-border rounded-lg max-w-4xl w-full p-6">
+        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold text-app-fg">Foto bearbeiten</h2>
+            <DialogClose asChild>
+              <IconButton
+                onClick={onClose}
+                icon={<X className="w-6 h-6" />}
+                variant="ghost"
+                size="sm"
+                aria-label="Schließen"
+                title="Schließen"
+                className="text-app-muted hover:text-app-fg"
+              />
+            </DialogClose>
+          </div>
 
         <div className="mb-4 flex gap-2">
           <MotionButton
@@ -202,8 +194,7 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
 
         <div
           ref={containerRef}
-          className="relative bg-app-bg rounded-lg overflow-hidden mb-4"
-          style={{ minHeight: '400px', maxHeight: '70vh' }}
+          className="relative mb-4 min-h-[400px] max-h-[70vh] overflow-hidden rounded-lg bg-app-bg"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -213,10 +204,9 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
             ref={imageRef}
             src={photoUrl}
             alt="Zu bearbeitendes Foto"
-            className="max-w-full max-h-[70vh] mx-auto block"
+            className="mx-auto block max-h-[70vh] max-w-full transition-transform duration-300 ease-in-out"
             style={{
               transform: `rotate(${rotation}deg)`,
-              transition: 'transform 0.3s ease',
             }}
           />
           
@@ -255,8 +245,9 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
             {isSaving ? 'Speichern...' : 'Speichern'}
           </MotionButton>
         </div>
-      </motion.div>
-    </motion.div>
+        </motion.div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

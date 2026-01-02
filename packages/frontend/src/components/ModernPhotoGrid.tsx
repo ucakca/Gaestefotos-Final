@@ -10,6 +10,7 @@ import { buildApiUrl } from '@/lib/api';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 const MotionIconButton = motion(IconButton);
 const MotionButton = motion(Button);
@@ -298,10 +299,7 @@ export default function ModernPhotoGrid({
     <>
       {allowUploads && (
         <div
-          className="fixed left-1/2 -translate-x-1/2 z-50"
-          style={{
-            bottom: `calc(env(safe-area-inset-bottom) + 84px)`,
-          }}
+          className="fixed left-1/2 -translate-x-1/2 z-50 bottom-[calc(env(safe-area-inset-bottom)+84px)]"
         >
           <div
             onClick={(e) => {
@@ -322,39 +320,23 @@ export default function ModernPhotoGrid({
         </div>
       )}
 
-      <AnimatePresence>
-        {showUploadDisabled && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+      <Dialog open={showUploadDisabled} onOpenChange={(open) => (open ? null : setShowUploadDisabled(false))}>
+        <DialogContent className="bottom-4 top-auto left-1/2 -translate-x-1/2 translate-y-0 w-[calc(100vw-2rem)] max-w-md rounded-2xl bg-app-card border border-app-border p-4 shadow-xl">
+          <div className="text-sm font-semibold text-app-fg">Upload nicht möglich</div>
+          <div className="mt-1 text-sm text-app-muted">
+            {isStorageLocked ? 'Die Speicherzeit ist abgelaufen.' : uploadDisabledReason || 'Uploads sind aktuell deaktiviert.'}
+          </div>
+          <Button
+            type="button"
             onClick={() => setShowUploadDisabled(false)}
-            className="fixed inset-0 bg-app-fg/50 z-50 flex items-end justify-center p-4"
+            variant="ghost"
+            size="sm"
+            className="mt-4 w-full rounded-xl bg-app-fg text-app-bg py-2 text-sm font-semibold"
           >
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 20, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md rounded-2xl bg-app-card border border-app-border p-4 shadow-xl"
-            >
-              <div className="text-sm font-semibold text-app-fg">Upload nicht möglich</div>
-              <div className="mt-1 text-sm text-app-muted">
-                {isStorageLocked ? 'Die Speicherzeit ist abgelaufen.' : uploadDisabledReason || 'Uploads sind aktuell deaktiviert.'}
-              </div>
-              <Button
-                type="button"
-                onClick={() => setShowUploadDisabled(false)}
-                variant="ghost"
-                size="sm"
-                className="mt-4 w-full rounded-xl bg-app-fg text-app-bg py-2 text-sm font-semibold"
-              >
-                OK
-              </Button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            OK
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       {/* Modern 3-Column Grid with Upload Button */}
       <div className="grid grid-cols-3 gap-0.5 md:gap-1 max-w-md mx-auto">
@@ -472,15 +454,9 @@ export default function ModernPhotoGrid({
 
 
       {/* Instagram-like Post Modal */}
-      <AnimatePresence>
+      <Dialog open={selectedPhoto !== null} onOpenChange={(open) => (open ? null : closePost())}>
         {selectedPhoto !== null && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={closePost}
-            className="fixed inset-0 bg-app-fg z-50 flex items-center justify-center"
-          >
+          <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row bg-app-card border border-app-border p-0">
             {/* Close Button */}
             <MotionIconButton
               initial={{ opacity: 0 }}
@@ -502,8 +478,7 @@ export default function ModernPhotoGrid({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     prevPhoto();
                   }}
                   icon={<ChevronLeft className="w-6 h-6" />}
@@ -517,8 +492,7 @@ export default function ModernPhotoGrid({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     nextPhoto();
                   }}
                   icon={<ChevronRight className="w-6 h-6" />}
@@ -531,52 +505,44 @@ export default function ModernPhotoGrid({
               </>
             )}
 
-            {/* Post Content - Instagram Style */}
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-app-card border border-app-border rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row"
-            >
-              {/* Image Section */}
-              <div className="relative bg-app-fg flex-1 flex items-center justify-center min-h-[400px] md:min-h-[600px] max-h-[90vh] overflow-hidden">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={selectedPhoto}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    drag={photos.length > 1 ? 'x' : false}
-                    dragConstraints={{ left: 0, right: 0 }}
-                    dragElastic={0.2}
-                    onDragEnd={(_, info) => {
-                      if (photos.length <= 1) return;
-                      const threshold = 60;
-                      if (info.offset.x > threshold) {
-                        prevPhoto();
-                        return;
-                      }
-                      if (info.offset.x < -threshold) {
-                        nextPhoto();
+            {/* Image Section */}
+            <div className="relative bg-app-fg flex-1 flex items-center justify-center min-h-[400px] md:min-h-[600px] max-h-[90vh] overflow-hidden">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedPhoto}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  drag={photos.length > 1 ? 'x' : false}
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.2}
+                  onDragEnd={(_, info) => {
+                    if (photos.length <= 1) return;
+                    const threshold = 60;
+                    if (info.offset.x > threshold) {
+                      prevPhoto();
+                      return;
+                    }
+                    if (info.offset.x < -threshold) {
+                      nextPhoto();
+                    }
+                  }}
+                  className="relative w-full h-full flex items-center justify-center p-4 select-none touch-pan-y"
+                >
+                  <img
+                    src={photos[selectedPhoto]?.url?.startsWith('/api/') ? photos[selectedPhoto]?.url : photos[selectedPhoto]?.url || ''}
+                    alt="Event Foto"
+                    className="max-w-full max-h-[85vh] w-auto h-auto object-contain"
+                    onError={(e) => {
+                      // Fallback: versuche absolute URL
+                      const url = photos[selectedPhoto]?.url;
+                      if (url && url.startsWith('/api/')) {
+                        const absoluteUrl = window.location.origin + url;
+                        (e.target as HTMLImageElement).src = absoluteUrl;
                       }
                     }}
-                    className="relative w-full h-full flex items-center justify-center p-4 select-none touch-pan-y"
-                  >
-                    <img
-                      src={photos[selectedPhoto]?.url?.startsWith('/api/') ? photos[selectedPhoto]?.url : photos[selectedPhoto]?.url || ''}
-                      alt="Event Foto"
-                      className="max-w-full max-h-[85vh] w-auto h-auto object-contain"
-                      onError={(e) => {
-                        // Fallback: versuche absolute URL
-                        const url = photos[selectedPhoto]?.url;
-                        if (url && url.startsWith('/api/')) {
-                          const absoluteUrl = window.location.origin + url;
-                          (e.target as HTMLImageElement).src = absoluteUrl;
-                        }
-                      }}
-                    />
+                  />
                     {/* Challenge Photo Badge on Full Image */}
                     {(photos[selectedPhoto] as any)?.isChallengePhoto && (photos[selectedPhoto] as any)?.challenge && (
                       <div className="absolute top-4 right-4 z-10">
@@ -694,6 +660,8 @@ export default function ModernPhotoGrid({
                       }}
                       variant="ghost"
                       size="sm"
+                      aria-label="Gefällt mir"
+                      title="Gefällt mir"
                       className="p-1 flex items-center gap-2"
                     >
                       <Heart
@@ -714,6 +682,8 @@ export default function ModernPhotoGrid({
                       onClick={() => handleShare(photos[selectedPhoto])}
                       variant="ghost"
                       size="sm"
+                      aria-label="Teilen"
+                      title="Teilen"
                       className="p-1"
                     >
                       <Share2 className="w-6 h-6 text-app-fg" />
@@ -724,6 +694,8 @@ export default function ModernPhotoGrid({
                         onClick={() => handleDownload(photos[selectedPhoto])}
                         variant="ghost"
                         size="sm"
+                        aria-label="Download"
+                        title="Download"
                         className="p-1"
                       >
                         <Download className="w-6 h-6 text-app-fg" />
@@ -916,6 +888,8 @@ export default function ModernPhotoGrid({
                         }
                         variant="ghost"
                         size="sm"
+                        aria-label="Kommentar senden"
+                        title="Kommentar senden"
                         className="px-4 py-2 bg-app-fg text-app-bg rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {submittingComment ? (
@@ -927,12 +901,10 @@ export default function ModernPhotoGrid({
                     </div>
                   </div>
                 </div>
-
-              </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </DialogContent>
         )}
-      </AnimatePresence>
+      </Dialog>
     </>
   );
 }

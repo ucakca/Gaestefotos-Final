@@ -6,6 +6,7 @@ import { Menu, X } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
+import { Sheet, SheetContent, SheetClose } from '@/components/ui/sheet';
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -43,37 +44,28 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         <main className="min-w-0 flex-1 overflow-y-auto bg-app-bg p-4 sm:p-6">{children}</main>
       </div>
 
-      <div className={cn('fixed inset-0 z-50 lg:hidden', mobileOpen ? '' : 'pointer-events-none')}>
-        <div
-          className={cn(
-            'absolute inset-0 bg-app-fg/40 transition-opacity',
-            mobileOpen ? 'opacity-100' : 'opacity-0'
-          )}
-          onClick={() => setMobileOpen(false)}
-        />
+      <div className={cn('lg:hidden', mobileOpen ? '' : 'pointer-events-none')}>
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetContent side="left" className="p-0">
+            <div className="flex h-14 items-center justify-between border-b border-app-border/40 px-3">
+              <div className="text-sm font-semibold">Admin Dashboard</div>
+              <SheetClose asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setMobileOpen(false)}
+                  className="h-10 w-10 p-0 text-[var(--app-on-dark)] hover:bg-app-card/10"
+                  aria-label="Menü schließen"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </SheetClose>
+            </div>
 
-        <div
-          className={cn(
-            'absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-tokens-brandDark text-white shadow-xl transition-transform',
-            mobileOpen ? 'translate-x-0' : '-translate-x-full'
-          )}
-        >
-          <div className="flex h-14 items-center justify-between border-b border-app-border/40 px-3">
-            <div className="text-sm font-semibold">Admin Dashboard</div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setMobileOpen(false)}
-              className="h-10 w-10 p-0 text-white hover:bg-app-card/10"
-              aria-label="Menü schließen"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-
-          <Sidebar className="h-[calc(100vh-3.5rem)]" onNavigate={() => setMobileOpen(false)} />
-        </div>
+            <Sidebar className="h-[calc(100vh-3.5rem)]" onNavigate={() => setMobileOpen(false)} />
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   );

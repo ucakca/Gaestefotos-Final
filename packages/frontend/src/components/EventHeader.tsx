@@ -1,14 +1,19 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Event as EventType } from '@gaestefotos/shared';
 import { Camera, Plus, User, Video, X } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import api from '@/lib/api';
 import { getDesignPreset } from '@/lib/designPresets';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+} from '@/components/ui/dialog';
 
 interface EventHeaderProps {
   event: EventType;
@@ -174,20 +179,18 @@ export default function EventHeader({
     [event.id, onPhotosChanged, onStoryCreated, storyUploaderName, validateVideoDuration]
   );
 
-  const pickFile = useCallback(
-    (kind: 'photo' | 'video', useCapture: boolean) => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = kind === 'video' ? 'video/*' : 'image/*';
-      if (useCapture && 'capture' in input) {
-        (input as any).capture = 'environment';
-      }
-      input.onchange = (e: any) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        uploadStoryMedia(file);
-      };
-      input.click();
+  const storyCapturePhotoInputRef = useRef<HTMLInputElement>(null);
+  const storyCaptureVideoInputRef = useRef<HTMLInputElement>(null);
+  const storyPickPhotoInputRef = useRef<HTMLInputElement>(null);
+  const storyPickVideoInputRef = useRef<HTMLInputElement>(null);
+
+  const onStoryFileSelected = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      // allow selecting the same file again
+      e.target.value = '';
+      if (!file) return;
+      uploadStoryMedia(file);
     },
     [uploadStoryMedia]
   );
@@ -308,33 +311,23 @@ export default function EventHeader({
           </div>
         </div>
 
-        <AnimatePresence>
+        <Dialog open={showStoryModal} onOpenChange={(open) => (open ? null : closeStoryModal())}>
           {showStoryModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeStoryModal}
-              className="fixed inset-0 bg-app-fg/50 z-50 flex items-end justify-center p-4"
-            >
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 20, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-md rounded-2xl bg-app-card border border-app-border p-4 shadow-xl"
-              >
+            <DialogContent className="bottom-4 top-auto translate-y-0 w-full max-w-md rounded-2xl bg-app-card border border-app-border p-4 shadow-xl">
+              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }}>
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-sm font-semibold text-app-fg">Story erstellen</div>
-                  <IconButton
-                    onClick={closeStoryModal}
-                    icon={<X className="w-5 h-5" />}
-                    variant="ghost"
-                    size="sm"
-                    aria-label="Schließen"
-                    title="Schließen"
-                    className="w-9 h-9 bg-app-bg hover:bg-app-bg/80"
-                  />
+                  <DialogClose asChild>
+                    <IconButton
+                      onClick={closeStoryModal}
+                      icon={<X className="w-5 h-5" />}
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Schließen"
+                      title="Schließen"
+                      className="w-9 h-9 bg-app-bg hover:bg-app-bg/80"
+                    />
+                  </DialogClose>
                 </div>
 
                 <div className="mt-3">
@@ -349,10 +342,28 @@ export default function EventHeader({
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-3">
+                  <input
+                    ref={storyCapturePhotoInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={onStoryFileSelected}
+                  />
+                  <input
+                    ref={storyCaptureVideoInputRef}
+                    type="file"
+                    accept="video/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={onStoryFileSelected}
+                  />
+                  <input ref={storyPickPhotoInputRef} type="file" accept="image/*" className="hidden" onChange={onStoryFileSelected} />
+                  <input ref={storyPickVideoInputRef} type="file" accept="video/*" className="hidden" onChange={onStoryFileSelected} />
                   <Button
                     type="button"
                     disabled={storyUploading}
-                    onClick={() => pickFile('photo', true)}
+                    onClick={() => storyCapturePhotoInputRef.current?.click()}
                     variant="ghost"
                     size="sm"
                     className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left h-auto"
@@ -365,7 +376,7 @@ export default function EventHeader({
                   <Button
                     type="button"
                     disabled={storyUploading}
-                    onClick={() => pickFile('video', true)}
+                    onClick={() => storyCaptureVideoInputRef.current?.click()}
                     variant="ghost"
                     size="sm"
                     className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left h-auto"
@@ -379,7 +390,7 @@ export default function EventHeader({
                   <Button
                     type="button"
                     disabled={storyUploading}
-                    onClick={() => pickFile('photo', false)}
+                    onClick={() => storyPickPhotoInputRef.current?.click()}
                     variant="ghost"
                     size="sm"
                     className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left h-auto"
@@ -390,7 +401,7 @@ export default function EventHeader({
                   <Button
                     type="button"
                     disabled={storyUploading}
-                    onClick={() => pickFile('video', false)}
+                    onClick={() => storyPickVideoInputRef.current?.click()}
                     variant="ghost"
                     size="sm"
                     className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left h-auto"
@@ -406,49 +417,35 @@ export default function EventHeader({
                   </div>
                 )}
 
-                <div className="mt-4 text-xs text-app-muted">
-                  Hinweis: Videos in Stories sind auf maximal 15 Sekunden begrenzt.
-                </div>
+                <div className="mt-4 text-xs text-app-muted">Hinweis: Videos in Stories sind auf maximal 15 Sekunden begrenzt.</div>
               </motion.div>
-            </motion.div>
+            </DialogContent>
           )}
-        </AnimatePresence>
+        </Dialog>
 
-        <AnimatePresence>
+        <Dialog open={showStoryDisabled} onOpenChange={(open) => (open ? null : closeStoryDisabled())}>
           {showStoryDisabled && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeStoryDisabled}
-              className="fixed inset-0 bg-app-fg/50 z-50 flex items-end justify-center p-4"
-            >
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 20, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-md rounded-2xl bg-app-card border border-app-border p-4 shadow-xl"
-              >
+            <DialogContent className="bottom-4 top-auto translate-y-0 w-full max-w-md rounded-2xl bg-app-card border border-app-border p-4 shadow-xl">
+              <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }}>
                 <div className="text-sm font-semibold text-app-fg">Story nicht möglich</div>
                 <div className="mt-1 text-sm text-app-muted">
-                  {isStorageLocked
-                    ? 'Die Speicherzeit ist abgelaufen.'
-                    : uploadDisabledReason || 'Uploads sind aktuell deaktiviert.'}
+                  {isStorageLocked ? 'Die Speicherzeit ist abgelaufen.' : uploadDisabledReason || 'Uploads sind aktuell deaktiviert.'}
                 </div>
-                <Button
-                  type="button"
-                  onClick={closeStoryDisabled}
-                  variant="ghost"
-                  size="sm"
-                  className="mt-4 w-full rounded-xl bg-tokens-brandGreen text-app-bg py-2 text-sm font-semibold hover:opacity-90 h-auto"
-                >
-                  OK
-                </Button>
+                <DialogClose asChild>
+                  <Button
+                    type="button"
+                    onClick={closeStoryDisabled}
+                    variant="ghost"
+                    size="sm"
+                    className="mt-4 w-full rounded-xl bg-tokens-brandGreen text-app-bg py-2 text-sm font-semibold hover:opacity-90 h-auto"
+                  >
+                    OK
+                  </Button>
+                </DialogClose>
               </motion.div>
-            </motion.div>
+            </DialogContent>
           )}
-        </AnimatePresence>
+        </Dialog>
       </div>
     );
   }

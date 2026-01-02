@@ -263,8 +263,7 @@ export default function TimeInput24h({
                 value={hours}
                 onChange={(e) => handleHourChange(e.target.value)}
                 placeholder="HH"
-                className="flex-1 px-3 py-2 border border-app-border bg-app-card text-app-fg rounded-lg text-center text-sm focus:ring-2 focus:outline-none focus:ring-app-fg/30"
-                style={{ maxWidth: '80px' }}
+                className="flex-1 max-w-[80px] px-3 py-2 border border-app-border bg-app-card text-app-fg rounded-lg text-center text-sm focus:ring-2 focus:outline-none focus:ring-app-fg/30"
               />
               <span className="text-app-muted font-semibold">:</span>
               <Input
@@ -274,8 +273,7 @@ export default function TimeInput24h({
                 value={minutes}
                 onChange={(e) => handleMinuteChange(e.target.value)}
                 placeholder="MM"
-                className="flex-1 px-3 py-2 border border-app-border bg-app-card text-app-fg rounded-lg text-center text-sm focus:ring-2 focus:outline-none focus:ring-app-fg/30"
-                style={{ maxWidth: '80px' }}
+                className="flex-1 max-w-[80px] px-3 py-2 border border-app-border bg-app-card text-app-fg rounded-lg text-center text-sm focus:ring-2 focus:outline-none focus:ring-app-fg/30"
               />
               <Button
                 type="button"

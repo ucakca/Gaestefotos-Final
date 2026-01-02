@@ -349,20 +349,26 @@ export default function CategoryManagementPage() {
               <div className="text-xs text-app-muted">2/2 Alben – Zeitfenster setzen & fertigstellen</div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => router.push(`/events/${eventId}/design?wizard=1`)}
-                className="rounded-lg border border-app-border bg-app-bg px-3 py-2 text-sm font-semibold text-app-fg hover:opacity-90"
-              >
-                Zurück
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => router.push(`/events/${eventId}/dashboard`)}
-                className="rounded-lg bg-tokens-brandGreen px-3 py-2 text-sm font-semibold text-app-bg hover:opacity-90"
-              >
-                Fertig
-              </motion.button>
+              <motion.div whileTap={{ scale: 0.95 }}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => router.push(`/events/${eventId}/design?wizard=1`)}
+                >
+                  Zurück
+                </Button>
+              </motion.div>
+              <motion.div whileTap={{ scale: 0.95 }}>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={() => router.push(`/events/${eventId}/dashboard`)}
+                >
+                  Fertig
+                </Button>
+              </motion.div>
             </div>
           </div>
         )}
@@ -381,28 +387,30 @@ export default function CategoryManagementPage() {
                 {event?.title} • {categories.length} Album{categories.length !== 1 ? 'e' : ''}
               </p>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                setShowAddForm(!showAddForm);
-                setEditingCategory(null);
-                setFormData({ 
-                  name: '', 
-                  iconKey: '',
-                  order: 0,
-                  isVisible: true,
-                  uploadLocked: false,
-                  uploadLockUntil: '',
-                  startAt: '',
-                  endAt: '',
-                });
-              }}
-              className="flex items-center gap-2 rounded-lg bg-tokens-brandGreen px-4 py-2 text-app-bg hover:opacity-90"
-            >
-              <Plus className="w-5 h-5" />
-              Album hinzufügen
-            </motion.button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                type="button"
+                variant="primary"
+                onClick={() => {
+                  setShowAddForm(!showAddForm);
+                  setEditingCategory(null);
+                  setFormData({
+                    name: '',
+                    iconKey: '',
+                    order: 0,
+                    isVisible: true,
+                    uploadLocked: false,
+                    uploadLockUntil: '',
+                    startAt: '',
+                    endAt: '',
+                  });
+                }}
+                className="gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                Album hinzufügen
+              </Button>
+            </motion.div>
           </div>
         </motion.div>
 
@@ -531,7 +539,7 @@ export default function CategoryManagementPage() {
                                 size="sm"
                                 className={`h-10 w-10 rounded-md border flex items-center justify-center transition-colors ${
                                   isSelected
-                                    ? 'border-tokens-brandGreen bg-tokens-brandGreen/10'
+                                    ? 'border-app-fg bg-app-bg'
                                     : 'border-app-border bg-app-card hover:bg-app-bg'
                                 }`}
                               />
@@ -560,9 +568,10 @@ export default function CategoryManagementPage() {
                                     key={key}
                                     type="button"
                                     onClick={() => setFormData({ ...formData, iconKey: key })}
+                                    variant={isSelected ? 'primary' : 'ghost'}
                                     className={`flex items-center gap-2 rounded-md border px-2 py-2 text-left text-xs transition-colors ${
                                       isSelected
-                                        ? 'border-tokens-brandGreen bg-tokens-brandGreen/10'
+                                        ? 'border-app-fg bg-app-bg'
                                         : 'border-app-border bg-app-card hover:bg-app-bg'
                                     }`}
                                   >
@@ -611,7 +620,7 @@ export default function CategoryManagementPage() {
                     />
                     <div className="flex items-center gap-2">
                       {formData.isVisible ? (
-                        <Eye className="w-5 h-5 text-tokens-brandGreen" />
+                        <Eye className="w-5 h-5 text-app-fg" />
                       ) : (
                         <EyeOff className="w-5 h-5 text-app-muted" />
                       )}
@@ -704,7 +713,7 @@ export default function CategoryManagementPage() {
                     </Button>
                   </motion.div>
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button type="submit" className="bg-tokens-brandGreen text-app-bg hover:opacity-90">
+                    <Button type="submit" variant="primary">
                       {editingCategory ? 'Speichern' : 'Hinzufügen'}
                     </Button>
                   </motion.div>
@@ -815,7 +824,7 @@ export default function CategoryManagementPage() {
                           size="sm"
                           aria-label="Album bearbeiten"
                           onClick={() => startEdit(category)}
-                          className="text-tokens-brandGreen"
+                          className="text-app-fg"
                         />
                         <IconButton
                           icon={<Trash2 className="h-5 w-5" />}

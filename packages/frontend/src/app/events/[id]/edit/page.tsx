@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import api from '@/lib/api';
 import { Event as EventType } from '@gaestefotos/shared';
 import { slugify } from '@gaestefotos/shared';
+import { DEFAULT_EVENT_FEATURES_CONFIG, normalizeEventFeaturesConfig } from '@gaestefotos/shared';
 import { useToastStore } from '@/store/toastStore';
 import DateTimePicker from '@/components/DateTimePicker';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
@@ -25,13 +26,7 @@ export default function EditEventPage() {
     dateTime: '',
     locationName: '',
     designConfig: {} as any,
-    featuresConfig: {
-      showGuestlist: true,
-      mysteryMode: false,
-      allowUploads: true,
-      moderationRequired: false,
-      allowDownloads: true,
-    },
+    featuresConfig: DEFAULT_EVENT_FEATURES_CONFIG,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -52,13 +47,7 @@ export default function EditEventPage() {
             dateTime: event.dateTime ? new Date(event.dateTime).toISOString() : '',
             locationName: event.locationName || '',
             designConfig: event.designConfig || {},
-            featuresConfig: event.featuresConfig || {
-              showGuestlist: true,
-              mysteryMode: false,
-              allowUploads: true,
-              moderationRequired: false,
-              allowDownloads: true,
-            },
+            featuresConfig: normalizeEventFeaturesConfig(event.featuresConfig || DEFAULT_EVENT_FEATURES_CONFIG) as any,
           });
     } catch (err: any) {
       console.error('Fehler beim Laden des Events:', err);

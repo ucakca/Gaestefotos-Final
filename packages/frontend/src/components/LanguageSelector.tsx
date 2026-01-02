@@ -1,12 +1,17 @@
 'use client';
 
-import { useState } from 'react';
 import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Globe } from 'lucide-react';
+import { ChevronDown, Globe } from 'lucide-react';
 import { locales, type Locale } from '../../i18n/config';
 import { Button } from '@/components/ui/Button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const localeNames: Record<Locale, string> = {
   de: 'Deutsch',
@@ -33,7 +38,6 @@ export default function LanguageSelector({
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
 
   const currentLocale = (eventLanguage || locale) as Locale;
 
@@ -46,7 +50,6 @@ export default function LanguageSelector({
       const newPathname = pathname.replace(`/${locale}`, `/${newLocale}`);
       router.push(newPathname);
     }
-    setIsOpen(false);
   };
 
   return (
@@ -56,52 +59,30 @@ export default function LanguageSelector({
           {t('select')}
         </label>
       )}
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        variant="ghost"
-        size="sm"
-        className="flex items-center gap-2 px-3 py-2 border border-app-border rounded-lg hover:bg-app-bg transition-colors text-tokens-brandGreen"
-      >
-        <Globe className="w-4 h-4" />
-        <span className="font-medium">{localeNames[currentLocale]}</span>
-        <svg
-          className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </Button>
-
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="absolute top-full mt-2 right-0 bg-app-card border border-app-border rounded-lg shadow-lg z-20 min-w-[150px]">
-            {locales.map((loc) => (
-              <Button
-                key={loc}
-                onClick={() => switchLocale(loc)}
-                variant="ghost"
-                size="sm"
-                className={`w-full text-left px-4 py-2 hover:bg-app-bg first:rounded-t-lg last:rounded-b-lg transition-colors ${
-                  currentLocale === loc ? 'font-semibold' : ''
-                }`}
-                style={
-                  currentLocale === loc
-                    ? { color: 'var(--tokens-brandGreen)', backgroundColor: 'var(--app-bg)' }
-                    : { color: 'var(--app-muted)', backgroundColor: 'transparent' }
-                }
-              >
-                {localeNames[loc]}
-              </Button>
-            ))}
-          </div>
-        </>
-      )}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-2 px-3 py-2 border border-app-border rounded-lg hover:bg-app-bg transition-colors text-tokens-brandGreen"
+          >
+            <Globe className="w-4 h-4" />
+            <span className="font-medium">{localeNames[currentLocale]}</span>
+            <ChevronDown className="h-4 w-4 opacity-70" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-[150px]">
+          {locales.map((loc) => (
+            <DropdownMenuItem
+              key={loc}
+              onSelect={() => switchLocale(loc)}
+              className={currentLocale === loc ? 'font-semibold' : undefined}
+            >
+              {localeNames[loc]}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

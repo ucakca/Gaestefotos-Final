@@ -12,6 +12,7 @@
   --app-border: #e5e7eb;
   --app-muted: #6b7280;
   --app-accent: #EAA48F;
+  --app-on-dark: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -21,6 +22,7 @@
     --app-card: #0f172a;
     --app-border: #1f2937;
     --app-muted: #9ca3af;
+    --app-on-dark: #ffffff;
   }
 }
 

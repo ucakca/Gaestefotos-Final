@@ -1,10 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+} from '@/components/ui/dialog';
 
 type Story = any;
 
@@ -36,42 +40,16 @@ export default function StoryViewer({
   const hasSelection = selectedStoryIndex !== null && !!stories[selectedStoryIndex];
   const selectedStory = hasSelection ? stories[selectedStoryIndex as number] : null;
 
-  useEffect(() => {
-    if (!hasSelection) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [hasSelection, onClose]);
-
   return (
-    <AnimatePresence>
+    <Dialog open={hasSelection} onOpenChange={(open) => (open ? null : onClose())}>
       {hasSelection && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
+        <DialogContent
           data-testid="story-viewer"
-          className="fixed inset-0 bg-app-fg/95 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-app-fg/95 p-0"
         >
-          <div className="absolute inset-0" onClick={onClose} />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0" />
 
-          <div
-            className="absolute top-0 left-0 right-0 z-30 px-4 pt-4 pb-5 bg-gradient-to-b from-app-fg/80 via-app-fg/50 to-transparent"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-4 pb-5 bg-gradient-to-b from-app-fg/80 via-app-fg/50 to-transparent">
             <div className="mx-auto w-full max-w-md">
               <div className="flex gap-1" data-testid="story-progress">
                 {stories.map((_: any, idx: number) => {
@@ -93,21 +71,20 @@ export default function StoryViewer({
 
               <div className="mt-3 flex items-center justify-between">
                 <div className="min-w-0 text-app-bg/90 text-sm font-medium truncate">
-                  ((selectedStory?.photo?.uploadedBy as string) ||
-                    (selectedStory?.video?.uploadedBy as string) ||
-                    'Story')
+                  {(selectedStory?.photo?.uploadedBy as string) || (selectedStory?.video?.uploadedBy as string) || 'Story'}
                 </div>
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onClose();
-                  }}
-                  icon={<X className="w-5 h-5" />}
-                  variant="glass"
-                  size="sm"
-                  data-testid="story-close"
-                  className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-app-bg/10 hover:bg-app-bg/15 text-app-bg"
-                />
+                <DialogClose asChild>
+                  <IconButton
+                    onClick={onClose}
+                    icon={<X className="w-5 h-5" />}
+                    variant="glass"
+                    size="sm"
+                    data-testid="story-close"
+                    aria-label="Schließen"
+                    title="Schließen"
+                    className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-app-bg/10 hover:bg-app-bg/15 text-app-bg"
+                  />
+                </DialogClose>
               </div>
             </div>
           </div>
@@ -115,25 +92,23 @@ export default function StoryViewer({
           {stories.length > 1 && (
             <>
               <IconButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPrev();
-                }}
+                onClick={onPrev}
                 icon={<ChevronLeft className="w-6 h-6" />}
                 variant="glass"
                 size="lg"
                 data-testid="story-prev"
+                aria-label="Vorherige Story"
+                title="Vorherige Story"
                 className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-app-bg/10 hover:bg-app-bg/15 text-app-bg flex items-center justify-center"
               />
               <IconButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onNext();
-                }}
+                onClick={onNext}
                 icon={<ChevronRight className="w-6 h-6" />}
                 variant="glass"
                 size="lg"
                 data-testid="story-next"
+                aria-label="Nächste Story"
+                title="Nächste Story"
                 className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-app-bg/10 hover:bg-app-bg/15 text-app-bg flex items-center justify-center"
               />
             </>
@@ -143,7 +118,6 @@ export default function StoryViewer({
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            onClick={(e) => e.stopPropagation()}
             drag={stories.length > 1 ? 'x' : false}
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.2}
@@ -176,10 +150,7 @@ export default function StoryViewer({
                 <Button
                   type="button"
                   aria-label="Vorherige Story"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onPrev();
-                  }}
+                  onClick={onPrev}
                   variant="ghost"
                   size="sm"
                   className="absolute inset-y-0 left-0 w-1/2 z-20"
@@ -187,10 +158,7 @@ export default function StoryViewer({
                 <Button
                   type="button"
                   aria-label="Nächste Story"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onNext();
-                  }}
+                  onClick={onNext}
                   variant="ghost"
                   size="sm"
                   className="absolute inset-y-0 right-0 w-1/2 z-20"
@@ -216,8 +184,8 @@ export default function StoryViewer({
               />
             )}
           </motion.div>
-        </motion.div>
+        </DialogContent>
       )}
-    </AnimatePresence>
+    </Dialog>
   );
 }

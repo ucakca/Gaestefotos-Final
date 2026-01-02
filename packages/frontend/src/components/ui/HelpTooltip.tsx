@@ -29,7 +29,7 @@ export default function HelpTooltip({ title, content, className }: HelpTooltipPr
   }, [open]);
 
   return (
-    <span ref={rootRef} className={className} style={{ position: 'relative', display: 'inline-flex' }}>
+    <span ref={rootRef} className={`relative inline-flex ${className || ''}`.trim()}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

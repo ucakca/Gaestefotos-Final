@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import api from '@/lib/api';
 import { Event as EventType } from '@gaestefotos/shared';
 import { useToastStore } from '@/store/toastStore';
@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Slider } from '@/components/ui/Slider';
+import { ColorInput } from '@/components/ui/ColorInput';
 
 function isWizardMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -294,7 +295,7 @@ export default function DesignLiveBuilderPage() {
               {wizardMode && (
                 <div className="hidden md:flex items-center gap-2 mr-2">
                   <span className="text-xs font-semibold text-app-muted">Wizard:</span>
-                  <span className="text-xs font-semibold text-tokens-brandGreen">1/2 Design</span>
+                  <span className="text-xs font-semibold text-app-fg">1/2 Design</span>
                   <span className="text-xs text-app-muted">→</span>
                   <span className="text-xs font-semibold text-app-muted">2/2 Alben</span>
                 </div>
@@ -305,7 +306,7 @@ export default function DesignLiveBuilderPage() {
                   <Button
                     type="button"
                     onClick={() => router.push(`/events/${eventId}/categories?wizard=1`)}
-                    className="bg-tokens-brandGreen text-app-bg hover:opacity-90"
+                    variant="primary"
                   >
                     Weiter
                   </Button>
@@ -414,7 +415,7 @@ export default function DesignLiveBuilderPage() {
                                 />
                               ) : (
                                 <div className="w-full h-full bg-app-bg flex items-center justify-center">
-                                  <Camera className="w-16 h-16 text-tokens-brandGreen" />
+                                  <Camera className="w-16 h-16 text-app-muted" />
                                 </div>
                               )}
                             </div>
@@ -571,11 +572,9 @@ export default function DesignLiveBuilderPage() {
                     <div className="grid grid-cols-1 gap-3">
                       <div className="flex items-center gap-2">
                         <div className="w-24 text-xs text-app-muted">Primary</div>
-                        <input
-                          type="color"
+                        <ColorInput
                           value={colors.primary || '#8B1538'}
-                          onChange={(e) => updateDesignConfig({ colors: { ...colors, primary: e.target.value } })}
-                          className="w-12 h-10 rounded border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
+                          onChange={(value) => updateDesignConfig({ colors: { ...colors, primary: value } })}
                         />
                         <Input
                           type="text"
@@ -587,11 +586,9 @@ export default function DesignLiveBuilderPage() {
 
                       <div className="flex items-center gap-2">
                         <div className="w-24 text-xs text-app-muted">Secondary</div>
-                        <input
-                          type="color"
+                        <ColorInput
                           value={colors.secondary || '#FFFFFF'}
-                          onChange={(e) => updateDesignConfig({ colors: { ...colors, secondary: e.target.value } })}
-                          className="w-12 h-10 rounded border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
+                          onChange={(value) => updateDesignConfig({ colors: { ...colors, secondary: value } })}
                         />
                         <Input
                           type="text"
@@ -603,11 +600,9 @@ export default function DesignLiveBuilderPage() {
 
                       <div className="flex items-center gap-2">
                         <div className="w-24 text-xs text-app-muted">Accent</div>
-                        <input
-                          type="color"
+                        <ColorInput
                           value={colors.accent || '#EC4899'}
-                          onChange={(e) => updateDesignConfig({ colors: { ...colors, accent: e.target.value } })}
-                          className="w-12 h-10 rounded border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
+                          onChange={(value) => updateDesignConfig({ colors: { ...colors, accent: value } })}
                         />
                         <Input
                           type="text"
@@ -654,11 +649,9 @@ export default function DesignLiveBuilderPage() {
                           Vordergrundfarbe
                         </label>
                         <div className="flex gap-2">
-                          <input
-                            type="color"
+                          <ColorInput
                             value={qrCodeConfig.fgColor}
-                            onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, fgColor: e.target.value })}
-                            className="w-12 h-10 rounded border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
+                            onChange={(value) => setQrCodeConfig({ ...qrCodeConfig, fgColor: value })}
                           />
                           <Input
                             type="text"
@@ -676,11 +669,9 @@ export default function DesignLiveBuilderPage() {
                           Hintergrundfarbe
                         </label>
                         <div className="flex gap-2">
-                          <input
-                            type="color"
+                          <ColorInput
                             value={qrCodeConfig.bgColor}
-                            onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, bgColor: e.target.value })}
-                            className="w-12 h-10 rounded border border-app-border bg-app-card cursor-pointer focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30"
+                            onChange={(value) => setQrCodeConfig({ ...qrCodeConfig, bgColor: value })}
                           />
                           <Input
                             type="text"

@@ -218,14 +218,19 @@ export default function DuplicatesPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
                       onClick={() => setSelectedGroup(selectedGroup === group.groupId ? null : group.groupId)}
-                      className="px-3 py-1.5 text-sm bg-tokens-brandGreen text-app-bg rounded-md hover:opacity-90"
                     >
                       {selectedGroup === group.groupId ? 'Ausblenden' : 'Details'}
                     </Button>
                     <Button
+                      type="button"
+                      variant="danger"
+                      size="sm"
                       onClick={() => deleteDuplicates(group.groupId, group.bestPhoto.id)}
-                      className="px-3 py-1.5 text-sm bg-[var(--status-danger)] text-app-bg rounded-md hover:opacity-90 flex items-center gap-1"
+                      className="gap-1"
                     >
                       <Trash2 className="w-4 h-4" />
                       Duplikate löschen

@@ -13,7 +13,6 @@ import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
 import FaceSearch from '@/components/FaceSearch';
 import PageHeader from '@/components/PageHeader';
-import ActionButton from '@/components/ActionButton';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import FilterButtons from '@/components/FilterButtons';
 import UploadModal from '@/components/UploadModal';
@@ -501,30 +500,47 @@ export default function PhotoManagementPage() {
           title={viewMode === 'trash' ? 'Fotos - Papierkorb' : 'Fotos'}
         >
           <div className="flex items-center gap-2 flex-wrap">
-            <ActionButton
-              icon={CheckSquare}
-              label="Alle auswählen"
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="gap-2"
               onClick={() => selectAll()}
               disabled={viewMode === 'trash' || photos.length === 0}
-            />
-            <ActionButton
-              icon={Square}
-              label="Auswahl löschen"
+            >
+              <CheckSquare className="h-5 w-5 flex-shrink-0" />
+              <span className="text-xs sm:text-sm">Alle auswählen</span>
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="gap-2"
               onClick={() => deselectAll()}
               disabled={viewMode === 'trash' || selectedPhotos.size === 0}
-            />
-            <ActionButton
-              icon={Trash2}
-              label={viewMode === 'trash' ? 'Zurück' : 'Papierkorb'}
+            >
+              <Square className="h-5 w-5 flex-shrink-0" />
+              <span className="text-xs sm:text-sm">Auswahl löschen</span>
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="gap-2"
               onClick={() => {
                 setSelectedPhotos(new Set());
                 setSelectedPhoto(null);
                 setViewMode(viewMode === 'trash' ? 'active' : 'trash');
               }}
-            />
-            <ActionButton
-              icon={Upload}
-              label="Foto hochladen"
+            >
+              <Trash2 className="h-5 w-5 flex-shrink-0" />
+              <span className="text-xs sm:text-sm">{viewMode === 'trash' ? 'Zurück' : 'Papierkorb'}</span>
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              className="gap-2"
               onClick={() => {
                 if (uploadDisabled) {
                   showToast(uploadDisabledReason, 'error');
@@ -533,17 +549,27 @@ export default function PhotoManagementPage() {
                 setShowUploadModal(true);
               }}
               disabled={viewMode === 'trash' || uploadDisabled}
-            />
-            <ActionButton
-              icon={ScanFace}
-              label="Finde meine eigenen Fotos"
+            >
+              <Upload className="h-5 w-5 flex-shrink-0" />
+              <span className="text-xs sm:text-sm">Foto hochladen</span>
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="gap-2"
               onClick={() => setShowFaceSearch(true)}
               disabled={viewMode === 'trash'}
-            />
-            <Link href={`/events/${eventId}/duplicates`} className="flex items-center justify-center gap-2 px-3 py-2 bg-tokens-brandGreen text-app-bg rounded-lg hover:opacity-90 transition-colors whitespace-nowrap">
-              <Copy className="w-5 h-5 flex-shrink-0" />
-              <span className="text-xs sm:text-sm">Duplikate verwalten</span>
-            </Link>
+            >
+              <ScanFace className="h-5 w-5 flex-shrink-0" />
+              <span className="text-xs sm:text-sm">Finde meine eigenen Fotos</span>
+            </Button>
+            <Button asChild variant="primary" size="sm" className="gap-2">
+              <Link href={`/events/${eventId}/duplicates`}>
+                <Copy className="h-5 w-5 flex-shrink-0" />
+                <span className="text-xs sm:text-sm">Duplikate verwalten</span>
+              </Link>
+            </Button>
           </div>
         </PageHeader>
 
@@ -962,22 +988,10 @@ export default function PhotoManagementPage() {
         )}
 
         {/* Photo Detail Modal */}
-        <AnimatePresence>
-          {selectedPhoto && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedPhoto(null)}
-              className="fixed inset-0 bg-app-fg/75 z-50 flex items-center justify-center p-4"
-            >
-              <motion.div
-                initial={{ scale: 0.9 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.9 }}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-app-card rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6"
-              >
+        <Dialog open={selectedPhoto !== null} onOpenChange={(open) => (open ? null : setSelectedPhoto(null))}>
+          {selectedPhoto !== null && (
+            <DialogContent className="bg-app-card rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
+              <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}>
                 <div className="mb-4 flex justify-between items-center sticky top-0 bg-app-card z-10 pb-2 border-b border-app-border">
                   <h2 className="text-lg font-semibold">Foto-Details</h2>
                   <div className="flex items-center gap-2">
@@ -1109,16 +1123,18 @@ export default function PhotoManagementPage() {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    
-                    <IconButton
-                      onClick={() => setSelectedPhoto(null)}
-                      icon={<X className="w-6 h-6" />}
-                      variant="ghost"
-                      size="sm"
-                      aria-label="Schließen"
-                      title="Schließen"
-                      className="text-app-muted hover:text-app-fg"
-                    />
+
+                    <DialogClose asChild>
+                      <IconButton
+                        onClick={() => setSelectedPhoto(null)}
+                        icon={<X className="w-6 h-6" />}
+                        variant="ghost"
+                        size="sm"
+                        aria-label="Schließen"
+                        title="Schließen"
+                        className="text-app-muted hover:text-app-fg"
+                      />
+                    </DialogClose>
                   </div>
                 </div>
 
@@ -1141,17 +1157,18 @@ export default function PhotoManagementPage() {
                     <div>
                       <p className="text-sm text-app-muted">Status</p>
                       <p className="font-medium">
-                        {((selectedPhoto.status as string)?.toLowerCase() === 'pending' || (selectedPhoto.status as string) === 'PENDING') ? 'Ausstehend' : 
-                         ((selectedPhoto.status as string)?.toLowerCase() === 'approved' || (selectedPhoto.status as string) === 'APPROVED') ? 'Freigegeben' : 
-                         ((selectedPhoto.status as string)?.toLowerCase() === 'rejected' || (selectedPhoto.status as string) === 'REJECTED') ? 'Abgelehnt' : 
-                         'Unbekannt'}
+                        {(selectedPhoto.status as string)?.toLowerCase() === 'pending' || (selectedPhoto.status as string) === 'PENDING'
+                          ? 'Ausstehend'
+                          : (selectedPhoto.status as string)?.toLowerCase() === 'approved' || (selectedPhoto.status as string) === 'APPROVED'
+                          ? 'Freigegeben'
+                          : (selectedPhoto.status as string)?.toLowerCase() === 'rejected' || (selectedPhoto.status as string) === 'REJECTED'
+                          ? 'Abgelehnt'
+                          : 'Unbekannt'}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-app-muted">Hochgeladen von</p>
-                      <p className="font-medium">
-                        {(selectedPhoto as any).uploadedBy || 'Unbekannt'}
-                      </p>
+                      <p className="font-medium">{(selectedPhoto as any).uploadedBy || 'Unbekannt'}</p>
                     </div>
                     {(selectedPhoto as any).guest && (
                       <div>
@@ -1163,27 +1180,25 @@ export default function PhotoManagementPage() {
                     )}
                     <div>
                       <p className="text-sm text-app-muted">Hochgeladen</p>
-                      <p className="font-medium">
-                        {new Date(selectedPhoto.createdAt).toLocaleString('de-DE')}
-                      </p>
+                      <p className="font-medium">{new Date(selectedPhoto.createdAt).toLocaleString('de-DE')}</p>
                     </div>
 
                     <div className="pt-4">
                       <p className="text-sm text-app-muted mb-2">Teilen & Download</p>
                       <div className="flex gap-2">
-                      <a
-                        href={`/api/photos/${selectedPhoto.id}/download`}
-                        download
-                        className="px-4 py-2 bg-[var(--status-info)] text-app-bg rounded-md hover:opacity-90 flex items-center gap-2"
-                      >
-                        <Download className="w-4 h-4" />
-                        Herunterladen
-                      </a>
-                      <SocialShare
-                        url={selectedPhoto.url || ''}
-                        title="Event Foto"
-                        imageUrl={selectedPhoto.url || undefined}
-                      />
+                        <a
+                          href={`/api/photos/${selectedPhoto.id}/download`}
+                          download
+                          className="px-4 py-2 bg-[var(--status-info)] text-app-bg rounded-md hover:opacity-90 flex items-center gap-2"
+                        >
+                          <Download className="w-4 h-4" />
+                          Herunterladen
+                        </a>
+                        <SocialShare
+                          url={selectedPhoto.url || ''}
+                          title="Event Foto"
+                          imageUrl={selectedPhoto.url || undefined}
+                        />
                       </div>
                     </div>
 
@@ -1234,9 +1249,9 @@ export default function PhotoManagementPage() {
                   </div>
                 </div>
               </motion.div>
-            </motion.div>
+            </DialogContent>
           )}
-        </AnimatePresence>
+        </Dialog>
 
         {/* Photo Editor Modal */}
         <AnimatePresence>

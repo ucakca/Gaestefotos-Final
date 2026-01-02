@@ -18,11 +18,12 @@ import {
   X,
 } from 'lucide-react';
 import api from '@/lib/api';
-import { Checkbox } from '@/components/ui/Checkbox';
-import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
+import { IconButton } from '@/components/ui/IconButton';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 
 interface GuestbookEntry {
   id: string;
@@ -50,11 +51,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
   const [editedHostMessage, setEditedHostMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [isHost, setIsHost] = useState(propIsHost);
-  
-  // Debug: Log isHost value
-  useEffect(() => {
-    console.log('Guestbook isHost:', isHost);
-  }, [isHost]);
+
   const [submitting, setSubmitting] = useState(false);
   const [authorName, setAuthorName] = useState('');
   const [message, setMessage] = useState('');
@@ -409,9 +406,9 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
   const displayHostMessage = hostMessage || DEFAULT_HOST_MESSAGE;
 
   return (
-    <div className="flex flex-col" style={{ height: '100%', overflow: 'hidden' }}>
+    <div className="flex h-full flex-col overflow-hidden">
       {/* Scrollable Container with Sticky Host Message */}
-      <div className="flex-1 overflow-y-auto bg-app-bg" style={{ minHeight: 0, WebkitOverflowScrolling: 'touch' }}>
+      <div className="flex-1 min-h-0 overflow-y-auto bg-app-bg overscroll-contain">
         {/* Sticky Host Message */}
         {displayHostMessage && (
           <div className="sticky top-0 z-10 bg-app-card border-b border-app-border px-4 py-3 shadow-sm">
@@ -467,7 +464,6 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                       {isHost && (
                         <IconButton
                           onClick={() => {
-                            console.log('Edit button clicked, isHost:', isHost);
                             setIsEditingHostMessage(true);
                           }}
                           icon={<Edit2 className="w-4 h-4 text-tokens-brandGreen" />}
@@ -750,32 +746,28 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
         </div>
 
       {/* Image Lightbox Modal */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-app-fg/75 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center">
-            <img
-              src={selectedImage}
-              alt="Vollbild"
-              className="max-w-full max-h-full object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
-            <div className="absolute top-4 right-4">
-              <IconButton
-                onClick={() => setSelectedImage(null)}
-                icon={<X className="w-6 h-6" />}
-                variant="ghost"
-                size="md"
-                className="bg-app-card/90 hover:bg-app-card shadow-lg border border-app-border"
-                aria-label="Schließen"
-                title="Schließen"
-              />
+      <Dialog open={selectedImage !== null} onOpenChange={(open) => (open ? null : setSelectedImage(null))}>
+        {selectedImage !== null && (
+          <DialogContent className="bg-app-fg/75 max-w-4xl w-full max-h-[90vh] p-0">
+            <div className="relative w-full h-full flex items-center justify-center p-4">
+              <img src={selectedImage} alt="Vollbild" className="max-w-full max-h-full object-contain rounded-lg" />
+              <div className="absolute top-4 right-4">
+                <DialogClose asChild>
+                  <IconButton
+                    onClick={() => setSelectedImage(null)}
+                    icon={<X className="w-6 h-6" />}
+                    variant="ghost"
+                    size="md"
+                    className="bg-app-card/90 hover:bg-app-card shadow-lg border border-app-border"
+                    aria-label="Schließen"
+                    title="Schließen"
+                  />
+                </DialogClose>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 }

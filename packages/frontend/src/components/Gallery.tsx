@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Download, Share2 } from 'lucide-react';
 import { Photo } from '@gaestefotos/shared';
 import { buildApiUrl } from '@/lib/api';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface GalleryProps {
   photos: Photo[];
@@ -109,21 +110,17 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
       </div>
 
       {/* Lightbox */}
-      <AnimatePresence>
+      <Dialog open={selectedPhoto !== null} onOpenChange={(open) => (open ? null : closeLightbox())}>
         {selectedPhoto !== null && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={closeLightbox}
-            className="fixed inset-0 bg-app-fg/90 z-50 flex items-center justify-center p-4"
-          >
+          <DialogContent className="left-0 top-0 translate-x-0 translate-y-0 w-screen h-screen max-w-none bg-app-fg/90 border-0 p-4">
             {/* Close Button */}
             <motion.button
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={closeLightbox}
+              aria-label="Schließen"
+              title="Schließen"
               className="absolute top-4 right-4 text-app-bg hover:text-app-bg/70 z-10"
             >
               <X className="w-8 h-8" />
@@ -136,10 +133,11 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     prevPhoto();
                   }}
+                  aria-label="Vorheriges Foto"
+                  title="Vorheriges Foto"
                   className="absolute left-4 text-app-bg hover:text-app-bg/70 z-10"
                 >
                   <ChevronLeft className="w-12 h-12" />
@@ -148,10 +146,11 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     nextPhoto();
                   }}
+                  aria-label="Nächstes Foto"
+                  title="Nächstes Foto"
                   className="absolute right-4 text-app-bg hover:text-app-bg/70 z-10"
                 >
                   <ChevronRight className="w-12 h-12" />
@@ -160,19 +159,20 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
             )}
 
             {/* Image */}
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={selectedPhoto}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
-                src={photos[selectedPhoto]?.url || ''}
-                alt="Event Foto"
-                className="max-w-full max-h-full object-contain"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </AnimatePresence>
+            <div className="w-full h-full flex items-center justify-center">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={selectedPhoto}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.3 }}
+                  src={photos[selectedPhoto]?.url || ''}
+                  alt="Event Foto"
+                  className="max-w-full max-h-full object-contain"
+                />
+              </AnimatePresence>
+            </div>
 
             {/* Action Buttons */}
             <motion.div
@@ -184,10 +184,11 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={() => {
                   handleDownload(photos[selectedPhoto]);
                 }}
+                aria-label="Download"
+                title="Download"
                 className="p-3 bg-app-fg/50 rounded-full text-app-bg hover:bg-app-fg/70"
               >
                 <Download className="w-6 h-6" />
@@ -195,10 +196,11 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={() => {
                   handleShare(photos[selectedPhoto]);
                 }}
+                aria-label="Teilen"
+                title="Teilen"
                 className="p-3 bg-app-fg/50 rounded-full text-app-bg hover:bg-app-fg/70"
               >
                 <Share2 className="w-6 h-6" />
@@ -227,9 +229,9 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
             >
               {selectedPhoto + 1} / {photos.length}
             </motion.div>
-          </motion.div>
+          </DialogContent>
         )}
-      </AnimatePresence>
+      </Dialog>
     </>
   );
 }
