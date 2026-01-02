@@ -106,7 +106,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
         setIsHost(propIsHost);
       }
     } catch (err: any) {
-      console.error('Fehler beim Laden der Gästebuch-Einträge:', err);
+      void err;
       setError('Fehler beim Laden der Einträge');
     } finally {
       setLoading(false);
@@ -143,7 +143,6 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       setPhotoSizeBytes(typeof response.data.photoSizeBytes === 'string' ? response.data.photoSizeBytes : null);
       setPhotoUploadId(typeof response.data.uploadId === 'string' ? response.data.uploadId : null);
     } catch (err: any) {
-      console.error('Fehler beim Hochladen des Fotos:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Hochladen des Fotos';
       setError(errorMessage);
       // Revoke blob URL if it exists
@@ -194,7 +193,6 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       setAudioMimeType(typeof response.data.audioMimeType === 'string' ? response.data.audioMimeType : null);
       setAudioDurationMs(typeof response.data.audioDurationMs === 'number' ? response.data.audioDurationMs : audioDurationMs);
     } catch (err: any) {
-      console.error('Fehler beim Hochladen des Audios:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Hochladen des Audios';
       setError(errorMessage);
       setAudioPreviewUrl(null);
@@ -269,7 +267,6 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
           setAudioDurationMs(dur);
           await uploadAudioBlob(blob);
         } catch (e: any) {
-          console.error('Fehler beim Stop/Upload Audio:', e);
           setError(e?.message || 'Fehler bei der Audio-Aufnahme');
         } finally {
           setIsRecording(false);
@@ -279,7 +276,6 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       recorder.start();
       setIsRecording(true);
     } catch (err: any) {
-      console.error('Fehler beim Starten der Aufnahme:', err);
       setError(err?.message || 'Mikrofon-Zugriff fehlgeschlagen');
       setIsRecording(false);
     }
@@ -356,7 +352,6 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       // Reload entries
       await loadEntries();
     } catch (err: any) {
-      console.error('Fehler beim Erstellen des Eintrags:', err);
       setError(err.response?.data?.error || 'Fehler beim Erstellen des Eintrags');
     } finally {
       setSubmitting(false);
@@ -371,7 +366,6 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       setHostMessage(editedHostMessage.trim() || DEFAULT_HOST_MESSAGE);
       setIsEditingHostMessage(false);
     } catch (err: any) {
-      console.error('Fehler beim Speichern der Host-Nachricht:', err);
       setError('Fehler beim Speichern der Nachricht');
     }
   };
@@ -533,7 +527,6 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                             className="w-24 h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                             onClick={() => setSelectedImage(entry.photoUrl || null)}
                             onError={(e) => {
-                              console.error('Fehler beim Laden des Bildes:', entry.photoUrl);
                               // Fallback: versuche absolute URL wenn relative
                               const img = e.target as HTMLImageElement;
                               if (entry.photoUrl && entry.photoUrl.startsWith('/api/')) {

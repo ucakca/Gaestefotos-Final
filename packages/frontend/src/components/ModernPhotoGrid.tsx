@@ -119,7 +119,7 @@ export default function ModernPhotoGrid({
         setReactionCounts((prev) => ({ ...prev, [photoId]: response.data.reactionCounts }));
       }
     } catch (err) {
-      console.error('Fehler beim Laden der Likes:', err);
+      void err;
     }
   };
 
@@ -151,7 +151,7 @@ export default function ModernPhotoGrid({
         setCustomReactionInput('');
       }
     } catch (err) {
-      console.error('Fehler beim Liken:', err);
+      void err;
     }
   };
 
@@ -168,7 +168,7 @@ export default function ModernPhotoGrid({
         [photoId]: response.data.comments || [],
       }));
     } catch (err) {
-      console.error('Fehler beim Laden der Kommentare:', err);
+      void err;
     } finally {
       setLoadingComments((prev) => {
         const newSet = new Set(prev);
@@ -210,7 +210,6 @@ export default function ModernPhotoGrid({
       setCommentText('');
       setAuthorName('');
     } catch (err: any) {
-      console.error('Fehler beim Erstellen des Kommentars:', err);
       setCommentError(err?.response?.data?.error || err?.message || 'Fehler beim Erstellen des Kommentars');
     } finally {
       setSubmittingComment(false);

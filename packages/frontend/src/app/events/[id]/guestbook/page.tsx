@@ -26,10 +26,9 @@ export default function GuestbookPage() {
       const { data } = await api.get(`/events/${eventId}`);
       setEvent(data.event);
       const hostCheck = user?.id === data.event.hostId;
-      console.log('Host Check:', { userId: user?.id, hostId: data.event.hostId, isHost: hostCheck });
       setIsHost(hostCheck);
     } catch (err) {
-      console.error('Fehler beim Laden des Events:', err);
+      void err;
     }
   };
 

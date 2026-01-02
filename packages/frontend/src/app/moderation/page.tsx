@@ -82,7 +82,7 @@ export default function ModerationPage() {
 
       setPendingPhotos(allPendingPhotos);
     } catch (err) {
-      console.error('Fehler beim Laden der Fotos:', err);
+      void err;
     } finally {
       setLoading(false);
     }

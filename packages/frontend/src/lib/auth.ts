@@ -23,7 +23,6 @@ export const authApi = {
       const { data } = await api.post('/auth/login', credentials);
       return data;
     } catch (error: any) {
-      console.error('Login API error:', error);
       throw error;
     }
   },
@@ -33,7 +32,6 @@ export const authApi = {
       const response = await api.post('/auth/register', data);
       return response.data;
     } catch (error: any) {
-      console.error('Register API error:', error);
       throw error;
     }
   },
@@ -43,7 +41,6 @@ export const authApi = {
       const { data } = await api.get('/auth/me');
       return data;
     } catch (error: any) {
-      console.error('GetMe API error:', error);
       throw error;
     }
   },

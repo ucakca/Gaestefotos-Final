@@ -80,7 +80,6 @@ export default function ChallengeCompletion({
         setUsingCamera(true);
       }
     } catch (err) {
-      console.error('Camera error:', err);
       showToast('Kamera konnte nicht geöffnet werden', 'error');
     }
   };
@@ -194,7 +193,6 @@ export default function ChallengeCompletion({
         window.dispatchEvent(new CustomEvent('photoUploaded'));
       }, 2000);
     } catch (err: any) {
-      console.error('Upload error:', err);
       showToast(formatApiError(err) || 'Fehler beim Hochladen', 'error');
       setUploading(false);
     }

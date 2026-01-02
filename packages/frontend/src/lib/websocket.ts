@@ -36,14 +36,6 @@ class WebSocketManager {
       path: '/socket.io',
     });
 
-    this.socket.on('connect', () => {
-      console.log('WebSocket connected:', this.socket?.id);
-    });
-
-    this.socket.on('disconnect', () => {
-      console.log('WebSocket disconnected');
-    });
-
     // Forward all events to listeners
     this.socket.onAny((event, data) => {
       const eventListeners = this.listeners.get(event);

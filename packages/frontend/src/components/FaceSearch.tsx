@@ -120,7 +120,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
       setCapturing(true);
     } catch (err) {
       setError('Kamera konnte nicht geöffnet werden. Bitte Berechtigung erteilen.');
-      console.error('Camera error:', err);
+      void err;
     }
   };
 

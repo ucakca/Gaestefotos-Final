@@ -79,7 +79,7 @@ export default function GuestManagementPage() {
       const { data } = await api.get(`/events/${eventId}`);
       setEvent(data.event);
     } catch (err) {
-      console.error('Fehler beim Laden des Events:', err);
+      void err;
     }
   };
 
@@ -88,7 +88,7 @@ export default function GuestManagementPage() {
       const { data } = await api.get(`/events/${eventId}/guests`);
       setGuests(data.guests || []);
     } catch (err) {
-      console.error('Fehler beim Laden der Gäste:', err);
+      void err;
     } finally {
       setLoading(false);
     }

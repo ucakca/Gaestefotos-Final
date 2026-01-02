@@ -153,7 +153,7 @@ export default function PhotoManagementPage() {
       const { data } = await api.get(`/events/${eventId}`);
       setEvent(data.event);
     } catch (err) {
-      console.error('Fehler beim Laden des Events:', err);
+      void err;
     }
   };
 
@@ -162,7 +162,7 @@ export default function PhotoManagementPage() {
       const { data } = await api.get(`/events/${eventId}/categories`);
       setCategories(data.categories || []);
     } catch (err) {
-      console.error('Fehler beim Laden der Kategorien:', err);
+      void err;
     }
   };
 
@@ -197,7 +197,7 @@ export default function PhotoManagementPage() {
       const { data } = await api.get(`/events/${eventId}/photos`, { params });
       setPhotos(data.photos || []);
     } catch (err) {
-      console.error('Fehler beim Laden der Fotos:', err);
+      void err;
     } finally {
       setLoading(false);
     }
@@ -297,7 +297,6 @@ export default function PhotoManagementPage() {
       showToast('Foto erfolgreich hochgeladen' + (alsoInGuestbook ? ' und im Gästebuch eingetragen' : ''), 'success');
       await loadPhotos();
     } catch (err: any) {
-      console.error('Fehler beim Hochladen:', err);
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Hochladen';
       showToast(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), 'error');
     } finally {

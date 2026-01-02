@@ -158,7 +158,7 @@ export default function CategoryManagementPage() {
       const { data } = await api.get(`/events/${eventId}`);
       setEvent(data.event);
     } catch (err) {
-      console.error('Fehler beim Laden des Events:', err);
+      void err;
     }
   };
 
@@ -167,7 +167,7 @@ export default function CategoryManagementPage() {
       const { data } = await api.get(`/events/${eventId}/categories`);
       setCategories(data.categories || []);
     } catch (err) {
-      console.error('Fehler beim Laden der Kategorien:', err);
+      void err;
     } finally {
       setLoading(false);
     }
@@ -217,7 +217,6 @@ export default function CategoryManagementPage() {
       setShowAddForm(false);
       loadCategories();
     } catch (err: any) {
-      console.error('Fehler beim Hinzufügen:', err);
       const errorMessage = err.response?.data?.error || 'Fehler beim Hinzufügen';
       showToast(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), 'error');
     }
@@ -257,7 +256,6 @@ export default function CategoryManagementPage() {
       });
       loadCategories();
     } catch (err: any) {
-      console.error('Fehler beim Aktualisieren:', err);
       const errorMessage = err.response?.data?.error || 'Fehler beim Aktualisieren';
       showToast(typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage), 'error');
     }

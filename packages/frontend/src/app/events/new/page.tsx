@@ -41,7 +41,6 @@ export default function NewEventPage() {
       });
       router.push(`/events/${data.event.id}/design?wizard=1`);
     } catch (err: any) {
-      console.error('Event creation error:', err);
       const errorData = err.response?.data;
       let errorMessage = 'Fehler beim Erstellen des Events';
 

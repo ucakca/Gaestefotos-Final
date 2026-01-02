@@ -55,7 +55,7 @@ export default function StatisticsPage() {
       const { data } = await api.get(`/events/${eventId}`);
       setEvent(data.event);
     } catch (err) {
-      console.error('Fehler beim Laden des Events:', err);
+      void err;
     }
   };
 
@@ -64,7 +64,7 @@ export default function StatisticsPage() {
       const { data } = await api.get(`/events/${eventId}/statistics`);
       setStatistics(data);
     } catch (err) {
-      console.error('Fehler beim Laden der Statistiken:', err);
+      void err;
     } finally {
       setLoading(false);
     }

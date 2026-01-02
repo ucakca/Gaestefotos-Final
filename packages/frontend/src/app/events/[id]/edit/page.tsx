@@ -40,17 +40,16 @@ export default function EditEventPage() {
     try {
       const { data } = await api.get(`/events/${eventId}`);
       const event = data.event;
-      
-          setFormData({
-            title: event.title,
-            slug: event.slug,
-            dateTime: event.dateTime ? new Date(event.dateTime).toISOString() : '',
-            locationName: event.locationName || '',
-            designConfig: event.designConfig || {},
-            featuresConfig: normalizeEventFeaturesConfig(event.featuresConfig || DEFAULT_EVENT_FEATURES_CONFIG) as any,
-          });
+
+      setFormData({
+        title: event.title,
+        slug: event.slug,
+        dateTime: event.dateTime || '',
+        locationName: event.locationName || '',
+        designConfig: event.designConfig || {},
+        featuresConfig: normalizeEventFeaturesConfig(event.featuresConfig || DEFAULT_EVENT_FEATURES_CONFIG) as any,
+      });
     } catch (err: any) {
-      console.error('Fehler beim Laden des Events:', err);
       setError('Fehler beim Laden des Events');
     } finally {
       setLoading(false);
@@ -250,4 +249,3 @@ export default function EditEventPage() {
     </div>
   );
 }
-

@@ -296,7 +296,7 @@ export default function PublicEventPage() {
       });
       setCategories(data.categories || []);
     } catch (err) {
-      console.error('Error loading categories:', err);
+      void err;
     }
   };
 
@@ -309,7 +309,7 @@ export default function PublicEventPage() {
       });
       setChallenges(data.challenges || []);
     } catch (err) {
-      console.error('Error loading challenges:', err);
+      void err;
     }
   };
 
@@ -488,7 +488,7 @@ export default function PublicEventPage() {
           // Add challenge photos
           filteredPhotos = [...filteredPhotos, ...challengePhotos];
         } catch (challengeErr) {
-          console.error('Error loading challenge photos:', challengeErr);
+          void challengeErr;
         }
         
         // Combine regular photos and guestbook photos, sort by date (newest first)
@@ -498,7 +498,7 @@ export default function PublicEventPage() {
           return dateB - dateA;
         });
       } catch (feedErr) {
-        console.error('Error loading feed entries:', feedErr);
+        void feedErr;
         // Continue without feed entries if there's an error
       }
       
@@ -526,7 +526,7 @@ export default function PublicEventPage() {
         });
       }
     } catch (err) {
-      console.error('Error loading photos:', err);
+      void err;
     } finally {
       loadingRef.current = false;
       setLoadingMore(false);
@@ -591,7 +591,6 @@ export default function PublicEventPage() {
     let debounceTimer: NodeJS.Timeout;
     
     const handlePhotoUploaded = () => {
-      console.log('Photo uploaded event received, reloading photos...');
       // Debounce: Warte 500ms bevor reload, um mehrere Events zu bündeln
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {

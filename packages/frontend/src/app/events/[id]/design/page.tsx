@@ -86,7 +86,6 @@ export default function DesignLiveBuilderPage() {
         }));
       }
     } catch (err) {
-      console.error('Fehler beim Laden des Events:', err);
       showToast('Fehler beim Laden', 'error');
     } finally {
       setLoading(false);

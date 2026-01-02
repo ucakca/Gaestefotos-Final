@@ -96,7 +96,7 @@ export default function DuplicatesPage() {
       const { data } = await api.get(`/events/${eventId}`);
       setEvent(data.event);
     } catch (err) {
-      console.error('Fehler beim Laden des Events:', err);
+      void err;
     }
   };
 

@@ -250,7 +250,7 @@ export default function AdminDashboardPage() {
           router.push('/login');
         }
       } catch (error) {
-        console.error('Auth check error:', error);
+        void error;
         router.push('/login');
       } finally {
         setLoading(false);

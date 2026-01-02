@@ -122,7 +122,7 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
       onClose();
     } catch (error: any) {
       showToast('Fehler beim Speichern', 'error');
-      console.error('Error saving photo edit:', error);
+      void error;
     } finally {
       setIsSaving(false);
     }

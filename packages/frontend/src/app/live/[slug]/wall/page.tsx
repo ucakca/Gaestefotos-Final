@@ -61,7 +61,7 @@ export default function LiveWallPage() {
       });
       setPhotos(data.photos || []);
     } catch (err) {
-      console.error('Error loading photos:', err);
+      void err;
     }
   };
 
