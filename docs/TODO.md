@@ -144,6 +144,9 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 
 - ❌ Security Hardening: 2FA (TOTP)
   - Ziel: **ADMIN/SUPERADMIN verpflichtend**, HOST optional (Opt-in)
+  - Empfehlung: **Primary = TOTP (Authenticator-App)** + **Recovery Codes** (low maintenance, best practice)
+  - Optionaler Fallback (wenn nötig): **E-Mail One-Time-Code** (nur als Backup, nicht als Primary)
+  - Nicht bevorzugt (nur wenn ihr es unbedingt wollt): SMS / WhatsApp (höherer Abuse/Support/Integrations-Aufwand)
   - Backend: Setup/Verify/Disable Endpoints + Recovery Codes (One-Time)
   - DB: `twoFactorEnabled`, `twoFactorSecretEncrypted`, `twoFactorRecoveryCodesHashed` (oder äquivalent)
   - UX: QR Setup + Code Verify + “Recovery Codes speichern” + Reauth fürs Deaktivieren
