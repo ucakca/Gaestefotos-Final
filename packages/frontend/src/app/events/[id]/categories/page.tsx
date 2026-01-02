@@ -707,7 +707,6 @@ export default function CategoryManagementPage() {
                         setShowAddForm(false);
                         cancelEdit();
                       }}
-                      className="border border-app-border bg-app-bg text-app-fg hover:opacity-90"
                     >
                       Abbrechen
                     </Button>
