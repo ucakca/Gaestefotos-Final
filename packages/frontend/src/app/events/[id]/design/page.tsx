@@ -550,7 +550,6 @@ export default function DesignLiveBuilderPage() {
                           type="button"
                           variant="secondary"
                           onClick={() => logoImageInputRef.current?.click()}
-                          className="bg-app-bg hover:opacity-90"
                           disabled={uploadingImage === 'logo'}
                         >
                           {uploadingImage === 'logo' ? 'Lädt…' : 'Logo hochladen'}
@@ -740,7 +739,7 @@ export default function DesignLiveBuilderPage() {
                         type="button"
                         variant="secondary"
                         onClick={downloadA5StandeePdf}
-                        className="w-full border border-app-border bg-app-card text-app-fg hover:opacity-90"
+                        className="w-full gap-2"
                       >
                         <Download className="w-4 h-4" />
                         Aufsteller (A5) als PDF
@@ -752,7 +751,7 @@ export default function DesignLiveBuilderPage() {
                         type="button"
                         variant="secondary"
                         onClick={saveQrCodeConfig}
-                        className="w-full bg-app-bg text-app-fg hover:opacity-90"
+                        className="w-full gap-2"
                       >
                         <Save className="w-4 h-4" />
                         QR-Einstellungen speichern
@@ -778,7 +777,6 @@ export default function DesignLiveBuilderPage() {
                         navigator.clipboard.writeText(eventUrl);
                         showToast('URL kopiert', 'success');
                       }}
-                      className="bg-app-bg hover:opacity-90"
                     >
                       Kopieren
                     </Button>
@@ -789,7 +787,7 @@ export default function DesignLiveBuilderPage() {
               {/* Quick Actions */}
               <div className="border-t border-app-border pt-6 space-y-2">
                 <h3 className="font-semibold mb-2">Schnellaktionen</h3>
-                <Button asChild type="button" variant="secondary" className="w-full bg-app-bg hover:opacity-90">
+                <Button asChild type="button" variant="secondary" className="w-full">
                   <a href={`/e2/${event.slug}`} target="_blank" rel="noopener noreferrer">
                     Öffentliche Seite öffnen
                   </a>
