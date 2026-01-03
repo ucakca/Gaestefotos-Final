@@ -325,7 +325,7 @@ export default function UploadButton({
         }}
       >
         <DialogContent className="max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
-          <input
+          <Input
             ref={capturePhotoInputRef}
             type="file"
             accept="image/*"
@@ -333,7 +333,7 @@ export default function UploadButton({
             className="hidden"
             onChange={onCaptureFileSelected}
           />
-          <input
+          <Input
             ref={captureVideoInputRef}
             type="file"
             accept="video/*"
@@ -357,47 +357,45 @@ export default function UploadButton({
             />
           </DialogClose>
 
-              <DialogTitle className="text-xl font-semibold text-app-fg mb-6">Foto/Video hochladen</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-app-fg mb-6">Foto/Video hochladen</DialogTitle>
 
-              {queueNotice && (
-                <div className="mb-4 rounded-lg border border-status-success bg-app-bg px-3 py-2 text-sm text-status-success">
-                  {queueNotice}
-                </div>
-              )}
+          {queueNotice && (
+            <div className="mb-4 rounded-lg border border-status-success bg-app-bg px-3 py-2 text-sm text-status-success">
+              {queueNotice}
+            </div>
+          )}
 
-              {disabled && disabledReason && (
-                <div className="mb-4 rounded-lg border border-status-warning bg-app-bg px-3 py-2 text-sm text-status-warning">
-                  {disabledReason}
-                </div>
-              )}
+          {disabled && disabledReason && (
+            <div className="mb-4 rounded-lg border border-status-warning bg-app-bg px-3 py-2 text-sm text-status-warning">
+              {disabledReason}
+            </div>
+          )}
 
-              {/* Uploader Name - Auffällig als Pflichtfeld */}
-              <div className="mb-4">
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-2"
-                >
-                  <label className="block text-sm font-semibold text-app-fg">
-                    Dein Name <span className="text-status-danger">*</span>
-                  </label>
-                  <Input
-                    type="text"
-                    value={uploaderName}
-                    onChange={(e) => {
-                      setUploaderName(e.target.value);
-                      if (uploaderNameError) setUploaderNameError(null);
-                    }}
-                    placeholder="z.B. Max Mustermann"
-                    required
-                    className="w-full rounded-lg border-2 border-app-accent bg-app-card px-4 py-3 font-medium text-app-fg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
-                  />
-                  {uploaderNameError && <p className="text-xs text-status-danger">{uploaderNameError}</p>}
-                  <p className="text-xs text-app-muted">
-                    Damit der Gastgeber weiß, wer die Fotos hochgeladen hat
-                  </p>
-                </motion.div>
-              </div>
+          {/* Uploader Name - Auffällig als Pflichtfeld */}
+          <div className="mb-4">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-2"
+            >
+              <label className="block text-sm font-semibold text-app-fg">
+                Dein Name <span className="text-status-danger">*</span>
+              </label>
+              <Input
+                type="text"
+                value={uploaderName}
+                onChange={(e) => {
+                  setUploaderName(e.target.value);
+                  if (uploaderNameError) setUploaderNameError(null);
+                }}
+                placeholder="z.B. Max Mustermann"
+                required
+                className="w-full rounded-lg border-2 border-app-accent bg-app-card px-4 py-3 font-medium text-app-fg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
+              />
+              {uploaderNameError && <p className="text-xs text-status-danger">{uploaderNameError}</p>}
+              <p className="text-xs text-app-muted">Damit der Gastgeber weiß, wer die Fotos hochgeladen hat</p>
+            </motion.div>
+          </div>
 
               <div
                 {...getRootProps()}
