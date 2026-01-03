@@ -31,7 +31,8 @@
   - In Produktion werden Browser-API Calls **same-origin** gemacht (relative `'/api'`)
   - `/register` ist in der UI deaktiviert; Backend-Register ist standardmäßig gesperrt (optional via `ALLOW_SELF_REGISTER=true`)
 - **2FA (TOTP)**
-  - Für Admins verpflichtend (Enforcement im Login-Flow), Hosts optional (Opt-in)
+  - Für Admins verpflichtend (Enforcement im Login-Flow)
+  - Setup/Opt-in ist aktuell **Admin-only** (Host-Opt-in ist Follow-up, falls gewünscht)
   - Secrets werden im Backend verschlüsselt gespeichert (AES-256-GCM, ENV: `TWO_FACTOR_ENCRYPTION_KEY`)
 - **Login UI**:
   - Passwort anzeigen/verbergen

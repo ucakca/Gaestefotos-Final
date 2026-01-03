@@ -49,13 +49,15 @@ Legende:
   - Backend: `packages/backend/src/routes/auth.ts`
   - Middleware: `packages/backend/src/middleware/auth.ts`
 
-- ✅ **2FA (TOTP) – Admin verpflichtend, Host optional**
+- ◐ **2FA (TOTP) – Admin verpflichtend (Host optional: Follow-up)**
   - DB: `User.twoFactor*` Felder (siehe `docs/DB_FIELD_MEANINGS.md`)
   - ENV: `TWO_FACTOR_ENCRYPTION_KEY` (AES-256-GCM Secret-Encryption)
   - Endpoints/Flows:
     - Login: `POST /api/auth/login` kann `twoFactorRequired` / `twoFactorSetupRequired` zurückgeben (Challenge Token)
     - Verify: `POST /api/auth/2fa/verify` (TOTP oder Recovery Code)
-    - Setup: `POST /api/auth/2fa/setup/start` + `POST /api/auth/2fa/setup/confirm`
+    - Setup (Admin-only): `POST /api/auth/2fa/setup/start` + `POST /api/auth/2fa/setup/confirm`
+  - Notes:
+    - Host-Opt-in ist aktuell nicht umgesetzt (Setup/Confirm sind role-gated auf `ADMIN`).
 
 - **Events (Create/Read/Update + Public by slug)**
   - Backend: `packages/backend/src/routes/events.ts`
