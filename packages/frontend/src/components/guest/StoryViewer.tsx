@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogTitle,
 } from '@/components/ui/dialog';
 
 type Story = any;
@@ -47,6 +48,7 @@ export default function StoryViewer({
           data-testid="story-viewer"
           className="fixed inset-0 z-50 flex items-center justify-center bg-app-fg/95 p-0"
         >
+          <DialogTitle className="sr-only">Story Viewer</DialogTitle>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0" />
 
           <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-4 pb-5 bg-gradient-to-b from-app-fg/80 via-app-fg/50 to-transparent">
