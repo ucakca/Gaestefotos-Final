@@ -84,6 +84,19 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 - ✅ Prod Fix: `dash` Admin API Routing: Nginx `location ^~ /api/` proxied → Backend (`127.0.0.1:8001`) + Backend CORS erlaubt `dash.*` Origins (Login funktioniert)
 - ✅ Prod Fix: `dash` `GET /favicon.ico` liefert `204` (kein 404/500 in Browser-Konsole)
 
+- ✅ Prod Fix: WordPress Role-Downgrade wird beim Login korrekt übernommen
+  - Problem: User hatte früher Admin, ist in WP inzwischen `customer` → App leitete trotzdem nach `dash.*` um
+  - Fix (Backend): Login resynct Role best-effort gegen WordPress für `wordpressUserId` Users
+  - Ergebnis: Redirect/Permissions folgen der aktuellen DB/WP Rolle
+
+- ✅ Hardening: App Login Redirect nach `dash.*` nur nach autoritativem `/api/auth/me`
+  - Fix (Frontend): Redirect-Entscheidung basiert auf DB-Rolle via `/auth/me`, nicht auf Login-Response alone
+  - Ergebnis: weniger Risiko durch stale Role-Infos / Edge-Cases
+
+- ✅ Ops Fix: Admin Dashboard `Failed to find Server Action` (stale build/assets)
+  - Fix: service stop → build → start (und danach Smoke erneut)
+  - Verifikation: `scripts/prelaunch-smoke.sh` erneut grün, keine neuen Fehler in `journalctl`
+
 - ✅ UI Redesign (alle Oberflächen): shadcn/ui + Tailwind, Apple-clean Basis + Theme-Welten
   - Admin-Dashboard:
     - shadcn Baseline Setup (deps + `tailwindcss-animate` + `components.json`)

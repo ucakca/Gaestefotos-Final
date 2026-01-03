@@ -221,6 +221,17 @@ Diese Checkliste ist als “einmal durchklicken/abarbeiten” gedacht.
 - `GET /api/health` liefert 200.
 - (Wenn Consent entfernt): `/api/wp-consent*` liefert 404/410.
 
+**Troubleshooting (Next.js / Admin Dashboard)**
+
+- Symptom: `Error: Failed to find Server Action ... This request might be from an older or newer deployment`
+- Ursache: meist stale Build/Assets (Mismatch zwischen Client und Server)
+- Fix (Runbook):
+  - `systemctl stop gaestefotos-admin-dashboard.service`
+  - `pnpm --filter @gaestefotos/shared build`
+  - `pnpm --filter @gaestefotos/admin-dashboard build`
+  - `systemctl start gaestefotos-admin-dashboard.service`
+  - danach: `scripts/prelaunch-smoke.sh` + `journalctl -u gaestefotos-admin-dashboard.service --since "10 min ago"`
+
 **Rollback (Minimal)**
 
 - Letzten funktionierenden Stand/Artefakt/Commit wiederherstellen.
