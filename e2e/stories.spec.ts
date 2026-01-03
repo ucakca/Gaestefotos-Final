@@ -8,6 +8,18 @@ test('stories: public event shows stories bar and viewer opens', async ({ page, 
   const { PrismaClient } = prisma as any;
   const db = new PrismaClient();
 
+  // The public event pages sometimes request the raw photo file endpoint.
+  // In E2E we seed photos as data URIs, so we mock that endpoint to avoid noisy 404s.
+  await page.route('**/api/photos/*/file', async (route) => {
+    const gifBase64 = 'R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+    const buf = Buffer.from(gifBase64, 'base64');
+    await route.fulfill({
+      status: 200,
+      headers: { 'content-type': 'image/gif' },
+      body: buf,
+    });
+  });
+
   const apiBase = (process.env.E2E_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001')
     .replace(/\/+$/, '')
     .replace(/\/api$/, '');
