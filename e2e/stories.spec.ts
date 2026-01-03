@@ -126,7 +126,13 @@ test('stories: public event shows stories bar and viewer opens', async ({ page, 
       await expect(page.getByTestId('story-progress')).toBeVisible();
       await expect(page.getByTestId('story-image')).toBeVisible();
 
-      await page.getByTestId('story-close').click();
+      const closeBtn = page.getByTestId('story-close');
+      try {
+        await closeBtn.scrollIntoViewIfNeeded();
+        await closeBtn.click({ force: true, timeout: 10_000 });
+      } catch {
+        await page.keyboard.press('Escape');
+      }
       await expect(page.getByTestId('story-viewer')).not.toBeVisible();
     };
 

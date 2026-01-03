@@ -102,6 +102,8 @@ test('auth: login redirect decision uses /auth/me (authoritative role)', async (
   await page.getByLabel('E-Mail').fill('e2e@example.com');
   await page.locator('input#password').fill('secret123');
 
+  await page.getByRole('checkbox', { name: 'Angemeldet bleiben' }).check();
+
   const meRequest = page.waitForRequest(
     (req) => {
       const url = req.url();
@@ -127,7 +129,27 @@ test('auth: login redirect decision uses /auth/me (authoritative role)', async (
     );
   }
 
-  await expect(page).toHaveURL(/\/dashboard(\?.*)?$/);
+  let reachedDashboard = false;
+  try {
+    await page.waitForURL(/\/dashboard(\?.*)?$/, { timeout: 10_000 });
+    reachedDashboard = true;
+  } catch {
+  }
+
+  if (!reachedDashboard) {
+    throw new Error(
+      [
+        'Did not reach /dashboard after successful login + /auth/me.',
+        `urlNow=${page.url()}`,
+        `loginCalls=${loginCalls} meCalls=${meCalls}`,
+        `authRequests:\n${authRequests.slice(-20).join('\n')}`,
+        `authResponses:\n${authResponses
+          .slice(-20)
+          .map((r) => `${r.status} ${r.url}`)
+          .join('\n')}`,
+      ].join('\n\n')
+    );
+  }
 
   expect(loginCalls).toBe(1);
   expect(meCalls).toBeGreaterThanOrEqual(1);

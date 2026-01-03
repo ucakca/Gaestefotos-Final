@@ -20,7 +20,7 @@ test('invitation dashboard: edit invitation (set password) -> public page requir
       email: `e2e-admin-${unique}@example.com`,
       name: 'E2E Admin',
       password: adminPasswordHash,
-      role: 'ADMIN',
+      role: 'HOST',
     },
   });
 
