@@ -604,7 +604,7 @@ export default function EventDashboardPage() {
             )}
           </div>
 
-          <input
+          <Input
             ref={coverImageInputRef}
             type="file"
             accept="image/*"
@@ -1056,7 +1056,7 @@ export default function EventDashboardPage() {
                     className="h-7 w-7 rounded-full p-0 shadow-lg"
                   />
                 </div>
-                <input
+                <Input
                   ref={profileImageInputRef}
                   type="file"
                   accept="image/*"

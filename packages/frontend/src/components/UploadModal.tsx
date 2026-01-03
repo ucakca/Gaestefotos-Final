@@ -95,7 +95,7 @@ export default function UploadModal({
             <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-app-border rounded-lg cursor-pointer hover:border-app-accent transition-colors">
               <Upload className="w-5 h-5 text-app-muted" />
               <span className="text-sm text-app-muted">{selectedFile ? selectedFile.name : 'Klicken zum Auswählen'}</span>
-              <input
+              <Input
                 type="file"
                 accept={accept}
                 className="hidden"

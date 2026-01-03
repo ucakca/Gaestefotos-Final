@@ -8,6 +8,7 @@ import { Event as EventType } from '@gaestefotos/shared';
 import { Camera, Upload, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
+import { Input } from '@/components/ui/Input';
 
 const MotionIconButton = motion(IconButton);
 const MotionButton = motion(Button);
@@ -179,7 +180,7 @@ export default function CameraPage() {
                     </div>
                   </div>
                 )}
-                <input
+                <Input
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"

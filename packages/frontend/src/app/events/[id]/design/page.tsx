@@ -388,7 +388,7 @@ export default function DesignLiveBuilderPage() {
                           </div>
                         )}
                       </div>
-                      <input
+                      <Input
                         ref={coverImageInputRef}
                         type="file"
                         accept="image/*"
@@ -430,7 +430,7 @@ export default function DesignLiveBuilderPage() {
                               <Edit2 className="w-6 h-6 text-app-bg" />
                             )}
                           </div>
-                          <input
+                          <Input
                             ref={profileImageInputRef}
                             type="file"
                             accept="image/*"
@@ -556,7 +556,7 @@ export default function DesignLiveBuilderPage() {
                           {uploadingImage === 'logo' ? 'Lädt…' : 'Logo hochladen'}
                         </Button>
                       </motion.div>
-                      <input
+                      <Input
                         ref={logoImageInputRef}
                         type="file"
                         accept="image/*"

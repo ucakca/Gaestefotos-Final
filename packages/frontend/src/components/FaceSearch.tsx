@@ -7,6 +7,7 @@ import api from '@/lib/api';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 
 const MotionButton = motion(Button);
@@ -291,7 +292,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                     </MotionButton>
                   </div>
 
-                  <input
+                  <Input
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"

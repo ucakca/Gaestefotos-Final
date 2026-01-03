@@ -6,6 +6,7 @@ import { Camera, X, Upload, Check } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import {
   Dialog,
   DialogContent,
@@ -169,7 +170,7 @@ export default function InstagramUploadButton({
       {/* Upload Modal */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="bg-app-card border border-app-border rounded-lg max-w-md w-full p-6">
-          <input
+          <Input
             ref={capturePhotoInputRef}
             type="file"
             accept="image/*"
