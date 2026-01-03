@@ -6,6 +6,35 @@ Ziel: Dieses Dokument ist die **Single Source of Truth**, welche DB-Felder was b
 
 ---
 
+## User (`users`)
+
+### Auth / Rollen
+
+- `User.role`
+  - `ADMIN` oder `HOST`.
+
+### 2FA (TOTP)
+
+- `User.twoFactorEnabled`
+  - `true` wenn 2FA vollständig aktiviert ist (Login erfordert dann TOTP/Recovery Code).
+
+- `User.twoFactorPending`
+  - `true` während eines Setup-Flows (z.B. Secret erzeugt, aber noch nicht bestätigt).
+
+- `User.twoFactorSecretEncrypted`
+  - Verschlüsseltes TOTP-Secret (AES-256-GCM).
+  - Wird nur gesetzt, wenn `TWO_FACTOR_ENCRYPTION_KEY` im Backend verfügbar ist.
+
+- `User.twoFactorSecretIv`, `User.twoFactorSecretTag`
+  - AES-256-GCM Parameter (IV + Auth Tag) für `twoFactorSecretEncrypted`.
+
+- `User.twoFactorRecoveryCodesHashed`
+  - JSON-Liste gehashter Recovery Codes.
+  - Codes werden nur einmal im Klartext beim Setup angezeigt.
+
+- `User.twoFactorSetupAt`
+  - Timestamp, wann 2FA erfolgreich eingerichtet/aktiviert wurde.
+
 ## Event (`events`)
 
 ### Identität / Lifecycle

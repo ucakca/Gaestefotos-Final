@@ -139,6 +139,13 @@ sudo systemctl status gaestefotos-admin-dashboard.service
 
 Wichtig: in Produktion **niemals** `next build` / `pnpm build:prod` laufen lassen, während der Service bereits läuft.
 
+Empfohlen (copy/paste, erzwingt Reihenfolge):
+
+```bash
+bash ./scripts/deploy-frontend-prod.sh
+bash ./scripts/deploy-admin-dashboard-prod.sh
+```
+
 Frontend:
 
 ```bash

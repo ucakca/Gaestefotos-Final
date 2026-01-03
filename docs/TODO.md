@@ -69,6 +69,9 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
   - Backend: download endpoints prüfen `featuresConfig.allowDownloads` für Guests
   - Frontend: `/e` + `/e2` defaulten `allowDownloads` korrekt auf `!== false`
   - Verifikation: `pnpm type-check` + `pnpm lint` erfolgreich
+- ✅ Status Token Sweep (Frontend: `var(--status-*)` Klassen → `*-status-*` Tokens)
+  - Verifikation: keine `text/bg/border/fill-[var(--status-*)]` Klassen mehr in `packages/frontend/src`
+  - Hinweis: verbleibende `var(--status-*)` Vorkommen sind nur noch Chart/Gradient-Strings (kein Tailwind-Class-Usage)
 - ✅ Frontend: Sweep remaining raw form controls in Event Flows (TODO 203)
   - `Select` Primitive (Radix) ergänzt + native `<select>` migriert (u.a. `design`, `challenges`, `qr-styler`)
   - `Slider` Primitive (Radix) ergänzt + QR-Größe in `design` migriert
@@ -120,6 +123,10 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
   - Cleanup: Debug-`console.log` entfernt (u.a. `Guestbook`, `ChallengeCompletion`)
   - Konsistenz: einzelne Labels vereinheitlicht (z.B. „Emoji auswählen")
 
+- ✅ Native Control Migration (Select/Date/Datetime)
+  - Keine nativen `<select>`/`input[type=date|time|datetime-local]` mehr (außer bewusste `type="file"` Uploads)
+  - `DateTimePicker` erweitert: `disabled`, `minDate`
+
 - ✅ Hardcoded Color Sweep (TODO 171)
   - Fallback-Gradienten/Inline-Styles auf `var(--...)` Tokens umgestellt (u.a. `design` A5 PDF, Design fallback gradients)
   - QR-Styler Defaults via Root-CSS-Variablen aufgelöst (sichere Hex-Fallbacks)
@@ -142,23 +149,21 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 
 - ✅ Big end-to-end Testlauf vor Launch
 
-- ❌ Security Hardening: 2FA (TOTP)
-  - Ziel: **ADMIN/SUPERADMIN verpflichtend**, HOST optional (Opt-in)
-  - Empfehlung: **Primary = TOTP (Authenticator-App)** + **Recovery Codes** (low maintenance, best practice)
-  - Optionaler Fallback (wenn nötig): **E-Mail One-Time-Code** (nur als Backup, nicht als Primary)
-  - HOST (psychologischer Trigger / low-friction): **Code per E-Mail** (default) + optional **SMS/WhatsApp**
-    - SMS/WhatsApp nur, wenn Provider/Integration vorhanden ist (z.B. Twilio/Vonage/WhatsApp Business) + Abuse-Prevention
-  - Provider-Vorbereitung (SMS/WhatsApp/E-Mail Codes)
-    - Interface/Service: `OtpDeliveryProvider` (send OTP, status, provider name)
-    - Secrets/Config: ENVs + Secret-Store (API Keys), Provider-Auswahl per Feature-Flag/Config
-    - Templates: transaktionale Text-Vorlagen (DE/EN), keine sensiblen Daten loggen
-    - Abuse-Prevention: Rate-Limits pro User/IP, Cooldowns, Max-Attempts, Replay-Schutz
-    - Audit/Observability: Audit-Events (OTP angefordert/gesendet/verifiziert), Metriken + Alerts
-    - Fallback-Policy: wenn Provider down → E-Mail/Recovery Codes/Support Flow
-  - Backend: Setup/Verify/Disable Endpoints + Recovery Codes (One-Time)
-  - DB: `twoFactorEnabled`, `twoFactorSecretEncrypted`, `twoFactorRecoveryCodesHashed` (oder äquivalent)
-  - UX: QR Setup + Code Verify + “Recovery Codes speichern” + Reauth fürs Deaktivieren
-  - Policy: Rate-Limits + Lockout/Delay bei falschen Codes
+- ✅ Security Hardening: 2FA (TOTP)
+  - Ziel: **ADMIN verpflichtend**, HOST optional (Opt-in)
+  - Backend (TOTP + Recovery Codes)
+    - DB: `twoFactorEnabled`, `twoFactorPending`, `twoFactorSecretEncrypted`, `twoFactorSecretIv`, `twoFactorSecretTag`, `twoFactorRecoveryCodesHashed`, `twoFactorSetupAt`
+    - ENV (prod): `TWO_FACTOR_ENCRYPTION_KEY` (für AES-256-GCM Secret-Encryption)
+    - Endpoints:
+      - `POST /api/auth/2fa/verify` (TOTP oder Recovery Code)
+      - `POST /api/auth/2fa/setup/start` + `POST /api/auth/2fa/setup/confirm` (JWT-basiert, Admin Settings)
+      - `POST /api/auth/2fa/setup/start-challenge` + `POST /api/auth/2fa/setup/confirm-challenge` (ohne JWT; Login-Setup-Flow)
+  - Enforcement (Admin Login)
+    - `/api/auth/login` gibt für Admins ohne 2FA **kein JWT** zurück, sondern `twoFactorSetupRequired` + Challenge Token (purpose `2fa_setup`)
+    - bei aktivierter 2FA: `twoFactorRequired` + Challenge Token (purpose `2fa`)
+  - Abuse-Prevention
+    - dedizierte Rate-Limits für 2FA Setup/Verify + Delay/Jitter bei falschen Codes
+    - Audit-Logs (minimal): verify ok/fail, setup start/confirm
 
 ## ❌ Later
 

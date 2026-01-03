@@ -468,6 +468,12 @@ Empfohlen: Deploy über Script (erzwingt die Reihenfolge):
 bash ./scripts/deploy-frontend-prod.sh
 ```
 
+Admin-Dashboard (dash) analog:
+
+```bash
+bash ./scripts/deploy-admin-dashboard-prod.sh
+```
+
 ```bash
 sudo systemctl stop gaestefotos-frontend.service
 

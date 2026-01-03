@@ -30,6 +30,9 @@
   - Login erfolgt über `POST /api/auth/login`
   - In Produktion werden Browser-API Calls **same-origin** gemacht (relative `'/api'`)
   - `/register` ist in der UI deaktiviert; Backend-Register ist standardmäßig gesperrt (optional via `ALLOW_SELF_REGISTER=true`)
+- **2FA (TOTP)**
+  - Für Admins verpflichtend (Enforcement im Login-Flow), Hosts optional (Opt-in)
+  - Secrets werden im Backend verschlüsselt gespeichert (AES-256-GCM, ENV: `TWO_FACTOR_ENCRYPTION_KEY`)
 - **Login UI**:
   - Passwort anzeigen/verbergen
   - Link „Passwort vergessen?“ (führt auf `gästefotos.com`)
@@ -43,6 +46,13 @@
 - **DB**: Postgres + Prisma
 - **Frontend**: Next.js 14 App Router
 - **Realtime**: Socket.io
+
+## UI / Design
+
+- **Design Tokens (Theme System v1)**
+  - Token-basierte Farben (Tailwind + CSS-Variablen) für konsistente UI
+- **Status Tokens (UI Konvention)**
+  - Status-Farben über Tokens/Utilities (`*-status-*`) statt direkter `var(--status-*)` Klassen
 
 ## Integrationen
 
