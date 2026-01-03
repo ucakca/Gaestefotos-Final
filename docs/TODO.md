@@ -129,9 +129,9 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
         - ✅ `HostPhotoUpload`, `PhotoUpload`, `FaceSearch`, `guest/StoriesBar`, `guest/StoryViewer`
         - Policy: `type="file"` bleibt bewusst **native**
 
-## ⏳ In Progress
+## ✅ Done
 
-- ⏳ Design Polish
+- ✅ Design Polish
   - A11y: Icon-only Buttons mit `aria-label`/`title` ergänzt (u.a. `Gallery` Lightbox, `ModernPhotoGrid` Actions)
   - Cleanup: Debug-`console.log` entfernt (u.a. `Guestbook`, `ChallengeCompletion`)
   - Konsistenz: einzelne Labels vereinheitlicht (z.B. „Emoji auswählen")
@@ -146,6 +146,7 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
   - Design Presets: globale Brand/Neutral-Fallbacks tokenisiert (Preset-Farben bewusst unangetastet)
   - Frontend UI-Chrome: Overlay Backdrop + QR Container tokenisiert (kein `bg-black`/`bg-white` in Primitives)
   - Admin Dashboard: `text-white`-Hardcodes entfernt via Token `--app-on-dark` (Sidebar + Sheet)
+  - Admin Dashboard: fehlende `Textarea`-UI-Primitive ergänzt + Settings migriert
   - Bewusst verbleibende Hex-Werte:
     - `globals.css` `:root` enthält die **Token-Quellen** (Hex ist hier ok, weil es die Definition der Tokens ist)
     - Presets/Templates (z.B. „Soft Floral“, „Elegant Rose“, Design Presets) bleiben bewusst **bunt** (intentional), damit sich das Design nicht verändert
@@ -158,7 +159,7 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
     - `app/ui/page.tsx` ist eine Design-System Demo/Preview und nutzt bewusst `white` als Demo-Surface
     - `StoryViewer` ist bewusst „cinema-dark“ (Overlay/Controls), aber token-basiert (`bg-app-fg`, `text-app-bg`)
 
-## ❌ Next (Priorität hoch)
+## ❌ Later
 
 - ✅ Big end-to-end Testlauf vor Launch
 
@@ -177,7 +178,4 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
   - Abuse-Prevention
     - dedizierte Rate-Limits für 2FA Setup/Verify + Delay/Jitter bei falschen Codes
     - Audit-Logs (minimal): verify ok/fail, setup start/confirm
-
-## ❌ Later
-
 
