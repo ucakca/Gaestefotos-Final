@@ -28,8 +28,6 @@ export default function LoginPage() {
     try {
       const response: any = await authApi.login({ email, password });
 
-      // If the backend requires 2FA setup/verification, the app does not handle it.
-      // Send the user to the admin dashboard login flow.
       if ((response?.twoFactorRequired || response?.twoFactorSetupRequired) && typeof window !== 'undefined') {
         const origin = window.location.origin;
         const url = new URL(origin);
@@ -50,7 +48,6 @@ export default function LoginPage() {
           }
         }
 
-        // Harden redirect decision: confirm role via /auth/me (DB role) before redirecting to dash.
         try {
           const me = await authApi.getMe();
           const roleRaw = (me?.user as any)?.role;
@@ -75,7 +72,6 @@ export default function LoginPage() {
             return;
           }
         } catch {
-          // If /me fails, default to the non-admin app dashboard (least privilege).
         }
 
         router.push('/dashboard');

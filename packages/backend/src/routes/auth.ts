@@ -751,9 +751,6 @@ router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Best-effort WordPress role sync for users that are linked to a WP account.
-    // Otherwise a WP role downgrade (admin -> customer) might not be reflected when the
-    // user still has a valid local password, which can cause wrong redirects/permissions.
     if (effectiveUser.wordpressUserId) {
       try {
         let wpUser: Awaited<ReturnType<typeof verifyWordPressUser>> = null;
