@@ -26,30 +26,20 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await authApi.login({ email, password });
-      if (response.user) {
-        const roleRaw = (response.user as any).role;
-        const roleLower = String(roleRaw || '').toLowerCase().trim();
-        const isAdmin =
-          roleRaw === 'ADMIN' ||
-          roleRaw === 'SUPERADMIN' ||
-          roleLower === 'admin' ||
-          roleLower === 'superadmin' ||
-          roleLower === 'administrator';
+      const response: any = await authApi.login({ email, password });
 
-        if (isAdmin && typeof window !== 'undefined') {
-          const origin = window.location.origin;
-          const token = String(response.token || '');
-          const url = new URL(origin);
-          url.hostname = url.hostname.replace(/^app\./i, 'dash.');
-          url.pathname = '/login';
-          if (token) {
-            url.searchParams.set('token', token);
-          }
-          window.location.href = url.toString();
-          return;
-        }
+      // If the backend requires 2FA setup/verification, the app does not handle it.
+      // Send the user to the admin dashboard login flow.
+      if ((response?.twoFactorRequired || response?.twoFactorSetupRequired) && typeof window !== 'undefined') {
+        const origin = window.location.origin;
+        const url = new URL(origin);
+        url.hostname = url.hostname.replace(/^app\./i, 'dash.');
+        url.pathname = '/login';
+        window.location.href = url.toString();
+        return;
+      }
 
+      if (response?.user) {
         if (typeof window !== 'undefined') {
           if (rememberMe) {
             if (response.token) localStorage.setItem('token', response.token);
@@ -58,6 +48,34 @@ export default function LoginPage() {
             if (response.token) sessionStorage.setItem('token', response.token);
             localStorage.removeItem('token');
           }
+        }
+
+        // Harden redirect decision: confirm role via /auth/me (DB role) before redirecting to dash.
+        try {
+          const me = await authApi.getMe();
+          const roleRaw = (me?.user as any)?.role;
+          const roleLower = String(roleRaw || '').toLowerCase().trim();
+          const isAdmin =
+            roleRaw === 'ADMIN' ||
+            roleRaw === 'SUPERADMIN' ||
+            roleLower === 'admin' ||
+            roleLower === 'superadmin' ||
+            roleLower === 'administrator';
+
+          if (isAdmin && typeof window !== 'undefined') {
+            const origin = window.location.origin;
+            const token = String(response.token || '');
+            const url = new URL(origin);
+            url.hostname = url.hostname.replace(/^app\./i, 'dash.');
+            url.pathname = '/login';
+            if (token) {
+              url.searchParams.set('token', token);
+            }
+            window.location.href = url.toString();
+            return;
+          }
+        } catch {
+          // If /me fails, default to the non-admin app dashboard (least privilege).
         }
 
         router.push('/dashboard');
