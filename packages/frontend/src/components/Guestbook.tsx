@@ -23,7 +23,7 @@ import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { IconButton } from '@/components/ui/IconButton';
-import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 interface GuestbookEntry {
   id: string;
@@ -741,6 +741,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       <Dialog open={selectedImage !== null} onOpenChange={(open) => (open ? null : setSelectedImage(null))}>
         {selectedImage !== null && (
           <DialogContent className="bg-app-fg/75 max-w-4xl w-full max-h-[90vh] p-0">
+            <DialogTitle className="sr-only">Bild Vorschau</DialogTitle>
             <div className="relative w-full h-full flex items-center justify-center p-4">
               <img src={selectedImage} alt="Vollbild" className="max-w-full max-h-full object-contain rounded-lg" />
               <div className="absolute top-4 right-4">

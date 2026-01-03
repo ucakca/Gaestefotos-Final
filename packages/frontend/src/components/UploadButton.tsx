@@ -9,7 +9,7 @@ import { enqueueUpload, processUploadQueue } from '@/lib/uploadQueue';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { Input } from '@/components/ui/Input';
-import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 interface UploadButtonProps {
   eventId: string;
@@ -357,7 +357,7 @@ export default function UploadButton({
             />
           </DialogClose>
 
-              <h2 className="text-xl font-semibold text-app-fg mb-6">Foto/Video hochladen</h2>
+              <DialogTitle className="text-xl font-semibold text-app-fg mb-6">Foto/Video hochladen</DialogTitle>
 
               {queueNotice && (
                 <div className="mb-4 rounded-lg border border-status-success bg-app-bg px-3 py-2 text-sm text-status-success">

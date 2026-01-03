@@ -9,7 +9,7 @@ import api, { formatApiError, isRetryableUploadError } from '@/lib/api';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
-import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogClose, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 const MotionButton = motion(Button);
 
@@ -225,7 +225,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
             />
           </DialogClose>
 
-          <h2 className="text-xl font-semibold mb-6">Foto hinzufügen</h2>
+          <DialogTitle className="text-xl font-semibold mb-6">Foto hinzufügen</DialogTitle>
 
           {/* Description with Emoji Picker */}
           <div className="mb-4 relative">

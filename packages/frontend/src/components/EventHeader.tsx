@@ -13,6 +13,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogTitle,
 } from '@/components/ui/dialog';
 
 interface EventHeaderProps {
@@ -314,6 +315,7 @@ export default function EventHeader({
         <Dialog open={showStoryModal} onOpenChange={(open) => (open ? null : closeStoryModal())}>
           {showStoryModal && (
             <DialogContent className="bottom-4 top-auto translate-y-0 w-full max-w-md rounded-2xl bg-app-card border border-app-border p-4 shadow-xl">
+              <DialogTitle className="sr-only">Story erstellen</DialogTitle>
               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }}>
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-sm font-semibold text-app-fg">Story erstellen</div>
@@ -426,6 +428,7 @@ export default function EventHeader({
         <Dialog open={showStoryDisabled} onOpenChange={(open) => (open ? null : closeStoryDisabled())}>
           {showStoryDisabled && (
             <DialogContent className="bottom-4 top-auto translate-y-0 w-full max-w-md rounded-2xl bg-app-card border border-app-border p-4 shadow-xl">
+              <DialogTitle className="sr-only">Story nicht möglich</DialogTitle>
               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }}>
                 <div className="text-sm font-semibold text-app-fg">Story nicht möglich</div>
                 <div className="mt-1 text-sm text-app-muted">
