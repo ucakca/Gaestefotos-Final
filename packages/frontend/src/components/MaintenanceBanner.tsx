@@ -34,7 +34,7 @@ export default function MaintenanceBanner() {
   if (!enabled) return null;
 
   return (
-    <div className="w-full bg-[var(--status-danger)] text-app-bg px-4 py-3 text-[0.95rem] font-semibold text-center">
+    <div className="w-full bg-status-danger text-app-bg px-4 py-3 text-[0.95rem] font-semibold text-center">
       {message || 'Wartungsmodus: Bitte später erneut versuchen.'}
     </div>
   );

@@ -10,6 +10,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        primary: 'bg-app-accent text-app-bg hover:opacity-90',
         default: 'bg-app-fg text-app-bg hover:opacity-90',
         secondary: 'bg-app-bg text-app-fg hover:opacity-90',
         outline: 'border border-app-border bg-app-card text-app-fg hover:bg-app-bg',

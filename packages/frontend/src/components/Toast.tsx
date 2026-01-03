@@ -28,15 +28,15 @@ function ToastItem({ toast, onRemove }: ToastProps) {
   }, [toast.id, onRemove]);
 
   const icons = {
-    success: <CheckCircle className="w-5 h-5 text-[var(--status-success)]" />,
-    error: <AlertCircle className="w-5 h-5 text-[var(--status-danger)]" />,
-    info: <Info className="w-5 h-5 text-[var(--status-info)]" />,
+    success: <CheckCircle className="w-5 h-5 text-status-success" />,
+    error: <AlertCircle className="w-5 h-5 text-status-danger" />,
+    info: <Info className="w-5 h-5 text-status-info" />,
   };
 
   const bgColors = {
-    success: 'bg-app-bg border-[var(--status-success)]',
-    error: 'bg-app-bg border-[var(--status-danger)]',
-    info: 'bg-app-bg border-[var(--status-info)]',
+    success: 'bg-app-bg border-status-success',
+    error: 'bg-app-bg border-status-danger',
+    info: 'bg-app-bg border-status-info',
   };
 
   return (

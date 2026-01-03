@@ -109,8 +109,8 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
           className={`
             border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors
             ${isDragActive 
-              ? 'border-tokens-brandGreen bg-app-bg' 
-              : 'border-app-border hover:border-tokens-brandGreen hover:bg-app-bg'
+              ? 'border-app-accent bg-app-bg' 
+              : 'border-app-border hover:border-app-accent hover:bg-app-bg'
             }
           `}
         >
@@ -163,7 +163,7 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                     {file.uploading && (
                       <div className="mt-2 w-full bg-app-border rounded-full h-2">
                         <motion.div
-                          className="bg-tokens-brandGreen h-2 rounded-full"
+                          className="h-2 rounded-full bg-app-accent"
                           initial={{ width: 0 }}
                           animate={{ width: `${file.progress}%` }}
                           transition={{ duration: 0.3 }}
@@ -172,7 +172,7 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                     )}
 
                     {file.error && (
-                      <p className="text-xs text-[var(--status-danger)] mt-1">{file.error}</p>
+                      <p className="text-xs text-status-danger mt-1">{file.error}</p>
                     )}
                   </div>
 
@@ -181,7 +181,7 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="w-8 h-8 rounded-full bg-[var(--status-success)] flex items-center justify-center"
+                        className="w-8 h-8 rounded-full bg-status-success flex items-center justify-center"
                       >
                         <Check className="w-5 h-5 text-app-bg" />
                       </motion.div>
@@ -195,7 +195,7 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                         size="sm"
                         aria-label="Entfernen"
                         title="Entfernen"
-                        className="w-8 h-8 rounded-full bg-app-bg text-[var(--status-danger)] border border-[var(--status-danger)] hover:opacity-90"
+                        className="w-8 h-8 rounded-full bg-app-bg text-status-danger border border-status-danger hover:opacity-90"
                       />
                     )}
                   </div>

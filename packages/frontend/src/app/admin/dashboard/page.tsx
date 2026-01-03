@@ -21,6 +21,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -757,7 +767,7 @@ export default function AdminDashboardPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-app-bg">
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-app-border border-t-tokens-brandGreen" />
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-app-border border-t-app-fg" />
           <p className="mt-4 text-sm font-medium text-app-fg">Lade Dashboard...</p>
         </div>
       </div>
@@ -769,23 +779,27 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <Dialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{confirmState?.title}</DialogTitle>
-          {confirmState?.description ? <DialogDescription>{confirmState.description}</DialogDescription> : null}
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose asChild>
+    <AlertDialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{confirmState?.title}</AlertDialogTitle>
+          {confirmState?.description ? (
+            <AlertDialogDescription>{confirmState.description}</AlertDialogDescription>
+          ) : null}
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel asChild>
             <Button variant="secondary" onClick={() => closeConfirm(false)}>
               {confirmState?.cancelText || 'Abbrechen'}
             </Button>
-          </DialogClose>
-          <Button variant="danger" onClick={() => closeConfirm(true)}>
-            {confirmState?.confirmText || 'Bestätigen'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+          </AlertDialogCancel>
+          <AlertDialogAction asChild>
+            <Button variant="danger" onClick={() => closeConfirm(true)}>
+              {confirmState?.confirmText || 'Bestätigen'}
+            </Button>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
 
       <div className="min-h-screen bg-app-bg">
         <header className="sticky top-0 z-10 border-b border-app-border bg-app-card/95 backdrop-blur">
@@ -907,7 +921,7 @@ export default function AdminDashboardPage() {
                 <>
 
               {packagesError && (
-                <p className="mt-3 text-sm text-[var(--status-danger)]">{packagesError}</p>
+                <p className="mt-3 text-sm text-status-danger">{packagesError}</p>
               )}
 
               <div className="mt-4 overflow-x-auto">
@@ -1260,7 +1274,7 @@ export default function AdminDashboardPage() {
               </div>
 
               {cmsSearchError && (
-                <p className="mt-3 text-sm text-[var(--status-danger)]">{cmsSearchError}</p>
+                <p className="mt-3 text-sm text-status-danger">{cmsSearchError}</p>
               )}
 
               {cmsSearchResult?.items?.length ? (
@@ -1285,7 +1299,7 @@ export default function AdminDashboardPage() {
               ) : null}
 
               {cmsFaqError && (
-                <p className="mt-3 text-sm text-[var(--status-danger)]">{cmsFaqError}</p>
+                <p className="mt-3 text-sm text-status-danger">{cmsFaqError}</p>
               )}
 
               {cmsLastSync?.extraction && (
@@ -1375,7 +1389,7 @@ export default function AdminDashboardPage() {
                 <ActionButton onClick={createApiKey} disabled={createApiKeyLoading}>
                   {createApiKeyLoading ? 'Erstelle…' : 'API Key erstellen'}
                 </ActionButton>
-                {apiKeysError && <span className="text-sm text-[var(--status-danger)]">{apiKeysError}</span>}
+                {apiKeysError && <span className="text-sm text-status-danger">{apiKeysError}</span>}
               </div>
 
               {createdApiKeyRaw && (
@@ -1521,7 +1535,7 @@ export default function AdminDashboardPage() {
                 <ActionButton variant="secondary" onClick={previewEmailTemplate} disabled={emailTplPreviewLoading}>
                   {emailTplPreviewLoading ? 'Preview…' : 'Preview'}
                 </ActionButton>
-                {emailTplError && <span className="text-sm text-[var(--status-danger)]">{emailTplError}</span>}
+                {emailTplError && <span className="text-sm text-status-danger">{emailTplError}</span>}
               </div>
 
               <div className="mt-3 flex items-start gap-2">
@@ -1597,7 +1611,7 @@ export default function AdminDashboardPage() {
                 <ActionButton onClick={saveMaintenance} disabled={maintenanceSaving}>
                   {maintenanceSaving ? 'Speichere…' : 'Speichern'}
                 </ActionButton>
-                {maintenanceError && <span className="text-sm text-[var(--status-danger)]">{maintenanceError}</span>}
+                {maintenanceError && <span className="text-sm text-status-danger">{maintenanceError}</span>}
               </div>
 
               <div className="mt-3 flex items-center gap-2">
@@ -1651,7 +1665,7 @@ export default function AdminDashboardPage() {
               </div>
 
               {impersonateError && (
-                <p className="mt-3 text-sm text-[var(--status-danger)]">{impersonateError}</p>
+                <p className="mt-3 text-sm text-status-danger">{impersonateError}</p>
               )}
 
               {impersonateResult && (
@@ -1695,7 +1709,7 @@ export default function AdminDashboardPage() {
               </div>
 
               {invoiceExportError && (
-                <p className="mt-3 text-sm text-[var(--status-danger)]">{invoiceExportError}</p>
+                <p className="mt-3 text-sm text-status-danger">{invoiceExportError}</p>
               )}
             </section>
 
@@ -1723,8 +1737,8 @@ export default function AdminDashboardPage() {
                 </ActionButton>
               </div>
 
-              {qrEventError && <p className="mt-3 text-sm text-[var(--status-danger)]">{qrEventError}</p>}
-              {qrTrafficError && <p className="mt-3 text-sm text-[var(--status-danger)]">{qrTrafficError}</p>}
+              {qrEventError && <p className="mt-3 text-sm text-status-danger">{qrEventError}</p>}
+              {qrTrafficError && <p className="mt-3 text-sm text-status-danger">{qrTrafficError}</p>}
 
               {(hostEventUrl || guestEventUrl) && (
                 <div className="mt-3 grid gap-2">
@@ -1779,7 +1793,7 @@ export default function AdminDashboardPage() {
                 </ActionButton>
               </div>
 
-              {qrExportError && <p className="mt-3 text-sm text-[var(--status-danger)]">{qrExportError}</p>}
+              {qrExportError && <p className="mt-3 text-sm text-status-danger">{qrExportError}</p>}
 
               <div className="mt-4">
                 <div className="flex items-center gap-2">
@@ -1848,7 +1862,7 @@ export default function AdminDashboardPage() {
                   {usageLoading ? 'Lade…' : 'Abrufen'}
                 </ActionButton>
               </div>
-              {usageError && <p className="mt-3 text-sm text-[var(--status-danger)]">{usageError}</p>}
+              {usageError && <p className="mt-3 text-sm text-status-danger">{usageError}</p>}
               {usageResult && (
                 <pre className="mt-3 overflow-x-auto rounded-lg bg-app-bg p-3 text-xs">
                   {JSON.stringify(usageResult, null, 2)}
@@ -1906,7 +1920,7 @@ export default function AdminDashboardPage() {
                 </ActionButton>
                 <HelpTooltip title="Upgrade-Link" content={'Erzeugt einen Add-to-Cart Link. Danach kannst du ihn kopieren und weitergeben.'} />
               </div>
-              {upgradeError && <p className="mt-3 text-sm text-[var(--status-danger)]">{upgradeError}</p>}
+              {upgradeError && <p className="mt-3 text-sm text-status-danger">{upgradeError}</p>}
               {upgradeUrl ? (
                 <div className="mt-3">
                   <p className="text-sm font-medium text-app-fg">Link:</p>
@@ -1951,7 +1965,7 @@ export default function AdminDashboardPage() {
               </div>
 
               {wooLogsError && (
-                <p className="mt-3 text-sm text-[var(--status-danger)]">{wooLogsError}</p>
+                <p className="mt-3 text-sm text-status-danger">{wooLogsError}</p>
               )}
 
               <div className="mt-4 overflow-x-auto">
@@ -1997,6 +2011,6 @@ export default function AdminDashboardPage() {
         </div>
       </main>
       </div>
-    </Dialog>
+    </AlertDialog>
   );
 }

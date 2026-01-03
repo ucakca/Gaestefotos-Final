@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SERVICE_NAME="${1:-gaestefotos-frontend.service}"
+SERVICE_NAME="${1:-gaestefotos-admin-dashboard.service}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-FRONTEND_DIR="$REPO_ROOT/packages/frontend"
+ADMIN_DASHBOARD_DIR="$REPO_ROOT/packages/admin-dashboard"
 
 if ! command -v systemctl >/dev/null 2>&1; then
   echo "ERROR: systemctl not found. This script is intended for systemd-based production deploys." >&2
@@ -18,8 +18,8 @@ if ! command -v pnpm >/dev/null 2>&1; then
   exit 1
 fi
 
-if [ ! -d "$FRONTEND_DIR" ]; then
-  echo "ERROR: frontend directory not found: $FRONTEND_DIR" >&2
+if [ ! -d "$ADMIN_DASHBOARD_DIR" ]; then
+  echo "ERROR: admin-dashboard directory not found: $ADMIN_DASHBOARD_DIR" >&2
   exit 1
 fi
 
@@ -45,7 +45,7 @@ on_error() {
 }
 trap on_error ERR
 
-echo "Deploying frontend (systemd) using mandatory order: stop → build:prod → start"
+echo "Deploying admin-dashboard (systemd) using mandatory order: stop → build → start"
 echo "Service: $SERVICE_NAME"
 echo "Repo:    $REPO_ROOT"
 echo ""
@@ -54,8 +54,8 @@ echo "1/3 Stopping service..."
 $SUDO systemctl stop "$SERVICE_NAME"
 STOPPED=1
 
-echo "2/3 Building frontend (pnpm build:prod)..."
-pnpm -C "$FRONTEND_DIR" build:prod
+echo "2/3 Building admin-dashboard (pnpm build)..."
+pnpm -C "$ADMIN_DASHBOARD_DIR" build
 
 echo "3/3 Starting service..."
 $SUDO systemctl start "$SERVICE_NAME"

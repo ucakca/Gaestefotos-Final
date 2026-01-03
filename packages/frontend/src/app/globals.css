@@ -3,9 +3,6 @@
 @tailwind utilities;
 
 :root {
-  --brand-green: #295B4D;
-  --brand-light: #e8f5f0;
-  --brand-dark: #18382f;
   --app-bg: #F9F5F2;
   --app-fg: #111827;
   --app-card: #ffffff;
@@ -39,7 +36,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--app-bg) !important;
-  color: var(--brand-green) !important;
+  color: var(--app-fg) !important;
   min-height: 100vh;
   height: 100%;
 }
@@ -101,8 +98,8 @@ textarea::placeholder {
 input:focus,
 textarea:focus,
 select:focus {
-  border-color: var(--tokens-brandGreen) !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tokens-brandGreen) 30%, transparent) !important;
+  border-color: var(--app-accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--app-fg) 15%, transparent) !important;
   outline: none;
 }
 
@@ -114,7 +111,7 @@ select:focus {
 }
 
 .react-datepicker__header {
-  background-color: var(--brand-green);
+  background-color: var(--app-accent);
   border-bottom: none;
   border-radius: 8px 8px 0 0;
   padding-top: 0.8rem;
@@ -132,7 +129,7 @@ select:focus {
 
 .react-datepicker__day--selected,
 .react-datepicker__day--keyboard-selected {
-  background-color: var(--brand-green);
+  background-color: var(--app-accent);
   border-radius: 4px;
 }
 
@@ -154,7 +151,7 @@ select:focus {
 }
 
 .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected {
-  background-color: var(--brand-green);
+  background-color: var(--app-accent);
 }
 
 .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item:hover {

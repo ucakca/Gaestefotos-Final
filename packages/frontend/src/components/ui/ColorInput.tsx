@@ -15,7 +15,7 @@ export function ColorInput({ value, onChange, className, ...props }: ColorInputP
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className={
-        `h-10 w-12 cursor-pointer rounded border border-app-border bg-app-card focus:outline-none focus:ring-1 focus:ring-tokens-brandGreen/30 ${
+        `h-10 w-12 cursor-pointer rounded border border-app-border bg-app-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15 ${
           className || ''
         }`.trim()
       }

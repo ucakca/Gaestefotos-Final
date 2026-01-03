@@ -15,6 +15,14 @@ export default function SettingsPage() {
   const [tokens, setTokens] = useState<Record<string, string>>({});
   const [faceSearchNoticeText, setFaceSearchNoticeText] = useState('');
   const [faceSearchCheckboxLabel, setFaceSearchCheckboxLabel] = useState('');
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [twoFactorPending, setTwoFactorPending] = useState(false);
+  const [twoFactorSetupLoading, setTwoFactorSetupLoading] = useState(false);
+  const [twoFactorConfirmLoading, setTwoFactorConfirmLoading] = useState(false);
+  const [twoFactorSecretBase32, setTwoFactorSecretBase32] = useState<string | null>(null);
+  const [twoFactorOtpAuthUrl, setTwoFactorOtpAuthUrl] = useState<string | null>(null);
+  const [twoFactorRecoveryCodes, setTwoFactorRecoveryCodes] = useState<string[]>([]);
+  const [twoFactorConfirmCode, setTwoFactorConfirmCode] = useState('');
 
   const tokenEntries = useMemo(() => {
     const entries = Object.entries(tokens);
@@ -33,13 +41,18 @@ export default function SettingsPage() {
           api.get('/admin/face-search-consent'),
         ]);
 
+        const meRes = await api.get('/auth/me');
+
         const nextTokens = (themeRes.data?.tokens || {}) as Record<string, string>;
         const nextNoticeText = (faceSearchRes.data?.noticeText || '') as string;
         const nextCheckboxLabel = (faceSearchRes.data?.checkboxLabel || '') as string;
+        const me = (meRes.data?.user || {}) as any;
         if (!mounted) return;
         setTokens(nextTokens);
         setFaceSearchNoticeText(nextNoticeText);
         setFaceSearchCheckboxLabel(nextCheckboxLabel);
+        setTwoFactorEnabled(!!me.twoFactorEnabled);
+        setTwoFactorPending(!!me.twoFactorPending);
       } catch (e: any) {
         if (!mounted) return;
         setError(e?.response?.data?.error || e?.message || 'Fehler beim Laden');
@@ -51,6 +64,45 @@ export default function SettingsPage() {
       mounted = false;
     };
   }, []);
+
+  async function startTwoFactorSetup() {
+    try {
+      setTwoFactorSetupLoading(true);
+      setError(null);
+      const res = await api.post('/auth/2fa/setup/start');
+      const secret = String(res.data?.secretBase32 || '');
+      const url = String(res.data?.otpauthUrl || '');
+      const recoveryCodes = Array.isArray(res.data?.recoveryCodes) ? (res.data.recoveryCodes as string[]) : [];
+      setTwoFactorSecretBase32(secret || null);
+      setTwoFactorOtpAuthUrl(url || null);
+      setTwoFactorRecoveryCodes(recoveryCodes);
+      setTwoFactorPending(true);
+      toast.success('2FA Setup gestartet');
+    } catch (e: any) {
+      const msg = e?.response?.data?.error || e?.message || '2FA Setup fehlgeschlagen';
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setTwoFactorSetupLoading(false);
+    }
+  }
+
+  async function confirmTwoFactorSetup() {
+    try {
+      setTwoFactorConfirmLoading(true);
+      setError(null);
+      await api.post('/auth/2fa/setup/confirm', { code: twoFactorConfirmCode });
+      setTwoFactorEnabled(true);
+      setTwoFactorPending(false);
+      toast.success('2FA aktiviert');
+    } catch (e: any) {
+      const msg = e?.response?.data?.error || e?.message || '2FA Bestätigung fehlgeschlagen';
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setTwoFactorConfirmLoading(false);
+    }
+  }
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -127,6 +179,106 @@ export default function SettingsPage() {
 
       {!loading && !error ? (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <Card className="p-5 lg:col-span-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div className="text-xs text-app-muted">Security</div>
+                <div className="mt-1 text-base font-medium text-app-fg">2FA (TOTP)</div>
+                <div className="mt-2 text-sm text-app-muted">
+                  Authenticator-App (z.B. 1Password, Google Authenticator, Authy) + Recovery Codes.
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {!twoFactorEnabled ? (
+                  <Button size="sm" onClick={startTwoFactorSetup} disabled={twoFactorSetupLoading}>
+                    {twoFactorSetupLoading ? 'Start…' : twoFactorPending ? 'Neu starten' : 'Setup starten'}
+                  </Button>
+                ) : (
+                  <div className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
+                    Aktiv
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {!twoFactorEnabled ? (
+              <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div className="rounded-lg border border-app-border bg-app-bg p-4">
+                  <div className="text-sm font-medium text-app-fg">Status</div>
+                  <div className="mt-1 text-sm text-app-muted">
+                    {twoFactorPending ? 'Setup läuft (Bestätigung ausstehend)' : 'Deaktiviert'}
+                  </div>
+                </div>
+
+                {twoFactorOtpAuthUrl || twoFactorSecretBase32 || twoFactorRecoveryCodes.length ? (
+                  <div className="rounded-lg border border-app-border bg-app-bg p-4">
+                    <div className="text-sm font-medium text-app-fg">Setup Daten</div>
+                    <div className="mt-2 space-y-3 text-sm">
+                      {twoFactorOtpAuthUrl ? (
+                        <div>
+                          <div className="text-xs text-app-muted">otpauth:// URL</div>
+                          <div className="mt-1 break-all rounded-lg border border-app-border bg-app-card px-3 py-2 font-mono text-xs text-app-fg">
+                            {twoFactorOtpAuthUrl}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {twoFactorSecretBase32 ? (
+                        <div>
+                          <div className="text-xs text-app-muted">Secret (Base32)</div>
+                          <div className="mt-1 rounded-lg border border-app-border bg-app-card px-3 py-2 font-mono text-xs text-app-fg">
+                            {twoFactorSecretBase32}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {twoFactorRecoveryCodes.length ? (
+                        <div>
+                          <div className="text-xs text-app-muted">Recovery Codes (einmalig anzeigen)</div>
+                          <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            {twoFactorRecoveryCodes.map((c) => (
+                              <div
+                                key={c}
+                                className="rounded-lg border border-app-border bg-app-card px-3 py-2 font-mono text-xs text-app-fg"
+                              >
+                                {c}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
+
+                {twoFactorPending ? (
+                  <div className="lg:col-span-2 rounded-lg border border-app-border bg-app-bg p-4">
+                    <div className="text-sm font-medium text-app-fg">Bestätigen</div>
+                    <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
+                      <div className="flex-1">
+                        <label htmlFor="twoFactorConfirmCode" className="block text-xs font-medium text-app-muted">
+                          6-stelliger Code
+                        </label>
+                        <Input
+                          id="twoFactorConfirmCode"
+                          name="twoFactorConfirmCode"
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          value={twoFactorConfirmCode}
+                          onChange={(e) => setTwoFactorConfirmCode(e.target.value)}
+                          placeholder="123456"
+                        />
+                      </div>
+                      <Button onClick={confirmTwoFactorSetup} disabled={twoFactorConfirmLoading}>
+                        {twoFactorConfirmLoading ? 'Prüfen…' : 'Aktivieren'}
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </Card>
+
           <Card className="p-5 lg:col-span-2">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -246,7 +398,7 @@ export default function SettingsPage() {
               <div className="rounded-lg border border-app-border bg-app-bg p-4">
                 <div className="text-sm text-app-fg">Background / Border / Text Tokens</div>
               </div>
-              <div className="rounded-lg bg-tokens-brandGreen px-4 py-2 text-sm font-medium text-[var(--app-on-dark)]">
+              <div className="rounded-lg bg-app-accent px-4 py-2 text-sm font-medium text-app-bg">
                 Brand Button
               </div>
             </div>

@@ -412,7 +412,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
               className="flex items-start gap-3"
             >
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-tokens-brandGreen to-[var(--brand-dark)] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-app-accent to-app-fg flex items-center justify-center">
                   <User className="w-5 h-5 text-app-bg" />
                 </div>
               </div>
@@ -461,7 +461,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                           onClick={() => {
                             setIsEditingHostMessage(true);
                           }}
-                          icon={<Edit2 className="w-4 h-4 text-tokens-brandGreen" />}
+                          icon={<Edit2 className="w-4 h-4 text-app-fg" />}
                           variant="ghost"
                           size="sm"
                           className="flex-shrink-0 border border-app-border"
@@ -503,15 +503,12 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                   className="flex items-start gap-3 justify-end"
                 >
                   <div className="flex-1 max-w-[75%] flex flex-col items-end">
-                    <div className="bg-tokens-brandGreen text-app-bg rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm">
+                    <div className="bg-app-accent text-app-bg rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-sm">
-                          {entry.authorName}
-                        </span>
+                        <span className="font-semibold text-sm">{entry.authorName}</span>
                       </div>
-                      <p className="text-sm whitespace-pre-wrap break-words">
-                        {entry.message}
-                      </p>
+                      <p className="text-sm whitespace-pre-wrap break-words">{entry.message}</p>
+
                       {entry.audioUrl && (
                         <div className="mt-3 w-full">
                           <audio controls preload="none" className="w-full">
@@ -519,6 +516,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                           </audio>
                         </div>
                       )}
+
                       {entry.photoUrl && (
                         <div className="mt-3">
                           <img
@@ -546,12 +544,12 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                         </div>
                       )}
                     </div>
-                    <span className="text-xs text-app-muted mt-1">
-                      {formatDate(entry.createdAt)}
-                    </span>
+
+                    <span className="text-xs text-app-muted mt-1">{formatDate(entry.createdAt)}</span>
                   </div>
+
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-app-accent to-tokens-brandGreen flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-app-accent to-app-fg flex items-center justify-center">
                       <User className="w-5 h-5 text-app-bg" />
                     </div>
                   </div>
@@ -568,7 +566,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       <div className="border-t border-app-border p-4 bg-app-card flex-shrink-0">
           <form onSubmit={handleSubmit} className="space-y-3">
             {error && (
-              <div className="bg-app-bg border border-[var(--status-danger)] text-[var(--status-danger)] text-sm rounded-lg p-3">
+              <div className="bg-app-bg border border-status-danger text-status-danger text-sm rounded-lg p-3">
                 {error}
               </div>
             )}
@@ -605,9 +603,9 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                       type="button"
                       onClick={startRecording}
                       disabled={submitting || uploadingAudio}
-                      variant="ghost"
+                      variant="secondary"
                       size="sm"
-                      className="flex items-center gap-2 px-4 py-3 border border-app-border rounded-lg hover:bg-app-bg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center gap-2 px-4 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Aufnahme starten"
                     >
                       <Mic className="w-5 h-5 text-app-fg" />
@@ -618,9 +616,9 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                       type="button"
                       onClick={stopRecording}
                       disabled={submitting || uploadingAudio}
-                      variant="ghost"
+                      variant="danger"
                       size="sm"
-                      className="flex items-center gap-2 px-4 py-3 bg-[var(--status-danger)] text-app-bg rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center gap-2 px-4 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Aufnahme stoppen"
                     >
                       <Square className="w-5 h-5" />
@@ -643,9 +641,9 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                     type="button"
                     onClick={removeAudio}
                     icon={<Trash2 className="w-4 h-4" />}
-                    variant="ghost"
+                    variant="danger"
                     size="sm"
-                    className="rounded-lg border border-app-border"
+                    className="rounded-lg"
                     disabled={submitting || uploadingAudio}
                     aria-label="Audio entfernen"
                     title="Audio entfernen"
@@ -684,7 +682,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                   </div>
                 </div>
               ) : (
-                <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-app-border rounded-lg cursor-pointer hover:border-tokens-brandGreen transition-colors">
+                <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-app-border rounded-lg cursor-pointer hover:border-app-accent transition-colors">
                   <ImageIcon className="w-5 h-5 text-app-muted" />
                   <span className="text-sm text-app-muted">
                     {uploadingPhoto ? 'Wird hochgeladen...' : 'Foto auswählen'}

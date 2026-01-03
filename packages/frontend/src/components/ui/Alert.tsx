@@ -9,7 +9,7 @@ export type AlertProps = HTMLAttributes<HTMLDivElement> & {
 
 const variantClasses: Record<Variant, string> = {
   info: 'border-app-border bg-app-bg text-app-fg',
-  danger: 'border-[var(--status-danger)] bg-app-bg text-[var(--status-danger)]',
+  danger: 'border-status-danger bg-app-bg text-status-danger',
 };
 
 export function Alert({ variant = 'info', title, className = '', children, ...props }: AlertProps) {

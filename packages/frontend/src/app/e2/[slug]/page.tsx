@@ -139,10 +139,10 @@ export default function PublicEventPageV2() {
       />
 
       {featuresConfig?.challengesEnabled === true && Array.isArray(challenges) && challenges.filter((c: any) => c?.isActive).length > 0 && (
-        <Section borderColorClassName="border-[var(--status-warning)]">
-          <Alert className="bg-app-bg border-[var(--status-warning)] text-app-fg">
+        <Section borderColorClassName="border-status-warning">
+          <Alert className="bg-app-bg border-status-warning text-app-fg">
             <div className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-[var(--status-warning)]" />
+              <Trophy className="w-5 h-5 text-status-warning" />
               <p className="text-sm text-app-fg">
                 <strong>Tolle Challenges verfügbar!</strong> Klicke auf "Challenges" im Menü unten, um teilzunehmen.
               </p>

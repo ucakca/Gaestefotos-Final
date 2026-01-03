@@ -34,7 +34,14 @@ interface Statistics {
   }>;
 }
 
-const COLORS = ['var(--brand-green)', 'var(--app-accent)', 'var(--app-bg)', 'var(--status-info)'];
+const STATUS_COLORS = {
+  success: 'var(--status-success)',
+  warning: 'var(--status-warning)',
+  danger: 'var(--status-danger)',
+  info: 'var(--status-info)',
+} as const;
+
+const COLORS = [STATUS_COLORS.success, 'var(--app-accent)', 'var(--app-bg)', STATUS_COLORS.info];
 
 export default function StatisticsPage() {
   const params = useParams();
@@ -80,15 +87,15 @@ export default function StatisticsPage() {
 
   // Prepare chart data
   const statusData = [
-    { name: 'Freigegeben', value: statistics.photos.approved, color: 'var(--status-success)' },
-    { name: 'Ausstehend', value: statistics.photos.pending, color: 'var(--status-warning)' },
-    { name: 'Abgelehnt', value: statistics.photos.rejected, color: 'var(--status-danger)' },
+    { name: 'Freigegeben', value: statistics.photos.approved, color: STATUS_COLORS.success },
+    { name: 'Ausstehend', value: statistics.photos.pending, color: STATUS_COLORS.warning },
+    { name: 'Abgelehnt', value: statistics.photos.rejected, color: STATUS_COLORS.danger },
   ];
 
   const guestStatusData = [
-    { name: 'Zugesagt', value: statistics.guests.accepted, color: 'var(--status-success)' },
-    { name: 'Ausstehend', value: statistics.guests.pending, color: 'var(--status-warning)' },
-    { name: 'Abgesagt', value: statistics.guests.declined, color: 'var(--status-danger)' },
+    { name: 'Zugesagt', value: statistics.guests.accepted, color: STATUS_COLORS.success },
+    { name: 'Ausstehend', value: statistics.guests.pending, color: STATUS_COLORS.warning },
+    { name: 'Abgesagt', value: statistics.guests.declined, color: STATUS_COLORS.danger },
   ];
 
   const trendData = Object.entries(statistics.uploadTrends)
@@ -135,7 +142,7 @@ export default function StatisticsPage() {
             className="bg-app-card border border-app-border rounded-lg shadow p-6"
           >
             <h3 className="text-sm font-medium text-app-muted mb-2">Freigegeben</h3>
-            <p className="text-3xl font-bold text-[var(--status-success)]">{statistics.photos.approved}</p>
+            <p className="text-3xl font-bold text-status-success">{statistics.photos.approved}</p>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -153,7 +160,7 @@ export default function StatisticsPage() {
             className="bg-app-card border border-app-border rounded-lg shadow p-6"
           >
             <h3 className="text-sm font-medium text-app-muted mb-2">Zugesagt</h3>
-            <p className="text-3xl font-bold text-[var(--status-success)]">{statistics.guests.accepted}</p>
+            <p className="text-3xl font-bold text-status-success">{statistics.guests.accepted}</p>
           </motion.div>
         </div>
 
@@ -227,8 +234,8 @@ export default function StatisticsPage() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="Freigegeben" stroke="var(--status-success)" />
-                <Line type="monotone" dataKey="Ausstehend" stroke="var(--status-warning)" />
+                <Line type="monotone" dataKey="Freigegeben" stroke={STATUS_COLORS.success} />
+                <Line type="monotone" dataKey="Ausstehend" stroke={STATUS_COLORS.warning} />
               </LineChart>
             </motion.div>
           )}
@@ -247,7 +254,7 @@ export default function StatisticsPage() {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="Fotos" fill="var(--brand-green)" />
+                <Bar dataKey="Fotos" fill={STATUS_COLORS.success} />
               </BarChart>
             </motion.div>
           )}

@@ -188,7 +188,7 @@ export default function InstagramUploadButton({
                   size="sm"
                   aria-label="Schließen"
                   title="Schließen"
-                  className="p-1 hover:bg-app-bg rounded text-app-fg"
+                  className="p-1"
                 />
               </DialogClose>
             </div>
@@ -203,8 +203,8 @@ export default function InstagramUploadButton({
               className={`
                 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
                 ${isDragActive 
-                  ? 'border-tokens-brandGreen bg-app-bg' 
-                  : 'border-app-border hover:border-tokens-brandGreen hover:bg-app-bg'
+                  ? 'border-app-accent bg-app-bg' 
+                  : 'border-app-border hover:border-app-accent hover:bg-app-bg'
                 }
               `}
             >
@@ -261,14 +261,14 @@ export default function InstagramUploadButton({
                       {file.uploading && (
                         <div className="mt-1 w-full bg-app-border rounded-full h-1.5">
                           <motion.div
-                            className="bg-tokens-brandGreen h-1.5 rounded-full"
+                            className="h-1.5 rounded-full bg-app-accent"
                             initial={{ width: 0 }}
                             animate={{ width: `${file.progress}%` }}
                             transition={{ duration: 0.3 }}
                           />
                         </div>
                       )}
-                      {file.error && <p className="text-xs text-[var(--status-danger)] mt-1">{file.error}</p>}
+                      {file.error && <p className="text-xs text-status-danger mt-1">{file.error}</p>}
                     </div>
 
                     <div className="flex items-center">
@@ -276,7 +276,7 @@ export default function InstagramUploadButton({
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="w-6 h-6 rounded-full bg-tokens-brandGreen flex items-center justify-center"
+                          className="w-6 h-6 rounded-full bg-app-accent flex items-center justify-center"
                         >
                           <Check className="w-4 h-4 text-app-bg" />
                         </motion.div>
@@ -289,7 +289,7 @@ export default function InstagramUploadButton({
                           size="sm"
                           aria-label="Entfernen"
                           title="Entfernen"
-                          className="w-6 h-6 rounded-full bg-app-card border border-app-border text-app-muted hover:opacity-80"
+                          className="w-6 h-6 rounded-full"
                         />
                       )}
                     </div>

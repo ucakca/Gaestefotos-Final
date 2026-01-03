@@ -31,15 +31,17 @@ export default function HelpTooltip({ title, content, className }: HelpTooltipPr
 
   return (
     <span ref={rootRef} className={`relative inline-flex ${className || ''}`.trim()}>
-      <button
+      <Button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={title ? `Hilfe: ${title}` : 'Hilfe'}
         title={title ? `Hilfe: ${title}` : 'Hilfe'}
-        className="inline-flex items-center justify-center w-[22px] h-[22px] rounded-full border border-app-border bg-app-card text-tokens-brandGreen font-extrabold text-[12px] leading-[20px]"
+        variant="secondary"
+        size="sm"
+        className="w-[22px] h-[22px] p-0 rounded-full text-app-fg font-extrabold text-[12px] leading-[20px]"
       >
         ?
-      </button>
+      </Button>
 
       {open && (
         <div
@@ -48,7 +50,7 @@ export default function HelpTooltip({ title, content, className }: HelpTooltipPr
           className="absolute z-50 right-0 top-[calc(100%+8px)] w-80 max-w-[min(85vw,360px)] bg-app-card border border-app-border rounded-xl shadow-xl p-3"
         >
           {title ? (
-            <div className="font-extrabold text-tokens-brandGreen mb-1.5 text-[13px]">{title}</div>
+            <div className="font-extrabold text-app-fg mb-1.5 text-[13px]">{title}</div>
           ) : null}
           <div className="text-[13px] leading-[1.35] text-app-fg whitespace-pre-wrap">{content}</div>
           <div className="mt-2.5 flex justify-end">

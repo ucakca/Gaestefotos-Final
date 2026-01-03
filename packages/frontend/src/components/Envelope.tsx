@@ -32,11 +32,11 @@ export default function Envelope({ children, onOpen }: EnvelopeProps) {
             {/* Envelope */}
             <div className="relative w-96 h-64">
               {/* Back */}
-              <div className="absolute inset-0 bg-gradient-to-br from-tokens-brandPeach to-tokens-brandGreen rounded-lg shadow-2xl" />
+              <div className="absolute inset-0 bg-gradient-to-br from-status-warning to-app-accent rounded-lg shadow-2xl" />
               
               {/* Flap */}
               <motion.div
-                className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-tokens-brandPeach to-tokens-brandGreen rounded-t-lg origin-top [transform-style:preserve-3d]"
+                className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-status-warning to-app-accent rounded-t-lg origin-top [transform-style:preserve-3d]"
                 animate={{ rotateX: isOpen ? -180 : 0 }}
                 transition={{ duration: 0.6, ease: 'easeInOut' }}
               >
@@ -46,7 +46,7 @@ export default function Envelope({ children, onOpen }: EnvelopeProps) {
               </motion.div>
               
               {/* Front */}
-              <div className="absolute inset-0 bg-gradient-to-br from-tokens-brandPeach to-tokens-brandGreen rounded-lg flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-br from-status-warning to-app-accent rounded-lg flex items-center justify-center">
                 <div className="text-center text-app-bg">
                   <p className="text-2xl font-bold mb-2">📧</p>
                   <p className="text-sm">Klicken zum Öffnen</p>

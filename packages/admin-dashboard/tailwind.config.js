@@ -16,11 +16,6 @@ module.exports = {
           muted: 'var(--app-muted)',
           accent: 'var(--app-accent)',
         },
-        tokens: {
-          brandGreen: 'var(--brand-green)',
-          brandLight: 'var(--brand-light)',
-          brandDark: 'var(--brand-dark)',
-        },
         primary: {
           50: '#e8f5f0',
           100: '#d1ebe1',
@@ -32,11 +27,6 @@ module.exports = {
           700: '#18382f',
           800: '#10271f',
           900: '#081510',
-        },
-        brand: {
-          green: '#295B4D',
-          light: '#e8f5f0',
-          dark: '#18382f',
         },
       },
     },

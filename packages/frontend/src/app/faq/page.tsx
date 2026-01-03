@@ -11,7 +11,7 @@ export default function FaqPage() {
 
   return (
     <div className="max-w-[980px] mx-auto p-5">
-      <h1 className="m-0 text-tokens-brandGreen">FAQ</h1>
+      <h1 className="m-0 text-app-fg">FAQ</h1>
       <p className="mt-3 text-app-muted">Weiterleitung…</p>
     </div>
   );

@@ -55,16 +55,16 @@ export default function LanguageSelector({
   return (
     <div className={`relative ${className}`}>
       {showLabel && (
-        <label className="block text-sm font-medium mb-2 text-tokens-brandGreen">
+        <label className="block text-sm font-medium mb-2 text-app-fg">
           {t('select')}
         </label>
       )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="ghost"
+            variant="secondary"
             size="sm"
-            className="flex items-center gap-2 px-3 py-2 border border-app-border rounded-lg hover:bg-app-bg transition-colors text-tokens-brandGreen"
+            className="flex items-center gap-2 px-3 py-2"
           >
             <Globe className="w-4 h-4" />
             <span className="font-medium">{localeNames[currentLocale]}</span>

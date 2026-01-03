@@ -71,7 +71,7 @@ export default function MapsLink({ address, className = '' }: MapsLinkProps) {
       onClick={handleClick}
       target={isAppleDevice ? undefined : '_blank'}
       rel="noopener noreferrer"
-      className={`inline-flex items-center gap-2 text-tokens-brandGreen hover:opacity-90 underline ${className}`}
+      className={`inline-flex items-center gap-2 text-app-fg hover:opacity-90 underline ${className}`}
     >
       <ExternalLink className="w-4 h-4" />
       <span>In Karten öffnen</span>

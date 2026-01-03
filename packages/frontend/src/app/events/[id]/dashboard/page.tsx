@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { Event as EventType } from '@gaestefotos/shared';
 import {
@@ -30,6 +29,8 @@ import {
   Eye as EyeIcon,
   Clock,
   Mail,
+  Pencil,
+  MoreVertical,
 } from 'lucide-react';
 import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
@@ -44,6 +45,13 @@ import { Input } from '@/components/ui/Input';
 import { Radio } from '@/components/ui/Radio';
 import { Textarea } from '@/components/ui/Textarea';
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useToastStore } from '@/store/toastStore';
 
 interface PhotoStats {
@@ -240,21 +248,17 @@ export default function EventDashboardPage() {
     }
   };
 
-  const shareInvitation = (url: string, channel: 'whatsapp' | 'facebook' | 'x' | 'linkedin') => {
-    const u = encodeURIComponent(url);
-    if (channel === 'whatsapp') {
-      window.open(`https://wa.me/?text=${u}`, '_blank', 'noopener,noreferrer');
-      return;
+  const shareLink = async (url: string, title = 'Einladung') => {
+    try {
+      if (typeof navigator !== 'undefined' && typeof (navigator as any).share === 'function') {
+        await (navigator as any).share({ title, url });
+        return;
+      }
+    } catch (err) {
+      void err;
     }
-    if (channel === 'facebook') {
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${u}`, '_blank', 'noopener,noreferrer');
-      return;
-    }
-    if (channel === 'x') {
-      window.open(`https://twitter.com/intent/tweet?url=${u}`, '_blank', 'noopener,noreferrer');
-      return;
-    }
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${u}`, '_blank', 'noopener,noreferrer');
+
+    await copyToClipboard(url, 'Link kopiert');
   };
 
   const handleGenerateShareLink = async () => {
@@ -471,6 +475,61 @@ export default function EventDashboardPage() {
   return (
     <AppLayout showBackButton backUrl="/dashboard">
       <div className="max-w-4xl mx-auto px-4 py-6">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            {editingField === 'title' ? (
+              <Input
+                type="text"
+                defaultValue={event.title}
+                onBlur={(e) => updateEventField('title', e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    updateEventField('title', (e.target as HTMLInputElement).value);
+                  }
+                }}
+                className="h-auto border-x-0 border-t-0 border-b-2 border-app-border bg-transparent px-0 py-0 text-2xl font-semibold shadow-none focus-visible:ring-0"
+                autoFocus
+              />
+            ) : (
+              <div className="flex items-center gap-2">
+                <h1 className="truncate text-2xl font-semibold text-app-fg">{event.title}</h1>
+                <IconButton
+                  onClick={() => setEditingField('title')}
+                  icon={<Pencil className="h-4 w-4" />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Titel bearbeiten"
+                  title="Titel bearbeiten"
+                />
+              </div>
+            )}
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-app-muted">
+              <span>{photoStats.total} Fotos</span>
+              {photoStats.pending > 0 ? (
+                <span className="text-status-warning">{photoStats.pending} ausstehend</span>
+              ) : null}
+              {(event as any).isActive === false ? (
+                <span className="text-status-danger">deaktiviert</span>
+              ) : (
+                <span className="text-status-success">aktiv</span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild variant="secondary" size="sm">
+              <Link href={`/events/${eventId}/photos`}>Fotos</Link>
+            </Button>
+            <Button asChild variant="secondary" size="sm">
+              <Link href={`/events/${eventId}/videos`}>Videos</Link>
+            </Button>
+            <Button type="button" variant="secondary" size="sm" onClick={() => setShowSettings(true)} className="gap-2">
+              <Settings className="h-4 w-4" />
+              Einstellungen
+            </Button>
+          </div>
+        </div>
+
         {event && (event as any).isActive === false && (
           <div className="mb-4 rounded-xl border border-app-border bg-app-card p-4">
             <div className="flex items-start gap-3">
@@ -512,43 +571,39 @@ export default function EventDashboardPage() {
             </div>
           </div>
         )}
-        {/* Cover Image */}
-        <div className="relative w-full h-48 md:h-64 bg-gradient-to-r from-tokens-brandGreen to-tokens-brandPeach rounded-lg mb-4 overflow-hidden group">
-          {coverImage && coverImage !== '/default-cover.jpg' ? (
-            <img
-              src={coverImage}
-              alt="Cover"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-app-bg opacity-50">
-              <ImageIcon className="w-12 h-12" />
+        <div className="mb-6 overflow-hidden rounded-xl border border-app-border bg-app-card">
+          <div className="border-b border-app-border px-4 py-3">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <div className="text-sm font-semibold text-app-fg">Titelbild</div>
+                <div className="text-xs text-app-muted">Wird oben im Event angezeigt</div>
+              </div>
+              <Button
+                type="button"
+                onClick={() => coverImageInputRef.current?.click()}
+                variant="secondary"
+                size="sm"
+                disabled={uploadingImage === 'cover'}
+              >
+                {uploadingImage === 'cover' ? 'Lädt…' : 'Titelbild ändern'}
+              </Button>
             </div>
-          )}
+          </div>
 
-          <motion.div
-            whileHover={{ opacity: 1 }}
-            whileTap={{ scale: 0.95 }}
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <Button
-              type="button"
-              onClick={() => coverImageInputRef.current?.click()}
-              variant="ghost"
-              className="h-full w-full bg-app-fg/0 hover:bg-app-fg/30 text-app-bg"
-            >
-              <span className="flex h-full w-full items-center justify-center">
-                {uploadingImage === 'cover' ? (
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-app-bg"></div>
-                ) : (
-                  <>
-                    <Camera className="w-6 h-6 mr-2" />
-                    <span className="text-sm font-medium">Titelbild ändern</span>
-                  </>
-                )}
-              </span>
-            </Button>
-          </motion.div>
+          <div className="relative h-48 md:h-64 w-full bg-app-bg">
+            {coverImage && coverImage !== '/default-cover.jpg' ? (
+              <img
+                src={coverImage}
+                alt="Cover"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-app-muted">
+                <ImageIcon className="h-12 w-12" />
+              </div>
+            )}
+          </div>
+
           <input
             ref={coverImageInputRef}
             type="file"
@@ -561,568 +616,582 @@ export default function EventDashboardPage() {
           />
         </div>
 
-        <div className="mt-6 rounded-xl border border-app-border bg-app-card p-4">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <div className="text-app-fg font-semibold">Speicher</div>
-              <div className="text-sm text-app-muted">
-                {usageLoading ? 'Lade…' : usageError ? 'Nicht verfügbar' : hasLimit ? 'Limit aktiv' : 'Kein Limit aktiv'}
+        <div className="mt-6 grid gap-4">
+          <div className="overflow-hidden rounded-xl border border-app-border bg-app-card">
+            <div className="border-b border-app-border px-4 py-3">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <div className="text-sm font-semibold text-app-fg">Speicher</div>
+                  <div className="text-xs text-app-muted">
+                    {usageLoading
+                      ? 'Lade…'
+                      : usageError
+                        ? 'Nicht verfügbar'
+                        : hasLimit
+                          ? 'Limit aktiv'
+                          : 'Kein Limit aktiv'}
+                  </div>
+                </div>
+                <Button type="button" onClick={loadUsage} size="sm" variant="secondary" disabled={usageLoading}>
+                  Aktualisieren
+                </Button>
               </div>
             </div>
-            <Button onClick={loadUsage} size="sm" className="rounded-lg">
-              Aktualisieren
-            </Button>
+
+            <div className="px-4 py-4">
+              {usageError && <div className="mt-3 text-sm text-status-danger">{usageError}</div>}
+
+              {!usageLoading && usage && (
+                <div className="mt-4">
+                  <div className="flex items-baseline justify-between gap-4">
+                    <div className="text-sm text-app-fg">
+                      {formatBytes(usedBytes)} {hasLimit ? `von ${formatBytes(limitBytes)}` : ''}
+                    </div>
+                    {hasLimit && (
+                      <div className="text-sm text-app-muted">{percent.toFixed(0)}%</div>
+                    )}
+                  </div>
+                  {hasLimit && (
+                    <div className="mt-2 h-2 w-full rounded-full bg-app-bg">
+                      <div
+                        className="h-2 rounded-full bg-app-fg/30"
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
+                  )}
+
+                  <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-app-muted">
+                    <div>Fotos: {formatBytes(usage?.usage?.photosBytes)}</div>
+                    <div>Videos: {formatBytes(usage?.usage?.videosBytes)}</div>
+                    <div>Gästebuch: {formatBytes(usage?.usage?.guestbookBytes)}</div>
+                    <div>Design: {formatBytes(usage?.usage?.designBytes)}</div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          {usageError && <div className="mt-3 text-sm text-[var(--status-danger)]">{usageError}</div>}
-
-          {!usageLoading && usage && (
-            <div className="mt-4">
-              <div className="flex items-baseline justify-between gap-4">
-                <div className="text-sm text-app-fg">
-                  {formatBytes(usedBytes)} {hasLimit ? `von ${formatBytes(limitBytes)}` : ''}
-                </div>
-                {hasLimit && (
-                  <div className="text-sm text-app-muted">{percent.toFixed(0)}%</div>
-                )}
+          <div className="overflow-hidden rounded-xl border border-app-border bg-app-card">
+            <div className="border-b border-app-border px-4 py-3">
+              <div className="text-sm font-semibold text-app-fg">Upgrade</div>
+              <div className="text-xs text-app-muted">
+                Optional – nur nötig, wenn du einen spezifischen Checkout-Link erzeugen willst.
               </div>
-              {hasLimit && (
-                <div className="mt-2 h-2 w-full rounded-full bg-app-bg">
-                  <div
-                    className="h-2 rounded-full bg-tokens-brandPeach"
-                    style={{ width: `${percent}%` }}
+            </div>
+
+            <div className="px-4 py-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <div className="text-xs font-medium text-app-muted">SKU (optional)</div>
+                  <Input
+                    value={upgradeSku}
+                    onChange={(e) => setUpgradeSku(e.target.value)}
+                    placeholder="z.B. premium_1000"
                   />
                 </div>
+                <div>
+                  <div className="text-xs font-medium text-app-muted">Product ID (optional)</div>
+                  <Input
+                    value={upgradeProductId}
+                    onChange={(e) => setUpgradeProductId(e.target.value)}
+                    placeholder="z.B. prod_..."
+                  />
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-2 flex-wrap">
+                <Button
+                  type="button"
+                  onClick={handleUpgrade}
+                  variant="primary"
+                  disabled={upgradeLoading}
+                >
+                  {upgradeLoading ? 'Erzeuge…' : 'Upgrade öffnen'}
+                </Button>
+                {upgradeUrl && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={async () => {
+                      await copyToClipboard(upgradeUrl);
+                    }}
+                  >
+                    Link kopieren
+                  </Button>
+                )}
+              </div>
+              {upgradeError && <div className="mt-2 text-sm text-status-danger">{upgradeError}</div>}
+              {upgradeUrl && (
+                <div className="mt-2 text-xs text-app-muted break-all">{upgradeUrl}</div>
               )}
+            </div>
+          </div>
 
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-app-muted">
-                <div>Fotos: {formatBytes(usage?.usage?.photosBytes)}</div>
-                <div>Videos: {formatBytes(usage?.usage?.videosBytes)}</div>
-                <div>Gästebuch: {formatBytes(usage?.usage?.guestbookBytes)}</div>
-                <div>Design: {formatBytes(usage?.usage?.designBytes)}</div>
+          <div className="overflow-hidden rounded-xl border border-app-border bg-app-card">
+            <div className="border-b border-app-border px-4 py-3">
+              <div className="text-sm font-semibold text-app-fg">Share-Link</div>
+              <div className="text-xs text-app-muted">Einladung erzeugen und teilen</div>
+            </div>
+
+            <div className="px-4 py-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  type="button"
+                  onClick={handleGenerateShareLink}
+                  variant="primary"
+                  disabled={shareLoading}
+                >
+                  {shareLoading ? 'Erzeuge…' : 'Link erzeugen'}
+                </Button>
+                {shareUrl && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={async () => {
+                      await copyToClipboard(shareUrl);
+                    }}
+                  >
+                    Link kopieren
+                  </Button>
+                )}
+                {shareUrl && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={async () => {
+                      await shareLink(shareUrl, 'Share-Link');
+                    }}
+                  >
+                    Teilen
+                  </Button>
+                )}
+              </div>
+              {shareError && <div className="mt-2 text-sm text-status-danger">{shareError}</div>}
+              {shareUrl && (
+                <div className="mt-2 text-xs text-app-muted break-all">{shareUrl}</div>
+              )}
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-xl border border-app-border bg-app-card">
+            <div className="border-b border-app-border px-4 py-3">
+              <div className="text-sm font-semibold text-app-fg">Einladungsseiten</div>
+              <div className="text-xs text-app-muted">
+                Erstelle mehrere Einladungen (z.B. Familie, Freunde) und teile Shortlinks.
               </div>
             </div>
-          )}
 
-          <div className="mt-6 border-t border-app-border pt-4">
-            <div className="text-app-fg font-semibold">Upgrade</div>
-            <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <Input
-                value={upgradeSku}
-                onChange={(e) => setUpgradeSku(e.target.value)}
-                placeholder="SKU (optional)"
-              />
-              <Input
-                value={upgradeProductId}
-                onChange={(e) => setUpgradeProductId(e.target.value)}
-                placeholder="ProductId (optional)"
-              />
-            </div>
-            <div className="mt-2 flex items-center gap-2 flex-wrap">
-              <Button
-                type="button"
-                onClick={handleUpgrade}
-                variant="primary"
-                disabled={upgradeLoading}
-              >
-                {upgradeLoading ? 'Erzeuge…' : 'Upgrade öffnen'}
-              </Button>
-              {upgradeUrl && (
+            <div className="px-4 py-4">
+              {copyFeedback && (
+                <div className="mb-2 text-sm text-app-fg">{copyFeedback}</div>
+              )}
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <Input
+                  value={newInvitationName}
+                  onChange={(e) => setNewInvitationName(e.target.value)}
+                  placeholder="Name (z.B. Familie)"
+                  className="flex-1 min-w-[220px]"
+                />
+                <Button
+                  type="button"
+                  onClick={createInvitation}
+                  variant="primary"
+                  disabled={creatingInvitation || newInvitationName.trim().length === 0}
+                >
+                  {creatingInvitation ? 'Erstelle…' : 'Neu erstellen'}
+                </Button>
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={async () => {
-                    await navigator.clipboard.writeText(upgradeUrl);
-                  }}
+                  onClick={loadInvitations}
+                  disabled={invitationsLoading}
                 >
-                  Link kopieren
+                  Aktualisieren
                 </Button>
-              )}
-            </div>
-            {upgradeError && <div className="mt-2 text-sm text-[var(--status-danger)]">{upgradeError}</div>}
-            {upgradeUrl && (
-              <div className="mt-2 text-xs text-app-muted break-all">{upgradeUrl}</div>
-            )}
-          </div>
+              </div>
 
-          <div className="mt-6 border-t border-app-border pt-4">
-            <div className="text-app-fg font-semibold">Share-Link</div>
-            <div className="mt-2 flex items-center gap-2 flex-wrap">
-              <Button
-                type="button"
-                onClick={handleGenerateShareLink}
-                variant="primary"
-                disabled={shareLoading}
-              >
-                {shareLoading ? 'Erzeuge…' : 'Link erzeugen'}
-              </Button>
-              {shareUrl && (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={async () => {
-                    await navigator.clipboard.writeText(shareUrl);
-                  }}
-                >
-                  Link kopieren
-                </Button>
-              )}
-            </div>
-            {shareError && <div className="mt-2 text-sm text-[var(--status-danger)]">{shareError}</div>}
-            {shareUrl && (
-              <div className="mt-2 text-xs text-app-muted break-all">{shareUrl}</div>
-            )}
-          </div>
+              {invitationsError && <div className="mt-2 text-sm text-status-danger">{invitationsError}</div>}
 
-          <div className="mt-6 border-t border-app-border pt-4">
-            <div className="text-app-fg font-semibold">Einladungsseiten</div>
-            <div className="mt-2 text-sm text-app-muted">
-              Erstelle mehrere Einladungen (z.B. Familie, Freunde) und teile Shortlinks für WhatsApp & Social Media.
-            </div>
+              <div className="mt-4 space-y-3">
+                {invitationsLoading && (
+                  <div className="text-sm text-app-muted">Lade Einladungen…</div>
+                )}
 
-            {copyFeedback && (
-              <div className="mt-2 text-sm text-app-fg">{copyFeedback}</div>
-            )}
+                {!invitationsLoading && invitations.length === 0 && (
+                  <div className="text-sm text-app-muted">Noch keine Einladungen erstellt.</div>
+                )}
 
-            <div className="mt-3 flex items-center gap-2 flex-wrap">
-              <Input
-                value={newInvitationName}
-                onChange={(e) => setNewInvitationName(e.target.value)}
-                placeholder="Name (z.B. Familie)"
-                className="flex-1 min-w-[220px]"
-              />
-              <Button
-                type="button"
-                onClick={createInvitation}
-                variant="primary"
-                disabled={creatingInvitation || newInvitationName.trim().length === 0}
-              >
-                {creatingInvitation ? 'Erstelle…' : 'Neu erstellen'}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={loadInvitations}
-                disabled={invitationsLoading}
-              >
-                Aktualisieren
-              </Button>
-            </div>
-
-            {invitationsError && <div className="mt-2 text-sm text-[var(--status-danger)]">{invitationsError}</div>}
-
-            <div className="mt-4 space-y-3">
-              {invitationsLoading && (
-                <div className="text-sm text-app-muted">Lade Einladungen…</div>
-              )}
-
-              {!invitationsLoading && invitations.length === 0 && (
-                <div className="text-sm text-app-muted">Noch keine Einladungen erstellt.</div>
-              )}
-
-              {invitations.map((inv: any) => {
-                const shortUrl = inv?.shortLinks?.[0]?.url as string | undefined;
-                const publicUrl = typeof window !== 'undefined'
-                  ? `${window.location.origin}/i/${inv.slug}`
-                  : `/i/${inv.slug}`;
-                const isEditing = editingInvitationId === inv.id;
-                const isSaving = savingInvitationId === inv.id;
-                const isGeneratingShortLink = generatingShortLinkInvitationId === inv.id;
-                return (
-                  <div key={inv.id} className="rounded-xl border border-app-border bg-app-card p-3">
-                    <div className="flex items-start justify-between gap-3 flex-wrap">
-                      <div>
-                        {isEditing ? (
-                          <div className="space-y-2">
-                            <Input
-                              value={editingInvitationName}
-                              onChange={(e) => setEditingInvitationName(e.target.value)}
-                              data-testid={`invitation-edit-name-${inv.id}`}
-                              placeholder="Name"
-                            />
-                            <label className="flex items-center gap-2 text-sm text-app-fg">
-                              <Checkbox
-                                checked={editingInvitationIsActive}
-                                onCheckedChange={(checked) => setEditingInvitationIsActive(checked)}
-                                data-testid={`invitation-edit-active-${inv.id}`}
-                              />
-                              Aktiv
-                            </label>
-
-                            <label className="flex items-center justify-between gap-2 text-sm text-app-fg">
-                              <span>Öffentlich</span>
-                              <Checkbox
-                                checked={editingInvitationVisibility === 'PUBLIC'}
-                                onCheckedChange={(checked) => setEditingInvitationVisibility(checked ? 'PUBLIC' : 'UNLISTED')}
-                                data-testid={`invitation-edit-visibility-${inv.id}`}
-                              />
-                            </label>
-
-                            <div>
-                              <div className="text-xs text-app-muted">Passwort (optional)</div>
+                {invitations.map((inv: any) => {
+                  const shortUrl = inv?.shortLinks?.[0]?.url as string | undefined;
+                  const publicUrl = typeof window !== 'undefined'
+                    ? `${window.location.origin}/i/${inv.slug}`
+                    : `/i/${inv.slug}`;
+                  const isEditing = editingInvitationId === inv.id;
+                  const isSaving = savingInvitationId === inv.id;
+                  const isGeneratingShortLink = generatingShortLinkInvitationId === inv.id;
+                  return (
+                    <div key={inv.id} className="rounded-xl border border-app-border bg-app-bg p-3">
+                      <div className="flex items-start justify-between gap-3 flex-wrap">
+                        <div>
+                          {isEditing ? (
+                            <div className="space-y-2">
                               <Input
-                                type="password"
-                                value={editingInvitationPassword}
-                                onChange={(e) => setEditingInvitationPassword(e.target.value)}
-                                data-testid={`invitation-edit-password-${inv.id}`}
-                                className="mt-1"
-                                placeholder={editingInvitationHasPassword ? 'Neues Passwort setzen (leer = unverändert)' : 'Passwort setzen'}
+                                value={editingInvitationName}
+                                onChange={(e) => setEditingInvitationName(e.target.value)}
+                                data-testid={`invitation-edit-name-${inv.id}`}
+                                placeholder="Name"
                               />
-                              {editingInvitationHasPassword && (
-                                <Button
-                                  type="button"
-                                  onClick={() => saveInvitation(inv.id, { removePassword: true })}
-                                  disabled={isSaving}
-                                  data-testid={`invitation-remove-password-${inv.id}`}
-                                  variant="secondary"
-                                  className="mt-2 border border-[var(--status-danger)] text-[var(--status-danger)] disabled:opacity-50"
-                                >
-                                  {isSaving ? 'Speichere…' : 'Passwort entfernen'}
-                                </Button>
+                              <label className="flex items-center gap-2 text-sm text-app-fg">
+                                <Checkbox
+                                  checked={editingInvitationIsActive}
+                                  onCheckedChange={(checked) => setEditingInvitationIsActive(checked)}
+                                  data-testid={`invitation-edit-active-${inv.id}`}
+                                />
+                                Aktiv
+                              </label>
+
+                              <label className="flex items-center justify-between gap-2 text-sm text-app-fg">
+                                <span>Öffentlich</span>
+                                <Checkbox
+                                  checked={editingInvitationVisibility === 'PUBLIC'}
+                                  onCheckedChange={(checked) =>
+                                    setEditingInvitationVisibility(checked ? 'PUBLIC' : 'UNLISTED')
+                                  }
+                                  data-testid={`invitation-edit-visibility-${inv.id}`}
+                                />
+                              </label>
+
+                              <div>
+                                <div className="text-xs text-app-muted">Passwort (optional)</div>
+                                <Input
+                                  type="password"
+                                  value={editingInvitationPassword}
+                                  onChange={(e) => setEditingInvitationPassword(e.target.value)}
+                                  data-testid={`invitation-edit-password-${inv.id}`}
+                                  className="mt-1"
+                                  placeholder={
+                                    editingInvitationHasPassword
+                                      ? 'Neues Passwort setzen (leer = unverändert)'
+                                      : 'Passwort setzen'
+                                  }
+                                />
+                                {editingInvitationHasPassword && (
+                                  <Button
+                                    type="button"
+                                    onClick={() => saveInvitation(inv.id, { removePassword: true })}
+                                    disabled={isSaving}
+                                    data-testid={`invitation-remove-password-${inv.id}`}
+                                    variant="danger"
+                                    className="mt-2 disabled:opacity-50"
+                                  >
+                                    {isSaving ? 'Speichere…' : 'Passwort entfernen'}
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-sm font-semibold text-app-fg">{inv.name}</div>
+                          )}
+                          <div className="text-xs text-app-muted">Opens: {typeof inv.opens === 'number' ? inv.opens : 0}</div>
+                          <div className="text-xs text-app-muted">
+                            RSVP: {inv?.rsvp?.yes ?? 0}/{inv?.rsvp?.no ?? 0}/{inv?.rsvp?.maybe ?? 0}
+                            {inv?.hasPassword ? ' · Passwort: ja' : ''}
+                            {inv?.isActive === false ? ' · inaktiv' : ''}
+                            {inv?.visibility === 'PUBLIC' ? ' · öffentlich' : ' · unlisted'}
+                          </div>
+
+                          {inv?.visibility === 'PUBLIC' && (
+                            <div className="mt-1">
+                              <div className="text-xs text-app-muted">Direkt-Link</div>
+                              <div className="text-xs text-app-muted break-all">{publicUrl}</div>
+                            </div>
+                          )}
+
+                          {shortUrl && (
+                            <div className="mt-1">
+                              <div className="text-xs text-app-muted break-all">{shortUrl}</div>
+                              {inv?.visibility !== 'PUBLIC' && (
+                                <div className="mt-1 text-xs text-app-muted">
+                                  Hinweis: UNLISTED-Einladungen sind nur über den Shortlink erreichbar.
+                                </div>
                               )}
                             </div>
-                          </div>
-                        ) : (
-                          <div className="text-sm font-semibold text-app-fg">{inv.name}</div>
-                        )}
-                        <div className="text-xs text-app-muted">Opens: {typeof inv.opens === 'number' ? inv.opens : 0}</div>
-                        <div className="text-xs text-app-muted">
-                          RSVP: {inv?.rsvp?.yes ?? 0}/{inv?.rsvp?.no ?? 0}/{inv?.rsvp?.maybe ?? 0}
-                          {inv?.hasPassword ? ' · Passwort: ja' : ''}
-                          {inv?.isActive === false ? ' · inaktiv' : ''}
-                          {inv?.visibility === 'PUBLIC' ? ' · öffentlich' : ' · unlisted'}
+                          )}
                         </div>
 
-                        {inv?.visibility === 'PUBLIC' && (
-                          <div className="mt-1">
-                            <div className="text-xs text-app-muted">Direkt-Link</div>
-                            <div className="text-xs text-app-muted break-all">{publicUrl}</div>
-                          </div>
-                        )}
-
-                        {shortUrl && (
-                          <div className="mt-1">
-                            <div className="text-xs text-app-muted break-all">{shortUrl}</div>
-                            {inv?.visibility !== 'PUBLIC' && (
-                              <div className="mt-1 text-xs text-app-muted">
-                                Hinweis: UNLISTED-Einladungen sind nur über den Shortlink erreichbar.
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {isEditing ? (
-                          <>
-                            <Button
-                              type="button"
-                              onClick={() => saveInvitation(inv.id)}
-                              data-testid={`invitation-save-${inv.id}`}
-                              variant="primary"
-                              disabled={isSaving || editingInvitationName.trim().length === 0}
-                            >
-                              {isSaving ? 'Speichere…' : 'Speichern'}
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              onClick={cancelEditInvitation}
-                              data-testid={`invitation-cancel-${inv.id}`}
-                              disabled={isSaving}
-                            >
-                              Abbrechen
-                            </Button>
-                          </>
-                        ) : (
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={() => startEditInvitation(inv)}
-                            data-testid={`invitation-edit-${inv.id}`}
-                          >
-                            Bearbeiten
-                          </Button>
-                        )}
-                        {shortUrl && (
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={async () => {
-                              await copyToClipboard(shortUrl);
-                            }}
-                          >
-                            Link kopieren
-                          </Button>
-                        )}
-
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          onClick={() => generateNewInvitationShortLink(inv.id)}
-                          disabled={isGeneratingShortLink}
-                        >
-                          {isGeneratingShortLink ? 'Erzeuge…' : 'Neuen Shortlink'}
-                        </Button>
-                        {inv?.visibility === 'PUBLIC' && (
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={async () => {
-                              await copyToClipboard(publicUrl, 'Direkt-Link kopiert');
-                            }}
-                          >
-                            Direkt-Link kopieren
-                          </Button>
-                        )}
-                        {shortUrl && (
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={() => shareInvitation(shortUrl, 'whatsapp')}
-                          >
-                            WhatsApp
-                          </Button>
-                        )}
-                        {shortUrl && (
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={() => shareInvitation(shortUrl, 'facebook')}
-                          >
-                            Facebook
-                          </Button>
-                        )}
-                        {shortUrl && (
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={() => shareInvitation(shortUrl, 'x')}
-                          >
-                            X
-                          </Button>
-                        )}
-                        {shortUrl && (
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={() => shareInvitation(shortUrl, 'linkedin')}
-                          >
-                            LinkedIn
-                          </Button>
-                        )}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {isEditing ? (
+                            <>
+                              <Button
+                                type="button"
+                                onClick={() => saveInvitation(inv.id)}
+                                data-testid={`invitation-save-${inv.id}`}
+                                variant="primary"
+                                disabled={isSaving || editingInvitationName.trim().length === 0}
+                                size="sm"
+                              >
+                                {isSaving ? 'Speichere…' : 'Speichern'}
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={cancelEditInvitation}
+                                data-testid={`invitation-cancel-${inv.id}`}
+                                disabled={isSaving}
+                                size="sm"
+                              >
+                                Abbrechen
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={() => startEditInvitation(inv)}
+                                data-testid={`invitation-edit-${inv.id}`}
+                                size="sm"
+                              >
+                                Bearbeiten
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <IconButton
+                                    type="button"
+                                    icon={<MoreVertical className="h-4 w-4" />}
+                                    variant="ghost"
+                                    size="sm"
+                                    aria-label="Mehr"
+                                    title="Mehr"
+                                  />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="min-w-[220px]">
+                                  <DropdownMenuItem
+                                    onSelect={(e) => {
+                                      e.preventDefault();
+                                      void generateNewInvitationShortLink(inv.id);
+                                    }}
+                                    disabled={isGeneratingShortLink}
+                                  >
+                                    {isGeneratingShortLink ? 'Erzeuge…' : 'Neuen Shortlink'}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onSelect={(e) => {
+                                      e.preventDefault();
+                                      if (shortUrl) void copyToClipboard(shortUrl);
+                                    }}
+                                    disabled={!shortUrl}
+                                  >
+                                    Link kopieren
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onSelect={(e) => {
+                                      e.preventDefault();
+                                      if (shortUrl) void shareLink(shortUrl, `Einladung: ${inv.name}`);
+                                    }}
+                                    disabled={!shortUrl}
+                                  >
+                                    Teilen
+                                  </DropdownMenuItem>
+                                  {inv?.visibility === 'PUBLIC' && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        onSelect={(e) => {
+                                          e.preventDefault();
+                                          void copyToClipboard(publicUrl, 'Direkt-Link kopiert');
+                                        }}
+                                      >
+                                        Direkt-Link kopieren
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Profile Info */}
-        <div className="flex items-start gap-4 mb-6">
-          {/* Profile Image */}
-          <div className="relative">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-tokens-brandGreen to-tokens-brandPeach overflow-hidden border-4 border-app-card shadow-lg group">
-              {profileImage && profileImage !== '/default-profile.png' ? (
-                <img
-                  src={profileImage}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-app-bg">
-                  <Users className="w-10 h-10" />
-                </div>
-              )}
-            </div>
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="absolute bottom-0 right-0">
-              <IconButton
-                onClick={() => profileImageInputRef.current?.click()}
-                icon={
-                  uploadingImage === 'profile' ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-app-bg"></div>
+        <div className="mb-6 overflow-hidden rounded-xl border border-app-border bg-app-card">
+          <div className="border-b border-app-border px-4 py-3">
+            <div className="text-sm font-semibold text-app-fg">Event Profil</div>
+            <div className="text-xs text-app-muted">Profilbild und Willkommensnachricht</div>
+          </div>
+
+          <div className="px-4 py-4">
+            <div className="flex items-start gap-4">
+              <div className="relative">
+                <div className="h-20 w-20 overflow-hidden rounded-full border border-app-border bg-app-bg shadow-sm">
+                  {profileImage && profileImage !== '/default-profile.png' ? (
+                    <img src={profileImage} alt="Profile" className="h-full w-full object-cover" />
                   ) : (
-                    <Camera className="w-4 h-4" />
-                  )
-                }
-                variant="ghost"
-                size="sm"
-                aria-label="Profilbild ändern"
-                title="Profilbild ändern"
-                className="h-7 w-7 rounded-full p-0 bg-app-fg text-app-bg border-2 border-app-bg shadow-lg hover:opacity-90"
-              />
-            </motion.div>
-            <input
-              ref={profileImageInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleImageUpload('profile', file);
-              }}
-            />
-          </div>
-
-          {/* Event Info */}
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              {editingField === 'title' ? (
-                <Input
-                  type="text"
-                  defaultValue={event.title}
-                  onBlur={(e) => updateEventField('title', e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      updateEventField('title', (e.target as HTMLInputElement).value);
+                    <div className="flex h-full w-full items-center justify-center text-app-muted">
+                      <Users className="h-10 w-10" />
+                    </div>
+                  )}
+                </div>
+                <div className="absolute bottom-0 right-0">
+                  <IconButton
+                    onClick={() => profileImageInputRef.current?.click()}
+                    icon={
+                      uploadingImage === 'profile' ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-app-bg"></div>
+                      ) : (
+                        <Camera className="w-4 h-4" />
+                      )
                     }
+                    variant="glass"
+                    size="sm"
+                    aria-label="Profilbild ändern"
+                    title="Profilbild ändern"
+                    className="h-7 w-7 rounded-full p-0 shadow-lg"
+                  />
+                </div>
+                <input
+                  ref={profileImageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleImageUpload('profile', file);
                   }}
-                  className="h-auto border-x-0 border-t-0 border-b-2 border-app-border bg-transparent px-0 py-0 text-xl font-semibold shadow-none focus-visible:ring-0"
-                  autoFocus
                 />
-              ) : (
-                <h2
-                  onClick={() => setEditingField('title')}
-                  className="text-xl font-semibold cursor-pointer hover:opacity-70 transition-opacity"
-                >
-                  {event.title}
-                </h2>
-              )}
-            </div>
-            
-            {/* Stats */}
-            <div className="flex items-center gap-4 text-sm text-app-muted mb-4">
-              <span><strong>{photoStats.total}</strong> Fotos</span>
-              <span><strong>{photoStats.approved}</strong> Freigegeben</span>
-              {photoStats.pending > 0 && (
-                <span className="text-[var(--status-warning)]"><strong>{photoStats.pending}</strong> Ausstehend</span>
-              )}
+              </div>
+
+              <div className="flex-1">
+                <div className="text-sm font-medium text-app-fg">Willkommensnachricht</div>
+                <div className="mt-2">
+                  {editingField === 'welcomeMessage' ? (
+                    <Textarea
+                      defaultValue={welcomeMessage}
+                      onBlur={(e) => {
+                        updateDesignConfig({
+                          welcomeMessage: e.target.value,
+                        });
+                      }}
+                      placeholder="Schreibe eine Willkommensnachricht..."
+                      className="resize-none"
+                      rows={3}
+                      autoFocus
+                    />
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="w-full h-auto justify-start text-left"
+                      onClick={() => setEditingField('welcomeMessage')}
+                    >
+                      {welcomeMessage ? (
+                        <span className="whitespace-pre-wrap text-app-fg">{welcomeMessage}</span>
+                      ) : (
+                        <span className="italic text-app-muted">Klicke hier, um eine Willkommensnachricht hinzuzufügen...</span>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Welcome Message */}
-        <div className="mb-6">
-          {editingField === 'welcomeMessage' ? (
-            <Textarea
-              defaultValue={welcomeMessage}
-              onBlur={(e) => {
-                updateDesignConfig({
-                  welcomeMessage: e.target.value,
-                });
-              }}
-              placeholder="Schreibe eine Willkommensnachricht..."
-              className="resize-none"
-              rows={3}
-              autoFocus
-            />
-          ) : (
-            <div
-              onClick={() => setEditingField('welcomeMessage')}
-              className="p-4 bg-app-card border border-app-border rounded-lg cursor-pointer hover:opacity-90 transition-opacity min-h-[60px]"
-            >
-              {welcomeMessage ? (
-                <p className="text-app-fg whitespace-pre-wrap">{welcomeMessage}</p>
-              ) : (
-                <p className="text-app-muted italic">Klicke hier, um eine Willkommensnachricht hinzuzufügen...</p>
-              )}
-            </div>
-          )}
-        </div>
+        <div className="mb-6 overflow-hidden rounded-xl border border-app-border bg-app-card">
+          <div className="border-b border-app-border px-4 py-3">
+            <div className="text-sm font-semibold text-app-fg">Event Details</div>
+            <div className="text-xs text-app-muted">Datum, Uhrzeit, Ort, URL und Passwort</div>
+          </div>
 
-        {/* Event Details */}
-        <div className="mb-6 space-y-3">
+          <div className="divide-y divide-app-border">
           {/* Date - Required */}
-          <div className="bg-app-card border border-app-border rounded-xl p-4">
+          <div className="px-4 py-4">
             <div className="flex items-center gap-3 mb-2">
               <Calendar className="w-5 h-5 text-app-fg" />
               <label className="text-sm font-medium text-app-fg">
-                Datum <span className="text-[var(--status-danger)]">*</span>
+                Datum <span className="text-status-danger">*</span>
               </label>
             </div>
             {editingField === 'date' ? (
-              <Input
-                type="date"
-                required
-                defaultValue={event.dateTime ? new Date(event.dateTime).toISOString().split('T')[0] : ''}
-                onBlur={(e) => {
-                  const dateValue = e.target.value;
-                  const timeValue = event.dateTime ? new Date(event.dateTime).toTimeString().slice(0, 5) : '00:00';
-                  if (dateValue) {
-                    const combinedDateTime = new Date(`${dateValue}T${timeValue}`);
-                    updateEventField('dateTime', combinedDateTime.toISOString());
-                  }
+              <DateTimePicker
+                value={event.dateTime ? new Date(event.dateTime as any).toISOString() : ''}
+                onChange={(value) => {
+                  if (!value) return;
+                  updateEventField('dateTime', value);
+                  setEditingField(null);
                 }}
-                className="border-2"
-                autoFocus
+                minDate={new Date(0)}
               />
             ) : (
-              <div
+              <Button
+                type="button"
+                variant="ghost"
                 onClick={() => setEditingField('date')}
-                className="cursor-pointer hover:opacity-70 transition-opacity"
+                className="h-auto p-0 justify-start text-left"
               >
                 {event.dateTime ? (
-                  <p className="text-app-fg">
+                  <span className="text-app-fg">
                     {new Date(event.dateTime).toLocaleDateString('de-DE', {
                       day: '2-digit',
                       month: '2-digit',
                       year: 'numeric',
                     })}
-                  </p>
+                  </span>
                 ) : (
-                  <p className="text-[var(--status-danger)] italic">Bitte Datum auswählen *</p>
+                  <span className="text-status-danger italic">Bitte Datum auswählen *</span>
                 )}
-              </div>
+              </Button>
             )}
           </div>
 
           {/* Time - Required */}
-          <div className="bg-app-card border border-app-border rounded-xl p-4">
+          <div className="px-4 py-4">
             <div className="flex items-center gap-3 mb-2">
               <Clock className="w-5 h-5 text-app-fg" />
               <label className="text-sm font-medium text-app-fg">
-                Uhrzeit <span className="text-[var(--status-danger)]">*</span>
+                Uhrzeit <span className="text-status-danger">*</span>
               </label>
             </div>
             {editingField === 'time' ? (
-              <Input
-                type="time"
-                required
-                defaultValue={event.dateTime ? new Date(event.dateTime).toTimeString().slice(0, 5) : '00:00'}
-                onBlur={(e) => {
-                  const timeValue = e.target.value;
-                  const dateValue = event.dateTime ? new Date(event.dateTime).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-                  if (timeValue) {
-                    const combinedDateTime = new Date(`${dateValue}T${timeValue}`);
-                    updateEventField('dateTime', combinedDateTime.toISOString());
-                  }
+              <DateTimePicker
+                value={event.dateTime ? new Date(event.dateTime as any).toISOString() : ''}
+                onChange={(value) => {
+                  if (!value) return;
+                  updateEventField('dateTime', value);
+                  setEditingField(null);
                 }}
-                className="border-2"
-                autoFocus
+                minDate={new Date(0)}
               />
             ) : (
-              <div
+              <Button
+                type="button"
+                variant="ghost"
                 onClick={() => setEditingField('time')}
-                className="cursor-pointer hover:opacity-70 transition-opacity"
+                className="h-auto p-0 justify-start text-left"
               >
                 {event.dateTime ? (
-                  <p className="text-app-fg">
+                  <span className="text-app-fg">
                     {new Date(event.dateTime).toLocaleTimeString('de-DE', {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
-                  </p>
+                  </span>
                 ) : (
-                  <p className="text-[var(--status-danger)] italic">Bitte Uhrzeit auswählen *</p>
+                  <span className="text-status-danger italic">Bitte Uhrzeit auswählen *</span>
                 )}
-              </div>
+              </Button>
             )}
           </div>
 
           {/* Location */}
-          <div className="bg-app-card border border-app-border rounded-xl p-4">
+          <div className="px-4 py-4">
             <div className="flex items-center gap-3 mb-2">
               <MapPin className="w-5 h-5 text-app-fg" />
               <label className="text-sm font-medium text-app-fg">Veranstaltungsort</label>
@@ -1139,21 +1208,23 @@ export default function EventDashboardPage() {
                 autoFocus
               />
             ) : (
-              <div
+              <Button
+                type="button"
+                variant="ghost"
                 onClick={() => setEditingField('locationName')}
-                className="cursor-pointer hover:opacity-70 transition-opacity"
+                className="h-auto p-0 justify-start text-left"
               >
                 {event.locationName ? (
-                  <p className="text-app-fg">{event.locationName}</p>
+                  <span className="text-app-fg">{event.locationName}</span>
                 ) : (
-                  <p className="text-app-muted italic">Klicke hier, um einen Ort hinzuzufügen...</p>
+                  <span className="text-app-muted italic">Klicke hier, um einen Ort hinzuzufügen...</span>
                 )}
-              </div>
+              </Button>
             )}
           </div>
 
           {/* Event URL/Slug - Read-only */}
-          <div className="bg-app-card border border-app-border rounded-xl p-4">
+          <div className="px-4 py-4">
             <div className="flex items-center gap-3 mb-2">
               <Globe className="w-5 h-5 text-app-fg" />
               <label className="text-sm font-medium text-app-fg">Event-URL</label>
@@ -1167,8 +1238,7 @@ export default function EventDashboardPage() {
                 type="button"
                 onClick={() => {
                   const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/e2/${event.slug}`;
-                  navigator.clipboard.writeText(url);
-                  showToast('URL kopiert!', 'success');
+                  void copyToClipboard(url, 'URL kopiert');
                 }}
                 size="sm"
                 variant="primary"
@@ -1180,7 +1250,7 @@ export default function EventDashboardPage() {
           </div>
 
           {/* Password */}
-          <div className="bg-app-card border border-app-border rounded-xl p-4">
+          <div className="px-4 py-4">
             <div className="flex items-center gap-3 mb-2">
               <Lock className="w-5 h-5 text-app-fg" />
               <label className="text-sm font-medium text-app-fg">Event-Passwort</label>
@@ -1201,52 +1271,153 @@ export default function EventDashboardPage() {
                 </p>
               </div>
             ) : (
-              <div
+              <Button
+                type="button"
+                variant="ghost"
                 onClick={() => setEditingField('password')}
-                className="cursor-pointer hover:opacity-70 transition-opacity"
+                className="h-auto p-0 justify-start text-left"
               >
                 {(event as any).password ? (
-                  <p className="text-app-fg">•••••••• (Passwort gesetzt)</p>
+                  <span className="text-app-fg">•••••••• (Passwort gesetzt)</span>
                 ) : (
-                  <p className="text-app-muted italic">Klicke hier, um ein Passwort hinzuzufügen...</p>
+                  <span className="text-app-muted italic">Klicke hier, um ein Passwort hinzuzufügen...</span>
                 )}
-              </div>
+              </Button>
             )}
+          </div>
           </div>
         </div>
 
 
 
-        {/* Quick Actions - iOS Style */}
-        <div className="space-y-2 mb-6">
-          {/* Event-Modus Accordion */}
-          <div className="bg-app-card border border-app-border rounded-xl overflow-hidden">
-            <motion.div
-              whileTap={{ scale: 0.98 }}
-              className="p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => setShowEventMode(!showEventMode)}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-app-bg flex items-center justify-center">
-                  <Settings className="w-5 h-5 text-app-fg" />
+        <div className="mb-6 grid gap-4">
+          <div className="overflow-hidden rounded-xl border border-app-border bg-app-card">
+            <div className="border-b border-app-border px-4 py-3">
+              <div className="text-sm font-semibold text-app-fg">Tools</div>
+              <div className="text-xs text-app-muted">Schnellzugriff auf die wichtigsten Bereiche</div>
+            </div>
+
+            <div className="divide-y divide-app-border">
+              <Button asChild variant="ghost" className="w-full justify-between rounded-none px-4 py-4">
+                <Link href={`/events/${eventId}/qr-styler`}>
+                  <span className="flex items-center gap-3">
+                    <Sparkles className="h-5 w-5 text-app-muted" />
+                    <span className="text-left">
+                      <span className="block text-sm font-medium text-app-fg">QR‑Aufsteller</span>
+                      <span className="block text-xs text-app-muted">Vorlagen gestalten und herunterladen</span>
+                    </span>
+                  </span>
+                  <ChevronRight className="h-5 w-5 text-app-muted" />
+                </Link>
+              </Button>
+
+              {featuresConfig.showGuestlist === false ? (
+                <div className="px-4 py-4 opacity-50">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="flex items-center gap-3">
+                      <Users className="h-5 w-5 text-app-muted" />
+                      <span className="text-left">
+                        <span className="block text-sm font-medium text-app-muted">Gäste</span>
+                        <span className="block text-xs text-app-muted">Gästelistenfunktion ist deaktiviert</span>
+                      </span>
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold text-sm text-app-fg">Event-Modus</p>
-                  <p className="text-xs text-app-muted">Event-Verhalten konfigurieren</p>
+              ) : (
+                <Button asChild variant="ghost" className="w-full justify-between rounded-none px-4 py-4">
+                  <Link href={`/events/${eventId}/guests`}>
+                    <span className="flex items-center gap-3">
+                      <Users className="h-5 w-5 text-app-muted" />
+                      <span className="text-left">
+                        <span className="block text-sm font-medium text-app-fg">Gäste</span>
+                        <span className="block text-xs text-app-muted">Gäste verwalten und einladen</span>
+                      </span>
+                    </span>
+                    <ChevronRight className="h-5 w-5 text-app-muted" />
+                  </Link>
+                </Button>
+              )}
+
+              <Button asChild variant="ghost" className="w-full justify-between rounded-none px-4 py-4">
+                <Link href={`/events/${eventId}/categories`}>
+                  <span className="flex items-center gap-3">
+                    <ImageIcon className="h-5 w-5 text-app-muted" />
+                    <span className="text-left">
+                      <span className="block text-sm font-medium text-app-fg">Alben</span>
+                      <span className="block text-xs text-app-muted">Alben erstellen und verwalten</span>
+                    </span>
+                  </span>
+                  <ChevronRight className="h-5 w-5 text-app-muted" />
+                </Link>
+              </Button>
+
+              {featuresConfig.challengesEnabled === false ? (
+                <div className="px-4 py-4 opacity-50">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="flex items-center gap-3">
+                      <Trophy className="h-5 w-5 text-app-muted" />
+                      <span className="text-left">
+                        <span className="block text-sm font-medium text-app-muted">Challenges</span>
+                        <span className="block text-xs text-app-muted">Challenges sind deaktiviert</span>
+                      </span>
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <ChevronRight className={`w-5 h-5 text-app-muted transition-transform ${showEventMode ? 'rotate-90' : ''}`} />
-            </motion.div>
-            <AnimatePresence>
+              ) : (
+                <Button asChild variant="ghost" className="w-full justify-between rounded-none px-4 py-4">
+                  <Link href={`/events/${eventId}/challenges`}>
+                    <span className="flex items-center gap-3">
+                      <Trophy className="h-5 w-5 text-app-muted" />
+                      <span className="text-left">
+                        <span className="block text-sm font-medium text-app-fg">Challenges</span>
+                        <span className="block text-xs text-app-muted">Challenges erstellen und verwalten</span>
+                      </span>
+                    </span>
+                    <ChevronRight className="h-5 w-5 text-app-muted" />
+                  </Link>
+                </Button>
+              )}
+
+              <Button asChild variant="ghost" className="w-full justify-between rounded-none px-4 py-4">
+                <Link href={`/events/${eventId}/statistics`}>
+                  <span className="flex items-center gap-3">
+                    <BarChart3 className="h-5 w-5 text-app-muted" />
+                    <span className="text-left">
+                      <span className="block text-sm font-medium text-app-fg">Statistiken</span>
+                      <span className="block text-xs text-app-muted">Event-Übersicht und Analysen</span>
+                    </span>
+                  </span>
+                  <ChevronRight className="h-5 w-5 text-app-muted" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-xl border border-app-border bg-app-card">
+            <div className="border-b border-app-border px-4 py-3">
+              <div className="text-sm font-semibold text-app-fg">Event Einstellungen</div>
+              <div className="text-xs text-app-muted">Verhalten und Features konfigurieren</div>
+            </div>
+
+            <div className="divide-y divide-app-border">
+              <button
+                type="button"
+                onClick={() => setShowEventMode(!showEventMode)}
+                className="flex w-full items-center justify-between px-4 py-4 text-left"
+              >
+                <span>
+                  <span className="block text-sm font-medium text-app-fg">Event-Modus</span>
+                  <span className="block text-xs text-app-muted">Event-Verhalten konfigurieren</span>
+                </span>
+                <ChevronRight
+                  className={`h-5 w-5 text-app-muted transition-transform ${showEventMode ? 'rotate-90' : ''}`}
+                />
+              </button>
+
               {showEventMode && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="px-4 pb-4"
-                >
-                  <div className="space-y-2 pt-2">
-                    <label className="flex items-center justify-between px-1 py-2">
+                <div className="px-4 py-4">
+                  <div className="space-y-2">
+                    <label className="flex items-center justify-between py-2">
                       <div className="flex items-center gap-2">
                         <Globe className="w-4 h-4 text-app-muted" />
                         <span className="text-sm text-app-fg">Event aktiv</span>
@@ -1262,10 +1433,8 @@ export default function EventDashboardPage() {
                     {['STANDARD', 'MODERATION', 'COLLECT', 'VIEW_ONLY'].map((mode) => (
                       <label
                         key={mode}
-                        className={`flex items-start p-3 border-2 rounded-lg cursor-pointer transition-all ${
-                          featuresConfig.mode === mode
-                            ? 'border-app-border bg-app-bg'
-                            : 'border-app-border hover:opacity-90'
+                        className={`flex items-start rounded-lg border border-app-border p-3 transition-colors ${
+                          featuresConfig.mode === mode ? 'bg-app-bg' : 'hover:bg-app-bg'
                         }`}
                       >
                         <Radio
@@ -1292,13 +1461,12 @@ export default function EventDashboardPage() {
                       </label>
                     ))}
                   </div>
-                  
-                  {/* Mystery Mode */}
-                  <div className="pt-3 mt-3 border-t border-app-border space-y-3">
-                    <label className="flex items-center justify-between px-1 py-2">
+
+                  <div className="mt-4 border-t border-app-border pt-4 space-y-3">
+                    <label className="flex items-center justify-between py-2">
                       <div className="flex items-center gap-2">
                         <EyeIcon className="w-4 h-4 text-app-muted" />
-                        <span className="text-sm text-app-fg">Mystery Mode <span className="text-app-muted font-normal">(Überschreibt die Sichtbarkeitsregeln der Event-Modi - Fotos werden erst nach dem Event sichtbar)</span></span>
+                        <span className="text-sm text-app-fg">Mystery Mode</span>
                       </div>
                       <Checkbox
                         checked={featuresConfig.mysteryMode === true}
@@ -1306,9 +1474,8 @@ export default function EventDashboardPage() {
                         className="h-5 w-5"
                       />
                     </label>
-                    
-                    {/* Foto-Uploads erlauben */}
-                    <label className="flex items-center justify-between px-1 py-2">
+
+                    <label className="flex items-center justify-between py-2">
                       <div className="flex items-center gap-2">
                         <Upload className="w-4 h-4 text-app-muted" />
                         <span className="text-sm text-app-fg">Foto-Uploads erlauben</span>
@@ -1320,9 +1487,8 @@ export default function EventDashboardPage() {
                         className="h-5 w-5"
                       />
                     </label>
-                    
-                    {/* Downloads erlauben */}
-                    <label className="flex items-center justify-between px-1 py-2">
+
+                    <label className="flex items-center justify-between py-2">
                       <div className="flex items-center gap-2">
                         <Download className="w-4 h-4 text-app-muted" />
                         <span className="text-sm text-app-fg">Downloads erlauben</span>
@@ -1335,162 +1501,26 @@ export default function EventDashboardPage() {
                       />
                     </label>
                   </div>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
-          </div>
 
-          {/* Gäste Section */}
-          <div className="space-y-2">
-            <Link href={`/events/${eventId}/qr-styler`}>
-              <motion.div
-                whileTap={{ scale: 0.98 }}
-                className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
+              <button
+                type="button"
+                onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+                className="flex w-full items-center justify-between px-4 py-4 text-left"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-app-bg flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-app-fg" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm text-app-fg">QR‑Aufsteller</p>
-                    <p className="text-xs text-app-muted">Vorlagen gestalten und herunterladen</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-app-muted" />
-              </motion.div>
-            </Link>
+                <span>
+                  <span className="block text-sm font-medium text-app-fg">Erweiterte Einstellungen</span>
+                  <span className="block text-xs text-app-muted">Weitere Features & Optionen</span>
+                </span>
+                <ChevronRight
+                  className={`h-5 w-5 text-app-muted transition-transform ${showAdvancedSettings ? 'rotate-90' : ''}`}
+                />
+              </button>
 
-            {/* Gäste Link */}
-            {featuresConfig.showGuestlist === false ? (
-              <div className="bg-app-card border border-app-border rounded-xl p-4 opacity-50">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-app-bg rounded-full flex items-center justify-center">
-                    <Users className="w-5 h-5 text-app-muted" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-sm text-app-muted">Gäste</p>
-                    <p className="text-xs text-app-muted">Gästelistenfunktion ist deaktiviert</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <Link href={`/events/${eventId}/guests`}>
-                <motion.div
-                  whileTap={{ scale: 0.98 }}
-                  className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-app-bg flex items-center justify-center">
-                      <Users className="w-5 h-5 text-app-fg" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm text-app-fg">Gäste</p>
-                      <p className="text-xs text-app-muted">Gäste verwalten und einladen</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-app-muted" />
-                </motion.div>
-              </Link>
-            )}
-
-            {/* Alben Link */}
-            <Link href={`/events/${eventId}/categories`}>
-              <motion.div
-                whileTap={{ scale: 0.98 }}
-                className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-app-bg flex items-center justify-center">
-                    <ImageIcon className="w-5 h-5 text-app-fg" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm text-app-fg">Alben</p>
-                    <p className="text-xs text-app-muted">Alben erstellen und verwalten</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-app-muted" />
-              </motion.div>
-            </Link>
-
-            {/* Challenges Link */}
-            {featuresConfig.challengesEnabled === false ? (
-              <div className="bg-app-card border border-app-border rounded-xl p-4 opacity-50">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-app-bg rounded-full flex items-center justify-center">
-                    <Trophy className="w-5 h-5 text-app-muted" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-sm text-app-muted">Challenges</p>
-                    <p className="text-xs text-app-muted">Challenges sind deaktiviert</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <Link href={`/events/${eventId}/challenges`}>
-                <motion.div
-                  whileTap={{ scale: 0.98 }}
-                  className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-app-bg flex items-center justify-center">
-                      <Trophy className="w-5 h-5 text-app-fg" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm text-app-fg">Challenges</p>
-                      <p className="text-xs text-app-muted">Challenges erstellen und verwalten</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-app-muted" />
-                </motion.div>
-              </Link>
-            )}
-          </div>
-
-          <Link href={`/events/${eventId}/statistics`}>
-            <motion.div
-              whileTap={{ scale: 0.98 }}
-              className="bg-app-card border border-app-border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-app-bg flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-app-fg" />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm text-app-fg">Statistiken</p>
-                  <p className="text-xs text-app-muted">Event-Übersicht und Analysen</p>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-app-muted" />
-            </motion.div>
-          </Link>
-
-          {/* Erweiterte Einstellungen Accordion */}
-          <div className="bg-app-card border border-app-border rounded-xl overflow-hidden">
-            <motion.div
-              whileTap={{ scale: 0.98 }}
-              className="p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-app-bg flex items-center justify-center">
-                  <Settings className="w-5 h-5 text-app-fg" />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm text-app-fg">Erweiterte Einstellungen</p>
-                  <p className="text-xs text-app-muted">Weitere Features & Optionen</p>
-                </div>
-              </div>
-              <ChevronRight className={`w-5 h-5 text-app-muted transition-transform ${showAdvancedSettings ? 'rotate-90' : ''}`} />
-            </motion.div>
-            <AnimatePresence>
               {showAdvancedSettings && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="px-4 pb-4"
-                >
-                  <div className="pt-4 space-y-3">
+                <div className="px-4 py-4">
+                  <div className="space-y-3">
                     <label className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <UserCheck className="w-4 h-4 text-app-muted" />
@@ -1514,29 +1544,27 @@ export default function EventDashboardPage() {
                         className="h-5 w-5"
                       />
                     </label>
-
                   </div>
-                  
-                  {/* Speichern Button */}
-                  <motion.div whileTap={{ scale: 0.98 }} className="mt-4">
-                    <Button
-                      onClick={async () => {
-                        try {
-                          await loadEvent();
-                          showToast('Änderungen gespeichert!', 'success');
-                        } catch (err) {
-                          showToast('Fehler beim Speichern', 'error');
-                        }
-                      }}
-                      className="w-full rounded-xl p-4 font-semibold"
-                    >
-                      <Check className="h-5 w-5" />
-                      Speichern
-                    </Button>
-                  </motion.div>
-                </motion.div>
+
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={async () => {
+                      try {
+                        await loadEvent();
+                        showToast('Änderungen gespeichert!', 'success');
+                      } catch (err) {
+                        showToast('Fehler beim Speichern', 'error');
+                      }
+                    }}
+                    className="w-full mt-4 gap-2"
+                  >
+                    <Check className="w-5 h-5" />
+                    Speichern
+                  </Button>
+                </div>
               )}
-            </AnimatePresence>
+            </div>
           </div>
         </div>
 
@@ -1557,36 +1585,42 @@ export default function EventDashboardPage() {
                 size="sm"
                 aria-label="Schließen"
                 title="Schließen"
-                className="p-1 hover:opacity-80 rounded-full text-app-fg"
+                className="p-1 rounded-full"
               />
             </DialogClose>
           </div>
           <div className="overflow-y-auto max-h-[calc(80vh-60px)] p-4 space-y-2">
-            <Link href={`/events/${eventId}`}>
-              <motion.div
-                whileTap={{ scale: 0.98 }}
-                className="bg-app-bg rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
-              >
-                <div className="flex items-center gap-3">
-                  <Eye className="w-5 h-5 text-app-muted" />
-                  <span className="font-medium text-app-fg">Event ansehen</span>
-                </div>
+            <Button
+              asChild
+              variant="secondary"
+              className="w-full h-auto px-3 py-3 rounded-lg flex items-center justify-between"
+            >
+              <Link href={`/events/${eventId}`}>
+                <span className="flex items-center gap-3">
+                  <span className="w-9 h-9 rounded-full bg-app-bg flex items-center justify-center">
+                    <Eye className="w-5 h-5 text-app-muted" />
+                  </span>
+                  <span className="font-medium">Event ansehen</span>
+                </span>
                 <ChevronRight className="w-5 h-5 text-app-muted" />
-              </motion.div>
-            </Link>
+              </Link>
+            </Button>
 
-            <Link href={`/events/${eventId}/duplicates`}>
-              <motion.div
-                whileTap={{ scale: 0.98 }}
-                className="bg-app-bg rounded-xl p-4 flex items-center justify-between cursor-pointer hover:opacity-90 transition-opacity"
-              >
-                <div className="flex items-center gap-3">
-                  <ImageIcon className="w-5 h-5 text-app-muted" />
-                  <span className="font-medium text-app-fg">Duplikate verwalten</span>
-                </div>
+            <Button
+              asChild
+              variant="secondary"
+              className="w-full h-auto px-3 py-3 rounded-lg flex items-center justify-between"
+            >
+              <Link href={`/events/${eventId}/duplicates`}>
+                <span className="flex items-center gap-3">
+                  <span className="w-9 h-9 rounded-full bg-app-bg flex items-center justify-center">
+                    <ImageIcon className="w-5 h-5 text-app-muted" />
+                  </span>
+                  <span className="font-medium">Duplikate verwalten</span>
+                </span>
                 <ChevronRight className="w-5 h-5 text-app-muted" />
-              </motion.div>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

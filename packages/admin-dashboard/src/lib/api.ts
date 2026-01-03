@@ -46,9 +46,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Unauthorized - redirect to login
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        const url = String(error.config?.url || '');
+        const pathname = window.location?.pathname || '';
+        const isAuthRequest = url.includes('/auth/login') || url.includes('/auth/2fa/verify');
+        if (pathname !== '/login' && !isAuthRequest) {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

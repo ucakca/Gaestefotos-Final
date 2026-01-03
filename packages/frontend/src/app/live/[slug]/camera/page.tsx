@@ -151,7 +151,7 @@ export default function CameraPage() {
                 <Camera className="w-24 h-24 mx-auto mb-4 text-app-bg/60" />
                 <p className="text-app-bg/70 mb-4">Kamera-Stream</p>
                 {uploadError && (
-                  <div className="mb-4 px-4 py-2 rounded-lg bg-app-fg/50 border border-[var(--status-danger)] text-[var(--status-danger)] text-sm max-w-xs mx-auto">
+                  <div className="mb-4 px-4 py-2 rounded-lg bg-app-fg/50 border border-status-danger text-status-danger text-sm max-w-xs mx-auto">
                     Fehler beim Upload: {uploadError}
                     {canRetry && !uploading && capturedPhoto && (
                       <div className="mt-2">
@@ -277,7 +277,7 @@ export default function CameraPage() {
                     opacity: [1, 0.5, 0],
                   }}
                   transition={{ duration: 1, repeat: Infinity }}
-                  className="w-32 h-32 bg-[var(--status-success)] rounded-full flex items-center justify-center"
+                  className="w-32 h-32 bg-status-success rounded-full flex items-center justify-center"
                 >
                   <Upload className="w-16 h-16 text-app-bg" />
                 </motion.div>

@@ -67,21 +67,18 @@ export default function DashboardPage() {
               <div className="flex items-center gap-4">
                 <Logo width={120} height={48} />
                 <div>
-                  <h1 className="text-2xl font-bold text-tokens-brandGreen">Dashboard</h1>
+                  <h1 className="text-2xl font-bold text-app-fg">Dashboard</h1>
                   {user && (
-                    <p className="text-sm text-tokens-brandGreen">{user.name || user.email}</p>
+                    <p className="text-sm text-app-muted">{user.name || user.email}</p>
                   )}
                 </div>
               </div>
               <div className="flex gap-4 items-center">
-                <a
-                  href="https://xn--gstefotos-v2a.com/faq/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-4 py-2 rounded-md border border-app-accent font-medium transition-colors text-tokens-brandGreen bg-app-card hover:bg-app-bg"
-                >
-                  FAQ
-                </a>
+                <Button asChild variant="secondary" size="sm">
+                  <a href="https://xn--gstefotos-v2a.com/faq/" target="_blank" rel="noreferrer">
+                    FAQ
+                  </a>
+                </Button>
                 <Link
                   href="/moderation"
                   className="px-4 py-2 rounded-md text-app-bg font-medium transition-colors bg-app-accent hover:opacity-90"
@@ -93,7 +90,8 @@ export default function DashboardPage() {
                 </Button>
                 <Button
                   onClick={logout}
-                  className="px-4 py-2 rounded-md border border-app-accent font-medium transition-colors text-tokens-brandGreen bg-app-card hover:bg-app-bg"
+                  variant="secondary"
+                  size="sm"
                 >
                   Abmelden
                 </Button>
@@ -102,7 +100,7 @@ export default function DashboardPage() {
           </div>
 
           {error && (
-            <div className="bg-app-bg border border-[var(--status-danger)] text-[var(--status-danger)] px-4 py-3 rounded mb-4">
+            <div className="bg-app-bg border border-status-danger text-status-danger px-4 py-3 rounded mb-4">
               {error}
             </div>
           )}
@@ -113,7 +111,7 @@ export default function DashboardPage() {
               animate={{ opacity: 1 }}
               className="text-center py-12 bg-app-card rounded-lg border border-app-border shadow-sm"
             >
-              <p className="mb-4 text-tokens-brandGreen">Noch keine Events vorhanden</p>
+              <p className="mb-4 text-app-muted">Noch keine Events vorhanden</p>
               <Button asChild variant="primary" size="sm" className="px-4 py-2 rounded-md font-medium inline-block">
                 <Link href="/events/new">Erstelle dein erstes Event</Link>
               </Button>
@@ -131,13 +129,13 @@ export default function DashboardPage() {
                     href={`/events/${event.id}`}
                     className="bg-app-card rounded-lg border border-app-border shadow-sm p-6 hover:shadow-lg transition-all block"
                   >
-                    <h2 className="text-xl font-semibold mb-2 text-tokens-brandGreen">
+                    <h2 className="text-xl font-semibold mb-2 text-app-fg">
                       {event.title}
                     </h2>
-                    <p className="text-sm mb-4 text-tokens-brandGreen/70">
+                    <p className="text-sm mb-4 text-app-muted">
                       Slug: {event.slug}
                     </p>
-                    <div className="text-sm text-tokens-brandGreen/60">
+                    <div className="text-sm text-app-muted">
                       Erstellt: {new Date(event.createdAt).toLocaleDateString('de-DE')}
                     </div>
                   </Link>

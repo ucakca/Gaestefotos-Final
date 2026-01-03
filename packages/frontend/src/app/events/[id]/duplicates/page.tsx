@@ -13,14 +13,15 @@ import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Photo {
   id: string;
@@ -153,25 +154,30 @@ export default function DuplicatesPage() {
 
   return (
     <AppLayout showBackButton backUrl={`/events/${eventId}/photos`}>
-      <Dialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{confirmState?.title}</DialogTitle>
-            {confirmState?.description ? <DialogDescription>{confirmState.description}</DialogDescription> : null}
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
+      <AlertDialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmState?.title}</AlertDialogTitle>
+            {confirmState?.description ? (
+              <AlertDialogDescription>{confirmState.description}</AlertDialogDescription>
+            ) : null}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
               <Button variant="secondary" onClick={() => closeConfirm(false)}>
                 {confirmState?.cancelText || 'Abbrechen'}
               </Button>
-            </DialogClose>
-            <Button variant="danger" onClick={() => closeConfirm(true)}>
-              {confirmState?.confirmText || 'Bestätigen'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button variant="danger" onClick={() => closeConfirm(true)}>
+                {confirmState?.confirmText || 'Bestätigen'}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -192,7 +198,7 @@ export default function DuplicatesPage() {
             className="text-center py-20"
           >
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-app-bg border border-app-border mb-6">
-              <Check className="w-10 h-10 text-[var(--status-success)]" />
+              <Check className="w-10 h-10 text-status-success" />
             </div>
             <h2 className="text-2xl font-bold text-app-fg mb-2">Keine Duplikate gefunden</h2>
             <p className="text-app-muted">Alle Fotos sind einzigartig!</p>
@@ -254,7 +260,7 @@ export default function DuplicatesPage() {
                           transition={{ delay: photoIndex * 0.05 }}
                           className={`relative rounded-lg overflow-hidden border-2 ${
                             photo.isBestInGroup
-                              ? 'border-[var(--status-success)] ring-2 ring-[var(--status-success)]/30'
+                              ? 'border-status-success ring-2 ring-status-success/30'
                               : 'border-app-border'
                           }`}
                         >
@@ -271,7 +277,7 @@ export default function DuplicatesPage() {
                           )}
 
                           {photo.isBestInGroup && (
-                            <div className="absolute top-2 left-2 bg-[var(--status-success)] text-app-bg text-xs px-2 py-1 rounded flex items-center gap-1">
+                            <div className="absolute top-2 left-2 bg-status-success text-app-bg text-xs px-2 py-1 rounded flex items-center gap-1">
                               <Star className="w-3 h-3" />
                               Bestes Foto
                             </div>
@@ -325,7 +331,7 @@ export default function DuplicatesPage() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <Star className="w-4 h-4 text-[var(--status-success)]" />
+                        <Star className="w-4 h-4 text-status-success" />
                         <span className="font-medium text-app-fg">Beste Foto (wird Gästen angezeigt)</span>
                       </div>
                       <p className="text-sm text-app-muted">
@@ -347,14 +353,14 @@ export default function DuplicatesPage() {
           </div>
         )}
       </div>
-      </Dialog>
 
-      {/* Sticky Footer Navigation */}
-      <DashboardFooter eventId={eventId} />
-      
-      {/* Padding for footer */}
-      <div className="h-20" />
-    </AppLayout>
-  );
+    {/* Sticky Footer Navigation */}
+    <DashboardFooter eventId={eventId} eventSlug={event?.slug || ''} />
+    
+    {/* Padding for footer */}
+    <div className="h-20" />
+  </AppLayout>
+);
+
 }
 

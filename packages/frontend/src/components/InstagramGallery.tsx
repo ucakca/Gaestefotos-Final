@@ -157,11 +157,11 @@ export default function InstagramGallery({
               exit={{ opacity: 0 }}
               onClick={closePost}
               icon={<X className="w-6 h-6" />}
-              variant="ghost"
+              variant="glass"
               size="sm"
               aria-label="Schließen"
               title="Schließen"
-              className="absolute top-4 right-4 text-app-bg hover:opacity-80 z-10 p-2"
+              className="absolute top-4 right-4 z-10 p-2"
             />
           </DialogClose>
 
@@ -177,11 +177,11 @@ export default function InstagramGallery({
                   prevPhoto();
                 }}
                 icon={<ChevronLeft className="w-6 h-6" />}
-                variant="ghost"
+                variant="glass"
                 size="sm"
                 aria-label="Vorheriges Foto"
                 title="Vorheriges Foto"
-                className="absolute left-4 text-app-bg hover:opacity-80 z-10 p-2 bg-app-fg/50 rounded-full"
+                className="absolute left-4 z-10 p-2 rounded-full"
               />
               <MotionIconButton
                 initial={{ opacity: 0 }}
@@ -192,11 +192,11 @@ export default function InstagramGallery({
                   nextPhoto();
                 }}
                 icon={<ChevronRight className="w-6 h-6" />}
-                variant="ghost"
+                variant="glass"
                 size="sm"
                 aria-label="Nächstes Foto"
                 title="Nächstes Foto"
-                className="absolute right-4 text-app-bg hover:opacity-80 z-10 p-2 bg-app-fg/50 rounded-full"
+                className="absolute right-4 z-10 p-2 rounded-full"
               />
             </>
           )}
@@ -235,47 +235,52 @@ export default function InstagramGallery({
                     size="sm"
                     aria-label="Mehr"
                     title="Mehr"
-                    className="p-1 hover:bg-app-bg rounded text-app-muted"
+                    className="p-1"
                   />
                 </div>
 
                 {/* Actions */}
                 <div className="p-4 border-b border-app-border">
                   <div className="flex items-center gap-4">
-                    <motion.button
+                    <MotionIconButton
                       whileTap={{ scale: 0.9 }}
                       onClick={() => toggleLike(selectedPhoto !== null ? (photos[selectedPhoto]?.id || '') : '')}
-                      className="p-1"
+                      icon={
+                        <Heart
+                          className={`w-6 h-6 ${
+                            likedPhotos.has(selectedPhoto !== null ? (photos[selectedPhoto]?.id || '') : '')
+                              ? 'fill-status-danger text-status-danger'
+                              : 'text-app-fg'
+                          }`}
+                        />
+                      }
+                      variant="ghost"
+                      size="sm"
                       aria-label="Gefällt mir"
                       title="Gefällt mir"
-                    >
-                      <Heart
-                        className={`w-6 h-6 ${
-                          likedPhotos.has(selectedPhoto !== null ? (photos[selectedPhoto]?.id || '') : '')
-                            ? 'fill-[var(--status-danger)] text-[var(--status-danger)]'
-                            : 'text-app-fg'
-                        }`}
-                      />
-                    </motion.button>
-                    <motion.button
+                      className="p-1"
+                    />
+                    <MotionIconButton
                       whileTap={{ scale: 0.9 }}
                       onClick={() => (selectedPhoto !== null ? handleShare(photos[selectedPhoto]) : null)}
-                      className="p-1"
+                      icon={<Share2 className="w-6 h-6" />}
+                      variant="ghost"
+                      size="sm"
                       aria-label="Teilen"
                       title="Teilen"
-                    >
-                      <Share2 className="w-6 h-6 text-app-fg" />
-                    </motion.button>
+                      className="p-1"
+                    />
                     {allowDownloads && (
-                      <motion.button
+                      <MotionIconButton
                         whileTap={{ scale: 0.9 }}
                         onClick={() => (selectedPhoto !== null ? handleDownload(photos[selectedPhoto]) : null)}
-                        className="p-1"
+                        icon={<Download className="w-6 h-6" />}
+                        variant="ghost"
+                        size="sm"
                         aria-label="Download"
                         title="Download"
-                      >
-                        <Download className="w-6 h-6 text-app-fg" />
-                      </motion.button>
+                        className="p-1"
+                      />
                     )}
                   </div>
                 </div>

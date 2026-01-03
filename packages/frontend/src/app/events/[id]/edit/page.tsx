@@ -97,17 +97,17 @@ export default function EditEventPage() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl font-bold mb-8 text-tokens-brandGreen">Event bearbeiten</h1>
+          <h1 className="text-3xl font-bold mb-8 text-app-fg">Event bearbeiten</h1>
 
           <form onSubmit={handleSubmit} className="bg-app-card border border-app-border shadow-lg rounded-lg p-6 space-y-6">
             {error && (
-              <div className="bg-app-bg border border-[var(--status-danger)] text-[var(--status-danger)] px-4 py-3 rounded">
+              <div className="bg-app-bg border border-status-danger text-status-danger px-4 py-3 rounded">
                 {error}
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-tokens-brandGreen">
+              <label className="block text-sm font-medium mb-1 text-app-fg">
                 Event-Titel *
               </label>
               <Input
@@ -115,12 +115,12 @@ export default function EditEventPage() {
                 required
                 value={formData.title}
                 onChange={handleTitleChange}
-                className="px-4 py-3 text-tokens-brandGreen"
+                className="px-4 py-3"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-tokens-brandGreen">
+              <label className="block text-sm font-medium mb-1 text-app-fg">
                 URL-Slug *
               </label>
               <Input
@@ -128,7 +128,7 @@ export default function EditEventPage() {
                 required
                 value={formData.slug}
                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                className="px-4 py-3 text-tokens-brandGreen"
+                className="px-4 py-3"
               />
             </div>
 
@@ -139,7 +139,7 @@ export default function EditEventPage() {
             />
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-tokens-brandGreen">
+              <label className="block text-sm font-medium mb-1 text-app-fg">
                 Veranstaltungsort / Adresse
               </label>
               <Input
@@ -147,9 +147,9 @@ export default function EditEventPage() {
                 value={formData.locationName}
                 onChange={(e) => setFormData({ ...formData, locationName: e.target.value })}
                 placeholder="z.B. Musterstraße 123, 12345 Musterstadt oder Hotel Beispiel, Berlin"
-                className="px-4 py-3 text-tokens-brandGreen"
+                className="px-4 py-3"
               />
-              <p className="mt-2 text-sm text-tokens-brandGreen/70">
+              <p className="mt-2 text-sm text-app-muted">
                 💡 Die Adresse wird automatisch verwendet, um einen Karten-Link zu generieren, 
                 der mit Google Maps und Apple Maps funktioniert.
               </p>
@@ -232,7 +232,7 @@ export default function EditEventPage() {
                 <Button
                   type="button"
                   onClick={() => router.back()}
-                  className="border border-app-accent bg-app-card text-tokens-brandGreen hover:bg-app-bg"
+                  variant="secondary"
                 >
                   Abbrechen
                 </Button>

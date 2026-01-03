@@ -16,6 +16,8 @@ interface DateTimePickerProps {
   label?: string;
   required?: boolean;
   className?: string;
+  disabled?: boolean;
+  minDate?: Date;
 }
 
 export default function DateTimePicker({
@@ -24,6 +26,8 @@ export default function DateTimePicker({
   label,
   required = false,
   className = '',
+  disabled = false,
+  minDate,
 }: DateTimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -74,7 +78,7 @@ export default function DateTimePicker({
       {label && (
         <label className="mb-2 block text-sm font-medium text-app-fg">
           {label}
-          {required && <span className="text-[var(--status-danger)] ml-1">*</span>}
+          {required && <span className="text-status-danger ml-1">*</span>}
         </label>
       )}
       <div className="relative">
@@ -82,8 +86,12 @@ export default function DateTimePicker({
           <Input
             type="text"
             readOnly
+            disabled={disabled}
             value={selectedDate ? formatDisplayDate(selectedDate) : ''}
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={() => {
+              if (disabled) return;
+              setIsOpen(!isOpen);
+            }}
             placeholder="DD.MM.YYYY HH:MM auswählen"
             className="pr-12 cursor-pointer"
           />
@@ -91,17 +99,19 @@ export default function DateTimePicker({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              if (disabled) return;
               setIsOpen(!isOpen);
             }}
             icon={<Calendar className="w-5 h-5" />}
             variant="ghost"
             size="sm"
+            disabled={disabled}
             aria-label="Kalender öffnen"
             title="Kalender öffnen"
             className="absolute right-3 text-app-muted hover:text-app-fg"
           />
         </div>
-        {isOpen && (
+        {isOpen && !disabled && (
           <div className="absolute z-50 mt-2 shadow-2xl">
             <DatePicker
               selected={selectedDate}
@@ -112,7 +122,7 @@ export default function DateTimePicker({
               dateFormat="dd.MM.yyyy HH:mm"
               locale="de"
               inline
-              minDate={new Date()}
+              minDate={minDate || new Date()}
               className="rounded-lg border border-app-border bg-app-card"
             />
           </div>

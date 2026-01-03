@@ -13,14 +13,15 @@ import { IconButton } from '@/components/ui/IconButton';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function GuestManagementPage() {
   const params = useParams();
@@ -134,11 +135,11 @@ export default function GuestManagementPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'accepted':
-        return 'border border-[var(--status-success)] bg-app-bg text-[var(--status-success)]';
+        return 'border border-status-success bg-app-bg text-status-success';
       case 'declined':
-        return 'border border-[var(--status-danger)] bg-app-bg text-[var(--status-danger)]';
+        return 'border border-status-danger bg-app-bg text-status-danger';
       default:
-        return 'border border-[var(--status-warning)] bg-app-bg text-[var(--status-warning)]';
+        return 'border border-status-warning bg-app-bg text-status-warning';
     }
   };
 
@@ -158,23 +159,27 @@ export default function GuestManagementPage() {
   }
 
   return (
-    <Dialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{confirmState?.title}</DialogTitle>
-          {confirmState?.description ? <DialogDescription>{confirmState.description}</DialogDescription> : null}
-        </DialogHeader>
-        <DialogFooter>
-          <DialogClose asChild>
+    <AlertDialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{confirmState?.title}</AlertDialogTitle>
+          {confirmState?.description ? (
+            <AlertDialogDescription>{confirmState.description}</AlertDialogDescription>
+          ) : null}
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel asChild>
             <Button variant="secondary" onClick={() => closeConfirm(false)}>
               {confirmState?.cancelText || 'Abbrechen'}
             </Button>
-          </DialogClose>
-          <Button variant="danger" onClick={() => closeConfirm(true)}>
-            {confirmState?.confirmText || 'Bestätigen'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+          </AlertDialogCancel>
+          <AlertDialogAction asChild>
+            <Button variant="danger" onClick={() => closeConfirm(true)}>
+              {confirmState?.confirmText || 'Bestätigen'}
+            </Button>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
 
       <div className="min-h-screen bg-app-bg">
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -183,7 +188,7 @@ export default function GuestManagementPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <Button type="button" variant="ghost" onClick={() => router.back()} className="mb-4 text-tokens-brandGreen">
+          <Button type="button" variant="ghost" onClick={() => router.back()} className="mb-4">
             ← Zurück
           </Button>
           <div className="flex justify-between items-center">
@@ -336,7 +341,7 @@ export default function GuestManagementPage() {
                         aria-label="Gast löschen"
                         title="Gast löschen"
                         onClick={() => handleDelete(guest.id)}
-                        className="text-[var(--status-danger)]"
+                        className="text-status-danger"
                       />
                     </td>
                   </motion.tr>
@@ -346,14 +351,11 @@ export default function GuestManagementPage() {
           </table>
 
           {guests.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-app-muted">Noch keine Gäste hinzugefügt</p>
-            </div>
+            <div className="p-6 text-sm text-app-muted">Noch keine Gäste vorhanden.</div>
           )}
         </div>
-        </div>
       </div>
-    </Dialog>
+    </div>
+    </AlertDialog>
   );
 }
-

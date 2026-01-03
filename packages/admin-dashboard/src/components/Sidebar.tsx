@@ -42,7 +42,7 @@ export default function Sidebar({
   };
 
   return (
-    <div className={cn('flex w-64 flex-col bg-tokens-brandDark text-[var(--app-on-dark)]', className)}>
+    <div className={cn('flex w-64 flex-col bg-app-fg text-[var(--app-on-dark)]', className)}>
       <div className="flex h-16 items-center justify-center border-b border-app-border/40">
         <h1 className="text-xl font-bold">Admin Dashboard</h1>
       </div>

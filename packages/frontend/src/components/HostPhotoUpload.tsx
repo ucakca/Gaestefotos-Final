@@ -221,7 +221,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
               size="sm"
               aria-label="Schließen"
               title="Schließen"
-              className="absolute top-4 right-4 p-1 hover:bg-app-bg rounded-full"
+              className="absolute top-4 right-4 p-1 rounded-full"
             />
           </DialogClose>
 
@@ -246,7 +246,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                 size="sm"
                 aria-label="Emoji auswählen"
                 title="Emoji auswählen"
-                className="absolute bottom-2 right-2 p-1 hover:bg-app-bg rounded-full"
+                className="absolute bottom-2 right-2 p-1 rounded-full"
               />
               {showEmojiPicker && (
                 <div ref={emojiPickerRef} className="absolute bottom-full right-0 mb-2 z-10">
@@ -270,8 +270,8 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
               className={`
                 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
                 ${isDragActive
-                  ? 'border-tokens-brandGreen bg-app-bg'
-                  : 'border-app-border hover:border-tokens-brandGreen hover:bg-app-bg'
+                  ? 'border-app-accent bg-app-bg'
+                  : 'border-app-border hover:border-app-accent hover:bg-app-bg'
                 }
               `}
             >
@@ -289,7 +289,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                 whileTap={{ scale: 0.98 }}
                 variant="ghost"
                 size="sm"
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-app-bg text-app-fg rounded-lg font-medium mb-4 hover:opacity-90 transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium mb-4 hover:opacity-90 transition-colors"
               >
                 <Camera className="w-5 h-5" />
                 <span>Foto mit Kamera aufnehmen</span>
@@ -327,7 +327,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                           {file.uploading && (
                             <div className="mt-1 w-full bg-app-border rounded-full h-1.5">
                               <motion.div
-                                className="bg-tokens-brandGreen h-1.5 rounded-full"
+                                className="h-1.5 rounded-full bg-app-accent"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${file.progress}%` }}
                                 transition={{ duration: 0.3 }}
@@ -336,13 +336,13 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                           )}
                           {file.error && (
                             <div className="mt-1">
-                              <p className="text-xs text-[var(--status-danger)]">{file.error}</p>
+                              <p className="text-xs text-status-danger">{file.error}</p>
                               <Button
                                 type="button"
                                 onClick={() => retryUpload(index)}
                                 variant="ghost"
                                 size="sm"
-                                className="mt-1 text-xs font-semibold text-tokens-brandGreen underline"
+                                className="mt-1 text-xs font-semibold underline"
                               >
                                 Erneut versuchen
                               </Button>
@@ -354,11 +354,11 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                           <IconButton
                             onClick={() => removeFile(index)}
                             icon={<X className="w-4 h-4" />}
-                            variant="ghost"
+                            variant="danger"
                             size="sm"
                             aria-label="Entfernen"
                             title="Entfernen"
-                            className="w-6 h-6 rounded-full bg-app-bg text-[var(--status-danger)] border border-[var(--status-danger)] hover:opacity-90"
+                            className="w-6 h-6 rounded-full"
                           />
                         )}
                       </motion.div>

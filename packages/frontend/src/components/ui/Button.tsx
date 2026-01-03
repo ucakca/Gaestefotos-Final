@@ -10,19 +10,19 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/30 disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
-        primary: 'bg-tokens-brandGreen text-app-bg hover:opacity-90',
+        primary: 'bg-app-accent text-app-bg hover:opacity-90',
         secondary: 'bg-app-bg text-app-fg border border-app-border hover:bg-app-card',
         ghost: 'bg-transparent text-app-fg hover:bg-app-bg',
-        danger: 'bg-[var(--status-danger)] text-app-bg hover:opacity-90',
+        danger: 'bg-status-danger text-app-bg hover:opacity-90',
       },
       size: {
-        sm: 'h-9 px-3 text-sm',
-        md: 'h-10 px-4 text-sm',
-        lg: 'h-11 px-5 text-base',
+        sm: 'h-9 px-3',
+        md: 'h-10 px-4',
+        lg: 'h-11 px-5',
       },
     },
     defaultVariants: {

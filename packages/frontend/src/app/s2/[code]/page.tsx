@@ -76,13 +76,13 @@ export default async function ShortLinkResolvePageV2({ params }: { params: { cod
         {initialTarget ? (
           <>
             <p className="mt-3 text-sm text-app-muted">Bitte kurz warten.</p>
-            <a className="mt-3 inline-block text-sm text-tokens-brandGreen underline" href={initialTarget}>
+            <a className="mt-3 inline-block text-sm text-app-fg underline" href={initialTarget}>
               Falls du nicht weitergeleitet wirst, klicke hier.
             </a>
             <ClientRedirect code={code} initialTarget={initialTarget} />
           </>
         ) : (
-          <div className="mt-3 text-sm text-[var(--status-danger)]">Link konnte nicht aufgelöst werden</div>
+          <div className="mt-3 text-sm text-status-danger">Link konnte nicht aufgelöst werden</div>
         )}
       </div>
     </div>

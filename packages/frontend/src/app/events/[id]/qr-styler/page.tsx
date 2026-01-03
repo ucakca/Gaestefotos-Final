@@ -44,7 +44,7 @@ const PRESETS: Preset[] = [
     label: 'Classic Green',
     bgColor: resolveRootCssVar('--app-card', '#ffffff'),
     textColor: resolveRootCssVar('--app-fg', '#111827'),
-    accentColor: resolveRootCssVar('--brand-green', '#295B4D'),
+    accentColor: resolveRootCssVar('--app-accent', '#295B4D'),
   },
   {
     key: 'modern-blue',
@@ -94,7 +94,7 @@ function getDefaultsForTemplate(templateSlug: string) {
     callToAction: 'QR-Code scannen & los geht’s',
     bgColor: resolveRootCssVar('--app-card', '#ffffff'),
     textColor: resolveRootCssVar('--app-fg', '#111827'),
-    accentColor: resolveRootCssVar('--brand-green', '#295B4D'),
+    accentColor: resolveRootCssVar('--app-accent', '#295B4D'),
   };
 }
 
@@ -256,7 +256,7 @@ export default function QrStylerPage() {
 
   const [bgColor, setBgColor] = useState(() => resolveRootCssVar('--app-card', '#ffffff'));
   const [textColor, setTextColor] = useState(() => resolveRootCssVar('--app-fg', '#111827'));
-  const [accentColor, setAccentColor] = useState(() => resolveRootCssVar('--brand-green', '#295B4D'));
+  const [accentColor, setAccentColor] = useState(() => resolveRootCssVar('--app-accent', '#295B4D'));
 
   const [templateSvg, setTemplateSvg] = useState<string>('');
   const [qrBox, setQrBox] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
@@ -505,7 +505,7 @@ export default function QrStylerPage() {
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <Link href={`/events/${eventId}/dashboard`} className="text-tokens-brandGreen hover:opacity-90 flex items-center gap-2">
+              <Link href={`/events/${eventId}/dashboard`} className="text-app-fg hover:opacity-80 flex items-center gap-2">
                 <ChevronLeft className="w-4 h-4" />
                 <span>Zurück</span>
               </Link>
@@ -656,7 +656,7 @@ export default function QrStylerPage() {
                 ))}
               </div>
 
-              {saveError && <div className="text-sm text-[var(--status-danger)]">{saveError}</div>}
+              {saveError && <div className="text-sm text-status-danger">{saveError}</div>}
 
               <div className="pt-2 border-t border-app-border" />
 
@@ -688,7 +688,7 @@ export default function QrStylerPage() {
                   )}
                 </div>
 
-                {exportError && <div className="mt-3 text-sm text-[var(--status-danger)]">{exportError}</div>}
+                {exportError && <div className="mt-3 text-sm text-status-danger">{exportError}</div>}
               </div>
             </div>
           </div>

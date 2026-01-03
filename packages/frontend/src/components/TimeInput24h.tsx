@@ -188,7 +188,7 @@ export default function TimeInput24h({
         <IconButton
           type="button"
           onClick={() => setShowPicker(!showPicker)}
-          icon={<Clock className="w-5 h-5 text-tokens-brandGreen" />}
+          icon={<Clock className="w-5 h-5 text-app-fg" />}
           variant="ghost"
           size="sm"
           aria-label="Uhrzeit auswählen"
@@ -214,7 +214,7 @@ export default function TimeInput24h({
                     }}
                     variant={parseInt(displayHours) === i ? 'primary' : 'ghost'}
                     size="sm"
-                    className="w-full px-3 py-2 text-sm hover:bg-app-bg transition-colors"
+                    className="w-full px-3 py-2 text-sm transition-colors"
                   >
                     {i.toString().padStart(2, '0')}
                   </Button>
@@ -236,7 +236,7 @@ export default function TimeInput24h({
                     }}
                     variant={parseInt(displayMinutes) === i ? 'primary' : 'ghost'}
                     size="sm"
-                    className="w-full px-3 py-2 text-sm hover:bg-app-bg transition-colors"
+                    className="w-full px-3 py-2 text-sm transition-colors"
                   >
                     {i.toString().padStart(2, '0')}
                   </Button>

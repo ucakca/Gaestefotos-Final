@@ -353,20 +353,20 @@ export default function UploadButton({
               size="sm"
               aria-label="Schließen"
               title="Schließen"
-              className="absolute top-4 right-4 p-1 hover:bg-app-bg rounded-full"
+              className="absolute top-4 right-4 p-1 rounded-full"
             />
           </DialogClose>
 
               <h2 className="text-xl font-semibold text-app-fg mb-6">Foto/Video hochladen</h2>
 
               {queueNotice && (
-                <div className="mb-4 rounded-lg border border-[var(--status-success)] bg-app-bg px-3 py-2 text-sm text-[var(--status-success)]">
+                <div className="mb-4 rounded-lg border border-status-success bg-app-bg px-3 py-2 text-sm text-status-success">
                   {queueNotice}
                 </div>
               )}
 
               {disabled && disabledReason && (
-                <div className="mb-4 rounded-lg border border-[var(--status-warning)] bg-app-bg px-3 py-2 text-sm text-[var(--status-warning)]">
+                <div className="mb-4 rounded-lg border border-status-warning bg-app-bg px-3 py-2 text-sm text-status-warning">
                   {disabledReason}
                 </div>
               )}
@@ -379,7 +379,7 @@ export default function UploadButton({
                   className="space-y-2"
                 >
                   <label className="block text-sm font-semibold text-app-fg">
-                    Dein Name <span className="text-[var(--status-danger)]">*</span>
+                    Dein Name <span className="text-status-danger">*</span>
                   </label>
                   <Input
                     type="text"
@@ -390,9 +390,9 @@ export default function UploadButton({
                     }}
                     placeholder="z.B. Max Mustermann"
                     required
-                    className="w-full px-4 py-3 border-2 border-tokens-brandGreen rounded-lg text-app-fg bg-app-card focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen font-medium"
+                    className="w-full rounded-lg border-2 border-app-accent bg-app-card px-4 py-3 font-medium text-app-fg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
                   />
-                  {uploaderNameError && <p className="text-xs text-[var(--status-danger)]">{uploaderNameError}</p>}
+                  {uploaderNameError && <p className="text-xs text-status-danger">{uploaderNameError}</p>}
                   <p className="text-xs text-app-muted">
                     Damit der Gastgeber weiß, wer die Fotos hochgeladen hat
                   </p>
@@ -410,8 +410,8 @@ export default function UploadButton({
                   className={`
                     border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
                     ${isDragActive 
-                      ? 'border-tokens-brandGreen bg-app-bg' 
-                      : 'border-app-border hover:border-tokens-brandGreen hover:bg-app-bg'
+                      ? 'border-app-accent bg-app-bg' 
+                      : 'border-app-border hover:border-app-accent hover:bg-app-bg'
                     }
                   `}
                 >
@@ -450,10 +450,10 @@ export default function UploadButton({
                   whileTap={{ scale: 0.98 }}
                   onClick={captureVideo}
                   disabled={!canPickFiles}
-                  variant="ghost"
+                  variant="secondary"
                   size="sm"
                   className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition-colors ${
-                    !canPickFiles ? 'bg-app-border text-app-muted cursor-not-allowed' : 'bg-app-fg text-app-bg hover:opacity-90'
+                    !canPickFiles ? 'cursor-not-allowed opacity-60' : ''
                   } h-auto`}
                 >
                   <Video className="w-5 h-5" />
@@ -492,7 +492,7 @@ export default function UploadButton({
                           {file.uploading && (
                             <div className="mt-1 w-full bg-app-border rounded-full h-1.5">
                               <motion.div
-                                className="bg-tokens-brandGreen h-1.5 rounded-full"
+                                className="h-1.5 rounded-full bg-app-accent"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${file.progress}%` }}
                                 transition={{ duration: 0.3 }}
@@ -501,13 +501,13 @@ export default function UploadButton({
                           )}
                           {file.error && (
                             <div className="mt-1">
-                              <p className="text-xs text-[var(--status-danger)]">{file.error}</p>
+                              <p className="text-xs text-status-danger">{file.error}</p>
                               <Button
                                 type="button"
                                 onClick={() => retryUpload(file.id)}
                                 variant="ghost"
                                 size="sm"
-                                className="mt-1 text-xs font-semibold text-tokens-brandGreen underline"
+                                className="mt-1 text-xs font-semibold text-app-fg underline"
                               >
                                 Erneut versuchen
                               </Button>
@@ -520,7 +520,7 @@ export default function UploadButton({
                             <motion.div
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
-                              className="w-6 h-6 rounded-full bg-tokens-brandGreen flex items-center justify-center"
+                              className="flex h-6 w-6 items-center justify-center rounded-full bg-app-accent"
                             >
                               <Check className="w-4 h-4 text-app-bg" />
                             </motion.div>

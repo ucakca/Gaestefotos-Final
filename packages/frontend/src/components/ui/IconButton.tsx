@@ -16,7 +16,7 @@ const iconButtonVariants = cva(
       variant: {
         ghost: 'bg-transparent text-app-fg hover:bg-app-bg',
         glass: 'bg-app-card/10 text-app-bg hover:bg-app-card/15',
-        danger: 'bg-[var(--status-danger)] text-app-bg hover:opacity-90',
+        danger: 'bg-status-danger text-app-bg hover:opacity-90',
       },
       size: {
         sm: 'w-8 h-8',

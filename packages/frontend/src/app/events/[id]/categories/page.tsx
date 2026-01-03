@@ -16,15 +16,17 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { IconButton } from '@/components/ui/IconButton';
+import DateTimePicker from '@/components/DateTimePicker';
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 function isWizardMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -83,11 +85,6 @@ function getAllLucideIconKeys(): string[] {
       return typeof v === 'function' && /^[A-Z]/.test(k);
     })
     .sort((a, b) => a.localeCompare(b));
-}
-
-function toLocalDateTimeInputValue(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 export default function CategoryManagementPage() {
@@ -321,25 +318,30 @@ export default function CategoryManagementPage() {
 
   return (
     <AppLayout showBackButton backUrl={wizardMode ? `/events/${eventId}/design?wizard=1` : `/events/${eventId}/dashboard`}>
-      <Dialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{confirmState?.title}</DialogTitle>
-            {confirmState?.description ? <DialogDescription>{confirmState.description}</DialogDescription> : null}
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
+      <AlertDialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmState?.title}</AlertDialogTitle>
+            {confirmState?.description ? (
+              <AlertDialogDescription>{confirmState.description}</AlertDialogDescription>
+            ) : null}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
               <Button variant="secondary" onClick={() => closeConfirm(false)}>
                 {confirmState?.cancelText || 'Abbrechen'}
               </Button>
-            </DialogClose>
-            <Button variant="danger" onClick={() => closeConfirm(true)}>
-              {confirmState?.confirmText || 'Bestätigen'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button variant="danger" onClick={() => closeConfirm(true)}>
+                {confirmState?.confirmText || 'Bestätigen'}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {wizardMode && (
           <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-app-border bg-app-card p-4">
             <div className="min-w-0">
@@ -449,19 +451,19 @@ export default function CategoryManagementPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-0">
                     <div>
                       <label className="block text-sm font-medium text-app-muted mb-1">Start</label>
-                      <Input
-                        type="datetime-local"
+                      <DateTimePicker
                         value={formData.startAt}
-                        onChange={(e) => setFormData({ ...formData, startAt: e.target.value })}
+                        onChange={(value) => setFormData({ ...formData, startAt: value })}
+                        minDate={new Date(0)}
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-app-muted mb-1">Ende</label>
-                      <Input
-                        type="datetime-local"
+                      <DateTimePicker
                         value={formData.endAt}
-                        onChange={(e) => setFormData({ ...formData, endAt: e.target.value })}
+                        onChange={(value) => setFormData({ ...formData, endAt: value })}
+                        minDate={new Date(0)}
                       />
                     </div>
                   </div>
@@ -642,7 +644,7 @@ export default function CategoryManagementPage() {
                     />
                     <div className="flex items-center gap-2">
                       {formData.uploadLocked ? (
-                        <Lock className="w-5 h-5 text-[var(--status-danger)]" />
+                        <Lock className="w-5 h-5 text-status-danger" />
                       ) : (
                         <Unlock className="w-5 h-5 text-app-muted" />
                       )}
@@ -656,11 +658,11 @@ export default function CategoryManagementPage() {
                       <label className="block text-sm font-medium text-app-muted mb-1">
                         Sperre bis (optional)
                       </label>
-                      <Input
-                        type="datetime-local"
+                      <DateTimePicker
                         value={formData.uploadLockUntil}
-                        onChange={(e) => setFormData({ ...formData, uploadLockUntil: e.target.value })}
+                        onChange={(value) => setFormData({ ...formData, uploadLockUntil: value })}
                         disabled={!canScheduleUploadLock}
+                        minDate={new Date(0)}
                         className="disabled:opacity-60"
                       />
 
@@ -676,7 +678,7 @@ export default function CategoryManagementPage() {
                             const d = new Date(dtRaw);
                             if (Number.isNaN(d.getTime())) return;
                             d.setDate(d.getDate() + 1);
-                            setFormData((prev) => ({ ...prev, uploadLockUntil: toLocalDateTimeInputValue(d) }));
+                            setFormData((prev) => ({ ...prev, uploadLockUntil: d.toISOString() }));
                           }}
                         >
                           +1 Tag nach Event
@@ -802,7 +804,7 @@ export default function CategoryManagementPage() {
                           )}
                         </div>
                         {category.uploadLocked && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-app-bg text-[var(--status-danger)] border border-app-border">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-app-bg text-status-danger border border-app-border">
                             <Lock className="w-3 h-3" />
                             Upload gesperrt
                           </span>
@@ -826,13 +828,13 @@ export default function CategoryManagementPage() {
                           className="text-app-fg"
                         />
                         <IconButton
-                          icon={<Trash2 className="h-5 w-5" />}
+                          icon={<Trash2 className="h-4 w-4" />}
                           variant="ghost"
                           size="sm"
                           aria-label="Album löschen"
                           title="Album löschen"
                           onClick={() => handleDelete(category.id)}
-                          className="text-[var(--status-danger)]"
+                          className="text-status-danger"
                         />
                       </div>
                     </td>
@@ -849,7 +851,6 @@ export default function CategoryManagementPage() {
           )}
         </div>
       </div>
-      </Dialog>
 
       {/* Sticky Footer Navigation */}
       <DashboardFooter eventId={eventId} />

@@ -215,7 +215,7 @@ export default function ChallengeCompletion({
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <Trophy className="w-5 h-5 text-[var(--status-warning)]" />
+            <Trophy className="w-5 h-5 text-status-warning" />
             <h3 className="font-semibold text-app-fg">{challenge.title}</h3>
           </div>
           {challenge.description && (
@@ -223,12 +223,12 @@ export default function ChallengeCompletion({
           )}
           
           {userCompletion ? (
-            <div className="flex items-center gap-2 text-[var(--status-success)]">
+            <div className="flex items-center gap-2 text-status-success">
               <Check className="w-5 h-5" />
               <span className="text-sm font-medium">Erfüllt!</span>
               {userCompletion.averageRating && (
                 <div className="flex items-center gap-1 ml-2">
-                  <Star className="w-4 h-4 fill-[var(--status-warning)] text-[var(--status-warning)]" />
+                  <Star className="w-4 h-4 fill-status-warning text-status-warning" />
                   <span className="text-xs">{userCompletion.averageRating.toFixed(1)}</span>
                   <span className="text-xs text-app-muted">({userCompletion.ratingCount})</span>
                 </div>
@@ -271,7 +271,7 @@ export default function ChallengeCompletion({
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0, opacity: 0 }}
-                    className="absolute inset-0 bg-[var(--status-success)]/90 flex items-center justify-center rounded-lg z-20"
+                    className="absolute inset-0 bg-status-success/90 flex items-center justify-center rounded-lg z-20"
                   >
                     <motion.div
                       initial={{ scale: 0 }}
@@ -279,7 +279,7 @@ export default function ChallengeCompletion({
                       transition={{ duration: 0.5 }}
                       className="text-center"
                     >
-                      <Trophy className="w-20 h-20 text-[var(--status-warning)] mx-auto mb-4" />
+                      <Trophy className="w-20 h-20 text-status-warning mx-auto mb-4" />
                       <h3 className="text-2xl font-bold text-app-bg mb-2">Challenge erfüllt!</h3>
                       <p className="text-app-bg">🎉</p>
                     </motion.div>
@@ -300,7 +300,6 @@ export default function ChallengeCompletion({
                     size="sm"
                     aria-label="Schließen"
                     title="Schließen"
-                    className="text-app-muted hover:text-app-fg"
                   />
                 </DialogClose>
               </div>
@@ -309,7 +308,7 @@ export default function ChallengeCompletion({
                 {/* Uploader Name Input - Auffällig als Pflichtfeld */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-app-fg mb-2">
-                    Dein Name <span className="text-[var(--status-danger)]">*</span>
+                    Dein Name <span className="text-status-danger">*</span>
                   </label>
                   <Input
                     type="text"
@@ -317,7 +316,7 @@ export default function ChallengeCompletion({
                     onChange={(e) => setUploaderName(e.target.value)}
                     placeholder="z.B. Max Mustermann"
                     required
-                    className="w-full px-4 py-3 border-2 border-tokens-brandGreen rounded-lg text-app-fg bg-app-card focus:outline-none focus:ring-2 focus:ring-app-fg/30 focus:border-transparent font-medium"
+                    className="w-full rounded-lg border-2 border-app-accent bg-app-card px-4 py-3 font-medium text-app-fg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
                   />
                 </div>
 
@@ -336,9 +335,9 @@ export default function ChallengeCompletion({
                       </Button>
                       <Button
                         onClick={() => fileInputRef.current?.click()}
-                        variant="ghost"
+                        variant="secondary"
                         size="sm"
-                        className="flex-1 px-4 py-3 bg-app-bg text-app-fg rounded-lg hover:opacity-90 flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-3 rounded-lg hover:opacity-90 flex items-center justify-center gap-2"
                       >
                         <Upload className="w-5 h-5" />
                         Galerie
@@ -384,9 +383,9 @@ export default function ChallengeCompletion({
                       if (usingCamera) startCamera();
                     }}
                     disabled={uploading}
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
-                    className="flex-1 px-4 py-2 border border-app-border rounded-lg text-app-fg hover:bg-app-bg disabled:opacity-50"
+                    className="flex-1 px-4 py-2 rounded-lg disabled:opacity-50"
                   >
                     Neu aufnehmen
                   </Button>

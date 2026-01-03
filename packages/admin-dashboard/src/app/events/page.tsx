@@ -77,12 +77,9 @@ export default function EventsPage() {
                       {ev.dateTime ? new Date(ev.dateTime).toLocaleString('de-DE') : '-'}
                     </div>
                   </div>
-                  <Link
-                    href={`/events/${ev.id}`}
-                    className="shrink-0 rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm font-medium text-app-fg"
-                  >
-                    Details
-                  </Link>
+                  <Button asChild variant="outline" size="sm" className="shrink-0">
+                    <Link href={`/events/${ev.id}`}>Details</Link>
+                  </Button>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   <div>

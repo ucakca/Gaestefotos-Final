@@ -42,7 +42,7 @@ export const SheetContent = React.forwardRef<
       <SheetPrimitive.Content
         ref={ref}
         className={cn(
-          'fixed z-50 gap-4 bg-tokens-brandDark text-[var(--app-on-dark)] shadow-xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
+          'fixed z-50 gap-4 bg-app-fg text-[var(--app-on-dark)] shadow-xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
           side === 'left' &&
             'inset-y-0 left-0 h-full w-80 max-w-[85vw] border-r border-app-border/40 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left',
           side === 'right' &&
@@ -56,7 +56,7 @@ export const SheetContent = React.forwardRef<
         {...props}
       >
         {children}
-        <SheetClose className="absolute right-3 top-3 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-tokens-brandGreen/30 disabled:pointer-events-none">
+        <SheetClose className="absolute right-3 top-3 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/30 disabled:pointer-events-none">
           <X className="h-5 w-5" />
           <span className="sr-only">Close</span>
         </SheetClose>

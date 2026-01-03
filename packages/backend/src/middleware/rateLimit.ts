@@ -42,6 +42,34 @@ export const wordpressSsoLimiter: any = rateLimit({
   skip: (req: Request) => process.env.NODE_ENV === 'development',
 });
 
+export const twoFactorVerifyLimiter: any = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 Minuten
+  max: 30, // 30 Versuche pro 10 Minuten
+  skipSuccessfulRequests: true,
+  message: 'Zu viele 2FA-Versuche, bitte versuchen Sie es später erneut.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req: Request) => process.env.NODE_ENV === 'development',
+  handler: (req: Request, res: Response) => {
+    logRateLimitHit('2fa:verify', req);
+    res.status(429).json({ error: 'Zu viele 2FA-Versuche, bitte versuchen Sie es später erneut.' });
+  },
+});
+
+export const twoFactorSetupLimiter: any = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 Minuten
+  max: 20, // Setup ist seltener, daher strenger
+  skipSuccessfulRequests: true,
+  message: 'Zu viele 2FA-Setup-Versuche, bitte versuchen Sie es später erneut.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req: Request) => process.env.NODE_ENV === 'development',
+  handler: (req: Request, res: Response) => {
+    logRateLimitHit('2fa:setup', req);
+    res.status(429).json({ error: 'Zu viele 2FA-Setup-Versuche, bitte versuchen Sie es später erneut.' });
+  },
+});
+
 // Stricter limiter for file uploads
 export const uploadLimiter: any = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 Stunde

@@ -69,17 +69,17 @@ export default function NewEventPage() {
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-app-bg">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-tokens-brandGreen">Neues Event erstellen</h1>
+        <h1 className="text-3xl font-bold mb-8 text-app-fg">Neues Event erstellen</h1>
 
         <form onSubmit={handleSubmit} className="bg-app-card border border-app-border shadow-lg rounded-lg p-6 space-y-6">
           {error && (
-            <div className="bg-app-bg border border-[var(--status-danger)] text-[var(--status-danger)] px-4 py-3 rounded">
+            <div className="bg-app-bg border border-status-danger text-status-danger px-4 py-3 rounded">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="title" className="block text-sm font-medium mb-1 text-tokens-brandGreen">
+            <label htmlFor="title" className="block text-sm font-medium mb-1 text-app-fg">
               Event-Titel *
             </label>
             <Input
@@ -88,13 +88,13 @@ export default function NewEventPage() {
               required
               value={formData.title}
               onChange={handleTitleChange}
-              className="w-full px-4 py-3 border border-app-accent rounded-lg focus:ring-2 focus:outline-none transition-all text-tokens-brandGreen bg-app-card focus:ring-tokens-brandGreen/30"
+              className="w-full rounded-lg border border-app-border bg-app-card px-4 py-3 text-app-fg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
               placeholder="z.B. Hochzeit von Maria und Max"
             />
           </div>
 
           <div>
-            <label htmlFor="slug" className="block text-sm font-medium mb-1 text-tokens-brandGreen">
+            <label htmlFor="slug" className="block text-sm font-medium mb-1 text-app-fg">
               URL-Slug *
             </label>
             <Input
@@ -103,7 +103,7 @@ export default function NewEventPage() {
               required
               value={formData.slug}
               onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-              className="w-full px-4 py-3 border border-app-accent rounded-lg focus:ring-2 focus:outline-none transition-all text-tokens-brandGreen bg-app-card focus:ring-tokens-brandGreen/30"
+              className="w-full rounded-lg border border-app-border bg-app-card px-4 py-3 text-app-fg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
               placeholder="hochzeit-maria-max"
             />
             <p className="mt-1 text-sm text-app-muted">
@@ -118,7 +118,7 @@ export default function NewEventPage() {
           />
 
           <div>
-            <label htmlFor="locationName" className="block text-sm font-medium mb-1 text-tokens-brandGreen">
+            <label htmlFor="locationName" className="block text-sm font-medium mb-1 text-app-fg">
               Veranstaltungsort / Adresse
             </label>
             <Input
@@ -126,13 +126,13 @@ export default function NewEventPage() {
               type="text"
               value={formData.locationName}
               onChange={(e) => setFormData({ ...formData, locationName: e.target.value })}
-              className="w-full px-4 py-3 border border-app-accent rounded-lg focus:ring-2 focus:outline-none transition-all text-tokens-brandGreen bg-app-card focus:ring-tokens-brandGreen/30"
+              className="w-full rounded-lg border border-app-border bg-app-card px-4 py-3 text-app-fg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
               placeholder="z.B. Musterstraße 123, 12345 Musterstadt oder Hotel Beispiel, Berlin"
             />
           </div>
 
           <div>
-            <p className="text-sm text-tokens-brandGreen/70">
+            <p className="text-sm text-app-muted">
               💡 Die Adresse wird automatisch verwendet, um einen Karten-Link zu generieren, 
               der mit Google Maps und Apple Maps funktioniert.
             </p>
@@ -142,7 +142,7 @@ export default function NewEventPage() {
             <Button
               type="button"
               onClick={() => router.back()}
-              className="px-4 py-2 border border-app-accent rounded-md font-medium transition-colors text-tokens-brandGreen bg-app-card hover:bg-app-bg"
+              variant="secondary"
             >
               Abbrechen
             </Button>

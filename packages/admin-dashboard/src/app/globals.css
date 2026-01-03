@@ -3,9 +3,6 @@
 @tailwind utilities;
 
 :root {
-  --brand-green: #295B4D;
-  --brand-light: #e8f5f0;
-  --brand-dark: #18382f;
   --app-bg: #ffffff;
   --app-fg: #111827;
   --app-card: #ffffff;

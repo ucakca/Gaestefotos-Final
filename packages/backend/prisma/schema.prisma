@@ -17,6 +17,13 @@ model User {
   password  String   // hashed
   role      UserRole @default(HOST)
   wordpressUserId Int?     @unique
+  twoFactorEnabled Boolean @default(false)
+  twoFactorPending Boolean @default(false)
+  twoFactorSecretEncrypted String?
+  twoFactorSecretIv String?
+  twoFactorSecretTag String?
+  twoFactorRecoveryCodesHashed Json?
+  twoFactorSetupAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

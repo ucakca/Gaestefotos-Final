@@ -16,6 +16,13 @@ module.exports = {
           muted: 'var(--app-muted)',
           accent: 'var(--app-accent)',
         },
+        status: {
+          danger: 'var(--status-danger)',
+          warning: 'var(--status-warning)',
+          success: 'var(--status-success)',
+          info: 'var(--status-info)',
+          neutral: 'var(--status-neutral)',
+        },
         tokens: {
           brandGreen: 'var(--brand-green)',
           brandLight: 'var(--brand-light)',

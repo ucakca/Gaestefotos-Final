@@ -4,10 +4,26 @@ import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { domainToASCII } from 'node:url';
 import prisma from '../config/database';
-import { authLimiter, passwordLimiter, wordpressSsoLimiter } from '../middleware/rateLimit';
-import { authMiddleware, AuthRequest } from '../middleware/auth';
+import {
+  authLimiter,
+  passwordLimiter,
+  twoFactorSetupLimiter,
+  twoFactorVerifyLimiter,
+  wordpressSsoLimiter,
+} from '../middleware/rateLimit';
+import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
 import { getWordPressUserById, verifyWordPressUser, WordPressAuthUnavailableError } from '../config/wordpress';
 import { logger } from '../utils/logger';
+import {
+  buildOtpAuthUrl,
+  buildRecoveryCodesPayload,
+  consumeRecoveryCode,
+  decryptTotpSecret,
+  encryptTotpSecret,
+  generateRecoveryCodes,
+  generateTotpSecretBase32,
+  verifyTotp,
+} from '../utils/twoFactor';
 
 const router = Router();
 
@@ -27,10 +43,274 @@ function isValidEmailLoose(email: string): boolean {
   return true;
 }
 
+function getTwoFactorIssuer(): string {
+  return String(process.env.TWO_FACTOR_ISSUER || 'Gästefotos').trim() || 'Gästefotos';
+}
+
+function signTwoFactorChallengeToken(params: { userId: string; role: string; purpose: '2fa' | '2fa_setup' }): string {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error('Server misconfigured: JWT_SECRET is missing');
+  }
+
+  return jwt.sign(
+    { userId: params.userId, role: params.role, purpose: params.purpose },
+    jwtSecret,
+    { expiresIn: '10m' }
+  );
+}
+
+function verifyTwoFactorChallengeToken(token: string): { userId: string; role: string; purpose: '2fa' | '2fa_setup' } {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error('Server misconfigured: JWT_SECRET is missing');
+  }
+
+  const decoded = jwt.verify(token, jwtSecret) as any;
+  const purpose = decoded?.purpose;
+  const okPurpose = purpose === '2fa' || purpose === '2fa_setup';
+  if (!decoded || !okPurpose || typeof decoded.userId !== 'string' || typeof decoded.role !== 'string') {
+    throw new Error('Invalid 2FA token');
+  }
+  return { userId: decoded.userId, role: decoded.role, purpose };
+}
+
 const emailSchema = z
   .string()
   .transform((v) => v.trim())
   .refine(isValidEmailLoose, { message: 'Invalid email' });
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getJitterMs(minMs: number, maxMs: number): number {
+  const min = Math.max(0, Math.floor(minMs));
+  const max = Math.max(min, Math.floor(maxMs));
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+router.post('/2fa/verify', passwordLimiter, twoFactorVerifyLimiter, async (req: Request, res: Response) => {
+  try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({ error: 'Server misconfigured: JWT_SECRET is missing' });
+    }
+
+    const data = twoFactorVerifySchema.parse(req.body);
+    const challenge = verifyTwoFactorChallengeToken(data.twoFactorToken);
+
+    if (challenge.purpose !== '2fa') {
+      return res.status(401).json({ error: 'Invalid 2FA token' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: challenge.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        twoFactorEnabled: true,
+        twoFactorSecretEncrypted: true,
+        twoFactorSecretIv: true,
+        twoFactorSecretTag: true,
+        twoFactorRecoveryCodesHashed: true,
+      },
+    });
+
+    if (!user || !user.twoFactorEnabled) {
+      return res.status(401).json({ error: '2FA not enabled' });
+    }
+
+    let ok = false;
+    let nextRecoveryCodes = user.twoFactorRecoveryCodesHashed as any;
+
+    const code = String(data.code || '').trim();
+    const recoveryCode = String(data.recoveryCode || '').trim();
+
+    if (recoveryCode) {
+      const consumed = consumeRecoveryCode({
+        recoveryCodesPayload: (user.twoFactorRecoveryCodesHashed as any) || null,
+        code: recoveryCode,
+      });
+      ok = consumed.ok;
+      nextRecoveryCodes = consumed.next;
+    } else if (code) {
+      if (!user.twoFactorSecretEncrypted || !user.twoFactorSecretIv || !user.twoFactorSecretTag) {
+        return res.status(500).json({ error: '2FA misconfigured' });
+      }
+
+      const secret = decryptTotpSecret({
+        encrypted: user.twoFactorSecretEncrypted,
+        iv: user.twoFactorSecretIv,
+        tag: user.twoFactorSecretTag,
+      });
+
+      ok = verifyTotp({ secretBase32: secret, token: code, window: 1 });
+    }
+
+    if (!ok) {
+      await sleep(getJitterMs(250, 600));
+      logger.warn('[auth] 2fa verify invalid', {
+        userId: user.id,
+        ip: req.ip,
+        usedRecoveryCode: !!recoveryCode,
+      });
+      return res.status(401).json({ error: 'Invalid 2FA code' });
+    }
+
+    if (recoveryCode) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          twoFactorRecoveryCodesHashed: nextRecoveryCodes as any,
+        },
+      });
+    }
+
+    logger.info('[auth] 2fa verify ok', {
+      userId: user.id,
+      ip: req.ip,
+      usedRecoveryCode: !!recoveryCode,
+    });
+
+    const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as any;
+    const token = jwt.sign({ userId: user.id, role: user.role }, jwtSecret, { expiresIn });
+
+    setAuthCookie(res, token, parseJwtExpiresInSeconds(expiresIn));
+
+    res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        createdAt: user.createdAt,
+      },
+      token,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+    logger.warn('[auth] 2fa verify failed', { message: (error as any)?.message || String(error) });
+    return res.status(401).json({ error: 'Invalid 2FA token' });
+  }
+});
+
+router.post('/2fa/setup/start', authMiddleware, requireRole('ADMIN'), twoFactorSetupLimiter, async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { id: true, email: true, role: true, twoFactorEnabled: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (user.twoFactorEnabled) {
+      return res.status(400).json({ error: '2FA already enabled' });
+    }
+
+    const secretBase32 = generateTotpSecretBase32();
+    const enc = encryptTotpSecret(secretBase32);
+    const recoveryCodes = generateRecoveryCodes();
+    const recoveryCodesPayload = buildRecoveryCodesPayload(recoveryCodes);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        twoFactorPending: true,
+        twoFactorSecretEncrypted: enc.encrypted,
+        twoFactorSecretIv: enc.iv,
+        twoFactorSecretTag: enc.tag,
+        twoFactorRecoveryCodesHashed: recoveryCodesPayload as any,
+      },
+    });
+
+    const issuer = getTwoFactorIssuer();
+    const otpauthUrl = buildOtpAuthUrl({
+      issuer,
+      accountName: user.email,
+      secretBase32,
+    });
+
+    res.json({
+      secretBase32,
+      otpauthUrl,
+      recoveryCodes,
+    });
+
+    logger.info('[auth] 2fa setup start', { userId: user.id });
+  } catch (error: any) {
+    logger.error('[auth] 2fa setup start error', { message: error?.message || String(error) });
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/2fa/setup/confirm', authMiddleware, requireRole('ADMIN'), twoFactorSetupLimiter, async (req: AuthRequest, res: Response) => {
+  try {
+    const data = twoFactorConfirmSchema.parse(req.body);
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: {
+        id: true,
+        twoFactorEnabled: true,
+        twoFactorPending: true,
+        twoFactorSecretEncrypted: true,
+        twoFactorSecretIv: true,
+        twoFactorSecretTag: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (user.twoFactorEnabled) {
+      return res.status(400).json({ error: '2FA already enabled' });
+    }
+    if (!user.twoFactorPending) {
+      return res.status(400).json({ error: '2FA setup not started' });
+    }
+    if (!user.twoFactorSecretEncrypted || !user.twoFactorSecretIv || !user.twoFactorSecretTag) {
+      return res.status(500).json({ error: '2FA misconfigured' });
+    }
+
+    const secret = decryptTotpSecret({
+      encrypted: user.twoFactorSecretEncrypted,
+      iv: user.twoFactorSecretIv,
+      tag: user.twoFactorSecretTag,
+    });
+
+    const ok = verifyTotp({ secretBase32: secret, token: data.code, window: 1 });
+    if (!ok) {
+      await sleep(getJitterMs(250, 600));
+      logger.warn('[auth] 2fa setup confirm invalid', { userId: user.id, ip: req.ip });
+      return res.status(401).json({ error: 'Invalid 2FA code' });
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        twoFactorEnabled: true,
+        twoFactorPending: false,
+        twoFactorSetupAt: new Date(),
+      },
+    });
+
+    logger.info('[auth] 2fa setup confirm ok', { userId: user.id });
+    res.json({ ok: true });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+    logger.error('[auth] 2fa setup confirm error', { message: (error as any)?.message || String(error) });
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 function getEmailAuthCandidates(email: string): string[] {
   const trimmed = email.trim();
@@ -63,6 +343,179 @@ const registerSchema = z.object({
 const loginSchema = z.object({
   email: emailSchema,
   password: z.string(),
+});
+
+const twoFactorVerifySchema = z.object({
+  twoFactorToken: z.string().min(1),
+  code: z.string().optional(),
+  recoveryCode: z.string().optional(),
+});
+
+const twoFactorConfirmSchema = z.object({
+  code: z.string().min(6),
+});
+
+const twoFactorSetupStartChallengeSchema = z.object({
+  twoFactorToken: z.string().min(1),
+});
+
+const twoFactorSetupConfirmChallengeSchema = z.object({
+  twoFactorToken: z.string().min(1),
+  code: z.string().min(6),
+});
+
+router.post('/2fa/setup/start-challenge', passwordLimiter, twoFactorSetupLimiter, async (req: Request, res: Response) => {
+  try {
+    const data = twoFactorSetupStartChallengeSchema.parse(req.body);
+    const challenge = verifyTwoFactorChallengeToken(data.twoFactorToken);
+    if (challenge.purpose !== '2fa_setup') {
+      return res.status(401).json({ error: 'Invalid 2FA token' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: challenge.userId },
+      select: { id: true, email: true, role: true, twoFactorEnabled: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
+    }
+    if (user.twoFactorEnabled) {
+      return res.status(400).json({ error: '2FA already enabled' });
+    }
+
+    const secretBase32 = generateTotpSecretBase32();
+    const enc = encryptTotpSecret(secretBase32);
+    const recoveryCodes = generateRecoveryCodes();
+    const recoveryCodesPayload = buildRecoveryCodesPayload(recoveryCodes);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        twoFactorPending: true,
+        twoFactorSecretEncrypted: enc.encrypted,
+        twoFactorSecretIv: enc.iv,
+        twoFactorSecretTag: enc.tag,
+        twoFactorRecoveryCodesHashed: recoveryCodesPayload as any,
+      },
+    });
+
+    const issuer = getTwoFactorIssuer();
+    const otpauthUrl = buildOtpAuthUrl({
+      issuer,
+      accountName: user.email,
+      secretBase32,
+    });
+
+    res.json({
+      secretBase32,
+      otpauthUrl,
+      recoveryCodes,
+    });
+
+    logger.info('[auth] 2fa setup start (challenge)', { userId: user.id, ip: req.ip });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+    logger.warn('[auth] 2fa setup start-challenge failed', { message: (error as any)?.message || String(error) });
+    return res.status(401).json({ error: 'Invalid 2FA token' });
+  }
+});
+
+router.post('/2fa/setup/confirm-challenge', passwordLimiter, twoFactorSetupLimiter, async (req: Request, res: Response) => {
+  try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({ error: 'Server misconfigured: JWT_SECRET is missing' });
+    }
+
+    const data = twoFactorSetupConfirmChallengeSchema.parse(req.body);
+    const challenge = verifyTwoFactorChallengeToken(data.twoFactorToken);
+    if (challenge.purpose !== '2fa_setup') {
+      return res.status(401).json({ error: 'Invalid 2FA token' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: challenge.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        twoFactorEnabled: true,
+        twoFactorPending: true,
+        twoFactorSecretEncrypted: true,
+        twoFactorSecretIv: true,
+        twoFactorSecretTag: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
+    }
+    if (user.twoFactorEnabled) {
+      return res.status(400).json({ error: '2FA already enabled' });
+    }
+    if (!user.twoFactorPending) {
+      return res.status(400).json({ error: '2FA setup not started' });
+    }
+    if (!user.twoFactorSecretEncrypted || !user.twoFactorSecretIv || !user.twoFactorSecretTag) {
+      return res.status(500).json({ error: '2FA misconfigured' });
+    }
+
+    const secret = decryptTotpSecret({
+      encrypted: user.twoFactorSecretEncrypted,
+      iv: user.twoFactorSecretIv,
+      tag: user.twoFactorSecretTag,
+    });
+
+    const ok = verifyTotp({ secretBase32: secret, token: data.code, window: 1 });
+    if (!ok) {
+      await sleep(getJitterMs(250, 600));
+      logger.warn('[auth] 2fa setup confirm invalid (challenge)', { userId: user.id, ip: req.ip });
+      return res.status(401).json({ error: 'Invalid 2FA code' });
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        twoFactorEnabled: true,
+        twoFactorPending: false,
+        twoFactorSetupAt: new Date(),
+      },
+    });
+
+    const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as any;
+    const token = jwt.sign({ userId: user.id, role: user.role }, jwtSecret, { expiresIn });
+    setAuthCookie(res, token, parseJwtExpiresInSeconds(expiresIn));
+
+    logger.info('[auth] 2fa setup confirm ok (challenge)', { userId: user.id, ip: req.ip });
+
+    res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        createdAt: user.createdAt,
+      },
+      token,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+    logger.warn('[auth] 2fa setup confirm-challenge failed', { message: (error as any)?.message || String(error) });
+    return res.status(401).json({ error: 'Invalid 2FA token' });
+  }
 });
 
 function parseJwtExpiresInSeconds(expiresIn: any): number {
@@ -298,6 +751,48 @@ router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    const adminMustUse2fa = effectiveUser.role === 'ADMIN';
+
+    if (effectiveUser.twoFactorEnabled) {
+      const twoFactorToken = signTwoFactorChallengeToken({
+        userId: effectiveUser.id,
+        role: effectiveUser.role,
+        purpose: '2fa',
+      });
+
+      return res.json({
+        twoFactorRequired: true,
+        twoFactorToken,
+        user: {
+          id: effectiveUser.id,
+          email: effectiveUser.email,
+          name: effectiveUser.name,
+          role: effectiveUser.role,
+          createdAt: effectiveUser.createdAt,
+        },
+      });
+    }
+
+    if (adminMustUse2fa) {
+      const twoFactorToken = signTwoFactorChallengeToken({
+        userId: effectiveUser.id,
+        role: effectiveUser.role,
+        purpose: '2fa_setup',
+      });
+
+      return res.json({
+        twoFactorSetupRequired: true,
+        twoFactorToken,
+        user: {
+          id: effectiveUser.id,
+          email: effectiveUser.email,
+          name: effectiveUser.name,
+          role: effectiveUser.role,
+          createdAt: effectiveUser.createdAt,
+        },
+      });
+    }
+
     // Generate token
     const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as any;
     const token = jwt.sign(
@@ -439,6 +934,8 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
         email: true,
         name: true,
         role: true,
+        twoFactorEnabled: true,
+        twoFactorPending: true,
         createdAt: true,
       },
     });

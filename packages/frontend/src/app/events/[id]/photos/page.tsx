@@ -29,14 +29,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 import Link from 'next/link';
 import { buildApiUrl } from '@/lib/api';
 
@@ -470,24 +472,28 @@ export default function PhotoManagementPage() {
 
   return (
     <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
-      <Dialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{confirmState?.title}</DialogTitle>
-            {confirmState?.description ? <DialogDescription>{confirmState.description}</DialogDescription> : null}
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
+      <AlertDialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmState?.title}</AlertDialogTitle>
+            {confirmState?.description ? (
+              <AlertDialogDescription>{confirmState.description}</AlertDialogDescription>
+            ) : null}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
               <Button variant="secondary" onClick={() => closeConfirm(false)}>
                 {confirmState?.cancelText || 'Abbrechen'}
               </Button>
-            </DialogClose>
-            <Button variant="danger" onClick={() => closeConfirm(true)}>
-              {confirmState?.confirmText || 'Bestätigen'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button variant="danger" onClick={() => closeConfirm(true)}>
+                {confirmState?.confirmText || 'Bestätigen'}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24">
         <FaceSearch 
           eventId={eventId} 
@@ -782,7 +788,7 @@ export default function PhotoManagementPage() {
                         e.preventDefault();
                         handleBulkDelete();
                       }}
-                      className="text-[var(--status-danger)] focus:text-[var(--status-danger)]"
+                      className="text-status-danger focus:text-status-danger"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Löschen
@@ -835,7 +841,7 @@ export default function PhotoManagementPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.2 }}
                 className={`relative bg-app-card rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow ${
-                  selectedPhotos.has(photo.id) ? 'ring-2 ring-tokens-brandGreen shadow-lg' : ''
+                  selectedPhotos.has(photo.id) ? 'ring-2 ring-app-fg/20 shadow-lg' : ''
                 }`}
                 onClick={(e) => {
                   if (viewMode === 'trash') return;
@@ -855,7 +861,7 @@ export default function PhotoManagementPage() {
                   >
                     <div className={`p-1.5 rounded-full shadow-lg transition-colors ${
                       selectedPhotos.has(photo.id) 
-                        ? 'bg-tokens-brandGreen' 
+                        ? 'bg-app-fg' 
                         : 'bg-app-card/90 hover:bg-app-card'
                     }`}>
                       {selectedPhotos.has(photo.id) ? (
@@ -910,12 +916,12 @@ export default function PhotoManagementPage() {
                     </div>
                   )}
                   {((photo.status as string)?.toLowerCase() === 'pending' || (photo.status as string) === 'PENDING') && (
-                    <div className="absolute top-2 right-2 bg-[var(--status-warning)] text-app-bg px-1.5 py-0.5 rounded text-xs font-medium">
+                    <div className="absolute top-2 right-2 bg-status-warning text-app-bg px-1.5 py-0.5 rounded text-xs font-medium">
                       Ausstehend
                     </div>
                   )}
                   {((photo.status as string)?.toLowerCase() === 'rejected' || (photo.status as string) === 'REJECTED') && (
-                    <div className="absolute top-2 right-2 bg-[var(--status-danger)] text-app-bg px-1.5 py-0.5 rounded text-xs font-medium">
+                    <div className="absolute top-2 right-2 bg-status-danger text-app-bg px-1.5 py-0.5 rounded text-xs font-medium">
                       Abgelehnt
                     </div>
                   )}
@@ -928,7 +934,7 @@ export default function PhotoManagementPage() {
                       }}
                       icon={
                         <Star
-                          className={`w-4 h-4 ${storiesByPhotoId[photo.id]?.isActive ? 'text-[var(--status-warning)] fill-[var(--status-warning)]' : 'text-app-muted'}`}
+                          className={`w-4 h-4 ${storiesByPhotoId[photo.id]?.isActive ? 'text-status-warning fill-status-warning' : 'text-app-muted'}`}
                         />
                       }
                       type="button"
@@ -953,45 +959,50 @@ export default function PhotoManagementPage() {
 
         {/* Floating Action Button for ZIP Download */}
         {photos.length > 0 && !isStorageLocked && (
-          <motion.button
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={async () => {
-              try {
-                const allIds = photos.map((p: any) => p.id).filter(Boolean);
-                if (allIds.length === 0) return;
-                const response = await api.post('/photos/bulk/download', {
-                  photoIds: allIds,
-                }, {
-                  responseType: 'blob',
-                });
-
-                const url = window.URL.createObjectURL(new Blob([response.data]));
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', `fotos-${Date.now()}.zip`);
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                window.URL.revokeObjectURL(url);
-                showToast('Alle Fotos heruntergeladen', 'success');
-              } catch (err: any) {
-                const code = err?.response?.data?.code;
-                if (code === 'STORAGE_LOCKED') {
-                  showToast('Speicherperiode beendet – Download nicht mehr möglich', 'error');
-                } else {
-                  showToast('Fehler beim Download', 'error');
-                }
-              }
-            }}
-            aria-label="Alle Fotos herunterladen (ZIP)"
-            title="Alle Fotos herunterladen (ZIP)"
-            className="fixed bottom-24 right-6 w-14 h-14 bg-tokens-brandGreen text-app-bg rounded-full shadow-lg flex items-center justify-center z-40 hover:opacity-90 transition-colors"
+          <Button
+            asChild
+            variant="primary"
+            className="fixed bottom-24 right-6 w-14 h-14 rounded-full p-0 shadow-lg z-40"
           >
-            <FileDown className="w-6 h-6" />
-          </motion.button>
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={async () => {
+                try {
+                  const allIds = photos.map((p: any) => p.id).filter(Boolean);
+                  if (allIds.length === 0) return;
+                  const response = await api.post('/photos/bulk/download', {
+                    photoIds: allIds,
+                  }, {
+                    responseType: 'blob',
+                  });
+
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', `fotos-${Date.now()}.zip`);
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                  window.URL.revokeObjectURL(url);
+                  showToast('Alle Fotos heruntergeladen', 'success');
+                } catch (err: any) {
+                  const code = err?.response?.data?.code;
+                  if (code === 'STORAGE_LOCKED') {
+                    showToast('Speicherperiode beendet – Download nicht mehr möglich', 'error');
+                  } else {
+                    showToast('Fehler beim Download', 'error');
+                  }
+                }
+              }}
+              aria-label="Alle Fotos herunterladen (ZIP)"
+              title="Alle Fotos herunterladen (ZIP)"
+              className="flex items-center justify-center w-full h-full"
+            >
+              <FileDown className="w-6 h-6" />
+            </motion.button>
+          </Button>
         )}
 
         {/* Photo Detail Modal */}
@@ -1123,7 +1134,7 @@ export default function PhotoManagementPage() {
                             e.preventDefault();
                             handleDelete(selectedPhoto.id);
                           }}
-                          className="text-[var(--status-danger)] focus:text-[var(--status-danger)]"
+                          className="text-status-danger focus:text-status-danger"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Löschen
@@ -1196,7 +1207,7 @@ export default function PhotoManagementPage() {
                         <a
                           href={`/api/photos/${selectedPhoto.id}/download`}
                           download
-                          className="px-4 py-2 bg-[var(--status-info)] text-app-bg rounded-md hover:opacity-90 flex items-center gap-2"
+                          className="px-4 py-2 bg-status-info text-app-bg rounded-md hover:opacity-90 flex items-center gap-2"
                         >
                           <Download className="w-4 h-4" />
                           Herunterladen
@@ -1217,7 +1228,7 @@ export default function PhotoManagementPage() {
                           setEditingPhoto(selectedPhoto);
                           setSelectedPhoto(null);
                         }}
-                        className="px-4 py-2 bg-[var(--status-info)] text-app-bg rounded-md hover:opacity-90 flex items-center justify-center gap-2"
+                        className="px-4 py-2 bg-status-info text-app-bg rounded-md hover:opacity-90 flex items-center justify-center gap-2"
                       >
                         <Edit className="w-5 h-5" />
                         Bearbeiten
@@ -1228,7 +1239,7 @@ export default function PhotoManagementPage() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleApprove(selectedPhoto.id)}
-                            className="flex-1 px-4 py-2 bg-[var(--status-success)] text-app-bg rounded-md hover:opacity-90 flex items-center justify-center gap-2"
+                            className="flex-1 px-4 py-2 bg-status-success text-app-bg rounded-md hover:opacity-90 flex items-center justify-center gap-2"
                           >
                             <Check className="w-5 h-5" />
                             Freigeben
@@ -1237,7 +1248,7 @@ export default function PhotoManagementPage() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleReject(selectedPhoto.id)}
-                            className="flex-1 px-4 py-2 bg-[var(--status-danger)] text-app-bg rounded-md hover:opacity-90 flex items-center justify-center gap-2"
+                            className="flex-1 px-4 py-2 bg-status-danger text-app-bg rounded-md hover:opacity-90 flex items-center justify-center gap-2"
                           >
                             <X className="w-5 h-5" />
                             Ablehnen
@@ -1250,7 +1261,7 @@ export default function PhotoManagementPage() {
                         onClick={() => handleDelete(selectedPhoto.id)}
                         aria-label="Löschen"
                         title="Löschen"
-                        className="px-4 py-2 bg-[var(--status-neutral)] text-app-bg rounded-md hover:opacity-90 flex items-center justify-center gap-2"
+                        className="px-4 py-2 bg-status-neutral text-app-bg rounded-md hover:opacity-90 flex items-center justify-center gap-2"
                       >
                         <Trash2 className="w-5 h-5" />
                       </motion.button>

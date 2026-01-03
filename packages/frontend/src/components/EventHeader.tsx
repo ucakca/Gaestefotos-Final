@@ -65,7 +65,7 @@ export default function EventHeader({
   const headerColor =
     designConfig?.colors?.primary ||
     designConfig.headerColor ||
-    'var(--brand-green)';
+    'var(--app-accent)';
   const appName = designConfig.appName || 'Gästefotos';
 
   const presetKey = designConfig.designPresetKey || 'classic';
@@ -85,7 +85,7 @@ export default function EventHeader({
     if (hasStories) {
       return {
         backgroundImage:
-          accentGradient || 'linear-gradient(135deg, var(--tokens-brandGreen) 0%, var(--tokens-brandPeach) 100%)',
+          accentGradient || 'linear-gradient(135deg, var(--app-accent) 0%, var(--status-warning) 100%)',
       };
     }
     return { backgroundImage: 'linear-gradient(135deg, var(--app-border) 0%, var(--app-bg) 100%)' };
@@ -269,9 +269,9 @@ export default function EventHeader({
                 <Button
                   type="button"
                   onClick={openStoryModal}
-                  variant="ghost"
+                  variant="secondary"
                   size="sm"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-app-card border border-app-border px-3 py-1.5 shadow-sm text-sm font-semibold text-app-fg h-auto"
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-sm text-sm font-semibold h-auto"
                 >
                   <Plus className="w-4 h-4" />
                   +Story
@@ -325,7 +325,7 @@ export default function EventHeader({
                       size="sm"
                       aria-label="Schließen"
                       title="Schließen"
-                      className="w-9 h-9 bg-app-bg hover:bg-app-bg/80"
+                      className="w-9 h-9"
                     />
                   </DialogClose>
                 </div>
@@ -364,9 +364,9 @@ export default function EventHeader({
                     type="button"
                     disabled={storyUploading}
                     onClick={() => storyCapturePhotoInputRef.current?.click()}
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
-                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left h-auto"
+                    className="rounded-2xl px-3 py-3 text-left h-auto"
                   >
                     <div className="flex items-center gap-2 text-sm font-semibold text-app-fg">
                       <Camera className="w-5 h-5" />
@@ -377,9 +377,9 @@ export default function EventHeader({
                     type="button"
                     disabled={storyUploading}
                     onClick={() => storyCaptureVideoInputRef.current?.click()}
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
-                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left h-auto"
+                    className="rounded-2xl px-3 py-3 text-left h-auto"
                   >
                     <div className="flex items-center gap-2 text-sm font-semibold text-app-fg">
                       <Video className="w-5 h-5" />
@@ -391,9 +391,9 @@ export default function EventHeader({
                     type="button"
                     disabled={storyUploading}
                     onClick={() => storyPickPhotoInputRef.current?.click()}
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
-                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left h-auto"
+                    className="rounded-2xl px-3 py-3 text-left h-auto"
                   >
                     <div className="text-sm font-semibold text-app-fg">Foto auswählen</div>
                     <div className="mt-1 text-xs text-app-muted">Galerie</div>
@@ -402,9 +402,9 @@ export default function EventHeader({
                     type="button"
                     disabled={storyUploading}
                     onClick={() => storyPickVideoInputRef.current?.click()}
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
-                    className="rounded-2xl border border-app-border bg-app-card px-3 py-3 text-left h-auto"
+                    className="rounded-2xl px-3 py-3 text-left h-auto"
                   >
                     <div className="text-sm font-semibold text-app-fg">Video auswählen</div>
                     <div className="mt-1 text-xs text-app-muted">Galerie · max 15s</div>
@@ -412,7 +412,7 @@ export default function EventHeader({
                 </div>
 
                 {storyUploadError && (
-                  <div className="mt-4 rounded-xl bg-app-bg border border-[var(--status-danger)] px-3 py-2 text-sm text-[var(--status-danger)]">
+                  <div className="mt-4 rounded-xl bg-app-bg border border-status-danger px-3 py-2 text-sm text-status-danger">
                     {storyUploadError}
                   </div>
                 )}
@@ -475,7 +475,7 @@ export default function EventHeader({
           >
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 flex-shrink-0">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-tokens-brandGreen to-tokens-brandPeach p-0.5">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-app-accent to-status-warning p-0.5">
                   <div className="w-full h-full rounded-full bg-app-bg flex items-center justify-center overflow-hidden">
                     {profileImage ? (
                       <img src={profileImage} alt={event.title} className="w-full h-full object-cover" />

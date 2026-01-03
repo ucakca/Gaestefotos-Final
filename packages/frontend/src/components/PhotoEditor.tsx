@@ -148,7 +148,6 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
                 size="sm"
                 aria-label="Schließen"
                 title="Schließen"
-                className="text-app-muted hover:text-app-fg"
               />
             </DialogClose>
           </div>
@@ -158,9 +157,9 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleRotate}
-            variant="ghost"
+            variant="secondary"
             size="sm"
-            className="px-4 py-2 bg-[var(--status-info)] text-app-bg rounded-md hover:opacity-90 flex items-center gap-2"
+            className="px-4 py-2 rounded-md flex items-center gap-2"
           >
             <RotateCw className="w-4 h-4" />
             Drehen ({rotation}°)
@@ -169,13 +168,9 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleCropStart}
-            variant="ghost"
+            variant={isCropping ? 'primary' : 'secondary'}
             size="sm"
-            className={`px-4 py-2 rounded-md flex items-center gap-2 ${
-              isCropping
-                ? 'bg-[var(--status-success)] text-app-bg hover:opacity-90'
-                : 'bg-[var(--status-neutral)] text-app-bg hover:opacity-90'
-            }`}
+            className="px-4 py-2 rounded-md flex items-center gap-2"
           >
             <Crop className="w-4 h-4" />
             {isCropping ? 'Zuschneiden...' : 'Zuschneiden'}
@@ -183,9 +178,9 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
           {isCropping && (
             <Button
               onClick={handleCancelCrop}
-              variant="ghost"
+              variant="danger"
               size="sm"
-              className="px-4 py-2 bg-[var(--status-danger)] text-app-bg rounded-md hover:opacity-90"
+              className="px-4 py-2 rounded-md"
             >
               Abbrechen
             </Button>
@@ -212,7 +207,7 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
           
           {cropArea && (
             <div
-              className="absolute border-2 border-[var(--status-info)] bg-[var(--status-info)]/20 pointer-events-none"
+              className="absolute border-2 border-status-info bg-status-info/20 pointer-events-none"
               style={{
                 left: `${cropArea.x}px`,
                 top: `${cropArea.y}px`,
@@ -226,9 +221,9 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
         <div className="flex justify-end gap-2">
           <Button
             onClick={onClose}
-            variant="ghost"
+            variant="secondary"
             size="sm"
-            className="px-4 py-2 bg-app-bg text-app-fg border border-app-border rounded-md hover:bg-app-card"
+            className="px-4 py-2 rounded-md"
           >
             Abbrechen
           </Button>
@@ -237,9 +232,9 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
             whileTap={{ scale: 0.95 }}
             onClick={handleSave}
             disabled={isSaving}
-            variant="ghost"
+            variant="primary"
             size="sm"
-            className="px-4 py-2 bg-[var(--status-success)] text-app-bg rounded-md hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <Check className="w-4 h-4" />
             {isSaving ? 'Speichern...' : 'Speichern'}

@@ -618,7 +618,7 @@ export default function PublicEventPage() {
   if (error || !event) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-app-bg">
-        <div className="text-[var(--status-danger)]">{error || 'Event nicht gefunden'}</div>
+        <div className="text-status-danger">{error || 'Event nicht gefunden'}</div>
       </div>
     );
   }
@@ -640,7 +640,7 @@ export default function PublicEventPage() {
                 required
               />
               {passwordError && (
-                <p className="mt-2 text-sm text-[var(--status-danger)]">{passwordError}</p>
+                <p className="mt-2 text-sm text-status-danger">{passwordError}</p>
               )}
             </div>
             <Button
@@ -730,9 +730,9 @@ export default function PublicEventPage() {
 
       {/* Challenge Hinweis - nur wenn Challenges aktiviert und vorhanden */}
       {featuresConfig?.challengesEnabled === true && challenges.filter((c: any) => c.isActive).length > 0 && (
-        <div className="px-4 py-3 bg-app-bg border-b border-[var(--status-warning)]">
+        <div className="px-4 py-3 bg-app-bg border-b border-status-warning">
           <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-[var(--status-warning)]" />
+            <Trophy className="w-5 h-5 text-status-warning" />
             <p className="text-sm text-app-fg">
               <strong>Tolle Challenges verfügbar!</strong> Klicke auf "Challenges" im Menü unten, um teilzunehmen.
             </p>

@@ -83,7 +83,6 @@ export default function UploadModal({
                 size="sm"
                 aria-label="Schließen"
                 title="Schließen"
-                className="text-app-muted hover:text-app-fg"
                 type="button"
               />
             </DialogClose>
@@ -93,7 +92,7 @@ export default function UploadModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-app-fg mb-2">Datei auswählen</label>
-            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-app-border rounded-lg cursor-pointer hover:border-tokens-brandGreen transition-colors">
+            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-app-border rounded-lg cursor-pointer hover:border-app-accent transition-colors">
               <Upload className="w-5 h-5 text-app-muted" />
               <span className="text-sm text-app-muted">{selectedFile ? selectedFile.name : 'Klicken zum Auswählen'}</span>
               <input

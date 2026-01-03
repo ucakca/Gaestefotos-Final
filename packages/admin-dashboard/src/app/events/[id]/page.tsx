@@ -9,14 +9,15 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import FullPageLoader from '@/components/FullPageLoader';
 
 type UploadIssuesResponse = {
@@ -305,12 +306,9 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Link
-            href="/events"
-            className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm font-medium text-app-fg"
-          >
-            Zurück
-          </Link>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/events">Zurück</Link>
+          </Button>
         </div>
       </div>
 
@@ -324,27 +322,28 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
 
       {!loading && !error && (
         <div className="space-y-6">
-          <Dialog open={confirmOpen} onOpenChange={(open) => setConfirmCleanAction(open ? confirmCleanAction : null)}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Freigeben (CLEAN) bestätigen</DialogTitle>
-                <DialogDescription>
-                  Diese Aktion gibt {confirmCleanAction?.kind === 'video' ? 'ein Video' : 'ein Foto'} frei.
-                  Fortfahren?
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <DialogClose asChild>
+          <AlertDialog open={confirmOpen} onOpenChange={(open: boolean) => (open ? null : setConfirmCleanAction(null))}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Freigeben (CLEAN) bestätigen</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Diese Aktion gibt {confirmCleanAction?.kind === 'video' ? 'ein Video' : 'ein Foto'} frei. Fortfahren?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel asChild>
                   <Button variant="secondary" disabled={confirmBusy}>
                     Abbrechen
                   </Button>
-                </DialogClose>
-                <Button onClick={runConfirmCleanAction} disabled={confirmBusy}>
-                  {confirmBusy ? '…' : 'Freigeben'}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                </AlertDialogCancel>
+                <AlertDialogAction asChild>
+                  <Button onClick={runConfirmCleanAction} disabled={confirmBusy} variant="primary">
+                    {confirmBusy ? '…' : 'Freigeben'}
+                  </Button>
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Card className="p-6">
             <h2 className="text-lg font-semibold text-app-fg">Virus Scan</h2>
             <p className="mt-1 text-sm text-app-muted">
@@ -374,11 +373,6 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
               <Button
                 onClick={saveVirusScanSettings}
                 disabled={savingVirusScan}
-                className={
-                  savingVirusScan
-                    ? 'bg-app-fg/30 text-app-bg hover:opacity-100'
-                    : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
-                }
               >
                 {savingVirusScan ? 'Speichern…' : 'Speichern'}
               </Button>
@@ -416,12 +410,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             <div className="mt-6 flex items-center gap-3">
               <Button
                 onClick={saveUploadDatePolicy}
+                variant="primary"
                 disabled={savingDatePolicy}
-                className={
-                  savingDatePolicy
-                    ? 'bg-app-fg/30 text-app-bg hover:opacity-100'
-                    : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
-                }
               >
                 {savingDatePolicy ? 'Speichern…' : 'Speichern'}
               </Button>
@@ -481,12 +471,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             <div className="mt-6 flex items-center gap-3">
               <Button
                 onClick={saveUploadRateLimits}
+                variant="primary"
                 disabled={savingLimits}
-                className={
-                  savingLimits
-                    ? 'bg-app-fg/30 text-app-bg hover:opacity-100'
-                    : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
-                }
               >
                 {savingLimits ? 'Speichern…' : 'Speichern'}
               </Button>
@@ -591,12 +577,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                             <Button
                               size="sm"
                               onClick={() => setConfirmCleanAction({ kind: 'video', id: v.id })}
+                              variant="primary"
                               disabled={markingVideoClean === v.id}
-                              className={
-                                markingVideoClean === v.id
-                                  ? 'bg-app-fg/30 text-app-bg hover:opacity-100'
-                                  : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
-                              }
                             >
                               {markingVideoClean === v.id ? '…' : 'Freigeben'}
                             </Button>
@@ -639,12 +621,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                             <Button
                               size="sm"
                               onClick={() => setConfirmCleanAction({ kind: 'video', id: v.id })}
+                              variant="primary"
                               disabled={markingVideoClean === v.id}
-                              className={
-                                markingVideoClean === v.id
-                                  ? 'bg-app-fg/30 text-app-bg hover:opacity-100'
-                                  : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
-                              }
                             >
                               {markingVideoClean === v.id ? '…' : 'Freigeben'}
                             </Button>
@@ -689,12 +667,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                             <Button
                               size="sm"
                               onClick={() => setConfirmCleanAction({ kind: 'photo', id: p.id })}
+                              variant="primary"
                               disabled={markingClean === p.id}
-                              className={
-                                markingClean === p.id
-                                  ? 'bg-app-fg/30 text-app-bg hover:opacity-100'
-                                  : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
-                              }
                             >
                               {markingClean === p.id ? '…' : 'Freigeben'}
                             </Button>
@@ -737,12 +711,8 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                             <Button
                               size="sm"
                               onClick={() => setConfirmCleanAction({ kind: 'photo', id: p.id })}
+                              variant="primary"
                               disabled={markingClean === p.id}
-                              className={
-                                markingClean === p.id
-                                  ? 'bg-app-fg/30 text-app-bg hover:opacity-100'
-                                  : 'bg-tokens-brandGreen text-app-bg hover:opacity-90'
-                              }
                             >
                               {markingClean === p.id ? '…' : 'Freigeben'}
                             </Button>

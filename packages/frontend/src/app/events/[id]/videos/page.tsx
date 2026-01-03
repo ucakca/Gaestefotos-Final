@@ -26,14 +26,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 
 interface VideoItem {
   id: string;
@@ -438,24 +440,28 @@ export default function VideosPage() {
 
   return (
     <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
-      <Dialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{confirmState?.title}</DialogTitle>
-            {confirmState?.description ? <DialogDescription>{confirmState.description}</DialogDescription> : null}
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
+      <AlertDialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmState?.title}</AlertDialogTitle>
+            {confirmState?.description ? (
+              <AlertDialogDescription>{confirmState.description}</AlertDialogDescription>
+            ) : null}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
               <Button variant="secondary" onClick={() => closeConfirm(false)}>
                 {confirmState?.cancelText || 'Abbrechen'}
               </Button>
-            </DialogClose>
-            <Button variant="danger" onClick={() => closeConfirm(true)}>
-              {confirmState?.confirmText || 'Bestätigen'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button variant="danger" onClick={() => closeConfirm(true)}>
+                {confirmState?.confirmText || 'Bestätigen'}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24">
         <PageHeader
           title={viewMode === 'trash' ? 'Videos - Papierkorb' : 'Videos'}
@@ -705,7 +711,7 @@ export default function VideosPage() {
                         e.preventDefault();
                         handleBulkDelete();
                       }}
-                      className="text-[var(--status-danger)] focus:text-[var(--status-danger)]"
+                      className="text-status-danger focus:text-status-danger"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Löschen
@@ -760,7 +766,7 @@ export default function VideosPage() {
                   handleVideoClick(video, e);
                 }}
                 className={`relative bg-app-card rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow ${
-                  selectedVideos.has(video.id) ? 'ring-2 ring-tokens-brandGreen shadow-lg' : ''
+                  selectedVideos.has(video.id) ? 'ring-2 ring-app-fg/20 shadow-lg' : ''
                 }`}
               >
                 <div className="relative bg-app-bg rounded-lg overflow-hidden">
@@ -775,7 +781,7 @@ export default function VideosPage() {
                     >
                       <div className={`p-1.5 rounded-full shadow-lg transition-colors ${
                         selectedVideos.has(video.id)
-                          ? 'bg-tokens-brandGreen'
+                          ? 'bg-app-fg'
                           : 'bg-app-card/90 hover:bg-app-card'
                       }`}>
                         {selectedVideos.has(video.id) ? (
@@ -830,12 +836,12 @@ export default function VideosPage() {
                     </div>
                   )}
                   {video.status === 'PENDING' && (
-                    <div className="absolute top-2 right-2 bg-[var(--status-warning)] text-app-bg px-1.5 py-0.5 rounded text-xs font-medium">
+                    <div className="absolute top-2 right-2 bg-status-warning text-app-bg px-1.5 py-0.5 rounded text-xs font-medium">
                       Ausstehend
                     </div>
                   )}
                   {video.status === 'REJECTED' && (
-                    <div className="absolute top-2 right-2 bg-[var(--status-danger)] text-app-bg px-1.5 py-0.5 rounded text-xs font-medium">
+                    <div className="absolute top-2 right-2 bg-status-danger text-app-bg px-1.5 py-0.5 rounded text-xs font-medium">
                       Abgelehnt
                     </div>
                   )}
@@ -928,7 +934,7 @@ export default function VideosPage() {
                           const url = buildApiUrl(`/videos/${selectedVideo.id}/download`);
                           window.open(url, '_blank', 'noopener,noreferrer');
                         }}
-                        className="px-4 py-2 bg-[var(--status-info)] text-app-bg rounded-md hover:opacity-90 flex items-center gap-2"
+                        className="px-4 py-2 bg-status-info text-app-bg rounded-md hover:opacity-90 flex items-center gap-2"
                       >
                         <Download className="w-4 h-4" />
                         Original herunterladen
@@ -944,45 +950,50 @@ export default function VideosPage() {
         </Dialog>
 
         {/* Floating Action Button for ZIP Download */}
-        {videos.length > 0 && !isStorageLocked && (
-          <motion.button
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={async () => {
-              try {
-                const allIds = videos.map((v: any) => v.id).filter(Boolean);
-                if (allIds.length === 0) return;
-                const response = await api.post('/videos/bulk/download', {
-                  videoIds: allIds,
-                }, {
-                  responseType: 'blob',
-                });
-                const url = window.URL.createObjectURL(new Blob([response.data]));
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', `videos-${Date.now()}.zip`);
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                window.URL.revokeObjectURL(url);
-                showToast('Alle Videos heruntergeladen', 'success');
-              } catch (err: any) {
-                const code = err?.response?.data?.code;
-                if (code === 'STORAGE_LOCKED') {
-                  showToast('Speicherperiode beendet – Download nicht mehr möglich', 'error');
-                } else {
-                  showToast('Fehler beim Download', 'error');
-                }
-              }
-            }}
-            aria-label="Alle Videos herunterladen (ZIP)"
-            title="Alle Videos herunterladen (ZIP)"
-            className="fixed bottom-24 right-6 w-14 h-14 bg-tokens-brandGreen text-app-bg rounded-full shadow-lg flex items-center justify-center z-40 hover:opacity-90 transition-colors"
+        {viewMode === 'active' && videos.length > 0 && (
+          <Button
+            asChild
+            variant="primary"
+            className="fixed bottom-24 right-6 w-14 h-14 rounded-full p-0 shadow-lg z-40"
           >
-            <FileDown className="w-6 h-6" />
-          </motion.button>
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={async () => {
+                try {
+                  const allIds = videos.map((v: any) => v.id).filter(Boolean);
+                  if (allIds.length === 0) return;
+                  const response = await api.post('/videos/bulk/download', {
+                    videoIds: allIds,
+                  }, {
+                    responseType: 'blob',
+                  });
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', `videos-${Date.now()}.zip`);
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                  window.URL.revokeObjectURL(url);
+                  showToast('Alle Videos heruntergeladen', 'success');
+                } catch (err: any) {
+                  const code = err?.response?.data?.code;
+                  if (code === 'STORAGE_LOCKED') {
+                    showToast('Speicherperiode beendet – Download nicht mehr möglich', 'error');
+                  } else {
+                    showToast('Fehler beim Download', 'error');
+                  }
+                }
+              }}
+              aria-label="Alle Videos herunterladen (ZIP)"
+              title="Alle Videos herunterladen (ZIP)"
+              className="flex items-center justify-center w-full h-full"
+            >
+              <FileDown className="w-6 h-6" />
+            </motion.button>
+          </Button>
         )}
       </div>
       <DashboardFooter eventId={eventId} />

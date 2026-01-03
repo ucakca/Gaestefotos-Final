@@ -63,7 +63,7 @@ export default function AlbumNavigation({
                 <div
                   className={`relative w-14 h-14 rounded-full p-0.5 transition-all ${
                     isSelected
-                      ? 'bg-tokens-brandGreen scale-110'
+                      ? 'bg-app-accent scale-110'
                       : 'bg-app-border'
                   }`}
                 >
@@ -73,7 +73,7 @@ export default function AlbumNavigation({
                       <div className="w-full h-full bg-app-bg flex items-center justify-center">
                         {(() => {
                           const IconComp = getIcon((album as any).iconKey);
-                          return <IconComp className="w-6 h-6 text-tokens-brandGreen" />;
+                          return <IconComp className="w-6 h-6 text-app-fg" />;
                         })()}
                       </div>
                     ) : (
@@ -89,7 +89,7 @@ export default function AlbumNavigation({
                 <span
                   className={`text-xs font-medium transition-colors ${
                     isSelected
-                      ? 'text-tokens-brandGreen'
+                      ? 'text-app-fg'
                       : 'text-app-muted'
                   }`}
                 >

@@ -17,14 +17,15 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Category {
   id: string;
@@ -265,25 +266,30 @@ export default function ChallengeManagementPage() {
 
   return (
     <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
-      <Dialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{confirmState?.title}</DialogTitle>
-            {confirmState?.description ? <DialogDescription>{confirmState.description}</DialogDescription> : null}
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
+      <AlertDialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmState?.title}</AlertDialogTitle>
+            {confirmState?.description ? (
+              <AlertDialogDescription>{confirmState.description}</AlertDialogDescription>
+            ) : null}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
               <Button variant="secondary" onClick={() => closeConfirm(false)}>
                 {confirmState?.cancelText || 'Abbrechen'}
               </Button>
-            </DialogClose>
-            <Button variant="danger" onClick={() => closeConfirm(true)}>
-              {confirmState?.confirmText || 'Bestätigen'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button variant="danger" onClick={() => closeConfirm(true)}>
+                {confirmState?.confirmText || 'Bestätigen'}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -442,7 +448,7 @@ export default function ChallengeManagementPage() {
           <div className="bg-app-card rounded-lg shadow p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Globe className="w-5 h-5 text-tokens-brandGreen" />
+                <Globe className="w-5 h-5 text-app-fg" />
                 Globale Challenges
               </h2>
             </div>
@@ -452,7 +458,7 @@ export default function ChallengeManagementPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <Trophy className="w-5 h-5 text-[var(--status-warning)]" />
+                        <Trophy className="w-5 h-5 text-status-warning" />
                         <span className="font-semibold">{challenge.title}</span>
                         {!challenge.isActive && (
                           <span className="text-xs text-app-muted bg-app-border px-2 py-0.5 rounded">Inaktiv</span>
@@ -473,7 +479,7 @@ export default function ChallengeManagementPage() {
                         aria-label="Challenge bearbeiten"
                         title="Challenge bearbeiten"
                         onClick={() => startEdit(challenge)}
-                        className="text-tokens-brandGreen"
+                        className="text-app-fg"
                       />
                       <IconButton
                         icon={<Trash2 className="h-4 w-4" />}
@@ -482,7 +488,7 @@ export default function ChallengeManagementPage() {
                         aria-label="Challenge löschen"
                         title="Challenge löschen"
                         onClick={() => handleDeleteChallenge(challenge.id)}
-                        className="text-[var(--status-danger)]"
+                        className="text-status-danger"
                       />
                     </div>
                   </div>
@@ -509,7 +515,7 @@ export default function ChallengeManagementPage() {
                         <div key={challenge.id} className="bg-app-bg rounded p-3 flex items-center justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <Trophy className="w-4 h-4 text-[var(--status-warning)]" />
+                              <Trophy className="w-4 h-4 text-status-warning" />
                               <span className="text-sm font-medium">{challenge.title}</span>
                               {!challenge.isActive && (
                                 <span className="text-xs text-app-muted">(Inaktiv)</span>
@@ -530,7 +536,7 @@ export default function ChallengeManagementPage() {
                               aria-label="Auf andere Alben kopieren"
                               title="Auf andere Alben kopieren"
                               onClick={() => handleCopyChallenge(challenge.id)}
-                              className="text-tokens-brandGreen"
+                              className="text-app-fg"
                             />
                             <IconButton
                               icon={<Edit2 className="h-4 w-4" />}
@@ -539,7 +545,7 @@ export default function ChallengeManagementPage() {
                               aria-label="Challenge bearbeiten"
                               title="Challenge bearbeiten"
                               onClick={() => startEdit(challenge)}
-                              className="text-tokens-brandGreen"
+                              className="text-app-fg"
                             />
                             <IconButton
                               icon={<Trash2 className="h-4 w-4" />}
@@ -548,7 +554,7 @@ export default function ChallengeManagementPage() {
                               aria-label="Challenge löschen"
                               title="Challenge löschen"
                               onClick={() => handleDeleteChallenge(challenge.id)}
-                              className="text-[var(--status-danger)]"
+                              className="text-status-danger"
                             />
                           </div>
                         </div>
@@ -569,7 +575,6 @@ export default function ChallengeManagementPage() {
           </div>
         )}
       </div>
-      </Dialog>
 
       {/* Sticky Footer Navigation */}
       <DashboardFooter eventId={eventId} />

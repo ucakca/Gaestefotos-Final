@@ -394,7 +394,7 @@ export default function ModernPhotoGrid({
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: 'spring', stiffness: 200 }}
-                    className="bg-tokens-brandPeach rounded-full p-1.5 shadow-lg"
+                    className="rounded-full p-1.5 shadow-lg bg-status-warning"
                   >
                     <Trophy className="w-4 h-4 text-app-fg" />
                   </motion.div>
@@ -422,7 +422,7 @@ export default function ModernPhotoGrid({
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   <div className="bg-app-card rounded-lg px-3 py-2 shadow-lg border border-app-border">
                     <div className="flex items-center gap-2 mb-1">
-                      <Trophy className="w-3 h-3 text-tokens-brandPeach flex-shrink-0" />
+                      <Trophy className="w-3 h-3 flex-shrink-0 text-status-warning" />
                       <span className="text-xs font-semibold text-app-fg truncate">
                         {challenge.title}
                       </span>
@@ -435,7 +435,7 @@ export default function ModernPhotoGrid({
                       </span>
                       {completion.averageRating && (
                         <div className="flex items-center gap-1 ml-auto">
-                          <Star className="w-3 h-3 fill-tokens-brandPeach text-tokens-brandPeach" />
+                          <Star className="w-3 h-3 fill-status-warning text-status-warning" />
                           <span className="text-xs text-app-muted">{completion.averageRating.toFixed(1)}</span>
                         </div>
                       )}
@@ -549,7 +549,7 @@ export default function ModernPhotoGrid({
                           initial={{ scale: 0, rotate: -180 }}
                           animate={{ scale: 1, rotate: 0 }}
                           transition={{ type: 'spring', stiffness: 200 }}
-                          className="bg-tokens-brandPeach rounded-full p-3 shadow-xl"
+                          className="rounded-full p-3 shadow-xl bg-status-warning"
                         >
                           <Trophy className="w-6 h-6 text-app-fg" />
                         </motion.div>
@@ -561,7 +561,7 @@ export default function ModernPhotoGrid({
                       <div className="absolute bottom-4 left-4 right-4">
                         <div className="bg-app-card border border-app-border rounded-lg px-4 py-3 shadow-xl max-w-md mx-auto">
                           <div className="flex items-center gap-2 mb-2">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-tokens-brandPeach to-tokens-brandGreen flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-status-warning to-app-accent flex items-center justify-center">
                               <User className="w-4 h-4 text-app-bg" />
                             </div>
                             <span className="text-sm font-semibold text-app-fg">
@@ -580,7 +580,7 @@ export default function ModernPhotoGrid({
                       <div className="absolute bottom-4 left-4 right-4">
                         <div className="bg-gradient-to-r from-app-bg to-app-card rounded-lg px-4 py-3 shadow-xl max-w-md mx-auto border border-app-border">
                           <div className="flex items-center gap-2 mb-2">
-                            <Trophy className="w-5 h-5 text-tokens-brandPeach" />
+                            <Trophy className="w-5 h-5 text-status-warning" />
                             <span className="text-sm font-semibold text-app-fg">
                               {(photos[selectedPhoto] as any).challenge.title}
                             </span>
@@ -666,7 +666,7 @@ export default function ModernPhotoGrid({
                       <Heart
                         className={`w-6 h-6 ${
                           likedPhotos.has(getUnderlyingPhotoId(photos[selectedPhoto]) || '')
-                            ? 'fill-tokens-brandPeach text-tokens-brandPeach'
+                            ? 'fill-status-warning text-status-warning'
                             : 'text-app-fg'
                         }`}
                       />
@@ -809,7 +809,7 @@ export default function ModernPhotoGrid({
                   ) : (
                     (comments[getUnderlyingPhotoId(photos[selectedPhoto]) || ''] || []).map((comment: any) => (
                       <div key={comment.id} className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-tokens-brandGreen to-tokens-brandPeach flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-app-accent to-status-warning flex items-center justify-center flex-shrink-0">
                           <User className="w-4 h-4 text-app-bg" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -842,7 +842,7 @@ export default function ModernPhotoGrid({
                       </div>
                     )}
                     {commentError && (
-                      <div className="text-xs text-[var(--status-danger)] bg-app-bg border border-[var(--status-danger)] rounded-lg px-3 py-2">
+                      <div className="text-xs text-status-danger bg-app-bg border border-status-danger rounded-lg px-3 py-2">
                         {commentError}
                       </div>
                     )}

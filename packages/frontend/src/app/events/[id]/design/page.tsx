@@ -277,8 +277,10 @@ export default function DesignLiveBuilderPage() {
   const colors = (designConfig.colors as any) || {};
   const welcomeMessage = designConfig.welcomeMessage || '';
   const selectedPreset = getDesignPreset(designConfig.designPresetKey);
-  const heroGradient = selectedPreset?.heroGradient || 'linear-gradient(90deg, var(--brand-green) 0%, var(--app-accent) 100%)';
-  const accentGradient = selectedPreset?.accentGradient || 'linear-gradient(135deg, var(--brand-green) 0%, var(--app-accent) 100%)';
+  const heroGradient =
+    selectedPreset?.heroGradient || 'linear-gradient(90deg, var(--status-success) 0%, var(--app-accent) 100%)';
+  const accentGradient =
+    selectedPreset?.accentGradient || 'linear-gradient(135deg, var(--status-success) 0%, var(--app-accent) 100%)';
   const eventUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/e2/${event.slug}`;
 
   return (

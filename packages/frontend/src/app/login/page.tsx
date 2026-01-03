@@ -28,6 +28,28 @@ export default function LoginPage() {
     try {
       const response = await authApi.login({ email, password });
       if (response.user) {
+        const roleRaw = (response.user as any).role;
+        const roleLower = String(roleRaw || '').toLowerCase().trim();
+        const isAdmin =
+          roleRaw === 'ADMIN' ||
+          roleRaw === 'SUPERADMIN' ||
+          roleLower === 'admin' ||
+          roleLower === 'superadmin' ||
+          roleLower === 'administrator';
+
+        if (isAdmin && typeof window !== 'undefined') {
+          const origin = window.location.origin;
+          const token = String(response.token || '');
+          const url = new URL(origin);
+          url.hostname = url.hostname.replace(/^app\./i, 'dash.');
+          url.pathname = '/login';
+          if (token) {
+            url.searchParams.set('token', token);
+          }
+          window.location.href = url.toString();
+          return;
+        }
+
         if (typeof window !== 'undefined') {
           if (rememberMe) {
             if (response.token) localStorage.setItem('token', response.token);
@@ -38,16 +60,7 @@ export default function LoginPage() {
           }
         }
 
-        const roleRaw = (response.user as any).role;
-        const roleLower = String(roleRaw || '').toLowerCase().trim();
-        const isAdmin =
-          roleRaw === 'ADMIN' ||
-          roleRaw === 'SUPERADMIN' ||
-          roleLower === 'admin' ||
-          roleLower === 'superadmin' ||
-          roleLower === 'administrator';
-
-        router.push(isAdmin ? '/admin/dashboard' : '/dashboard');
+        router.push('/dashboard');
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.message || 'Login fehlgeschlagen';
@@ -58,20 +71,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-screen flex items-center justify-center p-4 bg-tokens-brandGreen">
+    <div className="min-h-screen w-screen flex items-center justify-center bg-app-bg p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl shadow-xl p-8 w-full max-w-md bg-app-bg"
+        className="w-full max-w-md rounded-2xl bg-app-card p-8 shadow-xl"
       >
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <Logo width={180} height={72} />
           </div>
-          <h1 className="text-3xl font-bold mb-2 text-tokens-brandGreen">
+          <h1 className="mb-2 text-3xl font-bold text-app-fg">
             Willkommen zurück
           </h1>
-          <p className="text-sm text-tokens-brandGreen">
+          <p className="text-sm text-app-muted">
             Melde dich an, um fortzufahren
           </p>
         </div>
@@ -81,14 +94,14 @@ export default function LoginPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-app-bg border-2 border-[var(--status-danger)] text-[var(--status-danger)] px-4 py-3 rounded-lg"
+              className="bg-app-bg border-2 border-status-danger text-status-danger px-4 py-3 rounded-lg"
             >
               {error}
             </motion.div>
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-2 text-tokens-brandGreen">
+            <label htmlFor="email" className="mb-2 block text-sm font-medium text-app-fg">
               E-Mail
             </label>
             <Input
@@ -98,14 +111,14 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 border border-app-accent rounded-lg focus:ring-2 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen focus:outline-none transition-all text-app-fg bg-app-card"
+              className="w-full rounded-lg border border-app-border bg-app-card px-4 py-3 text-app-fg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
               placeholder="deine@email.com"
               autoComplete="email"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-2 text-tokens-brandGreen">
+            <label htmlFor="password" className="mb-2 block text-sm font-medium text-app-fg">
               Passwort
             </label>
             <div className="relative">
@@ -116,7 +129,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 pr-12 border border-app-accent rounded-lg focus:ring-2 focus:ring-tokens-brandGreen/30 focus:border-tokens-brandGreen focus:outline-none transition-all text-app-fg bg-app-card"
+                className="w-full rounded-lg border border-app-border bg-app-card px-4 py-3 pr-12 text-app-fg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
                 placeholder="••••••••"
                 autoComplete="current-password"
               />
@@ -128,18 +141,18 @@ export default function LoginPage() {
                 size="sm"
                 aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
                 title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-tokens-brandGreen"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-app-muted"
               />
             </div>
           </div>
 
           <div className="flex items-center justify-between">
-            <label className="flex items-center text-tokens-brandGreen">
+            <label className="flex items-center text-app-fg">
               <Checkbox id="rememberMe" name="rememberMe" checked={rememberMe} onCheckedChange={(checked) => setRememberMe(checked)} />
               <span className="ml-2 text-sm">Angemeldet bleiben</span>
             </label>
             <a
-              className="text-sm text-tokens-brandGreen hover:underline"
+              className="text-sm text-app-fg hover:underline"
               href="https://gästefotos.com/wp-login.php?action=lostpassword"
               target="_blank"
               rel="noreferrer"
@@ -158,20 +171,20 @@ export default function LoginPage() {
             </motion.span>
           </Button>
 
-          <div className="text-center text-sm text-tokens-brandGreen/90">
+          <div className="text-center text-sm text-app-muted">
             Kein Konto? Bitte auf <strong>gästefotos.com</strong> anlegen.
           </div>
 
-          <div className="mt-3 pt-3 border-t border-tokens-brandGreen/15 flex justify-center gap-3 flex-wrap text-center">
-            <a className="text-sm hover:underline text-tokens-brandGreen" href="https://xn--gstefotos-v2a.com/faq/" target="_blank" rel="noreferrer">
+          <div className="mt-3 flex flex-wrap justify-center gap-3 border-t border-app-border pt-3 text-center">
+            <a className="text-sm text-app-fg hover:underline" href="https://xn--gstefotos-v2a.com/faq/" target="_blank" rel="noreferrer">
               Hilfe / FAQ
             </a>
-            <span className="text-tokens-brandGreen/35">|</span>
-            <a className="text-sm hover:underline text-tokens-brandGreen" href="https://xn--gstefotos-v2a.com/datenschutz/" target="_blank" rel="noreferrer">
+            <span className="text-app-muted">|</span>
+            <a className="text-sm text-app-fg hover:underline" href="https://xn--gstefotos-v2a.com/datenschutz/" target="_blank" rel="noreferrer">
               Datenschutz
             </a>
-            <span className="text-tokens-brandGreen/35">|</span>
-            <a className="text-sm hover:underline text-tokens-brandGreen" href="https://gästefotos.com/impressum" target="_blank" rel="noreferrer">
+            <span className="text-app-muted">|</span>
+            <a className="text-sm text-app-fg hover:underline" href="https://gästefotos.com/impressum" target="_blank" rel="noreferrer">
               Impressum
             </a>
           </div>

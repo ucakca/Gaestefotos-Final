@@ -55,7 +55,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                   variant="ghost"
                   size="sm"
                   onClick={() => setMobileOpen(false)}
-                  className="h-10 w-10 p-0 text-[var(--app-on-dark)] hover:bg-app-card/10"
+                  className="h-10 w-10 p-0 text-inherit hover:bg-app-card/10"
                   aria-label="Menü schließen"
                 >
                   <X className="h-5 w-5" />

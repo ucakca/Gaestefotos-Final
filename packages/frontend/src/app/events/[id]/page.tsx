@@ -56,7 +56,7 @@ export default function EventDetailPage() {
         >
           <Link
             href="/dashboard"
-            className="text-tokens-brandGreen hover:opacity-90"
+            className="text-app-fg hover:opacity-80"
           >
             ← Zurück zum Dashboard
           </Link>
@@ -112,7 +112,7 @@ export default function EventDetailPage() {
               className="bg-app-bg border border-app-border p-4 rounded-lg"
             >
               <h3 className="font-semibold text-app-fg mb-2">Fotos</h3>
-              <p className="text-2xl font-bold text-tokens-brandGreen">
+              <p className="text-2xl font-bold text-app-fg">
                 {/* @ts-ignore */}
                 {event._count?.photos || 0}
               </p>
@@ -122,7 +122,7 @@ export default function EventDetailPage() {
               className="bg-app-bg border border-app-border p-4 rounded-lg"
             >
               <h3 className="font-semibold text-app-fg mb-2">Gäste</h3>
-              <p className="text-2xl font-bold text-[var(--status-success)]">
+              <p className="text-2xl font-bold text-status-success">
                 {/* @ts-ignore */}
                 {event._count?.guests || 0}
               </p>

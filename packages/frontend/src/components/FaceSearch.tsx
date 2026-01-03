@@ -268,7 +268,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                       disabled={!consentAccepted}
                       variant="ghost"
                       size="sm"
-                      className="p-6 border-2 border-dashed border-app-border rounded-lg hover:border-tokens-brandGreen hover:bg-app-bg transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-6 border-2 border-dashed border-app-border rounded-lg hover:border-app-accent hover:bg-app-bg transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Camera className="w-8 h-8 text-app-muted" />
                       <span className="font-medium">Selfie aufnehmen</span>
@@ -284,7 +284,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                       disabled={!consentAccepted}
                       variant="ghost"
                       size="sm"
-                      className="p-6 border-2 border-dashed border-app-border rounded-lg hover:border-tokens-brandGreen hover:bg-app-bg transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-6 border-2 border-dashed border-app-border rounded-lg hover:border-app-accent hover:bg-app-bg transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <ImageIcon className="w-8 h-8 text-app-muted" />
                       <span className="font-medium">Foto hochladen</span>
@@ -352,7 +352,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                   </div>
 
                   {error && (
-                    <div className="p-3 bg-app-bg border border-[var(--status-danger)] text-[var(--status-danger)] rounded-lg text-sm">
+                    <div className="p-3 bg-app-bg border border-status-danger text-status-danger rounded-lg text-sm">
                       {error}
                     </div>
                   )}
