@@ -5,6 +5,7 @@ import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import FullPageLoader from '@/components/FullPageLoader';
 
@@ -366,11 +367,11 @@ export default function SettingsPage() {
               <div>
                 <div className="text-sm font-medium text-app-fg">Hinweistext</div>
                 <div className="mt-1 text-sm text-app-muted">Wird im Frontend vor Face Search angezeigt.</div>
-                <textarea
+                <Textarea
                   value={faceSearchNoticeText}
-                  onChange={(e) => setFaceSearchNoticeText(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFaceSearchNoticeText(e.target.value)}
                   rows={8}
-                  className="mt-3 w-full rounded-lg border border-app-border bg-app-card px-4 py-3 text-sm text-app-fg focus:outline-none focus:ring-1 focus:ring-app-fg/30"
+                  className="mt-3"
                   placeholder="z.B. Hinweis zu biometrischen Daten / Einwilligung (Art. 9 DSGVO)"
                 />
               </div>
