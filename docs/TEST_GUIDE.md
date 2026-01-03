@@ -102,6 +102,34 @@ curl -I http://localhost:3002
 
 ---
 
+## E2E (Playwright)
+
+### Browser-Binaries installieren (Server)
+
+Falls E2E mit `Executable doesn't exist ...` fehlschlägt:
+
+```bash
+pnpm exec playwright install
+```
+
+### Port-Konflikte vermeiden
+
+Wenn `http://localhost:3000 is already used` kommt, nimm einen freien Port für die E2E WebServer:
+
+```bash
+E2E_BASE_URL=http://localhost:3100 pnpm e2e
+```
+
+### Pre-Push Hook (e2e:stable) überspringen
+
+Der Repo-Pre-Push Hook führt standardmäßig `pnpm run e2e:stable` aus. Wenn das auf einem Server gerade nicht sinnvoll ist:
+
+```bash
+SKIP_E2E_HOOK=1 git push
+```
+
+---
+
 ## Produktiv Smoke (Prod)
 
 Hinweis: In der Server-Umgebung ist „localhost im Browser“ oft nicht sinnvoll. Für Prod-Checks nutze eine **echte, öffentliche URL** (oder eine interne Domain/Ingress-URL).
