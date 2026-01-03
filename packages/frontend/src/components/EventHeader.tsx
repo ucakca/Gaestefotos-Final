@@ -85,7 +85,7 @@ export default function EventHeader({
     if (hasStories) {
       return {
         backgroundImage:
-          accentGradient || 'linear-gradient(135deg, var(--app-accent) 0%, var(--status-warning) 100%)',
+          accentGradient || 'linear-gradient(135deg, var(--app-accent) 0%, var(--app-fg) 100%)',
       };
     }
     return { backgroundImage: 'linear-gradient(135deg, var(--app-border) 0%, var(--app-bg) 100%)' };

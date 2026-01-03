@@ -24,7 +24,7 @@ export const DESIGN_PRESETS: DesignPreset[] = [
   {
     key: 'emerald_sand',
     label: 'Emerald & Sand',
-    heroGradient: 'linear-gradient(135deg, var(--status-success) 0%, var(--app-accent) 100%)',
+    heroGradient: 'linear-gradient(135deg, var(--app-accent) 0%, var(--app-fg) 100%)',
     accentGradient: 'linear-gradient(135deg, #10B981 0%, #F59E0B 100%)',
   },
   {

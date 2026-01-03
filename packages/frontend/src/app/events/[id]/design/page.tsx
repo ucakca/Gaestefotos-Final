@@ -278,9 +278,9 @@ export default function DesignLiveBuilderPage() {
   const welcomeMessage = designConfig.welcomeMessage || '';
   const selectedPreset = getDesignPreset(designConfig.designPresetKey);
   const heroGradient =
-    selectedPreset?.heroGradient || 'linear-gradient(90deg, var(--status-success) 0%, var(--app-accent) 100%)';
+    selectedPreset?.heroGradient || 'linear-gradient(90deg, var(--app-accent) 0%, var(--app-fg) 100%)';
   const accentGradient =
-    selectedPreset?.accentGradient || 'linear-gradient(135deg, var(--status-success) 0%, var(--app-accent) 100%)';
+    selectedPreset?.accentGradient || 'linear-gradient(135deg, var(--app-accent) 0%, var(--app-fg) 100%)';
   const eventUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/e2/${event.slug}`;
 
   return (

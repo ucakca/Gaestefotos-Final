@@ -35,10 +35,10 @@ interface Statistics {
 }
 
 const STATUS_COLORS = {
-  success: 'var(--status-success)',
-  warning: 'var(--status-warning)',
-  danger: 'var(--status-danger)',
-  info: 'var(--status-info)',
+  success: 'var(--app-accent)',
+  warning: 'var(--app-fg)',
+  danger: 'var(--app-muted)',
+  info: 'var(--app-border)',
 } as const;
 
 const COLORS = [STATUS_COLORS.success, 'var(--app-accent)', 'var(--app-bg)', STATUS_COLORS.info];
