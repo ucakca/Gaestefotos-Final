@@ -751,6 +751,48 @@ router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Best-effort WordPress role sync for users that are linked to a WP account.
+    // Otherwise a WP role downgrade (admin -> customer) might not be reflected when the
+    // user still has a valid local password, which can cause wrong redirects/permissions.
+    if (effectiveUser.wordpressUserId) {
+      try {
+        let wpUser: Awaited<ReturnType<typeof verifyWordPressUser>> = null;
+        for (const identifier of emailCandidates) {
+          wpUser = await verifyWordPressUser(identifier, data.password);
+          if (wpUser) break;
+        }
+
+        if (wpUser) {
+          const nextRole = wpUser.is_admin ? 'ADMIN' : 'HOST';
+          if (effectiveUser.role !== nextRole) {
+            const previousRole = effectiveUser.role;
+            const updated = await prisma.user.update({
+              where: { id: effectiveUser.id },
+              data: {
+                role: nextRole as any,
+                email: wpUser.user_email,
+                name: wpUser.display_name || wpUser.user_login,
+                wordpressUserId: wpUser.id,
+              },
+            });
+            effectiveUser = updated;
+            logger.info('[auth] wp role resynced on login', {
+              userId: effectiveUser.id,
+              from: previousRole,
+              to: nextRole,
+              wpUserId: wpUser.id,
+            });
+          }
+        }
+      } catch (e: any) {
+        if (e instanceof WordPressAuthUnavailableError) {
+          logger.warn('[auth] wp role resync skipped (wordpress unavailable)', { email: data.email, message: e.message });
+        } else {
+          logger.warn('[auth] wp role resync failed', { email: data.email, message: e?.message || String(e) });
+        }
+      }
+    }
+
     const adminMustUse2fa = effectiveUser.role === 'ADMIN';
 
     if (effectiveUser.twoFactorEnabled) {
