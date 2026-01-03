@@ -344,7 +344,7 @@ export default function EventHeader({
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-3">
-                  <input
+                  <Input
                     ref={storyCapturePhotoInputRef}
                     type="file"
                     accept="image/*"
@@ -352,7 +352,7 @@ export default function EventHeader({
                     className="hidden"
                     onChange={onStoryFileSelected}
                   />
-                  <input
+                  <Input
                     ref={storyCaptureVideoInputRef}
                     type="file"
                     accept="video/*"
@@ -360,8 +360,8 @@ export default function EventHeader({
                     className="hidden"
                     onChange={onStoryFileSelected}
                   />
-                  <input ref={storyPickPhotoInputRef} type="file" accept="image/*" className="hidden" onChange={onStoryFileSelected} />
-                  <input ref={storyPickVideoInputRef} type="file" accept="video/*" className="hidden" onChange={onStoryFileSelected} />
+                  <Input ref={storyPickPhotoInputRef} type="file" accept="image/*" className="hidden" onChange={onStoryFileSelected} />
+                  <Input ref={storyPickVideoInputRef} type="file" accept="video/*" className="hidden" onChange={onStoryFileSelected} />
                   <Button
                     type="button"
                     disabled={storyUploading}

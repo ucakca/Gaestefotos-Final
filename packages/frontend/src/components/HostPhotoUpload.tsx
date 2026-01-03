@@ -8,6 +8,7 @@ import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import api, { formatApiError, isRetryableUploadError } from '@/lib/api';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Dialog, DialogClose, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
@@ -200,7 +201,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
         }}
       >
         <DialogContent className="max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto">
-          <input
+          <Input
             ref={capturePhotoInputRef}
             type="file"
             accept="image/*"
