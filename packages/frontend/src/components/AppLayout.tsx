@@ -40,9 +40,9 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
       {/* Consistent Header */}
       <header className="sticky top-0 z-40 border-b border-app-border bg-app-card">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="relative flex items-center h-16">
             {/* Left: Back Button */}
-            <div className="flex items-center gap-4 flex-1">
+            <div className="flex items-center gap-4 min-w-0">
               {showBackButton && backUrl ? (
                 <IconButton
                   asChild
@@ -83,18 +83,18 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
             </div>
 
             {/* Center: Logo */}
-            <div className="flex-1 flex justify-center">
-              <Link href="/dashboard" className="flex items-center">
-                <img 
-                  src="/images/logo.webp" 
-                  alt="Gästefotos" 
-                  className="h-8 sm:h-10 md:h-12 w-auto max-w-[120px] sm:max-w-[150px] md:max-w-[180px]"
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <Link href="/dashboard" className="flex items-center pointer-events-auto">
+                <img
+                  src="/images/logo.webp"
+                  alt="Gästefotos"
+                  className="h-8 sm:h-10 md:h-12 w-auto max-w-[120px] sm:max-w-[150px] md:max-w-[180px] object-contain"
                 />
               </Link>
             </div>
 
             {/* Right: User Actions */}
-            <div className="flex items-center gap-2 flex-1 justify-end">
+            <div className="ml-auto flex items-center gap-2">
               {user && (
                 <div className="flex items-center gap-2 border-l border-app-border pl-3">
                   <div className="hidden sm:block text-right">

@@ -167,7 +167,7 @@ export default function DashboardPage() {
                   transition={{ delay: index * 0.1 }}
                 >
                   <Link
-                    href={`/events/${event.id}`}
+                    href={`/events/${event.id}/dashboard`}
                     className="bg-app-card rounded-lg border border-app-border shadow-sm p-6 hover:shadow-lg transition-all block"
                   >
                     <h2 className="text-xl font-semibold mb-2 text-app-fg">
