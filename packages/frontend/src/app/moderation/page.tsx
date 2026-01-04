@@ -8,6 +8,13 @@ import { Check, X, Trash2 } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import { Button } from '@/components/ui/Button';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select';
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -50,6 +57,8 @@ export default function ModerationPage() {
   }
 
   const [pendingPhotos, setPendingPhotos] = useState<(Photo & { event: EventType })[]>([]);
+  const [events, setEvents] = useState<EventType[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
@@ -61,7 +70,8 @@ export default function ModerationPage() {
     try {
       // Get all events first
       const { data: eventsData } = await api.get('/events');
-      const events = eventsData.events || [];
+      const events = (eventsData.events || []) as EventType[];
+      setEvents(events);
 
       // Get pending photos for each event
       const allPendingPhotos: (Photo & { event: EventType })[] = [];
@@ -88,6 +98,10 @@ export default function ModerationPage() {
       setLoading(false);
     }
   };
+
+  const filteredPhotos = selectedEventId === 'all'
+    ? pendingPhotos
+    : pendingPhotos.filter((p) => String((p as any)?.event?.id) === selectedEventId);
 
   const handleApprove = async (photoId: string) => {
     try {
@@ -176,14 +190,35 @@ export default function ModerationPage() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-8"
           >
-            <h1 className="text-3xl font-bold text-app-fg mb-2">Foto-Moderation</h1>
+            <h1 className="text-3xl font-bold text-app-fg mb-2">Uploads prüfen</h1>
             <p className="text-app-muted">
-              {pendingPhotos.length} Foto{pendingPhotos.length !== 1 ? 's' : ''} wartet
-              {pendingPhotos.length !== 1 ? 'en' : ''} auf Freigabe
+              {filteredPhotos.length} Foto{filteredPhotos.length !== 1 ? 's' : ''} wartet
+              {filteredPhotos.length !== 1 ? 'en' : ''} auf Freigabe
             </p>
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <div className="text-sm text-app-muted">Event</div>
+              <div className="w-full sm:max-w-xs">
+                <Select value={selectedEventId} onValueChange={(v) => setSelectedEventId(v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Alle Events" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Alle Events</SelectItem>
+                    {events.map((e) => (
+                      <SelectItem key={e.id} value={String(e.id)}>
+                        {e.title || e.slug}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="text-xs text-app-muted">
+                Es werden nur Events angezeigt, auf die dein Account Zugriff hat.
+              </div>
+            </div>
           </motion.div>
 
-          {pendingPhotos.length === 0 ? (
+          {filteredPhotos.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -195,7 +230,7 @@ export default function ModerationPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Photo List */}
               <div className="lg:col-span-1 space-y-4">
-                {pendingPhotos.map((photo, index) => (
+                {filteredPhotos.map((photo, index) => (
                   <motion.div
                     key={photo.id}
                     initial={{ opacity: 0, x: -20 }}

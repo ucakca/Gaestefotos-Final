@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/authStore';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Button } from '@/components/ui/Button';
+import { HelpCircle, ClipboardCheck, PlusSquare, LogOut } from 'lucide-react';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -60,41 +61,81 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-app-bg">
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 pb-24 sm:pb-8">
           {/* Header */}
           <div className="bg-app-card rounded-lg border border-app-border shadow-sm p-6 mb-8">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 min-w-0">
                 <Logo width={120} height={48} />
-                <div>
+                <div className="min-w-0">
                   <h1 className="text-2xl font-bold text-app-fg">Dashboard</h1>
                   {user && (
-                    <p className="text-sm text-app-muted">{user.name || user.email}</p>
+                    <p className="text-sm text-app-muted break-words">{user.name || user.email}</p>
                   )}
                 </div>
               </div>
-              <div className="flex gap-4 items-center">
-                <Button asChild variant="secondary" size="sm">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 sm:justify-end">
+                <Button asChild variant="secondary" size="sm" className="w-full sm:w-auto">
                   <a href="https://xn--gstefotos-v2a.com/faq/" target="_blank" rel="noreferrer">
                     FAQ
                   </a>
                 </Button>
                 <Link
                   href="/moderation"
-                  className="px-4 py-2 rounded-md text-app-bg font-medium transition-colors bg-app-accent hover:opacity-90"
+                  className="w-full sm:w-auto px-4 py-2 rounded-md text-app-bg font-medium transition-colors bg-app-accent hover:opacity-90 text-center"
                 >
-                  Moderation
+                  Uploads prüfen
                 </Link>
-                <Button asChild variant="primary" size="sm" className="px-4 py-2 rounded-md font-medium">
+                <Button asChild variant="primary" size="sm" className="w-full sm:w-auto px-4 py-2 rounded-md font-medium">
                   <Link href="/events/new">Neues Event</Link>
                 </Button>
                 <Button
                   onClick={logout}
                   variant="secondary"
                   size="sm"
+                  className="w-full sm:w-auto"
                 >
                   Abmelden
                 </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Sticky Actions */}
+          <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-app-border bg-app-card/90 backdrop-blur sm:hidden pb-[env(safe-area-inset-bottom)]">
+            <div className="mx-auto max-w-7xl px-4">
+              <div className="grid grid-cols-4 gap-2 py-2">
+                <a
+                  href="https://xn--gstefotos-v2a.com/faq/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-app-fg hover:bg-app-bg"
+                >
+                  <HelpCircle className="h-5 w-5" />
+                  <span>FAQ</span>
+                </a>
+                <Link
+                  href="/moderation"
+                  className="flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-app-fg hover:bg-app-bg"
+                >
+                  <ClipboardCheck className="h-5 w-5" />
+                  <span>Uploads</span>
+                </Link>
+                <Link
+                  href="/events/new"
+                  className="flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-app-fg hover:bg-app-bg"
+                >
+                  <PlusSquare className="h-5 w-5" />
+                  <span>Neu</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-app-fg hover:bg-app-bg"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span>Logout</span>
+                </button>
               </div>
             </div>
           </div>
