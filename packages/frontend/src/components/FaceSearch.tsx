@@ -12,8 +12,6 @@ import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 
 const MotionButton = motion(Button);
 
-const CONSENT_STORAGE_KEY = 'face_search_consent_accepted_v1';
-
 const DEFAULT_NOTICE_TEXT =
   'Hinweis: Für die Funktion „Finde Bilder von mir“ wird ein Referenzfoto (Selfie) verarbeitet, um passende Fotos zu finden. Dabei können biometrische Daten (Gesichtsmerkmale) verarbeitet werden. Bitte nutze diese Funktion nur mit deiner ausdrücklichen Einwilligung.';
 
@@ -53,14 +51,22 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
   }, [open]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const stored = window.localStorage.getItem(CONSENT_STORAGE_KEY);
-      if (stored === 'true') setConsentAccepted(true);
-    } catch {
-      // ignore
-    }
-  }, []);
+    let mounted = true;
+    if (!showModal) return;
+    (async () => {
+      try {
+        const res = await api.get(`/events/${eventId}/face-search-consent`);
+        if (!mounted) return;
+        setConsentAccepted(!!res.data?.accepted);
+      } catch {
+        // ignore
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [showModal, eventId]);
 
   useEffect(() => {
     let mounted = true;
@@ -97,14 +103,19 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
   const effectiveNoticeText = (consentNoticeText || '').trim() || DEFAULT_NOTICE_TEXT;
   const effectiveCheckboxLabel = (consentCheckboxLabel || '').trim() || DEFAULT_CHECKBOX_LABEL;
 
-  const setConsent = (next: boolean) => {
-    setConsentAccepted(next);
-    if (typeof window === 'undefined') return;
+  const setConsent = async (next: boolean) => {
+    setError('');
     try {
-      if (next) window.localStorage.setItem(CONSENT_STORAGE_KEY, 'true');
-      else window.localStorage.removeItem(CONSENT_STORAGE_KEY);
-    } catch {
-      // ignore
+      if (next) {
+        await api.post(`/events/${eventId}/face-search-consent`);
+        setConsentAccepted(true);
+      } else {
+        await api.delete(`/events/${eventId}/face-search-consent`);
+        setConsentAccepted(false);
+        reset();
+      }
+    } catch (err: any) {
+      setError(err?.response?.data?.error || 'Einwilligung konnte nicht gespeichert werden');
     }
   };
 
@@ -192,7 +203,13 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
         setError('Keine Fotos mit diesem Gesicht gefunden. Versuche es mit einem anderen Foto!');
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Fehler bei der Suche');
+      const status = err?.response?.status;
+      if (status === 403) {
+        setConsentAccepted(false);
+        setError(err.response?.data?.error || 'Einwilligung erforderlich');
+      } else {
+        setError(err.response?.data?.error || 'Fehler bei der Suche');
+      }
     } finally {
       setSearching(false);
     }
@@ -250,7 +267,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                 <div className="text-sm font-medium text-app-fg">Einwilligung (biometrische Daten)</div>
                 <div className="mt-2 text-sm text-app-muted whitespace-pre-wrap">{effectiveNoticeText}</div>
                 <label className="mt-3 flex items-start gap-3 text-sm text-app-fg">
-                  <Checkbox checked={consentAccepted} onCheckedChange={(checked) => setConsent(checked)} className="mt-1" />
+                  <Checkbox checked={consentAccepted} onCheckedChange={(checked) => void setConsent(checked)} className="mt-1" />
                   <span>{effectiveCheckboxLabel}</span>
                 </label>
               </div>

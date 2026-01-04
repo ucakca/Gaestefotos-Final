@@ -66,10 +66,28 @@ function verifyTwoFactorChallengeToken(token: string): { userId: string; role: s
     throw new Error('Server misconfigured: JWT_SECRET is missing');
   }
 
-  const decoded = jwt.verify(token, jwtSecret) as any;
+  let decoded: any;
+  try {
+    decoded = jwt.verify(token, jwtSecret) as any;
+  } catch (e: any) {
+    logger.warn('[auth] 2fa challenge token verify failed', {
+      message: e?.message || String(e),
+      tokenLength: typeof token === 'string' ? token.length : null,
+      tokenPrefix: typeof token === 'string' ? token.slice(0, 12) : null,
+    });
+    throw new Error('Invalid 2FA token');
+  }
+
   const purpose = decoded?.purpose;
   const okPurpose = purpose === '2fa' || purpose === '2fa_setup';
   if (!decoded || !okPurpose || typeof decoded.userId !== 'string' || typeof decoded.role !== 'string') {
+    logger.warn('[auth] 2fa challenge token payload invalid', {
+      purpose,
+      hasUserId: typeof decoded?.userId === 'string',
+      hasRole: typeof decoded?.role === 'string',
+      tokenLength: typeof token === 'string' ? token.length : null,
+      tokenPrefix: typeof token === 'string' ? token.slice(0, 12) : null,
+    });
     throw new Error('Invalid 2FA token');
   }
   return { userId: decoded.userId, role: decoded.role, purpose };
@@ -366,6 +384,11 @@ const twoFactorSetupConfirmChallengeSchema = z.object({
 
 router.post('/2fa/setup/start-challenge', passwordLimiter, twoFactorSetupLimiter, async (req: Request, res: Response) => {
   try {
+    const twoFactorKey = process.env.TWO_FACTOR_ENCRYPTION_KEY;
+    if (!twoFactorKey) {
+      return res.status(500).json({ error: 'Server misconfigured: TWO_FACTOR_ENCRYPTION_KEY is missing' });
+    }
+
     const data = twoFactorSetupStartChallengeSchema.parse(req.body);
     const challenge = verifyTwoFactorChallengeToken(data.twoFactorToken);
     if (challenge.purpose !== '2fa_setup') {
@@ -421,7 +444,15 @@ router.post('/2fa/setup/start-challenge', passwordLimiter, twoFactorSetupLimiter
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    logger.warn('[auth] 2fa setup start-challenge failed', { message: (error as any)?.message || String(error) });
+    const message = (error as any)?.message || String(error);
+    logger.warn('[auth] 2fa setup start-challenge failed', { message });
+
+    // If the server is misconfigured (e.g. missing TWO_FACTOR_ENCRYPTION_KEY), do NOT hide it behind
+    // "Invalid 2FA token" which makes debugging impossible.
+    if (typeof message === 'string' && message.toLowerCase().includes('server misconfigured')) {
+      return res.status(500).json({ error: message });
+    }
+
     return res.status(401).json({ error: 'Invalid 2FA token' });
   }
 });
@@ -790,7 +821,9 @@ router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
       }
     }
 
-    const adminMustUse2fa = effectiveUser.role === 'ADMIN';
+    const adminMustUse2fa =
+      effectiveUser.role === 'ADMIN' &&
+      String(process.env.ADMIN_2FA_REQUIRED || '').toLowerCase() === 'true';
 
     if (effectiveUser.twoFactorEnabled) {
       const twoFactorToken = signTwoFactorChallengeToken({

@@ -2,15 +2,21 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+const ensureApiBase = (raw: string): string => {
+  const trimmed = String(raw || '').trim().replace(/\/+$/g, '');
+  if (!trimmed) return '';
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+};
+
 const getBaseUrl = () => {
   if (typeof window !== 'undefined') {
     // Browser: always same-origin in production; allow explicit override only for local dev/E2E.
     if (process.env.NODE_ENV === 'production') return '/api';
-    return API_URL ? `${API_URL}/api` : '/api';
+    return API_URL ? ensureApiBase(API_URL) : '/api';
   }
 
   // Server/SSR (admin-dashboard is mostly client, but keep deterministic behavior)
-  return API_URL ? `${API_URL}/api` : 'http://localhost:8001/api';
+  return API_URL ? ensureApiBase(API_URL) : 'http://localhost:8001/api';
 };
 
 const api = axios.create({

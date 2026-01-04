@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/database';
+import { logger } from '../utils/logger';
 
 export interface AuthRequest extends Request {
   userId?: string;
@@ -115,6 +116,23 @@ export const authMiddleware = async (
     const token = getAuthTokenFromRequest(req);
 
     if (!token) {
+      const cookieHeader = typeof req.headers.cookie === 'string' ? req.headers.cookie : '';
+      const cookieNames = cookieHeader
+        ? cookieHeader
+            .split(';')
+            .map((p) => (p.split('=')[0] || '').trim())
+            .filter(Boolean)
+        : [];
+
+      logger.warn('[auth] missing token', {
+        path: req.originalUrl || req.url,
+        method: req.method,
+        host: req.get('host'),
+        origin: req.get('origin'),
+        referer: req.get('referer'),
+        hasAuthHeader: !!req.headers.authorization,
+        cookieNames,
+      });
       return res.status(401).json({ error: 'Unauthorized: No token provided' });
     }
 
@@ -143,6 +161,24 @@ export const authMiddleware = async (
 
     next();
   } catch (error) {
+    const cookieHeader = typeof req.headers.cookie === 'string' ? req.headers.cookie : '';
+    const cookieNames = cookieHeader
+      ? cookieHeader
+          .split(';')
+          .map((p) => (p.split('=')[0] || '').trim())
+          .filter(Boolean)
+      : [];
+
+    logger.warn('[auth] invalid token', {
+      path: req.originalUrl || req.url,
+      method: req.method,
+      host: req.get('host'),
+      origin: req.get('origin'),
+      referer: req.get('referer'),
+      hasAuthHeader: !!req.headers.authorization,
+      cookieNames,
+      message: (error as any)?.message || String(error),
+    });
     return res.status(401).json({ error: 'Unauthorized: Invalid token' });
   }
 };

@@ -77,6 +77,8 @@ model Event {
   invitations Invitation[]
   reminderLogs EventReminderLog[]
   invoiceRecords InvoiceRecord[]
+  faceSearchConsents FaceSearchConsent[]
+  faceSearchConsentAudits FaceSearchConsentAuditLog[]
 
   @@index([slug])
   @@index([hostId])
@@ -810,6 +812,55 @@ model ApiKeyAuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("api_key_audit_logs")
+}
+
+enum FaceSearchConsentAction {
+  ACCEPTED
+  REVOKED
+}
+
+model FaceSearchConsent {
+  id            String   @id @default(uuid())
+  eventId        String
+  ipHash         String?
+  userAgent      String?
+  consentKey     String? // e.g. face_search_consent_v1
+  noticeText     String? @db.Text
+  checkboxLabel  String? @db.Text
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  audits  FaceSearchConsentAuditLog[]
+
+  @@index([eventId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+  @@map("face_search_consents")
+}
+
+model FaceSearchConsentAuditLog {
+  id            String   @id @default(uuid())
+  consentId     String?
+  eventId       String
+  action        FaceSearchConsentAction
+  ipHash        String?
+  userAgent     String?
+  consentKey    String?
+  noticeText    String?  @db.Text
+  checkboxLabel String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  consent FaceSearchConsent? @relation(fields: [consentId], references: [id], onDelete: SetNull)
+  event   Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([consentId])
+  @@index([eventId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("face_search_consent_audit_logs")
 }
 
 enum InvoiceSource {

@@ -46,7 +46,7 @@ export default function WpConsentBanner() {
     <iframe
       title="Cookie Consent"
       src="/api/wp-consent/frame"
-      sandbox="allow-scripts allow-same-origin"
+      sandbox="allow-scripts allow-forms"
       className="fixed left-0 bottom-0 w-full border-0 bg-transparent z-[2147483647]"
       style={{
         height: `${height}px`,

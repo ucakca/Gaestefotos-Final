@@ -45,6 +45,7 @@ import themeRoutes from './routes/theme';
 import faceSearchConsentRoutes from './routes/faceSearchConsent';
 import adminFaceSearchConsentRoutes from './routes/adminFaceSearchConsent';
 import adminOpsRoutes from './routes/adminOps';
+import wpConsentRoutes from './routes/wpConsent';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -53,6 +54,7 @@ import { startRetentionPurgeWorker } from './services/retentionPurge';
 import { startVirusScanWorker } from './services/virusScan';
 import { startOrphanCleanupWorker } from './services/orphanCleanup';
 import { startStorageReminderWorker } from './services/storageReminder';
+import { startFaceSearchConsentRetentionWorker } from './services/faceSearchConsentRetention';
 import prisma from './config/database';
 import { hasEventAccess } from './middleware/auth';
 import { maintenanceModeMiddleware } from './middleware/maintenanceMode';
@@ -63,6 +65,29 @@ if (envFile) {
   dotenv.config({ path: envFile, override: false });
 }
 
+function validateRequiredEnv() {
+  const isProd = process.env.NODE_ENV === 'production';
+  if (!isProd) return;
+
+  const jwtSecret = String(process.env.JWT_SECRET || '').trim();
+  if (!jwtSecret) {
+    throw new Error('Server misconfigured: JWT_SECRET is missing');
+  }
+
+  const twoFactorKey = String(process.env.TWO_FACTOR_ENCRYPTION_KEY || '').trim();
+  const twoFactorKeys = String(process.env.TWO_FACTOR_ENCRYPTION_KEYS || '').trim();
+  if (!twoFactorKey && !twoFactorKeys) {
+    throw new Error('Server misconfigured: TWO_FACTOR_ENCRYPTION_KEY(S) is missing');
+  }
+}
+
+try {
+  validateRequiredEnv();
+} catch (err: any) {
+  logger.error('Startup validation failed', { message: err?.message || String(err) });
+  process.exit(1);
+}
+
 storageService.ensureBucketExists().catch((err) => {
   logger.warn('Storage config init failed', { error: err?.message || String(err) });
 });
@@ -71,6 +96,7 @@ startRetentionPurgeWorker();
 startVirusScanWorker();
 startOrphanCleanupWorker();
 startStorageReminderWorker();
+startFaceSearchConsentRetentionWorker();
 
 // Initialize Sentry for error tracking
 if (process.env.SENTRY_DSN) {
@@ -87,6 +113,10 @@ const CANONICAL_APP_HOST_UNICODE = 'app.gästefotos.com';
 const CANONICAL_WP_HOST_UNICODE = 'gästefotos.com';
 const CANONICAL_DASH_HOST_UNICODE = 'dash.gästefotos.com';
 
+// Legacy ASCII domains (historical); still used in some environments/DNS.
+const LEGACY_APP_HOST_ASCII = 'app.gaestefotos.com';
+const LEGACY_DASH_HOST_ASCII = 'dash.gaestefotos.com';
+
 const allowedOriginsFromEnv = (process.env.FRONTEND_URL || '')
   .split(',')
   .map((url) => url.trim())
@@ -95,11 +125,15 @@ const allowedOriginsFromEnv = (process.env.FRONTEND_URL || '')
 const canonicalAppOriginsAscii = [
   `https://${domainToASCII(CANONICAL_APP_HOST_UNICODE)}`,
   `http://${domainToASCII(CANONICAL_APP_HOST_UNICODE)}`,
+  `https://${LEGACY_APP_HOST_ASCII}`,
+  `http://${LEGACY_APP_HOST_ASCII}`,
 ];
 
 const canonicalDashOriginsAscii = [
   `https://${domainToASCII(CANONICAL_DASH_HOST_UNICODE)}`,
   `http://${domainToASCII(CANONICAL_DASH_HOST_UNICODE)}`,
+  `https://${LEGACY_DASH_HOST_ASCII}`,
+  `http://${LEGACY_DASH_HOST_ASCII}`,
 ];
 
 const allowedOrigins = Array.from(
@@ -258,6 +292,10 @@ app.use(cors({
     const alwaysAllow = [
       new RegExp(`^https?://${domainToASCII(CANONICAL_APP_HOST_UNICODE).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
       /^https?:\/\/app\.gästefotos\.com$/i,
+      /^https?:\/\/app\.gaestefotos\.com$/i,
+      /^https?:\/\/dash\.gaestefotos\.com$/i,
+      new RegExp(`^https?://${domainToASCII(CANONICAL_DASH_HOST_UNICODE).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
+      /^https?:\/\/dash\.gästefotos\.com$/i,
     ];
     if (alwaysAllow.some((re) => re.test(origin))) {
       return callback(null, true);
@@ -448,14 +486,15 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// API Routes with rate limiting
-// Note: authLimiter is applied per-route in auth.ts for more granular control
-app.use('/api/auth', authRoutes);
-app.use('/api', maintenanceRoutes);
-app.use('/api/theme', themeRoutes);
-app.use('/api/face-search-consent', faceSearchConsentRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/events', guestRoutes);
+ // API Routes with rate limiting
+ // Note: authLimiter is applied per-route in auth.ts for more granular control
+ app.use('/api/auth', authRoutes);
+ app.use('/api', maintenanceRoutes);
+ app.use('/api', wpConsentRoutes);
+ app.use('/api/theme', themeRoutes);
+ app.use('/api/face-search-consent', faceSearchConsentRoutes);
+ app.use('/api/events', eventRoutes);
+ app.use('/api/events', guestRoutes);
 app.use('/api/events', photoRoutes); // Photo routes: /api/events/:eventId/photos/*
 app.use('/api/events', categoryRoutes); // Category routes: /api/events/:eventId/categories/*
 app.use('/api/events', challengeRoutes); // Challenge routes: /api/events/:eventId/challenges/*

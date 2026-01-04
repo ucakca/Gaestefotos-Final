@@ -154,7 +154,13 @@ export default function LoginPage() {
       }
 
       if (twoFactorRequired) {
-        setTwoFactorVerifyToken(String(nextTwoFactorToken || ''));
+        const tokenStr = String(nextTwoFactorToken || '').trim();
+        if (!tokenStr) {
+          setError('2FA Fehler: Challenge Token fehlt. Bitte erneut anmelden.');
+          setLoading(false);
+          return;
+        }
+        setTwoFactorVerifyToken(tokenStr);
         setTwoFactorSetupToken(null);
         setTwoFactorCode('');
         setRecoveryCode('');
@@ -162,7 +168,12 @@ export default function LoginPage() {
       }
 
       if (twoFactorSetupRequired) {
-        const setupToken = String(nextTwoFactorToken || '');
+        const setupToken = String(nextTwoFactorToken || '').trim();
+        if (!setupToken) {
+          setError('2FA Fehler: Setup-Token fehlt. Bitte erneut anmelden.');
+          setLoading(false);
+          return;
+        }
         setTwoFactorSetupToken(setupToken);
         setTwoFactorVerifyToken(null);
         setTwoFactorCode('');

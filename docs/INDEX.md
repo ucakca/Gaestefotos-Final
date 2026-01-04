@@ -30,6 +30,12 @@ Ziel: Diese Dokumente sind die **Single Source of Truth** für Architektur, APIs
   - QA Checklist: `docs/QA_CHECKLIST.md`
   - Pre-Launch Checklist: `docs/PRE_LAUNCH_CHECKLIST.md`
   - Deployment: `docs/DEPLOYMENT.md`
+  - Ops Runbooks: `docs/ops/README.md`
+    - Deploy & Rollback: `docs/ops/DEPLOY_AND_ROLLBACK.md`
+    - Backups & Restore: `docs/ops/BACKUPS_AND_RESTORE.md`
+    - Monitoring & Alerting: `docs/ops/MONITORING_AND_ALERTING.md`
+    - 2FA Key Rotation: `docs/ops/TWO_FACTOR_KEY_ROTATION.md`
+    - Face Search Consent Rollout: `docs/ops/FACE_SEARCH_CONSENT_ROLLOUT.md`
 
 ## Gap-Analyse (Feature Spec → Code)
 
