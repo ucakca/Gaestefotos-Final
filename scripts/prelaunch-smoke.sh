@@ -4,8 +4,10 @@ set -euo pipefail
 APP_URL="${APP_URL:-https://app.gästefotos.com}"
 DASH_URL="${DASH_URL:-https://dash.xn--gstefotos-v2a.com}"
 API_HEALTH_URL="${API_HEALTH_URL:-${APP_URL}/api/health}"
+ADMIN_AUTH_BASE_URL="${ADMIN_AUTH_BASE_URL:-$APP_URL}"
 ADMIN_EMAIL="${ADMIN_EMAIL:-}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-}"
+SKIP_ADMIN_AUTH="${SKIP_ADMIN_AUTH:-}"
 
 color() {
   local code="$1"; shift
@@ -83,7 +85,7 @@ check_next_asset_200 "$DASH_URL"
 headline "Backend Health"
 check_url_200 "$API_HEALTH_URL"
 
-if [[ -z "$ADMIN_EMAIL" && -z "$ADMIN_PASSWORD" && -t 0 ]]; then
+if [[ -z "$SKIP_ADMIN_AUTH" && -z "$ADMIN_EMAIL" && -z "$ADMIN_PASSWORD" && -t 0 ]]; then
   echo
   read -r -p "Run optional Admin Auth check? [y/N] " RUN_ADMIN_AUTH
   if [[ "$RUN_ADMIN_AUTH" == "y" || "$RUN_ADMIN_AUTH" == "Y" ]]; then
@@ -95,7 +97,7 @@ fi
 
 if [[ -n "$ADMIN_EMAIL" && -n "$ADMIN_PASSWORD" ]]; then
   headline "Admin Auth (optional)"
-  TOKEN_JSON=$(curl -sS -X POST "${DASH_URL}/api/auth/login" \
+  TOKEN_JSON=$(curl -sS -X POST "${ADMIN_AUTH_BASE_URL}/api/auth/login" \
     -H "Content-Type: application/json" \
     --data "{\"email\":\"${ADMIN_EMAIL}\",\"password\":\"${ADMIN_PASSWORD}\"}")
   TOKEN=$(echo "$TOKEN_JSON" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')

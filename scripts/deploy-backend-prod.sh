@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SERVICE_NAME="${1:-gaestefotos-admin-dashboard.service}"
+SERVICE_NAME="${1:-gaestefotos-backend.service}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-ADMIN_DASHBOARD_DIR="$REPO_ROOT/packages/admin-dashboard"
+BACKEND_DIR="$REPO_ROOT/packages/backend"
 
 if ! command -v systemctl >/dev/null 2>&1; then
   echo "ERROR: systemctl not found. This script is intended for systemd-based production deploys." >&2
@@ -18,8 +18,8 @@ if ! command -v pnpm >/dev/null 2>&1; then
   exit 1
 fi
 
-if [ ! -d "$ADMIN_DASHBOARD_DIR" ]; then
-  echo "ERROR: admin-dashboard directory not found: $ADMIN_DASHBOARD_DIR" >&2
+if [ ! -d "$BACKEND_DIR" ]; then
+  echo "ERROR: backend directory not found: $BACKEND_DIR" >&2
   exit 1
 fi
 
@@ -45,7 +45,7 @@ on_error() {
 }
 trap on_error ERR
 
-echo "Deploying admin-dashboard (systemd) using mandatory order: stop → build → start"
+echo "Deploying backend (systemd) using mandatory order: stop → build → start"
 echo "Service: $SERVICE_NAME"
 echo "Repo:    $REPO_ROOT"
 echo ""
@@ -54,17 +54,8 @@ echo "1/3 Stopping service..."
 $SUDO systemctl stop "$SERVICE_NAME"
 STOPPED=1
 
-echo "2/3 Building admin-dashboard (pnpm build)..."
-GIT_SHA=""
-if command -v git >/dev/null 2>&1; then
-  if git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    GIT_SHA="$(git -C "$REPO_ROOT" rev-parse HEAD 2>/dev/null || true)"
-  fi
-fi
-
-BUILD_TIME="$(date -Iseconds)"
-
-NEXT_PUBLIC_GIT_SHA="$GIT_SHA" NEXT_PUBLIC_BUILD_TIME="$BUILD_TIME" pnpm -C "$ADMIN_DASHBOARD_DIR" build
+echo "2/3 Building backend (pnpm build)..."
+pnpm -C "$BACKEND_DIR" build
 
 echo "3/3 Starting service..."
 $SUDO systemctl start "$SERVICE_NAME"
