@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import GuidedTour from '@/components/ui/GuidedTour';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import {
   AlertDialog,
@@ -52,9 +53,38 @@ type EventDetail = {
   featuresConfig?: any;
 };
 
+type CohostMember = {
+  id: string;
+  role: 'COHOST' | string;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    role: string;
+  };
+};
+
+type AdminUserListItem = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  role: string;
+};
+
 export default function EventDetailPage({ params }: { params: { id: string } }) {
   const eventId = params.id;
   const [event, setEvent] = useState<EventDetail | null>(null);
+  const [cohosts, setCohosts] = useState<CohostMember[]>([]);
+  const [loadingCohosts, setLoadingCohosts] = useState(true);
+  const [errorCohosts, setErrorCohosts] = useState<string | null>(null);
+  const [userSearch, setUserSearch] = useState('');
+  const [userResults, setUserResults] = useState<AdminUserListItem[]>([]);
+  const [loadingUserResults, setLoadingUserResults] = useState(false);
+  const [addingCohostUserId, setAddingCohostUserId] = useState<string | null>(null);
+  const [removingCohostUserId, setRemovingCohostUserId] = useState<string | null>(null);
+  const [mintingInvite, setMintingInvite] = useState(false);
+  const [lastInviteUrl, setLastInviteUrl] = useState<string | null>(null);
   const [issues, setIssues] = useState<UploadIssuesResponse | null>(null);
   const [sinceHours, setSinceHours] = useState(72);
   const [loading, setLoading] = useState(true);
@@ -96,6 +126,33 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     );
   }, [issues]);
 
+  const cohostTourSteps = useMemo(
+    () => [
+      {
+        id: 'cohost-section',
+        target: '[data-tour="cohost-section"]',
+        title: 'Co-Hosts verwalten',
+        body: 'Hier kannst du Co-Hosts hinzufügen/entfernen und einen Invite-Link erzeugen.',
+        placement: 'top' as const,
+      },
+      {
+        id: 'cohost-invite',
+        target: '[data-tour="cohost-invite"]',
+        title: 'Invite-Link erzeugen',
+        body: 'Erzeugt einen Link. Der Link ist ein Bearer-Token (bis Ablauf) – nur an die richtige Person schicken.',
+        placement: 'bottom' as const,
+      },
+      {
+        id: 'cohost-search',
+        target: '[data-tour="cohost-search"]',
+        title: 'Co-Host hinzufügen',
+        body: 'Suche nach einem User und füge ihn als Co-Host hinzu. Danach hat die Person Manage-Zugriff aufs Event.',
+        placement: 'bottom' as const,
+      },
+    ],
+    []
+  );
+
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -130,6 +187,109 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
       mounted = false;
     };
   }, [eventId]);
+
+  async function loadCohosts() {
+    try {
+      setLoadingCohosts(true);
+      setErrorCohosts(null);
+      const res = await api.get(`/events/${eventId}/cohosts`);
+      const items = (res.data?.cohosts || []) as CohostMember[];
+      setCohosts(items);
+    } catch (e: any) {
+      setErrorCohosts(e?.response?.data?.error || e?.message || 'Fehler beim Laden');
+    } finally {
+      setLoadingCohosts(false);
+    }
+  }
+
+  useEffect(() => {
+    loadCohosts();
+  }, [eventId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const q = userSearch.trim();
+    const handle = setTimeout(async () => {
+      if (!q) {
+        setUserResults([]);
+        return;
+      }
+      try {
+        setLoadingUserResults(true);
+        const res = await api.get('/admin/users', {
+          params: { search: q, limit: 10 },
+        });
+        const items = (res.data?.users || []) as AdminUserListItem[];
+        if (!cancelled) setUserResults(items);
+      } catch {
+        if (!cancelled) setUserResults([]);
+      } finally {
+        if (!cancelled) setLoadingUserResults(false);
+      }
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
+  }, [userSearch]);
+
+  const existingCohostUserIds = useMemo(() => new Set(cohosts.map((c) => c.user.id)), [cohosts]);
+
+  async function addCohost(userId: string) {
+    try {
+      setAddingCohostUserId(userId);
+      await api.post(`/events/${eventId}/cohosts`, { userId });
+      toast.success('Co-Host hinzugefügt');
+      setUserSearch('');
+      setUserResults([]);
+      await loadCohosts();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || e?.message || 'Aktion fehlgeschlagen');
+    } finally {
+      setAddingCohostUserId(null);
+    }
+  }
+
+  async function removeCohost(userId: string) {
+    try {
+      setRemovingCohostUserId(userId);
+      await api.delete(`/events/${eventId}/cohosts/${userId}`);
+      toast.success('Co-Host entfernt');
+      await loadCohosts();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || e?.message || 'Aktion fehlgeschlagen');
+    } finally {
+      setRemovingCohostUserId(null);
+    }
+  }
+
+  async function mintInviteToken() {
+    try {
+      setMintingInvite(true);
+      const res = await api.post(`/events/${eventId}/cohosts/invite-token`);
+      const shareUrl = (res.data?.shareUrl as string | null) || null;
+      const inviteToken = (res.data?.inviteToken as string | null) || null;
+
+      const toCopy = shareUrl || inviteToken;
+      setLastInviteUrl(shareUrl || null);
+
+      if (toCopy) {
+        try {
+          await navigator.clipboard.writeText(toCopy);
+          toast.success('Invite-Link kopiert');
+        } catch {
+          toast.success('Invite erstellt');
+        }
+      } else {
+        toast.success('Invite erstellt');
+      }
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || e?.message || 'Aktion fehlgeschlagen');
+    } finally {
+      setMintingInvite(false);
+    }
+  }
 
   async function loadUploadIssues(currentSinceHours: number) {
     try {
@@ -377,6 +537,114 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                 {savingVirusScan ? 'Speichern…' : 'Speichern'}
               </Button>
               <p className="text-sm text-app-muted">Speichert in: featuresConfig.virusScan.enforce</p>
+            </div>
+          </Card>
+
+          <Card className="p-6" data-tour="cohost-section">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-app-fg">Co-Hosts</h2>
+                <p className="mt-1 text-sm text-app-muted">Co-Hosts dürfen das Event verwalten (wie Host).</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <GuidedTour tourId="admin-event-cohosts" steps={cohostTourSteps} autoStart />
+                <span data-tour="cohost-invite">
+                  <Button onClick={mintInviteToken} disabled={mintingInvite} variant="outline" size="sm">
+                    {mintingInvite ? 'Invite…' : 'Invite-Link erzeugen'}
+                  </Button>
+                </span>
+              </div>
+            </div>
+
+            {lastInviteUrl ? (
+              <div className="mt-4 rounded-lg border border-app-border bg-app-bg p-3" data-tour="cohost-link">
+                <div className="text-xs text-app-muted">Letzter Invite-Link</div>
+                <div className="mt-1 break-all text-sm text-app-fg">{lastInviteUrl}</div>
+              </div>
+            ) : null}
+
+            <div className="mt-6">
+              <label className="mb-1 block text-sm text-app-muted">User suchen</label>
+              <Input
+                className="px-3 py-2"
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                placeholder="Name oder E-Mail…"
+                data-tour="cohost-search"
+              />
+
+              {loadingUserResults ? <p className="mt-2 text-sm text-app-muted">Suche…</p> : null}
+              {!loadingUserResults && userSearch.trim() && userResults.length === 0 ? (
+                <p className="mt-2 text-sm text-app-muted">Keine Treffer</p>
+              ) : null}
+
+              {userResults.length > 0 ? (
+                <div className="mt-3 space-y-2">
+                  {userResults.map((u) => {
+                    const already = existingCohostUserIds.has(u.id);
+                    const busy = addingCohostUserId === u.id;
+                    return (
+                      <div
+                        key={u.id}
+                        className="flex flex-col gap-2 rounded-lg border border-app-border bg-app-bg p-3 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-medium text-app-fg">{u.name || '(ohne Namen)'}</div>
+                          <div className="truncate text-xs text-app-muted">{u.email || '-'}</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={() => addCohost(u.id)}
+                            disabled={already || busy}
+                            size="sm"
+                            variant="primary"
+                          >
+                            {already ? 'Schon Co-Host' : busy ? 'Hinzufügen…' : 'Als Co-Host hinzufügen'}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-6">
+              <div className="text-sm font-medium text-app-fg">Aktuelle Co-Hosts</div>
+              {loadingCohosts ? <p className="mt-2 text-sm text-app-muted">Lädt…</p> : null}
+              {!loadingCohosts && errorCohosts ? <p className="mt-2 text-sm text-[var(--status-danger)]">{errorCohosts}</p> : null}
+              {!loadingCohosts && !errorCohosts && cohosts.length === 0 ? (
+                <p className="mt-2 text-sm text-app-muted">Keine Co-Hosts</p>
+              ) : null}
+
+              {!loadingCohosts && !errorCohosts && cohosts.length > 0 ? (
+                <div className="mt-3 space-y-2">
+                  {cohosts.map((m) => {
+                    const busy = removingCohostUserId === m.user.id;
+                    return (
+                      <div
+                        key={m.id}
+                        className="flex flex-col gap-2 rounded-lg border border-app-border bg-app-bg p-3 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-medium text-app-fg">{m.user.name || '(ohne Namen)'}</div>
+                          <div className="truncate text-xs text-app-muted">{m.user.email || '-'}</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={() => removeCohost(m.user.id)}
+                            disabled={busy}
+                            size="sm"
+                            variant="outline"
+                          >
+                            {busy ? 'Entfernen…' : 'Entfernen'}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
             </div>
           </Card>
 

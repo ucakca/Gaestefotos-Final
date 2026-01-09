@@ -36,6 +36,7 @@ export const SheetContent = React.forwardRef<
     side?: 'top' | 'bottom' | 'left' | 'right';
   }
 >(function SheetContent({ side = 'right', className, children, ...props }, ref) {
+  const ariaDescribedBy = (props as any)?.['aria-describedby'];
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -53,8 +54,10 @@ export const SheetContent = React.forwardRef<
             'inset-x-0 bottom-0 w-full border-t border-app-border/40 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
           className
         )}
+        aria-describedby={ariaDescribedBy ?? undefined}
         {...props}
       >
+        <SheetPrimitive.Title className="sr-only">Dialog</SheetPrimitive.Title>
         {children}
         <SheetClose className="absolute right-3 top-3 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/30 disabled:pointer-events-none">
           <X className="h-5 w-5" />

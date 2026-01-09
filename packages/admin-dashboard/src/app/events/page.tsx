@@ -35,7 +35,7 @@ export default function EventsPage() {
       try {
         setLoading(true);
         setError(null);
-        const res = await api.get('/events');
+        const res = await api.get('/admin/events');
         const items = (res.data?.events || []) as EventListItem[];
         if (mounted) setEvents(items);
       } catch (e: any) {
