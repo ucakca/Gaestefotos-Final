@@ -70,7 +70,7 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
     - ✅ Ops/Server Metrics: `/api/admin/ops/server` (Admin Dashboard `/dashboard`)
     - ✅ Impersonation UI: `/api/admin/impersonation/token` (Admin Dashboard `/impersonation`)
   - ✅ Admin Impersonation: Audit logging (separate Tabelle/Log-Einträge bei Token-Ausstellung)
-  - ❌ (optional) Invitations: Admin/Host UI für Templates/Editor (falls Spec mehr als MVP verlangt)
+  - ✅ (optional) Invitations: Admin/Host UI für Templates/Editor (Admin: `/invitation-templates`, pro Event: Invitations UI in Event-Detail)
 
 ## ✅ Done
 

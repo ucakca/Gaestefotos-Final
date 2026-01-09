@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 import GuidedTour from '@/components/ui/GuidedTour';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import {
@@ -72,6 +73,38 @@ type AdminUserListItem = {
   role: string;
 };
 
+type InvitationShortLink = {
+  id: string;
+  invitationId: string;
+  code: string;
+  channel: string | null;
+  createdAt: string;
+  lastAccessedAt: string | null;
+  url: string;
+};
+
+type InvitationListItem = {
+  id: string;
+  eventId: string;
+  slug: string;
+  name: string;
+  config: any;
+  visibility: 'UNLISTED' | 'PUBLIC' | string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  hasPassword: boolean;
+  opens: number;
+  shortLinks: InvitationShortLink[];
+};
+
+type InvitationTemplateListItem = {
+  id: string;
+  slug: string;
+  title: string;
+  isActive: boolean;
+};
+
 export default function EventDetailPage({ params }: { params: { id: string } }) {
   const eventId = params.id;
   const [event, setEvent] = useState<EventDetail | null>(null);
@@ -104,6 +137,30 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   const [virusScanAutoClean, setVirusScanAutoClean] = useState(false);
   const [markingClean, setMarkingClean] = useState<string | null>(null);
   const [markingVideoClean, setMarkingVideoClean] = useState<string | null>(null);
+
+  const [invitations, setInvitations] = useState<InvitationListItem[]>([]);
+  const [loadingInvitations, setLoadingInvitations] = useState(false);
+  const [errorInvitations, setErrorInvitations] = useState<string | null>(null);
+
+  const [invTemplates, setInvTemplates] = useState<InvitationTemplateListItem[]>([]);
+  const [loadingInvTemplates, setLoadingInvTemplates] = useState(false);
+
+  const [creatingInvitation, setCreatingInvitation] = useState(false);
+  const [newInviteName, setNewInviteName] = useState('');
+  const [newInviteSlug, setNewInviteSlug] = useState('');
+  const [newInviteVisibility, setNewInviteVisibility] = useState<'UNLISTED' | 'PUBLIC'>('UNLISTED');
+  const [newInvitePassword, setNewInvitePassword] = useState('');
+  const [newInviteTemplateId, setNewInviteTemplateId] = useState<string>('');
+  const [newInviteConfigJson, setNewInviteConfigJson] = useState('');
+
+  const [editingInvitationId, setEditingInvitationId] = useState<string | null>(null);
+  const [editInviteName, setEditInviteName] = useState('');
+  const [editInviteVisibility, setEditInviteVisibility] = useState<'UNLISTED' | 'PUBLIC'>('UNLISTED');
+  const [editInvitePassword, setEditInvitePassword] = useState('');
+  const [editInviteConfigJson, setEditInviteConfigJson] = useState('');
+  const [savingInvitation, setSavingInvitation] = useState(false);
+  const [shortlinkChannel, setShortlinkChannel] = useState('');
+  const [creatingShortlink, setCreatingShortlink] = useState(false);
 
   const [confirmCleanAction, setConfirmCleanAction] = useState<
     | null
@@ -205,6 +262,191 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   useEffect(() => {
     loadCohosts();
   }, [eventId]);
+
+  async function loadInvitations() {
+    try {
+      setLoadingInvitations(true);
+      setErrorInvitations(null);
+      const res = await api.get(`/events/${eventId}/invitations`);
+      const list = (res.data?.invitations || []) as InvitationListItem[];
+      setInvitations(Array.isArray(list) ? list : []);
+    } catch (e: any) {
+      setErrorInvitations(e?.response?.data?.error || e?.message || 'Fehler beim Laden');
+      setInvitations([]);
+    } finally {
+      setLoadingInvitations(false);
+    }
+  }
+
+  async function loadInvitationTemplates() {
+    try {
+      setLoadingInvTemplates(true);
+      const res = await api.get('/admin/invitation-templates');
+      const list = (res.data?.templates || []) as InvitationTemplateListItem[];
+      setInvTemplates(Array.isArray(list) ? list : []);
+    } catch {
+      setInvTemplates([]);
+    } finally {
+      setLoadingInvTemplates(false);
+    }
+  }
+
+  useEffect(() => {
+    loadInvitations();
+    loadInvitationTemplates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId]);
+
+  const selectedInvitation = useMemo(() => {
+    if (!editingInvitationId) return null;
+    return invitations.find((i) => i.id === editingInvitationId) || null;
+  }, [editingInvitationId, invitations]);
+
+  useEffect(() => {
+    if (!selectedInvitation) return;
+    setEditInviteName(selectedInvitation.name || '');
+    setEditInviteVisibility((selectedInvitation.visibility as any) === 'PUBLIC' ? 'PUBLIC' : 'UNLISTED');
+    setEditInvitePassword('');
+    try {
+      setEditInviteConfigJson(selectedInvitation.config ? JSON.stringify(selectedInvitation.config, null, 2) : '');
+    } catch {
+      setEditInviteConfigJson('');
+    }
+  }, [selectedInvitation?.id]);
+
+  const parseConfigJson = (raw: string): { ok: true; value: any } | { ok: false; error: string } => {
+    const trimmed = raw.trim();
+    if (!trimmed) return { ok: true, value: undefined };
+    try {
+      return { ok: true, value: JSON.parse(trimmed) };
+    } catch {
+      return { ok: false, error: 'Config ist kein gültiges JSON' };
+    }
+  };
+
+  async function createInvitation() {
+    const name = newInviteName.trim();
+    if (!name) {
+      toast.error('Bitte Namen setzen');
+      return;
+    }
+
+    const parsed = parseConfigJson(newInviteConfigJson);
+    if (!parsed.ok) {
+      toast.error(parsed.error);
+      return;
+    }
+
+    setCreatingInvitation(true);
+    try {
+      const body: any = {
+        name,
+        visibility: newInviteVisibility,
+      };
+      if (newInviteSlug.trim()) body.slug = newInviteSlug.trim();
+      if (newInviteTemplateId) body.templateId = newInviteTemplateId;
+      if (typeof parsed.value !== 'undefined') body.config = parsed.value;
+      if (newInvitePassword.trim()) body.password = newInvitePassword.trim();
+
+      const res = await api.post(`/events/${eventId}/invitations`, body);
+      const invitationUrl = (res.data?.invitationUrl as string | undefined) || '';
+      await loadInvitations();
+      toast.success('Einladung erstellt');
+      if (invitationUrl) {
+        try {
+          await navigator.clipboard.writeText(invitationUrl);
+          toast.success('Invitation URL kopiert');
+        } catch {
+          // ignore
+        }
+      }
+      setNewInviteName('');
+      setNewInviteSlug('');
+      setNewInvitePassword('');
+      setNewInviteTemplateId('');
+      setNewInviteConfigJson('');
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || e?.message || 'Erstellen fehlgeschlagen');
+    } finally {
+      setCreatingInvitation(false);
+    }
+  }
+
+  async function saveInvitation() {
+    if (!selectedInvitation) return;
+    const name = editInviteName.trim();
+    if (!name) {
+      toast.error('Bitte Namen setzen');
+      return;
+    }
+
+    const parsed = parseConfigJson(editInviteConfigJson);
+    if (!parsed.ok) {
+      toast.error(parsed.error);
+      return;
+    }
+
+    setSavingInvitation(true);
+    try {
+      const body: any = {
+        name,
+        visibility: editInviteVisibility,
+      };
+      if (typeof parsed.value !== 'undefined') body.config = parsed.value;
+      if (editInvitePassword.trim()) {
+        body.password = editInvitePassword.trim();
+      } else {
+        body.password = null;
+      }
+      await api.put(`/events/${eventId}/invitations/${encodeURIComponent(selectedInvitation.id)}`, body);
+      toast.success('Gespeichert');
+      await loadInvitations();
+      setEditInvitePassword('');
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || e?.message || 'Speichern fehlgeschlagen');
+    } finally {
+      setSavingInvitation(false);
+    }
+  }
+
+  async function deactivateInvitation(invitationId: string) {
+    setSavingInvitation(true);
+    try {
+      await api.put(`/events/${eventId}/invitations/${encodeURIComponent(invitationId)}`, { isActive: false });
+      toast.success('Deaktiviert');
+      if (editingInvitationId === invitationId) setEditingInvitationId(null);
+      await loadInvitations();
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || e?.message || 'Aktion fehlgeschlagen');
+    } finally {
+      setSavingInvitation(false);
+    }
+  }
+
+  async function createInvitationShortlink(invitationId: string) {
+    setCreatingShortlink(true);
+    try {
+      const body: any = {};
+      if (shortlinkChannel.trim()) body.channel = shortlinkChannel.trim();
+      const res = await api.post(`/events/${eventId}/invitations/${encodeURIComponent(invitationId)}/shortlinks`, body);
+      const url = (res.data?.shortLink?.url as string | undefined) || '';
+      await loadInvitations();
+      toast.success('Shortlink erstellt');
+      if (url) {
+        try {
+          await navigator.clipboard.writeText(url);
+          toast.success('Shortlink kopiert');
+        } catch {
+          // ignore
+        }
+      }
+      setShortlinkChannel('');
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || e?.message || 'Shortlink fehlgeschlagen');
+    } finally {
+      setCreatingShortlink(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -645,6 +887,252 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
                   })}
                 </div>
               ) : null}
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-app-fg">Invitations</h2>
+                <p className="mt-1 text-sm text-app-muted">Einladungsseiten (RSVP/ICS/Preview) pro Event – inkl. Shortlinks.</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={loadInvitationTemplates} disabled={loadingInvTemplates}>
+                  {loadingInvTemplates ? '…' : 'Templates'}
+                </Button>
+                <Button size="sm" variant="outline" onClick={loadInvitations} disabled={loadingInvitations}>
+                  {loadingInvitations ? '…' : 'Reload'}
+                </Button>
+              </div>
+            </div>
+
+            {errorInvitations ? <div className="mt-4 text-sm text-[var(--status-danger)]">{errorInvitations}</div> : null}
+
+            <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <Card className="p-5">
+                <div className="text-sm font-medium text-app-fg">Neue Einladung</div>
+                <div className="mt-3 grid grid-cols-1 gap-3">
+                  <div>
+                    <div className="mb-1 text-xs text-app-muted">Name *</div>
+                    <Input value={newInviteName} onChange={(e) => setNewInviteName(e.target.value)} placeholder="z.B. Hochzeit Abend" />
+                  </div>
+                  <div>
+                    <div className="mb-1 text-xs text-app-muted">Slug (optional)</div>
+                    <Input value={newInviteSlug} onChange={(e) => setNewInviteSlug(e.target.value)} placeholder="z.B. abend" />
+                  </div>
+                  <div>
+                    <div className="mb-1 text-xs text-app-muted">Visibility</div>
+                    <Select value={newInviteVisibility} onValueChange={(v) => setNewInviteVisibility(v as any)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="UNLISTED">UNLISTED</SelectItem>
+                        <SelectItem value="PUBLIC">PUBLIC</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <div className="mb-1 text-xs text-app-muted">Template (optional)</div>
+                    <Select value={newInviteTemplateId || '__none__'} onValueChange={(v) => setNewInviteTemplateId(v === '__none__' ? '' : v)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="(keins)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">(keins)</SelectItem>
+                        {invTemplates
+                          .filter((t) => t.isActive !== false)
+                          .map((t) => (
+                            <SelectItem key={t.id} value={t.id}>
+                              {t.slug}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <div className="mb-1 text-xs text-app-muted">Password (optional)</div>
+                    <Input value={newInvitePassword} onChange={(e) => setNewInvitePassword(e.target.value)} placeholder="(leer = keines)" />
+                  </div>
+                  <div>
+                    <div className="mb-1 text-xs text-app-muted">Config JSON (optional)</div>
+                    <Textarea
+                      value={newInviteConfigJson}
+                      onChange={(e) => setNewInviteConfigJson(e.target.value)}
+                      placeholder='{"sections": {"rsvp": {"enabled": true}}}'
+                      rows={7}
+                    />
+                  </div>
+                  <Button variant="primary" onClick={createInvitation} disabled={creatingInvitation}>
+                    {creatingInvitation ? 'Erstelle…' : 'Erstellen'}
+                  </Button>
+                </div>
+              </Card>
+
+              <Card className="p-5 lg:col-span-2">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="text-sm font-medium text-app-fg">Bestehende Einladungen</div>
+                    <div className="mt-1 text-xs text-app-muted">
+                      {loadingInvitations ? 'Lade…' : `${invitations.length} Einträge`}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={() => setEditingInvitationId(null)} disabled={!editingInvitationId}>
+                      Editor schließen
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="mt-4 overflow-hidden rounded-lg border border-app-border">
+                  <div className="grid grid-cols-12 gap-2 border-b border-app-border bg-app-bg px-3 py-2 text-xs font-medium text-app-muted">
+                    <div className="col-span-4">Name</div>
+                    <div className="col-span-3">Slug</div>
+                    <div className="col-span-2">Visibility</div>
+                    <div className="col-span-1">Opens</div>
+                    <div className="col-span-2 text-right">Aktion</div>
+                  </div>
+                  <div className="divide-y divide-app-border">
+                    {invitations.map((inv) => (
+                      <div key={inv.id} className="grid grid-cols-12 gap-2 px-3 py-2 text-sm">
+                        <div className="col-span-4 min-w-0">
+                          <div className="truncate text-sm font-medium text-app-fg">
+                            {inv.isActive ? '' : '[inactive] '} {inv.name}
+                          </div>
+                          <div className="mt-0.5 text-xs text-app-muted">
+                            {inv.hasPassword ? '🔒 password' : 'no password'} · {new Date(inv.updatedAt).toLocaleString()}
+                          </div>
+                        </div>
+                        <div className="col-span-3 font-mono text-xs text-app-fg break-all">{inv.slug}</div>
+                        <div className="col-span-2">
+                          <span className="rounded-md bg-app-bg px-2 py-1 text-xs text-app-fg">{inv.visibility}</span>
+                        </div>
+                        <div className="col-span-1 text-xs text-app-muted">{inv.opens ?? 0}</div>
+                        <div className="col-span-2 flex items-center justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(`${window.location.origin.replace(/^https?:\/\//, 'https://').replace('dash.', 'app.')}/i/${inv.slug}`);
+                                toast.success('Invitation URL kopiert');
+                              } catch {
+                                toast.error('Kopieren fehlgeschlagen');
+                              }
+                            }}
+                          >
+                            Copy URL
+                          </Button>
+                          <Button size="sm" variant="primary" onClick={() => setEditingInvitationId(inv.id)}>
+                            Edit
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    {!invitations.length && !loadingInvitations ? (
+                      <div className="px-3 py-4 text-sm text-app-muted">Keine Einladungen</div>
+                    ) : null}
+                  </div>
+                </div>
+
+                {selectedInvitation ? (
+                  <div className="mt-5 rounded-xl border border-app-border bg-app-bg p-4">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <div className="text-sm font-semibold text-app-fg">Editor: {selectedInvitation.slug}</div>
+                        <div className="mt-1 text-xs text-app-muted">id: {selectedInvitation.id}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="outline" onClick={() => deactivateInvitation(selectedInvitation.id)} disabled={savingInvitation}>
+                          {savingInvitation ? '…' : 'Deaktivieren'}
+                        </Button>
+                        <Button size="sm" variant="primary" onClick={saveInvitation} disabled={savingInvitation}>
+                          {savingInvitation ? 'Speichere…' : 'Speichern'}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                      <div>
+                        <div className="mb-1 text-xs text-app-muted">Name *</div>
+                        <Input value={editInviteName} onChange={(e) => setEditInviteName(e.target.value)} />
+                      </div>
+                      <div>
+                        <div className="mb-1 text-xs text-app-muted">Visibility</div>
+                        <Select value={editInviteVisibility} onValueChange={(v) => setEditInviteVisibility(v as any)}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="UNLISTED">UNLISTED</SelectItem>
+                            <SelectItem value="PUBLIC">PUBLIC</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="md:col-span-2">
+                        <div className="mb-1 text-xs text-app-muted">Password (leer = entfernen)</div>
+                        <Input value={editInvitePassword} onChange={(e) => setEditInvitePassword(e.target.value)} placeholder="(leer = entfernen)" />
+                      </div>
+                      <div className="md:col-span-2">
+                        <div className="mb-1 text-xs text-app-muted">Config JSON (leer = unverändert/leer)</div>
+                        <Textarea value={editInviteConfigJson} onChange={(e) => setEditInviteConfigJson(e.target.value)} rows={10} />
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                      <div>
+                        <div className="mb-1 text-xs text-app-muted">Shortlink channel (optional)</div>
+                        <Input value={shortlinkChannel} onChange={(e) => setShortlinkChannel(e.target.value)} placeholder="default" />
+                      </div>
+                      <div className="flex items-end">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => createInvitationShortlink(selectedInvitation.id)}
+                          disabled={creatingShortlink}
+                          className="w-full"
+                        >
+                          {creatingShortlink ? 'Erstelle…' : 'Shortlink erstellen'}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <div className="text-xs font-medium text-app-muted">Shortlinks</div>
+                      <div className="mt-2 space-y-2">
+                        {(selectedInvitation.shortLinks || []).slice(0, 8).map((sl) => (
+                          <div
+                            key={sl.id}
+                            className="flex flex-col gap-1 rounded-lg border border-app-border bg-app-card p-3 sm:flex-row sm:items-center sm:justify-between"
+                          >
+                            <div className="min-w-0">
+                              <div className="truncate text-xs text-app-muted">{sl.channel || 'default'} · {new Date(sl.createdAt).toLocaleString()}</div>
+                              <div className="break-all font-mono text-xs text-app-fg">{sl.url}</div>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={async () => {
+                                try {
+                                  await navigator.clipboard.writeText(sl.url);
+                                  toast.success('Kopiert');
+                                } catch {
+                                  toast.error('Kopieren fehlgeschlagen');
+                                }
+                              }}
+                            >
+                              Copy
+                            </Button>
+                          </div>
+                        ))}
+                        {!selectedInvitation.shortLinks?.length ? (
+                          <div className="text-sm text-app-muted">Noch keine Shortlinks.</div>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </Card>
             </div>
           </Card>
 
