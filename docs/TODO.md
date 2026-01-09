@@ -10,8 +10,6 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 
 ## ⏳ In Arbeit
 
-- ⏳ Pre-Prod Audit: Scan nach fehlenden Elementen/Implementationen (WP/Woo/CMS/Admin Tools) + TODO-Liste aktualisieren
-- ⏳ In-App Guided Tour (Speech-Bubbles): CMS Sync + Woo Inbox + Co-Host Invites inkl. "don't show again" + manueller Restart
 
 ## ❌ Next
 
@@ -27,17 +25,17 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
   - ✅/❌ **Remove Test**: Host entfernt Co-Host → Co-Host verliert Manage-Zugriff (Reload/403/Redirect)
 - ❌ Production Test Run (Smoke + kritische Flows) nachdem Audit + Tour fertig sind
 
-- ❌ (Optional) Python DB Verification Scripts
-  - Hinweis: `python3` ist auf Prod bereits vorhanden (Ubuntu 24.04, Python 3.12.3)
+- ✅ (Optional) Python DB Verification Scripts
   - Standard-Check: `bash ./scripts/verify-prod.sh` (API Health + DB Schema/Migrations)
+  - Admin-API Smoke: `bash ./scripts/prod-smoke-admin.sh` (Invitation Templates CRUD + Impersonation Token)
   - Optional: `APP_URL=... ENV_FILE=... bash ./scripts/verify-prod.sh`
 
-- ❌ Admin Dashboard: Build/Version Anzeige + Cache-Bust Reload
+- ✅ Admin Dashboard: Build/Version Anzeige + Cache-Bust Reload
   - Ziel: in `dash.*` sofort sehen, welcher Build läuft (Commit + Build-Zeit) und per Button zuverlässig neu laden.
   - UI: Sidebar Footer zeigt `NEXT_PUBLIC_GIT_SHA` + `NEXT_PUBLIC_BUILD_TIME` + `Origin` und Button „Neu laden (Cache)“.
   - Deploy: `scripts/deploy-admin-dashboard-prod.sh` injiziert `NEXT_PUBLIC_GIT_SHA` + `NEXT_PUBLIC_BUILD_TIME` beim `pnpm build`.
 
-- ❌ Admin Dashboard: Dashboard Startseite mit System-Metriken (Uptime/Load/Memory/Disk)
+- ✅ Admin Dashboard: Dashboard Startseite mit System-Metriken (Uptime/Load/Memory/Disk)
   - Backend: `GET /api/admin/ops/server` liefert read-only Metriken (Uptime/Load/Mem + `df /`).
   - UI: `/dashboard` zeigt Backend-Version (`/api/version`) + Server-Metriken.
 
@@ -77,6 +75,8 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
 ## ✅ Done
 
 - ✅ Backlog aus Feature-Spec erstellt
+- ✅ Pre-Prod Audit: Backend `/api/admin/*` mounts + Admin-Dashboard Navigation/Pages verifiziert (keine toten Links/fehlenden Routes)
+- ✅ Guided Tour: Auto-Start nur einmal (localStorage `seen`), "Nicht mehr anzeigen" (localStorage `dismissed`), manueller Restart reset `seen` + `dismissed`; Tours integriert in `/woo`, `/cms`, Event-Detail (Co-Hosts) + Host Dashboard
 - ✅ Doku-Einstieg im Repo:
   - `docs/INDEX.md`
   - `docs/API_MAP.md`
