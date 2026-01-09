@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/database';
-import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { authMiddleware, AuthRequest, hasEventManageAccess } from '../middleware/auth';
 import { emailService } from '../services/email';
 import { logger } from '../utils/logger';
 
@@ -58,7 +58,7 @@ router.post(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
@@ -124,7 +124,7 @@ router.post(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 

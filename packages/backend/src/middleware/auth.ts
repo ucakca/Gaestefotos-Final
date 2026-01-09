@@ -8,6 +8,35 @@ export interface AuthRequest extends Request {
   userRole?: string;
 }
 
+export function isPrivilegedRole(role?: string) {
+  return role === 'ADMIN' || role === 'SUPERADMIN';
+}
+
+export async function hasEventManageAccess(req: AuthRequest, eventId: string): Promise<boolean> {
+  if (!req.userId) return false;
+  if (isPrivilegedRole(req.userRole)) return true;
+
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { hostId: true, deletedAt: true, isActive: true },
+  });
+
+  if (!event || event.deletedAt || event.isActive === false) return false;
+  if (event.hostId === req.userId) return true;
+
+  const member = await prisma.eventMember.findUnique({
+    where: {
+      eventId_userId: {
+        eventId,
+        userId: req.userId,
+      },
+    },
+    select: { id: true },
+  });
+
+  return !!member;
+}
+
 function parseCookies(req: Request): Record<string, string> {
   const header = req.headers.cookie;
   if (!header) return {};

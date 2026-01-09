@@ -27,6 +27,7 @@ import votesRoutes from './routes/votes';
 import duplicatesRoutes from './routes/duplicates';
 import faceSearchRoutes from './routes/faceSearch';
 import videoRoutes from './routes/videos';
+import cohostsRoutes from './routes/cohosts';
 import packageDefinitionsRoutes from './routes/packageDefinitions';
 import invitationRoutes from './routes/invitations';
 import woocommerceWebhooksRoutes from './routes/woocommerceWebhooks';
@@ -34,6 +35,7 @@ import adminWooWebhooksRoutes from './routes/adminWooWebhooks';
 import adminApiKeysRoutes from './routes/adminApiKeys';
 import adminInvoicesRoutes from './routes/adminInvoices';
 import adminEmailTemplatesRoutes from './routes/adminEmailTemplates';
+import adminInvitationTemplatesRoutes from './routes/adminInvitationTemplates';
 import adminCmsSyncRoutes from './routes/adminCmsSync';
 import cmsPublicRoutes from './routes/cmsPublic';
 import maintenanceRoutes from './routes/maintenance';
@@ -46,6 +48,11 @@ import faceSearchConsentRoutes from './routes/faceSearchConsent';
 import adminFaceSearchConsentRoutes from './routes/adminFaceSearchConsent';
 import adminOpsRoutes from './routes/adminOps';
 import wpConsentRoutes from './routes/wpConsent';
+import qaLogsRoutes from './routes/qaLogs';
+import adminQaLogsRoutes from './routes/adminQaLogs';
+import adminUsersRoutes from './routes/adminUsers';
+import adminEventsRoutes from './routes/adminEvents';
+import cohostInvitesRoutes from './routes/cohostInvites';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -55,6 +62,8 @@ import { startVirusScanWorker } from './services/virusScan';
 import { startOrphanCleanupWorker } from './services/orphanCleanup';
 import { startStorageReminderWorker } from './services/storageReminder';
 import { startFaceSearchConsentRetentionWorker } from './services/faceSearchConsentRetention';
+import { startQaLogRetentionWorker } from './services/qaLogRetention';
+import { startWooLogRetentionWorker } from './services/wooLogRetention';
 import prisma from './config/database';
 import { hasEventAccess } from './middleware/auth';
 import { maintenanceModeMiddleware } from './middleware/maintenanceMode';
@@ -97,6 +106,8 @@ startVirusScanWorker();
 startOrphanCleanupWorker();
 startStorageReminderWorker();
 startFaceSearchConsentRetentionWorker();
+startQaLogRetentionWorker();
+startWooLogRetentionWorker();
 
 // Initialize Sentry for error tracking
 if (process.env.SENTRY_DSN) {
@@ -514,6 +525,8 @@ app.use('/api/events', guestbookRoutes); // Guestbook: /api/events/:eventId/gues
 app.use('/api/events', duplicatesRoutes); // Duplicates: /api/events/:eventId/duplicates
 app.use('/api/events', faceSearchRoutes); // Face Search: /api/events/:eventId/face-search
 app.use('/api/events', videoRoutes); // Videos: /api/events/:eventId/videos
+app.use('/api/events', cohostsRoutes); // Co-hosts: /api/events/:eventId/cohosts
+app.use('/api/cohosts', cohostInvitesRoutes); // Co-host invite accept: /api/cohosts/accept
 app.use('/api/videos', videoRoutes); // Video files: /api/videos/:eventId/file/*
 app.use('/api', invitationRoutes);
 app.use('/api/admin/package-definitions', packageDefinitionsRoutes);
@@ -521,14 +534,19 @@ app.use('/api/admin/webhooks/woocommerce', adminWooWebhooksRoutes);
 app.use('/api/admin/api-keys', adminApiKeysRoutes);
 app.use('/api/admin/invoices', adminInvoicesRoutes);
 app.use('/api/admin/email-templates', adminEmailTemplatesRoutes);
+app.use('/api/admin/invitation-templates', adminInvitationTemplatesRoutes);
 app.use('/api/admin/cms', adminCmsSyncRoutes);
 app.use('/api/cms', cmsPublicRoutes);
 app.use('/api/admin/maintenance', adminMaintenanceRoutes);
 app.use('/api/admin/theme', adminThemeRoutes);
 app.use('/api/admin/face-search-consent', adminFaceSearchConsentRoutes);
 app.use('/api/admin/ops', adminOpsRoutes);
+app.use('/api/admin/qa-logs', adminQaLogsRoutes);
+app.use('/api/qa-logs', qaLogsRoutes);
 app.use('/api/admin/impersonation', adminImpersonationRoutes);
 app.use('/api/admin/marketing', adminMarketingRoutes);
+app.use('/api/admin/users', adminUsersRoutes);
+app.use('/api/admin/events', adminEventsRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
 
 // Sentry error handler (must be after routes, before error handlers)

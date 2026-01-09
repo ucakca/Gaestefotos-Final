@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import prisma from '../config/database';
-import { authMiddleware, AuthRequest, optionalAuthMiddleware, hasEventAccess } from '../middleware/auth';
+import { authMiddleware, AuthRequest, optionalAuthMiddleware, hasEventAccess, hasEventManageAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -41,8 +41,8 @@ router.get(
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
-    const isHost = req.userId && req.userId === event.hostId;
-    if (!isHost && !hasEventAccess(req, eventId)) {
+    const isManager = req.userId ? await hasEventManageAccess(req, eventId) : false;
+    if (!isManager && !hasEventAccess(req, eventId)) {
       return res.status(404).json({ error: 'Challenges nicht gefunden' });
     }
 
@@ -66,7 +66,7 @@ router.get(
                 createdAt: true,
               },
             },
-            guest: isHost
+            guest: isManager
               ? true
               : {
                   select: {
@@ -114,7 +114,7 @@ router.post(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
@@ -181,7 +181,7 @@ router.put(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
@@ -262,7 +262,7 @@ router.delete(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
@@ -304,7 +304,7 @@ router.post(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
@@ -394,8 +394,8 @@ router.post(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      const isHost = req.userId && req.userId === event.hostId;
-      if (!isHost && !hasEventAccess(req, eventId)) {
+      const isManager = req.userId ? await hasEventManageAccess(req, eventId) : false;
+      if (!isManager && !hasEventAccess(req, eventId)) {
         return res.status(404).json({ error: 'Challenge nicht gefunden' });
       }
 

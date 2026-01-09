@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
 
@@ -31,6 +32,15 @@ router.post('/token', authMiddleware, requireRole('ADMIN', 'SUPERADMIN'), async 
 
   const ttlSeconds = data.expiresInSeconds ?? 60 * 15;
 
+  const ipHashSecret = String(process.env.IP_HASH_SECRET || process.env.JWT_SECRET || '').trim();
+  const effectiveHashSecret = ipHashSecret || 'dev-ip-hash-secret';
+  const ipHash = crypto
+    .createHash('sha256')
+    .update(`${req.ip || 'unknown'}|${effectiveHashSecret}`)
+    .digest('hex');
+
+  const userAgent = (req.get('user-agent') || '').slice(0, 500) || null;
+
   const token = jwt.sign(
     {
       userId: target.id,
@@ -48,6 +58,21 @@ router.post('/token', authMiddleware, requireRole('ADMIN', 'SUPERADMIN'), async 
     expiresInSeconds: ttlSeconds,
     user: target,
   });
+
+  try {
+    await prisma.impersonationAuditLog.create({
+      data: {
+        adminUserId: req.userId as string,
+        targetUserId: target.id,
+        reason: data.reason || null,
+        ttlSeconds,
+        ipHash,
+        userAgent,
+      },
+    });
+  } catch {
+    // ignore audit errors
+  }
 });
 
 export default router;

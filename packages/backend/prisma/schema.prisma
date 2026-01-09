@@ -28,7 +28,10 @@ model User {
   updatedAt DateTime @updatedAt
 
   events Event[]
+  eventMembers EventMember[]
   apiKeys ApiKey[]
+  impersonationAuditsAsAdmin ImpersonationAuditLog[] @relation("ImpersonationAuditAdmin")
+  impersonationAuditsAsTarget ImpersonationAuditLog[] @relation("ImpersonationAuditTarget")
 
   @@map("users")
 }
@@ -36,6 +39,10 @@ model User {
 enum UserRole {
   ADMIN
   HOST
+}
+
+enum EventMemberRole {
+  COHOST
 }
 
 model Event {
@@ -63,6 +70,7 @@ model Event {
   updatedAt              DateTime @updatedAt
 
   host      User       @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  members   EventMember[]
   guests    Guest[]
   photos    Photo[]
   videos    Video[]
@@ -85,6 +93,23 @@ model Event {
   @@index([deletedAt])
   @@index([purgeAfter])
   @@map("events")
+}
+
+model EventMember {
+  id        String          @id @default(uuid())
+  eventId   String
+  userId    String
+  role      EventMemberRole @default(COHOST)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@map("event_members")
 }
 
 model EventTrafficStat {
@@ -127,6 +152,34 @@ model AppSetting {
   updatedAt DateTime @updatedAt
 
   @@map("app_settings")
+}
+
+enum QaLogLevel {
+  IMPORTANT
+  DEBUG
+}
+
+model QaLogEvent {
+  id        String     @id @default(uuid())
+  level     QaLogLevel @default(IMPORTANT)
+  type      String
+  message   String?
+  data      Json?
+  userId    String?
+  userRole  String?
+  eventId   String?
+  path      String?
+  method    String?
+  userAgent String?
+  ipHash    String?
+  createdAt DateTime   @default(now())
+
+  @@index([createdAt])
+  @@index([level])
+  @@index([type])
+  @@index([eventId])
+  @@index([userId])
+  @@map("qa_log_events")
 }
 
 enum EntitlementStatus {
@@ -700,14 +753,37 @@ model InvitationVisit {
 
 model InvitationTemplate {
   id        String   @id @default(uuid())
-  name      String
-  config    Json     @default("{}")
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  slug        String    @unique
+  title       String
+  description String?
+  html        String?   @db.Text
+  text        String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
+  @@index([slug])
   @@index([isActive])
   @@map("invitation_templates")
+}
+
+model ImpersonationAuditLog {
+  id           String   @id @default(uuid())
+  adminUserId  String
+  targetUserId String
+  reason       String?
+  ttlSeconds   Int
+  ipHash       String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  adminUser  User @relation("ImpersonationAuditAdmin", fields: [adminUserId], references: [id], onDelete: Cascade)
+  targetUser User @relation("ImpersonationAuditTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId])
+  @@index([targetUserId])
+  @@index([createdAt])
+  @@map("impersonation_audit_logs")
 }
 
 enum EmailTemplateKind {

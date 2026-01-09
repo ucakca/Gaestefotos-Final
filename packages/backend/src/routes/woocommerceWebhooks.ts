@@ -77,6 +77,14 @@ function isPaidOrderStatus(status: unknown): boolean {
   return s === 'processing' || s === 'completed';
 }
 
+function nonPaidReasonFromStatus(status: unknown): string {
+  const s = typeof status === 'string' ? status.trim().toLowerCase() : '';
+  if (s === 'refunded') return 'order_refunded';
+  if (s === 'cancelled' || s === 'canceled') return 'order_cancelled';
+  if (s === 'failed') return 'order_failed';
+  return 'order_not_paid';
+}
+
 function getMetaValue(meta: Array<{ key: string; value: any }> | undefined, key: string): string | undefined {
   if (!meta) return undefined;
   const found = meta.find((m) => m.key === key);
@@ -95,62 +103,55 @@ function getMetaValueLoose(meta: Array<{ key: string; value?: any }> | undefined
   return undefined;
 }
 
-router.post('/order-paid', async (req: RawBodyRequest, res: Response) => {
-  const signatureOk = verifyWooSignature(req);
-  const payloadHash = hashPayload(req.rawBody);
-
-  const logBase: any = {
-    provider: 'WOOCOMMERCE',
-    topic: 'order-paid',
-    signatureOk,
-    payloadHash,
-    payload: req.body as any,
-  };
-
-  const createdLog = await (prisma as any).wooWebhookEventLog
-    .create({
-      data: {
-        ...logBase,
-        status: signatureOk ? 'RECEIVED' : 'FORBIDDEN',
-      },
-    })
-    .catch(() => null);
-
-  const logId = createdLog?.id;
+export async function processWooOrderPaidWebhook(params: {
+  payload: unknown;
+  signatureOk: boolean;
+  payloadHash: string | null;
+  logId?: string | null;
+}): Promise<{ httpStatus: number; body: any }>
+{
+  const { payload: rawPayload, signatureOk, payloadHash, logId } = params;
 
   try {
     if (!signatureOk) {
       if (logId) {
-        await (prisma as any).wooWebhookEventLog.update({
-          where: { id: logId },
-          data: { status: 'FORBIDDEN', reason: 'invalid_signature' },
-        }).catch(() => null);
+        await (prisma as any).wooWebhookEventLog
+          .update({
+            where: { id: logId },
+            data: { status: 'FORBIDDEN', reason: 'invalid_signature' },
+          })
+          .catch(() => null);
       }
-      return res.status(403).json({ error: 'Forbidden' });
+      return { httpStatus: 403, body: { error: 'Forbidden' } };
     }
 
-    const payload = orderPaidSchema.parse(req.body);
+    const payload = orderPaidSchema.parse(rawPayload);
 
     const wcOrderId = String(payload.id);
     const payloadStatus = payload.status;
 
     if (logId) {
-      await (prisma as any).wooWebhookEventLog.update({
-        where: { id: logId },
-        data: { wcOrderId },
-      }).catch(() => null);
+      await (prisma as any).wooWebhookEventLog
+        .update({
+          where: { id: logId },
+          data: { wcOrderId, payloadHash },
+        })
+        .catch(() => null);
     }
 
     // Only process paid orders; acknowledge others to avoid webhook retries.
     if (!isPaidOrderStatus(payloadStatus)) {
-      logger.info('woocommerce_webhook_ignored', { wcOrderId, reason: 'order_not_paid' });
+      const reason = nonPaidReasonFromStatus(payloadStatus);
+      logger.info('woocommerce_webhook_ignored', { wcOrderId, reason, payloadStatus });
       if (logId) {
-        await (prisma as any).wooWebhookEventLog.update({
-          where: { id: logId },
-          data: { status: 'IGNORED', reason: 'order_not_paid' },
-        }).catch(() => null);
+        await (prisma as any).wooWebhookEventLog
+          .update({
+            where: { id: logId },
+            data: { status: 'IGNORED', reason },
+          })
+          .catch(() => null);
       }
-      return res.json({ success: true, ignored: true, reason: 'order_not_paid' });
+      return { httpStatus: 200, body: { success: true, ignored: true, reason } };
     }
 
     const eventCode = getMetaValueLoose(payload.meta_data, 'eventCode') || getMetaValueLoose(payload.meta_data, 'event_code');
@@ -159,21 +160,25 @@ router.post('/order-paid', async (req: RawBodyRequest, res: Response) => {
     const skus = lineItems.map((li) => (li.sku || '').trim()).filter((v) => v.length > 0);
 
     if (logId) {
-      await (prisma as any).wooWebhookEventLog.update({
-        where: { id: logId },
-        data: { eventCode: eventCode || null, skus },
-      }).catch(() => null);
+      await (prisma as any).wooWebhookEventLog
+        .update({
+          where: { id: logId },
+          data: { eventCode: eventCode || null, skus },
+        })
+        .catch(() => null);
     }
 
     if (skus.length === 0) {
       logger.info('woocommerce_webhook_ignored', { wcOrderId, reason: 'no_sku_in_order_payload' });
       if (logId) {
-        await (prisma as any).wooWebhookEventLog.update({
-          where: { id: logId },
-          data: { status: 'IGNORED', reason: 'no_sku_in_order_payload' },
-        }).catch(() => null);
+        await (prisma as any).wooWebhookEventLog
+          .update({
+            where: { id: logId },
+            data: { status: 'IGNORED', reason: 'no_sku_in_order_payload' },
+          })
+          .catch(() => null);
       }
-      return res.json({ success: true, ignored: true, reason: 'no_sku_in_order_payload' });
+      return { httpStatus: 200, body: { success: true, ignored: true, reason: 'no_sku_in_order_payload' } };
     }
 
     const activePackages = await prisma.packageDefinition.findMany({
@@ -187,29 +192,33 @@ router.post('/order-paid', async (req: RawBodyRequest, res: Response) => {
     if (activePackages.length === 0) {
       logger.info('woocommerce_webhook_ignored', { wcOrderId, reason: 'unknown_package_sku' });
       if (logId) {
-        await (prisma as any).wooWebhookEventLog.update({
-          where: { id: logId },
-          data: { status: 'IGNORED', reason: 'unknown_package_sku' },
-        }).catch(() => null);
+        await (prisma as any).wooWebhookEventLog
+          .update({
+            where: { id: logId },
+            data: { status: 'IGNORED', reason: 'unknown_package_sku' },
+          })
+          .catch(() => null);
       }
-      return res.json({ success: true, ignored: true, reason: 'unknown_package_sku' });
+      return { httpStatus: 200, body: { success: true, ignored: true, reason: 'unknown_package_sku' } };
     }
 
     // Prefer UPGRADE packages if present, else BASE
     const pkg =
-      activePackages.find((p: any) => p.type === 'UPGRADE') ||
-      activePackages.find((p: any) => p.type === 'BASE') ||
-      activePackages[0];
+      (activePackages as any).find((p: any) => p.type === 'UPGRADE') ||
+      (activePackages as any).find((p: any) => p.type === 'BASE') ||
+      (activePackages as any)[0];
 
     const lineItemForPkg = lineItems.find((li) => (li.sku || '').trim() === pkg.sku);
     const wcProductIdRaw = lineItemForPkg?.product_id;
     const wcProductId = wcProductIdRaw === null || wcProductIdRaw === undefined ? null : String(wcProductIdRaw);
 
     if (logId) {
-      await (prisma as any).wooWebhookEventLog.update({
-        where: { id: logId },
-        data: { wcProductId, wcSku: pkg.sku },
-      }).catch(() => null);
+      await (prisma as any).wooWebhookEventLog
+        .update({
+          where: { id: logId },
+          data: { wcProductId, wcSku: pkg.sku },
+        })
+        .catch(() => null);
     }
 
     // Determine wpUserId; Woo uses customer_id when user is logged in.
@@ -228,14 +237,14 @@ router.post('/order-paid', async (req: RawBodyRequest, res: Response) => {
         if (local?.wordpressUserId) {
           wpUserId = local.wordpressUserId;
         } else {
-        try {
-          const wpUser = await getWordPressUserByEmail(email);
-          if (wpUser) {
-            wpUserId = wpUser.id;
+          try {
+            const wpUser = await getWordPressUserByEmail(email);
+            if (wpUser) {
+              wpUserId = wpUser.id;
+            }
+          } catch {
+            logger.warn('WooCommerce webhook: billing email mapping failed');
           }
-        } catch (e) {
-          logger.warn('WooCommerce webhook: billing email mapping failed');
-        }
         }
       }
     }
@@ -247,19 +256,23 @@ router.post('/order-paid', async (req: RawBodyRequest, res: Response) => {
         hasEventCode: !!eventCode,
       });
       if (logId) {
-        await (prisma as any).wooWebhookEventLog.update({
-          where: { id: logId },
-          data: { status: 'IGNORED', reason: 'missing_customer_mapping' },
-        }).catch(() => null);
+        await (prisma as any).wooWebhookEventLog
+          .update({
+            where: { id: logId },
+            data: { status: 'IGNORED', reason: 'missing_customer_mapping' },
+          })
+          .catch(() => null);
       }
-      return res.json({ success: true, ignored: true, reason: 'missing_customer_mapping' });
+      return { httpStatus: 200, body: { success: true, ignored: true, reason: 'missing_customer_mapping' } };
     }
 
     if (logId) {
-      await (prisma as any).wooWebhookEventLog.update({
-        where: { id: logId },
-        data: { wpUserId },
-      }).catch(() => null);
+      await (prisma as any).wooWebhookEventLog
+        .update({
+          where: { id: logId },
+          data: { wpUserId },
+        })
+        .catch(() => null);
     }
 
     // Idempotency + processing should be in one transaction (avoid receipts without entitlements).
@@ -399,60 +412,72 @@ router.post('/order-paid', async (req: RawBodyRequest, res: Response) => {
     if (processed.duplicate) {
       logger.info('woocommerce_webhook_duplicate', { wcOrderId, eventId: processed.eventId });
       if (logId) {
-        await (prisma as any).wooWebhookEventLog.update({
-          where: { id: logId },
-          data: { status: 'PROCESSED', reason: 'duplicate', eventId: processed.eventId },
-        }).catch(() => null);
+        await (prisma as any).wooWebhookEventLog
+          .update({
+            where: { id: logId },
+            data: { status: 'PROCESSED', reason: 'duplicate', eventId: processed.eventId },
+          })
+          .catch(() => null);
       }
-      return res.json({ success: true, duplicate: true, eventId: processed.eventId });
+      return { httpStatus: 200, body: { success: true, duplicate: true, eventId: processed.eventId } };
     }
 
     if (logId) {
-      await (prisma as any).wooWebhookEventLog.update({
-        where: { id: logId },
-        data: { status: 'PROCESSED', eventId: processed.eventId, reason: processed.mode },
-      }).catch(() => null);
+      await (prisma as any).wooWebhookEventLog
+        .update({
+          where: { id: logId },
+          data: { status: 'PROCESSED', eventId: processed.eventId, reason: processed.mode },
+        })
+        .catch(() => null);
     }
 
-    return res.json({ success: true, eventId: processed.eventId, mode: processed.mode });
+    return { httpStatus: 200, body: { success: true, eventId: processed.eventId, mode: processed.mode } };
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       if (logId) {
-        await (prisma as any).wooWebhookEventLog.update({
-          where: { id: logId },
-          data: { status: 'FAILED', reason: 'invalid_payload', error: JSON.stringify(error.errors).slice(0, 2000) },
-        }).catch(() => null);
+        await (prisma as any).wooWebhookEventLog
+          .update({
+            where: { id: logId },
+            data: { status: 'FAILED', reason: 'invalid_payload', error: JSON.stringify(error.errors).slice(0, 2000) },
+          })
+          .catch(() => null);
       }
-      return res.status(400).json({ error: error.errors });
+      return { httpStatus: 400, body: { error: error.errors } };
     }
     if (error?.code === 'EVENT_NOT_FOUND') {
       if (logId) {
-        await (prisma as any).wooWebhookEventLog.update({
-          where: { id: logId },
-          data: { status: 'FAILED', reason: 'event_not_found', error: 'EVENT_NOT_FOUND' },
-        }).catch(() => null);
+        await (prisma as any).wooWebhookEventLog
+          .update({
+            where: { id: logId },
+            data: { status: 'FAILED', reason: 'event_not_found', error: 'EVENT_NOT_FOUND' },
+          })
+          .catch(() => null);
       }
-      return res.status(404).json({ error: 'Event not found' });
+      return { httpStatus: 404, body: { error: 'Event not found' } };
     }
     if (error?.code === 'EVENT_CODE_NOT_OWNED') {
       logger.info('woocommerce_webhook_ignored', { reason: 'eventCode_not_owned_by_customer' });
       if (logId) {
-        await (prisma as any).wooWebhookEventLog.update({
-          where: { id: logId },
-          data: { status: 'IGNORED', reason: 'eventCode_not_owned_by_customer' },
-        }).catch(() => null);
+        await (prisma as any).wooWebhookEventLog
+          .update({
+            where: { id: logId },
+            data: { status: 'IGNORED', reason: 'eventCode_not_owned_by_customer' },
+          })
+          .catch(() => null);
       }
-      return res.json({ success: true, ignored: true, reason: 'eventCode_not_owned_by_customer' });
+      return { httpStatus: 200, body: { success: true, ignored: true, reason: 'eventCode_not_owned_by_customer' } };
     }
     if (error?.code === 'NO_LOCAL_USER_MAPPING') {
       logger.info('woocommerce_webhook_ignored', { reason: 'no_local_user_mapping' });
       if (logId) {
-        await (prisma as any).wooWebhookEventLog.update({
-          where: { id: logId },
-          data: { status: 'IGNORED', reason: 'no_local_user_mapping' },
-        }).catch(() => null);
+        await (prisma as any).wooWebhookEventLog
+          .update({
+            where: { id: logId },
+            data: { status: 'IGNORED', reason: 'no_local_user_mapping' },
+          })
+          .catch(() => null);
       }
-      return res.json({ success: true, ignored: true, reason: 'no_local_user_mapping' });
+      return { httpStatus: 200, body: { success: true, ignored: true, reason: 'no_local_user_mapping' } };
     }
 
     logger.error('WooCommerce webhook error', {
@@ -460,13 +485,49 @@ router.post('/order-paid', async (req: RawBodyRequest, res: Response) => {
     });
 
     if (logId) {
-      await (prisma as any).wooWebhookEventLog.update({
-        where: { id: logId },
-        data: { status: 'FAILED', reason: 'unhandled', error: ((error as any)?.message || String(error)).slice(0, 2000) },
-      }).catch(() => null);
+      await (prisma as any).wooWebhookEventLog
+        .update({
+          where: { id: logId },
+          data: { status: 'FAILED', reason: 'unhandled', error: ((error as any)?.message || String(error)).slice(0, 2000) },
+        })
+        .catch(() => null);
     }
-    return res.status(500).json({ error: 'Internal server error' });
+    return { httpStatus: 500, body: { error: 'Internal server error' } };
   }
+}
+
+router.post('/order-paid', async (req: RawBodyRequest, res: Response) => {
+  const signatureOk = verifyWooSignature(req);
+  const payloadHash = hashPayload(req.rawBody);
+
+  const logBase: any = {
+    provider: 'WOOCOMMERCE',
+    topic: 'order-paid',
+    signatureOk,
+    payloadHash,
+    payload: req.body as any,
+  };
+
+  const createdLog = await (prisma as any).wooWebhookEventLog
+    .create({
+      data: {
+        ...logBase,
+        status: signatureOk ? 'RECEIVED' : 'FORBIDDEN',
+      },
+    })
+    .catch(() => null);
+
+  const logId = createdLog?.id;
+
+
+  const result = await processWooOrderPaidWebhook({
+    payload: req.body,
+    signatureOk,
+    payloadHash,
+    logId,
+  });
+
+  return res.status(result.httpStatus).json(result.body);
 });
 
 export default router;

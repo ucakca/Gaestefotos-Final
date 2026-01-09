@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/database';
-import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { authMiddleware, AuthRequest, issueEventAccessCookie, hasEventAccess, optionalAuthMiddleware, hasEventManageAccess } from '../middleware/auth';
 import { passwordLimiter } from '../middleware/rateLimit';
 import { logger } from '../utils/logger';
 import { randomString, slugify } from '@gaestefotos/shared';
@@ -236,7 +236,7 @@ router.get('/events/:eventId/invitations', authMiddleware, async (req: AuthReque
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
-    if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+    if (!(await hasEventManageAccess(req, eventId))) {
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
@@ -277,7 +277,7 @@ router.post('/events/:eventId/invitations/:invitationId/shortlinks', authMiddlew
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
-    if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+    if (!(await hasEventManageAccess(req, eventId))) {
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
@@ -320,7 +320,7 @@ router.post('/events/:eventId/invitations', authMiddleware, async (req: AuthRequ
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
-    if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+    if (!(await hasEventManageAccess(req, eventId))) {
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
@@ -346,7 +346,6 @@ router.post('/events/:eventId/invitations', authMiddleware, async (req: AuthRequ
 
     const nextConfig = {
       ...baseConfig,
-      ...(template?.config ? (template.config as any) : {}),
       ...(data.config || {}),
     };
 
@@ -404,7 +403,7 @@ router.put('/events/:eventId/invitations/:invitationId', authMiddleware, async (
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
-    if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+    if (!(await hasEventManageAccess(req, eventId))) {
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 

@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import prisma from '../config/database';
-import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { authMiddleware, AuthRequest, hasEventManageAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -24,7 +24,7 @@ router.get('/events/:eventId/statistics', authMiddleware, async (req: AuthReques
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
-    if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+    if (!(await hasEventManageAccess(req, eventId))) {
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
@@ -167,7 +167,10 @@ router.get('/statistics', authMiddleware, async (req: AuthRequest, res: Response
   try {
     const events = await prisma.event.findMany({
       where: {
-        hostId: req.userId,
+        OR: [
+          { hostId: req.userId },
+          { members: { some: { userId: req.userId } } },
+        ],
         deletedAt: null,
       },
       include: {
@@ -183,7 +186,10 @@ router.get('/statistics', authMiddleware, async (req: AuthRequest, res: Response
     const totalPhotos = await prisma.photo.count({
       where: {
         event: {
-          hostId: req.userId,
+          OR: [
+            { hostId: req.userId },
+            { members: { some: { userId: req.userId } } },
+          ],
           deletedAt: null,
         },
         deletedAt: null,
@@ -196,7 +202,10 @@ router.get('/statistics', authMiddleware, async (req: AuthRequest, res: Response
     const totalGuests = await prisma.guest.count({
       where: {
         event: {
-          hostId: req.userId,
+          OR: [
+            { hostId: req.userId },
+            { members: { some: { userId: req.userId } } },
+          ],
           deletedAt: null,
         },
       },

@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import { randomString } from '@gaestefotos/shared';
 import prisma from '../config/database';
-import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { authMiddleware, AuthRequest, hasEventManageAccess } from '../middleware/auth';
 
 const router = Router();
 
@@ -137,7 +137,7 @@ router.delete(
         return res.status(404).json({ error: 'Event not found' });
       }
 
-      if (event.hostId !== req.userId && req.userRole !== 'SUPERADMIN') {
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(403).json({ error: 'Forbidden' });
       }
 

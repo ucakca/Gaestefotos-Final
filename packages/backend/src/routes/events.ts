@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import archiver from 'archiver';
 import multer from 'multer';
 import prisma from '../config/database';
-import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie, optionalAuthMiddleware, hasEventAccess } from '../middleware/auth';
+import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie, optionalAuthMiddleware, hasEventAccess, isPrivilegedRole, hasEventManageAccess } from '../middleware/auth';
 import { DEFAULT_EVENT_FEATURES_CONFIG, normalizeEventFeaturesConfig, randomString, slugify } from '@gaestefotos/shared';
 import { logger } from '../utils/logger';
 import { getActiveEventEntitlement, getEffectiveEventPackage, getEventUsageBreakdown, bigintToString } from '../services/packageLimits';
@@ -48,7 +48,21 @@ async function requireHostOrAdmin(req: AuthRequest, res: Response, eventId: stri
     return null;
   }
 
-  if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+  const hasManageAccess =
+    (!!req.userId && event.hostId === req.userId) ||
+    isPrivilegedRole(req.userRole) ||
+    (!!req.userId &&
+      !!(await prisma.eventMember.findUnique({
+        where: {
+          eventId_userId: {
+            eventId,
+            userId: req.userId,
+          },
+        },
+        select: { id: true },
+      })));
+
+  if (!hasManageAccess) {
     res.status(404).json({ error: 'Event nicht gefunden' });
     return null;
   }
@@ -471,7 +485,7 @@ async function handleEventStorageUsage(req: AuthRequest, res: Response) {
 
     // Storage usage/limits are host/admin only.
     // Guests should not see 401s here (they don't have a JWT); return 404 instead.
-    if (existingEvent.hostId !== req.userId && req.userRole !== 'ADMIN') {
+    if (!(await hasEventManageAccess(req, eventId))) {
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
@@ -784,7 +798,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Event not found' });
     }
 
-    if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+    if (!(await hasEventManageAccess(req, event.id))) {
       return res.status(404).json({ error: 'Event not found' });
     }
 
@@ -855,7 +869,7 @@ router.get('/:id/traffic', authMiddleware, async (req: AuthRequest, res: Respons
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
-    if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+    if (!(await hasEventManageAccess(req, eventId))) {
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
@@ -1001,7 +1015,7 @@ router.patch(
         return res.status(404).json({ error: 'Event not found' });
       }
 
-      if (existingEvent.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, req.params.id))) {
         return res.status(403).json({ error: 'Forbidden' });
       }
 
@@ -1060,7 +1074,7 @@ router.get(
         return res.status(404).json({ error: 'Event not found' });
       }
 
-      if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(404).json({ error: 'Event not found' });
       }
 
@@ -1092,7 +1106,7 @@ router.get(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      if (existingEvent.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
@@ -1326,7 +1340,7 @@ router.post('/:id/invite-token', authMiddleware, async (req: AuthRequest, res: R
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
-    if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+    if (!(await hasEventManageAccess(req, eventId))) {
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
@@ -1374,7 +1388,7 @@ router.put(
         return res.status(404).json({ error: 'Event not found' });
       }
 
-      if (existingEvent.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, req.params.id))) {
         return res.status(403).json({ error: 'Forbidden' });
       }
 
@@ -1435,7 +1449,7 @@ router.delete(
         return res.status(404).json({ error: 'Event not found' });
       }
 
-      if (existingEvent.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, req.params.id))) {
         return res.status(403).json({ error: 'Forbidden' });
       }
 

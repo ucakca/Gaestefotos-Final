@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import multer from 'multer';
 import prisma from '../config/database';
-import { authMiddleware, requireRole, AuthRequest, optionalAuthMiddleware, hasEventAccess } from '../middleware/auth';
+import { authMiddleware, requireRole, AuthRequest, optionalAuthMiddleware, hasEventAccess, hasEventManageAccess } from '../middleware/auth';
 import { storageService } from '../services/storage';
 import { logger } from '../utils/logger';
 import { cache } from '../services/cache';
@@ -92,13 +92,11 @@ router.get(
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
-    const isHostUser = !!req.userId && event.hostId === req.userId;
-    const isAdmin = req.userRole === 'ADMIN';
+    const isManager = req.userId ? await hasEventManageAccess(req, eventId) : false;
 
-    // Allow host access without cookie
+    // Allow host/co-host/admin access without cookie
     if (req.userId) {
-      const isHostUser = event.hostId === req.userId;
-      if (!isHostUser && !hasEventAccess(req, eventId)) {
+      if (!isManager && !hasEventAccess(req, eventId)) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
     }
@@ -106,8 +104,7 @@ router.get(
     // Determine event mode and user role
     const featuresConfig = event.featuresConfig as any;
     const mode = featuresConfig?.mode || 'STANDARD';
-    const isHost = req.userId === event.hostId;
-    const isGuest = !isHost && req.userId;
+    const isGuest = !isManager && req.userId;
 
     const where: any = { eventId };
 
@@ -178,7 +175,7 @@ router.get(
     // Use relative URLs if BACKEND_URL is not set (works with Nginx proxy)
     const baseUrl = process.env.BACKEND_URL || process.env.API_URL;
     const videosWithPermanentUrls = videos.map((video: any) => {
-      const isPrivileged = isHostUser || isAdmin;
+      const isPrivileged = isManager;
       const safeVideo = isPrivileged
         ? video
         : (() => {
@@ -247,8 +244,8 @@ router.post(
     }
 
     const eventId = video.eventId;
-    const isHost = req.userId && req.userId === video.event.hostId;
-    if (!isHost && !hasEventAccess(req, eventId)) {
+    const isManager = req.userId ? await hasEventManageAccess(req, eventId) : false;
+    if (!isManager && !hasEventAccess(req, eventId)) {
       return res.status(404).json({ error: 'Video nicht gefunden' });
     }
 
@@ -380,9 +377,9 @@ router.post(
       const featuresConfig = event.featuresConfig as any;
       const mode = featuresConfig?.mode || 'STANDARD';
       const allowUploads = featuresConfig?.allowUploads !== false;
-      const isHost = req.userId === event.hostId;
-      const isGuest = !isHost && req.userId;
-      const denyVisibility = isHost || req.userRole === 'ADMIN' ? 'hostOrAdmin' : 'guest';
+      const isManager = req.userId ? await hasEventManageAccess(req, eventId) : false;
+      const isGuest = !isManager && req.userId;
+      const denyVisibility = isManager ? 'hostOrAdmin' : 'guest';
 
       // Block uploads in VIEW_ONLY mode for guests
       if (mode === 'VIEW_ONLY' && isGuest) {
@@ -645,9 +642,8 @@ router.get(
         return res.status(404).json({ error: 'Video nicht gefunden' });
       }
 
-      const isHost = !!req.userId && req.userId === event.hostId;
-      const isAdmin = req.userRole === 'ADMIN';
-      if (!isHost && !isAdmin && !hasEventAccess(req, eventId)) {
+      const isManager = req.userId ? await hasEventManageAccess(req, eventId) : false;
+      if (!isManager && !hasEventAccess(req, eventId)) {
         return res.status(404).json({ error: 'Video nicht gefunden' });
       }
 
@@ -710,14 +706,13 @@ router.get(
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
-    // Access control: host/admin via JWT OR event access cookie for guests
-    const isHost = !!req.userId && video.event.hostId === req.userId;
-    const isAdmin = req.userRole === 'ADMIN';
-    if (!isHost && !isAdmin && !hasEventAccess(req, video.eventId)) {
+    // Access control: host/co-host/admin via JWT OR event access cookie for guests
+    const isManager = req.userId ? await hasEventManageAccess(req, video.eventId) : false;
+    if (!isManager && !hasEventAccess(req, video.eventId)) {
       return res.status(404).json({ error: 'Video nicht gefunden' });
     }
 
-    const denyVisibility = isHost || isAdmin ? 'hostOrAdmin' : 'guest';
+    const denyVisibility = isManager ? 'hostOrAdmin' : 'guest';
 
     // Storage period enforcement
     const storageEndsAt = await getEventStorageEndsAt(video.eventId);
@@ -731,12 +726,12 @@ router.get(
     const featuresConfig = (video.event.featuresConfig || {}) as any;
 
     // Guests can download only if host enabled allowDownloads
-    if (!isHost && !isAdmin && featuresConfig?.allowDownloads === false) {
+    if (!isManager && featuresConfig?.allowDownloads === false) {
       return res.status(404).json({ error: 'Video nicht gefunden' });
     }
 
     // Guests can download only approved videos
-    if (!isHost && !isAdmin && video.status !== 'APPROVED') {
+    if (!isManager && video.status !== 'APPROVED') {
       return res.status(404).json({ error: 'Video nicht gefunden' });
     }
 
@@ -851,7 +846,7 @@ router.post('/:videoId/purge', authMiddleware, async (req: AuthRequest, res: Res
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
-    if (video.event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+    if (!(await hasEventManageAccess(req, video.eventId))) {
       return res.status(404).json({ error: 'Video nicht gefunden' });
     }
 
@@ -888,7 +883,7 @@ router.post('/bulk/approve', authMiddleware, async (req: AuthRequest, res: Respo
 
     // Check permissions for all videos
     for (const video of videos) {
-      if (video.event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, video.eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
     }
@@ -929,7 +924,7 @@ router.post('/bulk/reject', authMiddleware, async (req: AuthRequest, res: Respon
 
     // Check permissions for all videos
     for (const video of videos) {
-      if (video.event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, video.eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
     }
@@ -970,10 +965,10 @@ router.post('/bulk/delete', authMiddleware, async (req: AuthRequest, res: Respon
 
     // Check permissions for all videos
     for (const video of videos) {
-      const isHost = video.event.hostId === req.userId;
+      const isManager = req.userId ? await hasEventManageAccess(req, video.eventId) : false;
       const isOwner = video.guestId === req.userId;
       
-      if (!isHost && !isOwner && req.userRole !== 'ADMIN') {
+      if (!isManager && !isOwner && req.userRole !== 'ADMIN') {
         return res.status(404).json({ error: 'Video nicht gefunden' });
       }
     }
@@ -1039,8 +1034,8 @@ router.post(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      // Only host/admin can bulk-download
-      if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      // Only host/co-host/admin can bulk-download
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
@@ -1121,7 +1116,7 @@ router.post(
 
       // Check permissions
       for (const video of videos) {
-        if (video.event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+        if (!(await hasEventManageAccess(req, video.eventId))) {
           return res.status(404).json({ error: 'Event nicht gefunden' });
         }
       }
@@ -1201,8 +1196,8 @@ router.get(
 
       // Access control: host JWT OR event access cookie
       const eventId = video.event.id;
-      const isHost = req.userId && video.event.hostId === req.userId;
-      if (!isHost && !hasEventAccess(req, eventId)) {
+      const isManager = req.userId ? await hasEventManageAccess(req, eventId) : false;
+      if (!isManager && !hasEventAccess(req, eventId)) {
         return res.status(404).json({ error: 'Video nicht gefunden' });
       }
 
@@ -1264,9 +1259,8 @@ router.post(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      const isHost = req.userId && video.event.hostId === req.userId;
-      const isAdmin = req.userRole === 'ADMIN';
-      if (!isHost && !isAdmin) {
+      const isManager = req.userId ? await hasEventManageAccess(req, video.eventId) : false;
+      if (!isManager) {
         return res.status(404).json({ error: 'Video nicht gefunden' });
       }
 

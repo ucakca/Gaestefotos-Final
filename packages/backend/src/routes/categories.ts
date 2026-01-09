@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import prisma from '../config/database';
-import { authMiddleware, AuthRequest, optionalAuthMiddleware, hasEventAccess } from '../middleware/auth';
+import { authMiddleware, AuthRequest, optionalAuthMiddleware, hasEventAccess, hasEventManageAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -127,7 +127,7 @@ router.post(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
@@ -190,7 +190,7 @@ router.put(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
@@ -277,7 +277,7 @@ router.delete(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
@@ -314,7 +314,7 @@ router.put(
       }
 
       // Check permissions
-      if (photo.event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, photo.eventId))) {
         return res.status(404).json({ error: 'Foto nicht gefunden' });
       }
 

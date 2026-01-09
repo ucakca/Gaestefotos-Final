@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import multer from 'multer';
 import { io } from '../index';
 import prisma from '../config/database';
-import { authMiddleware, requireRole, AuthRequest, optionalAuthMiddleware, requireEventAccess, hasEventAccess } from '../middleware/auth';
+import { authMiddleware, requireRole, AuthRequest, optionalAuthMiddleware, requireEventAccess, hasEventAccess, hasEventManageAccess } from '../middleware/auth';
 import { storageService } from '../services/storage';
 import { imageProcessor } from '../services/imageProcessor';
 import { attachEventUploadRateLimits, photoUploadEventLimiter, photoUploadIpLimiter } from '../middleware/rateLimit';
@@ -79,13 +79,12 @@ const enforceEventUploadAllowed = async (req: AuthRequest, res: Response, next: 
       return res.status(404).json({ error: 'Event not found' });
     }
 
-    const isHost = !!req.userId && req.userId === event.hostId;
-    const isAdmin = req.userRole === 'ADMIN';
-    const denyVisibility = isHost || isAdmin ? 'hostOrAdmin' : 'guest';
+    const isManager = req.userId ? await hasEventManageAccess(req, eventId) : false;
+    const denyVisibility = isManager ? 'hostOrAdmin' : 'guest';
 
     const featuresConfig = (event.featuresConfig || {}) as any;
     const allowUploads = featuresConfig?.allowUploads !== false;
-    if (!allowUploads && !isHost && !isAdmin) {
+    if (!allowUploads && !isManager) {
       return denyByVisibility(res, denyVisibility, {
         code: 'UPLOADS_DISABLED',
         error: 'Uploads sind für dieses Event deaktiviert',
@@ -210,9 +209,8 @@ router.post(
         featuresConfig: any;
       };
 
-      const isHost = !!req.userId && req.userId === event.hostId;
-      const isAdmin = req.userRole === 'ADMIN';
-      const denyVisibility = isHost || isAdmin ? 'hostOrAdmin' : 'guest';
+      const isManager = req.userId ? await hasEventManageAccess(req, eventId) : false;
+      const denyVisibility = isManager ? 'hostOrAdmin' : 'guest';
       void denyVisibility;
 
       const featuresConfig = (event.featuresConfig || {}) as any;
@@ -231,7 +229,7 @@ router.post(
         : await selectSmartCategoryId({
             eventId,
             capturedAt: capturedAtResult.capturedAt,
-            isGuest: !isHost && !isAdmin,
+            isGuest: !isManager,
           });
 
       const uploadBytes = BigInt(processed.optimized.length);
@@ -253,7 +251,7 @@ router.post(
       );
 
       const moderationRequired = featuresConfig?.moderationRequired === true;
-      const status = moderationRequired && !isHost && !isAdmin ? 'PENDING' : 'APPROVED';
+      const status = moderationRequired && !isManager ? 'PENDING' : 'APPROVED';
 
       const photo = await prisma.photo.create({
         data: {
@@ -330,11 +328,10 @@ router.get(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      const isHost = !!req.userId && photo.event.hostId === req.userId;
-      const isAdmin = req.userRole === 'ADMIN';
-      const denyVisibility = isHost || isAdmin ? 'hostOrAdmin' : 'guest';
+      const isManager = req.userId ? await hasEventManageAccess(req, photo.eventId) : false;
+      const denyVisibility = isManager ? 'hostOrAdmin' : 'guest';
 
-      if (!isHost && !isAdmin && !hasEventAccess(req, photo.eventId)) {
+      if (!isManager && !hasEventAccess(req, photo.eventId)) {
         return res.status(404).json({ error: 'Foto nicht gefunden' });
       }
 
@@ -342,12 +339,12 @@ router.get(
       const isStorageLocked = !!(storageEndsAt && Date.now() > storageEndsAt.getTime());
 
       res.setHeader('X-GF-Storage-Locked', isStorageLocked ? '1' : '0');
-      res.setHeader('X-GF-Viewer', isHost ? 'host' : isAdmin ? 'admin' : 'guest');
+      res.setHeader('X-GF-Viewer', isManager ? 'host' : 'guest');
 
       // NOTE: For the public page UX we still want to show thumbnails even when storage is locked,
       // but downloads must remain blocked via /download.
 
-      if (!isHost && !isAdmin && photo.status !== 'APPROVED') {
+      if (!isManager && photo.status !== 'APPROVED') {
         return res.status(404).json({ error: 'Foto nicht gefunden' });
       }
 
@@ -442,12 +439,11 @@ router.get(
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
-    const isHost = !!req.userId && photo.event.hostId === req.userId;
-    const isAdmin = req.userRole === 'ADMIN';
-    const denyVisibility = isHost || isAdmin ? 'hostOrAdmin' : 'guest';
+    const isManager = req.userId ? await hasEventManageAccess(req, photo.eventId) : false;
+    const denyVisibility = isManager ? 'hostOrAdmin' : 'guest';
 
     // Access control: host/admin via JWT OR event access cookie for guests
-    if (!isHost && !isAdmin && !hasEventAccess(req, photo.eventId)) {
+    if (!isManager && !hasEventAccess(req, photo.eventId)) {
       return res.status(404).json({ error: 'Foto nicht gefunden' });
     }
 
@@ -463,12 +459,12 @@ router.get(
     const featuresConfig = (photo.event.featuresConfig || {}) as any;
 
     // Guests can download only if host enabled allowDownloads
-    if (!isHost && !isAdmin && featuresConfig?.allowDownloads === false) {
+    if (!isManager && featuresConfig?.allowDownloads === false) {
       return res.status(404).json({ error: 'Foto nicht gefunden' });
     }
 
     // Guests can download only approved photos
-    if (!isHost && !isAdmin && photo.status !== 'APPROVED') {
+    if (!isManager && photo.status !== 'APPROVED') {
       return res.status(404).json({ error: 'Foto nicht gefunden' });
     }
 
@@ -533,7 +529,7 @@ router.post(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      if (event.hostId !== req.userId && req.userRole !== 'ADMIN') {
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
@@ -599,10 +595,7 @@ router.post(
       }
 
       // Check permissions
-      if (
-        photo.event.hostId !== req.userId &&
-        req.userRole !== 'SUPERADMIN'
-      ) {
+      if (!(await hasEventManageAccess(req, photo.eventId))) {
         return res.status(403).json({ error: 'Forbidden' });
       }
 
@@ -644,10 +637,7 @@ router.post(
       }
 
       // Check permissions
-      if (
-        photo.event.hostId !== req.userId &&
-        req.userRole !== 'SUPERADMIN'
-      ) {
+      if (!(await hasEventManageAccess(req, photo.eventId))) {
         return res.status(403).json({ error: 'Forbidden' });
       }
 
@@ -684,10 +674,7 @@ router.delete(
       }
 
       // Check permissions
-      if (
-        photo.event.hostId !== req.userId &&
-        req.userRole !== 'SUPERADMIN'
-      ) {
+      if (!(await hasEventManageAccess(req, photo.eventId))) {
         return res.status(403).json({ error: 'Forbidden' });
       }
 
