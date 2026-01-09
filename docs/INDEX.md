@@ -20,6 +20,7 @@ Ziel: Diese Dokumente sind die **Single Source of Truth** für Architektur, APIs
 - **Kernlogiken / Policies**
   - Storage/Blur/Lock: `docs/STORAGE_AND_BLUR_POLICY.md`
   - Stories: `docs/STORIES.md`
+  - Co-Hosts (Event Mitglieder): `docs/COHOSTS.md`
   - QR Templates + Export: `docs/QR_TEMPLATES.md`
   - Theme Tokens (Admin Settings): `docs/THEME_TOKENS_AND_ADMIN_SETTINGS.md`
   - Event DesignConfig + QR Template Config: `docs/EVENT_DESIGNCONFIG_AND_QR_TEMPLATE_CONFIG.md`
@@ -28,6 +29,7 @@ Ziel: Diese Dokumente sind die **Single Source of Truth** für Architektur, APIs
 - **QA / Test / Deploy**
   - Test Guide: `docs/TEST_GUIDE.md`
   - QA Checklist: `docs/QA_CHECKLIST.md`
+  - QA Logging (UI/Debug) + Datenschutz: `docs/QA_LOGGING.md`
   - Pre-Launch Checklist: `docs/PRE_LAUNCH_CHECKLIST.md`
   - Deployment: `docs/DEPLOYMENT.md`
   - Ops Runbooks: `docs/ops/README.md`

@@ -120,6 +120,21 @@ Legende:
 - **Stories**
   - Backend: `packages/backend/src/routes/stories.ts` (inkl. `POST /:storyId/view`)
 
+- ✅ **Co-Hosts (Event Mitglieder) + Invite Flow**
+  - Backend:
+    - Routes: `packages/backend/src/routes/cohosts.ts`
+      - `GET /api/events/:eventId/cohosts`
+      - `POST /api/events/:eventId/cohosts` (Body `{ userId }`)
+      - `DELETE /api/events/:eventId/cohosts/:userId`
+      - `POST /api/events/:eventId/cohosts/invite-token`
+    - Routes: `packages/backend/src/routes/cohostInvites.ts`
+      - `POST /api/cohosts/accept` (Body `{ inviteToken }`)
+    - Permission: `hasEventManageAccess` (Host/Co-Host/Admin)
+  - Admin Dashboard:
+    - Event Detail UI: `packages/admin-dashboard/src/app/events/[id]/page.tsx`
+  - Public App:
+    - Invite Accept: `packages/frontend/src/app/e2/[slug]/page.tsx` (`?cohostInvite=...`)
+
 - **Stats (Host/Admin)**
   - Backend: `packages/backend/src/routes/statistics.ts`
 

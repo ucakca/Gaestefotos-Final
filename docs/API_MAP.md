@@ -22,11 +22,15 @@ Quelle: `packages/backend/src/index.ts`
 - `app.use('/api/categories', categoryRoutes)` → `packages/backend/src/routes/categories.ts`
 - `app.use('/api/stories', storiesRoutes)` → `packages/backend/src/routes/stories.ts`
 - `app.use('/api/statistics', statisticsRoutes)` → `packages/backend/src/routes/statistics.ts`
+- `app.use('/api/events', cohostsRoutes)` → `packages/backend/src/routes/cohosts.ts`
+- `app.use('/api/cohosts', cohostInvitesRoutes)` → `packages/backend/src/routes/cohostInvites.ts`
 - `app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes)` → `packages/backend/src/routes/woocommerceWebhooks.ts`
 
 ### Admin
 
 - Admin Dashboard UI: `packages/frontend/src/app/admin/dashboard/page.tsx`
+- In-App Guidance (Guided Tour): `packages/frontend/src/components/ui/GuidedTour.tsx`
+  - funktioniert über `data-tour="..."` Marker im DOM (z.B. `woo-section`, `woo-replay`, `woo-export`, `cms-*`).
 - Admin Routes (Backend): `packages/backend/src/routes/admin*`
 - Marketing / Stats (Admin): `GET /api/admin/marketing/stats` → `packages/backend/src/routes/adminMarketing.ts`
 
@@ -172,7 +176,29 @@ Backend nutzt für Login optional WordPress-Verifikation.
   - Admin Readback:
     - `GET /api/admin/webhooks/woocommerce/logs` → `packages/backend/src/routes/adminWooWebhooks.ts`
     - `POST /api/admin/webhooks/woocommerce/replay/:logId` → `packages/backend/src/routes/adminWooWebhooks.ts`
-      - Body: `{ "mode": "dry_run" | "apply" }` (aktuell ist es ein "readback" der gespeicherten Payload)
+      - Body: `{ "mode": "dry_run" | "apply" }`
+        - `dry_run`: Readback der gespeicherten Payload
+        - `apply`: verarbeitet die gespeicherte Payload erneut (Single Source of Truth via Woo webhook processor) und erzeugt einen neuen Log-Eintrag (Reason: `admin_replay_apply`)
+
+### Admin Ops (Diagnostics)
+
+- System Health:
+  - `GET /api/admin/ops/health` → `packages/backend/src/routes/adminOps.ts`
+
+- WordPress Auth Diagnostics (verify-password endpoint reachability):
+  - `GET /api/admin/ops/wordpress` → `packages/backend/src/routes/adminOps.ts`
+    - prüft Erreichbarkeit von `WORDPRESS_URL/wp-json/gaestefotos/v1/verify-password`
+    - führt bewusst einen Request mit ungültigen Credentials aus (erwartet HTTP `400` oder `200`)
+    - liefert zusätzlich Konfig-Flags:
+      - `config.hasVerifySecret`
+      - `config.hasWpDbConfig`
+
+## CMS (Public Snapshots)
+
+- Public readback (Snapshot-Content für Seiten wie `/faq`, `/datenschutz`, `/impressum`, `/agb`):
+  - `GET /api/cms/:kind/:slug` → `packages/backend/src/routes/cmsPublic.ts`
+    - `kind`: `pages` | `posts`
+    - Response: `{ snapshot: { title, html, excerpt, link, modifiedGmt, fetchedAt, ... } }`
 
 ## QR / Print Export
 

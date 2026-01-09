@@ -140,19 +140,25 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
       - optional `X-GF-Verify-Secret` via `WORDPRESS_VERIFY_SECRET`
   - **Notes**:
     - WP REST `400` wird als "invalid credentials" behandelt
-    - WP REST unavailable → Backend antwortet `503` (damit gültige WP User nicht fälschlich `401` bekommen)
-    - DB/PHP Fallback wird nur versucht, wenn WP DB Credentials explizit konfiguriert sind:
+    - WP REST unavailable → Backend antwortet `503`
+
+- **WordPress Auth (Login via WP)**
+  - **Status**: teilweise
+  - **Notes**:
+    - REST verify-password: vorhanden
+    - DB/PHP Fallback: optional (nur wenn WP DB Credentials gesetzt):
       - `WORDPRESS_DB_HOST`, `WORDPRESS_DB_USER`, `WORDPRESS_DB_PASSWORD`, `WORDPRESS_DB_NAME`
+    - Diagnostics/Failure-Mode Visibility: vorhanden (Admin Ops Endpoint `/api/admin/ops/wordpress`)
 
 - **WooCommerce Webhooks**
   - **Status**: vorhanden
   - **Belege**:
     - `packages/backend/src/routes/woocommerceWebhooks.ts`
-  - **Fehlt**:
-    - Admin Readback/Replay UX (Backend routes vorhanden; UI/Flow optional)
-
-  - **Technisch (Ist-Stand / Mounts)**:
-    - `POST /api/webhooks/woocommerce/order-paid`
+  - **Notes**:
+    - Admin Readback/Replay UX: siehe nächster Punkt (Inbox + Replay/Apply)
+    - Webhook ingestion (`/api/webhooks/woocommerce/order-paid`): vorhanden
+    - Admin Readback/Replay: vorhanden (inkl. `apply`)
+    - Non-paid Status Handling: vorhanden (nicht-bezahlte/abgebrochene/refunded Orders werden als `IGNORED` geloggt, ohne Retry-Schleifen)
     - Secret: `WOOCOMMERCE_WEBHOOK_SECRET` + `x-wc-webhook-signature`
     - DB:
       - `WooWebhookEventLog` (Logging)
@@ -160,17 +166,52 @@ Ziel: Für jede Spec-Funktion klar dokumentieren:
       - `EventEntitlement` (Result)
 
 - **Admin: WooCommerce Webhook Logs/Replay**
-  - **Status**: vorhanden (Logs), teilweise (Replay)
+  - **Status**: vorhanden (Logs + Replay/Apply)
   - **Belege**:
     - Backend: `packages/backend/src/routes/adminWooWebhooks.ts`
       - `GET /api/admin/webhooks/woocommerce/logs`
       - `POST /api/admin/webhooks/woocommerce/replay/:logId`
     - Frontend Admin UI: `packages/frontend/src/app/admin/dashboard/page.tsx` ("WooCommerce Webhook Inbox")
-  - **Fehlt**:
-    - echtes "apply" replay (aktuell gibt `replay` nur den gespeicherten Log/Payload zurück)
+  - **Ist-Stand (Replay/Apply)**:
+    - `mode=dry_run`: gibt den gespeicherten Log/Payload zurück
+    - `mode=apply`: verarbeitet den gespeicherten Payload erneut über den gleichen Processor wie der echte Webhook
+    - Replay erzeugt einen neuen Log-Eintrag (Reason: `admin_replay_apply`)
+    - Idempotency: `WooWebhookReceipt` verhindert doppelte Verarbeitung (Duplicate → `duplicate: true`)
 
-- **Marketing stats (Admin)**
+## Admin Onboarding / Guided Tour
+
+- **In-App Speech-Bubbles / Guided Tour (CMS Sync + Woo Inbox + weitere Admin Flows)**
+  - **Status**: teilweise
+  - **Belege**:
+    - Frontend: `packages/frontend/src/components/ui/GuidedTour.tsx`
+    - Admin Markers/Steps: `packages/frontend/src/app/admin/dashboard/page.tsx` (`data-tour="..."`)
+  - **Fehlt**:
+    - finaler UX-Polish (Auto-Start Regeln + "don't show again"/Restart konsistent für alle Flows)
+
+- **Co-Host Invite Flow – Guided Tour (Admin Dashboard / Event Detail)**
   - **Status**: vorhanden
+  - **Belege**:
+    - Admin UI: `packages/admin-dashboard/src/app/events/[id]/page.tsx` (`data-tour="cohost-*"`)
+    - Guided Tour Komponente (Admin): `packages/admin-dashboard/src/components/ui/GuidedTour.tsx`
+
+## Public CMS Pages
+
+- **CMS Snapshots (Public readback)**
+  - **Status**: vorhanden
+  - **Belege**:
+    - Backend: `packages/backend/src/routes/cmsPublic.ts` (`GET /api/cms/:kind/:slug`)
+    - Frontend:
+      - `packages/frontend/src/app/faq/page.tsx`
+      - `packages/frontend/src/app/datenschutz/page.tsx`
+      - `packages/frontend/src/app/impressum/page.tsx`
+      - `packages/frontend/src/app/agb/page.tsx`
+  - **Notes**:
+    - Fallback Redirect wenn Snapshot fehlt (`404`)
+    - Interne WP Links (z.B. `.../faq`, `.../impressum`) werden im gerenderten Snapshot-HTML auf lokale Routen umgeschrieben
+
+## Marketing stats (Admin)
+
+- **Status**: vorhanden
   - **Belege**:
     - Backend: `packages/backend/src/routes/adminMarketing.ts`
       - `GET /api/admin/marketing/stats?days=30&eventId=...`

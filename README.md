@@ -26,6 +26,7 @@
 - `docs/API_MAP.md` (Endpoints → Dateien)
 - `docs/GAP_ANALYSIS.md` (Spec → Status → Pfade)
 - `docs/FEATURES.md`
+- `docs/QA_LOGGING.md` (QA Logging / Debug / Datenschutz)
 - `docs/TEST_GUIDE.md`
 - `docs/DEPLOYMENT.md`
 - `docs/STORAGE_AND_BLUR_POLICY.md`

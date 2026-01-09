@@ -127,6 +127,35 @@ curl -sS -H "Authorization: Bearer $TOKEN" "$APP/api/admin/theme" | head
   - Event erstellen (nur wenn du bewusst testest) oder bestehendes Event öffnen
   - Upload-Flow + Moderation + Guest View (nur in Test-Event)
 
+### Manual UI Flows (Browser) – Co-Host (Invite / Accept)
+
+- Admin Dashboard (`dash.*`):
+  - Event öffnen → Abschnitt **Co-Hosts**
+  - **Invite-Link erzeugen**
+- Public App (`app.*`) in Incognito/Private Window:
+  - Invite-Link öffnen (enthält `?cohostInvite=...`)
+  - Falls nicht eingeloggt: Login
+  - Erwartung: Toast „Co-Host Einladung angenommen“
+  - Danach prüfen:
+    - Co-Host kann Event verwalten (z.B. `/events/:id/dashboard`, `/events/:id/photos`, `/events/:id/guests`)
+
+### Hinweis: `scripts/prelaunch-smoke.sh` (Admin Auth optional)
+
+- Ohne Admin Credentials (nur Infra):
+
+```bash
+SKIP_ADMIN_AUTH=1 bash ./scripts/prelaunch-smoke.sh
+```
+
+- Mit Admin Credentials (optional):
+
+```bash
+ADMIN_AUTH_BASE_URL=https://dash.xn--gstefotos-v2a.com \
+ADMIN_EMAIL="<ADMIN_EMAIL>" \
+ADMIN_PASSWORD="<ADMIN_PASSWORD>" \
+bash ./scripts/prelaunch-smoke.sh
+```
+
 ## 4) systemd / Services
 
 ```bash
