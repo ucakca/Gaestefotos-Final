@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
+import { isQaDebugEnabled, qaLog } from '@/lib/qaLog';
 import { 
   ArrowLeft,
   LogOut, 
@@ -20,6 +21,7 @@ interface AppLayoutProps {
 export default function AppLayout({ children, showBackButton, backUrl }: AppLayoutProps) {
   const pathname = usePathname();
   const didInitRef = useRef(false);
+  const lastLoggedPathRef = useRef<string | null>(null);
   const { user, logout, loadUser, hasCheckedAuth } = useAuthStore();
 
   useEffect(() => {
@@ -31,6 +33,24 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!pathname) return;
+    if (lastLoggedPathRef.current === pathname) return;
+    lastLoggedPathRef.current = pathname;
+
+    (async () => {
+      const enabled = await isQaDebugEnabled();
+      if (!enabled) return;
+      await qaLog({
+        level: 'DEBUG',
+        type: 'page_view',
+        message: pathname,
+        path: pathname,
+        data: { pathname },
+      });
+    })().catch(() => null);
+  }, [pathname]);
   
   const isEventPage = pathname?.includes('/events/');
   const eventId = pathname?.match(/\/events\/([^\/]+)/)?.[1];

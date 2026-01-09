@@ -48,6 +48,11 @@ export default function LoginPage() {
           }
         }
 
+        const returnUrl =
+          typeof window !== 'undefined'
+            ? new URLSearchParams(window.location.search).get('returnUrl')
+            : null;
+
         try {
           const me = await authApi.getMe();
           const roleRaw = (me?.user as any)?.role;
@@ -74,7 +79,7 @@ export default function LoginPage() {
         } catch {
         }
 
-        router.push('/dashboard');
+        router.push(returnUrl || '/dashboard');
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.message || 'Login fehlgeschlagen';
@@ -190,15 +195,15 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-3 flex flex-wrap justify-center gap-3 border-t border-app-border pt-3 text-center">
-            <a className="text-sm text-app-fg hover:underline" href="https://xn--gstefotos-v2a.com/faq/" target="_blank" rel="noreferrer">
+            <a className="text-sm text-app-fg hover:underline" href="/faq" target="_blank" rel="noreferrer">
               Hilfe / FAQ
             </a>
             <span className="text-app-muted">|</span>
-            <a className="text-sm text-app-fg hover:underline" href="https://xn--gstefotos-v2a.com/datenschutz/" target="_blank" rel="noreferrer">
+            <a className="text-sm text-app-fg hover:underline" href="/datenschutz" target="_blank" rel="noreferrer">
               Datenschutz
             </a>
             <span className="text-app-muted">|</span>
-            <a className="text-sm text-app-fg hover:underline" href="https://gästefotos.com/impressum" target="_blank" rel="noreferrer">
+            <a className="text-sm text-app-fg hover:underline" href="/impressum" target="_blank" rel="noreferrer">
               Impressum
             </a>
           </div>

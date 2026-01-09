@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import EventHeader from '@/components/EventHeader';
 import AlbumNavigation from '@/components/AlbumNavigation';
 import ModernPhotoGrid from '@/components/ModernPhotoGrid';
@@ -21,14 +21,24 @@ import { Section } from '@/components/ui/Section';
 import { Trophy } from 'lucide-react';
 import { useGuestEventData } from '@/hooks/useGuestEventData';
 import { useStoriesViewer } from '@/hooks/useStoriesViewer';
+import api, { formatApiError } from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
+import { useToastStore } from '@/store/toastStore';
 
 export default function PublicEventPageV2() {
   const params = useParams();
+  const router = useRouter();
   const slug = params.slug as string;
 
   const [selectedAlbum, setSelectedAlbum] = useState<string | null>(null);
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  const didInitAuthRef = useRef(false);
+  const didInitCohostInviteRef = useRef(false);
+  const didAcceptCohostInviteRef = useRef(false);
+  const { isAuthenticated, loadUser, hasCheckedAuth, loading: authLoading } = useAuthStore();
+  const { showToast } = useToastStore();
 
   const {
     event,
@@ -65,6 +75,87 @@ export default function PublicEventPageV2() {
     onStoryResume,
     reloadStories,
   } = useStoriesViewer(event?.id ?? null, inviteExchangeBump);
+
+  useEffect(() => {
+    if (didInitAuthRef.current) return;
+    didInitAuthRef.current = true;
+    loadUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (didInitCohostInviteRef.current) return;
+    didInitCohostInviteRef.current = true;
+
+    try {
+      if (typeof window === 'undefined') return;
+
+      const url = new URL(window.location.href);
+      const token = url.searchParams.get('cohostInvite');
+      if (token) {
+        try {
+          sessionStorage.setItem('cohost_invite_token', token);
+        } catch {
+        }
+        url.searchParams.delete('cohostInvite');
+        window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+      }
+    } catch {
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasCheckedAuth || authLoading) return;
+    if (typeof window === 'undefined') return;
+
+    let token: string | null = null;
+    try {
+      token = sessionStorage.getItem('cohost_invite_token');
+    } catch {
+      token = null;
+    }
+
+    if (!token) return;
+
+    if (!isAuthenticated) {
+      const returnUrl = window.location.pathname + window.location.search + window.location.hash;
+      router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+    }
+  }, [hasCheckedAuth, authLoading, isAuthenticated, router]);
+
+  useEffect(() => {
+    if (didAcceptCohostInviteRef.current) return;
+    if (!event?.id) return;
+    if (!hasCheckedAuth || authLoading) return;
+    if (!isAuthenticated) return;
+
+    let token: string | null = null;
+    try {
+      token = sessionStorage.getItem('cohost_invite_token');
+    } catch {
+      token = null;
+    }
+    if (!token) return;
+
+    didAcceptCohostInviteRef.current = true;
+
+    (async () => {
+      try {
+        await api.post('/cohosts/accept', { inviteToken: token });
+        try {
+          sessionStorage.removeItem('cohost_invite_token');
+        } catch {
+        }
+        showToast('Co-Host Einladung angenommen', 'success');
+      } catch (e: any) {
+        try {
+          sessionStorage.removeItem('cohost_invite_token');
+        } catch {
+        }
+        showToast(formatApiError(e), 'error');
+      }
+    })().catch(() => null);
+  }, [event?.id, hasCheckedAuth, authLoading, isAuthenticated, showToast]);
 
   useEffect(() => {
     if (!loadMoreRef.current || !hasMore) return;

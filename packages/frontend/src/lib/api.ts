@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { qaLog } from './qaLog';
 
 // Dynamically determine API URL based on current environment
 function getApiUrl(): string {
@@ -97,6 +98,32 @@ export function isRetryableUploadError(err: any): boolean {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    try {
+      const status = error?.response?.status;
+      const url = error?.config?.url;
+      const method = error?.config?.method;
+      const message = error?.message;
+      const isAuthRelated = typeof url === 'string' && (url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/logout'));
+
+      // Keep noise low: log only meaningful API failures.
+      if (!isAuthRelated && (status >= 500 || status === 401 || status === 403 || status === 429)) {
+        qaLog({
+          level: 'IMPORTANT',
+          type: 'api_error',
+          message: typeof message === 'string' ? message : 'API error',
+          data: {
+            status,
+            url,
+            method,
+            response: error?.response?.data,
+          },
+          path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+          method: typeof method === 'string' ? method.toUpperCase() : undefined,
+        }).catch(() => null);
+      }
+    } catch {
+      // ignore logging errors
+    }
     return Promise.reject(error);
   }
 );

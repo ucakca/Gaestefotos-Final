@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
+import GuidedTour from '@/components/ui/GuidedTour';
 import {
   Dialog,
   DialogClose,
@@ -81,6 +82,58 @@ export default function AdminDashboardPage() {
   const togglePanel = (key: string) => {
     setOpenPanels((prev) => ({ ...prev, [key]: prev[key] === false }));
   };
+
+  const adminTourSteps = [
+    {
+      id: 'cms-open',
+      target: '[data-tour="cms-open"]',
+      title: 'CMS Sync (1/4)',
+      body: 'Klappe das CMS Panel auf und starte dann mit Search/Recent. Klick auf einen Treffer setzt den slug.',
+      placement: 'bottom',
+    },
+    {
+      id: 'cms-fetch',
+      target: '[data-tour="cms-fetch"]',
+      title: 'CMS Sync (2/4)',
+      body: 'Mit Fetch lädst du den Inhalt live aus WordPress (Preview), ohne zu speichern.',
+      placement: 'bottom',
+    },
+    {
+      id: 'cms-sync',
+      target: '[data-tour="cms-sync"]',
+      title: 'CMS Sync (3/4)',
+      body: 'Mit Sync & Save wird ein Snapshot in der DB gespeichert. Danach kannst du die Public-Page öffnen.',
+      placement: 'bottom',
+    },
+    {
+      id: 'cms-open-public',
+      target: '[data-tour="cms-open-public"]',
+      title: 'CMS Sync (4/4)',
+      body: 'Öffnen zeigt die lokale Seite (/faq, /impressum, …). So prüfst du den Snapshot in der App.',
+      placement: 'bottom',
+    },
+    {
+      id: 'woo-section',
+      target: '[data-tour="woo-section"]',
+      title: 'Woo Inbox (1/3)',
+      body: 'Hier siehst du die letzten WooCommerce Webhooks. Nutze Filter optional und aktualisiere die Liste.',
+      placement: 'top',
+    },
+    {
+      id: 'woo-replay',
+      target: '[data-tour="woo-replay"]',
+      title: 'Woo Inbox (2/3)',
+      body: 'Replay (dry_run) zeigt dir die gespeicherte Payload. Apply verarbeitet sie erneut (idempotent).',
+      placement: 'top',
+    },
+    {
+      id: 'woo-export',
+      target: '[data-tour="woo-export"]',
+      title: 'Woo Inbox (3/3)',
+      body: 'Export CSV lädt Logs herunter. Purge löscht alte Logs nach Tagen/Filtern (Retention ist zusätzlich aktiv).',
+      placement: 'top',
+    },
+  ];
 
   const ActionButton = ({
     children,
@@ -181,6 +234,19 @@ export default function AdminDashboardPage() {
   const [wooFilterOrderId, setWooFilterOrderId] = useState('');
   const [wooFilterEventId, setWooFilterEventId] = useState('');
 
+  const [wooPurgeOpen, setWooPurgeOpen] = useState(false);
+  const [wooPurgeDays, setWooPurgeDays] = useState('90');
+  const [wooPurgeTopic, setWooPurgeTopic] = useState('');
+  const [wooPurgeStatus, setWooPurgeStatus] = useState('');
+  const [wooPurgeLoading, setWooPurgeLoading] = useState(false);
+  const [wooPurgeResult, setWooPurgeResult] = useState<any | null>(null);
+  const [wooPurgeError, setWooPurgeError] = useState<string | null>(null);
+
+  const [wooReplayOpen, setWooReplayOpen] = useState(false);
+  const [wooReplayLoadingId, setWooReplayLoadingId] = useState<string | null>(null);
+  const [wooReplayError, setWooReplayError] = useState<string | null>(null);
+  const [wooReplayResult, setWooReplayResult] = useState<any | null>(null);
+
   const [apiKeys, setApiKeys] = useState<any[]>([]);
   const [apiKeysLoading, setApiKeysLoading] = useState(false);
   const [apiKeysError, setApiKeysError] = useState<string | null>(null);
@@ -239,6 +305,8 @@ export default function AdminDashboardPage() {
   const [cmsSearchResult, setCmsSearchResult] = useState<any | null>(null);
 
   const [cmsSyncSaving, setCmsSyncSaving] = useState(false);
+  const [cmsSyncAllSaving, setCmsSyncAllSaving] = useState(false);
+  const [cmsSyncAllResult, setCmsSyncAllResult] = useState<any | null>(null);
   const [cmsSnapshotsLoading, setCmsSnapshotsLoading] = useState(false);
   const [cmsSnapshots, setCmsSnapshots] = useState<any[]>([]);
   const [cmsLastSync, setCmsLastSync] = useState<any | null>(null);
@@ -282,6 +350,41 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const exportWooLogsCsv = () => {
+    const qs = new URLSearchParams();
+    if (wooFilterStatus.trim()) qs.set('status', wooFilterStatus.trim());
+    if (wooFilterOrderId.trim()) qs.set('wcOrderId', wooFilterOrderId.trim());
+    if (wooFilterEventId.trim()) qs.set('eventId', wooFilterEventId.trim());
+    const url = `/api/admin/webhooks/woocommerce/logs/export.csv?${qs.toString()}`;
+    window.open(url, '_blank', 'noreferrer');
+  };
+
+  const purgeWooLogs = async () => {
+    try {
+      setWooPurgeError(null);
+      setWooPurgeResult(null);
+      setWooPurgeLoading(true);
+
+      const olderThanDays = Number(wooPurgeDays);
+      if (!Number.isFinite(olderThanDays) || olderThanDays <= 0) {
+        setWooPurgeError('Bitte gültige Tage angeben');
+        return;
+      }
+
+      const body: any = { olderThanDays };
+      if (wooPurgeStatus.trim()) body.status = wooPurgeStatus.trim();
+      if (wooPurgeTopic.trim()) body.topic = wooPurgeTopic.trim();
+
+      const { data } = await api.post('/admin/webhooks/woocommerce/logs/purge', body);
+      setWooPurgeResult(data || null);
+      await loadWooLogs();
+    } catch (err: any) {
+      setWooPurgeError(err?.response?.data?.error || err?.message || 'Purge fehlgeschlagen');
+    } finally {
+      setWooPurgeLoading(false);
+    }
+  };
+
   const syncAndSaveCms = async () => {
     try {
       setCmsFaqError(null);
@@ -299,6 +402,67 @@ export default function AdminDashboardPage() {
       setCmsFaqError(err?.response?.data?.error || err?.message || 'Sync fehlgeschlagen');
     } finally {
       setCmsSyncSaving(false);
+    }
+  };
+
+  const cmsPresets: Array<{ label: string; kind: 'pages' | 'posts'; slug: string; publicPath: string }> = [
+    { label: 'FAQ', kind: 'pages', slug: 'faq', publicPath: '/faq' },
+    { label: 'Datenschutz', kind: 'pages', slug: 'datenschutz', publicPath: '/datenschutz' },
+    { label: 'Impressum', kind: 'pages', slug: 'impressum', publicPath: '/impressum' },
+    { label: 'AGB', kind: 'pages', slug: 'agb', publicPath: '/agb' },
+  ];
+
+  const openCmsPublicPage = (slug: string) => {
+    const found = cmsPresets.find((p) => p.slug === slug);
+    const path = found?.publicPath || (slug ? `/${slug}` : '/');
+    window.open(path, '_blank', 'noreferrer');
+  };
+
+  const syncCmsPreset = async (opts: { kind: 'pages' | 'posts'; slug: string }) => {
+    try {
+      setCmsFaqError(null);
+      setCmsSyncSaving(true);
+      setCmsLastSync(null);
+
+      setCmsFaqKind(opts.kind);
+      setCmsFaqSlug(opts.slug);
+
+      const { data } = await api.post('/admin/cms/sync', { kind: opts.kind, slug: opts.slug });
+      setCmsLastSync(data || null);
+      await loadCmsSnapshots();
+    } catch (err: any) {
+      setCmsFaqError(err?.response?.data?.error || err?.message || 'Sync fehlgeschlagen');
+    } finally {
+      setCmsSyncSaving(false);
+    }
+  };
+
+  const syncAllCmsPresets = async () => {
+    try {
+      setCmsFaqError(null);
+      setCmsSyncAllSaving(true);
+      setCmsSyncAllResult(null);
+
+      const results: any[] = [];
+      for (const p of cmsPresets) {
+        try {
+          const { data } = await api.post('/admin/cms/sync', { kind: p.kind, slug: p.slug });
+          results.push({ preset: { kind: p.kind, slug: p.slug }, ok: true, data });
+        } catch (err: any) {
+          results.push({
+            preset: { kind: p.kind, slug: p.slug },
+            ok: false,
+            error: err?.response?.data?.error || err?.message || 'Sync fehlgeschlagen',
+          });
+        }
+      }
+
+      setCmsSyncAllResult({ ok: results.every((r) => r.ok), results });
+      await loadCmsSnapshots();
+    } catch (err: any) {
+      setCmsFaqError(err?.response?.data?.error || err?.message || 'Sync all fehlgeschlagen');
+    } finally {
+      setCmsSyncAllSaving(false);
     }
   };
 
@@ -763,6 +927,41 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const replayWooLog = async (opts: { logId: string; mode: 'dry_run' | 'apply' }) => {
+    const { logId, mode } = opts;
+    try {
+      setWooReplayError(null);
+      setWooReplayResult(null);
+      setWooReplayOpen(true);
+      setWooReplayLoadingId(logId);
+
+      if (mode === 'apply') {
+        const confirmed = await requestConfirm({
+          title: 'Webhook erneut anwenden?',
+          description:
+            'Das wendet den gespeicherten Webhook erneut an (idempotent, aber nicht rückgängig). Nur nutzen, wenn du sicher bist.',
+          confirmText: 'Apply ausführen',
+          cancelText: 'Abbrechen',
+        });
+        if (!confirmed) {
+          setWooReplayOpen(false);
+          return;
+        }
+      }
+
+      const { data } = await api.post(`/admin/webhooks/woocommerce/replay/${encodeURIComponent(logId)}`, { mode });
+      setWooReplayResult(data || null);
+
+      if (mode === 'apply') {
+        await loadWooLogs();
+      }
+    } catch (err: any) {
+      setWooReplayError(err?.response?.data?.error || err?.message || 'Replay fehlgeschlagen');
+    } finally {
+      setWooReplayLoadingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-app-bg">
@@ -829,11 +1028,11 @@ export default function AdminDashboardPage() {
             <aside className="w-full shrink-0 rounded-2xl border border-app-border bg-app-card p-4 lg:sticky lg:top-24 lg:w-[300px]">
               <div className="flex items-center justify-between gap-3">
                 <div className="text-sm font-semibold text-app-fg">Admin Navigation</div>
-              <HelpTooltip
-                title="Navigation"
-                content={'Links springst du direkt zu den Admin-Bereichen.\n\nTipp: So bleibt das Dashboard übersichtlich, auch wenn es viele Tools gibt.'}
-              />
-            </div>
+                <HelpTooltip
+                  title="Navigation"
+                  content={'Links springst du direkt zu den Admin-Bereichen.\n\nTipp: So bleibt das Dashboard übersichtlich, auch wenn es viele Tools gibt.'}
+                />
+              </div>
               <div className="mt-2 text-xs text-app-muted">{user.email}</div>
 
               <div className="mt-4 grid gap-2">
@@ -1181,23 +1380,40 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="max-h-[220px] overflow-y-auto">
                     {(cmsSnapshots || []).slice(0, 20).map((it: any) => (
-                      <Button
-                        key={String(it?.id)}
-                        onClick={() => {
-                          if (it?.kind) setCmsFaqKind(String(it.kind) as any);
-                          if (it?.slug) setCmsFaqSlug(String(it.slug));
-                        }}
-                        variant="ghost"
-                        className="h-auto w-full justify-start rounded-none border-b border-app-border bg-app-card p-3 text-left"
-                      >
-                        <div className="font-semibold text-app-fg">{String(it?.title || '')}</div>
-                        <div className="font-mono text-xs text-app-muted">
-                          {String(it?.kind || '')}:{String(it?.slug || '')}
+                      <div key={String(it?.id)} className="flex items-stretch border-b border-app-border bg-app-card">
+                        <Button
+                          onClick={() => {
+                            if (it?.kind) setCmsFaqKind(String(it.kind) as any);
+                            if (it?.slug) setCmsFaqSlug(String(it.slug));
+                          }}
+                          variant="ghost"
+                          className="h-auto w-full justify-start rounded-none p-3 text-left"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate font-semibold text-app-fg">{String(it?.title || '')}</div>
+                            <div className="font-mono text-xs text-app-muted">
+                              {String(it?.kind || '')}:{String(it?.slug || '')}
+                            </div>
+                            <div className="text-xs text-app-muted">
+                              {it?.fetchedAt ? String(it.fetchedAt).replace('T', ' ').replace('Z', '') : ''}
+                            </div>
+                          </div>
+                        </Button>
+                        <div className="flex items-center gap-2 p-3">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="h-8"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              openCmsPublicPage(String(it?.slug || '').trim() || 'faq');
+                            }}
+                          >
+                            Open
+                          </Button>
                         </div>
-                        <div className="text-xs text-app-muted">
-                          {it?.fetchedAt ? String(it.fetchedAt).replace('T', ' ').replace('Z', '') : ''}
-                        </div>
-                      </Button>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -1217,17 +1433,28 @@ export default function AdminDashboardPage() {
                 helpContent={'Ziel: WordPress-Inhalte (z.B. FAQ-Seite) finden und als Snapshot speichern.\n\nBedienung:\n- Recent: zeigt die neuesten WP Pages/Posts.\n- Klick auf einen Treffer setzt den slug.\n- Fetch lädt den Inhalt live aus WP (Preview).\n- Sync & Save speichert einen Snapshot in der DB.'}
                 actions={
                   <>
-                    <ActionButton variant="secondary" onClick={() => togglePanel('cms')}>
+                    <span data-tour="cms-open">
+                      <ActionButton variant="secondary" onClick={() => togglePanel('cms')}>
                       {openPanels.cms ? 'Einklappen' : 'Aufklappen'}
-                    </ActionButton>
-                    <ActionButton variant="secondary" onClick={() => window.open('https://xn--gstefotos-v2a.com/faq/', '_blank', 'noreferrer')}>
-                      Öffentliche FAQ
-                    </ActionButton>
-                    <ActionButton onClick={fetchCmsFaqPreview} disabled={cmsFaqLoading}>
+                      </ActionButton>
+                    </span>
+                    <span data-tour="cms-open-public">
+                      <ActionButton variant="secondary" onClick={() => openCmsPublicPage(cmsFaqSlug.trim() || 'faq')}>
+                      Öffnen
+                      </ActionButton>
+                    </span>
+                    <span data-tour="cms-fetch">
+                      <ActionButton onClick={fetchCmsFaqPreview} disabled={cmsFaqLoading}>
                       {cmsFaqLoading ? 'Lade…' : 'Fetch'}
-                    </ActionButton>
-                    <ActionButton onClick={syncAndSaveCms} disabled={cmsSyncSaving}>
+                      </ActionButton>
+                    </span>
+                    <span data-tour="cms-sync">
+                      <ActionButton onClick={syncAndSaveCms} disabled={cmsSyncSaving}>
                       {cmsSyncSaving ? 'Sync…' : 'Sync & Save'}
+                      </ActionButton>
+                    </span>
+                    <ActionButton variant="secondary" onClick={syncAllCmsPresets} disabled={cmsSyncAllSaving || cmsSyncSaving}>
+                      {cmsSyncAllSaving ? 'Sync all…' : 'Sync all'}
                     </ActionButton>
                     <ActionButton variant="secondary" onClick={loadCmsSnapshots} disabled={cmsSnapshotsLoading}>
                       {cmsSnapshotsLoading ? 'Lade…' : 'Snapshots'}
@@ -1238,6 +1465,31 @@ export default function AdminDashboardPage() {
 
               {openPanels.cms && (
                 <>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {cmsPresets.map((p) => (
+                  <ActionButton
+                    key={p.slug}
+                    variant="secondary"
+                    disabled={cmsSyncSaving || cmsSyncAllSaving}
+                    onClick={() => {
+                      setCmsFaqKind(p.kind);
+                      setCmsFaqSlug(p.slug);
+                    }}
+                  >
+                    {p.label}
+                  </ActionButton>
+                ))}
+                <ActionButton
+                  disabled={cmsSyncSaving || cmsSyncAllSaving}
+                  onClick={() => syncCmsPreset({ kind: cmsFaqKind, slug: cmsFaqSlug.trim() || 'faq' })}
+                >
+                  {cmsSyncSaving ? 'Sync…' : 'Sync preset'}
+                </ActionButton>
+                <ActionButton variant="secondary" onClick={() => openCmsPublicPage(cmsFaqSlug.trim() || 'faq')}>
+                  Open
+                </ActionButton>
+              </div>
 
               <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 <div className="flex items-center gap-2">
@@ -1312,6 +1564,12 @@ export default function AdminDashboardPage() {
                   }, null, 2)}
                 </pre>
               )}
+
+              {cmsSyncAllResult ? (
+                <pre className="mt-3 whitespace-pre-wrap rounded-xl border border-app-border bg-app-bg p-3 font-mono text-xs">
+                  {JSON.stringify(cmsSyncAllResult, null, 2)}
+                </pre>
+              ) : null}
 
               {cmsFaqResult && (
                 <div className="mt-3">
@@ -1670,46 +1928,15 @@ export default function AdminDashboardPage() {
 
               {impersonateResult && (
                 <pre className="mt-3 whitespace-pre-wrap rounded-xl border border-app-border bg-app-bg p-3 font-mono text-xs">
-                  {JSON.stringify({
-                    expiresInSeconds: impersonateResult?.expiresInSeconds,
-                    user: impersonateResult?.user,
-                  }, null, 2)}
+                  {JSON.stringify(
+                    {
+                      expiresInSeconds: impersonateResult?.expiresInSeconds,
+                      user: impersonateResult?.user,
+                    },
+                    null,
+                    2
+                  )}
                 </pre>
-              )}
-            </section>
-
-            <section id="admin-invoices" className={sectionCardClass}>
-              <SectionHeader
-                title="Invoices"
-                helpContent={'Exportiert Rechnungen als CSV. Filter sind optional.'}
-                actions={
-                  <ActionButton onClick={exportInvoicesCsv} disabled={invoiceExporting}>
-                    {invoiceExporting ? 'Export…' : 'CSV Export'}
-                  </ActionButton>
-                }
-              />
-
-              <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <div className="flex items-center gap-2">
-                  <Input value={invoiceStatus} onChange={(e) => setInvoiceStatus(e.target.value)} placeholder="status (OPEN/PAID/VOID/REFUNDED)" />
-                  <HelpTooltip title="status" content={'Optionaler Filter. Leer = alle.'} />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Input value={invoiceEventId} onChange={(e) => setInvoiceEventId(e.target.value)} placeholder="eventId" className="font-mono" />
-                  <HelpTooltip title="eventId" content={'Optionaler Filter nach Event.'} />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Input value={invoiceWcOrderId} onChange={(e) => setInvoiceWcOrderId(e.target.value)} placeholder="wcOrderId" className="font-mono" />
-                  <HelpTooltip title="wcOrderId" content={'Optionaler Filter nach WooCommerce Order ID.'} />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Input value={invoiceWpUserId} onChange={(e) => setInvoiceWpUserId(e.target.value)} placeholder="wpUserId" className="font-mono" />
-                  <HelpTooltip title="wpUserId" content={'Optionaler Filter nach WordPress User ID.'} />
-                </div>
-              </div>
-
-              {invoiceExportError && (
-                <p className="mt-3 text-sm text-status-danger">{invoiceExportError}</p>
               )}
             </section>
 
@@ -1936,18 +2163,124 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
               ) : null}
-            </section>
 
-            <section id="admin-woo-webhooks" className={sectionCardClass}>
-              <SectionHeader
-                title="WooCommerce Webhook Inbox"
-                helpContent={'Zeigt die letzten eingegangenen WooCommerce Webhooks inkl. Status/Reason. Filter sind optional.'}
-                actions={
-                  <ActionButton onClick={loadWooLogs} disabled={wooLogsLoading}>
-                    {wooLogsLoading ? 'Lade…' : 'Aktualisieren'}
-                  </ActionButton>
-                }
-              />
+              <Dialog open={wooPurgeOpen} onOpenChange={setWooPurgeOpen}>
+                <DialogContent className="max-w-[760px]">
+                  <DialogHeader>
+                    <DialogTitle>Woo Logs löschen (Purge)</DialogTitle>
+                    <DialogDescription>
+                      Löscht alte WooWebhook Logs aus der DB. Vorsicht: nicht rückgängig.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  {wooPurgeError ? <p className="text-sm text-status-danger">{wooPurgeError}</p> : null}
+
+                  <div className="mt-3 grid gap-3 md:grid-cols-3">
+                    <div>
+                      <p className="m-0 text-xs text-app-muted">älter als (Tage)</p>
+                      <Input value={wooPurgeDays} onChange={(e) => setWooPurgeDays(e.target.value)} placeholder="90" />
+                    </div>
+                    <div>
+                      <p className="m-0 text-xs text-app-muted">topic (optional)</p>
+                      <Input value={wooPurgeTopic} onChange={(e) => setWooPurgeTopic(e.target.value)} placeholder="order-paid" />
+                    </div>
+                    <div>
+                      <p className="m-0 text-xs text-app-muted">status (optional)</p>
+                      <Input value={wooPurgeStatus} onChange={(e) => setWooPurgeStatus(e.target.value)} placeholder="PROCESSED" />
+                    </div>
+                  </div>
+
+                  {wooPurgeResult ? (
+                    <div className="mt-3 rounded-xl border border-app-border bg-app-bg p-3">
+                      <pre className="max-h-[35vh] overflow-auto whitespace-pre-wrap break-words text-xs text-app-fg">
+                        {JSON.stringify(wooPurgeResult, null, 2)}
+                      </pre>
+                    </div>
+                  ) : null}
+
+                  <DialogFooter>
+                    <Button variant="secondary" onClick={() => setWooPurgeOpen(false)}>
+                      Schließen
+                    </Button>
+                    <Button onClick={purgeWooLogs} disabled={wooPurgeLoading}>
+                      {wooPurgeLoading ? 'Lösche…' : 'Purge ausführen'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={wooReplayOpen} onOpenChange={setWooReplayOpen}>
+                <DialogContent className="max-w-[900px]">
+                  <DialogHeader>
+                    <DialogTitle>WooCommerce Webhook Replay</DialogTitle>
+                    <DialogDescription>
+                      Ergebnis des Replay/Apply Runs. Bei `apply` wird ein neuer Log-Eintrag erzeugt (`replayLogId`).
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  {wooReplayError ? <p className="text-sm text-status-danger">{wooReplayError}</p> : null}
+
+                  {wooReplayResult ? (
+                    <div className="mt-2 rounded-xl border border-app-border bg-app-card p-3">
+                      <div className="grid gap-x-4 gap-y-2 md:grid-cols-2">
+                        <div className="text-xs text-app-muted">ok</div>
+                        <div className="text-xs font-mono text-app-fg">{String(wooReplayResult?.ok ?? '')}</div>
+
+                        <div className="text-xs text-app-muted">mode</div>
+                        <div className="text-xs font-mono text-app-fg">{String(wooReplayResult?.mode ?? '')}</div>
+
+                        <div className="text-xs text-app-muted">sourceLogId</div>
+                        <div className="text-xs font-mono text-app-fg">{String(wooReplayResult?.sourceLogId ?? '')}</div>
+
+                        <div className="text-xs text-app-muted">replayLogId</div>
+                        <div className="text-xs font-mono text-app-fg">{String(wooReplayResult?.replayLogId ?? '')}</div>
+
+                        <div className="text-xs text-app-muted">eventId</div>
+                        <div className="text-xs font-mono text-app-fg">{String(wooReplayResult?.result?.eventId ?? '')}</div>
+
+                        <div className="text-xs text-app-muted">duplicate</div>
+                        <div className="text-xs font-mono text-app-fg">{String(wooReplayResult?.result?.duplicate ?? '')}</div>
+
+                        <div className="text-xs text-app-muted">error</div>
+                        <div className="text-xs font-mono text-app-fg">{String(wooReplayResult?.result?.error ?? '')}</div>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-2 rounded-xl border border-app-border bg-app-bg p-3">
+                    <pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap break-words text-xs text-app-fg">
+                      {JSON.stringify(wooReplayResult, null, 2)}
+                    </pre>
+                  </div>
+
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="secondary">Schließen</Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              <div className="mt-6" data-tour="woo-section">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="text-sm font-semibold text-app-fg">WooCommerce Webhook Inbox</div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <ActionButton onClick={loadWooLogs} disabled={wooLogsLoading}>
+                      {wooLogsLoading ? 'Lade…' : 'Aktualisieren'}
+                    </ActionButton>
+                    <span data-tour="woo-export">
+                      <ActionButton variant="secondary" onClick={exportWooLogsCsv} disabled={wooLogsLoading}>
+                        Export CSV
+                      </ActionButton>
+                    </span>
+                    <span data-tour="woo-export">
+                      <ActionButton variant="danger" onClick={() => setWooPurgeOpen(true)}>
+                        Purge
+                      </ActionButton>
+                    </span>
+                  </div>
+                </div>
+              </div>
 
               <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 <div className="flex items-center gap-2">
@@ -1978,12 +2311,13 @@ export default function AdminDashboardPage() {
                       <th className="p-2 font-semibold text-app-fg">eventId</th>
                       <th className="p-2 font-semibold text-app-fg">SKU</th>
                       <th className="p-2 font-semibold text-app-fg">Reason</th>
+                      <th className="p-2 font-semibold text-app-fg">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {wooLogsLoading ? (
                       <tr>
-                        <td colSpan={6} className="p-3 text-sm text-app-muted">
+                        <td colSpan={7} className="p-3 text-sm text-app-muted">
                           Lade…
                         </td>
                       </tr>
@@ -1996,6 +2330,24 @@ export default function AdminDashboardPage() {
                           <td className="p-2 font-mono">{l.eventId || '-'}</td>
                           <td className="p-2 font-mono">{l.wcSku || '-'}</td>
                           <td className="p-2">{l.reason || '-'}</td>
+                          <td className="whitespace-nowrap p-2">
+                            <div className="flex flex-wrap items-center gap-2" data-tour="woo-replay">
+                              <ActionButton
+                                variant="secondary"
+                                disabled={wooReplayLoadingId === l.id}
+                                onClick={() => replayWooLog({ logId: String(l.id), mode: 'dry_run' })}
+                              >
+                                {wooReplayLoadingId === l.id ? '…' : 'Replay'}
+                              </ActionButton>
+                              <ActionButton
+                                variant="danger"
+                                disabled={wooReplayLoadingId === l.id}
+                                onClick={() => replayWooLog({ logId: String(l.id), mode: 'apply' })}
+                              >
+                                {wooReplayLoadingId === l.id ? '…' : 'Apply'}
+                              </ActionButton>
+                            </div>
+                          </td>
                         </tr>
                       ))
                     )}

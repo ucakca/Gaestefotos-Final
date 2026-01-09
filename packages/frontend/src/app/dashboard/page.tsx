@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/authStore';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Button } from '@/components/ui/Button';
+import GuidedTour from '@/components/ui/GuidedTour';
 import { HelpCircle, ClipboardCheck, PlusSquare, LogOut } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -19,6 +20,37 @@ export default function DashboardPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const tourSteps = [
+    {
+      id: 'faq',
+      target: '[data-tour="host-dashboard-faq"]',
+      title: 'Dashboard (1/4)',
+      body: 'FAQ öffnet die wichtigsten Antworten/How-Tos. Ideal als erster Einstieg.',
+      placement: 'bottom' as const,
+    },
+    {
+      id: 'moderation',
+      target: '[data-tour="host-dashboard-moderation"]',
+      title: 'Dashboard (2/4)',
+      body: 'Hier kannst du Uploads moderieren: freigeben/ablehnen, Probleme prüfen, Qualität sichern.',
+      placement: 'bottom' as const,
+    },
+    {
+      id: 'new-event',
+      target: '[data-tour="host-dashboard-new-event"]',
+      title: 'Dashboard (3/4)',
+      body: 'Neues Event anlegen – danach kannst du Design, Alben und Einladungen konfigurieren.',
+      placement: 'bottom' as const,
+    },
+    {
+      id: 'event-card',
+      target: '[data-tour="host-dashboard-event-card"]',
+      title: 'Dashboard (4/4)',
+      body: 'Klicke auf ein Event, um es zu verwalten (Fotos, Share-Link, Einladungen, Einstellungen).',
+      placement: 'top' as const,
+    },
+  ];
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -75,19 +107,23 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 sm:justify-end">
+                <GuidedTour tourId="host_dashboard" steps={tourSteps} autoStart />
                 <Button asChild variant="secondary" size="sm" className="w-full sm:w-auto">
-                  <a href="https://xn--gstefotos-v2a.com/faq/" target="_blank" rel="noreferrer">
+                  <a href="/faq" target="_blank" rel="noreferrer" data-tour="host-dashboard-faq">
                     FAQ
                   </a>
                 </Button>
                 <Link
                   href="/moderation"
+                  data-tour="host-dashboard-moderation"
                   className="w-full sm:w-auto px-4 py-2 rounded-md text-app-bg font-medium transition-colors bg-app-accent hover:opacity-90 text-center"
                 >
                   Uploads prüfen
                 </Link>
                 <Button asChild variant="primary" size="sm" className="w-full sm:w-auto px-4 py-2 rounded-md font-medium">
-                  <Link href="/events/new">Neues Event</Link>
+                  <Link href="/events/new" data-tour="host-dashboard-new-event">
+                    Neues Event
+                  </Link>
                 </Button>
                 <Button
                   onClick={logout}
@@ -106,7 +142,7 @@ export default function DashboardPage() {
             <div className="mx-auto max-w-7xl px-4">
               <div className="grid grid-cols-4 gap-2 py-2">
                 <a
-                  href="https://xn--gstefotos-v2a.com/faq/"
+                  href="/faq"
                   target="_blank"
                   rel="noreferrer"
                   className="flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-app-fg hover:bg-app-bg"
@@ -168,6 +204,7 @@ export default function DashboardPage() {
                 >
                   <Link
                     href={`/events/${event.id}/dashboard`}
+                    data-tour={index === 0 ? 'host-dashboard-event-card' : undefined}
                     className="bg-app-card rounded-lg border border-app-border shadow-sm p-6 hover:shadow-lg transition-all block"
                   >
                     <h2 className="text-xl font-semibold mb-2 text-app-fg">

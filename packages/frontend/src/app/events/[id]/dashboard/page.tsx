@@ -53,6 +53,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToastStore } from '@/store/toastStore';
+import GuidedTour from '@/components/ui/GuidedTour';
 
 interface PhotoStats {
   total: number;
@@ -129,6 +130,37 @@ export default function EventDashboardPage() {
   useEffect(() => {
     loadEvent();
   }, [eventId]);
+
+  const tourSteps = [
+    {
+      id: 'media',
+      target: '[data-tour="host-event-dashboard-media"]',
+      title: 'Event verwalten (1/4)',
+      body: 'Hier findest du Fotos & Videos deines Events und kannst schnell in die Übersicht springen.',
+      placement: 'bottom' as const,
+    },
+    {
+      id: 'settings',
+      target: '[data-tour="host-event-dashboard-settings"]',
+      title: 'Event verwalten (2/4)',
+      body: 'In den Einstellungen kannst du Event-Details, Upload-Regeln und Advanced Optionen steuern.',
+      placement: 'bottom' as const,
+    },
+    {
+      id: 'share-link',
+      target: '[data-tour="host-event-dashboard-share"]',
+      title: 'Event verwalten (3/4)',
+      body: 'Erzeuge einen Share-Link zum schnellen Teilen. Danach kannst du kopieren oder direkt teilen.',
+      placement: 'top' as const,
+    },
+    {
+      id: 'invitations',
+      target: '[data-tour="host-event-dashboard-invitations"]',
+      title: 'Event verwalten (4/4)',
+      body: 'Erstelle mehrere Einladungen (Familie/Freunde) und teile Shortlinks. Ideal für unterschiedliche Gruppen.',
+      placement: 'top' as const,
+    },
+  ];
 
   useEffect(() => {
     if (event) {
@@ -517,13 +549,25 @@ export default function EventDashboardPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <GuidedTour tourId={`host_event_dashboard:${eventId}`} steps={tourSteps} autoStart />
             <Button asChild variant="secondary" size="sm">
-              <Link href={`/events/${eventId}/photos`}>Fotos</Link>
+              <Link href={`/events/${eventId}/photos`} data-tour="host-event-dashboard-media">
+                Fotos
+              </Link>
             </Button>
             <Button asChild variant="secondary" size="sm">
-              <Link href={`/events/${eventId}/videos`}>Videos</Link>
+              <Link href={`/events/${eventId}/videos`}>
+                Videos
+              </Link>
             </Button>
-            <Button type="button" variant="secondary" size="sm" onClick={() => setShowSettings(true)} className="gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowSettings(true)}
+              className="gap-2"
+              data-tour="host-event-dashboard-settings"
+            >
               <Settings className="h-4 w-4" />
               Einstellungen
             </Button>
@@ -726,7 +770,7 @@ export default function EventDashboardPage() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-app-border bg-app-card">
+          <div className="overflow-hidden rounded-xl border border-app-border bg-app-card" data-tour="host-event-dashboard-share">
             <div className="border-b border-app-border px-4 py-3">
               <div className="text-sm font-semibold text-app-fg">Share-Link</div>
               <div className="text-xs text-app-muted">Einladung erzeugen und teilen</div>
@@ -772,7 +816,7 @@ export default function EventDashboardPage() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-app-border bg-app-card">
+          <div className="overflow-hidden rounded-xl border border-app-border bg-app-card" data-tour="host-event-dashboard-invitations">
             <div className="border-b border-app-border px-4 py-3">
               <div className="text-sm font-semibold text-app-fg">Einladungsseiten</div>
               <div className="text-xs text-app-muted">
