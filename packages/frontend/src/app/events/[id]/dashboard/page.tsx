@@ -107,6 +107,14 @@ export default function EventDashboardPage() {
   const [shareLoading, setShareLoading] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
 
+  const [cohosts, setCohosts] = useState<any[]>([]);
+  const [cohostsLoading, setCohostsLoading] = useState(false);
+  const [cohostsError, setCohostsError] = useState<string | null>(null);
+  const [mintingCohostInvite, setMintingCohostInvite] = useState(false);
+  const [lastCohostInviteUrl, setLastCohostInviteUrl] = useState<string | null>(null);
+  const [removingCohostUserId, setRemovingCohostUserId] = useState<string | null>(null);
+  const [savingCohostPermissionsUserId, setSavingCohostPermissionsUserId] = useState<string | null>(null);
+
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   const [invitations, setInvitations] = useState<any[]>([]);
@@ -167,8 +175,107 @@ export default function EventDashboardPage() {
       loadStats();
       loadUsage();
       loadInvitations();
+      loadCohosts();
     }
   }, [event]);
+
+  const loadCohosts = async () => {
+    try {
+      setCohostsLoading(true);
+      setCohostsError(null);
+      const { data } = await api.get(`/events/${eventId}/cohosts`);
+      setCohosts(Array.isArray(data?.cohosts) ? data.cohosts : []);
+    } catch (err: any) {
+      setCohostsError(err.response?.data?.error || 'Fehler beim Laden der Co-Hosts');
+      setCohosts([]);
+    } finally {
+      setCohostsLoading(false);
+    }
+  };
+
+  const mintCohostInvite = async () => {
+    try {
+      setMintingCohostInvite(true);
+      setCohostsError(null);
+      const { data } = await api.post(`/events/${eventId}/cohosts/invite-token`);
+      const shareUrl = (data?.shareUrl as string | null) || null;
+      const inviteToken = (data?.inviteToken as string | null) || null;
+      const toCopy = shareUrl || inviteToken;
+      setLastCohostInviteUrl(shareUrl);
+      if (toCopy) {
+        try {
+          await navigator.clipboard.writeText(toCopy);
+          showToast('Invite-Link kopiert', 'success');
+        } catch {
+          showToast('Invite erstellt', 'success');
+        }
+      } else {
+        showToast('Invite erstellt', 'success');
+      }
+    } catch (err: any) {
+      setCohostsError(err.response?.data?.error || 'Fehler beim Erzeugen des Invite-Links');
+      showToast(err.response?.data?.error || 'Fehler beim Erzeugen des Invite-Links', 'error');
+    } finally {
+      setMintingCohostInvite(false);
+    }
+  };
+
+  const removeCohost = async (userId: string) => {
+    try {
+      setRemovingCohostUserId(userId);
+      setCohostsError(null);
+      await api.delete(`/events/${eventId}/cohosts/${userId}`);
+      showToast('Co-Host entfernt', 'success');
+      await loadCohosts();
+    } catch (err: any) {
+      setCohostsError(err.response?.data?.error || 'Fehler beim Entfernen des Co-Hosts');
+      showToast(err.response?.data?.error || 'Fehler beim Entfernen des Co-Hosts', 'error');
+    } finally {
+      setRemovingCohostUserId(null);
+    }
+  };
+
+  const updateCohostPermissionLocal = (
+    memberId: string,
+    key: 'canUpload' | 'canDownload' | 'canModerate' | 'canEditEvent',
+    value: boolean
+  ) => {
+    setCohosts((prev) =>
+      prev.map((m: any) => {
+        if (m?.id !== memberId) return m;
+        const nextPermissions = { ...((m?.permissions || {}) as any), [key]: value };
+        return { ...m, permissions: nextPermissions };
+      })
+    );
+  };
+
+  const saveCohostPermissions = async (member: any) => {
+    const userId = member?.user?.id as string | undefined;
+    if (!userId) return;
+
+    try {
+      setSavingCohostPermissionsUserId(userId);
+      setCohostsError(null);
+
+      const permissions = (member?.permissions || {}) as any;
+      await api.put(`/events/${eventId}/cohosts/${userId}/permissions`, {
+        permissions: {
+          canUpload: permissions?.canUpload === true,
+          canDownload: permissions?.canDownload === true,
+          canModerate: permissions?.canModerate === true,
+          canEditEvent: permissions?.canEditEvent === true,
+        },
+      });
+
+      showToast('Berechtigungen gespeichert', 'success');
+      await loadCohosts();
+    } catch (err: any) {
+      setCohostsError(err.response?.data?.error || 'Fehler beim Speichern der Berechtigungen');
+      showToast(err.response?.data?.error || 'Fehler beim Speichern der Berechtigungen', 'error');
+    } finally {
+      setSavingCohostPermissionsUserId(null);
+    }
+  };
 
   const loadEvent = async () => {
     try {
@@ -812,6 +919,102 @@ export default function EventDashboardPage() {
               {shareError && <div className="mt-2 text-sm text-status-danger">{shareError}</div>}
               {shareUrl && (
                 <div className="mt-2 text-xs text-app-muted break-all">{shareUrl}</div>
+              )}
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-xl border border-app-border bg-app-card">
+            <div className="border-b border-app-border px-4 py-3">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div>
+                  <div className="text-sm font-semibold text-app-fg">Co-Hosts</div>
+                  <div className="text-xs text-app-muted">Co-Hosts dürfen das Event verwalten (wie Host).</div>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Button
+                    type="button"
+                    onClick={mintCohostInvite}
+                    variant="primary"
+                    disabled={mintingCohostInvite}
+                  >
+                    {mintingCohostInvite ? 'Invite…' : 'Invite-Link erzeugen'}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={loadCohosts}
+                    variant="secondary"
+                    disabled={cohostsLoading}
+                  >
+                    Aktualisieren
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-4 py-4">
+              {lastCohostInviteUrl && (
+                <div className="mb-3 rounded-lg border border-app-border bg-app-bg p-3">
+                  <div className="text-xs text-app-muted">Letzter Invite-Link</div>
+                  <div className="mt-1 break-all text-sm text-app-fg">{lastCohostInviteUrl}</div>
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={async () => {
+                        await copyToClipboard(lastCohostInviteUrl, 'Invite-Link kopiert');
+                      }}
+                    >
+                      Link kopieren
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={async () => {
+                        await shareLink(lastCohostInviteUrl, 'Co-Host Invite');
+                      }}
+                    >
+                      Teilen
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {cohostsError && <div className="mb-2 text-sm text-status-danger">{cohostsError}</div>}
+              {cohostsLoading && <div className="text-sm text-app-muted">Lade Co-Hosts…</div>}
+              {!cohostsLoading && !cohostsError && cohosts.length === 0 && (
+                <div className="text-sm text-app-muted">Noch keine Co-Hosts.</div>
+              )}
+
+              {!cohostsLoading && !cohostsError && cohosts.length > 0 && (
+                <div className="space-y-2">
+                  {cohosts.map((m: any) => {
+                    const u = m?.user;
+                    const busy = removingCohostUserId === u?.id;
+                    return (
+                      <div
+                        key={m.id}
+                        className="flex flex-col gap-2 rounded-lg border border-app-border bg-app-bg p-3 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-medium text-app-fg">{u?.name || '(ohne Namen)'}</div>
+                          <div className="truncate text-xs text-app-muted">{u?.email || '-'}</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="danger"
+                            disabled={busy}
+                            onClick={async () => {
+                              if (u?.id) await removeCohost(u.id);
+                            }}
+                          >
+                            {busy ? 'Entferne…' : 'Entfernen'}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           </div>

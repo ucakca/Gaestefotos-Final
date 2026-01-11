@@ -94,10 +94,16 @@ export default function LogsPage() {
       window.clearInterval(pollRef.current);
       pollRef.current = null;
     }
-    pollRef.current = window.setInterval(() => {
+
+    const poll = () => {
+      // Skip polling when tab is not visible
+      if (document.hidden) return;
       loadConfig().catch(() => null);
       loadEvents().catch(() => null);
-    }, 3000);
+    };
+
+    // Poll every 10 seconds (reduced from 3s to lower server load)
+    pollRef.current = window.setInterval(poll, 10000);
 
     return () => {
       if (pollRef.current) {

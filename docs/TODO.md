@@ -39,7 +39,7 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
   - Backend: `GET /api/admin/ops/server` liefert read-only Metriken (Uptime/Load/Mem + `df /`).
   - UI: `/dashboard` zeigt Backend-Version (`/api/version`) + Server-Metriken.
 
-- ❌ Audit Findings (WP/Woo/CMS/Admin Tools)
+- ✅ Audit Findings (WP/Woo/CMS/Admin Tools)
   - ✅ Guided Tour UX-Polish (konsistente Auto-Start Regeln + Restart + "Nicht mehr anzeigen" für alle Flows)
     - Implementiert: Auto-Start nur einmal pro Tour (localStorage `seen`), manueller Restart reset `seen` + `dismissed`
   - ✅ Admin-Dashboard (packages/admin-dashboard): Woo Inbox UI (Logs/Replay/Export/Purge)
@@ -58,7 +58,7 @@ Dieses Dokument spiegelt die aktuelle TODO-Liste aus dem Arbeits-Chat wider. Zie
       - `GET /api/admin/cms/wp/:kind/search` (kind: `pages|posts`)
     - Ziel: eigene Seite im Admin-Dashboard (statt nur `packages/frontend/src/app/admin/dashboard/page.tsx`)
     - ✅ WP Recent/Search UI: nutzt `/api/admin/cms/wp/:kind/recent` + `/api/admin/cms/wp/:kind/search` (Treffer klickbar → setzt slug)
-  - ❌ Admin-Dashboard: weitere Admin Tools migrieren (Backend bereits vorhanden, UI fehlt im neuen `packages/admin-dashboard`)
+  - ✅ Admin-Dashboard: weitere Admin Tools migrieren (Backend bereits vorhanden, UI fehlt im neuen `packages/admin-dashboard`)
     - ✅ Packages / Package Definitions: `/api/admin/package-definitions/*` (Admin Dashboard `/packages`)
     - ✅ API Keys: `/api/admin/api-keys/*` (Admin Dashboard `/api-keys`)
     - ✅ Invoices: `/api/admin/invoices/*` (Admin Dashboard `/invoices`)

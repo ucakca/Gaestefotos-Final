@@ -142,6 +142,18 @@ export async function updateQueuedUpload(id: string, patch: Partial<QueuedUpload
   await withStore('readwrite', (store) => store.put(next as any));
 }
 
+export async function getQueueCount(): Promise<number> {
+  if (!isBrowser()) {
+    return 0;
+  }
+  try {
+    const items = await listQueuedUploads();
+    return items.filter((i) => i.status === 'PENDING').length;
+  } catch {
+    return 0;
+  }
+}
+
 export async function processUploadQueue(opts: {
   fetchFn: (endpoint: string, body: FormData) => Promise<void>;
   maxItems?: number;

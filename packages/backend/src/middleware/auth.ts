@@ -12,6 +12,35 @@ export function isPrivilegedRole(role?: string) {
   return role === 'ADMIN' || role === 'SUPERADMIN';
 }
 
+export type EventPermissionKey = 'canUpload' | 'canModerate' | 'canEditEvent' | 'canDownload';
+
+export async function hasEventPermission(req: AuthRequest, eventId: string, perm: EventPermissionKey): Promise<boolean> {
+  if (!req.userId) return false;
+  if (isPrivilegedRole(req.userRole)) return true;
+
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { hostId: true, deletedAt: true, isActive: true },
+  });
+
+  if (!event || event.deletedAt || event.isActive === false) return false;
+  if (event.hostId === req.userId) return true;
+
+  const member = await prisma.eventMember.findUnique({
+    where: {
+      eventId_userId: {
+        eventId,
+        userId: req.userId,
+      },
+    },
+    select: { permissions: true },
+  });
+
+  if (!member) return false;
+  const perms = (member.permissions as any) || {};
+  return perms?.[perm] === true;
+}
+
 export async function hasEventManageAccess(req: AuthRequest, eventId: string): Promise<boolean> {
   if (!req.userId) return false;
   if (isPrivilegedRole(req.userRole)) return true;

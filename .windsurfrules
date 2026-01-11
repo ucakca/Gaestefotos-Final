@@ -1,0 +1,18 @@
+# .windsurfrules für gästefotos.com
+rules:
+  - name: logic_and_error_handling_protocol
+    trigger: "Jede Code-Änderung oder Fehleranalyse"
+    instructions: >
+      Bevor du Code schreibst oder änderst, befolge dieses Protokoll:
+
+      1. ANALYSE-PHASE: Wenn die Aufgabe komplex ist (Logik/Architektur), simuliere einen 'Claude 4.5 Opus' Denkvorgang.
+         Hinterfrage die Sinnhaftigkeit: 'Macht dieser Flow für eine Foto-App mit SSL-Verschlüsselung Sinn?'
+
+      2. BUG-FIXING: Wenn ein Fehler (Error-Finding) vorliegt, agiere mit der Präzision von 'GPT 5.2 High Reasoning'.
+         Prüfe Edge-Cases (z.B. Verbindungsabbrüche beim Upload, SSL-Handshake-Fehler).
+
+      3. IMPLEMENTIERUNG: Schreibe den Code im Stil von 'Claude 4.5 Sonnet' – sauber, performant und ohne Abkürzungen.
+
+      4. FEEDBACK: Wenn du merkst, dass das aktuell gewählte Modell (siehe System-Context) für die Logikprüfung
+         zu schwach ist (z.B. GPT 5.2 Low Reasoning), weise mich explizit darauf hin:
+         'BITTE FÜR DIESE AUFGABE AUF CLAUDE 4.5 OPUS UMSCHALTEN'.

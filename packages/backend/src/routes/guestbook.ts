@@ -61,7 +61,7 @@ async function cleanupExpiredGuestbookAudioUploads(eventId: string, now: Date): 
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
+    fileSize: 50 * 1024 * 1024, // 50MB (aligned with Nginx)
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
@@ -75,7 +75,7 @@ const upload = multer({
 const audioUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 20 * 1024 * 1024, // 20MB
+    fileSize: 50 * 1024 * 1024, // 50MB (aligned with Nginx)
   },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('audio/')) {

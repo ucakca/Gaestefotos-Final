@@ -100,6 +100,7 @@ model EventMember {
   eventId   String
   userId    String
   role      EventMemberRole @default(COHOST)
+  permissions Json          @default("{}")
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
 
@@ -317,7 +318,9 @@ model Photo {
   eventId    String
   guestId    String?
   categoryId String?
-  storagePath String
+  storagePath String        // Optimized (1920px) - für Galerie-Ansicht
+  storagePathOriginal String? // Original (volle Qualität) - für Host-Download
+  storagePathThumb String?    // Thumbnail (300px) - für Previews
   url        String?
   status     PhotoStatus @default(PENDING)
   deletedAt  DateTime?

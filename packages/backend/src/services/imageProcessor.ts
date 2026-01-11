@@ -7,46 +7,59 @@ try {
 }
 
 export interface ProcessedImage {
-  original: Buffer;
-  thumbnail: Buffer;
-  optimized: Buffer;
+  original: Buffer;    // Volle Qualität (nur EXIF stripped, keine Komprimierung)
+  thumbnail: Buffer;   // 300x300 für Previews
+  optimized: Buffer;   // 1920px für Galerie-Ansicht
 }
 
 export class ImageProcessor {
   /**
    * Process uploaded image
-   * - Create thumbnail (300x300)
-   * - Optimize original (max 1920px, 80% quality)
+   * - Original: Full quality, only EXIF stripped (for Host download)
+   * - Optimized: max 1920px, 85% quality (for guest gallery view)
+   * - Thumbnail: 300x300 (for previews)
    */
   async processImage(buffer: Buffer): Promise<ProcessedImage> {
     if (!sharp) {
       // Fallback: return original if sharp not available
       return {
         original: buffer,
-        thumbnail: buffer, // No thumbnail processing
+        thumbnail: buffer,
         optimized: buffer,
       };
     }
 
+    // Original: Full quality, only rotate and strip EXIF/GPS for privacy
     const original = await sharp(buffer)
+      .rotate() // Auto-rotate based on EXIF orientation
+      .withMetadata({ orientation: undefined }) // Strip all EXIF including GPS
+      .toBuffer();
+
+    // Optimized: Resize for gallery view (1920px max, good quality)
+    const optimized = await sharp(buffer)
+      .rotate()
       .resize(1920, 1920, {
         fit: 'inside',
         withoutEnlargement: true,
       })
-      .jpeg({ quality: 80 })
+      .jpeg({ quality: 85 })
+      .withMetadata({ orientation: undefined })
       .toBuffer();
 
+    // Thumbnail: Small preview (300px)
     const thumbnail = await sharp(buffer)
+      .rotate()
       .resize(300, 300, {
         fit: 'cover',
       })
       .jpeg({ quality: 75 })
+      .withMetadata({ orientation: undefined })
       .toBuffer();
 
     return {
-      original: buffer, // Keep original for now
+      original,
       thumbnail,
-      optimized: original,
+      optimized,
     };
   }
 

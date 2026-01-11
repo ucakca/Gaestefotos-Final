@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import multer from 'multer';
 import { io } from '../index';
 import prisma from '../config/database';
-import { authMiddleware, requireRole, AuthRequest, optionalAuthMiddleware, requireEventAccess, hasEventAccess, hasEventManageAccess } from '../middleware/auth';
+import { authMiddleware, requireRole, AuthRequest, optionalAuthMiddleware, requireEventAccess, hasEventAccess, hasEventManageAccess, hasEventPermission, isPrivilegedRole } from '../middleware/auth';
 import { storageService } from '../services/storage';
 import { imageProcessor } from '../services/imageProcessor';
 import { attachEventUploadRateLimits, photoUploadEventLimiter, photoUploadIpLimiter } from '../middleware/rateLimit';
@@ -55,7 +55,7 @@ function serializeBigInt(value: unknown): unknown {
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
+    fileSize: 50 * 1024 * 1024, // 50MB (aligned with Nginx)
   },
 });
 
@@ -89,6 +89,16 @@ const enforceEventUploadAllowed = async (req: AuthRequest, res: Response, next: 
         code: 'UPLOADS_DISABLED',
         error: 'Uploads sind für dieses Event deaktiviert',
       });
+    }
+
+    if (req.userId && isManager && event.hostId !== req.userId && !isPrivilegedRole(req.userRole)) {
+      const canUpload = await hasEventPermission(req, eventId, 'canUpload');
+      if (!canUpload) {
+        return denyByVisibility(res, 'hostOrAdmin', {
+          code: 'PERMISSION_DENIED',
+          error: 'Keine Berechtigung',
+        });
+      }
     }
 
     if (!event.dateTime) {
@@ -232,7 +242,8 @@ router.post(
             isGuest: !isManager,
           });
 
-      const uploadBytes = BigInt(processed.optimized.length);
+      // Calculate total upload size (all variants)
+      const uploadBytes = BigInt(processed.original.length + processed.optimized.length + processed.thumbnail.length);
       try {
         await assertUploadWithinLimit(eventId, uploadBytes);
       } catch (e: any) {
@@ -242,13 +253,15 @@ router.post(
         throw e;
       }
       
-      // Upload optimized image to SeaweedFS
-      const storagePath = await storageService.uploadFile(
-        eventId,
-        file.originalname,
-        processed.optimized,
-        file.mimetype
-      );
+      // Upload all three variants to SeaweedFS
+      const baseFilename = file.originalname.replace(/\.[^/.]+$/, '');
+      const ext = file.originalname.match(/\.[^/.]+$/)?.[0] || '.jpg';
+      
+      const [storagePath, storagePathOriginal, storagePathThumb] = await Promise.all([
+        storageService.uploadFile(eventId, `${baseFilename}_opt${ext}`, processed.optimized, 'image/jpeg'),
+        storageService.uploadFile(eventId, `${baseFilename}_orig${ext}`, processed.original, file.mimetype),
+        storageService.uploadFile(eventId, `${baseFilename}_thumb${ext}`, processed.thumbnail, 'image/jpeg'),
+      ]);
 
       const moderationRequired = featuresConfig?.moderationRequired === true;
       const status = moderationRequired && !isManager ? 'PENDING' : 'APPROVED';
@@ -256,9 +269,10 @@ router.post(
       const photo = await prisma.photo.create({
         data: {
           eventId,
-          storagePath,
+          storagePath,           // Optimized for gallery view
+          storagePathOriginal,   // Original quality for Host download
+          storagePathThumb,      // Thumbnail for previews
           categoryId: resolvedCategoryId,
-          // Persist a stable proxy URL (no mixed-content issues)
           url: '',
           status,
           sizeBytes: uploadBytes,
@@ -448,8 +462,9 @@ router.get(
     }
 
     // Storage period enforcement (no downloads after storageEndsAt)
+    // Host/Admin can still download after lock (for backup before hard delete)
     const storageEndsAt = await getEventStorageEndsAt(photo.eventId);
-    if (storageEndsAt && Date.now() > storageEndsAt.getTime()) {
+    if (!isManager && storageEndsAt && Date.now() > storageEndsAt.getTime()) {
       return denyByVisibility(res, denyVisibility, {
         code: 'STORAGE_LOCKED',
         error: 'Speicherperiode beendet',
@@ -468,12 +483,24 @@ router.get(
       return res.status(404).json({ error: 'Foto nicht gefunden' });
     }
 
+    if (req.userId && isManager && photo.event.hostId !== req.userId && !isPrivilegedRole(req.userRole)) {
+      const canDownload = await hasEventPermission(req, photo.eventId, 'canDownload');
+      if (!canDownload) {
+        return res.status(404).json({ error: 'Foto nicht gefunden' });
+      }
+    }
+
     if (!photo.storagePath) {
       return res.status(404).json({ error: 'Foto nicht gefunden' });
     }
 
-    const fileBuffer = await storageService.getFile(photo.storagePath);
-    const extension = photo.storagePath.split('.').pop() || 'jpg';
+    // Host/Admin get original quality, guests get optimized
+    const downloadPath = isManager && photo.storagePathOriginal 
+      ? photo.storagePathOriginal 
+      : photo.storagePath;
+    
+    const fileBuffer = await storageService.getFile(downloadPath);
+    const extension = downloadPath.split('.').pop() || 'jpg';
     const contentType = extension === 'png'
       ? 'image/png'
       : extension === 'webp'
@@ -485,6 +512,7 @@ router.get(
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'private, max-age=0');
     res.setHeader('Content-Disposition', `attachment; filename="photo-${photoId}.${extension}"`);
+    res.setHeader('X-GF-Quality', isManager && photo.storagePathOriginal ? 'original' : 'optimized');
     res.send(fileBuffer);
   } catch (error: any) {
     console.error('Download photo error:', error);
@@ -533,10 +561,15 @@ router.post(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      const storageEndsAt = await getEventStorageEndsAt(event.id);
-      if (storageEndsAt && Date.now() > storageEndsAt.getTime()) {
-        return res.status(403).json({ code: 'STORAGE_LOCKED', error: 'Speicherperiode beendet' });
+      if (req.userId && event.hostId !== req.userId && !isPrivilegedRole(req.userRole)) {
+        const canDownload = await hasEventPermission(req, eventId, 'canDownload');
+        if (!canDownload) {
+          return res.status(404).json({ error: 'Event nicht gefunden' });
+        }
       }
+
+      // Storage period enforcement - Host/Admin can still bulk-download after lock (for backup)
+      // Note: hasEventManageAccess already verified above, so we skip lock for managers
 
       res.setHeader('Content-Type', 'application/zip');
       res.setHeader('Content-Disposition', `attachment; filename="${event.slug}-photos-${Date.now()}.zip"`);
@@ -557,8 +590,10 @@ router.post(
       for (const photo of photos) {
         if (!photo.storagePath) continue;
         try {
-          const fileBuffer = await storageService.getFile(photo.storagePath);
-          const extension = photo.storagePath.split('.').pop() || 'jpg';
+          // Use original quality for bulk download (host/admin only endpoint)
+          const downloadPath = photo.storagePathOriginal || photo.storagePath;
+          const fileBuffer = await storageService.getFile(downloadPath);
+          const extension = downloadPath.split('.').pop() || 'jpg';
           archive.append(fileBuffer, { name: `${photo.id}.${extension}` });
         } catch (err) {
           console.warn(`Fehler beim Hinzufügen von Foto ${photo.id}:`, err);
@@ -597,6 +632,14 @@ router.post(
       // Check permissions
       if (!(await hasEventManageAccess(req, photo.eventId))) {
         return res.status(403).json({ error: 'Forbidden' });
+      }
+
+
+      if (req.userId && photo.event.hostId !== req.userId && !isPrivilegedRole(req.userRole)) {
+        const canModerate = await hasEventPermission(req, photo.eventId, 'canModerate');
+        if (!canModerate) {
+          return res.status(403).json({ error: 'Forbidden' });
+        }
       }
 
       const updatedPhoto = await prisma.photo.update({
@@ -640,6 +683,13 @@ router.post(
       if (!(await hasEventManageAccess(req, photo.eventId))) {
         return res.status(403).json({ error: 'Forbidden' });
       }
+      
+      if (req.userId && photo.event.hostId !== req.userId && !isPrivilegedRole(req.userRole)) {
+        const canModerate = await hasEventPermission(req, photo.eventId, 'canModerate');
+        if (!canModerate) {
+          return res.status(403).json({ error: 'Forbidden' });
+        }
+      }
 
       const updatedPhoto = await prisma.photo.update({
         where: { id: photoId },
@@ -677,7 +727,13 @@ router.delete(
       if (!(await hasEventManageAccess(req, photo.eventId))) {
         return res.status(403).json({ error: 'Forbidden' });
       }
-
+      if (req.userId && photo.event.hostId !== req.userId && !isPrivilegedRole(req.userRole)) {
+        const canModerate = await hasEventPermission(req, photo.eventId, 'canModerate');
+        if (!canModerate) {
+          return res.status(403).json({ error: 'Forbidden' });
+        }
+      }
+      
       await prisma.photo.update({
         where: { id: photoId },
         data: { status: 'DELETED' },

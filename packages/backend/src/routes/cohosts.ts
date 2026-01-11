@@ -11,6 +11,17 @@ const addCohostSchema = z.object({
   userId: z.string().uuid(),
 });
 
+const updateCohostPermissionsSchema = z.object({
+  permissions: z
+    .object({
+      canUpload: z.boolean().optional(),
+      canModerate: z.boolean().optional(),
+      canEditEvent: z.boolean().optional(),
+      canDownload: z.boolean().optional(),
+    })
+    .strict(),
+});
+
 function getCohostInviteJwtSecret(): string | null {
   return process.env.INVITE_JWT_SECRET || process.env.JWT_SECRET || null;
 }
@@ -43,6 +54,7 @@ router.get('/:eventId/cohosts', authMiddleware, async (req: AuthRequest, res: Re
       select: {
         id: true,
         role: true,
+        permissions: true,
         createdAt: true,
         user: {
           select: {
@@ -58,6 +70,71 @@ router.get('/:eventId/cohosts', authMiddleware, async (req: AuthRequest, res: Re
     return res.json({ cohosts: members });
   } catch (error) {
     logger.error('List cohosts error', { message: (error as any)?.message || String(error), eventId: req.params.eventId });
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update a co-host's permissions for an event (host/admin only)
+router.put('/:eventId/cohosts/:userId/permissions', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, userId } = req.params;
+    const { permissions } = updateCohostPermissionsSchema.parse(req.body);
+
+    if (!(await requireManageAccessOr404(req, res, eventId))) return;
+
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, hostId: true, deletedAt: true, isActive: true },
+    });
+
+    if (!event || event.deletedAt || event.isActive === false) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    if (!req.userId || (event.hostId !== req.userId && req.userRole !== 'ADMIN' && req.userRole !== 'SUPERADMIN')) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    if (event.hostId === userId) {
+      return res.status(400).json({ error: 'Host Rechte können nicht geändert werden' });
+    }
+
+    const member = await prisma.eventMember.update({
+      where: {
+        eventId_userId: {
+          eventId,
+          userId,
+        },
+      },
+      data: {
+        permissions,
+      },
+      select: {
+        id: true,
+        role: true,
+        permissions: true,
+        createdAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+    });
+
+    return res.json({ ok: true, cohost: member });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+    const code = (error as any)?.code;
+    if (code === 'P2025') {
+      return res.status(404).json({ error: 'Co-Host nicht gefunden' });
+    }
+    logger.error('Update cohost permissions error', { message: (error as any)?.message || String(error), eventId: req.params.eventId, userId: req.params.userId });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -110,6 +187,7 @@ router.post('/:eventId/cohosts', authMiddleware, async (req: AuthRequest, res: R
       select: {
         id: true,
         role: true,
+        permissions: true,
         createdAt: true,
         user: {
           select: {

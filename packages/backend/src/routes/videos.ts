@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import multer from 'multer';
 import prisma from '../config/database';
-import { authMiddleware, requireRole, AuthRequest, optionalAuthMiddleware, hasEventAccess, hasEventManageAccess } from '../middleware/auth';
+import { authMiddleware, requireRole, AuthRequest, optionalAuthMiddleware, hasEventAccess, hasEventManageAccess, hasEventPermission, isPrivilegedRole } from '../middleware/auth';
 import { storageService } from '../services/storage';
 import { logger } from '../utils/logger';
 import { cache } from '../services/cache';
@@ -381,6 +381,16 @@ router.post(
       const isGuest = !isManager && req.userId;
       const denyVisibility = isManager ? 'hostOrAdmin' : 'guest';
 
+      if (req.userId && isManager && event.hostId !== req.userId && !isPrivilegedRole(req.userRole)) {
+        const canUpload = await hasEventPermission(req, eventId, 'canUpload');
+        if (!canUpload) {
+          return denyByVisibility(res, 'hostOrAdmin', {
+            code: 'PERMISSION_DENIED',
+            error: 'Keine Berechtigung',
+          });
+        }
+      }
+
       // Block uploads in VIEW_ONLY mode for guests
       if (mode === 'VIEW_ONLY' && isGuest) {
         return denyByVisibility(res, denyVisibility, {
@@ -715,8 +725,9 @@ router.get(
     const denyVisibility = isManager ? 'hostOrAdmin' : 'guest';
 
     // Storage period enforcement
+    // Host/Admin can still download after lock (for backup before hard delete)
     const storageEndsAt = await getEventStorageEndsAt(video.eventId);
-    if (storageEndsAt && Date.now() > storageEndsAt.getTime()) {
+    if (!isManager && storageEndsAt && Date.now() > storageEndsAt.getTime()) {
       return denyByVisibility(res, denyVisibility, {
         code: 'STORAGE_LOCKED',
         error: 'Speicherperiode beendet',
@@ -733,6 +744,13 @@ router.get(
     // Guests can download only approved videos
     if (!isManager && video.status !== 'APPROVED') {
       return res.status(404).json({ error: 'Video nicht gefunden' });
+    }
+
+    if (req.userId && isManager && video.event.hostId !== req.userId && !isPrivilegedRole(req.userRole)) {
+      const canDownload = await hasEventPermission(req, video.eventId, 'canDownload');
+      if (!canDownload) {
+        return res.status(404).json({ error: 'Video nicht gefunden' });
+      }
     }
 
     // Quarantine enforcement
@@ -850,6 +868,13 @@ router.post('/:videoId/purge', authMiddleware, async (req: AuthRequest, res: Res
       return res.status(404).json({ error: 'Video nicht gefunden' });
     }
 
+    if (req.userId && video.event.hostId !== req.userId && !isPrivilegedRole(req.userRole)) {
+      const canModerate = await hasEventPermission(req, video.eventId, 'canModerate');
+      if (!canModerate) {
+        return res.status(404).json({ error: 'Video nicht gefunden' });
+      }
+    }
+
     await prisma.video.update({
       where: { id: videoId },
       data: {
@@ -885,6 +910,13 @@ router.post('/bulk/approve', authMiddleware, async (req: AuthRequest, res: Respo
     for (const video of videos) {
       if (!(await hasEventManageAccess(req, video.eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      if (req.userId && video.event.hostId !== req.userId && !isPrivilegedRole(req.userRole)) {
+        const canModerate = await hasEventPermission(req, video.eventId, 'canModerate');
+        if (!canModerate) {
+          return res.status(404).json({ error: 'Event nicht gefunden' });
+        }
       }
     }
 
@@ -926,6 +958,13 @@ router.post('/bulk/reject', authMiddleware, async (req: AuthRequest, res: Respon
     for (const video of videos) {
       if (!(await hasEventManageAccess(req, video.eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      if (req.userId && video.event.hostId !== req.userId && !isPrivilegedRole(req.userRole)) {
+        const canModerate = await hasEventPermission(req, video.eventId, 'canModerate');
+        if (!canModerate) {
+          return res.status(404).json({ error: 'Event nicht gefunden' });
+        }
       }
     }
 
@@ -970,6 +1009,13 @@ router.post('/bulk/delete', authMiddleware, async (req: AuthRequest, res: Respon
       
       if (!isManager && !isOwner && req.userRole !== 'ADMIN') {
         return res.status(404).json({ error: 'Video nicht gefunden' });
+      }
+
+      if (req.userId && isManager && !isOwner && video.event.hostId !== req.userId && !isPrivilegedRole(req.userRole)) {
+        const canModerate = await hasEventPermission(req, video.eventId, 'canModerate');
+        if (!canModerate) {
+          return res.status(404).json({ error: 'Video nicht gefunden' });
+        }
       }
     }
 
@@ -1039,11 +1085,15 @@ router.post(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      // Storage period enforcement
-      const storageEndsAt = await getEventStorageEndsAt(event.id);
-      if (storageEndsAt && Date.now() > storageEndsAt.getTime()) {
-        return res.status(403).json({ code: 'STORAGE_LOCKED', error: 'Speicherperiode beendet' });
+      if (req.userId && event.hostId !== req.userId && !isPrivilegedRole(req.userRole)) {
+        const canDownload = await hasEventPermission(req, eventId, 'canDownload');
+        if (!canDownload) {
+          return res.status(404).json({ error: 'Event nicht gefunden' });
+        }
       }
+
+      // Storage period enforcement - Host/Admin can still bulk-download after lock (for backup)
+      // Note: hasEventManageAccess already verified above, so we skip lock for managers
 
       const featuresConfig = (event.featuresConfig || {}) as any;
 

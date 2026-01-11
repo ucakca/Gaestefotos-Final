@@ -70,6 +70,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     void load();
+
+    // Auto-refresh every 30 seconds when tab is visible
+    const interval = setInterval(() => {
+      if (!document.hidden) void load();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, [load]);
 
   const memUsed = useMemo(() => {

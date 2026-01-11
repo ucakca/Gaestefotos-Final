@@ -3,6 +3,7 @@ set -euo pipefail
 
 BACKEND_SERVICE_NAME="${BACKEND_SERVICE_NAME:-gaestefotos-backend-staging.service}"
 DASH_SERVICE_NAME="${DASH_SERVICE_NAME:-gaestefotos-admin-dashboard-staging.service}"
+FRONTEND_SERVICE_NAME="${FRONTEND_SERVICE_NAME:-gaestefotos-frontend-staging.service}"
 
 STAGING_ENV_FILE_BACKEND="${STAGING_ENV_FILE_BACKEND:-/root/gaestefotos-app-v2/packages/backend/.env.staging}"
 
@@ -36,10 +37,13 @@ on_error() {
     echo "ERROR: Staging deploy failed. Attempting to start services again..." >&2
     $SUDO systemctl start "$BACKEND_SERVICE_NAME" || true
     $SUDO systemctl start "$DASH_SERVICE_NAME" || true
+    $SUDO systemctl start "$FRONTEND_SERVICE_NAME" || true
     echo "Backend status:" >&2
     $SUDO systemctl --no-pager --full status "$BACKEND_SERVICE_NAME" || true
     echo "Dashboard status:" >&2
     $SUDO systemctl --no-pager --full status "$DASH_SERVICE_NAME" || true
+    echo "Frontend status:" >&2
+    $SUDO systemctl --no-pager --full status "$FRONTEND_SERVICE_NAME" || true
   fi
 }
 trap on_error ERR
@@ -47,12 +51,14 @@ trap on_error ERR
 echo "Deploying staging using mandatory order: stop → migrate → build → start → smoke"
 echo "Backend:  $BACKEND_SERVICE_NAME"
 echo "Dash:     $DASH_SERVICE_NAME"
+echo "Frontend: $FRONTEND_SERVICE_NAME"
 echo "Repo:     $REPO_ROOT"
 echo ""
 
 echo "1/5 Stopping staging services..."
 $SUDO systemctl stop "$BACKEND_SERVICE_NAME" || true
 $SUDO systemctl stop "$DASH_SERVICE_NAME" || true
+$SUDO systemctl stop "$FRONTEND_SERVICE_NAME" || true
 STOPPED=1
 
 echo "2/5 Applying Prisma migrations on staging DB..."
@@ -88,10 +94,12 @@ echo "3/5 Building packages..."
 pnpm --filter @gaestefotos/shared build
 pnpm --filter @gaestefotos/backend build
 pnpm --filter @gaestefotos/admin-dashboard build
+pnpm --filter @gaestefotos/frontend build
 
 echo "4/5 Starting staging services..."
 $SUDO systemctl start "$BACKEND_SERVICE_NAME"
 $SUDO systemctl start "$DASH_SERVICE_NAME"
+$SUDO systemctl start "$FRONTEND_SERVICE_NAME"
 STOPPED=0
 
 wait_http() {
@@ -112,6 +120,7 @@ wait_http() {
 echo "Waiting for services to become ready..."
 wait_http "http://127.0.0.1:8101/api/health" 40 2
 wait_http "http://127.0.0.1:3101/" 40 2
+wait_http "http://127.0.0.1:3002/" 40 2
 
 echo "5/5 Smoke checks (staging URLs)..."
 APP_URL="${APP_URL:-https://staging.app.xn--gstefotos-v2a.com}"

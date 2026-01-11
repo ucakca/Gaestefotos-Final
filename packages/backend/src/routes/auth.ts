@@ -897,6 +897,7 @@ router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
 const wordpressSsoSchema = z.object({
   wpUserId: z.union([z.number().int(), z.string()]).transform((v) => (typeof v === 'string' ? parseInt(v, 10) : v)),
   ssoSecret: z.string().optional(),
+  returnUrl: z.string().optional(),
 });
 
 router.post('/wordpress-sso', wordpressSsoLimiter, async (req: Request, res: Response) => {
@@ -979,9 +980,15 @@ router.post('/wordpress-sso', wordpressSsoLimiter, async (req: Request, res: Res
     setAuthCookie(res, token, parseJwtExpiresInSeconds(expiresIn));
 
     const appUrl = getAppBaseUrl();
+    const returnUrlRaw = String(parsed.data.returnUrl || '').trim();
+    const returnUrl = returnUrlRaw.startsWith('/') ? returnUrlRaw : '';
+    const redirectUrl =
+      returnUrl
+        ? `${appUrl}${returnUrl}${returnUrl.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`
+        : `${appUrl}/dashboard?token=${encodeURIComponent(token)}`;
     res.json({
       success: true,
-      redirectUrl: `${appUrl}/dashboard?token=${encodeURIComponent(token)}`,
+      redirectUrl,
       token,
     });
   } catch (error: any) {

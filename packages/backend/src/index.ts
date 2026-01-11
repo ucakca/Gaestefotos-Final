@@ -53,6 +53,7 @@ import adminQaLogsRoutes from './routes/adminQaLogs';
 import adminUsersRoutes from './routes/adminUsers';
 import adminEventsRoutes from './routes/adminEvents';
 import cohostInvitesRoutes from './routes/cohostInvites';
+import uploadsRoutes from './routes/uploads';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -209,7 +210,7 @@ const io = new Server(httpServer, {
     methods: ['GET', 'POST'],
     credentials: true,
   },
-  transports: ['polling'], // Nur Polling - WebSocket verursacht Probleme mit Cloudflare/Plesk
+  transports: ['websocket', 'polling'], // WebSocket bevorzugt, Polling als Fallback
   allowEIO3: true, // Allow Engine.IO v3 clients
   pingTimeout: 60000, // 60 seconds
   pingInterval: 25000, // 25 seconds
@@ -548,6 +549,9 @@ app.use('/api/admin/marketing', adminMarketingRoutes);
 app.use('/api/admin/users', adminUsersRoutes);
 app.use('/api/admin/events', adminEventsRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
+
+// Tus.io resumable uploads
+app.use('/api/uploads', uploadsRoutes);
 
 // Sentry error handler (must be after routes, before error handlers)
 // Note: Sentry v10 uses automatic error tracking, manual handler not needed

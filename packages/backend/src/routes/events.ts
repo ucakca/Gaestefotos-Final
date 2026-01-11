@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import archiver from 'archiver';
 import multer from 'multer';
 import prisma from '../config/database';
-import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie, optionalAuthMiddleware, hasEventAccess, isPrivilegedRole, hasEventManageAccess } from '../middleware/auth';
+import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie, optionalAuthMiddleware, hasEventAccess, isPrivilegedRole, hasEventManageAccess, hasEventPermission } from '../middleware/auth';
 import { DEFAULT_EVENT_FEATURES_CONFIG, normalizeEventFeaturesConfig, randomString, slugify } from '@gaestefotos/shared';
 import { logger } from '../utils/logger';
 import { getActiveEventEntitlement, getEffectiveEventPackage, getEventUsageBreakdown, bigintToString } from '../services/packageLimits';
@@ -16,7 +16,7 @@ const router = Router();
 
 const designUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB (aligned with Nginx)
   fileFilter: (_req, file, cb) => {
     if (file.mimetype?.startsWith('image/')) {
       cb(null, true);
@@ -65,6 +65,21 @@ async function requireHostOrAdmin(req: AuthRequest, res: Response, eventId: stri
   if (!hasManageAccess) {
     res.status(404).json({ error: 'Event nicht gefunden' });
     return null;
+  }
+
+  return event;
+}
+
+async function requireEventEditAccess(req: AuthRequest, res: Response, eventId: string) {
+  const event = await requireHostOrAdmin(req, res, eventId);
+  if (!event) return null;
+
+  if (req.userId && event.hostId !== req.userId && !isPrivilegedRole(req.userRole)) {
+    const canEdit = await hasEventPermission(req, eventId, 'canEditEvent');
+    if (!canEdit) {
+      res.status(404).json({ error: 'Event nicht gefunden' });
+      return null;
+    }
   }
 
   return event;
@@ -242,7 +257,10 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const events = await prisma.event.findMany({
       where: {
-        hostId: req.userId,
+        OR: [
+          { hostId: req.userId },
+          { members: { some: { userId: req.userId } } },
+        ],
       },
       include: {
         _count: {
@@ -289,7 +307,7 @@ router.put('/:id/qr/config', authMiddleware, async (req: AuthRequest, res: Respo
       return res.status(400).json({ error: 'Ungültige QR-Konfiguration' });
     }
 
-    const event = await requireHostOrAdmin(req, res, eventId);
+    const event = await requireEventEditAccess(req, res, eventId);
     if (!event) return;
 
     const designConfig = (event.designConfig as any) || {};
@@ -320,7 +338,7 @@ router.post('/:id/qr/export.png', authMiddleware, async (req: AuthRequest, res: 
       return res.status(400).json({ error: 'Ungültige Export-Daten' });
     }
 
-    const event = await requireHostOrAdmin(req, res, eventId);
+    const event = await requireEventEditAccess(req, res, eventId);
     if (!event) return;
 
     const { format, svg } = parsed.data;
@@ -684,7 +702,8 @@ router.post(
   async (req: AuthRequest, res: Response) => {
     try {
       const eventId = req.params.id;
-      const event = await requireHostOrAdmin(req, res, eventId);
+
+      const event = await requireEventEditAccess(req, res, eventId);
       if (!event) return;
 
       const file = req.file;
@@ -716,7 +735,8 @@ router.post(
   async (req: AuthRequest, res: Response) => {
     try {
       const eventId = req.params.id;
-      const event = await requireHostOrAdmin(req, res, eventId);
+
+      const event = await requireEventEditAccess(req, res, eventId);
       if (!event) return;
 
       const file = req.file;
@@ -748,7 +768,8 @@ router.post(
   async (req: AuthRequest, res: Response) => {
     try {
       const eventId = req.params.id;
-      const event = await requireHostOrAdmin(req, res, eventId);
+
+      const event = await requireEventEditAccess(req, res, eventId);
       if (!event) return;
 
       const file = req.file;

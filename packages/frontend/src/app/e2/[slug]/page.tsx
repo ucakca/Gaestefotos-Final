@@ -35,6 +35,7 @@ export default function PublicEventPageV2() {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const didInitAuthRef = useRef(false);
+  const didInitAuthFromUrlRef = useRef(false);
   const didInitCohostInviteRef = useRef(false);
   const didAcceptCohostInviteRef = useRef(false);
   const { isAuthenticated, loadUser, hasCheckedAuth, loading: authLoading } = useAuthStore();
@@ -84,6 +85,32 @@ export default function PublicEventPageV2() {
   }, []);
 
   useEffect(() => {
+    if (didInitAuthFromUrlRef.current) return;
+    didInitAuthFromUrlRef.current = true;
+
+    try {
+      if (typeof window === 'undefined') return;
+
+      const url = new URL(window.location.href);
+      const tokenFromUrl = url.searchParams.get('token');
+      if (!tokenFromUrl) return;
+
+      try {
+        sessionStorage.setItem('token', tokenFromUrl);
+        localStorage.removeItem('token');
+      } catch {
+      }
+
+      url.searchParams.delete('token');
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+
+      loadUser();
+    } catch {
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     if (didInitCohostInviteRef.current) return;
     didInitCohostInviteRef.current = true;
 
@@ -119,7 +146,9 @@ export default function PublicEventPageV2() {
 
     if (!isAuthenticated) {
       const returnUrl = window.location.pathname + window.location.search + window.location.hash;
-      router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+      const kaufUrl = new URL('https://xn--gstefotos-v2a.com/register/');
+      kaufUrl.searchParams.set('gfReturnUrl', returnUrl);
+      window.location.href = kaufUrl.toString();
     }
   }, [hasCheckedAuth, authLoading, isAuthenticated, router]);
 

@@ -55,6 +55,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const tokenFromUrl = new URLSearchParams(window.location.search).get('token');
+      const returnUrlFromUrl = new URLSearchParams(window.location.search).get('returnUrl');
       if (tokenFromUrl) {
       try {
         sessionStorage.setItem('token', tokenFromUrl);
@@ -62,7 +63,8 @@ export default function DashboardPage() {
       } catch {
         // ignore
       }
-      window.location.href = '/dashboard';
+      const next = returnUrlFromUrl && returnUrlFromUrl.startsWith('/') ? returnUrlFromUrl : '/dashboard';
+      window.location.href = next;
       return;
       }
     }
