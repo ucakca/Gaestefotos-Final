@@ -7,6 +7,7 @@ import { useDropzone } from 'react-dropzone';
 import api, { formatApiError, isRetryableUploadError } from '@/lib/api';
 import { enqueueUpload, processUploadQueue, getQueueCount } from '@/lib/uploadQueue';
 import { uploadWithTus } from '@/lib/tusUpload';
+import { trackUpload } from '@/lib/uploadMetrics';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { Input } from '@/components/ui/Input';
@@ -260,8 +261,12 @@ export default function UploadButton({
   const uploadMedia = async (uploadId: string, originalFile: File) => {
     setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, uploading: true, progress: 0 } : f)));
 
-    // No client-side resize - backend handles Original + Optimized + Thumbnail
+    const startTime = Date.now();
+    const originalSize = originalFile.size;
+
+    // Client-side resize for bandwidth optimization
     const file = await resizeImageIfNeeded(originalFile);
+    const resizedSize = file.size;
 
     const name = uploaderName.trim();
     const isVideo = typeof file.type === 'string' && file.type.startsWith('video/');
@@ -296,6 +301,16 @@ export default function UploadButton({
 
       // Success!
       setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, uploading: false, progress: 100, success: true } : f)));
+
+      // Track successful upload
+      trackUpload({
+        originalSize,
+        resizedSize,
+        duration: Date.now() - startTime,
+        success: true,
+        fileType: originalFile.type,
+        timestamp: Date.now(),
+      });
 
       setTimeout(() => {
         setFiles((prev) => prev.filter((f) => f.id !== uploadId));
@@ -342,6 +357,16 @@ export default function UploadButton({
 
         // Success!
         setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, uploading: false, progress: 100, success: true } : f)));
+
+        // Track successful fallback upload
+        trackUpload({
+          originalSize,
+          resizedSize,
+          duration: Date.now() - startTime,
+          success: true,
+          fileType: originalFile.type,
+          timestamp: Date.now(),
+        });
 
         setTimeout(() => {
           setFiles((prev) => prev.filter((f) => f.id !== uploadId));
@@ -409,6 +434,17 @@ export default function UploadButton({
         // fall back to normal error UI
       }
     }
+
+    // Track failed upload
+    trackUpload({
+      originalSize,
+      resizedSize,
+      duration: Date.now() - startTime,
+      success: false,
+      errorMessage: msg,
+      fileType: originalFile.type,
+      timestamp: Date.now(),
+    });
 
     setFiles((prev) =>
       prev.map((f) => (f.id === uploadId ? { ...f, uploading: false, error: retryable ? `${msg} (Retry möglich)` : msg } : f))
