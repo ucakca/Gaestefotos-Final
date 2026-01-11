@@ -57,12 +57,74 @@ function sleep(ms: number): Promise<void> {
 }
 
 /**
- * Pass-through function - original quality is now preserved.
- * Backend handles resizing: Original (full quality) + Optimized (1920px) + Thumbnail (300px)
- * This ensures Host can download original quality photos.
+ * Client-side resize to reduce upload size and bandwidth.
+ * Resizes images to max 2500px before upload.
+ * Backend will then create: Original (full quality) + Optimized (1920px) + Thumbnail (300px)
  */
 async function resizeImageIfNeeded(file: File): Promise<File> {
-  return file;
+  if (!file.type.startsWith('image/')) {
+    return file;
+  }
+
+  const MAX_DIMENSION = 2500;
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+
+      const { width, height } = img;
+      
+      // Skip if already smaller than max
+      if (width <= MAX_DIMENSION && height <= MAX_DIMENSION) {
+        resolve(file);
+        return;
+      }
+
+      // Calculate new dimensions
+      const scale = MAX_DIMENSION / Math.max(width, height);
+      const newWidth = Math.round(width * scale);
+      const newHeight = Math.round(height * scale);
+
+      // Resize using canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve(file);
+            return;
+          }
+          const resizedFile = new File([blob], file.name, {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          });
+          resolve(resizedFile);
+        },
+        'image/jpeg',
+        0.92
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+
+    img.src = url;
+  });
 }
 
  const MotionButton = motion(Button);

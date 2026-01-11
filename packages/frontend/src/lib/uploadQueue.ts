@@ -187,7 +187,7 @@ export async function processUploadQueue(opts: {
     } catch (e: any) {
       failed += 1;
       await updateQueuedUpload(item.id, { status: 'PENDING', lastError: (e as any)?.message || String(e) });
-      break;
+      continue; // Continue with remaining uploads instead of stopping
     }
   }
 
