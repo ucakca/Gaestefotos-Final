@@ -62,14 +62,14 @@ const packages = [
     allowFaceSearch: false,
     allowGuestlist: false,
     allowFullInvitation: false,
-    allowCoHosts: true,          // Empfehlung: 1 Co-Host
+    allowCoHosts: false,         // Kein Co-Host für Basic
     isAdFree: false,
     
     // Limits
     maxCategories: 1,
     maxChallenges: 0,
     maxZipDownloadPhotos: 200,
-    maxCoHosts: 1,
+    maxCoHosts: 0,
   },
   {
     sku: 'smart',
@@ -96,14 +96,14 @@ const packages = [
     allowFaceSearch: false,      // ❌ Nur Premium
     allowGuestlist: true,        // ✅
     allowFullInvitation: true,   // ✅
-    allowCoHosts: true,          // Empfehlung: 3 Co-Hosts
+    allowCoHosts: true,          // 2 Co-Hosts
     isAdFree: true,              // ✅
     
     // Limits
     maxCategories: 3,
     maxChallenges: null,         // Unbegrenzt
     maxZipDownloadPhotos: null,  // Unbegrenzt
-    maxCoHosts: 3,
+    maxCoHosts: 2,
   },
   {
     sku: 'premium',

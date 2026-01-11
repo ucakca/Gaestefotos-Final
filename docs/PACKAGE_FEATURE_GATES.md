@@ -259,8 +259,8 @@ await assertWithinLimit(eventId, 'maxCoHosts', currentCount);
 
 **Paket-Verfügbarkeit:**
 - ❌ Free (0 Co-Hosts)
-- ✅ Basic (1 Co-Host)
-- ✅ Smart (3 Co-Hosts)
+- ❌ Basic (0 Co-Hosts)
+- ✅ Smart (2 Co-Hosts)
 - ✅ Premium (unbegrenzt)
 
 ---
