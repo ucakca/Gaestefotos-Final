@@ -297,25 +297,14 @@ export default function ModernPhotoGrid({
   return (
     <>
       {allowUploads && (
-        <div
-          className="fixed left-1/2 -translate-x-1/2 z-50 bottom-[calc(env(safe-area-inset-bottom)+84px)]"
-        >
-          <div
-            onClick={(e) => {
-              if (!uploadDisabled && !isStorageLocked) return;
-              e.preventDefault();
-              e.stopPropagation();
-              setShowUploadDisabled(true);
-            }}
-          >
-            <UploadButton
-              eventId={eventId}
-              onUploadSuccess={onUploadSuccess}
-              disabled={uploadDisabled || isStorageLocked}
-              disabledReason={isStorageLocked ? 'Die Speicherzeit ist abgelaufen.' : uploadDisabledReason}
-              variant="fab"
-            />
-          </div>
+        <div className="fixed left-1/2 -translate-x-1/2 z-50 bottom-[calc(env(safe-area-inset-bottom)+84px)]">
+          <UploadButton
+            eventId={eventId}
+            onUploadSuccess={onUploadSuccess}
+            disabled={uploadDisabled || isStorageLocked}
+            disabledReason={isStorageLocked ? 'Die Speicherzeit ist abgelaufen.' : uploadDisabledReason}
+            variant="fab"
+          />
         </div>
       )}
 

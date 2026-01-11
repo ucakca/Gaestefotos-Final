@@ -275,7 +275,7 @@ export default function EventHeader({
                   className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-sm text-sm font-semibold h-auto"
                 >
                   <Plus className="w-4 h-4" />
-                  +Story
+                  Story
                 </Button>
               </div>
 

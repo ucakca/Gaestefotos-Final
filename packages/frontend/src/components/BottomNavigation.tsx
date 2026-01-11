@@ -176,7 +176,7 @@ export default function BottomNavigation({
               variant={activeView === 'feed' ? 'primary' : 'ghost'}
               size="sm"
               className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full ${
-                activeView === 'feed' ? '' : 'text-app-muted'
+                activeView === 'feed' ? 'bg-app-accent text-app-bg' : 'text-app-muted bg-transparent'
               }`}
             >
               <Grid3x3 className="w-5 h-5" />
@@ -196,7 +196,7 @@ export default function BottomNavigation({
               variant={activeView === 'challenges' ? 'primary' : 'ghost'}
               size="sm"
               className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full ${
-                activeView === 'challenges' ? '' : 'text-app-muted'
+                activeView === 'challenges' ? 'bg-app-accent text-app-bg' : 'text-app-muted bg-transparent'
               }`}
             >
               <Trophy className="w-5 h-5" />
@@ -210,7 +210,7 @@ export default function BottomNavigation({
               variant={activeView === 'guestbook' ? 'primary' : 'ghost'}
               size="sm"
               className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full ${
-                activeView === 'guestbook' ? '' : 'text-app-muted'
+                activeView === 'guestbook' ? 'bg-app-accent text-app-bg' : 'text-app-muted bg-transparent'
               }`}
             >
               <BookOpen className="w-5 h-5" />
@@ -224,7 +224,7 @@ export default function BottomNavigation({
               variant={activeView === 'info' ? 'primary' : 'ghost'}
               size="sm"
               className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full ${
-                activeView === 'info' ? '' : 'text-app-muted'
+                activeView === 'info' ? 'bg-app-accent text-app-bg' : 'text-app-muted bg-transparent'
               }`}
             >
               <Info className="w-5 h-5" />

@@ -64,16 +64,15 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
             {/* Left: Back Button */}
             <div className="flex items-center gap-4 min-w-0">
               {showBackButton && backUrl ? (
-                <IconButton
-                  asChild
-                  icon={<ArrowLeft className="w-5 h-5" />}
-                  variant="ghost"
-                  size="md"
-                  aria-label="Zurück"
-                  title="Zurück"
-                >
-                  <Link href={backUrl} />
-                </IconButton>
+                <Link href={backUrl}>
+                  <IconButton
+                    icon={<ArrowLeft className="w-5 h-5" />}
+                    variant="ghost"
+                    size="md"
+                    aria-label="Zurück"
+                    title="Zurück"
+                  />
+                </Link>
               ) : (
                 pathname !== '/dashboard' && (
                   <IconButton
@@ -113,8 +112,8 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
               </Link>
             </div>
 
-            {/* Right: User Actions */}
-            <div className="ml-auto flex items-center gap-2">
+            {/* Right: User Actions - Only on Desktop */}
+            <div className="ml-auto hidden md:flex items-center gap-2">
               {user && (
                 <div className="flex items-center gap-2 border-l border-app-border pl-3">
                   <div className="hidden sm:block text-right">

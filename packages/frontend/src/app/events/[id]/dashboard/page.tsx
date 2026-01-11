@@ -92,6 +92,7 @@ export default function EventDashboardPage() {
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
   const [showEventMode, setShowEventMode] = useState(false);
   const [togglingActive, setTogglingActive] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [usage, setUsage] = useState<any | null>(null);
   const [usageLoading, setUsageLoading] = useState(false);
@@ -579,10 +580,10 @@ export default function EventDashboardPage() {
   const profileImageStoragePath = designConfig.profileImageStoragePath;
   const coverImageStoragePath = designConfig.coverImageStoragePath;
   const profileImage = profileImageStoragePath 
-    ? `/api/events/${eventId}/design-image/profile/${profileImageStoragePath}`
+    ? `/api/events/${eventId}/design-image/profile/${encodeURIComponent(profileImageStoragePath)}`
     : (designConfig.profileImage || '/default-profile.png');
   const coverImage = coverImageStoragePath
-    ? `/api/events/${eventId}/design-image/cover/${coverImageStoragePath}`
+    ? `/api/events/${eventId}/design-image/cover/${encodeURIComponent(coverImageStoragePath)}`
     : (designConfig.coverImage || '/default-cover.jpg');
   const welcomeMessage = designConfig.welcomeMessage || '';
   const limitBytes = usage?.entitlement?.storageLimitBytes ?? null;
@@ -1381,16 +1382,19 @@ export default function EventDashboardPage() {
                 type="button"
                 variant="ghost"
                 onClick={() => setEditingField('date')}
-                className="h-auto p-0 justify-start text-left"
+                className="h-auto p-0 justify-start text-left flex items-center gap-2"
               >
                 {event.dateTime ? (
-                  <span className="text-app-fg">
-                    {new Date(event.dateTime).toLocaleDateString('de-DE', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                    })}
-                  </span>
+                  <>
+                    <span className="text-app-fg">
+                      {new Date(event.dateTime).toLocaleDateString('de-DE', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                      })}
+                    </span>
+                    <Pencil className="w-3 h-3 text-app-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </>
                 ) : (
                   <span className="text-status-danger italic">Bitte Datum auswählen *</span>
                 )}
@@ -1504,32 +1508,57 @@ export default function EventDashboardPage() {
             </div>
             {editingField === 'password' ? (
               <div className="space-y-2">
-                <Input
-                  type="password"
-                  placeholder="Neues Passwort eingeben (leer lassen zum Entfernen)"
-                  onBlur={(e) => {
-                    updateEventField('password', e.target.value || null);
-                  }}
-                  className="w-full px-3 py-2"
-                  autoFocus
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Neues Passwort eingeben (leer lassen zum Entfernen)"
+                    onBlur={(e) => {
+                      updateEventField('password', e.target.value || null);
+                    }}
+                    className="w-full px-3 py-2 pr-12"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 hover:bg-app-bg rounded-md transition-colors"
+                    title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4 text-app-muted" /> : <EyeIcon className="w-4 h-4 text-app-muted" />}
+                  </button>
+                </div>
                 <p className="text-xs text-app-muted">
-                  {(event as any).password ? 'Leer lassen, um Passwort zu entfernen' : 'Passwort schützt den Event-Zugang'}
+                  {(event as any).password ? 'Leer lassen, um Passwort zu entfernen. Dieses Passwort wird öffentlich geteilt (QR-Code, Einladungen).' : 'Passwort schützt den Event-Zugang'}
                 </p>
               </div>
             ) : (
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setEditingField('password')}
-                className="h-auto p-0 justify-start text-left"
-              >
-                {(event as any).password ? (
-                  <span className="text-app-fg">•••••••• (Passwort gesetzt)</span>
-                ) : (
-                  <span className="text-app-muted italic">Klicke hier, um ein Passwort hinzuzufügen...</span>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setEditingField('password')}
+                  className="h-auto p-0 justify-start text-left flex-1"
+                >
+                  {(event as any).password ? (
+                    <span className="text-app-fg flex items-center gap-2">
+                      {showPassword ? (event as any).password : '••••••••'}
+                      <span className="text-xs text-app-muted">(Passwort gesetzt)</span>
+                    </span>
+                  ) : (
+                    <span className="text-app-muted italic">Klicke hier, um ein Passwort hinzuzufügen...</span>
+                  )}
+                </Button>
+                {(event as any).password && (
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    icon={showPassword ? <EyeOff className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                    variant="ghost"
+                    size="sm"
+                    aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                    title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                  />
                 )}
-              </Button>
+              </div>
             )}
           </div>
           </div>
