@@ -9,6 +9,7 @@ import { imageProcessor } from '../services/imageProcessor';
 import { validateUploadedFile } from '../middleware/uploadSecurity';
 import { attachEventUploadRateLimits, photoUploadEventLimiter, photoUploadIpLimiter } from '../middleware/rateLimit';
 import { assertUploadWithinLimit } from '../services/packageLimits';
+import { assertFeatureEnabled } from '../services/featureGate';
 import { extractCapturedAtFromImage, isWithinDateWindowPlusMinusDays } from '../services/uploadDatePolicy';
 
 const router = Router();
@@ -382,6 +383,20 @@ router.post(
 
     if (!event || event.deletedAt || event.isActive === false) {
       return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    // Check if guestbook feature is enabled for this event's package
+    try {
+      await assertFeatureEnabled(eventId, 'guestbook');
+    } catch (err: any) {
+      if (err.code === 'FEATURE_NOT_AVAILABLE') {
+        return res.status(403).json({
+          error: 'Gästebuch ist in deinem aktuellen Paket nicht verfügbar. Upgrade auf Basic oder höher.',
+          code: 'FEATURE_NOT_AVAILABLE',
+          requiredUpgrade: true,
+        });
+      }
+      throw err;
     }
 
     // Check if guestbook is enabled

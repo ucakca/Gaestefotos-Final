@@ -266,21 +266,51 @@ model WooWebhookEventLog {
 }
 
 model PackageDefinition {
-  id                String                @id @default(uuid())
-  sku               String                @unique
-  name              String
-  type              PackageDefinitionType @default(BASE)
-  resultingTier     String
-  upgradeFromTier   String?
-  storageLimitBytes BigInt?
-  storageDurationDays Int?
-  isActive          Boolean               @default(true)
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
+  id                    String                @id @default(uuid())
+  sku                   String                @unique
+  name                  String
+  type                  PackageDefinitionType @default(BASE)
+  resultingTier         String
+  upgradeFromTier       String?
+  isActive              Boolean               @default(true)
+  
+  // === STORAGE & DURATION ===
+  storageLimitBytes     BigInt?               // null = unlimited
+  storageLimitPhotos    Int?                  // Alternative: Foto-Anzahl statt Bytes
+  storageDurationDays   Int?                  // Online-Laufzeit in Tagen
+  
+  // === FEATURE FLAGS ===
+  allowVideoUpload      Boolean               @default(false)
+  allowStories          Boolean               @default(false)
+  allowPasswordProtect  Boolean               @default(false)
+  allowGuestbook        Boolean               @default(false)
+  allowZipDownload      Boolean               @default(false)
+  allowBulkOperations   Boolean               @default(false)
+  allowLiveWall         Boolean               @default(false)
+  allowFaceSearch       Boolean               @default(false)  // "Finde meine Fotos"
+  allowGuestlist        Boolean               @default(false)
+  allowFullInvitation   Boolean               @default(false)  // Nicht-beschränkte Einladungsseite
+  allowCoHosts          Boolean               @default(false)
+  isAdFree              Boolean               @default(false)  // Werbefrei
+  
+  // === LIMITS ===
+  maxCategories         Int?                  // null = unlimited
+  maxChallenges         Int?                  // null = unlimited
+  maxZipDownloadPhotos  Int?                  // z.B. 200 für Basic
+  maxCoHosts            Int?                  // 0/1/3/null(unlimited)
+  
+  // === DISPLAY & PRICING ===
+  displayOrder          Int                   @default(0)
+  priceEurCents         Int?                  // Preis in Cents (2900 = 29€)
+  description           String?               @db.Text
+  
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
 
   @@index([sku])
   @@index([type])
   @@index([isActive])
+  @@index([displayOrder])
   @@map("package_definitions")
 }
 

@@ -9,6 +9,7 @@ import archiver from 'archiver';
 import { validateUploadedFile } from '../middleware/uploadSecurity';
 import { attachEventUploadRateLimits, videoUploadEventLimiter, videoUploadIpLimiter } from '../middleware/rateLimit';
 import { assertUploadWithinLimit } from '../services/packageLimits';
+import { assertFeatureEnabled } from '../services/featureGate';
 import { isWithinDateWindowPlusMinusDays } from '../services/uploadDatePolicy';
 import { denyByVisibility, isWithinEventDateWindow } from '../services/eventPolicy';
 import { getEventStorageEndsAt } from '../services/storagePolicy';
@@ -351,6 +352,20 @@ router.post(
       }
 
       logger.info('Video upload started', { eventId, filename: file.originalname, size: file.size });
+
+      // Check if video upload feature is enabled for this event's package
+      try {
+        await assertFeatureEnabled(eventId, 'videoUpload');
+      } catch (err: any) {
+        if (err.code === 'FEATURE_NOT_AVAILABLE') {
+          return res.status(403).json({
+            error: 'Video-Uploads sind in deinem aktuellen Paket nicht verfügbar. Upgrade auf Premium für dieses Feature.',
+            code: 'FEATURE_NOT_AVAILABLE',
+            requiredUpgrade: true,
+          });
+        }
+        throw err;
+      }
 
       // Check if event exists and get featuresConfig
       const event = await prisma.event.findUnique({

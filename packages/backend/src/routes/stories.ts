@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import prisma from '../config/database';
 import { AuthRequest, hasEventAccess, optionalAuthMiddleware } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { assertFeatureEnabled } from '../services/featureGate';
 
 const router = Router();
 
@@ -128,6 +129,20 @@ router.post(
       const isHost = req.userId && req.userId === photo.event.hostId;
       if (!isHost && !hasEventAccess(req, eventId)) {
         return res.status(404).json({ error: 'Foto nicht gefunden' });
+      }
+
+      // Check if stories feature is enabled for this event's package
+      try {
+        await assertFeatureEnabled(eventId, 'stories');
+      } catch (err: any) {
+        if (err.code === 'FEATURE_NOT_AVAILABLE') {
+          return res.status(403).json({
+            error: 'Stories sind in deinem aktuellen Paket nicht verfügbar. Upgrade auf Smart oder Premium.',
+            code: 'FEATURE_NOT_AVAILABLE',
+            requiredUpgrade: true,
+          });
+        }
+        throw err;
       }
 
       if (photo.status !== 'APPROVED') {

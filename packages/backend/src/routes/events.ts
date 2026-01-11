@@ -8,6 +8,7 @@ import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie, optio
 import { DEFAULT_EVENT_FEATURES_CONFIG, normalizeEventFeaturesConfig, randomString, slugify } from '@gaestefotos/shared';
 import { logger } from '../utils/logger';
 import { getActiveEventEntitlement, getEffectiveEventPackage, getEventUsageBreakdown, bigintToString } from '../services/packageLimits';
+import { getEventFeatures } from '../services/featureGate';
 import { getEventStorageEndsAt } from '../services/storagePolicy';
 import { storageService } from '../services/storage';
 import { PDFDocument, rgb } from 'pdf-lib';
@@ -1481,6 +1482,52 @@ router.delete(
       res.json({ message: 'Event deleted' });
     } catch (error) {
       logger.error('Delete event error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+// === PACKAGE INFO ENDPOINT ===
+// Gibt alle Feature-Flags und Limits für ein Event zurück
+// Nützlich für Frontend um UI basierend auf Paket anzupassen
+router.get(
+  '/:id/package-info',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const eventId = req.params.id;
+
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { id: true, hostId: true, deletedAt: true, isActive: true },
+      });
+
+      if (!event || event.deletedAt || event.isActive === false) {
+        return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      // Require at least view access to the event
+      if (!(await hasEventAccess(req, eventId))) {
+        return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      const packageInfo = await getEventFeatures(eventId);
+      const usage = await getEventUsageBreakdown(eventId);
+      const storageEndsAt = await getEventStorageEndsAt(eventId);
+
+      res.json({
+        ...packageInfo,
+        usage: {
+          photosBytes: bigintToString(usage.photosBytes),
+          videosBytes: bigintToString(usage.videosBytes),
+          guestbookBytes: bigintToString(usage.guestbookBytes),
+          totalBytes: bigintToString(usage.totalBytes),
+        },
+        storageEndsAt,
+        isStorageLocked: storageEndsAt ? Date.now() > storageEndsAt.getTime() : false,
+      });
+    } catch (error) {
+      logger.error('Get package info error', { message: (error as any)?.message || String(error), eventId: req.params.id });
       res.status(500).json({ error: 'Internal server error' });
     }
   }

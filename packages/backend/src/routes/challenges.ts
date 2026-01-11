@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, optionalAuthMiddleware, hasEventAccess, hasEventManageAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { assertWithinLimit } from '../services/featureGate';
 
 const router = Router();
 
@@ -116,6 +117,25 @@ router.post(
 
       if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      // Check challenge limit for this event's package
+      const currentChallengeCount = await prisma.challenge.count({
+        where: { eventId },
+      });
+
+      try {
+        await assertWithinLimit(eventId, 'maxChallenges', currentChallengeCount);
+      } catch (err: any) {
+        if (err.code === 'LIMIT_REACHED') {
+          return res.status(403).json({
+            error: err.message,
+            code: 'LIMIT_REACHED',
+            currentCount: currentChallengeCount,
+            requiredUpgrade: true,
+          });
+        }
+        throw err;
       }
 
       // If categoryId is provided, verify it belongs to the event
