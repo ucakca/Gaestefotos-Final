@@ -223,6 +223,48 @@ await assertFeatureEnabled(eventId, 'faceSearch');
 
 ---
 
+### 7. Co-Hosts (Basic+)
+
+**Routes:** 
+- `packages/backend/src/routes/cohosts.ts:161` (add co-host)
+- `packages/backend/src/routes/cohosts.ts:290` (invite token)
+- `packages/backend/src/routes/cohostInvites.ts:60` (accept invite)
+
+```typescript
+await assertFeatureEnabled(eventId, 'coHosts');
+
+const currentCount = await prisma.eventMember.count({ where: { eventId } });
+await assertWithinLimit(eventId, 'maxCoHosts', currentCount);
+```
+
+**Fehler-Response:**
+```json
+{
+  "error": "Co-Hosts sind in deinem aktuellen Paket nicht verfügbar. Upgrade für dieses Feature.",
+  "code": "FEATURE_NOT_AVAILABLE",
+  "requiredUpgrade": true
+}
+```
+
+**Limit-Response:**
+```json
+{
+  "error": "Limit für maxCoHosts erreicht (1/1). Upgrade für mehr.",
+  "code": "LIMIT_REACHED",
+  "currentCount": 1,
+  "maxAllowed": 1,
+  "requiredUpgrade": true
+}
+```
+
+**Paket-Verfügbarkeit:**
+- ❌ Free (0 Co-Hosts)
+- ✅ Basic (1 Co-Host)
+- ✅ Smart (3 Co-Hosts)
+- ✅ Premium (unbegrenzt)
+
+---
+
 ## Package-Info Endpoint
 
 **Endpoint:** `GET /api/events/:id/package-info`

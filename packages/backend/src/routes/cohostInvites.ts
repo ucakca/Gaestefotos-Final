@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { assertFeatureEnabled, assertWithinLimit } from '../services/featureGate';
 
 const router = Router();
 
@@ -53,6 +54,25 @@ router.post('/accept', authMiddleware, async (req: AuthRequest, res: Response) =
 
     if (event.hostId === req.userId) {
       return res.status(400).json({ error: 'Host kann nicht als Co-Host beitreten' });
+    }
+
+    try {
+      await assertFeatureEnabled(eventId, 'coHosts');
+    } catch (err: any) {
+      if (err.code === 'FEATURE_NOT_AVAILABLE') {
+        return res.status(403).json({ error: err.message, details: err.details });
+      }
+      throw err;
+    }
+
+    const currentCount = await prisma.eventMember.count({ where: { eventId } });
+    try {
+      await assertWithinLimit(eventId, 'maxCoHosts', currentCount);
+    } catch (err: any) {
+      if (err.code === 'LIMIT_REACHED') {
+        return res.status(403).json({ error: err.message, details: err.details });
+      }
+      throw err;
     }
 
     await prisma.eventMember.upsert({

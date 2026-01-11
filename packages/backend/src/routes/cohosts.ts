@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, hasEventManageAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { assertFeatureEnabled, assertWithinLimit } from '../services/featureGate';
 
 const router = Router();
 
@@ -156,6 +157,25 @@ router.post('/:eventId/cohosts', authMiddleware, async (req: AuthRequest, res: R
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
+    try {
+      await assertFeatureEnabled(eventId, 'coHosts');
+    } catch (err: any) {
+      if (err.code === 'FEATURE_NOT_AVAILABLE') {
+        return res.status(403).json({ error: err.message, details: err.details });
+      }
+      throw err;
+    }
+
+    const currentCount = await prisma.eventMember.count({ where: { eventId } });
+    try {
+      await assertWithinLimit(eventId, 'maxCoHosts', currentCount);
+    } catch (err: any) {
+      if (err.code === 'LIMIT_REACHED') {
+        return res.status(403).json({ error: err.message, details: err.details });
+      }
+      throw err;
+    }
+
     if (event.hostId === userId) {
       return res.status(400).json({ error: 'Host kann nicht als Co-Host hinzugefügt werden' });
     }
@@ -264,6 +284,15 @@ router.post('/:eventId/cohosts/invite-token', authMiddleware, async (req: AuthRe
 
     if (!event || event.deletedAt || event.isActive === false) {
       return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    try {
+      await assertFeatureEnabled(eventId, 'coHosts');
+    } catch (err: any) {
+      if (err.code === 'FEATURE_NOT_AVAILABLE') {
+        return res.status(403).json({ error: err.message, details: err.details });
+      }
+      throw err;
     }
 
     const secret = getCohostInviteJwtSecret();
