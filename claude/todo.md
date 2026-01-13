@@ -38,10 +38,7 @@
 
 - [x] ✅ **Name-Persist in LocalStorage** - Erledigt 2026-01-13
 
-- [ ] ⚠️ **Upload-ETA anzeigen** (1 Stunde)
-  - Progress-Component erweitern
-  - ETA-Berechnung: `(100 - progress) / progress * elapsedTime`
-  - **Impact: Besseres User-Feedback bei langen Uploads!**
+- [x] ✅ **Upload-ETA anzeigen** - Erledigt 2026-01-13
 
 - [ ] ⚠️ **Offline-Queue UI** (3 Stunden)
   - Persistent Badge mit Queue-Count
