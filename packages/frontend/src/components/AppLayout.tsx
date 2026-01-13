@@ -64,26 +64,32 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
             {/* Left: Back Button */}
             <div className="flex items-center gap-4 min-w-0">
               {showBackButton && backUrl ? (
-                <Link href={backUrl}>
-                  <IconButton
-                    icon={<ArrowLeft className="w-5 h-5" />}
-                    variant="ghost"
-                    size="md"
-                    aria-label="Zurück"
-                    title="Zurück"
-                  />
-                </Link>
+                <IconButton
+                  asChild
+                  icon={<ArrowLeft className="w-5 h-5" />}
+                  variant="ghost"
+                  size="md"
+                  aria-label="Zurück"
+                  title="Zurück"
+                >
+                  <Link href={backUrl}>
+                    <ArrowLeft className="w-5 h-5" />
+                  </Link>
+                </IconButton>
               ) : (
                 pathname !== '/dashboard' && (
-                  <Link href="/dashboard">
-                    <IconButton
-                      icon={<Home className="w-5 h-5" />}
-                      variant="ghost"
-                      size="md"
-                      aria-label="Zur Übersicht"
-                      title="Zur Übersicht"
-                    />
-                  </Link>
+                  <IconButton
+                    asChild
+                    icon={<Home className="w-5 h-5" />}
+                    variant="ghost"
+                    size="md"
+                    aria-label="Zur Übersicht"
+                    title="Zur Übersicht"
+                  >
+                    <Link href="/dashboard">
+                      <Home className="w-5 h-5" />
+                    </Link>
+                  </IconButton>
                 )
               )}
               

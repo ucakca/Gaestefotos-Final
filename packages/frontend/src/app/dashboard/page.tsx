@@ -110,7 +110,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 sm:justify-end">
                 <GuidedTour tourId="host_dashboard" steps={tourSteps} autoStart />
-                <Button asChild variant="secondary" size="sm" className="w-full sm:w-auto">
+                <Button asChild variant="secondary" size="sm" className="hidden sm:inline-flex">
                   <a href="/faq" target="_blank" rel="noreferrer" data-tour="host-dashboard-faq">
                     FAQ
                   </a>
@@ -131,7 +131,7 @@ export default function DashboardPage() {
                   onClick={logout}
                   variant="secondary"
                   size="sm"
-                  className="w-full sm:w-auto"
+                  className="hidden sm:inline-flex"
                 >
                   Abmelden
                 </Button>
