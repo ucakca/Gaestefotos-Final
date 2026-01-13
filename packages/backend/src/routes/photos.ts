@@ -560,6 +560,9 @@ router.post(
         },
         include: {
           event: true,
+          category: {
+            select: { id: true, name: true },
+          },
         },
       });
 
@@ -608,6 +611,9 @@ router.post(
 
       archive.pipe(res);
 
+      // Track photo index per category for sequential naming
+      const categoryCounters: Record<string, number> = {};
+      
       for (const photo of photos) {
         if (!photo.storagePath) continue;
         try {
@@ -615,7 +621,16 @@ router.post(
           const downloadPath = photo.storagePathOriginal || photo.storagePath;
           const fileBuffer = await storageService.getFile(downloadPath);
           const extension = downloadPath.split('.').pop() || 'jpg';
-          archive.append(fileBuffer, { name: `${photo.id}.${extension}` });
+          
+          // Organize files in category folders
+          const categoryName = (photo as any).category?.name || 'Allgemein';
+          const safeCategoryName = categoryName.replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '').trim() || 'Allgemein';
+          
+          // Increment counter for this category
+          categoryCounters[safeCategoryName] = (categoryCounters[safeCategoryName] || 0) + 1;
+          const photoIndex = categoryCounters[safeCategoryName].toString().padStart(3, '0');
+          
+          archive.append(fileBuffer, { name: `${safeCategoryName}/IMG_${photoIndex}.${extension}` });
         } catch (err) {
           console.warn(`Fehler beim Hinzufügen von Foto ${photo.id}:`, err);
         }
