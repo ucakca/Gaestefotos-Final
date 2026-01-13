@@ -140,8 +140,21 @@ export default function UploadButton({
 }: UploadButtonProps) {
   const [showModal, setShowModal] = useState(false);
   const [files, setFiles] = useState<UploadFile[]>([]);
-  const [uploaderName, setUploaderName] = useState('');
+  const [uploaderName, setUploaderName] = useState(() => {
+    // Load saved name from localStorage on init
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('guestUploaderName') || '';
+    }
+    return '';
+  });
   const [uploaderNameError, setUploaderNameError] = useState<string | null>(null);
+
+  // Persist name to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && uploaderName.trim()) {
+      localStorage.setItem('guestUploaderName', uploaderName.trim());
+    }
+  }, [uploaderName]);
   const [queueNotice, setQueueNotice] = useState<string | null>(null);
   const [pendingQueueCount, setPendingQueueCount] = useState<number>(0);
 

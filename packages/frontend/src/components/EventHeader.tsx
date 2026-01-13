@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Event as EventType } from '@gaestefotos/shared';
 import { Camera, Plus, User, Video, X } from 'lucide-react';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import api from '@/lib/api';
 import { getDesignPreset } from '@/lib/designPresets';
 import { IconButton } from '@/components/ui/IconButton';
@@ -51,8 +51,20 @@ export default function EventHeader({
 
   const [showStoryModal, setShowStoryModal] = useState(false);
   const [showStoryDisabled, setShowStoryDisabled] = useState(false);
-  const [storyUploaderName, setStoryUploaderName] = useState('');
+  const [storyUploaderName, setStoryUploaderName] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('guestUploaderName') || '';
+    }
+    return '';
+  });
   const [storyUploadError, setStoryUploadError] = useState<string | null>(null);
+
+  // Persist story uploader name to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined' && storyUploaderName.trim()) {
+      localStorage.setItem('guestUploaderName', storyUploaderName.trim());
+    }
+  }, [storyUploaderName]);
   const [storyUploading, setStoryUploading] = useState(false);
   
   // Get profile image - use storagePath if available, otherwise use direct URL

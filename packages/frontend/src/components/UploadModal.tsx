@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Upload } from 'lucide-react';
 import {
   Dialog,
@@ -36,8 +36,20 @@ export default function UploadModal({
 }: UploadModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [uploaderName, setUploaderName] = useState('');
+  const [uploaderName, setUploaderName] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('guestUploaderName') || '';
+    }
+    return '';
+  });
   const [showNameField, setShowNameField] = useState(false);
+
+  // Persist uploader name to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined' && uploaderName.trim()) {
+      localStorage.setItem('guestUploaderName', uploaderName.trim());
+    }
+  }, [uploaderName]);
   const [alsoInGuestbook, setAlsoInGuestbook] = useState(false);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
