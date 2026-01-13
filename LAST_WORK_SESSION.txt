@@ -1,6 +1,6 @@
-13.01.2026 16:51
+13.01.2026 16:55
 
-Session Summary (14 Items erledigt):
+Session Summary (15 Items erledigt):
 1. Bug #8 gefixt: Design-Bilder laden bei deaktivierten Events
 2. Bug #1 gefixt: Zurück-Button Mobile (asChild-Pattern)
 3. Name-Persist in LocalStorage: Gast muss Namen nicht neu eingeben
@@ -13,8 +13,9 @@ Session Summary (14 Items erledigt):
 10. SeaweedFS Replication: Als "Blocked" markiert (erfordert 2. Volume-Server)
 11. Host-Download trotz Storage-Lock: Hosts können auch nach Ablauf downloaden
 12. Skeleton UI Components: Animierte Lade-Skelette statt "Loading..." Text
-13. TODO-Liste bereinigt und aktualisiert
-14. Backend + Frontend deployed (18 Commits heute)
+13. Email-Benachrichtigung: Host erhält Email wenn Gast Foto hochlädt
+14. TODO-Liste bereinigt und aktualisiert
+15. Backend + Frontend deployed (20 Commits heute)
 
 Commits heute:
 - e7a6178: fix: Bug #8 design images, Bug #1 back button
@@ -34,3 +35,6 @@ Commits heute:
 - f29277d: feat: allow host downloads even after storage lock
 - 7a6981d: docs: update TODO list (Host-Download completed)
 - 5ebb8e5: feat: add Skeleton UI components for better loading UX
+- d661928: docs: update session summary and TODO list
+- 3e1caf5: feat: send email notification to host when guest uploads photo
+- d7049a2: docs: update TODO list (Email notification completed)
