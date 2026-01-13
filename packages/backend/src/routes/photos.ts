@@ -11,6 +11,7 @@ import { assertUploadWithinLimit } from '../services/packageLimits';
 import { denyByVisibility, isWithinEventDateWindow } from '../services/eventPolicy';
 import { getEventStorageEndsAt } from '../services/storagePolicy';
 import { extractCapturedAtFromImage } from '../services/uploadDatePolicy';
+import { emailService } from '../services/email';
 import archiver from 'archiver';
 
 // Sharp is optional; if missing we fall back to a tiny placeholder for blurred previews.
@@ -302,6 +303,26 @@ router.post(
       io.to(`event:${eventId}`).emit('photo_uploaded', {
         photo: serializeBigInt(photoWithProxyUrl),
       });
+
+      // Send upload notification to host (async, non-blocking)
+      const uploaderName = (req.body?.uploaderName || 'Ein Gast').trim();
+      if (!isManager && uploaderName) {
+        prisma.event.findUnique({
+          where: { id: eventId },
+          include: { host: { select: { email: true, name: true } } },
+        }).then((eventWithHost) => {
+          if (eventWithHost?.host?.email) {
+            emailService.sendUploadNotification({
+              to: eventWithHost.host.email,
+              hostName: eventWithHost.host.name || 'Host',
+              eventTitle: eventWithHost.title,
+              eventId,
+              uploaderName,
+              photoCount: 1,
+            }).catch((err) => console.warn('Upload notification failed:', err));
+          }
+        }).catch(() => {});
+      }
 
       res.status(201).json({ photo: serializeBigInt(photoWithProxyUrl) });
     } catch (error) {

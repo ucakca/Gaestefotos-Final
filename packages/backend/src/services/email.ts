@@ -335,6 +335,84 @@ Dashboard: ${dashboardUrl}
     });
   }
 
+  async sendUploadNotification(options: {
+    to: string;
+    hostName: string;
+    eventTitle: string;
+    eventId: string;
+    uploaderName: string;
+    photoCount: number;
+  }) {
+    if (!this.transporter || !this.config) {
+      console.warn('Email-Service nicht konfiguriert - Upload-Benachrichtigung übersprungen');
+      return;
+    }
+
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const photosUrl = `${baseUrl}/events/${options.eventId}/photos`;
+
+    const safeEventTitle = this.escapeHtml(options.eventTitle);
+    const safeHostName = this.escapeHtml(options.hostName);
+    const safeUploaderName = this.escapeHtml(options.uploaderName);
+    const safePhotosUrl = this.escapeHtml(photosUrl);
+
+    const photoText = options.photoCount === 1 ? 'ein neues Foto' : `${options.photoCount} neue Fotos`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #295B4D; color: white; padding: 20px; text-align: center; }
+            .content { background-color: #F9F5F2; padding: 30px; }
+            .button { display: inline-block; padding: 12px 24px; background-color: #EAA48F; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>📸 Neues Foto!</h1>
+            </div>
+            <div class="content">
+              <p>Hallo ${safeHostName},</p>
+              <p><strong>${safeUploaderName}</strong> hat ${photoText} zu deinem Event <strong>${safeEventTitle}</strong> hochgeladen.</p>
+              <p style="text-align: center;">
+                <a href="${safePhotosUrl}" class="button">Fotos ansehen</a>
+              </p>
+            </div>
+            <div class="footer">
+              <p>Du erhältst diese Benachrichtigung, weil Gäste Fotos zu deinem Event hochgeladen haben.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const text = `
+Hallo ${options.hostName},
+
+${options.uploaderName} hat ${photoText} zu deinem Event "${options.eventTitle}" hochgeladen.
+
+Fotos ansehen: ${photosUrl}
+    `;
+
+    try {
+      await this.transporter.sendMail({
+        from: this.config.from,
+        to: options.to,
+        subject: `📸 Neues Foto von ${options.uploaderName} - ${options.eventTitle}`,
+        html,
+        text,
+      });
+    } catch (err) {
+      console.error('Upload-Benachrichtigung fehlgeschlagen:', err);
+    }
+  }
+
   async testConnection(): Promise<boolean> {
     if (!this.transporter) {
       return false;
