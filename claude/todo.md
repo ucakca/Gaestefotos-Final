@@ -89,9 +89,7 @@
   - Statt "Loading..." Text
   - Animated Skeletons für Grid, Modal, etc.
 
-- [ ] 📌 **Host-Download trotz Storage-Lock** (1 Stunde)
-  - Host/Admin sollten IMMER downloaden können
-  - Auch nach Package-Ablauf!
+- [x] ✅ **Host-Download trotz Storage-Lock** - Erledigt 2026-01-13
 
 **⏱ Gesamtaufwand OPTIONAL: ~40 Stunden**
 
