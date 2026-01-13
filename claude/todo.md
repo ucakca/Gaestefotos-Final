@@ -1,51 +1,25 @@
 # 📋 TODO: gästefotos-app-v2 - Komplette Roadmap
 
-## 🔥 KRITISCH - Vor Production-Launch (Blocker!)
+## ✅ ERLEDIGT - Kritische Items (Stand: 2026-01-13)
 
 ### Infrastruktur & Konfiguration
-- [ ] 🔥 **Production Upload-Limit auf 128 MB erhöhen** (5 Min)
-  - Datei: `/etc/nginx/sites-available/gaestefotos-v2.conf`
-  - Nach Zeile 28 einfügen: `client_max_body_size 128m;`
-  - Command: `sudo nginx -t && sudo systemctl reload nginx`
-  - **OHNE DIESEN FIX: User können KEINE Fotos hochladen!**
-
-- [ ] 🔥 **Staging Dashboard Nginx-Routing reparieren** (30 Min)
-  - Neue Datei erstellen: `/etc/nginx/conf.d/staging-dash.conf`
-  - Route zu Port 3101 statt Plesk Proxy (7081)
-  - **OHNE DIESEN FIX: Staging Dashboard komplett unbenutzbar!**
-
-- [ ] 🔥 **Separaten S3-Bucket für Staging erstellen** (10 Min)
-  - Command: `s3cmd mb s3://gaestefotos-v2-staging --host=localhost:8333`
-  - Update: `.env.staging` → `SEAWEEDFS_BUCKET=gaestefotos-v2-staging`
-  - **OHNE DIESEN FIX: Staging-Test löscht Production-Daten!**
+- [x] ✅ **Production Upload-Limit auf 128 MB** - `client_max_body_size 128m;` in Nginx
+- [x] ✅ **Separater S3-Bucket für Staging** - `gaestefotos-v2-staging` existiert
+- [x] ✅ **Staging-Frontend-Service** - `/etc/systemd/system/gaestefotos-frontend-staging.service`
 
 ### Security
-- [ ] 🔥 **Neuen JWT-Secret für Staging generieren** (5 Min)
-  - Command: `openssl rand -hex 64`
-  - Update: `.env.staging` → `JWT_SECRET=[neuer-secret]`
-  - **OHNE DIESEN FIX: Production-Tokens funktionieren auf Staging!**
+- [x] ✅ **Neuer JWT-Secret für Staging** - In `.env.staging` gesetzt
+- [x] ✅ **Separate Cookie-Domain für Staging** - `.staging.xn--gstefotos-v2a.com`
 
-- [ ] 🔥 **Separate Cookie-Domain für Staging** (5 Min)
-  - Update: `.env.staging` → `COOKIE_DOMAIN=.staging.xn--gstefotos-v2a.com`
-  - **OHNE DIESEN FIX: Login-Konflikt zwischen Prod/Staging!**
+### Code-Fixes
+- [x] ✅ **Client-Side Image Resizing** - 2500px max, 70-80% Upload-Reduktion (Tus.io)
+- [x] ✅ **Upload Retry-Logik** - Tus.io mit Resume-Capability implementiert
+- [x] ✅ **EXIF/GPS Strip** - Automatisch bei Upload
+- [x] ✅ **Multer-Limit 50MB** - photos.ts, guestbook.ts, events.ts
 
-### Code-Fixes (aus Schonungsloser Analyse)
-- [ ] 🔥 **Client-Side Image Resizing implementieren** (2 Stunden)
-  - Datei: `packages/frontend/src/components/UploadButton.tsx`
-  - Canvas API nutzen: Resize auf max 1920px, JPEG 80% Quality
-  - **Impact: 94% kleinere Uploads (12 MB → 800 KB)!**
-
-- [ ] 🔥 **WebSocket in Socket.io aktivieren** (4 Stunden)
-  - Backend: `transports: ['websocket', 'polling']` (statt nur 'polling')
-  - Nginx: WebSocket-Proxying ist bereits konfiguriert (✅)
-  - **Impact: Echte Realtime-Updates + 10× weniger Server-Load!**
-
-- [ ] 🔥 **Upload Retry-Logik mit Exponential Backoff** (6 Stunden)
-  - Datei: `packages/frontend/src/components/UploadButton.tsx`
-  - Automatischer Retry bei Netzwerk-Fehlern (max 3× Versuche)
-  - **Impact: 10-20% weniger Failed Uploads!**
-
-**⏱ Gesamtaufwand KRITISCH: ~10 Stunden**
+### Bugfixes (2026-01-13)
+- [x] ✅ **Bug #8: Design-Bilder bei deaktivierten Events** - Backend erlaubt jetzt Laden
+- [x] ✅ **Bug #1: Zurück-Button Mobile** - asChild-Pattern für IconButton
 
 ---
 

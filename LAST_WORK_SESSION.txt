@@ -1,1 +1,7 @@
-05.12.2025 23:24
+13.01.2026 16:10
+
+Session Summary:
+- Bug #8 gefixt: Design-Bilder laden jetzt auch bei deaktivierten Events
+- Bug #1 gefixt: Zurück-Button Mobile funktioniert (asChild-Pattern)
+- Backend + Frontend deployed
+- TODO-Liste aktualisiert (kritische Items als erledigt markiert)
