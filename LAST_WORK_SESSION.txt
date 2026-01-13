@@ -1,9 +1,25 @@
-13.01.2026 16:20
+13.01.2026 16:28
 
-Session Summary:
-- Bug #8 gefixt: Design-Bilder laden jetzt auch bei deaktivierten Events
-- Bug #1 gefixt: Zurück-Button Mobile funktioniert (asChild-Pattern)
-- Name-Persist in LocalStorage: Gast muss Namen nicht bei jedem Upload neu eingeben
-- WebSocket Transport aktiviert: Frontend nutzt jetzt WebSocket statt nur Polling
-- Realtime-Updates: useRealtimePhotos Hook - Dashboard/Photos aktualisieren automatisch
-- Backend + Frontend deployed (4 Commits heute)
+Session Summary (10 Items erledigt):
+1. Bug #8 gefixt: Design-Bilder laden bei deaktivierten Events
+2. Bug #1 gefixt: Zurück-Button Mobile (asChild-Pattern)
+3. Name-Persist in LocalStorage: Gast muss Namen nicht neu eingeben
+4. WebSocket Transport: Frontend nutzt jetzt WebSocket statt nur Polling
+5. Realtime-Updates: useRealtimePhotos Hook für Dashboard/Photos
+6. Upload-ETA: Zeigt geschätzte Restzeit beim Upload
+7. Admin Dashboard: Nutzt jetzt localhost API für reduzierte Latenz
+8. Offline-Queue UI: Badge, Liste und Manual Retry für ausstehende Uploads
+9. TODO-Liste bereinigt und aktualisiert
+10. Backend + Frontend deployed (10 Commits heute)
+
+Commits heute:
+- e7a6178: fix: Bug #8 design images, Bug #1 back button
+- 92004bb: docs: update TODO list
+- dd02ba1: feat: persist guest uploader name in localStorage
+- 16228f7: perf: enable WebSocket transport in frontend
+- aecbb3f: feat: add realtime photo updates via Socket.io
+- 5553c7a: docs: update TODO list and work session summary
+- e122719: feat: add upload ETA display
+- 9b31bb1: docs: update TODO list (Upload-ETA completed)
+- c375966: perf: admin dashboard uses localhost API
+- 8db03bd: feat: add offline queue UI

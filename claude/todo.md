@@ -37,20 +37,14 @@
 
 - [x] ✅ **Upload-ETA anzeigen** - Erledigt 2026-01-13
 
-- [ ] ⚠️ **Offline-Queue UI** (3 Stunden)
-  - Persistent Badge mit Queue-Count
-  - Liste der wartenden Uploads + Manual Retry
-  - **Impact: User sehen ausstehende Uploads!**
+- [x] ✅ **Offline-Queue UI** - Erledigt 2026-01-13 (OfflineQueueIndicator.tsx)
 
 ### Infrastruktur
 - [ ] ⚠️ **SeaweedFS Replication aktivieren** (2 Stunden)
   - Command: `weed master -mdir=./mdir -defaultReplication=001`
   - **Impact: Backup! Wenn Server crasht, bleiben Fotos erhalten!**
 
-- [ ] ⚠️ **Multer File Size Limit auf 50 MB** (5 Min)
-  - Datei: `packages/backend/src/routes/photos.ts`
-  - Zeile 58: `fileSize: 50 * 1024 * 1024`
-  - **Impact: Moderne Smartphones (12-15 MB) werden akzeptiert!**
+- [x] ✅ **Multer File Size Limit auf 50 MB** - Bereits erledigt (photos.ts:58)
 
 - [ ] ⚠️ **Sharp-Fallback crashen lassen** (5 Min)
   - Datei: `packages/backend/src/services/imageProcessor.ts`
