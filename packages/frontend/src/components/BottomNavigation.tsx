@@ -491,8 +491,19 @@ export default function BottomNavigation({
               </div>
               <div>
                 <p className="font-semibold text-app-fg mb-1">Betrieb & Hosting</p>
+                <p className="text-xs mb-2">
+                  Diese Plattform wird betrieben von <strong>Gästefotos</strong>.
+                </p>
                 <p className="text-xs">
-                  Diese Plattform wird betrieben von Gästefotos. Bei Fragen oder technischen Problemen kontaktieren Sie bitte den Support.
+                  <strong>Kontakt & Support:</strong><br/>
+                  E-Mail: support@gästefotos.com<br/>
+                  Website: gästefotos.com
+                </p>
+                <p className="text-xs mt-2">
+                  <strong>Technische Infrastruktur:</strong><br/>
+                  • Sichere SSL-verschlüsselte Datenübertragung<br/>
+                  • DSGVO-konform in Deutschland gehostet<br/>
+                  • Automatische Backups & 99.9% Uptime
                 </p>
               </div>
               <div>
@@ -501,7 +512,8 @@ export default function BottomNavigation({
                   • <strong>Fotos hochladen:</strong> Nutzen Sie den Kamera-Button<br/>
                   • <strong>Alben:</strong> Filtern Sie Fotos nach Kategorien<br/>
                   • <strong>Challenges:</strong> Nehmen Sie an Foto-Challenges teil<br/>
-                  • <strong>Gästebuch:</strong> Hinterlassen Sie Nachrichten
+                  • <strong>Gästebuch:</strong> Hinterlassen Sie Nachrichten<br/>
+                  • <strong>Stories:</strong> Teilen Sie Momente in Echtzeit
                 </p>
               </div>
             </div>

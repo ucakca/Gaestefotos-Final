@@ -118,10 +118,10 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
             </div>
 
             {/* Right: User Actions - Only on Desktop */}
-            <div className="ml-auto hidden md:flex items-center gap-2">
+            <div className="ml-auto hidden lg:flex items-center gap-2">
               {user && (
                 <div className="flex items-center gap-2 border-l border-app-border pl-3">
-                  <div className="hidden sm:block text-right">
+                  <div className="text-right">
                     <p className="text-xs text-app-muted">Angemeldet als</p>
                     <p className="text-sm font-medium text-app-fg">{user.name || user.email}</p>
                   </div>

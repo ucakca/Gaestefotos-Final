@@ -662,6 +662,16 @@ export default function EventDashboardPage() {
 
           <div className="flex flex-wrap items-center gap-2">
             <GuidedTour tourId={`host_event_dashboard:${eventId}`} steps={tourSteps} autoStart />
+            <Button asChild variant="primary" size="sm" className="hidden sm:inline-flex" data-tour="host-event-dashboard-media">
+              <Link href={`/events/${eventId}/photos`}>
+                Fotos
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" size="sm" className="hidden sm:inline-flex">
+              <Link href={`/events/${eventId}/videos`}>
+                Videos
+              </Link>
+            </Button>
             <Button
               type="button"
               variant="secondary"
