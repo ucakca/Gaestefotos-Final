@@ -64,9 +64,7 @@
   - WAF, DDoS-Protection, CDN
   - Realistische Tests (aktuell: nur Production hat Cloudflare)
 
-- [ ] 📌 **Zwei Staging-Umgebungen** (12 Stunden)
-  - `staging-dev.app` → Lockere Limits für Entwicklung
-  - `staging-prod.app` → 1:1-Clone von Production
+- [x] ✅ **Zwei Staging-Umgebungen** - Bereits vorhanden (staging.app.gästefotos.com + staging.dash.gästefotos.com)
 
 ### Features
 - [x] ✅ **Gast-Analytics für Host** - API erledigt 2026-01-13 (Frontend-Page ausstehend)
