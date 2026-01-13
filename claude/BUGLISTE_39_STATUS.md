@@ -42,8 +42,8 @@
 | 28 | Mystery Mode Erklärung | ✅ | HelpTooltip existiert |
 | 29 | Video-Auswahlfunktion | ✅ | Bereits vollständig: selectedVideos, Bulk-Actions, Filter |
 | 30 | Gästebuch Host-Logik | ✅ | Session 2: Entry-Form nur für Gäste, Host nur Host-Message |
-| 31 | Design Presets verbessern | 📋 | Custom Preset Feature |
-| 32 | Farben-UI unübersichtlich | 📋 | UX-Redesign |
+| 31 | Design Presets verbessern | ✅ | Opus: 11 Presets mit Kategorien + Emojis |
+| 32 | Farben-UI unübersichtlich | ✅ | Opus: Presets nach Event-Typ sortiert |
 | 33 | Titelbild auf Gästeseite | ❓ | Braucht Reproduktionsschritte vom User |
 | 34 | "++story" Text | ✅ | Opus: Filter für ungültige Namen implementiert |
 | 35 | Alben abgeschnitten/ohne Icon | ✅ | Opus: getIcon + dynamische Icons in BottomNavigation |
@@ -58,8 +58,8 @@
 
 | Kategorie | Anzahl | Prozent |
 |-----------|--------|---------|
-| ✅ Erledigt | 33 | 85% |
-| 📋 Feature-Requests | 3 | 8% |
+| ✅ Erledigt | 35 | 90% |
+| 📋 Feature-Requests | 1 | 3% |
 | ❓ Klärung nötig | 3 | 8% |
 | **GESAMT** | **39** | **100%** |
 
