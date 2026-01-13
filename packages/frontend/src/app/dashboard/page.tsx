@@ -123,7 +123,7 @@ export default function DashboardPage() {
                   Uploads prüfen
                 </Link>
                 <Button asChild variant="primary" size="sm" className="w-full sm:w-auto px-4 py-2 rounded-md font-medium">
-                  <Link href="/events/new" data-tour="host-dashboard-new-event">
+                  <Link href="/create-event" data-tour="host-dashboard-new-event">
                     Neues Event
                   </Link>
                 </Button>
@@ -135,45 +135,6 @@ export default function DashboardPage() {
                 >
                   Abmelden
                 </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile Sticky Actions */}
-          <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-app-border bg-app-card/90 backdrop-blur sm:hidden pb-[env(safe-area-inset-bottom)]">
-            <div className="mx-auto max-w-7xl px-4">
-              <div className="grid grid-cols-4 gap-2 py-2">
-                <a
-                  href="/faq"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-app-fg hover:bg-app-bg"
-                >
-                  <HelpCircle className="h-5 w-5" />
-                  <span>FAQ</span>
-                </a>
-                <Link
-                  href="/moderation"
-                  className="flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-app-fg hover:bg-app-bg"
-                >
-                  <ClipboardCheck className="h-5 w-5" />
-                  <span>Uploads</span>
-                </Link>
-                <Link
-                  href="/events/new"
-                  className="flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-app-fg hover:bg-app-bg"
-                >
-                  <PlusSquare className="h-5 w-5" />
-                  <span>Neu</span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={logout}
-                  className="flex flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium text-app-fg hover:bg-app-bg"
-                >
-                  <LogOut className="h-5 w-5" />
-                  <span>Logout</span>
-                </button>
               </div>
             </div>
           </div>
@@ -192,35 +153,71 @@ export default function DashboardPage() {
             >
               <p className="mb-4 text-app-muted">Noch keine Events vorhanden</p>
               <Button asChild variant="primary" size="sm" className="px-4 py-2 rounded-md font-medium inline-block">
-                <Link href="/events/new">Erstelle dein erstes Event</Link>
+                <Link href="/create-event">Erstelle dein erstes Event</Link>
               </Button>
             </motion.div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.isArray(events) && events.map((event, index) => (
-                <motion.div
-                  key={event.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Link
-                    href={`/events/${event.id}/dashboard`}
-                    data-tour={index === 0 ? 'host-dashboard-event-card' : undefined}
-                    className="bg-app-card rounded-lg border border-app-border shadow-sm p-6 hover:shadow-lg transition-all block"
+              {Array.isArray(events) && events.map((event, index) => {
+                const designConfig = (event.designConfig as any) || {};
+                const profileImageStoragePath = designConfig.profileImageStoragePath;
+                const coverImageStoragePath = designConfig.coverImageStoragePath;
+                const profileImage = profileImageStoragePath 
+                  ? `/api/events/${event.id}/design-image/profile/${encodeURIComponent(profileImageStoragePath)}`
+                  : designConfig.profileImage;
+                const coverImage = coverImageStoragePath
+                  ? `/api/events/${event.id}/design-image/cover/${encodeURIComponent(coverImageStoragePath)}`
+                  : designConfig.coverImage;
+                
+                return (
+                  <motion.div
+                    key={event.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
                   >
-                    <h2 className="text-xl font-semibold mb-2 text-app-fg">
-                      {event.title}
-                    </h2>
-                    <p className="text-sm mb-4 text-app-muted">
-                      Slug: {event.slug}
-                    </p>
-                    <div className="text-sm text-app-muted">
-                      Erstellt: {new Date(event.createdAt).toLocaleDateString('de-DE')}
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
+                    <Link
+                      href={`/events/${event.id}/dashboard`}
+                      data-tour={index === 0 ? 'host-dashboard-event-card' : undefined}
+                      className="bg-app-card rounded-lg border border-app-border shadow-sm overflow-hidden hover:shadow-lg transition-all block"
+                    >
+                      {coverImage && (
+                        <div className="relative w-full h-32 bg-app-bg overflow-hidden">
+                          <img 
+                            src={coverImage} 
+                            alt={event.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="p-6">
+                        <div className="flex items-start gap-3 mb-3">
+                          {profileImage && (
+                            <div className="w-12 h-12 rounded-full overflow-hidden bg-app-bg border-2 border-app-border flex-shrink-0">
+                              <img 
+                                src={profileImage} 
+                                alt={event.title}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h2 className="text-xl font-semibold mb-1 text-app-fg truncate">
+                              {event.title}
+                            </h2>
+                            <p className="text-xs text-app-muted truncate">
+                              {event.slug}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-sm text-app-muted">
+                          Erstellt: {new Date(event.createdAt).toLocaleDateString('de-DE')}
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </div>

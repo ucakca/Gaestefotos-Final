@@ -93,6 +93,9 @@ const createEventSchema = z.object({
   dateTime: z.string().datetime().optional(),
   locationName: z.string().optional(),
   locationGoogleMapsLink: z.string().optional(),
+  password: z.string().min(4).optional(),
+  colorScheme: z.enum(['elegant', 'romantic', 'modern', 'colorful']).optional(),
+  visibilityMode: z.enum(['instant', 'mystery', 'moderated']).optional(),
   designConfig: z.record(z.any()).optional(),
   featuresConfig: z.record(z.any()).optional(),
   categories: z
@@ -649,10 +652,11 @@ router.get('/:eventId/design-image/:kind/:storagePath', async (req: AuthRequest,
 
     const event = await prisma.event.findUnique({
       where: { id: eventId },
-      select: { id: true, deletedAt: true, isActive: true },
+      select: { id: true, deletedAt: true },
     });
 
-    if (!event || event.deletedAt || event.isActive === false) {
+    // Allow loading design images even for inactive events (hosts need to see branding in dashboard)
+    if (!event || event.deletedAt) {
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
@@ -676,10 +680,11 @@ router.get('/:eventId/design/file/:storagePath', async (req: AuthRequest, res: R
 
     const event = await prisma.event.findUnique({
       where: { id: eventId },
-      select: { id: true, deletedAt: true, isActive: true },
+      select: { id: true, deletedAt: true },
     });
 
-    if (!event || event.deletedAt || event.isActive === false) {
+    // Allow loading design images even for inactive events (hosts need to see branding in dashboard)
+    if (!event || event.deletedAt) {
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
@@ -908,13 +913,37 @@ router.get('/:id/traffic', authMiddleware, async (req: AuthRequest, res: Respons
   }
 });
 
+// Create event (with Wizard support)
+const wizardUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype?.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Nur Bilddateien sind erlaubt'));
+    }
+  },
+});
+
 // Create event
 router.post(
   '/',
   authMiddleware,
+  wizardUpload.fields([{ name: 'coverImage', maxCount: 1 }, { name: 'profileImage', maxCount: 1 }]),
   async (req: AuthRequest, res: Response) => {
     try {
-      const data = createEventSchema.parse(req.body);
+      // Parse JSON fields from FormData
+      const bodyData = { ...req.body };
+      if (bodyData.albums) bodyData.albums = JSON.parse(bodyData.albums);
+      if (bodyData.challenges) bodyData.challenges = JSON.parse(bodyData.challenges);
+      if (bodyData.guestbook) bodyData.guestbook = JSON.parse(bodyData.guestbook);
+      if (bodyData.coHostEmails) bodyData.coHostEmails = JSON.parse(bodyData.coHostEmails);
+      if (bodyData.categories) bodyData.categories = JSON.parse(bodyData.categories);
+      if (bodyData.featuresConfig) bodyData.featuresConfig = JSON.parse(bodyData.featuresConfig);
+      if (bodyData.designConfig) bodyData.designConfig = JSON.parse(bodyData.designConfig);
+
+      const data = createEventSchema.parse(bodyData);
 
       // Free-event limit enforcement (default: 3) for hosts.
       // An event is considered "free" if it has no ACTIVE entitlement for the owner.
@@ -971,17 +1000,69 @@ router.post(
       }
       const slug = await getUniqueEventSlug(preferredSlug);
 
-      const categoriesCreate = (data.categories || [])
-        .filter((c) => (c.name || '').trim().length > 0)
-        .map((c, idx) => ({
-          name: c.name,
-          order: typeof c.order === 'number' ? c.order : idx,
-          isVisible: c.isVisible ?? true,
-          uploadLocked: c.uploadLocked ?? false,
-          uploadLockUntil: c.uploadLockUntil ? new Date(c.uploadLockUntil) : null,
-          dateTime: c.dateTime ? new Date(c.dateTime) : null,
-          locationName: c.locationName ?? null,
+      // Handle password hashing if provided
+      const bcrypt = require('bcryptjs');
+      let hashedPassword: string | undefined;
+      if (data.password) {
+        hashedPassword = await bcrypt.hash(data.password, 12);
+      }
+
+      // Handle image uploads
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+      let coverImageUrl: string | undefined;
+      let profileImageUrl: string | undefined;
+      let uploadedEventId: string | undefined;
+
+      // Albums from wizard (albums array with {id, label, icon, enabled, hostOnly})
+      const wizardAlbums = (bodyData.albums || []) as Array<{id: string; label: string; enabled: boolean; hostOnly: boolean}>;
+      let categoriesCreate: Array<any> = wizardAlbums
+        .filter((a) => a.enabled && a.label.trim().length > 0)
+        .map((a, idx) => ({
+          name: a.label,
+          order: idx,
+          isVisible: true,
+          uploadLocked: a.hostOnly,
+          uploadLockUntil: null,
+          dateTime: null,
+          locationName: null,
         }));
+
+      // Fallback to old categories format if no albums
+      if (categoriesCreate.length === 0 && data.categories) {
+        categoriesCreate = data.categories
+          .filter((c) => (c.name || '').trim().length > 0)
+          .map((c, idx) => ({
+            name: c.name,
+            order: typeof c.order === 'number' ? c.order : idx,
+            isVisible: c.isVisible ?? true,
+            uploadLocked: c.uploadLocked ?? false,
+            uploadLockUntil: c.uploadLockUntil ? new Date(c.uploadLockUntil) : null,
+            dateTime: c.dateTime ? new Date(c.dateTime) : null,
+            locationName: c.locationName ?? null,
+          }));
+      }
+
+      // Build featuresConfig from wizard
+      const wizardFeaturesConfig: any = {};
+      if (bodyData.visibilityMode) {
+        if (bodyData.visibilityMode === 'mystery') wizardFeaturesConfig.mysteryMode = true;
+        if (bodyData.visibilityMode === 'moderated') wizardFeaturesConfig.moderationRequired = true;
+      }
+      if (bodyData.guestbook?.enabled !== undefined) {
+        wizardFeaturesConfig.allowGuestbook = bodyData.guestbook.enabled;
+      }
+
+      const finalFeaturesConfig = normalizeEventFeaturesConfig({
+        ...DEFAULT_EVENT_FEATURES_CONFIG,
+        ...(data.featuresConfig || {}),
+        ...wizardFeaturesConfig,
+      });
+
+      // Build designConfig with colorScheme
+      const finalDesignConfig: any = data.designConfig || {};
+      if (data.colorScheme) {
+        finalDesignConfig.colorScheme = data.colorScheme;
+      }
 
       const event = await prisma.event.create({
         data: {
@@ -991,8 +1072,10 @@ router.post(
           dateTime: data.dateTime ? new Date(data.dateTime) : null,
           locationName: data.locationName,
           locationGoogleMapsLink: data.locationGoogleMapsLink,
-          designConfig: data.designConfig || {},
-          featuresConfig: normalizeEventFeaturesConfig(data.featuresConfig || DEFAULT_EVENT_FEATURES_CONFIG),
+          password: hashedPassword,
+          designConfig: finalDesignConfig,
+          featuresConfig: finalFeaturesConfig,
+          guestbookHostMessage: bodyData.guestbook?.message || null,
           ...(categoriesCreate.length > 0
             ? {
                 categories: {
@@ -1012,7 +1095,67 @@ router.post(
         },
       });
 
-      res.status(201).json({ event });
+      uploadedEventId = event.id;
+
+      // Upload images if provided
+      if (files?.coverImage?.[0]) {
+        const file = files.coverImage[0];
+        const storagePath = await storageService.uploadFile(event.id, file.originalname, file.buffer, file.mimetype);
+        coverImageUrl = `/api/events/${event.id}/design/file/${encodeURIComponent(storagePath)}`;
+        await prisma.event.update({
+          where: { id: event.id },
+          data: {
+            designConfig: {
+              ...(event.designConfig as any),
+              coverImage: coverImageUrl,
+              coverImageStoragePath: storagePath,
+            },
+          },
+        });
+      }
+
+      if (files?.profileImage?.[0]) {
+        const file = files.profileImage[0];
+        const storagePath = await storageService.uploadFile(event.id, file.originalname, file.buffer, file.mimetype);
+        profileImageUrl = `/api/events/${event.id}/design/file/${encodeURIComponent(storagePath)}`;
+        await prisma.event.update({
+          where: { id: event.id },
+          data: {
+            designConfig: {
+              ...(event.designConfig as any),
+              profileImage: profileImageUrl,
+              profileImageStoragePath: storagePath,
+            },
+          },
+        });
+      }
+
+      // Create challenges if provided
+      const wizardChallenges = (bodyData.challenges || []) as Array<{label: string; icon: string; enabled: boolean}>;
+      if (wizardChallenges.length > 0) {
+        const challengesToCreate = wizardChallenges
+          .filter((c) => c.enabled && c.label.trim().length > 0)
+          .map((c, idx) => ({
+            eventId: event.id,
+            title: c.label,
+            order: idx,
+            isActive: true,
+            isVisible: true,
+          }));
+        if (challengesToCreate.length > 0) {
+          await prisma.challenge.createMany({ data: challengesToCreate });
+        }
+      }
+
+      // Send co-host invitations if provided
+      const coHostEmails = (bodyData.coHostEmails || []) as string[];
+      if (coHostEmails.length > 0) {
+        // TODO: Implement co-host invitation email sending
+        // For now, just log it
+        logger.info('Co-host invitations to send', { eventId: event.id, emails: coHostEmails });
+      }
+
+      res.status(201).json({ event, id: event.id });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });

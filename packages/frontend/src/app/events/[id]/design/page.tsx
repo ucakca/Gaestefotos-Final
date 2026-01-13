@@ -514,7 +514,10 @@ export default function DesignLiveBuilderPage() {
                         key={p.key}
                         type="button"
                         variant="secondary"
-                        onClick={() => updateDesignConfig({ designPresetKey: p.key })}
+                        onClick={() => updateDesignConfig({ 
+                          designPresetKey: p.key,
+                          colors: p.colors
+                        })}
                         className={`h-auto w-full rounded-lg border p-2 text-left transition-colors ${
                           isSelected
                             ? 'border-app-fg bg-app-bg text-app-fg'
@@ -528,7 +531,7 @@ export default function DesignLiveBuilderPage() {
                   })}
                 </div>
                 <p className="mt-2 text-xs text-app-muted">
-                  Presets beeinflussen den Hero-Hintergrund und Akzente (z.B. Story-Ring) auf der Gast-Seite.
+                  Presets setzen automatisch passende Farben und beeinflussen Hero-Hintergrund sowie Akzente (z.B. Story-Ring).
                 </p>
               </div>
 

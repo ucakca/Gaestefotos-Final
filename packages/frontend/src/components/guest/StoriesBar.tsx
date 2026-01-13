@@ -35,7 +35,7 @@ export default function StoriesBar({ stories, onSelect }: { stories: Story[]; on
               </div>
             </div>
             <div className="text-[11px] font-medium text-app-fg max-w-[72px] truncate">
-              {(s?.photo?.uploadedBy as string) || (s?.video?.uploadedBy as string) || 'Story'}
+              {(s?.photo?.uploadedBy as string)?.trim() || (s?.video?.uploadedBy as string)?.trim() || 'Story'}
             </div>
           </Button>
         ))}

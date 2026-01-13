@@ -305,10 +305,9 @@ export default function ChallengeManagementPage() {
               </p>
             </div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                type="button"
+              <IconButton
                 onClick={() => {
-                  setShowAddForm(!showAddForm);
+                  setShowAddForm(true);
                   setEditingChallenge(null);
                   setFormData({
                     title: '',
@@ -319,13 +318,14 @@ export default function ChallengeManagementPage() {
                     categoryId: null,
                   });
                 }}
-                variant="primary"
+                icon={<Plus className="h-5 w-5" />}
+                variant="ghost"
+                size="lg"
                 disabled={!challengesEnabled}
-                className={challengesEnabled ? '' : 'bg-app-border text-app-muted cursor-not-allowed'}
-              >
-                <Plus className="h-5 w-5" />
-                Challenge hinzufügen
-              </Button>
+                aria-label="Challenge hinzufügen"
+                title="Challenge hinzufügen"
+                className={challengesEnabled ? 'bg-app-accent hover:bg-app-accent/90 text-app-bg' : 'bg-app-border text-app-muted cursor-not-allowed'}
+              />
             </motion.div>
           </div>
         </motion.div>

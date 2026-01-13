@@ -388,11 +388,9 @@ export default function CategoryManagementPage() {
               </p>
             </div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                type="button"
-                variant="primary"
+              <IconButton
                 onClick={() => {
-                  setShowAddForm(!showAddForm);
+                  setShowAddForm(true);
                   setEditingCategory(null);
                   setFormData({
                     name: '',
@@ -405,11 +403,13 @@ export default function CategoryManagementPage() {
                     endAt: '',
                   });
                 }}
-                className="gap-2"
-              >
-                <Plus className="w-5 h-5" />
-                Album hinzufügen
-              </Button>
+                icon={<Plus className="w-5 h-5" />}
+                variant="ghost"
+                size="lg"
+                aria-label="Album hinzufügen"
+                title="Album hinzufügen"
+                className="bg-app-accent hover:bg-app-accent/90 text-app-bg"
+              />
             </motion.div>
           </div>
         </motion.div>
@@ -724,7 +724,8 @@ export default function CategoryManagementPage() {
 
 
         {/* Categories List */}
-        <div className="overflow-hidden rounded-lg border border-app-border bg-app-card">
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-hidden rounded-lg border border-app-border bg-app-card">
           <table className="min-w-full divide-y divide-app-border">
             <thead className="bg-app-bg">
               <tr>
@@ -771,6 +772,14 @@ export default function CategoryManagementPage() {
                           }
                           className="text-app-muted hover:text-app-fg"
                         />
+                        {(() => {
+                          const IconComp = getLucideIconComponent(category.iconKey);
+                          return IconComp ? (
+                            <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-app-bg border border-app-border flex items-center justify-center">
+                              <IconComp className="w-4 h-4 text-app-fg" />
+                            </div>
+                          ) : null;
+                        })()}
                         <div>
                           <div className="text-sm font-medium text-app-fg">
                             {category.name}
@@ -846,6 +855,98 @@ export default function CategoryManagementPage() {
 
           {categories.length === 0 && (
             <div className="text-center py-12">
+              <p className="text-app-muted">Noch keine Alben hinzugefügt</p>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-3">
+          <AnimatePresence>
+            {categories.map((category, index) => (
+              <motion.div
+                key={category.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ delay: index * 0.05 }}
+                className="rounded-lg border border-app-border bg-app-card p-4"
+              >
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      {(() => {
+                        const IconComp = getLucideIconComponent(category.iconKey);
+                        return IconComp ? <IconComp className="w-4 h-4 text-app-muted flex-shrink-0" /> : null;
+                      })()}
+                      <h3 className="text-sm font-semibold text-app-fg truncate">{category.name}</h3>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-app-muted">
+                      <span>Reihenfolge: {category.order}</span>
+                      <span>•</span>
+                      <span>{category._count?.photos || 0} Fotos</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <IconButton
+                      icon={<Edit2 className="h-4 w-4" />}
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Album bearbeiten"
+                      title="Album bearbeiten"
+                      onClick={() => startEdit(category)}
+                      className="text-app-fg"
+                    />
+                    <IconButton
+                      icon={<Trash2 className="h-4 w-4" />}
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Album löschen"
+                      title="Album löschen"
+                      onClick={() => handleDelete(category.id)}
+                      className="text-status-danger"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {category.isVisible ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-app-bg text-app-fg border border-app-border">
+                      <Eye className="w-3 h-3" />
+                      Sichtbar
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-app-bg text-app-muted border border-app-border">
+                      <EyeOff className="w-3 h-3" />
+                      Versteckt
+                    </span>
+                  )}
+                  {category.uploadLocked && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-app-bg text-status-danger border border-app-border">
+                      <Lock className="w-3 h-3" />
+                      Upload gesperrt
+                    </span>
+                  )}
+                </div>
+
+                {expandedCategory === category.id && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-3 rounded-lg border border-app-border bg-app-bg p-3"
+                  >
+                    <p className="text-xs text-app-muted">
+                      💡 Tipp: Challenges können in der separaten Challenge-Verwaltung erstellt und diesem Album zugewiesen werden.
+                    </p>
+                  </motion.div>
+                )}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          {categories.length === 0 && (
+            <div className="text-center py-12 rounded-lg border border-app-border bg-app-card">
               <p className="text-app-muted">Noch keine Alben hinzugefügt</p>
             </div>
           )}

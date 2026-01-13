@@ -43,6 +43,7 @@ export interface EventFeaturesConfig {
   allowUploads: boolean;
   moderationRequired: boolean;
   allowDownloads: boolean;
+  mode?: 'STANDARD' | 'MODERATION' | 'COLLECT' | 'VIEW_ONLY';
 }
 
 export const DEFAULT_EVENT_FEATURES_CONFIG: EventFeaturesConfig = {
@@ -51,6 +52,7 @@ export const DEFAULT_EVENT_FEATURES_CONFIG: EventFeaturesConfig = {
   allowUploads: true,
   moderationRequired: false,
   allowDownloads: true,
+  mode: 'STANDARD',
 };
 
 export function normalizeEventFeaturesConfig(input: unknown): Record<string, any> {
@@ -68,6 +70,10 @@ export function normalizeEventFeaturesConfig(input: unknown): Record<string, any
         : DEFAULT_EVENT_FEATURES_CONFIG.moderationRequired,
     allowDownloads:
       typeof raw.allowDownloads === 'boolean' ? raw.allowDownloads : DEFAULT_EVENT_FEATURES_CONFIG.allowDownloads,
+    mode:
+      raw.mode === 'STANDARD' || raw.mode === 'MODERATION' || raw.mode === 'COLLECT' || raw.mode === 'VIEW_ONLY'
+        ? raw.mode
+        : DEFAULT_EVENT_FEATURES_CONFIG.mode,
   };
 }
 

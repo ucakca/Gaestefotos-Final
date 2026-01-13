@@ -157,3 +157,20 @@ select:focus {
 .react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item:hover {
   background-color: var(--app-accent);
 }
+
+/* Event Wizard - Shimmer Animation */
+@keyframes shimmer {
+  0% {
+    box-shadow: 0 0 0 0 rgba(234, 164, 143, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 10px rgba(234, 164, 143, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(234, 164, 143, 0);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 0.6s ease-out;
+}

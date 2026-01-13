@@ -63,6 +63,14 @@ export default function EventHeader({
         ? designConfig.profileImage 
         : null);
 
+  // Get cover image - use storagePath if available, otherwise use direct URL
+  const coverImageStoragePath = designConfig.coverImageStoragePath;
+  const coverImage = coverImageStoragePath
+    ? `/api/events/${event.id}/design-image/cover/${encodeURIComponent(coverImageStoragePath)}`
+    : (designConfig.coverImage && !designConfig.coverImage.startsWith('http://localhost:8001')
+        ? designConfig.coverImage
+        : null);
+
   const headerColor =
     designConfig?.colors?.primary ||
     designConfig.headerColor ||
@@ -203,12 +211,30 @@ export default function EventHeader({
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative"
-            style={heroGradient ? { backgroundImage: heroGradient } : { backgroundColor: headerColor }}
+            className="relative overflow-hidden"
+            style={
+              coverImage 
+                ? {} 
+                : heroGradient 
+                  ? { backgroundImage: heroGradient } 
+                  : { backgroundColor: headerColor }
+            }
           >
+            {coverImage && (
+              <>
+                <div className="absolute inset-0">
+                  <img 
+                    src={coverImage} 
+                    alt={event.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+              </>
+            )}
             <div className="absolute inset-0 opacity-25">
               <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-app-bg/40 blur-3xl" />
-              <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-app-fg/25 blur-3xl" />
+              <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-app-bg/40 blur-3xl" />
             </div>
 
             <div className="pt-safe-top" />

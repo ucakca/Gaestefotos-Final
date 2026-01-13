@@ -482,16 +482,28 @@ export default function BottomNavigation({
               <Share2 className="w-5 h-5" />
               <span className="font-medium text-app-fg">Event teilen</span>
             </MotionButton>
-            <div className="text-sm text-app-muted space-y-2">
-              <p>
-                <strong>Event teilen:</strong> Lade deine Freunde ein, die Fotos zu sehen!
-              </p>
-              <p>
-                <strong>Fotos hochladen:</strong> Nutze den Kamera-Button, um deine Fotos zu teilen.
-              </p>
-              <p>
-                <strong>Alben:</strong> Organisiere Fotos in verschiedenen Alben.
-              </p>
+            <div className="text-sm text-app-muted space-y-3">
+              <div>
+                <p className="font-semibold text-app-fg mb-1">Über diese App</p>
+                <p className="text-xs">
+                  Mit Gästefotos können Sie Fotos von Ihrem Event teilen und organisieren. Laden Sie Ihre Gäste ein, Fotos hochzuladen und gemeinsam Erinnerungen zu schaffen.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-app-fg mb-1">Betrieb & Hosting</p>
+                <p className="text-xs">
+                  Diese Plattform wird betrieben von Gästefotos. Bei Fragen oder technischen Problemen kontaktieren Sie bitte den Support.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-app-fg mb-1">So funktioniert's</p>
+                <p className="text-xs">
+                  • <strong>Fotos hochladen:</strong> Nutzen Sie den Kamera-Button<br/>
+                  • <strong>Alben:</strong> Filtern Sie Fotos nach Kategorien<br/>
+                  • <strong>Challenges:</strong> Nehmen Sie an Foto-Challenges teil<br/>
+                  • <strong>Gästebuch:</strong> Hinterlassen Sie Nachrichten
+                </p>
+              </div>
             </div>
           </div>
         </DialogContent>

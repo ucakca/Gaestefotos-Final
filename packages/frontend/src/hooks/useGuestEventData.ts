@@ -31,25 +31,39 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
   const withinUploadWindow = useMemo(() => {
     const e: any = event as any;
     if (!e?.dateTime) return true;
+    
+    // Check if uploadDatePolicy is configured in featuresConfig
+    const datePolicy = featuresConfig?.uploadDatePolicy;
+    if (!datePolicy?.enabled) return true; // No date restriction if not explicitly enabled
+    
     const eventTime = new Date(e.dateTime).getTime();
     if (!Number.isFinite(eventTime)) return true;
-    const windowMs = 24 * 60 * 60 * 1000;
+    
+    // Get tolerance from config (default: 7 days)
+    const toleranceDays = Number.isFinite(datePolicy.toleranceDays) ? datePolicy.toleranceDays : 7;
+    const windowMs = toleranceDays * 24 * 60 * 60 * 1000;
     const now = Date.now();
+    
     return now >= eventTime - windowMs && now <= eventTime + windowMs;
-  }, [event]);
+  }, [event, featuresConfig]);
 
   const uploadDisabled = useMemo(() => {
     if (!featuresConfig?.allowUploads) return true;
     if (isStorageLocked) return true;
-    return !withinUploadWindow;
+    if (!withinUploadWindow) return true;
+    return false;
   }, [featuresConfig?.allowUploads, isStorageLocked, withinUploadWindow]);
 
   const uploadDisabledReason = useMemo(() => {
     if (!featuresConfig?.allowUploads) return 'Uploads sind deaktiviert.';
     if (isStorageLocked) return 'Die Speicherzeit ist abgelaufen.';
-    if (!withinUploadWindow) return 'Uploads sind nur 1 Tag vor/nach dem Event möglich.';
+    if (!withinUploadWindow) {
+      const datePolicy = featuresConfig?.uploadDatePolicy;
+      const days = datePolicy?.toleranceDays ?? 7;
+      return `Uploads sind nur ${days} Tag${days !== 1 ? 'e' : ''} vor/nach dem Event möglich.`;
+    }
     return undefined;
-  }, [featuresConfig?.allowUploads, isStorageLocked, withinUploadWindow]);
+  }, [featuresConfig, isStorageLocked, withinUploadWindow]);
 
   const inviteTokenRef = useRef<string | null>(null);
   const [inviteExchangeBump, setInviteExchangeBump] = useState(0);

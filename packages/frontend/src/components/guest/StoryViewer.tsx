@@ -73,7 +73,7 @@ export default function StoryViewer({
 
               <div className="mt-3 flex items-center justify-between">
                 <div className="min-w-0 text-app-bg/90 text-sm font-medium truncate">
-                  {(selectedStory?.photo?.uploadedBy as string) || (selectedStory?.video?.uploadedBy as string) || 'Story'}
+                  {(selectedStory?.photo?.uploadedBy as string)?.trim() || (selectedStory?.video?.uploadedBy as string)?.trim() || 'Story'}
                 </div>
                 <DialogClose asChild>
                   <IconButton

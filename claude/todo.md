@@ -1,9 +1,262 @@
-## ToDo
-- ✅ Analyse Codebasis & Architektur (Backend/Frontend/Infra)
-- ✅ Feature-Inventar & UX-Flow dokumentieren
-- ✅ Performance/SSL/Datenbank-Konfiguration prüfen
-- ⏳ Staging-Parität herstellen (App-Frontend-Build + Ports/SSL prüfen)
-- [ ] Secrets-Trennung Production/Staging verifizieren & dokumentieren
-- [ ] Nginx/Proxy Ports vereinheitlichen (Backend 8002 vs 8001) inkl. Dash
-- [ ] SSL/Cert-Checkliste für alle 4 Domains (app/dash + staging) ergänzen
+# 📋 TODO: gästefotos-app-v2 - Komplette Roadmap
+
+## 🔥 KRITISCH - Vor Production-Launch (Blocker!)
+
+### Infrastruktur & Konfiguration
+- [ ] 🔥 **Production Upload-Limit auf 128 MB erhöhen** (5 Min)
+  - Datei: `/etc/nginx/sites-available/gaestefotos-v2.conf`
+  - Nach Zeile 28 einfügen: `client_max_body_size 128m;`
+  - Command: `sudo nginx -t && sudo systemctl reload nginx`
+  - **OHNE DIESEN FIX: User können KEINE Fotos hochladen!**
+
+- [ ] 🔥 **Staging Dashboard Nginx-Routing reparieren** (30 Min)
+  - Neue Datei erstellen: `/etc/nginx/conf.d/staging-dash.conf`
+  - Route zu Port 3101 statt Plesk Proxy (7081)
+  - **OHNE DIESEN FIX: Staging Dashboard komplett unbenutzbar!**
+
+- [ ] 🔥 **Separaten S3-Bucket für Staging erstellen** (10 Min)
+  - Command: `s3cmd mb s3://gaestefotos-v2-staging --host=localhost:8333`
+  - Update: `.env.staging` → `SEAWEEDFS_BUCKET=gaestefotos-v2-staging`
+  - **OHNE DIESEN FIX: Staging-Test löscht Production-Daten!**
+
+### Security
+- [ ] 🔥 **Neuen JWT-Secret für Staging generieren** (5 Min)
+  - Command: `openssl rand -hex 64`
+  - Update: `.env.staging` → `JWT_SECRET=[neuer-secret]`
+  - **OHNE DIESEN FIX: Production-Tokens funktionieren auf Staging!**
+
+- [ ] 🔥 **Separate Cookie-Domain für Staging** (5 Min)
+  - Update: `.env.staging` → `COOKIE_DOMAIN=.staging.xn--gstefotos-v2a.com`
+  - **OHNE DIESEN FIX: Login-Konflikt zwischen Prod/Staging!**
+
+### Code-Fixes (aus Schonungsloser Analyse)
+- [ ] 🔥 **Client-Side Image Resizing implementieren** (2 Stunden)
+  - Datei: `packages/frontend/src/components/UploadButton.tsx`
+  - Canvas API nutzen: Resize auf max 1920px, JPEG 80% Quality
+  - **Impact: 94% kleinere Uploads (12 MB → 800 KB)!**
+
+- [ ] 🔥 **WebSocket in Socket.io aktivieren** (4 Stunden)
+  - Backend: `transports: ['websocket', 'polling']` (statt nur 'polling')
+  - Nginx: WebSocket-Proxying ist bereits konfiguriert (✅)
+  - **Impact: Echte Realtime-Updates + 10× weniger Server-Load!**
+
+- [ ] 🔥 **Upload Retry-Logik mit Exponential Backoff** (6 Stunden)
+  - Datei: `packages/frontend/src/components/UploadButton.tsx`
+  - Automatischer Retry bei Netzwerk-Fehlern (max 3× Versuche)
+  - **Impact: 10-20% weniger Failed Uploads!**
+
+**⏱ Gesamtaufwand KRITISCH: ~10 Stunden**
+
+---
+
+## ⚠️ WICHTIG - Diese Woche (vor Load-Test!)
+
+### Performance & UX
+- [ ] ⚠️ **Dashboard Realtime-Updates via Socket.io** (4 Stunden)
+  - Socket.io-Client in Admin-Dashboard einbauen
+  - Event-Listener für `photo_uploaded`, `photo_approved`
+  - **Impact: Admin muss nicht mehr F5 drücken!**
+
+- [ ] ⚠️ **Dashboard API-Calls direkt zu localhost** (30 Min)
+  - Service: `gaestefotos-admin-dashboard.service`
+  - Ändern: `NEXT_PUBLIC_API_URL=http://localhost:8001`
+  - **Impact: -100ms Latenz, keine Cloudflare-Abhängigkeit!**
+
+- [ ] ⚠️ **Name-Persist in LocalStorage** (30 Min)
+  - Datei: `packages/frontend/src/components/UploadButton.tsx`
+  - `localStorage.setItem('guestUploaderName', name)`
+  - **Impact: Gast muss Namen nicht bei jedem Upload neu eingeben!**
+
+- [ ] ⚠️ **Upload-ETA anzeigen** (1 Stunde)
+  - Progress-Component erweitern
+  - ETA-Berechnung: `(100 - progress) / progress * elapsedTime`
+  - **Impact: Besseres User-Feedback bei langen Uploads!**
+
+- [ ] ⚠️ **Offline-Queue UI** (3 Stunden)
+  - Persistent Badge mit Queue-Count
+  - Liste der wartenden Uploads + Manual Retry
+  - **Impact: User sehen ausstehende Uploads!**
+
+### Infrastruktur
+- [ ] ⚠️ **SeaweedFS Replication aktivieren** (2 Stunden)
+  - Command: `weed master -mdir=./mdir -defaultReplication=001`
+  - **Impact: Backup! Wenn Server crasht, bleiben Fotos erhalten!**
+
+- [ ] ⚠️ **Multer File Size Limit auf 50 MB** (5 Min)
+  - Datei: `packages/backend/src/routes/photos.ts`
+  - Zeile 58: `fileSize: 50 * 1024 * 1024`
+  - **Impact: Moderne Smartphones (12-15 MB) werden akzeptiert!**
+
+- [ ] ⚠️ **Sharp-Fallback crashen lassen** (5 Min)
+  - Datei: `packages/backend/src/services/imageProcessor.ts`
+  - Zeile 22-28: `throw new Error('Sharp missing')`
+  - **Impact: Keine unkomprimierten 12 MB Bilder ausliefern!**
+
+**⏱ Gesamtaufwand WICHTIG: ~12 Stunden**
+
+---
+
+## 📌 OPTIONAL - Nächsten Monat (Nice-to-Have)
+
+### Environment-Verbesserungen
+- [ ] 📌 **Separate PostgreSQL-Instanz für Staging** (8 Stunden)
+  - Docker-Container oder VM
+  - Echte Isolation (aktuell: shared localhost:5432)
+
+- [ ] 📌 **Cloudflare für Staging aktivieren** (2 Stunden)
+  - WAF, DDoS-Protection, CDN
+  - Realistische Tests (aktuell: nur Production hat Cloudflare)
+
+- [ ] 📌 **Zwei Staging-Umgebungen** (12 Stunden)
+  - `staging-dev.app` → Lockere Limits für Entwicklung
+  - `staging-prod.app` → 1:1-Clone von Production
+
+### Features
+- [ ] 📌 **Gast-Analytics für Host** (4 Stunden)
+  - API: `GET /api/events/:id/analytics/guests`
+  - Dashboard-Page: Upload-Heatmap pro Gast
+
+- [ ] 📌 **Email-Benachrichtigung bei Upload** (2 Stunden)
+  - Nach erfolgreichem Upload Email an Host
+  - Template: "Neues Foto von [Gast-Name]"
+
+- [ ] 📌 **Bulk-Download mit Ordner-Struktur** (3 Stunden)
+  - ZIP mit Kategorien als Ordner
+  - `Trauung/IMG_001.jpg`, `Feier/IMG_002.jpg`
+
+- [ ] 📌 **QR-Code Vorlagen** (6 Stunden)
+  - QR mit Event-Logo in der Mitte
+  - Visitenkarten-Format, Tischaufsteller-Format
+
+- [ ] 📌 **Skeleton Loaders** (2 Stunden)
+  - Statt "Loading..." Text
+  - Animated Skeletons für Grid, Modal, etc.
+
+- [ ] 📌 **Host-Download trotz Storage-Lock** (1 Stunde)
+  - Host/Admin sollten IMMER downloaden können
+  - Auch nach Package-Ablauf!
+
+**⏱ Gesamtaufwand OPTIONAL: ~40 Stunden**
+
+---
+
+## ✅ ERLEDIGT
+
+### Analysen & Audits
+- [x] ✅ **Schonungslose Komplettanalyse erstellt** (SCHONUNGSLOSE_ANALYSE.md)
+  - Technische Architektur-Bewertung
+  - UX-Flow-Analyse (QR → Upload)
+  - Performance-Szenarien (500 Gäste gleichzeitig)
+  - Feature-Inventory (Frontend + Backend)
+  - Prioritätenliste (Kritisch/Wichtig/Optional)
+
+- [x] ✅ **Multi-Environment Deep-Audit** (MULTI_ENVIRONMENT_DEEP_AUDIT.md)
+  - 4-Subdomain-Analyse (Prod App, Prod Dash, Staging App, Staging Dash)
+  - SSL-Zertifikate & Environment-Sync
+  - Cross-Domain-Logik (App ↔ Dashboard)
+  - Deployment-Check (Staging vs. Production)
+  - 5 kritische Blocker identifiziert
+
+### Infrastruktur-Checks
+- [x] ✅ Projektstruktur analysiert (Monorepo mit pnpm)
+- [x] ✅ Backend-Service Status geprüft (Port 8001, aktiv seit 1 Tag)
+- [x] ✅ Frontend-Service Status geprüft (Port 3000, aktiv seit 1 Tag)
+- [x] ✅ Server-Ressourcen geprüft (125GB RAM, 32 Cores, 2TB Disk)
+- [x] ✅ Datenbank-Schema analysiert (Prisma, 40+ Models)
+- [x] ✅ API-Endpoints identifiziert (40+ Routes)
+- [x] ✅ Bildverarbeitungs-Pipeline untersucht (Sharp, Server-Side)
+
+---
+
+## 📊 METRIKEN & ZIELE
+
+### Performance-Ziele
+- **Upload-Zeit (10 MB Foto):** 
+  - ❌ Aktuell: 40 Sekunden (bei 2 Mbit/s Event-WiFi)
+  - ✅ Nach Client-Resize: 5 Sekunden (800 KB)
+  
+- **Live Wall Latenz:**
+  - ❌ Aktuell: 2-5 Sekunden (Polling)
+  - ✅ Nach WebSocket: <100ms
+
+- **Backend CPU-Last (500× Upload):**
+  - ❌ Aktuell: 500× Sharp-Processing = CPU-Spike
+  - ✅ Nach Client-Resize: 10× weniger Last
+
+### Load-Test-Ziele
+- [ ] 50 gleichzeitige User (Baseline)
+- [ ] 100 gleichzeitige User (Realistic)
+- [ ] 500 gleichzeitige User (Peak Event)
+
+**Tools:** Playwright E2E + Artillery Load-Testing
+
+---
+
+## 🎯 ROADMAP-ÜBERSICHT
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  WOCHE 1: KRITISCHE BLOCKER (10h)                           │
+│  → Upload-Limit, Staging Dashboard, S3-Bucket, Secrets     │
+│  → Client-Side Resize, WebSocket, Retry-Logik              │
+├─────────────────────────────────────────────────────────────┤
+│  WOCHE 2: WICHTIGE VERBESSERUNGEN (12h)                    │
+│  → Dashboard Realtime, Name-Persist, Upload-ETA            │
+│  → SeaweedFS Replication, Multer Limits, Sharp-Fallback    │
+├─────────────────────────────────────────────────────────────┤
+│  WOCHE 3: LOAD-TESTS & BUG-FIXES (variabel)                │
+│  → 50 → 100 → 500 gleichzeitige User testen                │
+│  → Gefundene Bugs fixen                                    │
+├─────────────────────────────────────────────────────────────┤
+│  WOCHE 4: GO-LIVE VORBEREITUNG                             │
+│  → Final Smoke-Tests                                       │
+│  → Monitoring Setup (Sentry, Logs)                         │
+│  → Backup-Strategie finalisieren                           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**GO/NO-GO für Production:** Nach Woche 2 + erfolgreichen Load-Tests ✅
+
+---
+
+## 📝 NOTIZEN & CONTEXT
+
+### Server-Details
+- **IP:** 65.109.71.182
+- **OS:** Linux 6.8.0-90-generic (Ubuntu/Debian)
+- **RAM:** 125 GB (117 GB verfügbar)
+- **CPU:** 32 Cores
+- **Disk:** 2 TB (36 GB genutzt = 2%)
+
+### Service-Ports
+| Service | Production | Staging |
+|---------|------------|---------|
+| Frontend App | 3000 | 3002 |
+| Frontend Dash | 3001 | 3101 |
+| Backend | 8001 | 8002 |
+| PostgreSQL | 5432 (shared) | 5432 (shared) |
+| SeaweedFS | 8333 (shared) | 8333 (shared) |
+| Redis | 6379 (shared) | 6379 (shared) |
+
+### Tech-Stack
+- **Backend:** Node.js 24, Express.js, TypeScript
+- **Frontend:** Next.js 14 (App Router), React, TypeScript
+- **Database:** PostgreSQL 14+ mit Prisma ORM
+- **Storage:** SeaweedFS (S3-kompatibel)
+- **Image:** Sharp (Resize, Thumbnail, Optimize)
+- **Realtime:** Socket.io (aktuell: Polling-only)
+- **Auth:** JWT + httpOnly Cookies + 2FA (TOTP)
+
+### Bekannte Limitierungen
+- ⚠️ Kein Client-Side Image Resizing
+- ⚠️ Socket.io nur Polling (WebSocket deaktiviert)
+- ⚠️ Keine automatische Upload-Retry
+- ⚠️ Dashboard ohne Realtime-Updates
+- ⚠️ Staging und Production teilen Ressourcen
+
+---
+
+**Letzte Aktualisierung:** 2026-01-10  
+**Nächstes Review:** Nach Woche 1 (Kritische Fixes)  
+**Verantwortlich:** Senior Technical Product Manager & Fullstack Architect
 

@@ -39,9 +39,9 @@ export default function AlbumNavigation({
 
   return (
     <div className="sticky top-0 z-30 bg-app-card/95 backdrop-blur border-b border-app-border pt-safe-top">
-      <div className="max-w-md mx-auto px-4 py-4">
+      <div className="max-w-md mx-auto px-4 py-3">
         {/* Horizontal Scrollable Album Navigation */}
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
           {allAlbums.map((album, index) => {
             const isSelected = selectedAlbum === album.id;
             
