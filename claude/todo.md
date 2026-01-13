@@ -75,9 +75,7 @@
 
 - [x] ✅ **Email-Benachrichtigung bei Upload** - Erledigt 2026-01-13
 
-- [ ] 📌 **Bulk-Download mit Ordner-Struktur** (3 Stunden)
-  - ZIP mit Kategorien als Ordner
-  - `Trauung/IMG_001.jpg`, `Feier/IMG_002.jpg`
+- [x] ✅ **Bulk-Download mit Ordner-Struktur** - Erledigt 2026-01-13
 
 - [ ] 📌 **QR-Code Vorlagen** (6 Stunden)
   - QR mit Event-Logo in der Mitte
