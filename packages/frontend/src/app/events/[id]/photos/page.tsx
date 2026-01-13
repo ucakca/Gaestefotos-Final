@@ -41,6 +41,7 @@ import {
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
 import Link from 'next/link';
 import { buildApiUrl } from '@/lib/api';
+import { useRealtimePhotos } from '@/hooks/useRealtimePhotos';
 
 export default function PhotoManagementPage() {
   const params = useParams();
@@ -135,6 +136,15 @@ export default function PhotoManagementPage() {
     loadPhotos();
     loadStories();
   }, [eventId, filter, viewMode]);
+
+  // Realtime updates via Socket.io
+  useRealtimePhotos({
+    eventId,
+    onRefreshNeeded: () => {
+      loadPhotos();
+      loadStories();
+    },
+  });
 
   useEffect(() => {
     // Extract unique uploaders from photos

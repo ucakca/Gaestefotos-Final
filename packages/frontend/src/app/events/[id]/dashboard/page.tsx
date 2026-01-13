@@ -55,6 +55,7 @@ import {
 import { useToastStore } from '@/store/toastStore';
 import GuidedTour from '@/components/ui/GuidedTour';
 import HelpTooltip from '@/components/ui/HelpTooltip';
+import { useRealtimePhotos } from '@/hooks/useRealtimePhotos';
 
 interface PhotoStats {
   total: number;
@@ -180,6 +181,14 @@ export default function EventDashboardPage() {
       loadCohosts();
     }
   }, [event]);
+
+  // Realtime updates via Socket.io - auto-refresh stats when photos change
+  useRealtimePhotos({
+    eventId,
+    onRefreshNeeded: () => {
+      loadStats();
+    },
+  });
 
   const loadCohosts = async () => {
     try {
