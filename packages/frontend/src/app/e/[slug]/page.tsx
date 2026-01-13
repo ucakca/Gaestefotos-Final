@@ -16,6 +16,7 @@ import StoryViewer from '@/components/guest/StoryViewer';
 import { Trophy } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { PhotoGridSkeleton, Skeleton } from '@/components/ui/Skeleton';
 
 type Category = {
   id: string;
@@ -609,8 +610,21 @@ export default function PublicEventPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-app-bg">
-        <div className="text-app-muted">Laden...</div>
+      <div className="min-h-screen bg-app-bg">
+        {/* Header Skeleton */}
+        <div className="p-4 pb-0">
+          <div className="flex items-center gap-3 mb-4">
+            <Skeleton className="w-16 h-16 rounded-full" />
+            <div className="flex-1">
+              <Skeleton className="h-6 w-48 mb-2" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+        </div>
+        {/* Grid Skeleton */}
+        <div className="p-4">
+          <PhotoGridSkeleton count={12} />
+        </div>
       </div>
     );
   }
