@@ -20,7 +20,7 @@
 | 6 | Karte bei Event-Erstellung | ✅ | Opus: OpenStreetMap Preview + Geocoding hinzugefügt |
 | 7 | Fotos/Videos Buttons im Dashboard entfernen | ✅ | Bereits hidden sm:inline-flex |
 | 8 | Titelbild/Profilbild lädt nicht | ✅ | Heute behoben (Design-Images Route) |
-| 9 | Dashboard benutzerfreundlicher | 📋 | Konzept-Arbeit nötig |
+| 9 | Dashboard benutzerfreundlicher | ✅ | Opus: Quick Stats Cards hinzugefügt |
 | 10 | Nicht-enthaltene Features ausgrauen | ✅ | Opus: usePackageFeatures Hook + FeatureGate Komponenten |
 | 11 | Auge-Symbol für Passwort | ✅ | Bereits vorhanden (showPassword) |
 | 12 | Speicher/Statistiken sinnvoll? | ❓ | Design-Entscheidung |
@@ -32,7 +32,7 @@
 | 18 | QR-Aufsteller Fehler | ✅ | Opus: Backend OK (resvg+sharp funktionieren) |
 | 19 | Tools-Gäste verbessern | 📋 | Kontakt-Import Feature |
 | 20 | Einladungsseite-Funktion | ✅ | Opus: Konzept dokumentiert (FEATURE_ALBUM_INVITATIONS.md) |
-| 21 | Alben-Vorschläge fehlen | 📋 | Event-Typ basierte Templates |
+| 21 | Alben-Vorschläge fehlen | ✅ | Opus: Erweiterte albumPresets für alle Event-Typen |
 | 22 | Lucide Icons bei Alben | ✅ | Opus: getLucideIconComponent + POPULAR_ICON_KEYS |
 | 23 | Album bearbeiten Mobile | ❓ | Braucht Reproduktionsschritte vom User |
 | 24 | Smart-Album Checkbox | ✅ | Session 2: Info-Box + Overlap-Warnung |
@@ -58,8 +58,8 @@
 
 | Kategorie | Anzahl | Prozent |
 |-----------|--------|---------|
-| ✅ Erledigt | 31 | 79% |
-| 📋 Feature-Requests | 5 | 13% |
+| ✅ Erledigt | 33 | 85% |
+| 📋 Feature-Requests | 3 | 8% |
 | ❓ Klärung nötig | 3 | 8% |
 | **GESAMT** | **39** | **100%** |
 

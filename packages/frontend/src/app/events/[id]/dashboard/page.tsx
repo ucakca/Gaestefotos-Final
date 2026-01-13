@@ -686,6 +686,54 @@ export default function EventDashboardPage() {
           </div>
         </div>
 
+        {/* Quick Stats Cards */}
+        <div className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Link href={`/events/${eventId}/photos`} className="rounded-xl border border-app-border bg-app-card p-4 hover:bg-app-card/80 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-app-accent/10 flex items-center justify-center">
+                <Camera className="w-5 h-5 text-app-accent" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-app-fg">{photoStats.total}</div>
+                <div className="text-xs text-app-muted">Fotos</div>
+              </div>
+            </div>
+          </Link>
+          <Link href={`/events/${eventId}/guests`} className="rounded-xl border border-app-border bg-app-card p-4 hover:bg-app-card/80 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-status-success/10 flex items-center justify-center">
+                <Users className="w-5 h-5 text-status-success" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-app-fg">{(event as any)?.guestCount || 0}</div>
+                <div className="text-xs text-app-muted">Gäste</div>
+              </div>
+            </div>
+          </Link>
+          <div className="rounded-xl border border-app-border bg-app-card p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-status-warning/10 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-status-warning" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-app-fg">{photoStats.pending}</div>
+                <div className="text-xs text-app-muted">Ausstehend</div>
+              </div>
+            </div>
+          </div>
+          <Link href={`/events/${eventId}/statistics`} className="rounded-xl border border-app-border bg-app-card p-4 hover:bg-app-card/80 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-app-fg/10 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-app-fg" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-app-fg">{usage ? formatBytes(usage.totalBytes) : '—'}</div>
+                <div className="text-xs text-app-muted">Speicher</div>
+              </div>
+            </div>
+          </Link>
+        </div>
+
         {event && (event as any).isActive === false && (
           <div className="mb-4 rounded-xl border border-app-border bg-app-card p-4">
             <div className="flex items-start gap-3">
