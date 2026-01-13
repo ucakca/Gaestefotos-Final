@@ -70,29 +70,35 @@ export default function ChallengesStep({
       </div>
 
       {showAddCustom ? (
-        <div className="flex gap-2">
+        <div className="p-4 rounded-lg border-2 border-app-accent bg-app-accent/5 space-y-3">
+          <div className="text-sm font-medium text-app-fg">Neue Challenge erstellen</div>
           <Input
-            placeholder="Challenge-Name"
+            placeholder="z.B. Lustigstes Selfie, Bestes Gruppenfoto..."
             value={customLabel}
             onChange={(e) => setCustomLabel(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAddCustomChallenge()}
+            autoFocus
+            className="text-base"
           />
-          <Button onClick={handleAddCustomChallenge} disabled={!customLabel.trim()}>
-            Hinzufügen
-          </Button>
-          <Button variant="ghost" onClick={() => setShowAddCustom(false)}>
-            Abbrechen
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleAddCustomChallenge} disabled={!customLabel.trim()} size="sm">
+              Erstellen
+            </Button>
+            <Button variant="secondary" onClick={() => { setShowAddCustom(false); setCustomLabel(''); }} size="sm">
+              Abbrechen
+            </Button>
+          </div>
         </div>
       ) : (
         <Button 
-          variant="ghost" 
+          variant="secondary" 
           onClick={() => setShowAddCustom(true)} 
-          className="w-full flex items-center justify-center gap-2"
+          className="w-full flex items-center justify-center gap-2 py-4 border-2 border-dashed border-app-border hover:border-app-accent hover:bg-app-accent/5"
           title="Eigene Challenge hinzufügen"
           aria-label="Eigene Challenge hinzufügen"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-6 h-6" />
+          <span className="text-app-muted">Eigene Challenge</span>
         </Button>
       )}
 
@@ -105,7 +111,7 @@ export default function ChallengesStep({
             Überspringen
           </Button>
           <Button onClick={onNext}>
-            Weiter {enabledCount > 0 && `(${enabledCount} Challenge${enabledCount !== 1 ? 's' : ''})`}
+            Weiter
           </Button>
         </div>
       </div>

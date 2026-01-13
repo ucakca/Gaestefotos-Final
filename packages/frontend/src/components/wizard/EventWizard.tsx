@@ -163,17 +163,20 @@ export default function EventWizard() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
       <div className="container max-w-4xl mx-auto px-4">
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-2">
             <h1 className="text-3xl font-bold">Event erstellen</h1>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm font-medium text-app-fg">
               Schritt {state.currentStep} von {getTotalSteps()}
             </span>
           </div>
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-primary transition-all duration-300"
+              className="h-full bg-app-accent transition-all duration-300 rounded-full"
               style={{ width: `${(state.currentStep / getTotalSteps()) * 100}%` }}
             />
+          </div>
+          <div className="mt-2 text-xs text-app-muted">
+            {Math.round((state.currentStep / getTotalSteps()) * 100)}% abgeschlossen
           </div>
         </div>
 
@@ -277,6 +280,7 @@ export default function EventWizard() {
               state={state}
               onBack={handleBack}
               onFinish={createEvent}
+              onEditStep={(step) => updateState({ currentStep: step })}
               isCreating={isCreating}
             />
           )}

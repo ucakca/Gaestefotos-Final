@@ -70,6 +70,10 @@ export default function AccessStep({
             <p className="text-sm text-red-600 mt-1">{passwordError}</p>
           )}
           <p className="text-xs text-muted-foreground mt-1">💡 Wird auf dem QR-Code angezeigt</p>
+          <div className="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200">
+            <p className="text-sm text-amber-800 font-medium">⚠️ Wichtig: Ohne Passwort können Gäste keine Fotos hochladen!</p>
+            <p className="text-xs text-amber-700 mt-1">Das Passwort schützt dein Event vor unerwünschten Uploads.</p>
+          </div>
         </div>
 
         <div>

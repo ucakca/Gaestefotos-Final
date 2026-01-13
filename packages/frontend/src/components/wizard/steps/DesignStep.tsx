@@ -136,7 +136,10 @@ export default function DesignStep({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-3">🎨 Farbschema</label>
+            <label className="block text-sm font-medium mb-1">🎨 Farbschema</label>
+            <p className="text-xs text-muted-foreground mb-3">
+              Bestimmt die Farben für Header, Buttons und Akzente in der Gäste-App
+            </p>
             <div className="grid grid-cols-2 gap-3">
               {colorSchemes.map((scheme) => (
                 <button
@@ -144,7 +147,7 @@ export default function DesignStep({
                   onClick={() => onColorSchemeChange(scheme.id)}
                   className={`
                     p-4 rounded-lg border-2 transition-all
-                    ${colorScheme === scheme.id ? 'border-primary' : 'border-gray-200 hover:border-gray-300'}
+                    ${colorScheme === scheme.id ? 'border-app-accent ring-2 ring-app-accent ring-offset-1' : 'border-gray-200 hover:border-gray-300'}
                   `}
                 >
                   <div className={`h-12 rounded mb-2 ${scheme.colors}`} />
