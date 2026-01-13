@@ -21,12 +21,8 @@ export class ImageProcessor {
    */
   async processImage(buffer: Buffer): Promise<ProcessedImage> {
     if (!sharp) {
-      // Fallback: return original if sharp not available
-      return {
-        original: buffer,
-        thumbnail: buffer,
-        optimized: buffer,
-      };
+      // Sharp is required for image processing - fail fast to avoid serving uncompressed 12MB images
+      throw new Error('Sharp image processor not available - cannot process uploads');
     }
 
     // Original: Full quality, only rotate and strip EXIF/GPS for privacy
