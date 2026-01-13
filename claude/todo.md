@@ -17,31 +17,26 @@
 - [x] ✅ **EXIF/GPS Strip** - Automatisch bei Upload
 - [x] ✅ **Multer-Limit 50MB** - photos.ts, guestbook.ts, events.ts
 
-### Bugfixes (2026-01-13)
+### Bugfixes & Features (2026-01-13)
 - [x] ✅ **Bug #8: Design-Bilder bei deaktivierten Events** - Backend erlaubt jetzt Laden
 - [x] ✅ **Bug #1: Zurück-Button Mobile** - asChild-Pattern für IconButton
 - [x] ✅ **Name-Persist in LocalStorage** - Gast muss Namen nicht bei jedem Upload neu eingeben
-- [x] ✅ **WebSocket in Socket.io** - Bereits aktiviert: `transports: ['websocket', 'polling']`
+- [x] ✅ **WebSocket in Socket.io** - Backend + Frontend nutzen jetzt WebSocket (statt nur Polling)
+- [x] ✅ **Realtime-Updates für Dashboard/Photos** - useRealtimePhotos Hook, auto-refresh bei photo_uploaded/approved
 
 ---
 
 ## ⚠️ WICHTIG - Diese Woche (vor Load-Test!)
 
 ### Performance & UX
-- [ ] ⚠️ **Dashboard Realtime-Updates via Socket.io** (4 Stunden)
-  - Socket.io-Client in Admin-Dashboard einbauen
-  - Event-Listener für `photo_uploaded`, `photo_approved`
-  - **Impact: Admin muss nicht mehr F5 drücken!**
+- [x] ✅ **Dashboard Realtime-Updates via Socket.io** - Erledigt 2026-01-13
 
 - [ ] ⚠️ **Dashboard API-Calls direkt zu localhost** (30 Min)
   - Service: `gaestefotos-admin-dashboard.service`
   - Ändern: `NEXT_PUBLIC_API_URL=http://localhost:8001`
   - **Impact: -100ms Latenz, keine Cloudflare-Abhängigkeit!**
 
-- [ ] ⚠️ **Name-Persist in LocalStorage** (30 Min)
-  - Datei: `packages/frontend/src/components/UploadButton.tsx`
-  - `localStorage.setItem('guestUploaderName', name)`
-  - **Impact: Gast muss Namen nicht bei jedem Upload neu eingeben!**
+- [x] ✅ **Name-Persist in LocalStorage** - Erledigt 2026-01-13
 
 - [ ] ⚠️ **Upload-ETA anzeigen** (1 Stunde)
   - Progress-Component erweitern

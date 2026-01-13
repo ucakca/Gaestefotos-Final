@@ -1,7 +1,9 @@
-13.01.2026 16:10
+13.01.2026 16:20
 
 Session Summary:
 - Bug #8 gefixt: Design-Bilder laden jetzt auch bei deaktivierten Events
 - Bug #1 gefixt: Zurück-Button Mobile funktioniert (asChild-Pattern)
-- Backend + Frontend deployed
-- TODO-Liste aktualisiert (kritische Items als erledigt markiert)
+- Name-Persist in LocalStorage: Gast muss Namen nicht bei jedem Upload neu eingeben
+- WebSocket Transport aktiviert: Frontend nutzt jetzt WebSocket statt nur Polling
+- Realtime-Updates: useRealtimePhotos Hook - Dashboard/Photos aktualisieren automatisch
+- Backend + Frontend deployed (4 Commits heute)
