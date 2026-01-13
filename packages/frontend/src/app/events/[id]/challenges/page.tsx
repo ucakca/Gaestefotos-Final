@@ -354,6 +354,34 @@ export default function ChallengeManagementPage() {
               <h2 className="text-xl font-semibold mb-4">
                 {editingChallenge ? 'Challenge bearbeiten' : 'Neue Challenge'}
               </h2>
+              
+              {!editingChallenge && (
+                <div className="mb-4 p-4 rounded-lg bg-app-bg border border-app-border">
+                  <p className="text-xs font-semibold text-app-fg mb-2">💡 Vorlagen - Klicken zum Übernehmen</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { title: 'Bestes Gruppenfoto', desc: 'Zeigt euer schönstes Gruppenbild!' },
+                      { title: 'Lustigster Moment', desc: 'Der witzigste Augenblick des Events' },
+                      { title: 'Schönstes Paar-Foto', desc: 'Das romantischste Foto des Abends' },
+                      { title: 'Action-Shot', desc: 'Dynamik pur - zeigt Bewegung!' },
+                      { title: 'Bestes Selfie', desc: 'Euer coolstes Selfie' },
+                      { title: 'Kreativstes Foto', desc: 'Überrascht uns mit Kreativität!' },
+                    ].map((template) => (
+                      <Button
+                        key={template.title}
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setFormData({ ...formData, title: template.title, description: template.desc })}
+                        className="text-xs"
+                      >
+                        {template.title}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               <form onSubmit={editingChallenge ? handleUpdateChallenge : handleAddChallenge} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-app-fg mb-1">

@@ -682,24 +682,15 @@ export default function PublicEventPage() {
     return Date.now() > endsAt;
   })();
 
-  const withinUploadWindow = (() => {
-    const e: any = event as any;
-    if (!e?.dateTime) return true;
-    const eventTime = new Date(e.dateTime).getTime();
-    if (!Number.isFinite(eventTime)) return true;
-    const windowMs = 24 * 60 * 60 * 1000;
-    const now = Date.now();
-    return now >= eventTime - windowMs && now <= eventTime + windowMs;
-  })();
+  // Upload window restriction removed - uploads allowed anytime while event is active
+  // Host can disable uploads via featuresConfig.allowUploads if needed
 
-  const uploadDisabled = !featuresConfig?.allowUploads || isStorageLocked || !withinUploadWindow;
+  const uploadDisabled = !featuresConfig?.allowUploads || isStorageLocked;
   const uploadDisabledReason = !featuresConfig?.allowUploads
     ? 'Uploads sind deaktiviert.'
     : isStorageLocked
       ? 'Die Speicherzeit ist abgelaufen.'
-      : !withinUploadWindow
-        ? 'Uploads sind nur 1 Tag vor/nach dem Event möglich.'
-        : undefined;
+      : undefined;
 
   const onStoryPrev = () => {
     setSelectedStoryIndex((i) => {

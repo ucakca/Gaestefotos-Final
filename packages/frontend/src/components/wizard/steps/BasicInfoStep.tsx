@@ -1,8 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Calendar } from 'lucide-react';
+import { Calendar, MapPin, ExternalLink } from 'lucide-react';
 
 interface BasicInfoStepProps {
   title: string;
@@ -25,6 +26,40 @@ export default function BasicInfoStep({
   onNext,
   onBack,
 }: BasicInfoStepProps) {
+  const [mapCoords, setMapCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [mapLoading, setMapLoading] = useState(false);
+
+  // Geocode location when it changes (debounced)
+  useEffect(() => {
+    if (!location || location.trim().length < 3) {
+      setMapCoords(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setMapLoading(true);
+      try {
+        const encoded = encodeURIComponent(location.trim());
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encoded}&limit=1`,
+          { headers: { 'User-Agent': 'GaesteFotos-App' } }
+        );
+        const data = await res.json();
+        if (data && data[0]) {
+          setMapCoords({ lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) });
+        } else {
+          setMapCoords(null);
+        }
+      } catch {
+        setMapCoords(null);
+      } finally {
+        setMapLoading(false);
+      }
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [location]);
+
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const date = e.target.value ? new Date(e.target.value) : null;
     onDateTimeChange(date);
@@ -100,6 +135,48 @@ export default function BasicInfoStep({
             value={location || ''}
             onChange={(e) => onLocationChange(e.target.value)}
           />
+          
+          {/* Map Preview */}
+          {location && location.trim().length >= 3 && (
+            <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
+              {mapLoading ? (
+                <div className="h-32 bg-gray-100 flex items-center justify-center">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+                    <span>Karte wird geladen...</span>
+                  </div>
+                </div>
+              ) : mapCoords ? (
+                <div className="relative">
+                  <iframe
+                    title="Location Map"
+                    width="100%"
+                    height="150"
+                    frameBorder="0"
+                    scrolling="no"
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapCoords.lon - 0.01}%2C${mapCoords.lat - 0.005}%2C${mapCoords.lon + 0.01}%2C${mapCoords.lat + 0.005}&layer=mapnik&marker=${mapCoords.lat}%2C${mapCoords.lon}`}
+                    className="w-full"
+                  />
+                  <a
+                    href={`https://www.openstreetmap.org/?mlat=${mapCoords.lat}&mlon=${mapCoords.lon}#map=16/${mapCoords.lat}/${mapCoords.lon}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute bottom-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-white transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Größere Karte
+                  </a>
+                </div>
+              ) : (
+                <div className="h-24 bg-gray-50 flex items-center justify-center">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="w-4 h-4" />
+                    <span>Ort nicht gefunden</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

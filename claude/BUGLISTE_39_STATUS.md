@@ -12,10 +12,10 @@
 
 | # | Beschreibung | Status | Kommentar |
 |---|--------------|--------|-----------|
-| 1 | Zurück-Button Header Mobile | ✅ | Heute behoben (asChild-Pattern) |
-| 2 | FAQ Button im Host-Dashboard entfernen | ✅ | Heute behoben (hidden sm:inline-flex) |
+| 1 | Zurück-Button Header Mobile | ✅ | Session 1: asChild-Pattern |
+| 2 | FAQ Button im Host-Dashboard entfernen | ✅ | Nicht gefunden - evtl. bereits entfernt |
 | 3 | "Uploads prüfen" Funktion unklar | ❓ | Link zu /moderation - Moderation-Seite |
-| 4 | Logout/Abmelden Button entfernen | ✅ | Heute behoben (hidden sm:inline-flex) |
+| 4 | Logout/Abmelden Button entfernen | ✅ | Session 2: hidden lg:flex (statt md) |
 | 5 | Schritt-für-Schritt Event-Erstellung | 📋 | Wizard existiert bereits (`/components/wizard/`) |
 | 6 | Karte bei Event-Erstellung | 🔧 | Muss geprüft werden |
 | 7 | Fotos/Videos Buttons im Dashboard entfernen | ✅ | Bereits hidden sm:inline-flex |
@@ -28,20 +28,20 @@
 | 14 | Share-Link Funktion erklären | 🔧 | Bessere Beschriftung/Tooltip |
 | 15 | Einladungsseite fehlt/broken | 🔧 | Route prüfen |
 | 16 | Event Profil doppelt | 🔧 | Deduplizieren |
-| 17 | Event-Details Bearbeiten-Hinweis | 🔧 | Pencil-Icon hinzufügen |
+| 17 | Event-Details Bearbeiten-Hinweis | ✅ | Session 2: Pencil-Icon + Text 'Zum Bearbeiten klicken' |
 | 18 | QR-Aufsteller Fehler | 🔧 | Error-Handling prüfen |
 | 19 | Tools-Gäste verbessern | 📋 | Kontakt-Import Feature |
 | 20 | Einladungsseite-Funktion | 📋 | Album-basierte Einladungen |
 | 21 | Alben-Vorschläge fehlen | 📋 | Event-Typ basierte Templates |
 | 22 | Lucide Icons bei Alben | 🔧 | Icon-Picker prüfen |
 | 23 | Album bearbeiten Mobile | 🔧 | Responsive Fix |
-| 24 | Smart-Album Checkbox | 🔧 | UX-Erklärung verbessern |
-| 25 | Challenges Vorlagen | 📋 | Template-System |
-| 26 | + Button statt Text | 🔧 | UI-Anpassung |
-| 27 | Event-Modus Standard aktiv | 🔧 | Default-Wert prüfen |
+| 24 | Smart-Album Checkbox | ✅ | Session 2: Info-Box + Overlap-Warnung |
+| 25 | Challenges Vorlagen | ✅ | Session 2: 6 Templates (Gruppenfoto, Lustigster Moment, etc.) |
+| 26 | + Button statt Text | ✅ | Bereits korrekt: Nur IconButton mit + |
+| 27 | Event-Modus Standard aktiv | ✅ | Bereits korrekt: mode || 'STANDARD' default |
 | 28 | Mystery Mode Erklärung | ✅ | HelpTooltip existiert |
-| 29 | Video-Auswahlfunktion | 🔧 | Wie bei Fotos implementieren |
-| 30 | Gästebuch Host-Logik | ❓ | Design-Entscheidung |
+| 29 | Video-Auswahlfunktion | ✅ | Bereits vollständig: selectedVideos, Bulk-Actions, Filter |
+| 30 | Gästebuch Host-Logik | ✅ | Session 2: Entry-Form nur für Gäste, Host nur Host-Message |
 | 31 | Design Presets verbessern | 📋 | Custom Preset Feature |
 | 32 | Farben-UI unübersichtlich | 📋 | UX-Redesign |
 | 33 | Titelbild auf Gästeseite | 🔧 | CSS/Design-Config prüfen |
@@ -49,8 +49,8 @@
 | 35 | Alben abgeschnitten/ohne Icon | 🔧 | CSS Fix + Icon |
 | 36 | Upload-Button ohne Funktion | 🔧 | Event-Handler prüfen |
 | 37 | Challenges Modal falsch | 🔧 | Fullscreen Modal |
-| 38 | Info-Menü erweitern | 📋 | Betrieb-Info hinzufügen |
-| 39 | Feed Button Hintergrund | ✅ | Heute behoben (bg-transparent) |
+| 38 | Info-Menü erweitern | ✅ | Session 2: Kontakt, SSL, DSGVO, Backups hinzugefügt |
+| 39 | Feed Button Hintergrund | ✅ | Session 2: bg-transparent entfernt |
 
 ---
 
@@ -58,19 +58,33 @@
 
 | Kategorie | Anzahl |
 |-----------|--------|
-| ✅ Bereits behoben | 8 |
-| 🔧 Heute fixbar | 16 |
-| 📋 Feature-Request | 12 |
-| ❓ Klärung nötig | 3 |
+| ✅ Bereits behoben | 17 |
 
 ---
 
-## Priorität für heute (🔧 Quick Fixes)
+## HEUTE ERLEDIGT (Sonnet Session 2)
 
-1. **#2, #4** - FAQ/Logout Buttons entfernen (Mobile)
-2. **#7** - Fotos/Videos im Header entfernen (Mobile)
-3. **#34** - "++story" Text fixen
-4. **#35** - Alben CSS + Icons
-5. **#36** - Upload-Button prüfen
-6. **#39** - Feed Button CSS
+**Quick Fixes implementiert:**
+1. **#4** - Logout nur Desktop (lg: statt md:)
+2. **#17** - Event Details Pencil-Icon + Hinweis
+3. **#24** - Smart Album Erklärung + Overlap-Warnung
+4. **#25** - Challenge-Templates (6 Vorlagen)
+5. **#26** - Bestätigt: Bereits nur + Button
+6. **#27** - Bestätigt: STANDARD default OK
+7. **#29** - Bestätigt: Video-Auswahl bereits da
+8. **#30** - Gästebuch: Entry-Form nur für Gäste
+9. **#38** - Info-Menü: Betriebsinfo erweitert
+10. **#39** - Feed-Button CSS gefixt
 
+## VERBLEIBENDE QUICK FIXES (für Opus)
+
+1. **#6** - Karte bei Event-Erstellung (Maps-Integration)
+2. **#14** - Share-Link Funktion klarer beschreiben
+3. **#15** - Einladungsseite Route prüfen
+4. **#16** - Event Profil Deduplizierung
+5. **#18** - QR-Aufsteller Fehler debuggen
+6. **#23** - Album Mobile bearbeiten prüfen
+7. **#33** - Titelbild Sync Dashboard Gästeseite
+8. **#34** - "++story" Text debuggen
+9. **#35** - Alben CSS + Icons prüfen
+10. **#36** - Upload-Button Funktionalität testen

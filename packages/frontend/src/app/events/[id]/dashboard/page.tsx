@@ -936,8 +936,11 @@ export default function EventDashboardPage() {
         {/* 3. Event Details */}
         <div className="mb-6 overflow-hidden rounded-xl border border-app-border bg-app-card">
           <div className="border-b border-app-border px-4 py-3">
-            <div className="text-sm font-semibold text-app-fg">Event Details</div>
-            <div className="text-xs text-app-muted">Datum, Uhrzeit, Ort, URL und Passwort</div>
+            <div className="flex items-center gap-2">
+              <div className="text-sm font-semibold text-app-fg">Event Details</div>
+              <Pencil className="w-3.5 h-3.5 text-app-muted" />
+            </div>
+            <div className="text-xs text-app-muted">Datum, Uhrzeit, Ort, URL und Passwort - Zum Bearbeiten klicken</div>
           </div>
 
           <div className="divide-y divide-app-border">

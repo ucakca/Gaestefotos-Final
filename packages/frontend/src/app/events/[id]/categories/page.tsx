@@ -448,6 +448,15 @@ export default function CategoryManagementPage() {
                     <div className="text-sm font-medium text-app-fg">Smart Album Zeitfenster (optional)</div>
                   </div>
 
+                  <div className="rounded-lg bg-app-bg border border-app-border p-3 mb-3">
+                    <p className="text-xs text-app-fg font-medium mb-1">💡 Was sind Smart Alben?</p>
+                    <p className="text-xs text-app-muted">
+                      Fotos werden automatisch dem richtigen Album zugeordnet, basierend auf dem Aufnahmezeitpunkt (EXIF-Daten).
+                      <br/>
+                      <strong>Beispiel:</strong> Album "Trauung" (14:00-15:00), Album "Feier" (18:00-23:00)
+                    </p>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-0">
                     <div>
                       <label className="block text-sm font-medium text-app-muted mb-1">Start</label>
@@ -468,9 +477,12 @@ export default function CategoryManagementPage() {
                     </div>
                   </div>
 
-                  <p className="text-xs text-app-muted">
-                    Wenn gesetzt, werden Uploads ohne Album-Auswahl automatisch diesem Album zugeordnet (nach EXIF/Uploadzeit). Zeitfenster dürfen sich nicht überschneiden.
-                  </p>
+                  <div className="rounded-lg bg-status-warning/10 border border-status-warning/30 p-3">
+                    <p className="text-xs text-status-warning font-semibold mb-1">⚠️ Wichtig: Zeitfenster dürfen sich nicht überschneiden!</p>
+                    <p className="text-xs text-app-muted">
+                      Sonst werden Fotos mehreren Alben zugeordnet. Lasse Lücken zwischen den Zeitfenstern oder nutze kein Smart Album für bestimmte Bereiche.
+                    </p>
+                  </div>
                 </div>
 
                   <div>
