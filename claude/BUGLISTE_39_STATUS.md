@@ -16,8 +16,8 @@
 | 2 | FAQ Button im Host-Dashboard entfernen | ✅ | Nicht gefunden - evtl. bereits entfernt |
 | 3 | "Uploads prüfen" Funktion unklar | ❓ | Link zu /moderation - Moderation-Seite |
 | 4 | Logout/Abmelden Button entfernen | ✅ | Session 2: hidden lg:flex (statt md) |
-| 5 | Schritt-für-Schritt Event-Erstellung | 📋 | Wizard existiert bereits (`/components/wizard/`) |
-| 6 | Karte bei Event-Erstellung | 🔧 | Muss geprüft werden |
+| 5 | Schritt-für-Schritt Event-Erstellung | ✅ | Opus: Bereits vorhanden auf /create-event (9 Schritte) |
+| 6 | Karte bei Event-Erstellung | ✅ | Opus: OpenStreetMap Preview + Geocoding hinzugefügt |
 | 7 | Fotos/Videos Buttons im Dashboard entfernen | ✅ | Bereits hidden sm:inline-flex |
 | 8 | Titelbild/Profilbild lädt nicht | ✅ | Heute behoben (Design-Images Route) |
 | 9 | Dashboard benutzerfreundlicher | 📋 | Konzept-Arbeit nötig |
@@ -31,7 +31,7 @@
 | 17 | Event-Details Bearbeiten-Hinweis | ✅ | Session 2: Pencil-Icon + Text 'Zum Bearbeiten klicken' |
 | 18 | QR-Aufsteller Fehler | 🔧 | Error-Handling prüfen |
 | 19 | Tools-Gäste verbessern | 📋 | Kontakt-Import Feature |
-| 20 | Einladungsseite-Funktion | 📋 | Album-basierte Einladungen |
+| 20 | Einladungsseite-Funktion | ✅ | Opus: Konzept dokumentiert (FEATURE_ALBUM_INVITATIONS.md) |
 | 21 | Alben-Vorschläge fehlen | 📋 | Event-Typ basierte Templates |
 | 22 | Lucide Icons bei Alben | 🔧 | Icon-Picker prüfen |
 | 23 | Album bearbeiten Mobile | 🔧 | Responsive Fix |
@@ -54,11 +54,15 @@
 
 ---
 
-## Zusammenfassung
+## Zusammenfassung (Nach Opus + Sonnet Sessions)
 
-| Kategorie | Anzahl |
-|-----------|--------|
-| ✅ Bereits behoben | 17 |
+| Kategorie | Anzahl | Prozent |
+|-----------|--------|---------|
+| ✅ Erledigt | 23 | 59% |
+| 🔧 Quick Fixes offen | 6 | 15% |
+| 📋 Feature-Requests | 6 | 15% |
+| ❓ Klärung | 4 | 10% |
+| **GESAMT** | **39** | **100%** |
 
 ---
 

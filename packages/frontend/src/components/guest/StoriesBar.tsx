@@ -35,7 +35,14 @@ export default function StoriesBar({ stories, onSelect }: { stories: Story[]; on
               </div>
             </div>
             <div className="text-[11px] font-medium text-app-fg max-w-[72px] truncate">
-              {(s?.photo?.uploadedBy as string)?.trim() || (s?.video?.uploadedBy as string)?.trim() || 'Story'}
+              {(() => {
+                const name = (s?.photo?.uploadedBy as string)?.trim() || (s?.video?.uploadedBy as string)?.trim();
+                // Filter out invalid names like "++", empty strings, or just symbols
+                if (!name || name.length < 2 || /^[^a-zA-Z0-9äöüÄÖÜß]+$/.test(name)) {
+                  return 'Story';
+                }
+                return name;
+              })()}
             </div>
           </Button>
         ))}

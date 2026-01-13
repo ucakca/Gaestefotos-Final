@@ -16,6 +16,7 @@ import {
   Heart,
   LayoutDashboard
 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { Category, Event as EventType } from '@gaestefotos/shared';
 import Guestbook from './Guestbook';
 import ChallengeCompletion from './ChallengeCompletion';
@@ -45,6 +46,13 @@ interface FeedEntry {
 }
 
 const MotionButton = motion(Button);
+
+// Helper to get Lucide icon component from iconKey
+const getIcon = (iconKey?: string | null) => {
+  if (!iconKey) return Folder;
+  const Comp = (LucideIcons as any)[String(iconKey)];
+  return typeof Comp === 'function' ? Comp : Folder;
+};
 
 export default function BottomNavigation({
   eventId,
@@ -292,11 +300,16 @@ export default function BottomNavigation({
                   size="sm"
                   className="h-auto w-full bg-app-bg hover:bg-app-card rounded-lg p-4 flex items-center gap-3 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <Folder className="w-5 h-5" />
-                    <div className="flex-1">
-                      <p className="font-medium">{category.name}</p>
-                      <p className="text-sm opacity-70">Album</p>
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-10 h-10 rounded-full bg-app-accent/10 flex items-center justify-center flex-shrink-0">
+                      {(() => {
+                        const IconComp = getIcon(category.iconKey);
+                        return <IconComp className="w-5 h-5 text-app-accent" />;
+                      })()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-app-fg truncate">{category.name}</p>
+                      <p className="text-sm text-app-muted">Album</p>
                     </div>
                   </div>
                 </MotionButton>
