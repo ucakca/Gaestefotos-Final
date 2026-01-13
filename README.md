@@ -2,7 +2,7 @@
 
 **Version:** 2.0.0  
 **Status:** ✅ Produktionsbereit  
-**Letzte Aktualisierung:** 2025-12-25
+**Letzte Aktualisierung:** 2026-01-13
 
 ---
 
@@ -26,12 +26,8 @@
 - `docs/API_MAP.md` (Endpoints → Dateien)
 - `docs/GAP_ANALYSIS.md` (Spec → Status → Pfade)
 - `docs/FEATURES.md`
-- `docs/QA_LOGGING.md` (QA Logging / Debug / Datenschutz)
-- `docs/TEST_GUIDE.md`
 - `docs/DEPLOYMENT.md`
-- `docs/STORAGE_AND_BLUR_POLICY.md`
 - `docs/DB_FIELD_MEANINGS.md`
-- `docs/STORIES.md`
 
 ---
 
@@ -545,18 +541,18 @@ pnpm prisma migrate dev
 
 ### Weitere Hilfe
 
-- Siehe `PROBLEME_GELOEST.md` für bekannte Probleme
-- Siehe `EMAIL_SETUP.md` für Email-Konfiguration
 - Prüfe Logs in `/tmp/`
+- Siehe `docs/` für detaillierte Dokumentation
 
 ---
 
 ## 📚 Weitere Dokumentation
 
 - [Bedienungsanleitung](BEDIENUNGSANLEITUNG.md) - Für Endbenutzer
-- [Email Setup](EMAIL_SETUP.md) - Email-Konfiguration
-- [Test Report](TEST_REPORT_*.md) - Test-Ergebnisse
-- [Probleme gelöst](PROBLEME_GELOEST.md) - Bekannte Probleme & Lösungen
+- [Design System](DESIGN_SYSTEM.md) - UI/UX Dokumentation
+- [API Map](docs/API_MAP.md) - Endpoint Übersicht
+- [Feature Matrix](docs/FEATURE_MATRIX.md) - Feature-Übersicht
+- [Deployment](docs/DEPLOYMENT.md) - Deployment-Anleitung
 
 ---
 
