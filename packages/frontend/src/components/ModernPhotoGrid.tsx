@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Heart, Share2, Download, MoreHorizontal, MessageCircle, Send, User, Trophy, Star } from 'lucide-react';
 import { Photo } from '@gaestefotos/shared';
 import UploadButton from './UploadButton';
+import OfflineQueueIndicator from './OfflineQueueIndicator';
 import api from '@/lib/api';
 import { buildApiUrl } from '@/lib/api';
 import { IconButton } from '@/components/ui/IconButton';
@@ -297,15 +298,18 @@ export default function ModernPhotoGrid({
   return (
     <>
       {allowUploads && (
-        <div className="fixed left-1/2 -translate-x-1/2 z-50 bottom-[calc(env(safe-area-inset-bottom)+84px)]">
-          <UploadButton
-            eventId={eventId}
-            onUploadSuccess={onUploadSuccess}
-            disabled={uploadDisabled || isStorageLocked}
-            disabledReason={isStorageLocked ? 'Die Speicherzeit ist abgelaufen.' : uploadDisabledReason}
-            variant="fab"
-          />
-        </div>
+        <>
+          <div className="fixed left-1/2 -translate-x-1/2 z-50 bottom-[calc(env(safe-area-inset-bottom)+84px)]">
+            <UploadButton
+              eventId={eventId}
+              onUploadSuccess={onUploadSuccess}
+              disabled={uploadDisabled || isStorageLocked}
+              disabledReason={isStorageLocked ? 'Die Speicherzeit ist abgelaufen.' : uploadDisabledReason}
+              variant="fab"
+            />
+          </div>
+          <OfflineQueueIndicator onUploadSuccess={onUploadSuccess} />
+        </>
       )}
 
       <Dialog open={showUploadDisabled} onOpenChange={(open) => (open ? null : setShowUploadDisabled(false))}>
