@@ -1,6 +1,6 @@
-13.01.2026 16:57
+13.01.2026 17:00
 
-Session Summary (16 Items erledigt):
+Session Summary (17 Items erledigt):
 1. Bug #8 gefixt: Design-Bilder laden bei deaktivierten Events
 2. Bug #1 gefixt: Zurück-Button Mobile (asChild-Pattern)
 3. Name-Persist in LocalStorage: Gast muss Namen nicht neu eingeben
@@ -15,8 +15,9 @@ Session Summary (16 Items erledigt):
 12. Skeleton UI Components: Animierte Lade-Skelette statt "Loading..." Text
 13. Email-Benachrichtigung: Host erhält Email wenn Gast Foto hochlädt
 14. Bulk-Download: ZIP-Dateien jetzt mit Kategorie-Ordnern strukturiert
-15. TODO-Liste bereinigt und aktualisiert
-16. Backend + Frontend deployed (23 Commits heute)
+15. Gast-Analytics API: Upload-Statistiken pro Gast mit Heatmap-Daten
+16. TODO-Liste bereinigt und aktualisiert
+17. Backend + Frontend deployed (27 Commits heute)
 
 Commits heute:
 - e7a6178: fix: Bug #8 design images, Bug #1 back button
@@ -42,3 +43,6 @@ Commits heute:
 - c6ed7b4: docs: update session summary with email notification
 - 8af84eb: feat: organize bulk download photos in category folders
 - 6233306: docs: update TODO list (Bulk-Download completed)
+- 8c30aeb: docs: update session summary with bulk download feature
+- e2d0f53: feat: add guest analytics API endpoint
+- 3ae4f4a: docs: update TODO list (Guest Analytics API completed)
