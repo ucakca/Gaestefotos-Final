@@ -73,9 +73,7 @@
   - API: `GET /api/events/:id/analytics/guests`
   - Dashboard-Page: Upload-Heatmap pro Gast
 
-- [ ] 📌 **Email-Benachrichtigung bei Upload** (2 Stunden)
-  - Nach erfolgreichem Upload Email an Host
-  - Template: "Neues Foto von [Gast-Name]"
+- [x] ✅ **Email-Benachrichtigung bei Upload** - Erledigt 2026-01-13
 
 - [ ] 📌 **Bulk-Download mit Ordner-Struktur** (3 Stunden)
   - ZIP mit Kategorien als Ordner
