@@ -46,10 +46,7 @@
 
 - [x] ✅ **Multer File Size Limit auf 50 MB** - Bereits erledigt (photos.ts:58)
 
-- [ ] ⚠️ **Sharp-Fallback crashen lassen** (5 Min)
-  - Datei: `packages/backend/src/services/imageProcessor.ts`
-  - Zeile 22-28: `throw new Error('Sharp missing')`
-  - **Impact: Keine unkomprimierten 12 MB Bilder ausliefern!**
+- [x] ✅ **Sharp-Fallback crashen lassen** - Erledigt 2026-01-13
 
 **⏱ Gesamtaufwand WICHTIG: ~12 Stunden**
 
