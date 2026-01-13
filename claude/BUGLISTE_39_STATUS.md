@@ -13,12 +13,12 @@
 | # | Beschreibung | Status | Kommentar |
 |---|--------------|--------|-----------|
 | 1 | Zurück-Button Header Mobile | ✅ | Heute behoben (asChild-Pattern) |
-| 2 | FAQ Button im Host-Dashboard entfernen | 🔧 | Vorhanden in `/dashboard/page.tsx:114` |
-| 3 | "Uploads prüfen" Funktion unklar | ❓ | Wo genau? Moderation? |
-| 4 | Logout/Abmelden Button entfernen | 🔧 | Vorhanden in `/dashboard/page.tsx:131-137` |
+| 2 | FAQ Button im Host-Dashboard entfernen | ✅ | Heute behoben (hidden sm:inline-flex) |
+| 3 | "Uploads prüfen" Funktion unklar | ❓ | Link zu /moderation - Moderation-Seite |
+| 4 | Logout/Abmelden Button entfernen | ✅ | Heute behoben (hidden sm:inline-flex) |
 | 5 | Schritt-für-Schritt Event-Erstellung | 📋 | Wizard existiert bereits (`/components/wizard/`) |
 | 6 | Karte bei Event-Erstellung | 🔧 | Muss geprüft werden |
-| 7 | Fotos/Videos Buttons im Dashboard entfernen | 🔧 | Zeile 665-674, `hidden sm:inline-flex` |
+| 7 | Fotos/Videos Buttons im Dashboard entfernen | ✅ | Bereits hidden sm:inline-flex |
 | 8 | Titelbild/Profilbild lädt nicht | ✅ | Heute behoben (Design-Images Route) |
 | 9 | Dashboard benutzerfreundlicher | 📋 | Konzept-Arbeit nötig |
 | 10 | Nicht-enthaltene Features ausgrauen | 📋 | Package-Prüfung pro Feature |
@@ -50,7 +50,7 @@
 | 36 | Upload-Button ohne Funktion | 🔧 | Event-Handler prüfen |
 | 37 | Challenges Modal falsch | 🔧 | Fullscreen Modal |
 | 38 | Info-Menü erweitern | 📋 | Betrieb-Info hinzufügen |
-| 39 | Feed Button Hintergrund | 🔧 | CSS Fix |
+| 39 | Feed Button Hintergrund | ✅ | Heute behoben (bg-transparent) |
 
 ---
 
@@ -58,8 +58,8 @@
 
 | Kategorie | Anzahl |
 |-----------|--------|
-| ✅ Bereits behoben | 4 |
-| 🔧 Heute fixbar | 20 |
+| ✅ Bereits behoben | 8 |
+| 🔧 Heute fixbar | 16 |
 | 📋 Feature-Request | 12 |
 | ❓ Klärung nötig | 3 |
 
