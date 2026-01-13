@@ -85,9 +85,7 @@
   - QR mit Event-Logo in der Mitte
   - Visitenkarten-Format, Tischaufsteller-Format
 
-- [ ] 📌 **Skeleton Loaders** (2 Stunden)
-  - Statt "Loading..." Text
-  - Animated Skeletons für Grid, Modal, etc.
+- [x] ✅ **Skeleton Loaders** - Erledigt 2026-01-13 (Skeleton.tsx, e/[slug]/page.tsx)
 
 - [x] ✅ **Host-Download trotz Storage-Lock** - Erledigt 2026-01-13
 

@@ -1,6 +1,6 @@
-13.01.2026 16:30
+13.01.2026 16:51
 
-Session Summary (11 Items erledigt):
+Session Summary (14 Items erledigt):
 1. Bug #8 gefixt: Design-Bilder laden bei deaktivierten Events
 2. Bug #1 gefixt: Zurück-Button Mobile (asChild-Pattern)
 3. Name-Persist in LocalStorage: Gast muss Namen nicht neu eingeben
@@ -10,10 +10,13 @@ Session Summary (11 Items erledigt):
 7. Admin Dashboard: Nutzt jetzt localhost API für reduzierte Latenz
 8. Offline-Queue UI: Badge, Liste und Manual Retry für ausstehende Uploads
 9. Sharp-Fallback: Wirft jetzt Fehler statt unkomprimierte Bilder auszuliefern
-10. TODO-Liste bereinigt und aktualisiert
-11. Backend + Frontend deployed
+10. SeaweedFS Replication: Als "Blocked" markiert (erfordert 2. Volume-Server)
+11. Host-Download trotz Storage-Lock: Hosts können auch nach Ablauf downloaden
+12. Skeleton UI Components: Animierte Lade-Skelette statt "Loading..." Text
+13. TODO-Liste bereinigt und aktualisiert
+14. Backend + Frontend deployed (18 Commits heute)
 
-Commits heute (13):
+Commits heute:
 - e7a6178: fix: Bug #8 design images, Bug #1 back button
 - 92004bb: docs: update TODO list
 - dd02ba1: feat: persist guest uploader name in localStorage
@@ -27,3 +30,7 @@ Commits heute (13):
 - 0dddca5: docs: finalize TODO list and session summary
 - c1da0bf: fix: fail fast if Sharp not available
 - 4e5caf4: docs: update TODO list (Sharp fallback completed)
+- 8163120: docs: update session summary
+- f29277d: feat: allow host downloads even after storage lock
+- 7a6981d: docs: update TODO list (Host-Download completed)
+- 5ebb8e5: feat: add Skeleton UI components for better loading UX
