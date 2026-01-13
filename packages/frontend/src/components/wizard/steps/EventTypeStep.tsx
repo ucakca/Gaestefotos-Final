@@ -48,18 +48,23 @@ export default function EventTypeStep({
               key={type}
               onClick={() => handleTypeSelect(type)}
               className={`
-                flex flex-col items-center justify-center p-6 rounded-lg border-2 transition-all
+                flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all
                 ${
                   isSelected
-                    ? `border-${config.color}-500 bg-${config.color}-50`
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-app-accent bg-app-accent/10 ring-2 ring-app-accent ring-offset-2 shadow-lg'
+                    : 'border-app-border bg-app-card hover:border-app-muted hover:bg-app-bg'
                 }
               `}
             >
-              <IconComponent className={`w-12 h-12 mb-3 ${isSelected ? `text-${config.color}-600` : 'text-gray-600'}`} />
-              <span className={`font-medium ${isSelected ? `text-${config.color}-900` : 'text-gray-900'}`}>
+              <IconComponent className={`w-12 h-12 mb-3 ${isSelected ? 'text-app-accent' : 'text-app-muted'}`} />
+              <span className={`font-medium ${isSelected ? 'text-app-accent' : 'text-app-fg'}`}>
                 {config.label}
               </span>
+              {isSelected && (
+                <div className="mt-2 w-6 h-6 rounded-full bg-app-accent flex items-center justify-center">
+                  <Icons.Check className="w-4 h-4 text-white" />
+                </div>
+              )}
             </button>
           );
         })}
@@ -67,7 +72,7 @@ export default function EventTypeStep({
 
       {hasSubtypes && (
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Welche Art?</h3>
+          <h3 className="text-lg font-medium text-app-fg">Welche Art?</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {eventConfig.subtypes!.map((subtype) => {
               const isSelected = selectedSubtype === subtype.id;
@@ -76,17 +81,22 @@ export default function EventTypeStep({
                   key={subtype.id}
                   onClick={() => onSelectSubtype(subtype.id)}
                   className={`
-                    px-4 py-3 rounded-lg border-2 transition-all text-left
+                    px-4 py-3 rounded-lg border-2 transition-all text-left flex items-center justify-between
                     ${
                       isSelected
-                        ? `border-${eventConfig.color}-500 bg-${eventConfig.color}-50`
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-app-accent bg-app-accent/10 ring-1 ring-app-accent'
+                        : 'border-app-border bg-app-card hover:border-app-muted hover:bg-app-bg'
                     }
                   `}
                 >
-                  <span className={isSelected ? `text-${eventConfig.color}-900` : 'text-gray-900'}>
+                  <span className={isSelected ? 'text-app-accent font-medium' : 'text-app-fg'}>
                     {subtype.label}
                   </span>
+                  {isSelected && (
+                    <div className="w-5 h-5 rounded-full bg-app-accent flex items-center justify-center">
+                      <Icons.Check className="w-3 h-3 text-white" />
+                    </div>
+                  )}
                 </button>
               );
             })}
