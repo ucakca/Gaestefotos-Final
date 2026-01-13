@@ -30,6 +30,19 @@ interface UploadFile {
   progress: number;
   error?: string;
   success?: boolean;
+  startTime?: number;
+  etaSeconds?: number;
+}
+
+/**
+ * Format seconds to human-readable ETA string.
+ */
+function formatEta(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds < 0) return '';
+  if (seconds < 60) return `~${Math.ceil(seconds)}s`;
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.ceil(seconds % 60);
+  return `~${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 function createUploadId() {
@@ -272,7 +285,8 @@ export default function UploadButton({
   }, [uploaderName]);
 
   const uploadMedia = async (uploadId: string, originalFile: File) => {
-    setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, uploading: true, progress: 0 } : f)));
+    const uploadStartTime = Date.now();
+    setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, uploading: true, progress: 0, startTime: uploadStartTime } : f)));
 
     const startTime = Date.now();
     const originalSize = originalFile.size;
@@ -305,7 +319,9 @@ export default function UploadButton({
         eventId,
         uploadedBy: name,
         onProgress: (percent) => {
-          setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, progress: Math.round(percent) } : f)));
+          const elapsed = (Date.now() - uploadStartTime) / 1000;
+          const etaSeconds = percent > 0 ? (elapsed / percent) * (100 - percent) : 0;
+          setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, progress: Math.round(percent), etaSeconds } : f)));
         },
         onError: (error) => {
           console.error('Tus upload error:', error);
@@ -751,13 +767,21 @@ export default function UploadButton({
                             {file.file.name}
                           </p>
                           {file.uploading && (
-                            <div className="mt-1 w-full bg-app-border rounded-full h-1.5">
-                              <motion.div
-                                className="h-1.5 rounded-full bg-app-accent"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${file.progress}%` }}
-                                transition={{ duration: 0.3 }}
-                              />
+                            <div className="mt-1">
+                              <div className="flex items-center justify-between text-xs text-app-muted mb-0.5">
+                                <span>{file.progress}%</span>
+                                {file.etaSeconds && file.etaSeconds > 0 && file.progress < 95 && (
+                                  <span>{formatEta(file.etaSeconds)}</span>
+                                )}
+                              </div>
+                              <div className="w-full bg-app-border rounded-full h-1.5">
+                                <motion.div
+                                  className="h-1.5 rounded-full bg-app-accent"
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${file.progress}%` }}
+                                  transition={{ duration: 0.3 }}
+                                />
+                              </div>
                             </div>
                           )}
                           {file.error && (
