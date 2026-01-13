@@ -31,10 +31,7 @@
 ### Performance & UX
 - [x] ✅ **Dashboard Realtime-Updates via Socket.io** - Erledigt 2026-01-13
 
-- [ ] ⚠️ **Dashboard API-Calls direkt zu localhost** (30 Min)
-  - Service: `gaestefotos-admin-dashboard.service`
-  - Ändern: `NEXT_PUBLIC_API_URL=http://localhost:8001`
-  - **Impact: -100ms Latenz, keine Cloudflare-Abhängigkeit!**
+- [x] ✅ **Dashboard API-Calls direkt zu localhost** - Erledigt 2026-01-13 (override.conf)
 
 - [x] ✅ **Name-Persist in LocalStorage** - Erledigt 2026-01-13
 
