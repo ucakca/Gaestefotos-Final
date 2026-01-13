@@ -20,6 +20,8 @@
 ### Bugfixes (2026-01-13)
 - [x] ✅ **Bug #8: Design-Bilder bei deaktivierten Events** - Backend erlaubt jetzt Laden
 - [x] ✅ **Bug #1: Zurück-Button Mobile** - asChild-Pattern für IconButton
+- [x] ✅ **Name-Persist in LocalStorage** - Gast muss Namen nicht bei jedem Upload neu eingeben
+- [x] ✅ **WebSocket in Socket.io** - Bereits aktiviert: `transports: ['websocket', 'polling']`
 
 ---
 

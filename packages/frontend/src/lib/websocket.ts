@@ -31,8 +31,8 @@ class WebSocketManager {
     if (this.socket?.connected) return;
 
     this.socket = io(getWsBaseUrl(), {
-      transports: ['polling'],
-      upgrade: false,
+      transports: ['websocket', 'polling'], // WebSocket bevorzugt, Polling als Fallback
+      upgrade: true,
       path: '/socket.io',
     });
 
