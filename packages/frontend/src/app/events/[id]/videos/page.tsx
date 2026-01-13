@@ -507,7 +507,7 @@ export default function VideosPage() {
               <div>
                 <p className="font-semibold text-sm text-app-fg">Speicherperiode beendet</p>
                 <p className="text-xs text-app-muted mt-1">
-                  Uploads und Downloads sind deaktiviert. Bitte verlängere das Paket, um wieder Zugriff zu erhalten.
+                  Uploads sind deaktiviert. Als Host kannst du weiterhin alle Videos herunterladen.
                 </p>
               </div>
             </div>

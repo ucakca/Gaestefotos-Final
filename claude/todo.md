@@ -40,9 +40,10 @@
 - [x] ✅ **Offline-Queue UI** - Erledigt 2026-01-13 (OfflineQueueIndicator.tsx)
 
 ### Infrastruktur
-- [ ] ⚠️ **SeaweedFS Replication aktivieren** (2 Stunden)
-  - Command: `weed master -mdir=./mdir -defaultReplication=001`
-  - **Impact: Backup! Wenn Server crasht, bleiben Fotos erhalten!**
+- [ ] ⏸️ **SeaweedFS Replication aktivieren** (erfordert 2. Volume-Server)
+  - Aktuell: 1 Volume-Server auf `/var/seaweedfs/volume`
+  - Benötigt: 2. Server oder 2. Disk für echte Redundanz
+  - **Blocked: Hardware/Budget-Entscheidung erforderlich**
 
 - [x] ✅ **Multer File Size Limit auf 50 MB** - Bereits erledigt (photos.ts:58)
 

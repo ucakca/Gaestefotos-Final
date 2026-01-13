@@ -594,7 +594,7 @@ export default function PhotoManagementPage() {
               <div>
                 <p className="font-semibold text-sm text-app-fg">Speicherperiode beendet</p>
                 <p className="text-xs text-app-muted mt-1">
-                  Uploads und Downloads sind deaktiviert. Bitte verlängere das Paket, um wieder Zugriff zu erhalten.
+                  Uploads sind deaktiviert. Als Host kannst du weiterhin alle Fotos herunterladen.
                 </p>
               </div>
             </div>
@@ -785,7 +785,6 @@ export default function PhotoManagementPage() {
                         e.preventDefault();
                         handleBulkDownload();
                       }}
-                      disabled={isStorageLocked}
                     >
                       <Download className="mr-2 h-4 w-4" />
                       Herunterladen
@@ -967,8 +966,8 @@ export default function PhotoManagementPage() {
 
         {/* Bulk Actions Bar removed - now handled by actions menu in header */}
 
-        {/* Floating Action Button for ZIP Download */}
-        {photos.length > 0 && !isStorageLocked && (
+        {/* Floating Action Button for ZIP Download - hosts can always download */}
+        {photos.length > 0 && (
           <Button
             asChild
             variant="primary"
@@ -1125,10 +1124,6 @@ export default function PhotoManagementPage() {
                         <DropdownMenuItem
                           onSelect={(e) => {
                             e.preventDefault();
-                            if (isStorageLocked) {
-                              showToast('Speicherperiode beendet – Download nicht mehr möglich', 'error');
-                              return;
-                            }
                             const url = buildApiUrl(`/photos/${selectedPhoto.id}/download`);
                             window.open(url, '_blank', 'noopener,noreferrer');
                           }}
