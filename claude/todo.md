@@ -69,9 +69,7 @@
   - `staging-prod.app` → 1:1-Clone von Production
 
 ### Features
-- [ ] 📌 **Gast-Analytics für Host** (4 Stunden)
-  - API: `GET /api/events/:id/analytics/guests`
-  - Dashboard-Page: Upload-Heatmap pro Gast
+- [x] ✅ **Gast-Analytics für Host** - API erledigt 2026-01-13 (Frontend-Page ausstehend)
 
 - [x] ✅ **Email-Benachrichtigung bei Upload** - Erledigt 2026-01-13
 
