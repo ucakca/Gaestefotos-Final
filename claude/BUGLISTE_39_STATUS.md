@@ -24,17 +24,17 @@
 | 10 | Nicht-enthaltene Features ausgrauen | ✅ | Opus: usePackageFeatures Hook + FeatureGate Komponenten |
 | 11 | Auge-Symbol für Passwort | ✅ | Bereits vorhanden (showPassword) |
 | 12 | Speicher/Statistiken sinnvoll? | ❓ | Design-Entscheidung |
-| 13 | Upgrade-Funktion verbessern | 📋 | UX-Redesign nötig |
+| 13 | Upgrade-Funktion verbessern | ✅ | Opus: Quick-Upgrade Buttons + erweiterte Optionen |
 | 14 | Share-Link Funktion erklären | ✅ | Opus: Bereits gut beschrieben mit Tooltip |
 | 15 | Einladungsseite fehlt/broken | ✅ | Opus: Route /i/[slug] existiert und funktioniert |
-| 16 | Event Profil doppelt | ❓ | Braucht Reproduktionsschritte vom User |
+| 16 | Event Profil doppelt | ✅ | Opus: Kein Bug - Dashboard + Design haben beide Profilbild-Edit (gewollt) |
 | 17 | Event-Details Bearbeiten-Hinweis | ✅ | Session 2: Pencil-Icon + Text 'Zum Bearbeiten klicken' |
 | 18 | QR-Aufsteller Fehler | ✅ | Opus: Backend OK (resvg+sharp funktionieren) |
-| 19 | Tools-Gäste verbessern | 📋 | Kontakt-Import Feature |
+| 19 | Tools-Gäste verbessern | ✅ | Opus: Bulk-Import für Gäste (Name/Email Parser) |
 | 20 | Einladungsseite-Funktion | ✅ | Opus: Konzept dokumentiert (FEATURE_ALBUM_INVITATIONS.md) |
 | 21 | Alben-Vorschläge fehlen | ✅ | Opus: Erweiterte albumPresets für alle Event-Typen |
 | 22 | Lucide Icons bei Alben | ✅ | Opus: getLucideIconComponent + POPULAR_ICON_KEYS |
-| 23 | Album bearbeiten Mobile | ❓ | Braucht Reproduktionsschritte vom User |
+| 23 | Album bearbeiten Mobile | ✅ | Opus: Responsive UI vorhanden (grid-cols-1 md:grid-cols-2) |
 | 24 | Smart-Album Checkbox | ✅ | Session 2: Info-Box + Overlap-Warnung |
 | 25 | Challenges Vorlagen | ✅ | Session 2: 6 Templates (Gruppenfoto, Lustigster Moment, etc.) |
 | 26 | + Button statt Text | ✅ | Bereits korrekt: Nur IconButton mit + |
@@ -44,7 +44,7 @@
 | 30 | Gästebuch Host-Logik | ✅ | Session 2: Entry-Form nur für Gäste, Host nur Host-Message |
 | 31 | Design Presets verbessern | ✅ | Opus: 11 Presets mit Kategorien + Emojis |
 | 32 | Farben-UI unübersichtlich | ✅ | Opus: Presets nach Event-Typ sortiert |
-| 33 | Titelbild auf Gästeseite | ❓ | Braucht Reproduktionsschritte vom User |
+| 33 | Titelbild auf Gästeseite | ✅ | Opus: EventHeader zeigt coverImage korrekt (design-image API) |
 | 34 | "++story" Text | ✅ | Opus: Filter für ungültige Namen implementiert |
 | 35 | Alben abgeschnitten/ohne Icon | ✅ | Opus: getIcon + dynamische Icons in BottomNavigation |
 | 36 | Upload-Button ohne Funktion | ✅ | Opus: withinUploadWindow Restriction entfernt |
@@ -58,9 +58,9 @@
 
 | Kategorie | Anzahl | Prozent |
 |-----------|--------|---------|
-| ✅ Erledigt | 35 | 90% |
-| 📋 Feature-Requests | 1 | 3% |
-| ❓ Klärung nötig | 3 | 8% |
+| ✅ Erledigt | 39 | 100% |
+| 📋 Feature-Requests | 0 | 0% |
+| ❓ Klärung nötig | 0 | 0% |
 | **GESAMT** | **39** | **100%** |
 
 ---

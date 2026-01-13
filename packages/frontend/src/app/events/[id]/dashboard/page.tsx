@@ -1829,55 +1829,92 @@ export default function EventDashboardPage() {
 
           <div className="overflow-hidden rounded-xl border border-app-border bg-app-card">
             <div className="border-b border-app-border px-4 py-3">
-              <div className="text-sm font-semibold text-app-fg">Upgrade</div>
+              <div className="text-sm font-semibold text-app-fg">🚀 Paket erweitern</div>
               <div className="text-xs text-app-muted">
-                Optional – nur nötig, wenn du einen spezifischen Checkout-Link erzeugen willst.
+                Mehr Speicher, mehr Features, längere Laufzeit
               </div>
             </div>
 
-            <div className="px-4 py-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <div className="text-xs font-medium text-app-muted">SKU (optional)</div>
-                  <Input
-                    value={upgradeSku}
-                    onChange={(e) => setUpgradeSku(e.target.value)}
-                    placeholder="z.B. premium_1000"
-                  />
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-app-muted">Product ID (optional)</div>
-                  <Input
-                    value={upgradeProductId}
-                    onChange={(e) => setUpgradeProductId(e.target.value)}
-                    placeholder="z.B. prod_..."
-                  />
-                </div>
-              </div>
-              <div className="mt-3 flex items-center gap-2 flex-wrap">
-                <Button
+            <div className="px-4 py-4 space-y-4">
+              {/* Quick Upgrade Options */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <button
                   type="button"
-                  onClick={handleUpgrade}
-                  variant="primary"
-                  disabled={upgradeLoading}
+                  onClick={() => { setUpgradeSku('premium_500'); handleUpgrade(); }}
+                  className="p-3 rounded-lg border border-app-border bg-app-bg hover:border-app-accent transition-colors text-left"
                 >
-                  {upgradeLoading ? 'Erzeuge…' : 'Upgrade öffnen'}
-                </Button>
-                {upgradeUrl && (
+                  <div className="text-sm font-semibold text-app-fg">+500 Fotos</div>
+                  <div className="text-xs text-app-muted mt-1">Speicher erweitern</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setUpgradeSku('premium_1000'); handleUpgrade(); }}
+                  className="p-3 rounded-lg border border-app-border bg-app-bg hover:border-app-accent transition-colors text-left"
+                >
+                  <div className="text-sm font-semibold text-app-fg">+1000 Fotos</div>
+                  <div className="text-xs text-app-muted mt-1">Mehr Speicher</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setUpgradeSku('premium_unlimited'); handleUpgrade(); }}
+                  className="p-3 rounded-lg border border-app-accent bg-app-accent/5 hover:bg-app-accent/10 transition-colors text-left"
+                >
+                  <div className="text-sm font-semibold text-app-accent">Unbegrenzt</div>
+                  <div className="text-xs text-app-muted mt-1">Keine Limits</div>
+                </button>
+              </div>
+
+              {/* Advanced: Manual SKU */}
+              <details className="group">
+                <summary className="cursor-pointer text-xs text-app-muted hover:text-app-fg">
+                  Erweiterte Optionen (SKU manuell eingeben)
+                </summary>
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <div className="text-xs font-medium text-app-muted">SKU</div>
+                    <Input
+                      value={upgradeSku}
+                      onChange={(e) => setUpgradeSku(e.target.value)}
+                      placeholder="z.B. premium_1000"
+                    />
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-app-muted">Product ID</div>
+                    <Input
+                      value={upgradeProductId}
+                      onChange={(e) => setUpgradeProductId(e.target.value)}
+                      placeholder="z.B. prod_..."
+                    />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <Button
+                    type="button"
+                    onClick={handleUpgrade}
+                    variant="secondary"
+                    size="sm"
+                    disabled={upgradeLoading}
+                  >
+                    {upgradeLoading ? 'Erzeuge…' : 'Link erstellen'}
+                  </Button>
+                </div>
+              </details>
+
+              {upgradeError && <div className="text-sm text-status-danger">{upgradeError}</div>}
+              {upgradeUrl && (
+                <div className="flex items-center gap-2 flex-wrap">
                   <Button
                     type="button"
                     variant="secondary"
+                    size="sm"
                     onClick={async () => {
                       await copyToClipboard(upgradeUrl);
                     }}
                   >
                     Link kopieren
                   </Button>
-                )}
-              </div>
-              {upgradeError && <div className="mt-2 text-sm text-status-danger">{upgradeError}</div>}
-              {upgradeUrl && (
-                <div className="mt-2 text-xs text-app-muted break-all">{upgradeUrl}</div>
+                  <span className="text-xs text-app-muted break-all">{upgradeUrl}</span>
+                </div>
               )}
             </div>
           </div>

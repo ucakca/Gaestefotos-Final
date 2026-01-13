@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { Guest, Event as EventType } from '@gaestefotos/shared';
-import { Trash2, Mail, UserPlus } from 'lucide-react';
+import { Trash2, Mail, UserPlus, Upload, FileText } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Button } from '@/components/ui/Button';
@@ -62,6 +62,9 @@ export default function GuestManagementPage() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showImportForm, setShowImportForm] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [importing, setImporting] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -112,6 +115,67 @@ export default function GuestManagementPage() {
     } catch (err: any) {
       showToast('Fehler beim Hinzufügen', 'error');
     }
+  };
+
+  const handleImportGuests = async () => {
+    if (!importText.trim()) {
+      showToast('Bitte Gästeliste eingeben', 'error');
+      return;
+    }
+    
+    setImporting(true);
+    const lines = importText.split('\n').filter(line => line.trim());
+    let added = 0;
+    let failed = 0;
+    
+    for (const line of lines) {
+      // Parse: "Vorname Nachname, email@example.com" or "Vorname Nachname" or "email@example.com"
+      const parts = line.split(',').map(p => p.trim());
+      let firstName = '';
+      let lastName = '';
+      let email = '';
+      
+      if (parts.length >= 2) {
+        // "Name, Email" format
+        const nameParts = parts[0].split(' ').filter(Boolean);
+        firstName = nameParts[0] || '';
+        lastName = nameParts.slice(1).join(' ') || '';
+        email = parts[1] || '';
+      } else if (parts[0].includes('@')) {
+        // Just email
+        email = parts[0];
+        firstName = parts[0].split('@')[0];
+      } else {
+        // Just name
+        const nameParts = parts[0].split(' ').filter(Boolean);
+        firstName = nameParts[0] || '';
+        lastName = nameParts.slice(1).join(' ') || '';
+      }
+      
+      if (!firstName && !email) {
+        failed++;
+        continue;
+      }
+      
+      try {
+        await api.post(`/events/${eventId}/guests`, {
+          firstName: firstName || 'Gast',
+          lastName,
+          email,
+          dietaryRequirements: '',
+          plusOneCount: 0,
+        });
+        added++;
+      } catch {
+        failed++;
+      }
+    }
+    
+    setImporting(false);
+    setImportText('');
+    setShowImportForm(false);
+    showToast(`${added} Gäste importiert${failed > 0 ? `, ${failed} fehlgeschlagen` : ''}`, added > 0 ? 'success' : 'error');
+    loadGuests();
   };
 
   const handleDelete = async (guestId: string) => {
@@ -200,18 +264,81 @@ export default function GuestManagementPage() {
                 {guests.length} Gast{guests.length !== 1 ? 'e' : ''}
               </p>
             </div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                type="button"
-                onClick={() => setShowAddForm(!showAddForm)}
-                variant="primary"
-              >
-                <UserPlus className="h-5 w-5" />
-                Gast hinzufügen
-              </Button>
-            </motion.div>
+            <div className="flex gap-2">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  type="button"
+                  onClick={() => { setShowImportForm(!showImportForm); setShowAddForm(false); }}
+                  variant="secondary"
+                >
+                  <Upload className="h-5 w-5" />
+                  Importieren
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  type="button"
+                  onClick={() => { setShowAddForm(!showAddForm); setShowImportForm(false); }}
+                  variant="primary"
+                >
+                  <UserPlus className="h-5 w-5" />
+                  Hinzufügen
+                </Button>
+              </motion.div>
+            </div>
           </div>
         </motion.div>
+
+        {/* Import Guests Form */}
+        <AnimatePresence>
+          {showImportForm && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-app-card border border-app-border rounded-lg shadow p-6 mb-6"
+            >
+              <h2 className="text-xl font-semibold mb-2 text-app-fg flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Gäste importieren
+              </h2>
+              <p className="text-sm text-app-muted mb-4">
+                Füge mehrere Gäste auf einmal hinzu. Ein Gast pro Zeile.
+              </p>
+              
+              <div className="mb-4 p-3 rounded-lg bg-app-bg border border-app-border">
+                <div className="text-xs font-medium text-app-fg mb-1">Unterstützte Formate:</div>
+                <div className="text-xs text-app-muted space-y-1">
+                  <div>• <code>Vorname Nachname, email@example.com</code></div>
+                  <div>• <code>Vorname Nachname</code></div>
+                  <div>• <code>email@example.com</code></div>
+                </div>
+              </div>
+              
+              <Textarea
+                value={importText}
+                onChange={(e) => setImportText(e.target.value)}
+                placeholder={`Max Mustermann, max@example.com\nAnna Schmidt\nmaria@example.com`}
+                rows={8}
+                className="font-mono text-sm"
+              />
+              
+              <div className="flex gap-4 mt-4">
+                <Button type="button" variant="secondary" onClick={() => setShowImportForm(false)}>
+                  Abbrechen
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="primary" 
+                  onClick={handleImportGuests}
+                  disabled={importing || !importText.trim()}
+                >
+                  {importing ? 'Importiere...' : `${importText.split('\n').filter(l => l.trim()).length} Gäste importieren`}
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Add Guest Form */}
         <AnimatePresence>
