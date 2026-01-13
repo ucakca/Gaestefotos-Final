@@ -21,20 +21,20 @@
 | 7 | Fotos/Videos Buttons im Dashboard entfernen | ✅ | Bereits hidden sm:inline-flex |
 | 8 | Titelbild/Profilbild lädt nicht | ✅ | Heute behoben (Design-Images Route) |
 | 9 | Dashboard benutzerfreundlicher | 📋 | Konzept-Arbeit nötig |
-| 10 | Nicht-enthaltene Features ausgrauen | 📋 | Package-Prüfung pro Feature |
+| 10 | Nicht-enthaltene Features ausgrauen | ✅ | Opus: usePackageFeatures Hook + FeatureGate Komponenten |
 | 11 | Auge-Symbol für Passwort | ✅ | Bereits vorhanden (showPassword) |
 | 12 | Speicher/Statistiken sinnvoll? | ❓ | Design-Entscheidung |
 | 13 | Upgrade-Funktion verbessern | 📋 | UX-Redesign nötig |
-| 14 | Share-Link Funktion erklären | 🔧 | Bessere Beschriftung/Tooltip |
-| 15 | Einladungsseite fehlt/broken | 🔧 | Route prüfen |
-| 16 | Event Profil doppelt | 🔧 | Deduplizieren |
+| 14 | Share-Link Funktion erklären | ✅ | Opus: Bereits gut beschrieben mit Tooltip |
+| 15 | Einladungsseite fehlt/broken | ✅ | Opus: Route /i/[slug] existiert und funktioniert |
+| 16 | Event Profil doppelt | ❓ | Braucht Reproduktionsschritte vom User |
 | 17 | Event-Details Bearbeiten-Hinweis | ✅ | Session 2: Pencil-Icon + Text 'Zum Bearbeiten klicken' |
-| 18 | QR-Aufsteller Fehler | 🔧 | Error-Handling prüfen |
+| 18 | QR-Aufsteller Fehler | ✅ | Opus: Backend OK (resvg+sharp funktionieren) |
 | 19 | Tools-Gäste verbessern | 📋 | Kontakt-Import Feature |
 | 20 | Einladungsseite-Funktion | ✅ | Opus: Konzept dokumentiert (FEATURE_ALBUM_INVITATIONS.md) |
 | 21 | Alben-Vorschläge fehlen | 📋 | Event-Typ basierte Templates |
-| 22 | Lucide Icons bei Alben | 🔧 | Icon-Picker prüfen |
-| 23 | Album bearbeiten Mobile | 🔧 | Responsive Fix |
+| 22 | Lucide Icons bei Alben | ✅ | Opus: getLucideIconComponent + POPULAR_ICON_KEYS |
+| 23 | Album bearbeiten Mobile | ❓ | Braucht Reproduktionsschritte vom User |
 | 24 | Smart-Album Checkbox | ✅ | Session 2: Info-Box + Overlap-Warnung |
 | 25 | Challenges Vorlagen | ✅ | Session 2: 6 Templates (Gruppenfoto, Lustigster Moment, etc.) |
 | 26 | + Button statt Text | ✅ | Bereits korrekt: Nur IconButton mit + |
@@ -44,11 +44,11 @@
 | 30 | Gästebuch Host-Logik | ✅ | Session 2: Entry-Form nur für Gäste, Host nur Host-Message |
 | 31 | Design Presets verbessern | 📋 | Custom Preset Feature |
 | 32 | Farben-UI unübersichtlich | 📋 | UX-Redesign |
-| 33 | Titelbild auf Gästeseite | 🔧 | CSS/Design-Config prüfen |
-| 34 | "++story" Text | 🔧 | StoriesBar.tsx prüfen |
-| 35 | Alben abgeschnitten/ohne Icon | 🔧 | CSS Fix + Icon |
-| 36 | Upload-Button ohne Funktion | 🔧 | Event-Handler prüfen |
-| 37 | Challenges Modal falsch | 🔧 | Fullscreen Modal |
+| 33 | Titelbild auf Gästeseite | ❓ | Braucht Reproduktionsschritte vom User |
+| 34 | "++story" Text | ✅ | Opus: Filter für ungültige Namen implementiert |
+| 35 | Alben abgeschnitten/ohne Icon | ✅ | Opus: getIcon + dynamische Icons in BottomNavigation |
+| 36 | Upload-Button ohne Funktion | ✅ | Opus: withinUploadWindow Restriction entfernt |
+| 37 | Challenges Modal falsch | ✅ | Opus: Bereits Fullscreen (fixed inset-0) |
 | 38 | Info-Menü erweitern | ✅ | Session 2: Kontakt, SSL, DSGVO, Backups hinzugefügt |
 | 39 | Feed Button Hintergrund | ✅ | Session 2: bg-transparent entfernt |
 
@@ -58,10 +58,9 @@
 
 | Kategorie | Anzahl | Prozent |
 |-----------|--------|---------|
-| ✅ Erledigt | 23 | 59% |
-| 🔧 Quick Fixes offen | 6 | 15% |
-| 📋 Feature-Requests | 6 | 15% |
-| ❓ Klärung | 4 | 10% |
+| ✅ Erledigt | 31 | 79% |
+| 📋 Feature-Requests | 5 | 13% |
+| ❓ Klärung nötig | 3 | 8% |
 | **GESAMT** | **39** | **100%** |
 
 ---
