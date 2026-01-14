@@ -54,6 +54,7 @@ import adminUsersRoutes from './routes/adminUsers';
 import adminEventsRoutes from './routes/adminEvents';
 import cohostInvitesRoutes from './routes/cohostInvites';
 import uploadsRoutes from './routes/uploads';
+import qrDesignsRoutes from './routes/qrDesigns';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -530,6 +531,7 @@ app.use('/api/events', cohostsRoutes); // Co-hosts: /api/events/:eventId/cohosts
 app.use('/api/cohosts', cohostInvitesRoutes); // Co-host invite accept: /api/cohosts/accept
 app.use('/api/videos', videoRoutes); // Video files: /api/videos/:eventId/file/*
 app.use('/api', invitationRoutes);
+app.use('/api', qrDesignsRoutes);
 app.use('/api/admin/package-definitions', packageDefinitionsRoutes);
 app.use('/api/admin/webhooks/woocommerce', adminWooWebhooksRoutes);
 app.use('/api/admin/api-keys', adminApiKeysRoutes);

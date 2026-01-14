@@ -142,3 +142,6 @@ export interface PhotoUploadMessage extends WebSocketMessage {
   };
 }
 
+// Re-export invitation and QR design types
+export * from './invitation';
+export * from './qr-design';
