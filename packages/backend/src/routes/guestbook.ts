@@ -11,14 +11,10 @@ import { attachEventUploadRateLimits, photoUploadEventLimiter, photoUploadIpLimi
 import { assertUploadWithinLimit } from '../services/packageLimits';
 import { assertFeatureEnabled } from '../services/featureGate';
 import { extractCapturedAtFromImage, isWithinDateWindowPlusMinusDays } from '../services/uploadDatePolicy';
+import { serializeBigInt } from '../utils/serializers';
 
 const router = Router();
 
-function serializeBigInt(value: unknown): unknown {
-  return JSON.parse(
-    JSON.stringify(value, (_key, v) => (typeof v === 'bigint' ? v.toString() : v))
-  ) as unknown;
-}
 
 async function cleanupExpiredGuestbookPhotoUploads(eventId: string, now: Date): Promise<void> {
   type ExpiredUpload = { id: string; storagePath: string };

@@ -13,36 +13,10 @@ import { assertFeatureEnabled } from '../services/featureGate';
 import { isWithinDateWindowPlusMinusDays } from '../services/uploadDatePolicy';
 import { denyByVisibility, isWithinEventDateWindow } from '../services/eventPolicy';
 import { getEventStorageEndsAt } from '../services/storagePolicy';
+import { serializeBigInt } from '../utils/serializers';
+import { selectSmartCategoryId } from '../services/smartAlbum';
 
 const router = Router();
-
-async function selectSmartCategoryId(opts: {
-  eventId: string;
-  capturedAt: Date;
-  isGuest: boolean;
-}): Promise<string | null> {
-  const { eventId, capturedAt, isGuest } = opts;
-
-  const cat = await prisma.category.findFirst({
-    where: {
-      eventId,
-      startAt: { not: null, lte: capturedAt },
-      endAt: { not: null, gte: capturedAt },
-    },
-    select: { id: true, uploadLocked: true },
-    orderBy: { startAt: 'desc' },
-  });
-
-  if (!cat) return null;
-  if (isGuest && cat.uploadLocked) return null;
-  return cat.id;
-}
-
-function serializeBigInt(value: unknown): unknown {
-  return JSON.parse(
-    JSON.stringify(value, (_key, v) => (typeof v === 'bigint' ? v.toString() : v))
-  ) as unknown;
-}
 
 // Multer setup for video uploads
 const upload = multer({

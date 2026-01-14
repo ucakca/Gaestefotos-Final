@@ -12,6 +12,8 @@ import { denyByVisibility, isWithinEventDateWindow } from '../services/eventPoli
 import { getEventStorageEndsAt } from '../services/storagePolicy';
 import { extractCapturedAtFromImage } from '../services/uploadDatePolicy';
 import { emailService } from '../services/email';
+import { serializeBigInt } from '../utils/serializers';
+import { selectSmartCategoryId } from '../services/smartAlbum';
 import archiver from 'archiver';
 
 // Sharp is optional; if missing we fall back to a tiny placeholder for blurred previews.
@@ -23,34 +25,6 @@ try {
 }
 
 const router = Router();
-
-async function selectSmartCategoryId(opts: {
-  eventId: string;
-  capturedAt: Date;
-  isGuest: boolean;
-}): Promise<string | null> {
-  const { eventId, capturedAt, isGuest } = opts;
-
-  const cat = await prisma.category.findFirst({
-    where: {
-      eventId,
-      startAt: { not: null, lte: capturedAt },
-      endAt: { not: null, gte: capturedAt },
-    },
-    select: { id: true, uploadLocked: true },
-    orderBy: { startAt: 'desc' },
-  });
-
-  if (!cat) return null;
-  if (isGuest && cat.uploadLocked) return null;
-  return cat.id;
-}
-
-function serializeBigInt(value: unknown): unknown {
-  return JSON.parse(
-    JSON.stringify(value, (_key, v) => (typeof v === 'bigint' ? v.toString() : v))
-  ) as unknown;
-}
 
 // Multer setup for file uploads
 const upload = multer({
@@ -136,7 +110,7 @@ const uploadSinglePhoto = (req: AuthRequest, res: Response, next: any) => {
     if (!err) return next();
     const code = (err as any)?.code;
     if (code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'Datei zu groß. Maximum: 10MB' });
+      return res.status(400).json({ error: 'Datei zu groß. Maximum: 50MB' });
     }
     const message = (err as any)?.message || String(err);
     if (message === 'Only image files are allowed') {
