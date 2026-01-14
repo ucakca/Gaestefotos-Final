@@ -69,7 +69,7 @@ export function DownloadButton({ config, eventId, eventSlug }: DownloadButtonPro
       <Button
         onClick={() => handleDownload('png')}
         disabled={downloading}
-        variant="outline"
+        variant="secondary"
         className="flex-1"
       >
         <Download size={16} className="mr-2" />
@@ -78,7 +78,7 @@ export function DownloadButton({ config, eventId, eventSlug }: DownloadButtonPro
       <Button
         onClick={() => handleDownload('pdf')}
         disabled={downloading}
-        variant="outline"
+        variant="secondary"
         className="flex-1"
       >
         <Download size={16} className="mr-2" />

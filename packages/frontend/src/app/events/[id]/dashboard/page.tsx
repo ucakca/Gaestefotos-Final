@@ -56,6 +56,7 @@ import { useToastStore } from '@/store/toastStore';
 import GuidedTour from '@/components/ui/GuidedTour';
 import HelpTooltip from '@/components/ui/HelpTooltip';
 import { useRealtimePhotos } from '@/hooks/useRealtimePhotos';
+import { QRDesignerPanel } from '@/components/qr-designer/QRDesignerPanel';
 
 interface PhotoStats {
   total: number;
@@ -1940,6 +1941,21 @@ export default function EventDashboardPage() {
                   <span className="text-xs text-app-muted break-all">{upgradeUrl}</span>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* QR-Code Designer */}
+          <div className="overflow-hidden rounded-xl border border-app-border bg-app-card">
+            <div className="border-b border-app-border px-4 py-3">
+              <div className="text-sm font-semibold text-app-fg">QR-Code Designer</div>
+              <div className="text-xs text-app-muted">Gestalte stylische QR-Codes für Tischaufsteller & Poster</div>
+            </div>
+            <div className="px-4 py-6">
+              <QRDesignerPanel
+                eventId={eventId}
+                eventSlug={event.slug}
+                galleryUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/e2/${event.slug}`}
+              />
             </div>
           </div>
 

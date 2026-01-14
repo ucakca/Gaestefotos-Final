@@ -197,7 +197,7 @@ export function QRDesignerPanel({ eventId, eventSlug, galleryUrl }: QRDesignerPa
               {designs.length > 1 && (
                 <Button
                   onClick={() => deleteDesign(activeDesign.id)}
-                  variant="outline"
+                  variant="secondary"
                   className="text-destructive hover:text-destructive"
                 >
                   <Trash2 size={16} />
