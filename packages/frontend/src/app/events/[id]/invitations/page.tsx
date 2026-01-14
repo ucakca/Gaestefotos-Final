@@ -29,7 +29,10 @@ import {
   Copy,
   QrCode,
   Calendar,
+  Settings,
 } from 'lucide-react';
+import { InvitationConfigEditor } from '@/components/invitation-editor/InvitationConfigEditor';
+import { InvitationConfig } from '@gaestefotos/shared';
 
 interface Invitation {
   id: string;
@@ -71,6 +74,10 @@ export default function InvitationsPage() {
 
   // Copy feedback
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
+
+  // Config editor
+  const [editingConfigId, setEditingConfigId] = useState<string | null>(null);
+  const [editingConfig, setEditingConfig] = useState<Partial<InvitationConfig> | null>(null);
 
   useEffect(() => {
     loadInvitations();
@@ -167,6 +174,29 @@ export default function InvitationsPage() {
     await navigator.clipboard.writeText(text);
     setCopyFeedback(message);
     setTimeout(() => setCopyFeedback(null), 2000);
+  };
+
+  const openConfigEditor = async (inv: Invitation) => {
+    try {
+      const { data } = await api.get(`/invitations/slug/${inv.slug}`);
+      setEditingConfigId(inv.id);
+      setEditingConfig((data.invitation?.config as Partial<InvitationConfig>) || {});
+    } catch (err: any) {
+      showToast('Fehler beim Laden der Konfiguration', 'error');
+    }
+  };
+
+  const saveConfig = async (config: Partial<InvitationConfig>) => {
+    if (!editingConfigId) return;
+    
+    try {
+      await api.put(`/events/${eventId}/invitations/${editingConfigId}`, { config });
+      await loadInvitations();
+      showToast('Einladung konfiguriert', 'success');
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Fehler beim Speichern', 'error');
+      throw err;
+    }
   };
 
   const shareLink = async (url: string, title: string) => {
@@ -292,6 +322,11 @@ export default function InvitationsPage() {
                           />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openConfigEditor(inv)}>
+                            <Settings className="w-4 h-4 mr-2" />
+                            Einladungsseite konfigurieren
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => generateShortlink(inv.id)}
                             disabled={generatingShortlink === inv.id}
@@ -463,6 +498,19 @@ export default function InvitationsPage() {
           )}
         </div>
       </div>
+
+      {/* Config Editor Modal */}
+      {editingConfigId && editingConfig && (
+        <InvitationConfigEditor
+          invitationId={editingConfigId}
+          initialConfig={editingConfig}
+          onSave={saveConfig}
+          onClose={() => {
+            setEditingConfigId(null);
+            setEditingConfig(null);
+          }}
+        />
+      )}
     </AppLayout>
   );
 }
