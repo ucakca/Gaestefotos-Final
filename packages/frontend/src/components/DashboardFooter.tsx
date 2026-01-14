@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -20,8 +19,6 @@ interface DashboardFooterProps {
 
 export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterProps) {
   const pathname = usePathname();
-
-  const MotionButton = motion(Button);
 
   const menuItems = [
     {
@@ -67,10 +64,7 @@ export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterP
   };
 
   return (
-    <motion.div
-      initial={{ y: 100 }}
-      animate={{ y: 0 }}
-      className="fixed bottom-0 left-0 right-0 bg-app-card/90 backdrop-blur border-t border-app-border z-50 safe-area-bottom pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_24px_color-mix(in_srgb,var(--app-fg)_6%,transparent)]"
+    <div className="fixed bottom-0 left-0 right-0 bg-app-card/90 backdrop-blur border-t border-app-border z-50 safe-area-bottom pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_24px_color-mix(in_srgb,var(--app-fg)_6%,transparent)]"
     >
       {/* Horizontal Scrollable Menu */}
       <div className="overflow-x-auto scrollbar-hide">
@@ -80,10 +74,9 @@ export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterP
             const active = isActive(item.path);
             
             return (
-              <MotionButton
+              <Button
                 key={item.id}
                 asChild
-                whileTap={{ scale: 0.9 }}
                 variant={active ? 'primary' : 'ghost'}
                 size="sm"
                 className={`h-auto flex-shrink-0 flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[70px] ${
@@ -98,7 +91,7 @@ export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterP
                     {item.label}
                   </span>
                 </Link>
-              </MotionButton>
+              </Button>
             );
           })}
         </div>
@@ -113,6 +106,6 @@ export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterP
           display: none;
         }
       `}</style>
-    </motion.div>
+    </div>
   );
 }
