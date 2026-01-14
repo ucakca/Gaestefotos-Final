@@ -1139,7 +1139,21 @@ export default function EventDashboardPage() {
                   )}
                 </div>
                 {event.locationName && (
-                  <MapsLink address={event.locationName} className="text-sm" />
+                  <div className="space-y-2">
+                    <MapsLink address={event.locationName} className="text-sm" />
+                    {/* Embedded Map Preview */}
+                    <div className="relative w-full h-48 rounded-lg overflow-hidden border border-app-border bg-app-bg">
+                      <iframe
+                        src={`https://www.google.com/maps?q=${encodeURIComponent(event.locationName)}&output=embed`}
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        title={`Karte: ${event.locationName}`}
+                      />
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -1799,9 +1813,19 @@ export default function EventDashboardPage() {
 
               {!usageLoading && usage && (
                 <div className="mt-4">
+                  {/* Positive Success Message */}
+                  <div className="mb-4 p-3 rounded-lg bg-success/10 border border-success/20">
+                    <p className="text-sm font-semibold text-success flex items-center gap-2">
+                      🎉 {photoStats.total} Fotos gesammelt!
+                    </p>
+                    <p className="text-xs text-app-muted mt-1">
+                      {formatBytes(usedBytes)} Speicher genutzt{hasLimit ? ` • ${formatBytes(limitBytes)} verfügbar` : ''}
+                    </p>
+                  </div>
+
                   <div className="flex items-baseline justify-between gap-4">
                     <div className="text-sm text-app-fg">
-                      {formatBytes(usedBytes)} {hasLimit ? `von ${formatBytes(limitBytes)}` : ''}
+                      {formatBytes(usedBytes)} {hasLimit ? `von ${formatBytes(limitBytes)}` : 'genutzt'}
                     </div>
                     {hasLimit && (
                       <div className="text-sm text-app-muted">{percent.toFixed(0)}%</div>
@@ -1810,17 +1834,17 @@ export default function EventDashboardPage() {
                   {hasLimit && (
                     <div className="mt-2 h-2 w-full rounded-full bg-app-bg">
                       <div
-                        className="h-2 rounded-full bg-app-fg/30"
+                        className="h-2 rounded-full bg-success/50"
                         style={{ width: `${percent}%` }}
                       />
                     </div>
                   )}
 
                   <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-app-muted">
-                    <div>Fotos: {formatBytes(usage?.usage?.photosBytes)}</div>
-                    <div>Videos: {formatBytes(usage?.usage?.videosBytes)}</div>
-                    <div>Gästebuch: {formatBytes(usage?.usage?.guestbookBytes)}</div>
-                    <div>Design: {formatBytes(usage?.usage?.designBytes)}</div>
+                    <div>✓ Fotos: {formatBytes(usage?.usage?.photosBytes)}</div>
+                    <div>✓ Videos: {formatBytes(usage?.usage?.videosBytes)}</div>
+                    <div>✓ Gästebuch: {formatBytes(usage?.usage?.guestbookBytes)}</div>
+                    <div>✓ Design: {formatBytes(usage?.usage?.designBytes)}</div>
                   </div>
                 </div>
               )}

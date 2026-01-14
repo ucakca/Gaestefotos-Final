@@ -65,6 +65,10 @@ packages/shared/src/**/*.d.ts.map
 # OS
 Thumbs.db
 
+# Temporary editor backups (should never be committed)
+*.backup-*
+*.broken
+
 .pids/
 .pids-services/
 

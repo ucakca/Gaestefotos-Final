@@ -115,13 +115,11 @@ export default function DashboardPage() {
                     FAQ
                   </a>
                 </Button>
-                <Link
-                  href="/moderation"
-                  data-tour="host-dashboard-moderation"
-                  className="w-full sm:w-auto px-4 py-2 rounded-md text-app-bg font-medium transition-colors bg-app-accent hover:opacity-90 text-center"
-                >
-                  Uploads prüfen
-                </Link>
+                <Button asChild variant="primary" size="sm" className="w-full sm:w-auto px-4 py-2 rounded-md font-medium">
+                  <Link href="/moderation" data-tour="host-dashboard-moderation">
+                    Uploads prüfen
+                  </Link>
+                </Button>
                 <Button asChild variant="primary" size="sm" className="w-full sm:w-auto px-4 py-2 rounded-md font-medium">
                   <Link href="/create-event" data-tour="host-dashboard-new-event">
                     Neues Event

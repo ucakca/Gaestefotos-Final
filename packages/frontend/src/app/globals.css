@@ -2,175 +2,348 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --app-bg: #F9F5F2;
-  --app-fg: #111827;
-  --app-card: #ffffff;
-  --app-border: #e5e7eb;
-  --app-muted: #6b7280;
-  --app-accent: #EAA48F;
-  --status-danger: #DC2626;
-  --status-warning: #F59E0B;
-  --status-success: #16A34A;
-  --status-info: #2563EB;
-  --status-neutral: #4B5563;
-}
+/* Gästefotos Design System - Festlich & Romantisch */
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+@layer base {
+  :root {
+    /* Core Colors - Warm & Romantic */
+    --background: 30 20% 98%;
+    --foreground: 20 25% 10%;
 
-html {
-  background-color: var(--app-bg);
-  height: 100%;
-}
+    --card: 0 0% 100%;
+    --card-foreground: 20 25% 10%;
 
-body {
-  margin: 0;
-  padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--app-bg) !important;
-  color: var(--app-fg) !important;
-  min-height: 100vh;
-  height: 100%;
-}
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 25% 10%;
 
-#__next {
-  min-height: 100vh;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
+    /* Primary - Romantic Rose */
+    --primary: 340 75% 55%;
+    --primary-foreground: 0 0% 100%;
 
-/* Fix für Tailwind - sicherstellen dass Utility-Klassen funktionieren */
-.min-h-screen {
-  min-height: 100vh !important;
-}
+    /* Secondary - Soft Blush */
+    --secondary: 340 30% 95%;
+    --secondary-foreground: 340 75% 35%;
 
-.flex {
-  display: flex !important;
-}
+    /* Muted - Warm Gray */
+    --muted: 30 15% 94%;
+    --muted-foreground: 20 10% 45%;
 
-.items-center {
-  align-items: center !important;
-}
+    /* Accent - Golden */
+    --accent: 38 92% 50%;
+    --accent-foreground: 20 25% 10%;
 
-.justify-center {
-  justify-content: center !important;
-}
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-* {
-  box-sizing: border-box;
-}
+    /* Success - Fresh Green */
+    --success: 142 70% 45%;
+    --success-foreground: 0 0% 100%;
 
-/* Input Fields - Fix für lesbare Schrift */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-input[type="url"],
-input[type="datetime-local"],
-textarea,
-select {
-  @apply text-app-fg bg-app-card border-app-border;
-  color: var(--app-fg) !important;
-  background-color: var(--app-card) !important;
-}
+    /* Warning - Gold */
+    --warning: 38 92% 50%;
+    --warning-foreground: 20 25% 10%;
 
-input[type="text"]::placeholder,
-input[type="email"]::placeholder,
-input[type="password"]::placeholder,
-input[type="number"]::placeholder,
-input[type="url"]::placeholder,
-textarea::placeholder {
-  @apply text-app-muted;
-  color: var(--app-muted) !important;
-}
+    /* Info - Blue */
+    --info: 210 90% 55%;
+    --info-foreground: 0 0% 100%;
 
-/* Focus States */
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: var(--app-accent) !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--app-fg) 15%, transparent) !important;
-  outline: none;
-}
+    --border: 30 20% 88%;
+    --input: 30 20% 88%;
+    --ring: 340 75% 55%;
 
-/* React DatePicker Styles */
-.react-datepicker {
-  border: 2px solid var(--app-accent);
-  border-radius: 8px;
-  font-family: inherit;
-}
+    --radius: 0.75rem;
 
-.react-datepicker__header {
-  background-color: var(--app-accent);
-  border-bottom: none;
-  border-radius: 8px 8px 0 0;
-  padding-top: 0.8rem;
-}
+    /* Custom Festive Colors */
+    --rose: 340 75% 55%;
+    --rose-light: 340 60% 75%;
+    --rose-dark: 340 80% 40%;
+    --gold: 38 92% 50%;
+    --gold-light: 45 100% 72%;
+    --champagne: 45 40% 90%;
+    --blush: 340 30% 95%;
+    --cream: 40 30% 96%;
 
-.react-datepicker__current-month {
-  color: var(--app-card);
-  font-weight: 600;
-}
-
-.react-datepicker__day-name {
-  color: var(--app-card);
-  font-weight: 500;
-}
-
-.react-datepicker__day--selected,
-.react-datepicker__day--keyboard-selected {
-  background-color: var(--app-accent);
-  border-radius: 4px;
-}
-
-.react-datepicker__day:hover {
-  background-color: var(--app-accent);
-  border-radius: 4px;
-}
-
-.react-datepicker__time-container .react-datepicker__time {
-  background: var(--app-card);
-}
-
-.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box {
-  width: 100%;
-}
-
-.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list {
-  height: 195px;
-}
-
-.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item--selected {
-  background-color: var(--app-accent);
-}
-
-.react-datepicker__time-container .react-datepicker__time .react-datepicker__time-box ul.react-datepicker__time-list li.react-datepicker__time-list-item:hover {
-  background-color: var(--app-accent);
-}
-
-/* Event Wizard - Shimmer Animation */
-@keyframes shimmer {
-  0% {
-    box-shadow: 0 0 0 0 rgba(234, 164, 143, 0.4);
+    /* Legacy app-* variables (for backward compatibility) */
+    --app-bg: 30 20% 98%;
+    --app-fg: 20 25% 10%;
+    --app-card: 0 0% 100%;
+    --app-border: 30 20% 88%;
+    --app-accent: 340 75% 55%;
+    --app-muted: 20 10% 45%;
   }
-  50% {
-    box-shadow: 0 0 20px 10px rgba(234, 164, 143, 0.2);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(234, 164, 143, 0);
+
+  .dark {
+    --background: 20 20% 8%;
+    --foreground: 30 20% 95%;
+
+    --card: 20 20% 12%;
+    --card-foreground: 30 20% 95%;
+
+    --popover: 20 20% 12%;
+    --popover-foreground: 30 20% 95%;
+
+    --primary: 340 75% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 20 20% 18%;
+    --secondary-foreground: 340 60% 75%;
+
+    --muted: 20 20% 18%;
+    --muted-foreground: 30 15% 60%;
+
+    --accent: 38 92% 55%;
+    --accent-foreground: 20 25% 10%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 70% 50%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 55%;
+    --warning-foreground: 20 25% 10%;
+
+    --border: 20 20% 20%;
+    --input: 20 20% 20%;
+    --ring: 340 75% 60%;
+
+    --rose: 340 75% 60%;
+    --rose-light: 340 60% 70%;
+    --rose-dark: 340 80% 45%;
+    --gold: 38 92% 55%;
+    --gold-light: 45 100% 70%;
+    --champagne: 40 25% 25%;
+    --blush: 340 20% 18%;
+    --cream: 40 20% 15%;
+
+    /* Legacy app-* variables (dark mode) */
+    --app-bg: 20 20% 8%;
+    --app-fg: 30 20% 95%;
+    --app-card: 20 20% 12%;
+    --app-border: 20 20% 20%;
+    --app-accent: 340 75% 60%;
+    --app-muted: 30 15% 60%;
   }
 }
 
-.animate-shimmer {
-  animation: shimmer 0.6s ease-out;
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+}
+
+@layer components {
+  /* Festive Gradient Text */
+  .text-gradient-romantic {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  }
+
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-light)) 100%);
+  }
+
+  /* Festive Buttons */
+  .btn-festive {
+    @apply relative overflow-hidden text-white;
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--rose-dark)) 100%);
+    box-shadow: 0 4px 14px -3px hsl(var(--primary) / 0.4);
+    transition: all 0.3s ease;
+  }
+
+  .btn-festive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -4px hsl(var(--primary) / 0.5);
+  }
+
+  .btn-gold {
+    @apply relative overflow-hidden;
+    background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-light)) 100%);
+    color: hsl(20 25% 10%);
+    box-shadow: 0 4px 14px -3px hsl(var(--gold) / 0.4);
+    transition: all 0.3s ease;
+  }
+
+  .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -4px hsl(var(--gold) / 0.5);
+  }
+
+  /* Glass Cards */
+  .card-glass {
+    @apply backdrop-blur-md border border-white/20;
+    background: hsl(var(--card) / 0.8);
+  }
+
+  .card-hover {
+    @apply transition-all duration-300;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -15px hsl(var(--primary) / 0.15);
+  }
+
+  /* Festive Background */
+  .bg-festive {
+    background: linear-gradient(135deg, 
+      hsl(var(--champagne)) 0%, 
+      hsl(var(--blush)) 50%, 
+      hsl(var(--cream)) 100%
+    );
+  }
+
+  .bg-festive-dark {
+    background: linear-gradient(135deg, 
+      hsl(var(--rose-dark)) 0%, 
+      hsl(var(--primary)) 50%, 
+      hsl(var(--accent)) 100%
+    );
+  }
+
+  /* Shimmer Effect */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--gold-light) / 0.3) 50%,
+      transparent 100%
+    );
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  /* Photo Grid */
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  @media (max-width: 640px) {
+    .photo-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+  }
+}
+
+@layer utilities {
+  /* Float Animation */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  /* Pulse Glow */
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite;
+  }
+
+  @keyframes glow {
+    0%, 100% { 
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+    }
+    50% { 
+      box-shadow: 0 0 40px hsl(var(--primary) / 0.5);
+    }
+  }
+
+  /* Sparkle */
+  .sparkle {
+    position: relative;
+  }
+
+  .sparkle::before,
+  .sparkle::after {
+    content: '✨';
+    position: absolute;
+    animation: sparkle 2s infinite;
+  }
+
+  .sparkle::before {
+    top: -10px;
+    left: -10px;
+    animation-delay: 0s;
+  }
+
+  .sparkle::after {
+    bottom: -10px;
+    right: -10px;
+    animation-delay: 1s;
+  }
+
+  @keyframes sparkle {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+
+  /* Heart Beat */
+  .animate-heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+  }
+
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    15% { transform: scale(1.15); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.1); }
+    60% { transform: scale(1); }
+  }
+
+  /* Safe Area Support */
+  .pt-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .pb-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  /* Scrollbar Hide */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }

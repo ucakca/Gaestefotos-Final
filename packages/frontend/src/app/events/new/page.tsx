@@ -1,6 +1,6 @@
-import { redirect } from 'next/navigation';
+import EventWizard from '@/components/wizard/EventWizard';
 
 export default function NewEventPage() {
-  redirect('/create-event');
+  return <EventWizard />;
 }
 

@@ -10,14 +10,14 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15 disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
-        primary: 'bg-app-accent text-app-bg hover:opacity-90',
-        secondary: 'bg-app-bg text-app-fg border border-app-border hover:bg-app-card',
-        ghost: 'bg-transparent text-app-fg hover:bg-app-bg',
-        danger: 'bg-status-danger text-app-bg hover:opacity-90',
+        primary: 'btn-festive text-white shadow-lg hover:shadow-xl',
+        secondary: 'bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80 shadow-sm hover:shadow-md',
+        ghost: 'bg-transparent text-foreground hover:bg-accent/10',
+        danger: 'bg-destructive text-destructive-foreground hover:opacity-90 shadow-md hover:shadow-lg',
       },
       size: {
         sm: 'h-9 px-3',
