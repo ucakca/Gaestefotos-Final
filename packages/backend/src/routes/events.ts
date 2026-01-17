@@ -5,7 +5,7 @@ import archiver from 'archiver';
 import multer from 'multer';
 import prisma from '../config/database';
 import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie, optionalAuthMiddleware, hasEventAccess, isPrivilegedRole, hasEventManageAccess, hasEventPermission } from '../middleware/auth';
-import { DEFAULT_EVENT_FEATURES_CONFIG, normalizeEventFeaturesConfig, randomString, slugify } from '@gaestefotos/shared';
+import { createEventSchema, updateEventSchema } from '@gaestefotos/shared';
 import { logger } from '../utils/logger';
 import { getActiveEventEntitlement, getEffectiveEventPackage, getEventUsageBreakdown, bigintToString } from '../services/packageLimits';
 import { getEventFeatures } from '../services/featureGate';
@@ -1764,8 +1764,7 @@ router.put(
       }
 
       // Check access
-      const hasAccess = await hasEventManageAccess(req.user!.id, eventId);
-      if (!hasAccess) {
+      if (!(await hasEventManageAccess(req, eventId))) {
         return res.status(403).json({ error: 'Keine Berechtigung' });
       }
 
@@ -1774,8 +1773,8 @@ router.put(
         data: { invitationDesign: design as any },
       });
 
-      logger.info('Invitation design updated', { eventId, userId: req.user!.id });
-      res.json(updatedEvent.invitationDesign);
+      logger.info('Invitation design updated', { eventId, userId: req.userId });
+      res.json((updatedEvent as any).invitationDesign);
     } catch (error: any) {
       logger.error('Update invitation design error', { error: error.message, eventId: req.params.eventId });
       res.status(500).json({ error: 'Internal server error' });

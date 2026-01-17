@@ -61,6 +61,7 @@ model Event {
   
   // JSONB für flexible Konfiguration
   designConfig           Json?    @default("{}")
+  invitationDesign       Json?    // Invitation canvas design (Konva.js elements)
   featuresConfig         Json     @default("{\"showGuestlist\":false,\"mysteryMode\":false,\"allowUploads\":true,\"moderationRequired\":false,\"allowDownloads\":true}")
   guestbookHostMessage   String?  @db.Text // Host-Nachricht im Gästebuch (Standardtext)
   profileDescription     String?  @db.Text
