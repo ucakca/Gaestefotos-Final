@@ -142,15 +142,17 @@ export function InvitationEditorPanel({
           </div>
 
           {/* Element Properties */}
-          {selectedElementId && (
-            <div className="space-y-2 pt-4 border-t">
-              <label className="block text-sm font-medium">Element-Eigenschaften</label>
-              <p className="text-sm text-gray-600">
-                Element "{selectedElementId}" ausgewählt
-              </p>
-              {/* TODO: Phase 2.4 - Element properties panel */}
-            </div>
-          )}
+          {selectedElementId && (() => {
+            const selectedElement = activeDesign.elements.find(el => el.id === selectedElementId);
+            return selectedElement ? (
+              <div className="space-y-2 pt-4 border-t">
+                <PropertyPanel
+                  element={selectedElement}
+                  onChange={(attrs) => handleElementChange(selectedElementId, attrs)}
+                />
+              </div>
+            ) : null;
+          })()}
         </div>
       </div>
 
