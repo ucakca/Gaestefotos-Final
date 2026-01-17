@@ -59,49 +59,6 @@ export function InvitationCanvas({
     stage.position(newPos);
   }, []);
 
-  const handleElementChange = useCallback(
-    (elementId: string, attrs: Partial<CanvasElementUnion>) => {
-      const newElements = config.elements.map((el) =>
-        el.id === elementId ? { ...el, ...attrs } : el
-      );
-      onConfigChange({
-        ...config,
-        elements: newElements,
-      });
-    },
-    [config, onConfigChange]
-  );
-
-  const renderElement = (element: CanvasElementUnion) => {
-    const isSelected = element.id === selectedElementId;
-    const isLocked = (element as any).locked;
-    const isVisible = (element as any).visible !== false;
-
-    const commonProps = {
-      key: element.id,
-      element,
-      isSelected,
-      onSelect: () => onSelectElement(element.id),
-      onChange: (attrs: Partial<CanvasElementUnion>) => handleElementChange(element.id, attrs),
-      isLocked,
-      isVisible,
-    };
-
-    switch (element.type) {
-      case 'text':
-        return <TextElement {...commonProps} element={element} />;
-      case 'image':
-        return <ImageElement {...commonProps} element={element} />;
-      case 'shape':
-        return <ShapeElement {...commonProps} element={element} />;
-      case 'qr':
-        // TODO: QR element renderer in Phase 2.4
-        return null;
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className="relative w-full h-full overflow-hidden bg-gray-100 rounded-lg">
       <Stage
