@@ -5,7 +5,12 @@ import archiver from 'archiver';
 import multer from 'multer';
 import prisma from '../config/database';
 import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie, optionalAuthMiddleware, hasEventAccess, isPrivilegedRole, hasEventManageAccess, hasEventPermission } from '../middleware/auth';
-import { createEventSchema, updateEventSchema } from '@gaestefotos/shared';
+import { randomString as importedRandomString, slugify as importedSlugify, DEFAULT_EVENT_FEATURES_CONFIG, normalizeEventFeaturesConfig, createEventSchema as importedCreateEventSchema, updateEventSchema } from '@gaestefotos/shared';
+
+// Re-export for local use
+const randomString = importedRandomString;
+const slugify = importedSlugify;
+const createEventSchema = importedCreateEventSchema;
 import { logger } from '../utils/logger';
 import { getActiveEventEntitlement, getEffectiveEventPackage, getEventUsageBreakdown, bigintToString } from '../services/packageLimits';
 import { getEventFeatures } from '../services/featureGate';
@@ -88,71 +93,45 @@ async function requireEventEditAccess(req: AuthRequest, res: Response, eventId: 
 }
 
 // Validation schemas
-const createEventSchema = z.object({
-  title: z.string().min(1),
-  slug: z.string().min(3).max(100).regex(/^[a-z0-9-]+$/).optional(),
-  dateTime: z.string().datetime().optional(),
-  locationName: z.string().optional(),
-  locationGoogleMapsLink: z.string().optional(),
-  password: z.string().min(4).optional(),
-  colorScheme: z.enum(['elegant', 'romantic', 'modern', 'colorful']).optional(),
-  visibilityMode: z.enum(['instant', 'mystery', 'moderated']).optional(),
-  designConfig: z.record(z.any()).optional(),
-  featuresConfig: z.record(z.any()).optional(),
-  categories: z
-    .array(
-      z.object({
-        name: z.string().min(1),
-        order: z.number().int().optional(),
-        isVisible: z.boolean().optional(),
-        uploadLocked: z.boolean().optional(),
-        uploadLockUntil: z.string().datetime().nullable().optional(),
-        dateTime: z.string().datetime().nullable().optional(),
-        locationName: z.string().nullable().optional(),
-      })
-    )
-    .optional(),
-});
-
 const uploadIssuesQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(200).optional().default(50),
   sinceHours: z.coerce.number().int().min(1).max(24 * 365).optional().default(72),
 });
 
- const trafficSourceSchema = z
-   .string()
-   .trim()
-   .min(1)
-   .max(32)
-   .regex(/^[a-zA-Z0-9_-]+$/);
+const trafficSourceSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(32)
+  .regex(/^[a-zA-Z0-9_-]+$/);
 
- async function trackEventTrafficBySource(eventId: string, source: string) {
-   if (!eventId || !source) return;
-   try {
-     await prisma.eventTrafficStat.upsert({
-       where: {
-         eventId_source: {
-           eventId,
-           source,
-         },
-       },
-       create: {
-         eventId,
-         source,
-         count: 1,
-       },
-       update: {
-         count: { increment: 1 },
-       },
-     });
-   } catch (error) {
-     logger.error('trackEventTrafficBySource failed', {
-       message: (error as any)?.message || String(error),
-       eventId,
-       source,
-     });
-   }
- }
+async function trackEventTrafficBySource(eventId: string, source: string) {
+  if (!eventId || !source) return;
+  try {
+    await prisma.eventTrafficStat.upsert({
+      where: {
+        eventId_source: {
+          eventId,
+          source,
+        },
+      },
+      create: {
+        eventId,
+        source,
+        count: 1,
+      },
+      update: {
+        count: { increment: 1 },
+      },
+    });
+  } catch (error) {
+    logger.error('trackEventTrafficBySource failed', {
+      message: (error as any)?.message || String(error),
+      eventId,
+      source,
+    });
+  }
+}
 
 const qrExportSchema = z.object({
   format: z.enum(['A6', 'A5']),
@@ -248,13 +227,16 @@ function getViewBoxSize(svg: string): { w: number; h: number } | null {
 
 async function getUniqueEventSlug(preferredSlug: string): Promise<string> {
   // Avoid tight infinite loops, but collisions should be extremely unlikely.
-  for (let i = 0; i < 10; i++) {
-    const candidate = i === 0 ? preferredSlug : `${preferredSlug}-${randomString(4).toLowerCase()}`;
-    const existingEvent = await prisma.event.findUnique({ where: { slug: candidate } });
-    if (!existingEvent) return candidate;
+  for (let i = 0; i < 100; i++) {
+    const candidate = i === 0 ? preferredSlug : `${preferredSlug}-${importedRandomString(4).toLowerCase()}`;
+    const existing = await prisma.event.findUnique({
+      where: { slug: candidate },
+      select: { id: true },
+    });
+    if (!existing) return candidate;
   }
   // Last resort
-  return `event-${randomString(12).toLowerCase()}`;
+  return `event-${importedRandomString(12).toLowerCase()}`;
 }
 
 // Get all events (for current user)
