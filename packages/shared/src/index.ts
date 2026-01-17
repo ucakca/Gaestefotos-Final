@@ -1,5 +1,6 @@
 // Shared Types
-export * from './types';
+export * from './types/qr-design';
+export * from './types/invitation-design';
 
 // Shared Utilities
 export * from './utils';

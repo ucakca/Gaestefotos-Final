@@ -167,37 +167,25 @@ export function InvitationEditorPanel({
         />
       </div>
 
-      {/* Right Sidebar - Layers (Phase 2.2) */}
+      {/* Right Sidebar - Layers */}
       <div className="w-64 bg-white border-l overflow-y-auto">
         <div className="p-4 space-y-4">
-          <h3 className="font-medium">Ebenen</h3>
-          <p className="text-sm text-gray-500">
-            Layer-System kommt in Phase 2.2
-          </p>
-          
-          {/* Elements list */}
-          <div className="space-y-1">
-            {activeDesign.elements.length === 0 ? (
-              <p className="text-sm text-gray-400 italic">Keine Elemente</p>
-            ) : (
-              activeDesign.elements.map((el) => (
-                <div
-                  key={el.id}
-                  className={`p-2 rounded cursor-pointer ${
-                    el.id === selectedElementId
-                      ? 'bg-blue-100 border border-blue-300'
-                      : 'bg-gray-50 hover:bg-gray-100'
-                  }`}
-                  onClick={() => setSelectedElementId(el.id)}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium capitalize">{el.type}</span>
-                    <span className="text-xs text-gray-500">z:{el.zIndex}</span>
-                  </div>
-                </div>
-              ))
-            )}
+          <div className="flex items-center justify-between">
+            <h3 className="font-medium">Ebenen</h3>
+            <span className="text-xs text-gray-500">
+              {activeDesign.elements.length} Element{activeDesign.elements.length !== 1 ? 'e' : ''}
+            </span>
           </div>
+          
+          <LayerPanel
+            elements={activeDesign.elements}
+            selectedId={selectedElementId}
+            onSelectElement={setSelectedElementId}
+            onReorderElement={handleReorderElement}
+            onToggleVisibility={handleToggleVisibility}
+            onToggleLock={handleToggleLock}
+            onDeleteElement={handleDeleteElement}
+          />
         </div>
       </div>
     </div>
