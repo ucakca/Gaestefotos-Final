@@ -124,31 +124,34 @@ class EmailService {
         },
       });
     } else {
+      const subject = `Einladung als Co-Host: ${options.eventTitle}`;
+      const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Du wurdest als Co-Host eingeladen!</h2>
+          <p>Du wurdest eingeladen, das Event <strong>${this.escapeHtml(options.eventTitle)}</strong> als Co-Host zu verwalten.</p>
+          <p>Als Co-Host kannst du:</p>
+          <ul>
+            <li>Fotos genehmigen und moderieren</li>
+            <li>QR-Codes herunterladen</li>
+            <li>Gäste verwalten</li>
+          </ul>
+          <p>
+            <a href="${this.escapeHtml(options.inviteUrl)}" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+              Einladung annehmen
+            </a>
+          </p>
+          <p style="color: #666; font-size: 12px; margin-top: 24px;">
+            Oder kopiere diesen Link: ${this.escapeHtml(options.inviteUrl)}
+          </p>
+        </div>
+      `;
+      const text = `Du wurdest als Co-Host für das Event "${options.eventTitle}" eingeladen.\n\nKlicke auf diesen Link, um die Einladung anzunehmen:\n${options.inviteUrl}`;
       await this.transporter.sendMail({
         from: this.config.from,
         to: options.to,
-        subject: `Einladung als Co-Host: ${options.eventTitle}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>Du wurdest als Co-Host eingeladen!</h2>
-            <p>Du wurdest eingeladen, das Event <strong>${this.escapeHtml(options.eventTitle)}</strong> als Co-Host zu verwalten.</p>
-            <p>Als Co-Host kannst du:</p>
-            <ul>
-              <li>Fotos genehmigen und moderieren</li>
-              <li>QR-Codes herunterladen</li>
-              <li>Gäste verwalten</li>
-            </ul>
-            <p>
-              <a href="${this.escapeHtml(options.inviteUrl)}" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                Einladung annehmen
-              </a>
-            </p>
-            <p style="color: #666; font-size: 12px; margin-top: 24px;">
-              Oder kopiere diesen Link: ${this.escapeHtml(options.inviteUrl)}
-            </p>
-          </div>
-        `,
-        text: `Du wurdest als Co-Host für das Event "${options.eventTitle}" eingeladen.\n\nKlicke auf diesen Link, um die Einladung anzunehmen:\n${options.inviteUrl}`,
+        subject,
+        html,
+        text,
       });
     }
   }
@@ -460,7 +463,7 @@ Fotos ansehen: ${photosUrl}
         text,
       });
     } catch (err) {
-      console.error('Upload-Benachrichtigung fehlgeschlagen:', err);
+      logger.error('Upload-Benachrichtigung fehlgeschlagen', { error: (err as any)?.message || String(err), to: options.to });
     }
   }
 

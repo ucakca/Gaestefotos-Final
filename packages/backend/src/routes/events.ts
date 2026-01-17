@@ -11,6 +11,7 @@ import { getActiveEventEntitlement, getEffectiveEventPackage, getEventUsageBreak
 import { getEventFeatures } from '../services/featureGate';
 import { getEventStorageEndsAt } from '../services/storagePolicy';
 import { storageService } from '../services/storage';
+import { emailService } from '../services/email';
 import { PDFDocument, rgb } from 'pdf-lib';
 
 const router = Router();
@@ -1148,9 +1149,42 @@ router.post(
       // Send co-host invitations if provided
       const coHostEmails = (bodyData.coHostEmails || []) as string[];
       if (coHostEmails.length > 0) {
-        // TODO: Implement co-host invitation email sending
-        // For now, just log it
-        logger.info('Co-host invitations to send', { eventId: event.id, emails: coHostEmails });
+        // Send co-host invitation emails
+        const hostUser = await prisma.user.findUnique({ where: { id: event.hostId } });
+        const hostName = hostUser?.name || 'Der Event-Host';
+        
+        for (const email of coHostEmails) {
+          try {
+            // Generate invite token
+            const inviteToken = jwt.sign(
+              { type: 'cohost_invite', eventId: event.id },
+              process.env.INVITE_JWT_SECRET || process.env.JWT_SECRET!,
+              { expiresIn: 60 * 60 * 24 * 7 } // 7 days
+            );
+            
+            const frontendBaseUrl = process.env.FRONTEND_URL || process.env.PUBLIC_URL || '';
+            const inviteUrl = event.slug
+              ? `${frontendBaseUrl}/e2/${event.slug}?cohostInvite=${encodeURIComponent(inviteToken)}`
+              : '';
+            
+            if (inviteUrl) {
+              await emailService.sendCohostInvite({
+                to: email,
+                eventTitle: event.title,
+                inviteUrl,
+                hostName,
+              });
+              logger.info('Co-host invite email sent', { eventId: event.id, email });
+            }
+          } catch (emailError: any) {
+            logger.error('Failed to send co-host invite email', { 
+              error: emailError.message, 
+              email, 
+              eventId: event.id 
+            });
+            // Continue with other emails even if one fails
+          }
+        }
       }
 
       res.status(201).json({ event, id: event.id });
