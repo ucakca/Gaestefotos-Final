@@ -1709,5 +1709,79 @@ router.get(
   }
 );
 
+// Get invitation design
+router.get(
+  '/:eventId/invitation',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { 
+          id: true, 
+          hostId: true, 
+          coHosts: true,
+          invitationDesign: true 
+        },
+      });
+
+      if (!event) {
+        return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      // Check access
+      const hasAccess = await hasEventManageAccess(req.user!.id, eventId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+
+      res.json(event.invitationDesign || null);
+    } catch (error: any) {
+      logger.error('Get invitation design error', { error: error.message, eventId: req.params.eventId });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+// Update invitation design
+router.put(
+  '/:eventId/invitation',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      const design = req.body;
+
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { id: true, hostId: true, coHosts: true },
+      });
+
+      if (!event) {
+        return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      // Check access
+      const hasAccess = await hasEventManageAccess(req.user!.id, eventId);
+      if (!hasAccess) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+
+      const updatedEvent = await prisma.event.update({
+        where: { id: eventId },
+        data: { invitationDesign: design as any },
+      });
+
+      logger.info('Invitation design updated', { eventId, userId: req.user!.id });
+      res.json(updatedEvent.invitationDesign);
+    } catch (error: any) {
+      logger.error('Update invitation design error', { error: error.message, eventId: req.params.eventId });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
 export default router;
 

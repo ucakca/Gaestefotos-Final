@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { InvitationDesignConfig, INVITATION_SIZES, InvitationSizePreset } from '@gaestefotos/shared';
 import { InvitationCanvas } from './InvitationCanvas';
 import { debounce } from 'lodash';
