@@ -402,8 +402,6 @@ export function InvitationEditorPanel({
           onConfigChange={handleConfigChange}
           selectedElementId={selectedElementId}
           onSelectElement={setSelectedElementId}
-          snapToGrid={snapToGridEnabled}
-          gridSize={gridSize}
         />
       </div>
 
