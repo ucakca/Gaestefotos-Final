@@ -213,7 +213,7 @@ export function InvitationEditorPanel({
     );
     handleConfigChange({
       ...activeDesign,
-      elements: newElements,
+      elements: newElements as any,
     });
   }, [activeDesign, handleConfigChange]);
 
