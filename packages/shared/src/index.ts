@@ -46,6 +46,7 @@ export type Guest = {
   dietaryRestrictions?: string | null;
   plusOne?: boolean;
   plusOneName?: string | null;
+  plusOneCount?: number;
   tableNumber?: number | null;
   notes?: string | null;
   createdAt: Date;
