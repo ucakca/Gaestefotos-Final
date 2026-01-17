@@ -20,6 +20,9 @@ export type Event = {
   designConfig?: any;
   featuresConfig?: any;
   createdAt: Date;
+  dateTime?: Date | null;
+  locationName?: string | null;
+  locationGoogleMapsLink?: string | null;
 };
 
 export type Photo = {
