@@ -228,7 +228,7 @@ function getViewBoxSize(svg: string): { w: number; h: number } | null {
 async function getUniqueEventSlug(preferredSlug: string): Promise<string> {
   // Avoid tight infinite loops, but collisions should be extremely unlikely.
   for (let i = 0; i < 100; i++) {
-    const candidate = i === 0 ? preferredSlug : `${preferredSlug}-${importedRandomString(4).toLowerCase()}`;
+    const candidate = i === 0 ? preferredSlug : `${preferredSlug}-${randomString(4).toLowerCase()}`;
     const existing = await prisma.event.findUnique({
       where: { slug: candidate },
       select: { id: true },
@@ -236,7 +236,7 @@ async function getUniqueEventSlug(preferredSlug: string): Promise<string> {
     if (!existing) return candidate;
   }
   // Last resort
-  return `event-${importedRandomString(12).toLowerCase()}`;
+  return `event-${randomString(12).toLowerCase()}`;
 }
 
 // Get all events (for current user)
