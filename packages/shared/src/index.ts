@@ -61,6 +61,7 @@ export type Category = {
   order?: number;
   isVisible?: boolean;
   icon?: string | null;
+  iconKey?: string | null;
   createdAt: Date;
 };
 export { formatDate, formatDateTime } from './utils/date';
