@@ -1172,6 +1172,7 @@ router.post(
                 to: email,
                 eventTitle: event.title,
                 inviteUrl,
+                eventSlug: event.slug || '',
                 hostName,
               });
               logger.info('Co-host invite email sent', { eventId: event.id, email });
