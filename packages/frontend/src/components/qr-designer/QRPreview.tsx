@@ -77,7 +77,7 @@ export function QRPreview({ config, galleryUrl, showSafeZone }: QRPreviewProps) 
         )}
         
         {/* Safe Zone Overlay */}
-        <SafeZoneOverlay enabled={showSafeZone} safeZoneMm={5} />
+        <SafeZoneOverlay enabled={showSafeZone || false} safeZoneMm={5} />
       </div>
     </div>
   );
