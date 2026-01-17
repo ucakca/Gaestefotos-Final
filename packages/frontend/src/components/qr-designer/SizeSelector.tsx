@@ -8,11 +8,12 @@ interface SizeSelectorProps {
 }
 
 const SIZE_OPTIONS: { value: QRSizePreset; label: string; description: string }[] = [
-  { value: 'table', label: 'Tischkarte', description: '10×15 cm' },
+  { value: 'table', label: 'Tischaufsteller', description: 'A6 (105×148 mm)' },
+  { value: 'a6', label: 'A6', description: '105×148 mm' },
   { value: 'a5', label: 'A5', description: '148×210 mm' },
   { value: 'a4', label: 'A4', description: '210×297 mm' },
-  { value: 'poster', label: 'Poster', description: '30×40 cm' },
   { value: 'square', label: 'Quadrat', description: '20×20 cm' },
+  { value: 'poster', label: 'Poster', description: '30×40 cm' },
 ];
 
 export function SizeSelector({ selected, onChange }: SizeSelectorProps) {

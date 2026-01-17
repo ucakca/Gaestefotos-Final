@@ -36,7 +36,10 @@ export function DownloadButton({ config, eventId, eventSlug }: DownloadButtonPro
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          format: config.sizePreset === 'a4' ? 'A5' : 'A6',
+          format: config.sizePreset === 'a4' ? 'A4' : 
+                  config.sizePreset === 'a5' ? 'A5' : 
+                  config.sizePreset === 'poster' ? 'A4' :
+                  config.sizePreset === 'square' ? 'A5' : 'A6',
           svg,
         }),
       });
@@ -91,12 +94,18 @@ export function DownloadButton({ config, eventId, eventSlug }: DownloadButtonPro
   const loadTemplateSvg = async (config: QRDesignConfig): Promise<string> => {
     const width = config.sizePreset === 'a4' ? 595 : 420;
     const height = config.sizePreset === 'a4' ? 842 : 595;
+    const fontSize = config.fontSize || 24;
+    const fontFamily = config.font === 'serif' ? 'Georgia, serif' : 
+                       config.font === 'mono' ? 'Courier New, monospace' :
+                       config.font === 'script' ? 'Brush Script MT, cursive' :
+                       config.font === 'display' ? 'Impact, fantasy' :
+                       'system-ui, sans-serif';
     
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
       <rect width="${width}" height="${height}" fill="${config.colors.background}"/>
-      <text x="${width/2}" y="50" text-anchor="middle" fill="${config.colors.foreground}" font-size="24" font-weight="bold">${config.headerText || ''}</text>
+      <text x="${width/2}" y="50" text-anchor="middle" fill="${config.colors.foreground}" font-size="${fontSize}" font-family="${fontFamily}" font-weight="bold">${config.headerText || ''}</text>
       <rect id="gf:qr" x="${width/2 - 150}" y="${height/2 - 150}" width="300" height="300" fill="white" stroke="${config.colors.foreground}" stroke-width="2"/>
-      <text x="${width/2}" y="${height - 30}" text-anchor="middle" fill="${config.colors.foreground}" font-size="16">${config.footerText || ''}</text>
+      <text x="${width/2}" y="${height - 30}" text-anchor="middle" fill="${config.colors.foreground}" font-size="${Math.round(fontSize * 0.66)}" font-family="${fontFamily}">${config.footerText || ''}</text>
     </svg>`;
   };
 

@@ -45,6 +45,39 @@ export interface EventQRDesigns {
   activeDesignId?: string;
 }
 
+// Font definitions
+export const QR_FONTS: Record<QRFont, {
+  name: string;
+  cssClass: string;
+  fontFamily: string;
+}> = {
+  sans: {
+    name: 'Sans-Serif',
+    cssClass: 'font-sans',
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+  },
+  serif: {
+    name: 'Serif',
+    cssClass: 'font-serif',
+    fontFamily: 'Georgia, Times New Roman, serif',
+  },
+  mono: {
+    name: 'Monospace',
+    cssClass: 'font-mono',
+    fontFamily: 'Courier New, monospace',
+  },
+  script: {
+    name: 'Script',
+    cssClass: 'font-script',
+    fontFamily: 'Brush Script MT, cursive',
+  },
+  display: {
+    name: 'Display',
+    cssClass: 'font-display',
+    fontFamily: 'Impact, fantasy',
+  },
+};
+
 // Template presets with default values
 export const QR_TEMPLATES: Record<QRTemplate, {
   name: string;

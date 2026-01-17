@@ -73,6 +73,9 @@ export function QRPreview({ config, galleryUrl }: QRPreviewProps) {
             {config.footerText}
           </p>
         )}
+        
+        {/* Safe Zone Overlay */}
+        <SafeZoneOverlay enabled={showSafeZone} safeZoneMm={5} />
       </div>
     </div>
   );

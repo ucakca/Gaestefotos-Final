@@ -160,6 +160,14 @@ Hinweis: In der Server-Umgebung ist „localhost im Browser“ oft nicht sinnvol
 - Moderation (falls aktiv): approve/reject
 - Download (Einzel + ZIP, wenn Storage nicht locked)
 
+**QR-Designer (NEU):**
+- QR-Code Tab öffnen
+- Design erstellen/bearbeiten
+- Font ändern → Vorschau aktualisiert
+- Format wechseln (A6 → A4) → Vorschau passt sich an
+- PDF Download → Datei öffnet sich, QR ist scanbar
+- QR scannen → Leitet korrekt zur Gallery-URL
+
 ### 3) Smoke: Guest (B) – kritische Wege
 
 - Öffnen per `/e/<slug>` oder `/e2/<slug>` (je nach kanonischer URL im Projekt)

@@ -57,6 +57,8 @@ export function QRDesignerPanel({ eventId, eventSlug, galleryUrl }: QRDesignerPa
       frameStyle: 'rounded',
       headerText: 'Teile deine Fotos!',
       footerText: 'Scanne mich',
+      font: 'sans',
+      fontSize: 24,
       sizePreset: 'table',
       isDefault: designs.length === 0,
     };
@@ -208,7 +210,7 @@ export function QRDesignerPanel({ eventId, eventSlug, galleryUrl }: QRDesignerPa
 
           {/* Preview Panel */}
           <div className="space-y-4">
-            <QRPreview config={activeDesign} galleryUrl={galleryUrl} />
+            <QRPreview config={activeDesign} galleryUrl={galleryUrl} showSafeZone={showSafeZone} />
             <DownloadButton config={activeDesign} eventId={eventId} eventSlug={eventSlug} />
           </div>
         </div>
