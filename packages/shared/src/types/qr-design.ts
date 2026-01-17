@@ -4,38 +4,27 @@
 
 export type QRTemplate = 'modern' | 'boho' | 'classic' | 'minimal' | 'elegant';
 export type QRFrameStyle = 'none' | 'rounded' | 'ornate' | 'floral' | 'geometric';
-export type QRSizePreset = 'table' | 'poster' | 'a4' | 'a5' | 'square';
+export type QRSizePreset = 'table' | 'a6' | 'a5' | 'a4' | 'square' | 'poster';
+export type QRFont = 'sans' | 'serif' | 'mono' | 'script' | 'display';
 
 export interface QRDesignColors {
-  foreground: string; // Hex color for QR code
-  background: string; // Hex color for background
-  frame?: string; // Hex color for frame/border
+  foreground: string;
+  background: string;
+  frame?: string;
 }
 
 export interface QRDesignConfig {
   id: string;
   name: string;
-  
-  // Template
   template: QRTemplate;
-  
-  // Colors
   colors: QRDesignColors;
-  
-  // Frame
   frameStyle: QRFrameStyle;
-  
-  // Text
   headerText?: string;
   footerText?: string;
-  
-  // Logo
+  font?: QRFont;
+  fontSize?: number;
   centerLogoUrl?: string;
-  
-  // Size & Format
   sizePreset: QRSizePreset;
-  
-  // Meta
   isDefault?: boolean;
   createdAt?: string;
 }
@@ -45,7 +34,6 @@ export interface EventQRDesigns {
   activeDesignId?: string;
 }
 
-// Font definitions
 export const QR_FONTS: Record<QRFont, {
   name: string;
   cssClass: string;
@@ -78,7 +66,6 @@ export const QR_FONTS: Record<QRFont, {
   },
 };
 
-// Template presets with default values
 export const QR_TEMPLATES: Record<QRTemplate, {
   name: string;
   frameStyle: QRFrameStyle;
