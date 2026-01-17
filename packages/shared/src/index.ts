@@ -40,6 +40,7 @@ export type Guest = {
   firstName?: string | null;
   lastName?: string | null;
   email?: string | null;
+  status?: string | null;
   rsvpStatus?: string | null;
   phoneNumber?: string | null;
   dietaryRestrictions?: string | null;
