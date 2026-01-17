@@ -1733,7 +1733,7 @@ router.put(
 
       const event = await prisma.event.findUnique({
         where: { id: eventId },
-        select: { id: true, hostId: true, coHosts: true },
+        select: { id: true, hostId: true },
       });
 
       if (!event) {

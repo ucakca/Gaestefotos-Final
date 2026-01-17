@@ -16,6 +16,8 @@ export type Event = {
   slug: string;
   title: string;
   hostId: string;
+  designConfig?: any;
+  featuresConfig?: any;
 };
 
 export type Photo = {
