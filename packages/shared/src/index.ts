@@ -32,6 +32,15 @@ export type Photo = {
   url: string;
   createdAt: Date;
 };
+
+export type Guest = {
+  id: string;
+  eventId: string;
+  name: string;
+  email?: string | null;
+  rsvpStatus?: string | null;
+  createdAt: Date;
+};
 export { formatDate, formatDateTime } from './utils/date';
 export { slugify, generateRandomCode, randomString } from './utils/string';
 
