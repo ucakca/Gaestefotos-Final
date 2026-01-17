@@ -53,6 +53,16 @@ export type Guest = {
   createdAt: Date;
   updatedAt?: Date;
 };
+
+export type Category = {
+  id: string;
+  eventId: string;
+  name: string;
+  order?: number;
+  isVisible?: boolean;
+  icon?: string | null;
+  createdAt: Date;
+};
 export { formatDate, formatDateTime } from './utils/date';
 export { slugify, generateRandomCode, randomString } from './utils/string';
 
