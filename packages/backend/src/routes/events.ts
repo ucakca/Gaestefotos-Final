@@ -7,10 +7,6 @@ import prisma from '../config/database';
 import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie, optionalAuthMiddleware, hasEventAccess, isPrivilegedRole, hasEventManageAccess, hasEventPermission } from '../middleware/auth';
 import { randomString, slugify, DEFAULT_EVENT_FEATURES_CONFIG, normalizeEventFeaturesConfig } from '@gaestefotos/shared';
 
-// Re-export for local use
-const randomString = importedRandomString;
-const slugify = importedSlugify;
-const createEventSchema = importedCreateEventSchema;
 import { logger } from '../utils/logger';
 import { getActiveEventEntitlement, getEffectiveEventPackage, getEventUsageBreakdown, bigintToString } from '../services/packageLimits';
 import { getEventFeatures } from '../services/featureGate';
@@ -1713,7 +1709,7 @@ router.get(
       }
 
       // Check access
-      const hasAccess = await hasEventManageAccess(req.user!.id, eventId);
+      const hasAccess = await hasEventManageAccess(req, eventId);
       if (!hasAccess) {
         return res.status(403).json({ error: 'Keine Berechtigung' });
       }
