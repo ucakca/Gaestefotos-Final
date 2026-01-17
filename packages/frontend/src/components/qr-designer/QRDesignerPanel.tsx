@@ -210,7 +210,7 @@ export function QRDesignerPanel({ eventId, eventSlug, galleryUrl }: QRDesignerPa
 
           {/* Preview Panel */}
           <div className="space-y-4">
-            <QRPreview config={activeDesign} galleryUrl={galleryUrl} showSafeZone={showSafeZone} />
+            <QRPreview config={activeDesign} galleryUrl={galleryUrl} />
             <DownloadButton config={activeDesign} eventId={eventId} eventSlug={eventSlug} />
           </div>
         </div>
