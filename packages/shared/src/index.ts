@@ -18,6 +18,7 @@ export type Event = {
   hostId: string;
   designConfig?: any;
   featuresConfig?: any;
+  createdAt: Date;
 };
 
 export type Photo = {
