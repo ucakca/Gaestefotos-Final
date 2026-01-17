@@ -37,9 +37,18 @@ export type Guest = {
   id: string;
   eventId: string;
   name: string;
+  firstName?: string | null;
+  lastName?: string | null;
   email?: string | null;
   rsvpStatus?: string | null;
+  phoneNumber?: string | null;
+  dietaryRestrictions?: string | null;
+  plusOne?: boolean;
+  plusOneName?: string | null;
+  tableNumber?: number | null;
+  notes?: string | null;
   createdAt: Date;
+  updatedAt?: Date;
 };
 export { formatDate, formatDateTime } from './utils/date';
 export { slugify, generateRandomCode, randomString } from './utils/string';
