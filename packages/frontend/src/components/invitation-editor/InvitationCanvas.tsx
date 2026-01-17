@@ -64,7 +64,7 @@ export function InvitationCanvas({
       let finalAttrs = attrs;
       
       // Apply grid snapping if enabled
-      if (snapEnabled && (attrs.x !== undefined || attrs.y !== undefined)) {
+      if (snapToGridEnabled && (attrs.x !== undefined || attrs.y !== undefined)) {
         finalAttrs = {
           ...attrs,
           x: attrs.x !== undefined ? snapToGrid(attrs.x, gridSize) : undefined,
@@ -80,7 +80,7 @@ export function InvitationCanvas({
         elements: newElements,
       });
     },
-    [config, onConfigChange, snapEnabled, gridSize]
+    [config, onConfigChange, snapToGridEnabled, gridSize]
   );
 
   const renderElement = (element: CanvasElementUnion) => {
