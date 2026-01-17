@@ -5,7 +5,7 @@ import archiver from 'archiver';
 import multer from 'multer';
 import prisma from '../config/database';
 import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie, optionalAuthMiddleware, hasEventAccess, isPrivilegedRole, hasEventManageAccess, hasEventPermission } from '../middleware/auth';
-import { randomString as importedRandomString, slugify as importedSlugify, DEFAULT_EVENT_FEATURES_CONFIG, normalizeEventFeaturesConfig, createEventSchema as importedCreateEventSchema, updateEventSchema } from '@gaestefotos/shared';
+import { randomString, slugify, DEFAULT_EVENT_FEATURES_CONFIG, normalizeEventFeaturesConfig } from '@gaestefotos/shared';
 
 // Re-export for local use
 const randomString = importedRandomString;

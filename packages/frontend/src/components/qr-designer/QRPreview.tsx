@@ -9,9 +9,8 @@ interface QRPreviewProps {
   config: QRDesignConfig;
   galleryUrl: string;
 }
-  showSafeZone?: boolean;
 
-export function QRPreview({ config, galleryUrl }: QRPreviewProps) {
+export function QRPreview({ config, galleryUrl, showSafeZone }: QRPreviewProps) {
   const previewRef = useRef<HTMLDivElement>(null);
   const template = QR_TEMPLATES[config.template];
 
