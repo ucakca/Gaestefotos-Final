@@ -31,7 +31,6 @@ export async function uploadWithTus(
         categoryId: categoryId || '',
       },
       onError: (error) => {
-        console.error('Tus upload error:', error);
         onError?.(error);
         reject(error);
       },
@@ -47,7 +46,6 @@ export async function uploadWithTus(
     // Check for previous uploads to resume
     upload.findPreviousUploads().then((previousUploads) => {
       if (previousUploads.length > 0) {
-        console.log('Resuming previous upload:', previousUploads[0]);
         upload.resumeFromPreviousUpload(previousUploads[0]);
       }
       upload.start();

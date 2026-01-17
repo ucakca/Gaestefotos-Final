@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
@@ -56,9 +56,12 @@ interface VideoItem {
   };
 }
 
-export default function VideosPage() {
-  const params = useParams();
-  const eventId = params.id as string;
+export default function VideosPage({ params }: { params: Promise<{ id: string }> }) {
+  const [eventId, setEventId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    params.then(p => setEventId(p.id));
+  }, []);
   const { showToast } = useToastStore();
 
   const confirmResolveRef = useRef<((value: boolean) => void) | null>(null);
@@ -103,9 +106,11 @@ export default function VideosPage() {
   const [viewMode, setViewMode] = useState<'active' | 'trash'>('active');
 
   useEffect(() => {
-    loadEvent();
-    loadCategories();
-    loadVideos();
+    if (eventId) {
+      loadEvent();
+      loadCategories();
+      loadVideos();
+    }
   }, [eventId, filter, viewMode]);
 
   useEffect(() => {
@@ -430,12 +435,8 @@ export default function VideosPage() {
     ? 'Die Speicherperiode ist beendet – Uploads sind nicht mehr möglich.'
     : 'Uploads sind nur 1 Tag vor/nach dem Event möglich.';
 
-  if (loading && videos.length === 0) {
-    return (
-      <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
-        <FullPageLoader label="Laden..." />
-      </AppLayout>
-    );
+  if (loading || !eventId) {
+    return <FullPageLoader label="Lade..." />;
   }
 
   return (
@@ -996,7 +997,7 @@ export default function VideosPage() {
           </Button>
         )}
       </div>
-      <DashboardFooter eventId={eventId} />
+      <DashboardFooter eventId={eventId!} />
     </AppLayout>
   );
 }

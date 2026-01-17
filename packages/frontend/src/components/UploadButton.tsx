@@ -323,8 +323,8 @@ export default function UploadButton({
           const etaSeconds = percent > 0 ? (elapsed / percent) * (100 - percent) : 0;
           setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, progress: Math.round(percent), etaSeconds } : f)));
         },
-        onError: (error) => {
-          console.error('Tus upload error:', error);
+        onError: () => {
+          // Error handled by uploadWithTus rejection
         },
       });
 
@@ -350,8 +350,8 @@ export default function UploadButton({
       }, 2000);
       return;
 
-    } catch (tusError: any) {
-      console.warn('Tus upload failed, falling back to standard upload:', tusError);
+    } catch {
+      // Tus upload failed, falling back to standard upload
     }
 
     // Fallback to standard multipart upload

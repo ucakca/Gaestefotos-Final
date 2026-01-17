@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import api from '@/lib/api';
@@ -14,10 +14,13 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 
-export default function EditEventPage() {
-  const params = useParams();
+export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const eventId = params.id as string;
+  const [eventId, setEventId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    params.then(p => setEventId(p.id));
+  }, []);
   const { showToast } = useToastStore();
 
   const [formData, setFormData] = useState({
@@ -33,7 +36,7 @@ export default function EditEventPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    loadEvent();
+    if (eventId) loadEvent();
   }, [eventId]);
 
   const loadEvent = async () => {

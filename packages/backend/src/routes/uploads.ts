@@ -7,6 +7,7 @@ import prisma from '../config/database';
 import { storageService } from '../services/storage';
 import { imageProcessor } from '../services/imageProcessor';
 import { assertUploadWithinLimit } from '../services/packageLimits';
+import { logger } from '../utils/logger';
 
 const router = Router();
 
@@ -14,7 +15,9 @@ const TUS_UPLOAD_DIR = process.env.TUS_UPLOAD_DIR || '/tmp/tus-uploads';
 const TUS_MAX_SIZE = parseInt(process.env.TUS_MAX_SIZE || '524288000', 10); // 500MB default
 
 // Ensure upload directory exists
-fs.mkdir(TUS_UPLOAD_DIR, { recursive: true }).catch(console.error);
+fs.mkdir(TUS_UPLOAD_DIR, { recursive: true }).catch((error: any) => {
+  logger.error('Failed to create TUS upload directory', { error: error.message, directory: TUS_UPLOAD_DIR });
+});
 
 // Create Tus server instance
 const tusServer = new Server({
@@ -35,8 +38,8 @@ const tusServer = new Server({
   onUploadFinish: async (_req: any, upload: any) => {
     try {
       await processCompletedUpload(upload);
-    } catch (error) {
-      console.error('Error processing completed upload:', error);
+    } catch (error: any) {
+      logger.error('Error processing completed upload', { error: error.message, uploadId: upload.id });
     }
     return {};
   },
@@ -59,7 +62,7 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
   const categoryId = metadata.categoryId || null;
 
   if (!eventId) {
-    console.error('No eventId in upload metadata');
+    logger.error('No eventId in upload metadata', { uploadId: upload.id, metadata });
     return;
   }
 
@@ -135,15 +138,23 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
     }
     
     // Clean up temp file
-    await fs.unlink(filePath).catch(() => {});
+    await fs.unlink(filePath).catch((error: any) => {
+      logger.warn('Failed to cleanup temp file', { error: error.message, filePath });
+    });
     // Also clean up .json metadata file if exists
-    await fs.unlink(`${filePath}.json`).catch(() => {});
+    await fs.unlink(`${filePath}.json`).catch((error: any) => {
+      logger.warn('Failed to cleanup temp metadata file', { error: error.message, filePath: `${filePath}.json` });
+    });
     
-  } catch (error) {
-    console.error('Error processing upload:', error);
+  } catch (error: any) {
+    logger.error('Error processing upload', { error: error.message, stack: error.stack, uploadId: upload.id, eventId });
     // Clean up on error
-    await fs.unlink(filePath).catch(() => {});
-    await fs.unlink(`${filePath}.json`).catch(() => {});
+    await fs.unlink(filePath).catch((cleanupError: any) => {
+      logger.warn('Failed to cleanup temp file after error', { error: cleanupError.message, filePath });
+    });
+    await fs.unlink(`${filePath}.json`).catch((cleanupError: any) => {
+      logger.warn('Failed to cleanup temp metadata file after error', { error: cleanupError.message, filePath: `${filePath}.json` });
+    });
     throw error;
   }
 }

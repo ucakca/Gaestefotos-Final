@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import api from '@/lib/api';
@@ -40,10 +40,13 @@ function resolveRootCssVar(name: string, fallback: string): string {
   return v || fallback;
 }
 
-export default function DesignLiveBuilderPage() {
-  const params = useParams();
+export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const eventId = params.id as string;
+  const [eventId, setEventId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    params.then(p => setEventId(p.id));
+  }, []);
   const { showToast } = useToastStore();
 
   const wizardMode = isWizardMode();
@@ -67,7 +70,7 @@ export default function DesignLiveBuilderPage() {
   const logoImageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    loadEvent();
+    if (eventId) loadEvent();
   }, [eventId]);
 
   const loadEvent = async () => {
@@ -262,8 +265,8 @@ export default function DesignLiveBuilderPage() {
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
   };
 
-  if (loading) {
-    return <FullPageLoader label="Laden..." />;
+  if (loading || !eventId) {
+    return <FullPageLoader label="Lade..." />;
   }
 
   if (!event) {
@@ -803,7 +806,7 @@ export default function DesignLiveBuilderPage() {
         </div>
 
         {/* Sticky Footer Navigation */}
-        <DashboardFooter eventId={eventId} />
+        <DashboardFooter eventId={eventId!} />
         
         {/* Padding for footer */}
         <div className="h-20" />

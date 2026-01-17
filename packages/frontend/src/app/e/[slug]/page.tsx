@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { Event as EventType, Photo } from '@gaestefotos/shared';
@@ -10,13 +11,14 @@ import BottomNavigation from '@/components/BottomNavigation';
 import EventHeader from '@/components/EventHeader';
 import AlbumNavigation from '@/components/AlbumNavigation';
 import ModernPhotoGrid from '@/components/ModernPhotoGrid';
-import FaceSearch from '@/components/FaceSearch';
 import StoriesBar from '@/components/guest/StoriesBar';
-import StoryViewer from '@/components/guest/StoryViewer';
 import { Trophy } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { PhotoGridSkeleton, Skeleton } from '@/components/ui/Skeleton';
+
+const StoryViewer = dynamic(() => import('@/components/guest/StoryViewer'), { ssr: false });
+const FaceSearch = dynamic(() => import('@/components/FaceSearch'), { ssr: false });
 
 type Category = {
   id: string;

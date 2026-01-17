@@ -2,7 +2,7 @@
 
 **Version:** 2.0.0  
 **Status:** ✅ Produktionsbereit  
-**Letzte Aktualisierung:** 2026-01-13
+**Letzte Aktualisierung:** 2026-01-15
 
 ---
 
@@ -45,6 +45,8 @@ Gästefotos ist eine moderne, vollständig funktionsfähige Web-Anwendung für E
 - 📥 **Download-Funktionalität**: Einzelne Fotos oder ZIP-Archive herunterladen
 - 🔗 **Social Sharing**: Fotos auf Facebook, WhatsApp teilen oder Link kopieren
 - 📱 **PWA-Unterstützung**: Progressive Web App für mobile Geräte
+- 💌 **Einladungsseiten**: Dynamische Einladungen mit Gästegruppen-Differenzierung
+- 🎨 **QR-Code Designer**: Visuelle QR-Code Erstellung mit 5 Templates und PDF-Export
 
 ---
 
@@ -62,6 +64,8 @@ Gästefotos ist eine moderne, vollständig funktionsfähige Web-Anwendung für E
 - ✅ Email-Einladungen versenden
 - ✅ Bulk-Einladungen
 - ✅ Download-Funktionalität (ZIP)
+- ✅ QR-Code Designer (5 Templates, PDF/PNG Export)
+- ✅ Einladungs-Konfiguration mit Gästegruppen
 
 ### Für Gäste
 
@@ -70,7 +74,9 @@ Gästefotos ist eine moderne, vollständig funktionsfähige Web-Anwendung für E
 - ✅ Fotos herunterladen
 - ✅ Social Sharing (Facebook, WhatsApp)
 - ✅ Live Wall (Echtzeit-Updates)
-- ✅ Digital Invitation
+- ✅ Digitale Einladungen (gruppenbasiert)
+- ✅ RSVP-Formulare mit dynamischen Fragen
+- ✅ QR-Code Scan für direkten Event-Zugang
 
 ### Technische Features
 

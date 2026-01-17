@@ -24,6 +24,8 @@ export function CoHostsSection({
   const [minting, setMinting] = useState(false);
   const [lastInviteUrl, setLastInviteUrl] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   const loadCohosts = async () => {
     try {
@@ -49,6 +51,29 @@ export function CoHostsSection({
       onToast(err.response?.data?.error || 'Fehler', 'error');
     } finally {
       setMinting(false);
+    }
+  };
+
+  const sendEmailInvite = async () => {
+    if (!inviteEmail.trim()) {
+      onToast('Bitte E-Mail-Adresse eingeben', 'error');
+      return;
+    }
+    try {
+      setSendingEmail(true);
+      const { data } = await api.post(`/events/${eventId}/cohosts/invite-token`, { email: inviteEmail });
+      if (data?.emailSent) {
+        onToast(`Einladung an ${inviteEmail} gesendet`, 'success');
+        setInviteEmail('');
+        setLastInviteUrl(data?.shareUrl || null);
+      } else {
+        onToast('E-Mail konnte nicht gesendet werden', 'error');
+        setLastInviteUrl(data?.shareUrl || null);
+      }
+    } catch (err: any) {
+      onToast(err.response?.data?.error || 'Fehler', 'error');
+    } finally {
+      setSendingEmail(false);
     }
   };
 
@@ -90,6 +115,26 @@ export function CoHostsSection({
       </div>
 
       <div className="px-4 py-4">
+        <div className="mb-4">
+          <label className="text-xs text-muted-foreground block mb-2">Co-Host per E-Mail einladen</label>
+          <div className="flex gap-2">
+            <input
+              type="email"
+              placeholder="name@beispiel.de"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              className="flex-1 px-3 py-2 text-sm border border-border rounded-md bg-background"
+              onKeyPress={(e) => e.key === 'Enter' && sendEmailInvite()}
+            />
+            <Button onClick={sendEmailInvite} disabled={sendingEmail || !inviteEmail.trim()} size="sm">
+              {sendingEmail ? 'Sende...' : 'Einladen'}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            💡 Der Co-Host erhält einen Anmeldelink per E-Mail
+          </p>
+        </div>
+
         {lastInviteUrl && (
           <div className="mb-3 p-3 rounded-lg bg-accent/5 border border-accent/20">
             <div className="text-xs text-muted-foreground">Letzter Invite-Link</div>

@@ -62,6 +62,10 @@ export default function DesignStep({
     { id: 'romantic', label: 'Romantisch', colors: 'bg-gradient-to-br from-rose-100 to-pink-50' },
     { id: 'modern', label: 'Modern', colors: 'bg-gradient-to-br from-slate-200 to-slate-100' },
     { id: 'colorful', label: 'Bunt', colors: 'bg-gradient-to-br from-purple-100 via-pink-100 to-orange-100' },
+    { id: 'ocean', label: 'Ozean', colors: 'bg-gradient-to-br from-blue-100 to-cyan-50' },
+    { id: 'forest', label: 'Natur', colors: 'bg-gradient-to-br from-green-100 to-emerald-50' },
+    { id: 'sunset', label: 'Sonnenuntergang', colors: 'bg-gradient-to-br from-orange-100 via-rose-100 to-purple-50' },
+    { id: 'custom', label: 'Benutzerdefiniert', colors: 'bg-gradient-to-br from-gray-100 to-gray-50' },
   ];
 
   return (

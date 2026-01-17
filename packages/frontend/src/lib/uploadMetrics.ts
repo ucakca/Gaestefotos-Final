@@ -32,9 +32,8 @@ export function trackUpload(metric: UploadMetric): void {
     // Keep only last 100 metrics
     const trimmed = stored.slice(-MAX_STORED_METRICS);
     localStorage.setItem(METRICS_STORAGE_KEY, JSON.stringify(trimmed));
-  } catch (error) {
+  } catch {
     // Silent fail - don't break upload flow
-    console.warn('[Metrics] Failed to store metric', error);
   }
 }
 
@@ -129,7 +128,7 @@ export function getRecentFailures(limit: number = 10): UploadMetric[] {
 export function clearMetrics(): void {
   try {
     localStorage.removeItem(METRICS_STORAGE_KEY);
-  } catch (error) {
-    console.warn('[Metrics] Failed to clear metrics', error);
+  } catch {
+    // Silent fail
   }
 }

@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import api from '@/lib/api';
 import { Event as EventType } from '@gaestefotos/shared';
 import {
@@ -56,7 +57,21 @@ import { useToastStore } from '@/store/toastStore';
 import GuidedTour from '@/components/ui/GuidedTour';
 import HelpTooltip from '@/components/ui/HelpTooltip';
 import { useRealtimePhotos } from '@/hooks/useRealtimePhotos';
-import { QRDesignerPanel } from '@/components/qr-designer/QRDesignerPanel';
+
+const QRDesignerPanel = dynamic(
+  () => import('@/components/qr-designer/QRDesignerPanel').then(mod => ({ default: mod.QRDesignerPanel })),
+  { 
+    loading: () => (
+      <div className="rounded-lg border border-border bg-card p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 w-48 bg-muted rounded"></div>
+          <div className="h-32 bg-muted rounded"></div>
+        </div>
+      </div>
+    ),
+    ssr: false 
+  }
+);
 
 interface PhotoStats {
   total: number;
@@ -78,10 +93,13 @@ function formatBytes(input: string | number | null | undefined): string {
   return `${v.toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
 }
 
-export default function EventDashboardPage() {
-  const params = useParams();
+export default function EventDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const eventId = params.id as string;
+  const [eventId, setEventId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    params.then(p => setEventId(p.id));
+  }, []);
 
   const { showToast } = useToastStore();
   
@@ -140,7 +158,7 @@ export default function EventDashboardPage() {
   const coverImageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    loadEvent();
+    if (eventId) loadEvent();
   }, [eventId]);
 
   const tourSteps = [
@@ -185,7 +203,7 @@ export default function EventDashboardPage() {
 
   // Realtime updates via Socket.io - auto-refresh stats when photos change
   useRealtimePhotos({
-    eventId,
+    eventId: eventId || '',
     onRefreshNeeded: () => {
       loadStats();
     },
@@ -1952,7 +1970,7 @@ export default function EventDashboardPage() {
             </div>
             <div className="px-4 py-6">
               <QRDesignerPanel
-                eventId={eventId}
+                eventId={eventId!}
                 eventSlug={event.slug}
                 galleryUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/e2/${event.slug}`}
               />
@@ -2114,7 +2132,7 @@ export default function EventDashboardPage() {
       </Dialog>
 
       {/* Sticky Footer Navigation */}
-      <DashboardFooter eventId={eventId} eventSlug={event.slug} />
+      <DashboardFooter eventId={eventId!} eventSlug={event.slug} />
       
       {/* Padding for footer */}
       <div className="h-20" />

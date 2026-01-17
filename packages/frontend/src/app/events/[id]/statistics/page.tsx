@@ -1,15 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import api from '@/lib/api';
 import { Event as EventType } from '@gaestefotos/shared';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { ErrorState } from '@/components/ui/ErrorState';
+
+const BarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false });
+const Bar = dynamic(() => import('recharts').then(mod => mod.Bar), { ssr: false });
+const XAxis = dynamic(() => import('recharts').then(mod => mod.XAxis), { ssr: false });
+const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: false });
+const CartesianGrid = dynamic(() => import('recharts').then(mod => mod.CartesianGrid), { ssr: false });
+const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false });
+const Legend = dynamic(() => import('recharts').then(mod => mod.Legend), { ssr: false });
+const LineChart = dynamic(() => import('recharts').then(mod => mod.LineChart), { ssr: false });
+const Line = dynamic(() => import('recharts').then(mod => mod.Line), { ssr: false });
+const PieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false });
+const Pie = dynamic(() => import('recharts').then(mod => mod.Pie), { ssr: false });
+const Cell = dynamic(() => import('recharts').then(mod => mod.Cell), { ssr: false });
 
 interface Statistics {
   photos: {
@@ -43,18 +56,23 @@ const STATUS_COLORS = {
 
 const COLORS = [STATUS_COLORS.success, 'var(--app-accent)', 'var(--app-bg)', STATUS_COLORS.info];
 
-export default function StatisticsPage() {
-  const params = useParams();
+export default function StatisticsPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const eventId = params.id as string;
+  const [eventId, setEventId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    params.then(p => setEventId(p.id));
+  }, []);
 
   const [event, setEvent] = useState<EventType | null>(null);
   const [statistics, setStatistics] = useState<Statistics | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadEvent();
-    loadStatistics();
+    if (eventId) {
+      loadEvent();
+      loadStatistics();
+    }
   }, [eventId]);
 
   const loadEvent = async () => {
@@ -77,8 +95,8 @@ export default function StatisticsPage() {
     }
   };
 
-  if (loading) {
-    return <FullPageLoader label="Laden..." />;
+  if (loading || !eventId) {
+    return <FullPageLoader label="Lade..." />;
   }
 
   if (!statistics) {
@@ -262,7 +280,7 @@ export default function StatisticsPage() {
       </div>
 
       {/* Sticky Footer Navigation */}
-      <DashboardFooter eventId={eventId} />
+      <DashboardFooter eventId={eventId!} />
       
       {/* Padding for footer */}
       <div className="h-20" />

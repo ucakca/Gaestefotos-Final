@@ -1,24 +1,29 @@
 'use client';
 
-import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import AppLayout from '@/components/AppLayout';
 import DashboardFooter from '@/components/DashboardFooter';
 import Guestbook from '@/components/Guestbook';
+import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import api from '@/lib/api';
 import { Event as EventType } from '@gaestefotos/shared';
 import { useAuthStore } from '@/store/authStore';
 
-export default function GuestbookPage() {
-  const params = useParams();
-  const eventId = params.id as string;
+export default function GuestbookPage({ params }: { params: Promise<{ id: string }> }) {
+  const [eventId, setEventId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    params.then(p => setEventId(p.id));
+  }, []);
+
   const { user } = useAuthStore();
   const [event, setEvent] = useState<EventType | null>(null);
   const [isHost, setIsHost] = useState(false);
 
   useEffect(() => {
-    loadEvent();
+    if (eventId) loadEvent();
   }, [eventId, user]);
 
   const loadEvent = async () => {
@@ -31,6 +36,10 @@ export default function GuestbookPage() {
       void err;
     }
   };
+
+  if (!eventId) {
+    return <FullPageLoader label="Lade..." />;
+  }
 
   return (
     <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
@@ -54,10 +63,10 @@ export default function GuestbookPage() {
           transition={{ delay: 0.1 }}
           className="bg-app-card rounded-lg shadow-sm border border-app-border overflow-hidden min-h-[600px] flex flex-col"
         >
-          <Guestbook eventId={eventId} isHost={isHost} eventTitle={event?.title} />
+          <Guestbook eventId={eventId!} isHost={isHost} eventTitle={event?.title} />
         </motion.div>
       </div>
-      <DashboardFooter eventId={eventId} />
+      <DashboardFooter eventId={eventId!} />
       <div className="h-20" />
     </AppLayout>
   );

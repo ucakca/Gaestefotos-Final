@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/lib/api';
@@ -239,9 +239,12 @@ async function downloadPdf(eventId: string, format: Format, svg: string): Promis
   URL.revokeObjectURL(url);
 }
 
-export default function QrStylerPage() {
-  const params = useParams();
-  const eventId = params.id as string;
+export default function QrStylerPage({ params }: { params: Promise<{ id: string }> }) {
+  const [eventId, setEventId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    params.then(p => setEventId(p.id));
+  }, []);
 
   const [format, setFormat] = useState<Format>('A6');
   const [templateSlug, setTemplateSlug] = useState<string>('minimal-classic');
@@ -274,7 +277,7 @@ export default function QrStylerPage() {
   const autosaveTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    (async () => {
+    const loadEvent = async () => {
       try {
         const { data } = await api.get(`/events/${eventId}`);
         const ev = data?.event;
@@ -308,7 +311,9 @@ export default function QrStylerPage() {
       } finally {
         setLoading(false);
       }
-    })();
+    };
+    
+    if (eventId) loadEvent();
   }, [eventId]);
 
   useEffect(() => {
@@ -435,7 +440,7 @@ export default function QrStylerPage() {
       if (!publicUrl) throw new Error('Kein QR-Ziel verfügbar');
       const qrSvg = await renderQrToSvgMarkup(publicUrl);
       const svgWithQr = embedQrIntoTemplateSvg(computedSvg.svg, qrSvg);
-      await downloadPng(eventId, format, svgWithQr);
+      await downloadPng(eventId!, format, svgWithQr);
     } catch (err: any) {
       setExportError(err?.message || 'Export fehlgeschlagen');
     } finally {
@@ -451,7 +456,7 @@ export default function QrStylerPage() {
       if (!publicUrl) throw new Error('Kein QR-Ziel verfügbar');
       const qrSvg = await renderQrToSvgMarkup(publicUrl);
       const svgWithQr = embedQrIntoTemplateSvg(computedSvg.svg, qrSvg);
-      await downloadPdf(eventId, format, svgWithQr);
+      await downloadPdf(eventId!, format, svgWithQr);
     } catch (err: any) {
       setExportError(err?.message || 'Export fehlgeschlagen');
     } finally {

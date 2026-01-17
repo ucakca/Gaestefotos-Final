@@ -27,7 +27,7 @@ export default function AccessStep({
 }: AccessStepProps) {
   const [showPassword, setShowPassword] = useState(false);
 
-  const canProceed = password.trim().length >= 4;
+  const canProceed = password.trim().length === 0 || password.trim().length >= 4;
   const passwordError = password.length > 0 && password.length < 4 ? 'Passwort muss mindestens 4 Zeichen haben' : '';
 
   const modes: { id: VisibilityMode; label: string; description: string }[] = [
@@ -46,13 +46,13 @@ export default function AccessStep({
       <div className="space-y-6">
         <div>
           <label htmlFor="password" className="block text-sm font-medium mb-2">
-            🔐 Event-Passwort
+            🔐 Event-Passwort (optional)
           </label>
           <div className="relative">
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
-              placeholder="Mindestens 4 Zeichen"
+              placeholder="Mindestens 4 Zeichen (leer lassen für offenen Zugang)"
               value={password}
               onChange={(e) => onPasswordChange(e.target.value)}
               className={`pr-10 ${passwordError ? 'border-red-500' : ''}`}
@@ -69,10 +69,10 @@ export default function AccessStep({
           {passwordError && (
             <p className="text-sm text-red-600 mt-1">{passwordError}</p>
           )}
-          <p className="text-xs text-muted-foreground mt-1">💡 Wird auf dem QR-Code angezeigt</p>
-          <div className="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200">
-            <p className="text-sm text-amber-800 font-medium">⚠️ Wichtig: Ohne Passwort können Gäste keine Fotos hochladen!</p>
-            <p className="text-xs text-amber-700 mt-1">Das Passwort schützt dein Event vor unerwünschten Uploads.</p>
+          <p className="text-xs text-muted-foreground mt-1">💡 Teile das Passwort mit deinen Gästen (z.B. auf Einladungen oder QR-Code)</p>
+          <div className="mt-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
+            <p className="text-sm text-blue-800 font-medium">ℹ️ Hinweis zum Passwort</p>
+            <p className="text-xs text-blue-700 mt-1">Ein Passwort schützt dein Event vor unerwünschten Uploads. Du kannst aber auch ohne Passwort starten und es später jederzeit hinzufügen.</p>
           </div>
         </div>
 

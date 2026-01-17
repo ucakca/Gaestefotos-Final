@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { Event as EventType } from '@gaestefotos/shared';
-import * as LucideIcons from 'lucide-react';
-import { Plus, Trash2, Edit2, X, Eye, EyeOff, Lock, Unlock, Calendar, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { 
+  Plus, Trash2, Edit2, X, Eye, EyeOff, Lock, Unlock, Calendar, Search, ChevronDown, ChevronUp,
+  Camera, Heart, Star, Gift, Music, Coffee, Beer, Cake, Utensils, Home, User, Users,
+  Image, Video, MessageCircle, FileText, MapPin, Clock, Award, Sparkles
+} from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
@@ -27,6 +30,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+
+const LucideIcons = {
+  Camera, Heart, Star, Gift, Music, Coffee, Beer, Cake, Utensils, Home, User, Users,
+  Image, Video, MessageCircle, FileText, MapPin, Clock, Award, Sparkles, Plus, Trash2,
+  Edit2, X, Eye, EyeOff, Lock, Unlock, Calendar, Search
+};
 
 function isWizardMode(): boolean {
   if (typeof window === 'undefined') return false;
@@ -87,10 +96,13 @@ function getAllLucideIconKeys(): string[] {
     .sort((a, b) => a.localeCompare(b));
 }
 
-export default function CategoryManagementPage() {
-  const params = useParams();
+export default function CategoryManagementPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const eventId = params.id as string;
+  const [eventId, setEventId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    params.then(p => setEventId(p.id));
+  }, []);
   const { showToast } = useToastStore();
 
   const confirmResolveRef = useRef<((value: boolean) => void) | null>(null);
@@ -145,10 +157,14 @@ export default function CategoryManagementPage() {
   const [iconSearch, setIconSearch] = useState('');
 
   useEffect(() => {
-    loadEvent();
-    loadCategories();
-    loadEntitlement();
+    if (eventId) loadData();
   }, [eventId]);
+
+  const loadData = async () => {
+    await loadEvent();
+    await loadCategories();
+    await loadEntitlement();
+  };
 
   const loadEvent = async () => {
     try {
@@ -308,12 +324,8 @@ export default function CategoryManagementPage() {
   };
 
 
-  if (loading) {
-    return (
-      <AppLayout showBackButton backUrl={wizardMode ? `/events/${eventId}/design?wizard=1` : `/events/${eventId}/dashboard`}>
-        <FullPageLoader label="Laden..." />
-      </AppLayout>
-    );
+  if (loading || !eventId) {
+    return <FullPageLoader label="Lade..." />;
   }
 
   return (
@@ -966,7 +978,7 @@ export default function CategoryManagementPage() {
       </div>
 
       {/* Sticky Footer Navigation */}
-      <DashboardFooter eventId={eventId} />
+      <DashboardFooter eventId={eventId!} />
       
       {/* Padding for footer */}
       <div className="h-20" />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import api from '@/lib/api';
 import AppLayout from '@/components/AppLayout';
@@ -46,9 +46,12 @@ interface Invitation {
   shortLinks?: { url: string }[];
 }
 
-export default function InvitationsPage() {
-  const params = useParams();
-  const eventId = params.id as string;
+export default function InvitationsPage({ params }: { params: Promise<{ id: string }> }) {
+  const [eventId, setEventId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    params.then(p => setEventId(p.id));
+  }, []);
   const { showToast } = useToastStore();
 
   const [invitations, setInvitations] = useState<Invitation[]>([]);
@@ -80,7 +83,7 @@ export default function InvitationsPage() {
   const [editingConfig, setEditingConfig] = useState<Partial<InvitationConfig> | null>(null);
 
   useEffect(() => {
-    loadInvitations();
+    if (eventId) loadInvitations();
   }, [eventId]);
 
   const loadInvitations = async () => {

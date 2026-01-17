@@ -49,7 +49,7 @@ export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterP
       id: 'invitation',
       label: 'Einladung',
       icon: Mail,
-      path: eventSlug ? `/e2/${eventSlug}/invitation` : `/events/${eventId}/dashboard`,
+      path: eventSlug ? `/e2/${eventSlug}/invite` : `/events/${eventId}/dashboard`,
     },
     {
       id: 'design',

@@ -15,7 +15,7 @@ export interface ChallengeConfig {
   enabled: boolean;
 }
 
-export type ColorScheme = 'elegant' | 'romantic' | 'modern' | 'colorful';
+export type ColorScheme = 'elegant' | 'romantic' | 'modern' | 'colorful' | 'ocean' | 'forest' | 'sunset' | 'custom';
 export type VisibilityMode = 'instant' | 'mystery' | 'moderated';
 
 export interface WizardState {

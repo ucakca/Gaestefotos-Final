@@ -2,13 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import EventHeader from '@/components/EventHeader';
 import AlbumNavigation from '@/components/AlbumNavigation';
 import ModernPhotoGrid from '@/components/ModernPhotoGrid';
 import BottomNavigation from '@/components/BottomNavigation';
 import StoriesBar from '@/components/guest/StoriesBar';
-import StoryViewer from '@/components/guest/StoryViewer';
-import FaceSearch from '@/components/FaceSearch';
 import { Alert } from '@/components/ui/Alert';
 import { Centered } from '@/components/ui/Centered';
 import { Container } from '@/components/ui/Container';
@@ -24,6 +23,9 @@ import { useStoriesViewer } from '@/hooks/useStoriesViewer';
 import api, { formatApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { useToastStore } from '@/store/toastStore';
+
+const StoryViewer = dynamic(() => import('@/components/guest/StoryViewer'), { ssr: false });
+const FaceSearch = dynamic(() => import('@/components/FaceSearch'), { ssr: false });
 
 export default function PublicEventPageV2() {
   const params = useParams();

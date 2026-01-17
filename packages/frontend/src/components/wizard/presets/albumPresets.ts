@@ -17,7 +17,7 @@ export const ALBUM_PRESETS: Record<EventCategory, AlbumPreset[]> = {
       label: 'Unsere Geschichte',
       hostOnly: true,
       default: true,
-      hint: 'Perfekt für Kinderfotos oder Verlobungsbilder vorab',
+      hint: '💡 Für Erinnerungen aus der Vergangenheit – Kindheitsfotos, besondere Momente, oder die Geschichte hinter dem Event',
     },
     { id: 'getting-ready', icon: 'Sparkles', label: 'Getting Ready', hostOnly: false, default: true },
     { id: 'ceremony', icon: 'Church', label: 'Zeremonie', hostOnly: false, default: true },

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Card } from '@/components/ui/Card';
@@ -105,8 +106,12 @@ type InvitationTemplateListItem = {
   isActive: boolean;
 };
 
-export default function EventDetailPage({ params }: { params: { id: string } }) {
-  const eventId = params.id;
+export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const [eventId, setEventId] = useState<string | null>(null);
+
+  useEffect(() => {
+    params.then(p => setEventId(p.id));
+  }, []);
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [cohosts, setCohosts] = useState<CohostMember[]>([]);
   const [loadingCohosts, setLoadingCohosts] = useState(true);
@@ -170,6 +175,10 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
       }
   >(null);
 
+  const [confirmDeleteEvent, setConfirmDeleteEvent] = useState(false);
+  const [deletingEvent, setDeletingEvent] = useState(false);
+  const router = useRouter();
+
   const totalIssues = useMemo(() => {
     if (!issues) return 0;
     return (
@@ -211,6 +220,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   );
 
   useEffect(() => {
+    if (!eventId) return;
     let mounted = true;
     (async () => {
       try {
@@ -260,10 +270,11 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   }
 
   useEffect(() => {
-    loadCohosts();
+    if (eventId) loadCohosts();
   }, [eventId]);
 
   async function loadInvitations() {
+    if (!eventId) return;
     try {
       setLoadingInvitations(true);
       setErrorInvitations(null);
@@ -549,7 +560,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
   }
 
   useEffect(() => {
-    loadUploadIssues(sinceHours);
+    if (eventId) loadUploadIssues(sinceHours);
   }, [eventId, sinceHours]);
 
   async function markPhotoClean(photoId: string) {
@@ -698,6 +709,23 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
     }
   }
 
+  async function handleDeleteEvent() {
+    if (!eventId) return;
+    try {
+      setDeletingEvent(true);
+      await api.delete(`/events/${eventId}`);
+      toast.success('Event gelöscht');
+      router.push('/events');
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || e?.message || 'Löschen fehlgeschlagen');
+      setDeletingEvent(false);
+    }
+  }
+
+  if (!eventId || loading) {
+    return <FullPageLoader />;
+  }
+
   return (
     <div className="mx-auto w-full max-w-6xl">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -708,13 +736,18 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setConfirmDeleteEvent(true)}
+          >
+            Event löschen
+          </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/events">Zurück</Link>
           </Button>
         </div>
       </div>
-
-      {loading ? <FullPageLoader /> : null}
 
       {!loading && error && (
         <Card className="p-5">
@@ -724,6 +757,24 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
 
       {!loading && !error && (
         <div className="space-y-6">
+          <AlertDialog open={confirmDeleteEvent} onOpenChange={setConfirmDeleteEvent}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Event löschen?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Bist du sicher, dass du dieses Event unwiderruflich löschen möchtest? Alle Fotos, Videos, Einladungen und Daten werden gelöscht.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deletingEvent}>Abbrechen</AlertDialogCancel>
+                <AlertDialogAction asChild>
+                  <Button onClick={handleDeleteEvent} disabled={deletingEvent} variant="destructive">
+                    {deletingEvent ? 'Löschen...' : 'Event löschen'}
+                  </Button>
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <AlertDialog open={confirmOpen} onOpenChange={(open: boolean) => (open ? null : setConfirmCleanAction(null))}>
             <AlertDialogContent>
               <AlertDialogHeader>

@@ -77,7 +77,7 @@ class EmailService {
     });
   }
 
-  private async getActiveTemplate(kind: 'INVITATION' | 'STORAGE_ENDS_REMINDER' | 'PHOTO_NOTIFICATION') {
+  private async getActiveTemplate(kind: 'INVITATION' | 'STORAGE_ENDS_REMINDER' | 'PHOTO_NOTIFICATION' | 'COHOST_INVITE') {
     try {
       const tpl = await (prisma as any).emailTemplate.findFirst({
         where: { kind, isActive: true },
@@ -100,6 +100,57 @@ class EmailService {
         pass: config.password,
       },
     });
+  }
+
+  async sendCohostInvite(options: {
+    to: string;
+    eventTitle: string;
+    inviteUrl: string;
+    eventSlug: string;
+  }) {
+    if (!this.transporter || !this.config) {
+      throw new Error('Email-Service nicht konfiguriert');
+    }
+
+    const tpl = await this.getActiveTemplate('COHOST_INVITE');
+    if (tpl) {
+      await this.sendTemplatedEmail({
+        to: options.to,
+        template: { subject: tpl.subject, html: tpl.html, text: tpl.text },
+        variables: {
+          eventTitle: options.eventTitle,
+          inviteUrl: options.inviteUrl,
+          eventSlug: options.eventSlug,
+        },
+      });
+    } else {
+      await this.transporter.sendMail({
+        from: this.config.from,
+        to: options.to,
+        subject: `Einladung als Co-Host: ${options.eventTitle}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2>Du wurdest als Co-Host eingeladen!</h2>
+            <p>Du wurdest eingeladen, das Event <strong>${this.escapeHtml(options.eventTitle)}</strong> als Co-Host zu verwalten.</p>
+            <p>Als Co-Host kannst du:</p>
+            <ul>
+              <li>Fotos genehmigen und moderieren</li>
+              <li>QR-Codes herunterladen</li>
+              <li>Gäste verwalten</li>
+            </ul>
+            <p>
+              <a href="${this.escapeHtml(options.inviteUrl)}" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Einladung annehmen
+              </a>
+            </p>
+            <p style="color: #666; font-size: 12px; margin-top: 24px;">
+              Oder kopiere diesen Link: ${this.escapeHtml(options.inviteUrl)}
+            </p>
+          </div>
+        `,
+        text: `Du wurdest als Co-Host für das Event "${options.eventTitle}" eingeladen.\n\nKlicke auf diesen Link, um die Einladung anzunehmen:\n${options.inviteUrl}`,
+      });
+    }
   }
 
   async sendInvitation(options: {

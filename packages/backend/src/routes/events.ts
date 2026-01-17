@@ -1095,8 +1095,6 @@ router.post(
         },
       });
 
-      uploadedEventId = event.id;
-
       // Upload images if provided
       if (files?.coverImage?.[0]) {
         const file = files.coverImage[0];

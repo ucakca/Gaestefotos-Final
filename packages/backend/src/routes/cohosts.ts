@@ -5,6 +5,7 @@ import prisma from '../config/database';
 import { authMiddleware, AuthRequest, hasEventManageAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
 import { assertFeatureEnabled, assertWithinLimit } from '../services/featureGate';
+import { emailService } from '../services/email';
 
 const router = Router();
 
@@ -270,10 +271,15 @@ router.delete('/:eventId/cohosts/:userId', authMiddleware, async (req: AuthReque
   }
 });
 
-// Create a co-host invite token for an event
+const inviteTokenSchema = z.object({
+  email: z.string().email().optional(),
+});
+
+// Create a co-host invite token for an event (optionally send via email)
 router.post('/:eventId/cohosts/invite-token', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
+    const { email } = inviteTokenSchema.parse(req.body);
 
     if (!(await requireManageAccessOr404(req, res, eventId))) return;
 
@@ -310,6 +316,22 @@ router.post('/:eventId/cohosts/invite-token', authMiddleware, async (req: AuthRe
     const shareUrl = event.slug
       ? `${frontendBaseUrl}/e2/${event.slug}?cohostInvite=${encodeURIComponent(inviteToken)}`
       : null;
+
+    // Send email if requested
+    if (email && shareUrl) {
+      try {
+        await emailService.sendCohostInvite({
+          to: email,
+          eventTitle: event.title,
+          inviteUrl: shareUrl,
+          eventSlug: event.slug,
+        });
+        return res.json({ ok: true, eventId, inviteToken, shareUrl, emailSent: true });
+      } catch (emailError: any) {
+        logger.error('Failed to send co-host invite email', { error: emailError.message, email, eventId });
+        return res.json({ ok: true, eventId, inviteToken, shareUrl, emailSent: false, emailError: emailError.message });
+      }
+    }
 
     return res.json({ ok: true, eventId, inviteToken, shareUrl });
   } catch (error) {

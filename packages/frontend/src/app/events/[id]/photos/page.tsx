@@ -1,14 +1,15 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { Photo, Event as EventType } from '@gaestefotos/shared';
 import { Check, X, Trash2, Download, Square, CheckSquare, Edit, ScanFace, Image as ImageIcon, Copy, Folder, FileDown, Upload, MoreVertical, ChevronDown, Star } from 'lucide-react';
 import SocialShare from '@/components/SocialShare';
-import PhotoEditor from '@/components/PhotoEditor';
 import { useToastStore } from '@/store/toastStore';
+import { useAuthStore } from '@/store/authStore';
 import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
 import FaceSearch from '@/components/FaceSearch';
@@ -43,10 +44,23 @@ import Link from 'next/link';
 import { buildApiUrl } from '@/lib/api';
 import { useRealtimePhotos } from '@/hooks/useRealtimePhotos';
 
-export default function PhotoManagementPage() {
-  const params = useParams();
-  const eventId = params.id as string;
+const PhotoEditor = dynamic(() => import('@/components/PhotoEditor'), { 
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-96">
+      <div className="animate-pulse text-muted-foreground">Editor wird geladen...</div>
+    </div>
+  )
+});
+
+export default function PhotoManagementPage({ params }: { params: Promise<{ id: string }> }) {
+  const [eventId, setEventId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    params.then(p => setEventId(p.id));
+  }, []);
   const { showToast } = useToastStore();
+  const { user } = useAuthStore();
 
   const confirmResolveRef = useRef<((value: boolean) => void) | null>(null);
   const [confirmState, setConfirmState] = useState<null | {
@@ -131,15 +145,17 @@ export default function PhotoManagementPage() {
   };
 
   useEffect(() => {
-    loadEvent();
-    loadCategories();
-    loadPhotos();
-    loadStories();
+    if (eventId) {
+      loadEvent();
+      loadCategories();
+      loadPhotos();
+      loadStories();
+    }
   }, [eventId, filter, viewMode]);
 
   // Realtime updates via Socket.io
   useRealtimePhotos({
-    eventId,
+    eventId: eventId || '',
     onRefreshNeeded: () => {
       loadPhotos();
       loadStories();
@@ -183,7 +199,7 @@ export default function PhotoManagementPage() {
       setLoading(true);
 
       if (viewMode === 'trash') {
-        const { data } = await api.get(`/photos/${eventId}/trash`);
+        const { data } = await api.get(`/${eventId}/photos?status=DELETED`);
         setPhotos(data.photos || []);
         return;
       }
@@ -467,7 +483,9 @@ export default function PhotoManagementPage() {
     return now >= eventTime - windowMs && now <= eventTime + windowMs;
   })();
 
-  const uploadDisabled = isStorageLocked || !withinUploadWindow;
+  // Host can always upload (bypass time window check)
+  const isHost = event?.hostId === user?.id;
+  const uploadDisabled = isStorageLocked || (!isHost && !withinUploadWindow);
   const uploadDisabledReason = isStorageLocked
     ? 'Die Speicherperiode ist beendet – Uploads sind nicht mehr möglich.'
     : 'Uploads sind nur 1 Tag vor/nach dem Event möglich.';
@@ -506,7 +524,7 @@ export default function PhotoManagementPage() {
       </AlertDialog>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24">
         <FaceSearch 
-          eventId={eventId} 
+          eventId={eventId!} 
           open={showFaceSearch}
           onClose={() => setShowFaceSearch(false)}
         />
@@ -553,7 +571,7 @@ export default function PhotoManagementPage() {
             </Button>
             <Button
               type="button"
-              variant="primary"
+              variant="secondary"
               size="sm"
               className="gap-2"
               onClick={() => {
@@ -968,15 +986,16 @@ export default function PhotoManagementPage() {
 
         {/* Floating Action Button for ZIP Download - hosts can always download */}
         {photos.length > 0 && (
-          <Button
-            asChild
-            variant="primary"
-            className="fixed bottom-24 right-6 w-14 h-14 rounded-full p-0 shadow-lg z-40"
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="fixed bottom-24 right-6 z-40"
           >
-            <motion.button
+            <Button
               type="button"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              variant="secondary"
+              size="sm"
+              className="w-10 h-10 rounded-full p-0 shadow-sm"
               onClick={async () => {
                 try {
                   const allIds = photos.map((p: any) => p.id).filter(Boolean);
@@ -1007,11 +1026,10 @@ export default function PhotoManagementPage() {
               }}
               aria-label="Alle Fotos herunterladen (ZIP)"
               title="Alle Fotos herunterladen (ZIP)"
-              className="flex items-center justify-center w-full h-full"
             >
-              <FileDown className="w-6 h-6" />
-            </motion.button>
-          </Button>
+              <FileDown className="w-4 h-4" />
+            </Button>
+          </motion.div>
         )}
 
         {/* Photo Detail Modal */}
@@ -1020,7 +1038,7 @@ export default function PhotoManagementPage() {
             <DialogContent className="bg-app-card rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
               <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}>
                 <div className="mb-4 flex justify-between items-center sticky top-0 bg-app-card z-10 pb-2 border-b border-app-border">
-                  <h2 className="text-lg font-semibold">Foto-Details</h2>
+                  <h2 id="photo-details-title" className="text-lg font-semibold">Foto-Details</h2>
                   <div className="flex items-center gap-2">
                     {/* Photo Actions Menu */}
                     <DropdownMenu>
@@ -1293,7 +1311,7 @@ export default function PhotoManagementPage() {
           )}
         </AnimatePresence>
       </div>
-      <DashboardFooter eventId={eventId} />
+      <DashboardFooter eventId={eventId!} />
     </AppLayout>
   );
 }

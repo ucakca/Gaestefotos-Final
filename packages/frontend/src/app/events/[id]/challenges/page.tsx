@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
@@ -61,10 +61,13 @@ interface Challenge {
   }>;
 }
 
-export default function ChallengeManagementPage() {
-  const params = useParams();
+export default function ChallengeManagementPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const eventId = params.id as string;
+  const [eventId, setEventId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    params.then(p => setEventId(p.id));
+  }, []);
   const { showToast } = useToastStore();
 
   const confirmResolveRef = useRef<((value: boolean) => void) | null>(null);
@@ -113,10 +116,14 @@ export default function ChallengeManagementPage() {
   });
 
   useEffect(() => {
-    loadEvent();
-    loadCategories();
-    loadChallenges();
+    if (eventId) loadData();
   }, [eventId]);
+
+  const loadData = async () => {
+    await loadEvent();
+    await loadCategories();
+    await loadChallenges();
+  };
 
   const loadEvent = async () => {
     try {
@@ -253,8 +260,8 @@ export default function ChallengeManagementPage() {
     });
   };
 
-  if (loading) {
-    return <FullPageLoader label="Laden..." />;
+  if (loading || !eventId) {
+    return <FullPageLoader label="Lade..." />;
   }
 
   const featuresConfig = (event?.featuresConfig as any) || {};
@@ -605,7 +612,7 @@ export default function ChallengeManagementPage() {
       </div>
 
       {/* Sticky Footer Navigation */}
-      <DashboardFooter eventId={eventId} />
+      <DashboardFooter eventId={eventId!} />
       
       {/* Padding for footer */}
       <div className="h-20" />

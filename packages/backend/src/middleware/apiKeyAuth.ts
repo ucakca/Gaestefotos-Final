@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import crypto from 'crypto';
 import prisma from '../config/database';
+import crypto from 'crypto';
+import { logger } from '../utils/logger';
 
 export interface ApiKeyAuthRequest extends Request {
   apiKeyId?: string;
@@ -78,7 +79,9 @@ export function requireApiKey(requiredScopes: string[] = []) {
     }
 
     if (apiKey.expiresAt && apiKey.expiresAt.getTime() <= Date.now()) {
-      await (prisma as any).apiKey.update({ where: { id: apiKey.id }, data: { status: 'EXPIRED' } }).catch(() => undefined);
+      await (prisma as any).apiKey.update({ where: { id: apiKey.id }, data: { status: 'EXPIRED' } }).catch((error: any) => {
+        logger.error('Failed to update expired API key status', { error: error.message, apiKeyId: apiKey.id });
+      });
       return res.status(403).json({ error: 'Forbidden: API key expired' });
     }
 
@@ -97,12 +100,16 @@ export function requireApiKey(requiredScopes: string[] = []) {
             message: 'missing_scope',
           },
         })
-        .catch(() => undefined);
+        .catch((error: any) => {
+          logger.error('Failed to create audit log for missing scope', { error: error.message, apiKeyId: apiKey.id });
+        });
 
       return res.status(403).json({ error: 'Forbidden: Missing scope' });
     }
 
-    await (prisma as any).apiKey.update({ where: { id: apiKey.id }, data: { lastUsedAt: new Date() } }).catch(() => undefined);
+    await (prisma as any).apiKey.update({ where: { id: apiKey.id }, data: { lastUsedAt: new Date() } }).catch((error: any) => {
+      logger.error('Failed to update API key lastUsedAt', { error: error.message, apiKeyId: apiKey.id });
+    });
     await (prisma as any).apiKeyAuditLog
       .create({
         data: {
@@ -114,7 +121,9 @@ export function requireApiKey(requiredScopes: string[] = []) {
           userAgent: req.get('user-agent') || undefined,
         },
       })
-      .catch(() => undefined);
+      .catch((error: any) => {
+        logger.error('Failed to create audit log for API key usage', { error: error.message, apiKeyId: apiKey.id });
+      });
 
     req.apiKeyId = apiKey.id;
     req.apiKeyScopes = scopes;

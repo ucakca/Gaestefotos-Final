@@ -683,11 +683,11 @@ router.post('/register', passwordLimiter, async (req: Request, res: Response) =>
       user,
       token,
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    console.error('Register error:', error);
+    logger.error('Register error', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -885,11 +885,11 @@ router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
       },
       token,
     });
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    console.error('Login error:', error);
+    logger.error('Login error', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1024,8 +1024,8 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
     }
 
     res.json({ user });
-  } catch (error) {
-    console.error('Get me error:', error);
+  } catch (error: any) {
+    logger.error('Get me error', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Internal server error' });
   }
 });

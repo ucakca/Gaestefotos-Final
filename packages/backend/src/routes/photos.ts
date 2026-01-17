@@ -15,6 +15,7 @@ import { emailService } from '../services/email';
 import { serializeBigInt } from '../utils/serializers';
 import { selectSmartCategoryId } from '../services/smartAlbum';
 import archiver from 'archiver';
+import { logger } from '../utils/logger';
 
 // Sharp is optional; if missing we fall back to a tiny placeholder for blurred previews.
 let sharp: any;
@@ -162,8 +163,8 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
     }));
 
     res.json({ photos: serializeBigInt(photosWithProxyUrls) });
-  } catch (error) {
-    console.error('Get photos error:', error);
+  } catch (error: any) {
+    logger.error('Get photos error', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -293,14 +294,14 @@ router.post(
               eventId,
               uploaderName,
               photoCount: 1,
-            }).catch((err) => console.warn('Upload notification failed:', err));
+            }).catch((err: any) => logger.warn('Upload notification failed', { error: err.message, eventId, uploaderName }));
           }
         }).catch(() => {});
       }
 
       res.status(201).json({ photo: serializeBigInt(photoWithProxyUrl) });
-    } catch (error) {
-      console.error('Upload photo error:', error);
+    } catch (error: any) {
+      logger.error('Upload photo error', { error: error.message, stack: error.stack });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -329,7 +330,7 @@ router.get(
         },
       });
 
-      if (!photo || photo.deletedAt || photo.status === 'DELETED') {
+      if (!photo || photo.deletedAt) {
         return res.status(404).json({ error: 'Foto nicht gefunden' });
       }
 
@@ -341,6 +342,11 @@ router.get(
       const denyVisibility = isManager ? 'hostOrAdmin' : 'guest';
 
       if (!isManager && !hasEventAccess(req, photo.eventId)) {
+        return res.status(404).json({ error: 'Foto nicht gefunden' });
+      }
+
+      // Guests cannot see deleted photos, but hosts/admins can (for trash management)
+      if (!isManager && photo.status === 'DELETED') {
         return res.status(404).json({ error: 'Foto nicht gefunden' });
       }
 
@@ -411,7 +417,7 @@ router.get(
       res.setHeader('Content-Disposition', `inline; filename="photo-${photoId}.${extension}"`);
       res.send(fileBuffer);
     } catch (error: any) {
-      console.error('Serve photo file error:', error);
+      logger.error('Serve photo file error', { error: error.message, stack: error.stack, photoId: req.params.photoId });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -510,7 +516,7 @@ router.get(
     res.setHeader('X-GF-Quality', isManager && photo.storagePathOriginal ? 'original' : 'optimized');
     res.send(fileBuffer);
   } catch (error: any) {
-    console.error('Download photo error:', error);
+    logger.error('Download photo error', { error: error.message, stack: error.stack, photoId: req.params.photoId });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -576,8 +582,8 @@ router.post(
         zlib: { level: 9 },
       });
 
-      archive.on('error', (err) => {
-        console.error('ZIP-Erstellungsfehler:', err);
+      archive.on('error', (err: any) => {
+        logger.error('ZIP creation error', { error: err.message, eventId: event.id });
         if (!res.headersSent) {
           res.status(500).json({ error: 'Fehler beim Erstellen der ZIP-Datei' });
         }
@@ -605,14 +611,14 @@ router.post(
           const photoIndex = categoryCounters[safeCategoryName].toString().padStart(3, '0');
           
           archive.append(fileBuffer, { name: `${safeCategoryName}/IMG_${photoIndex}.${extension}` });
-        } catch (err) {
-          console.warn(`Fehler beim Hinzufügen von Foto ${photo.id}:`, err);
+        } catch (err: any) {
+          logger.warn('Failed to add photo to ZIP', { error: err.message, photoId: photo.id });
         }
       }
 
       archive.finalize();
-    } catch (error) {
-      console.error('Fehler beim Bulk-Download:', error);
+    } catch (error: any) {
+      logger.error('Bulk download error', { error: error.message, stack: error.stack, eventId });
       if (!res.headersSent) {
         res.status(500).json({ error: 'Interner Serverfehler' });
       }
@@ -663,8 +669,8 @@ router.post(
       });
 
       res.json({ photo: updatedPhoto });
-    } catch (error) {
-      console.error('Approve photo error:', error);
+    } catch (error: any) {
+      logger.error('Approve photo error', { error: error.message, stack: error.stack, photoId: req.params.photoId });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -707,8 +713,8 @@ router.post(
       });
 
       res.json({ photo: updatedPhoto });
-    } catch (error) {
-      console.error('Reject photo error:', error);
+    } catch (error: any) {
+      logger.error('Reject photo error', { error: error.message, stack: error.stack, photoId: req.params.photoId });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -750,8 +756,101 @@ router.delete(
       });
 
       res.json({ message: 'Photo deleted' });
-    } catch (error) {
-      console.error('Delete photo error:', error);
+    } catch (error: any) {
+      logger.error('Delete photo error', { error: error.message, stack: error.stack, photoId: req.params.photoId });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+// Restore photo from trash
+router.post(
+  '/:photoId/restore',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoId } = req.params;
+
+      const photo = await prisma.photo.findUnique({
+        where: { id: photoId },
+        include: {
+          event: true,
+        },
+      });
+
+      if (!photo) {
+        return res.status(404).json({ error: 'Photo not found' });
+      }
+
+      if (!(await hasEventManageAccess(req, photo.eventId))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      await prisma.photo.update({
+        where: { id: photoId },
+        data: { status: 'APPROVED' },
+      });
+
+      res.json({ message: 'Photo restored' });
+    } catch (error: any) {
+      logger.error('Restore photo error', { error: error.message, stack: error.stack, photoId: req.params.photoId });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+// Permanently delete photo (purge)
+router.delete(
+  '/:photoId/purge',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoId } = req.params;
+
+      const photo = await prisma.photo.findUnique({
+        where: { id: photoId },
+        select: {
+          id: true,
+          eventId: true,
+          storagePath: true,
+          storagePathOriginal: true,
+          storagePathThumb: true,
+          event: {
+            select: {
+              id: true,
+              hostId: true,
+            },
+          },
+        },
+      });
+
+      if (!photo) {
+        return res.status(404).json({ error: 'Photo not found' });
+      }
+
+      if (!(await hasEventManageAccess(req, photo.eventId))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      // Delete from storage
+      if (photo.storagePath) {
+        await storageService.deleteFile(photo.storagePath);
+      }
+      if (photo.storagePathOriginal) {
+        await storageService.deleteFile(photo.storagePathOriginal);
+      }
+      if (photo.storagePathThumb) {
+        await storageService.deleteFile(photo.storagePathThumb);
+      }
+
+      // Delete from database
+      await prisma.photo.delete({
+        where: { id: photoId },
+      });
+
+      res.json({ message: 'Photo permanently deleted' });
+    } catch (error: any) {
+      logger.error('Purge photo error', { error: error.message, stack: error.stack, photoId: req.params.photoId });
       res.status(500).json({ error: 'Internal server error' });
     }
   }

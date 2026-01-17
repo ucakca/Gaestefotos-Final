@@ -13,10 +13,10 @@ type ShortlinkResolveResponse = {
   };
 };
 
-function getApiBaseUrl(): string {
+async function getApiBaseUrl(): Promise<string> {
   // In production we must use same-origin to avoid mixed deployments / wrong domains.
   if (process.env.NODE_ENV === 'production') {
-    const h = headers();
+    const h = await headers();
     const proto = h.get('x-forwarded-proto') || 'https';
     const host = h.get('x-forwarded-host') || h.get('host');
     if (host) return `${proto}://${host}`;
@@ -30,7 +30,7 @@ function getApiBaseUrl(): string {
 
 async function resolveShortlink(code: string): Promise<ShortlinkResolveResponse | null> {
   try {
-    const url = `${getApiBaseUrl()}/api/shortlinks/${encodeURIComponent(code)}`;
+    const url = `${await getApiBaseUrl()}/api/shortlinks/${encodeURIComponent(code)}`;
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return null;
     return (await res.json()) as ShortlinkResolveResponse;

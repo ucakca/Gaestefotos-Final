@@ -1,5 +1,9 @@
 const { withSentryConfig } = require('@sentry/nextjs');
 
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -10,6 +14,11 @@ const nextConfig = {
       {
         source: '/favicon.ico',
         destination: '/favicon.svg',
+      },
+      // Proxy API requests to backend
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:8001/api/:path*',
       },
     ];
   },
@@ -43,7 +52,16 @@ const sentryWebpackPluginOptions = {
   disableClientWebpackPlugin: true,
 };
 
-module.exports = process.env.SENTRY_DSN
-  ? withSentryConfig(nextConfig, sentryWebpackPluginOptions)
-  : nextConfig;
+// Compose all wrappers
+let finalConfig = nextConfig;
+
+// Apply bundle analyzer
+finalConfig = withBundleAnalyzer(finalConfig);
+
+// Apply Sentry if configured
+if (process.env.SENTRY_DSN) {
+  finalConfig = withSentryConfig(finalConfig, sentryWebpackPluginOptions);
+}
+
+module.exports = finalConfig;
 
