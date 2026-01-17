@@ -1,6 +1,7 @@
 // Shared Types
 export * from './types/qr-design';
 export * from './types/invitation-design';
+export * from './types/invitation';
 
 // Database types (re-export for frontend)
 export type User = {
