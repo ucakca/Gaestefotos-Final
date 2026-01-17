@@ -1,9 +1,13 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
-import { InvitationDesignConfig, INVITATION_SIZES, InvitationSizePreset } from '@gaestefotos/shared';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { InvitationDesignConfig, INVITATION_SIZES, InvitationSizePreset, CanvasElementUnion, TextElement, ImageElement, ShapeElement } from '@gaestefotos/shared';
 import { InvitationCanvas } from './InvitationCanvas';
+import { LayerPanel } from './LayerPanel';
+import { PropertyPanel } from './PropertyPanel';
+import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 import { debounce } from 'lodash';
+import { generateId } from '@/utils/generateId';
 
 interface InvitationEditorPanelProps {
   eventId: string;
@@ -29,19 +33,41 @@ export function InvitationEditorPanel({
   
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [sizePreset, setSizePreset] = useState<InvitationSizePreset>('a5-portrait');
+  const [loading, setLoading] = useState(true);
+  const [snapToGridEnabled, setSnapToGridEnabled] = useState(false);
+  const [gridSize] = useState(10);
+  const clipboardRef = useRef<CanvasElementUnion | null>(null);
+
+  // Load design from API
+  useEffect(() => {
+    if (initialDesign) {
+      setLoading(false);
+      return;
+    }
+
+    fetch(`/api/events/${eventId}/invitation`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.id) {
+          setActiveDesign(data);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+  }, [eventId, initialDesign]);
 
   // Auto-save with debounce (1 second delay)
   const debouncedSave = useMemo(
     () =>
       debounce(async (design: InvitationDesignConfig) => {
         try {
-          // TODO: Implement API endpoint in Phase 2.5
-          // await fetch(`/api/events/${eventId}/invitation`, {
-          //   method: 'PUT',
-          //   headers: { 'Content-Type': 'application/json' },
-          //   body: JSON.stringify(design),
-          // });
-          console.log('Auto-save:', design);
+          await fetch(`/api/events/${eventId}/invitation`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(design),
+          });
         } catch (error) {
           console.error('Failed to save invitation design:', error);
         }
@@ -66,6 +92,207 @@ export function InvitationEditorPanel({
       height: size.height,
     });
   }, [activeDesign, handleConfigChange]);
+
+  const addTextElement = useCallback(() => {
+    const newElement: TextElement = {
+      type: 'text',
+      id: generateId(),
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 50,
+      zIndex: activeDesign.elements.length,
+      text: 'Neuer Text',
+      fontSize: 24,
+      fontFamily: 'Arial',
+      fill: '#000000',
+      align: 'left',
+    };
+    handleConfigChange({
+      ...activeDesign,
+      elements: [...activeDesign.elements, newElement],
+    });
+    setSelectedElementId(newElement.id);
+  }, [activeDesign, handleConfigChange]);
+
+  const addImageElement = useCallback(() => {
+    const newElement: ImageElement = {
+      type: 'image',
+      id: generateId(),
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 200,
+      zIndex: activeDesign.elements.length,
+      src: '/placeholder-image.png',
+    };
+    handleConfigChange({
+      ...activeDesign,
+      elements: [...activeDesign.elements, newElement],
+    });
+    setSelectedElementId(newElement.id);
+  }, [activeDesign, handleConfigChange]);
+
+  const addShapeElement = useCallback((shapeType: 'rectangle' | 'circle' | 'line') => {
+    const newElement: ShapeElement = {
+      type: 'shape',
+      id: generateId(),
+      x: 100,
+      y: 100,
+      width: 200,
+      height: shapeType === 'circle' ? 200 : shapeType === 'line' ? 2 : 100,
+      zIndex: activeDesign.elements.length,
+      shapeType,
+      fill: shapeType === 'line' ? undefined : '#3B82F6',
+      stroke: shapeType === 'line' ? '#000000' : undefined,
+      strokeWidth: shapeType === 'line' ? 2 : undefined,
+    };
+    handleConfigChange({
+      ...activeDesign,
+      elements: [...activeDesign.elements, newElement],
+    });
+    setSelectedElementId(newElement.id);
+  }, [activeDesign, handleConfigChange]);
+
+  const handleDeleteElement = useCallback((elementId: string) => {
+    handleConfigChange({
+      ...activeDesign,
+      elements: activeDesign.elements.filter((el) => el.id !== elementId),
+    });
+    if (selectedElementId === elementId) {
+      setSelectedElementId(null);
+    }
+  }, [activeDesign, handleConfigChange, selectedElementId]);
+
+  const handleReorderElement = useCallback((elementId: string, direction: 'up' | 'down') => {
+    const index = activeDesign.elements.findIndex((el) => el.id === elementId);
+    if (index === -1) return;
+
+    const newElements = [...activeDesign.elements];
+    if (direction === 'up' && index < newElements.length - 1) {
+      [newElements[index].zIndex, newElements[index + 1].zIndex] = [
+        newElements[index + 1].zIndex,
+        newElements[index].zIndex,
+      ];
+    } else if (direction === 'down' && index > 0) {
+      [newElements[index].zIndex, newElements[index - 1].zIndex] = [
+        newElements[index - 1].zIndex,
+        newElements[index].zIndex,
+      ];
+    }
+
+    handleConfigChange({
+      ...activeDesign,
+      elements: newElements,
+    });
+  }, [activeDesign, handleConfigChange]);
+
+  const handleToggleVisibility = useCallback((elementId: string) => {
+    const newElements = activeDesign.elements.map((el) =>
+      el.id === elementId ? { ...el, visible: !(el as any).visible !== false } : el
+    );
+    handleConfigChange({
+      ...activeDesign,
+      elements: newElements,
+    });
+  }, [activeDesign, handleConfigChange]);
+
+  const handleToggleLock = useCallback((elementId: string) => {
+    const newElements = activeDesign.elements.map((el) =>
+      el.id === elementId ? { ...el, locked: !(el as any).locked } : el
+    );
+    handleConfigChange({
+      ...activeDesign,
+      elements: newElements,
+    });
+  }, [activeDesign, handleConfigChange]);
+
+  const handleElementChange = useCallback((elementId: string, attrs: Partial<CanvasElementUnion>) => {
+    const newElements = activeDesign.elements.map((el) =>
+      el.id === elementId ? { ...el, ...attrs } : el
+    );
+    handleConfigChange({
+      ...activeDesign,
+      elements: newElements,
+    });
+  }, [activeDesign, handleConfigChange]);
+
+  const handleCopy = useCallback(() => {
+    if (!selectedElementId) return;
+    const element = activeDesign.elements.find(el => el.id === selectedElementId);
+    if (element) {
+      clipboardRef.current = element;
+    }
+  }, [selectedElementId, activeDesign.elements]);
+
+  const handlePaste = useCallback(() => {
+    if (!clipboardRef.current) return;
+    
+    const newElement = {
+      ...clipboardRef.current,
+      id: generateId(),
+      x: clipboardRef.current.x + 20,
+      y: clipboardRef.current.y + 20,
+      zIndex: activeDesign.elements.length,
+    };
+    
+    handleConfigChange({
+      ...activeDesign,
+      elements: [...activeDesign.elements, newElement],
+    });
+    setSelectedElementId(newElement.id);
+  }, [activeDesign, handleConfigChange]);
+
+  const handleDuplicate = useCallback((id: string) => {
+    const element = activeDesign.elements.find(el => el.id === id);
+    if (!element) return;
+    
+    const newElement = {
+      ...element,
+      id: generateId(),
+      x: element.x + 20,
+      y: element.y + 20,
+      zIndex: activeDesign.elements.length,
+    };
+    
+    handleConfigChange({
+      ...activeDesign,
+      elements: [...activeDesign.elements, newElement],
+    });
+    setSelectedElementId(newElement.id);
+  }, [activeDesign, handleConfigChange]);
+
+  const handleMove = useCallback((id: string, dx: number, dy: number) => {
+    const newElements = activeDesign.elements.map((el) =>
+      el.id === id ? { ...el, x: el.x + dx, y: el.y + dy } : el
+    );
+    handleConfigChange({
+      ...activeDesign,
+      elements: newElements,
+    });
+  }, [activeDesign, handleConfigChange]);
+
+  useKeyboardShortcuts({
+    selectedElementId,
+    elements: activeDesign.elements,
+    onDelete: handleDeleteElement,
+    onDuplicate: handleDuplicate,
+    onMove: handleMove,
+    onCopy: handleCopy,
+    onPaste: handlePaste,
+    disabled: loading,
+  });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Design wird geladen...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen">
@@ -108,6 +335,18 @@ export function InvitationEditorPanel({
               }
               className="w-full h-10 rounded-md cursor-pointer"
             />
+          </div>
+
+          {/* Grid Toggle */}
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="gridToggle"
+              checked={snapToGridEnabled}
+              onChange={(e) => setSnapToGridEnabled(e.target.checked)}
+              className="rounded"
+            />
+            <label htmlFor="gridToggle" className="text-sm">Raster aktivieren ({gridSize}px)</label>
           </div>
 
           {/* Element Tools */}
@@ -163,6 +402,8 @@ export function InvitationEditorPanel({
           onConfigChange={handleConfigChange}
           selectedElementId={selectedElementId}
           onSelectElement={setSelectedElementId}
+          snapToGrid={snapToGridEnabled}
+          gridSize={gridSize}
         />
       </div>
 

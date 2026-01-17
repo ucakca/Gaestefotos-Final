@@ -27,7 +27,16 @@ export function slugify(text: string): string {
 /**
  * Generate a random string
  */
-export function randomString(length: number = 32): string {
+export function generateRandomCode(length: number = 6): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+export function randomString(length: number = 8): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
