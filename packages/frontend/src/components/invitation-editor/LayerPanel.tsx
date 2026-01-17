@@ -51,7 +51,7 @@ export function LayerPanel({
       case 'qr':
         return 'QR-Code';
       default:
-        return element.type;
+        return (element as any).type || 'Element';
     }
   };
 
