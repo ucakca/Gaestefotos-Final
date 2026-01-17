@@ -460,8 +460,8 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
                       <div className="text-sm text-app-muted">{guest.email || '-'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(guest.status)}`}>
-                        {getStatusText(guest.status)}
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(guest.status || '')}`}>
+                        {getStatusText(guest.status || '')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-app-muted">
