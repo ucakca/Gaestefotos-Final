@@ -24,6 +24,9 @@ export function ShapeElement({
 }: ShapeElementProps) {
   const shapeRef = useRef<Konva.Rect | Konva.Circle | Konva.Line>(null);
   const trRef = useRef<Konva.Transformer>(null);
+  const rectRef = useRef<Konva.Rect>(null);
+  const circleRef = useRef<Konva.Circle>(null);
+  const lineRef = useRef<Konva.Line>(null);
 
   useEffect(() => {
     if (isSelected && trRef.current && shapeRef.current) {
