@@ -34,8 +34,33 @@ export function ShapeElement({
 
   if (!isVisible) return null;
 
-  const commonProps = {
-    ref: shapeRef,
+  const handleDragEnd = (e: Konva.KonvaEventObject<DragEvent>) => {
+    onChange({
+      x: e.target.x(),
+      y: e.target.y(),
+    });
+  };
+
+  const handleTransformEnd = (ref: React.RefObject<any>) => {
+    const node = ref.current;
+    if (!node) return;
+
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
+
+    node.scaleX(1);
+    node.scaleY(1);
+
+    onChange({
+      x: node.x(),
+      y: node.y(),
+      width: Math.max(5, node.width() * scaleX),
+      height: Math.max(5, node.height() * scaleY),
+      rotation: node.rotation(),
+    });
+  };
+
+  const baseProps = {
     x: element.x,
     y: element.y,
     rotation: element.rotation,
@@ -46,30 +71,7 @@ export function ShapeElement({
     draggable: !isLocked,
     onClick: onSelect,
     onTap: onSelect,
-    onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => {
-      onChange({
-        x: e.target.x(),
-        y: e.target.y(),
-      });
-    },
-    onTransformEnd: () => {
-      const node = shapeRef.current;
-      if (!node) return;
-
-      const scaleX = node.scaleX();
-      const scaleY = node.scaleY();
-
-      node.scaleX(1);
-      node.scaleY(1);
-
-      onChange({
-        x: node.x(),
-        y: node.y(),
-        width: Math.max(5, node.width() * scaleX),
-        height: Math.max(5, node.height() * scaleY),
-        rotation: node.rotation(),
-      });
-    },
+    onDragEnd: handleDragEnd,
   };
 
   let ShapeComponent;
@@ -77,25 +79,31 @@ export function ShapeElement({
     case 'rectangle':
       ShapeComponent = (
         <Rect
-          {...commonProps}
+          ref={rectRef}
+          {...baseProps}
           width={element.width}
           height={element.height}
+          onTransformEnd={() => handleTransformEnd(rectRef)}
         />
       );
       break;
     case 'circle':
       ShapeComponent = (
         <Circle
-          {...commonProps}
+          ref={circleRef}
+          {...baseProps}
           radius={Math.min(element.width, element.height) / 2}
+          onTransformEnd={() => handleTransformEnd(circleRef)}
         />
       );
       break;
     case 'line':
       ShapeComponent = (
         <Line
-          {...commonProps}
+          ref={lineRef}
+          {...baseProps}
           points={[0, 0, element.width, 0]}
+          onTransformEnd={() => handleTransformEnd(lineRef)}
         />
       );
       break;

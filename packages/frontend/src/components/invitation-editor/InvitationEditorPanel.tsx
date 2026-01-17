@@ -110,38 +110,35 @@ export function InvitationEditorPanel({
             />
           </div>
 
-          {/* Element Tools - Phase 2.3 */}
+          {/* Element Tools */}
           <div className="space-y-2">
             <label className="block text-sm font-medium">Elemente hinzufügen</label>
             <div className="grid grid-cols-2 gap-2">
               <button
-                disabled
-                className="px-4 py-2 bg-gray-100 text-gray-400 rounded-md cursor-not-allowed"
+                onClick={addTextElement}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 + Text
               </button>
               <button
-                disabled
-                className="px-4 py-2 bg-gray-100 text-gray-400 rounded-md cursor-not-allowed"
+                onClick={addImageElement}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 + Bild
               </button>
               <button
-                disabled
-                className="px-4 py-2 bg-gray-100 text-gray-400 rounded-md cursor-not-allowed"
+                onClick={() => addShapeElement('rectangle')}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
-                + Form
+                + Rechteck
               </button>
               <button
-                disabled
-                className="px-4 py-2 bg-gray-100 text-gray-400 rounded-md cursor-not-allowed"
+                onClick={() => addShapeElement('circle')}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
-                + QR-Code
+                + Kreis
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
-              Element-Tools kommen in Phase 2.3
-            </p>
           </div>
 
           {/* Element Properties */}
