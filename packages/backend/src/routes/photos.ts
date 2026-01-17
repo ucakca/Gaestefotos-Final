@@ -618,7 +618,7 @@ router.post(
 
       archive.finalize();
     } catch (error: any) {
-      logger.error('Bulk download error', { error: error.message, stack: error.stack, eventId });
+      logger.error('Bulk download error', { error: error.message, stack: error.stack });
       if (!res.headersSent) {
         res.status(500).json({ error: 'Interner Serverfehler' });
       }

@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import prisma from '../config/database';
 
+import { logger } from '../utils/logger';
 interface EmailConfig {
   host: string;
   port: number;
@@ -106,6 +107,7 @@ class EmailService {
     to: string;
     eventTitle: string;
     inviteUrl: string;
+    hostName?: string;
     eventSlug: string;
   }) {
     if (!this.transporter || !this.config) {
