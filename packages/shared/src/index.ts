@@ -30,6 +30,7 @@ export type Photo = {
   eventId: string;
   uploaderId: string | null;
   url: string;
+  status?: string | null;
   createdAt: Date;
 };
 
