@@ -3,11 +3,13 @@
 import { useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { QRDesignConfig, QR_TEMPLATES } from '@gaestefotos/shared';
+import { SafeZoneOverlay } from './SafeZoneOverlay';
 
 interface QRPreviewProps {
   config: QRDesignConfig;
   galleryUrl: string;
 }
+  showSafeZone?: boolean;
 
 export function QRPreview({ config, galleryUrl }: QRPreviewProps) {
   const previewRef = useRef<HTMLDivElement>(null);
