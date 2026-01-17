@@ -465,7 +465,7 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-app-muted">
-                      {guest.plusOneCount > 0 ? `+${guest.plusOneCount}` : '-'}
+                      {(guest.plusOneCount || 0) > 0 ? `+${guest.plusOneCount}` : '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <IconButton
