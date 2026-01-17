@@ -1,7 +1,7 @@
 // Shared Types
 export * from './types/qr-design';
 export * from './types/invitation-design';
-export { formatDate, formatDateTime, formatRelativeDate } from './utils/date';
+export { formatDate, formatDateTime } from './utils/date';
 export { slugify, generateRandomCode, randomString } from './utils/string';
 
 // Event helpers
