@@ -1,6 +1,30 @@
 // Shared Types
 export * from './types/qr-design';
 export * from './types/invitation-design';
+
+// Database types (re-export for frontend)
+export type User = {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+  createdAt: Date;
+};
+
+export type Event = {
+  id: string;
+  slug: string;
+  title: string;
+  hostId: string;
+};
+
+export type Photo = {
+  id: string;
+  eventId: string;
+  uploaderId: string | null;
+  url: string;
+  createdAt: Date;
+};
 export { formatDate, formatDateTime } from './utils/date';
 export { slugify, generateRandomCode, randomString } from './utils/string';
 

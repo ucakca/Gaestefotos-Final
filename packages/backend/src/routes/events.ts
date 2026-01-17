@@ -1704,7 +1704,6 @@ router.get(
         select: { 
           id: true, 
           hostId: true, 
-          coHosts: true,
           invitationDesign: true 
         },
       });
