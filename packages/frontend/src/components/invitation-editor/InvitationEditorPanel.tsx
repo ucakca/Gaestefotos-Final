@@ -105,7 +105,7 @@ export function InvitationEditorPanel({
       text: 'Neuer Text',
       fontSize: 24,
       fontFamily: 'Arial',
-      fill: '#000000',
+      color: '#000000',
       align: 'left',
     };
     handleConfigChange({
