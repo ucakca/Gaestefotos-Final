@@ -53,4 +53,77 @@ router.get('/', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, r
   return res.json({ ok: true, total, users });
 });
 
+router.patch('/:id/role', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    if (!['USER', 'HOST', 'ADMIN'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role' });
+    }
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: { role },
+      select: { id: true, email: true, name: true, role: true },
+    });
+
+    return res.json({ ok: true, user });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.patch('/:id/lock', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  return res.status(501).json({ error: 'User locking not implemented - field missing in schema' });
+});
+
+router.delete('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (id === req.userId) {
+      return res.status(400).json({ error: 'Cannot delete yourself' });
+    }
+
+    await prisma.user.delete({ where: { id } });
+
+    return res.json({ ok: true });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        twoFactorEnabled: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            events: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    return res.json({ ok: true, user });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

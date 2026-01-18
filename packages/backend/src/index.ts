@@ -52,6 +52,9 @@ import qaLogsRoutes from './routes/qaLogs';
 import adminQaLogsRoutes from './routes/adminQaLogs';
 import adminUsersRoutes from './routes/adminUsers';
 import adminEventsRoutes from './routes/adminEvents';
+import adminDashboardRoutes from './routes/adminDashboard';
+import adminPhotosRoutes from './routes/adminPhotos';
+import adminLogsRoutes from './routes/adminLogs';
 import cohostInvitesRoutes from './routes/cohostInvites';
 import uploadsRoutes from './routes/uploads';
 import qrDesignsRoutes from './routes/qrDesigns';
@@ -550,6 +553,9 @@ app.use('/api/admin/impersonation', adminImpersonationRoutes);
 app.use('/api/admin/marketing', adminMarketingRoutes);
 app.use('/api/admin/users', adminUsersRoutes);
 app.use('/api/admin/events', adminEventsRoutes);
+app.use('/api/admin/dashboard', adminDashboardRoutes);
+app.use('/api/admin/photos', adminPhotosRoutes);
+app.use('/api/admin/logs', adminLogsRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
 
 // Tus.io resumable uploads

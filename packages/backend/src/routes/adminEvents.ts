@@ -62,4 +62,90 @@ router.get('/', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, r
   return res.json({ ok: true, total, events });
 });
 
+router.patch('/:id/status', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { isActive } = req.body;
+
+    if (typeof isActive !== 'boolean') {
+      return res.status(400).json({ error: 'isActive must be boolean' });
+    }
+
+    const event = await prisma.event.update({
+      where: { id },
+      data: { isActive },
+      select: { id: true, title: true, isActive: true },
+    });
+
+    return res.json({ ok: true, event });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.delete('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { permanent } = req.query;
+
+    if (permanent === 'true') {
+      await prisma.event.delete({ where: { id } });
+    } else {
+      await prisma.event.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      });
+    }
+
+    return res.json({ ok: true });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const event = await prisma.event.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        slug: true,
+        dateTime: true,
+        locationName: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
+        host: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+          },
+        },
+        _count: {
+          select: {
+            photos: true,
+            guests: true,
+            videos: true,
+          },
+        },
+      },
+    });
+
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    return res.json({ ok: true, event });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
