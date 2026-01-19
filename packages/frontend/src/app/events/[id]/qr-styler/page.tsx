@@ -6,7 +6,7 @@ import Link from 'next/link';
 import api from '@/lib/api';
 import AppLayout from '@/components/AppLayout';
 import { QRCodeSVG } from 'qrcode.react';
-import { Download, ChevronLeft, Image as ImageIcon, Save, FileText, RotateCcw } from 'lucide-react';
+import { ChevronLeft, Image as ImageIcon, RotateCcw } from 'lucide-react';
 import { createRoot } from 'react-dom/client';
 import { Button } from '@/components/ui/Button';
 import { ColorInput } from '@/components/ui/ColorInput';
