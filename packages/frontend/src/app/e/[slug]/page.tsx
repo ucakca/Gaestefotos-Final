@@ -12,6 +12,7 @@ import EventHeader from '@/components/EventHeader';
 import AlbumNavigation from '@/components/AlbumNavigation';
 import ModernPhotoGrid from '@/components/ModernPhotoGrid';
 import StoriesBar from '@/components/guest/StoriesBar';
+import InstallPrompt from '@/components/InstallPrompt';
 import { Trophy } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -813,6 +814,8 @@ export default function PublicEventPage() {
         guestId={guestId}
         uploaderName={uploaderName}
       />
+
+      <InstallPrompt variant="guest" />
 
       <StoryViewer
         stories={stories}
