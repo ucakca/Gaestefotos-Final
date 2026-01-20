@@ -1801,5 +1801,69 @@ router.put(
   }
 );
 
+// QR Design speichern für Druckservice
+router.post('/:id/qr/save-design', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const {
+      template,
+      format,
+      headline,
+      subline,
+      eventName,
+      callToAction,
+      bgColor,
+      textColor,
+      accentColor,
+      logoUrl,
+    } = req.body;
+
+    const event = await prisma.event.findUnique({ where: { id } });
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    // Check authorization
+    if (event.hostId !== req.user?.id && req.user?.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    // Upsert QR Design
+    const design = await prisma.qrDesign.upsert({
+      where: { eventId: id },
+      create: {
+        eventId: id,
+        template,
+        format,
+        headline,
+        subline,
+        eventName,
+        callToAction,
+        bgColor,
+        textColor,
+        accentColor,
+        logoUrl,
+      },
+      update: {
+        template,
+        format,
+        headline,
+        subline,
+        eventName,
+        callToAction,
+        bgColor,
+        textColor,
+        accentColor,
+        logoUrl,
+      },
+    });
+
+    res.json(design);
+  } catch (error) {
+    console.error('Error saving QR design:', error);
+    res.status(500).json({ error: 'Failed to save QR design' });
+  }
+});
+
 export default router;
 
