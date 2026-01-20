@@ -10,7 +10,6 @@ import { Download, ChevronLeft, Image as ImageIcon, Save, FileText, RotateCcw } 
 import { createRoot } from 'react-dom/client';
 import { Button } from '@/components/ui/Button';
 import { ColorInput } from '@/components/ui/ColorInput';
-import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 
 type Format = 'A6' | 'A5';
@@ -269,7 +268,6 @@ export default function QrStylerPage({ params }: { params: Promise<{ id: string 
   const [exportingPdf, setExportingPdf] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
-  const [savingConfig, setSavingConfig] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveOk, setSaveOk] = useState<string | null>(null);
 
@@ -647,12 +645,6 @@ export default function QrStylerPage({ params }: { params: Promise<{ id: string 
 
               <div className="pt-2 border-t border-app-border" />
 
-              <LogoUpload
-                eventId={eventId!}
-                currentLogoUrl={logoUrl || undefined}
-                onLogoChange={setLogoUrl}
-                disabled={loading}
-              />
 
               <div className="pt-2 border-t border-app-border" />
 
