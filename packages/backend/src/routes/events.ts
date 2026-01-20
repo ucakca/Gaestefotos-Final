@@ -480,12 +480,12 @@ router.post('/:id/qr/logo', authMiddleware, uploadSingleDesignImage('logo'), asy
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const uploadResult = await storageService.uploadEventAsset(eventId, req.file.buffer, req.file.originalname, req.file.mimetype);
+    const uploadResult = await storageService.uploadFile(req.file.buffer, req.file.originalname, req.file.mimetype);
     const logoUrl = uploadResult.url;
     
     await prisma.qrDesign.upsert({
       where: { eventId },
-      create: { eventId, logoUrl },
+      create: { eventId, template: 'default', logoUrl },
       update: { logoUrl },
     });
 
