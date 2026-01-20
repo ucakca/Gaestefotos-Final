@@ -531,7 +531,6 @@ app.use('/api/events', guestbookRoutes); // Guestbook: /api/events/:eventId/gues
 app.use('/api/events', duplicatesRoutes); // Duplicates: /api/events/:eventId/duplicates
 app.use('/api/face-search', faceSearchRoutes);
 app.use('/api/print-service', printServiceRoutes);
-app.use('/api/photobooth', photoboothRoutes);
 app.use('/api/events', videoRoutes); // Videos: /api/events/:eventId/videos
 app.use('/api/events', cohostsRoutes); // Co-hosts: /api/events/:eventId/cohosts
 app.use('/api/cohosts', cohostInvitesRoutes); // Co-host invite accept: /api/cohosts/accept
