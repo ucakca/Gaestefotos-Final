@@ -1833,13 +1833,7 @@ router.post('/:id/qr/save-design', authMiddleware, async (req: AuthRequest, res:
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const logoFile = req.file;
-    if (!logoFile) {
-      return res.status(400).json({ error: 'No logo file provided' });
-    }
-
-    const logoUrl = await storageService.uploadFile(logoFile.buffer, logoFile.originalname, 'image/png');
-
+    // Upsert QR Design
     const design = await prisma.qrDesign.upsert({
       where: { eventId: id },
       create: {
