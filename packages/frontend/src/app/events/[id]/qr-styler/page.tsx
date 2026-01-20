@@ -303,6 +303,21 @@ export default function QrStylerPage({ params }: { params: Promise<{ id: string 
   const autosaveTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
+    async function loadPrintServiceSettings() {
+      try {
+        const res = await api.get('/print-service/settings');
+        if (res.data.enabled) {
+          const price = format === 'A5' ? res.data.priceA5 : res.data.priceA6;
+          setPrintPrice(price);
+        }
+      } catch (err) {
+        // Print service not configured - ignore
+      }
+    }
+    loadPrintServiceSettings();
+  }, [format]);
+
+  useEffect(() => {
     const loadEvent = async () => {
       try {
         const { data } = await api.get(`/events/${eventId}`);

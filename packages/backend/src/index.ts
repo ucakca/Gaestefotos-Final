@@ -528,7 +528,8 @@ app.use('/api/events', storiesRoutes); // Stories: /api/events/:eventId/stories
 app.use('/api/photos', storiesRoutes); // Story from photo: /api/photos/:photoId/story
 app.use('/api/events', guestbookRoutes); // Guestbook: /api/events/:eventId/guestbook
 app.use('/api/events', duplicatesRoutes); // Duplicates: /api/events/:eventId/duplicates
-app.use('/api/events', faceSearchRoutes); // Face Search: /api/events/:eventId/face-search
+app.use('/api/face-search', faceSearchRoutes);
+app.use('/api/print-service', printServiceRoutes);
 app.use('/api/events', videoRoutes); // Videos: /api/events/:eventId/videos
 app.use('/api/events', cohostsRoutes); // Co-hosts: /api/events/:eventId/cohosts
 app.use('/api/cohosts', cohostInvitesRoutes); // Co-host invite accept: /api/cohosts/accept
