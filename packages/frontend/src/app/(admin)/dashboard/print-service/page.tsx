@@ -136,9 +136,11 @@ export default function PrintServiceSettingsPage() {
                     Zeigt "Jetzt drucken lassen" Button im QR-Styler
                   </p>
                 </div>
-                <Switch
+                <input
+                  type="checkbox"
                   checked={settings.enabled}
-                  onCheckedChange={(enabled) => setSettings({ ...settings, enabled })}
+                  onChange={(e) => setSettings({ ...settings, enabled: e.target.checked })}
+                  className="w-10 h-6"
                 />
               </div>
             </div>

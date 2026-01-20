@@ -7,7 +7,12 @@ const router = Router();
 // GET Settings
 router.get('/settings', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    if (req.user?.role !== 'ADMIN') {
+    if (!req.userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user || user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Admin only' });
     }
 
@@ -32,7 +37,12 @@ router.get('/settings', authMiddleware, async (req: AuthRequest, res: Response) 
 // POST Update Settings
 router.post('/settings', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    if (req.user?.role !== 'ADMIN') {
+    if (!req.userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user || user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Admin only' });
     }
 

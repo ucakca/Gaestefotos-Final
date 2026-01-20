@@ -1824,11 +1824,22 @@ router.post('/:id/qr/save-design', authMiddleware, async (req: AuthRequest, res:
     }
 
     // Check authorization
-    if (event.hostId !== req.user?.id && req.user?.role !== 'ADMIN') {
+    if (!req.userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user || (event.hostId !== user.id && user.role !== 'ADMIN')) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    // Upsert QR Design
+    const logoFile = req.file;
+    if (!logoFile) {
+      return res.status(400).json({ error: 'No logo file provided' });
+    }
+
+    const logoUrl = await storageService.uploadFile(logoFile.buffer, logoFile.originalname, 'image/png');
+
     const design = await prisma.qrDesign.upsert({
       where: { eventId: id },
       create: {

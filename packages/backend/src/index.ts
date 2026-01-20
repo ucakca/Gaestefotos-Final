@@ -26,6 +26,7 @@ import guestbookRoutes from './routes/guestbook';
 import votesRoutes from './routes/votes';
 import duplicatesRoutes from './routes/duplicates';
 import faceSearchRoutes from './routes/faceSearch';
+import printServiceRoutes from './routes/printService';
 import videoRoutes from './routes/videos';
 import cohostsRoutes from './routes/cohosts';
 import packageDefinitionsRoutes from './routes/packageDefinitions';
