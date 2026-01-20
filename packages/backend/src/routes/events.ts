@@ -471,6 +471,48 @@ router.post('/:id/qr/export.pdf', authMiddleware, async (req: AuthRequest, res: 
   }
 });
 
+// Logo upload for QR design
+router.post('/:id/qr/logo', authMiddleware, uploadSingleDesignImage('logo'), async (req: AuthRequest, res: Response) => {
+  try {
+    const eventId = req.params.id;
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const uploadResult = await storageService.uploadEventAsset(eventId, req.file.buffer, req.file.originalname, req.file.mimetype);
+    const logoUrl = uploadResult.url;
+    
+    await prisma.qrDesign.upsert({
+      where: { eventId },
+      create: { eventId, logoUrl },
+      update: { logoUrl },
+    });
+
+    return res.json({ logoUrl });
+  } catch (error) {
+    logger.error('Logo upload error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+    return res.status(500).json({ error: 'Logo upload failed' });
+  }
+});
+
+// Logo delete for QR design
+router.delete('/:id/qr/logo', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const eventId = req.params.id;
+    
+    await prisma.qrDesign.update({
+      where: { eventId },
+      data: { logoUrl: null },
+    });
+
+    return res.json({ success: true });
+  } catch (error) {
+    logger.error('Logo delete error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+    return res.status(500).json({ error: 'Logo delete failed' });
+  }
+});
+
 async function handleEventStorageUsage(req: AuthRequest, res: Response) {
   try {
     const eventId = req.params.id;
