@@ -2134,6 +2134,7 @@ export default function EventDashboardPage({ params }: { params: Promise<{ id: s
 
       {/* Sticky Footer Navigation */}
       <DashboardFooter eventId={eventId!} eventSlug={event.slug} />
+      <InstallPrompt variant="host" />
       
       {/* Padding for footer */}
       <div className="h-20" />

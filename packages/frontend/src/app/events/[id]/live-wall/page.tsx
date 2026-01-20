@@ -302,6 +302,25 @@ export default function LiveWallPage() {
         )}
       </AnimatePresence>
 
+      {/* Countdown Banner */}
+      <AnimatePresence>
+        {showCountdown && countdown && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="sticky top-[73px] z-40 bg-gradient-to-r from-app-accent via-purple-600 to-pink-600 text-white shadow-lg"
+          >
+            <div className="max-w-7xl mx-auto px-4 py-4">
+              <div className="flex items-center justify-center gap-3">
+                <Clock className="w-6 h-6 animate-pulse" />
+                <span className="text-lg sm:text-2xl font-bold">{countdown}</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Photo Grid */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {loading ? (
