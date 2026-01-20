@@ -127,7 +127,7 @@ model PrintServiceSettings {
   priceA5         Float?
   
   // URLs
-  wordpressUrl    String?  // z.B. "https://gaestefotos.com"
+  wordpressUrl    String?  // z.B. "https://gästefotos.com"
   
   // Design-Upload zu WordPress
   uploadEndpoint  String?  // Optional: WordPress REST API Endpoint
@@ -172,7 +172,7 @@ model qrDesign {
         {/* WordPress URL */}
         <Input 
           label="WordPress URL"
-          placeholder="https://gaestefotos.com"
+          placeholder="https://gästefotos.com"
           value={settings.wordpressUrl}
         />
         
@@ -275,7 +275,7 @@ function gf_save_qr_design_to_order($item_id, $values) {
 
 // Helper: Design PDF von App-Server holen
 function get_qr_design_pdf($design_id) {
-  $app_url = get_option('gf_app_url'); // z.B. https://app.gaestefotos.com
+  $app_url = get_option('gf_app_url'); // z.B. https://app.gästefotos.com
   $api_key = get_option('gf_api_key');
   
   // API Call zu App-Backend
@@ -296,7 +296,7 @@ function get_qr_design_pdf($design_id) {
 
 **Generierte URL:**
 ```
-https://gaestefotos.com/checkout/?add-to-cart=123&quantity=1&qr_design_id=clx123&qr_format=A6&qr_event_id=evt123
+https://gästefotos.com/checkout/?add-to-cart=123&quantity=1&qr_design_id=clx123&qr_format=A6&qr_event_id=evt123
 ```
 
 **Flow:**
@@ -419,11 +419,11 @@ Falls WordPress Plugin zu komplex:
 
 ```bash
 # App Backend (.env)
-WORDPRESS_URL=https://gaestefotos.com
+WORDPRESS_URL=https://gästefotos.com
 WORDPRESS_API_KEY=<generierter-key>
 
 # WordPress Plugin Settings (Admin UI)
-gf_app_url=https://app.gaestefotos.com
+gf_app_url=https://app.gästefotos.com
 gf_api_key=<gleicher-key>
 ```
 

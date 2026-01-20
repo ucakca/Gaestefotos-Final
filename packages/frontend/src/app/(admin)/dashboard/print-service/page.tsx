@@ -192,7 +192,7 @@ export default function PrintServiceSettingsPage() {
               </div>
 
               <p className="text-xs text-app-muted">
-                Finde die Product IDs in WooCommerce → Produkte → Bearbeiten (URL zeigt ?post=123)
+                Finde die Product IDs in WooCommerce → Produkte → Bearbeiten (URL: ?post=123)
               </p>
             </div>
           </Card>
