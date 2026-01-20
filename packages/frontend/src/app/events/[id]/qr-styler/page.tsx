@@ -665,25 +665,6 @@ export default function QrStylerPage({ params }: { params: Promise<{ id: string 
 
               <div className="pt-2 border-t border-app-border" />
 
-              <ExportPanel
-                eventId={eventId!}
-                eventSlug={eventSlug}
-                format={format}
-                template={template}
-                svg={computedSvg.svg}
-                disabled={!computedSvg.svg || loading}
-                onExportStart={() => {
-                  setExportError(null);
-                  setExportingPng(false);
-                  setExportingPdf(false);
-                }}
-                onExportComplete={() => {
-                  setExportError(null);
-                }}
-                onExportError={(error) => {
-                  setExportError(error);
-                }}
-              />
 
               <div className="pt-2 border-t border-app-border" />
 
