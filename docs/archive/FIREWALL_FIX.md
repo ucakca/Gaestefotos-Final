@@ -24,7 +24,7 @@
 ### Frontend URL anpassen (falls nötig):
 Backend `.env`:
 ```env
-FRONTEND_URL=http://65.109.71.182:3000,https://app.gaestefotos.com
+FRONTEND_URL=http://65.109.71.182:3000,https://app.gästefotos.com
 ```
 
 ---

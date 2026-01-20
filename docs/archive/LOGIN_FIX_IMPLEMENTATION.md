@@ -29,7 +29,7 @@
 ```typescript
 const allowedOrigins = process.env.FRONTEND_URL?.split(',').map(url => url.trim()) || [
   'http://localhost:3000',
-  'https://app.gaestefotos.com',
+  'https://app.gästefotos.com',
   'https://app.xn--gstefotos-v2a.com',
   'http://app.gästefotos.com',
   'https://app.gästefotos.com'

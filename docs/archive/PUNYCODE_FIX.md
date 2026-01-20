@@ -19,7 +19,7 @@ Alle Domain-Referenzen wurden auf Punycode umgestellt:
    - ✅ `NEXT_PUBLIC_WS_URL=https://app.xn--gstefotos-v2a.com`
 
 3. **Backend index.ts** (CORS):
-   - ❌ `'https://app.gaestefotos.com'`
+   - ❌ `'https://app.gästefotos.com'`
    - ✅ `'https://app.xn--gstefotos-v2a.com'`
 
 ---

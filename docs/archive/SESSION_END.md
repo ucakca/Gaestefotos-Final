@@ -23,7 +23,7 @@
 - `WORDPRESS_MULTISITE_ANALYSIS.md` - Analyse WordPress Multisite
 
 ### Login-Credentials
-- **Test-Benutzer**: `admin@gaestefotos.com` / `admin123`
+- **Test-Benutzer**: `admin@gästefotos.com` / `admin123`
 - **WordPress-Benutzer**: Können sich mit WordPress-Credentials anmelden
 
 ### Nächste Schritte (optional)

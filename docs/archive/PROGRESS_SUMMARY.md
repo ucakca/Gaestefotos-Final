@@ -176,7 +176,7 @@
 ## 🔐 Login-Credentials
 
 ### Test-Benutzer (PostgreSQL)
-- **Email**: `admin@gaestefotos.com`
+- **Email**: `admin@gästefotos.com`
 - **Passwort**: `admin123`
 - **Rolle**: ADMIN
 
