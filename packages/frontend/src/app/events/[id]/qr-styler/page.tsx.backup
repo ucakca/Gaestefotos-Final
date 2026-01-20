@@ -22,12 +22,6 @@ const TEMPLATES: TemplateDef[] = [
   { slug: 'minimal-floral', label: 'Minimal Floral' },
   { slug: 'minimal-modern', label: 'Minimal Modern' },
   { slug: 'elegant-floral', label: 'Elegant Floral' },
-  { slug: 'elegant-gold', label: 'Elegant Gold' },
-  { slug: 'botanical-green', label: 'Botanical Green' },
-  { slug: 'rustic-wood', label: 'Rustic Wood' },
-  { slug: 'festive-celebration', label: 'Festive Celebration' },
-  { slug: 'modern-geometric', label: 'Modern Geometric' },
-  { slug: 'vintage-frame', label: 'Vintage Frame' },
 ];
 
 type Preset = {
