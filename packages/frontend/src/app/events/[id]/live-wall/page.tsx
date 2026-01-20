@@ -224,6 +224,8 @@ export default function LiveWallPage() {
                 onClick={() => router.back()}
                 variant="ghost"
                 size="sm"
+                aria-label="Zurück"
+                title="Zurück"
               />
             )}
             <div>
@@ -254,6 +256,8 @@ export default function LiveWallPage() {
               onClick={toggleFullscreen}
               variant="ghost"
               size="sm"
+              aria-label={isFullscreen ? "Vollbild beenden" : "Vollbild"}
+              title={isFullscreen ? "Vollbild beenden" : "Vollbild"}
             />
           </div>
         </div>
@@ -283,6 +287,8 @@ export default function LiveWallPage() {
                   onClick={() => setShowQR(false)}
                   variant="ghost"
                   size="sm"
+                  aria-label="Schließen"
+                  title="Schließen"
                 />
               </div>
               {qrDataUrl && (
