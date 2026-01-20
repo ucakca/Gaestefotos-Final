@@ -329,7 +329,7 @@ export default function CategoryManagementPage({ params }: { params: Promise<{ i
   }
 
   return (
-    <AppLayout showBackButton backUrl={wizardMode ? `/events/${eventId}/design?wizard=1` : `/events/${eventId}/dashboard`}>
+    <AppLayout showBackButton backUrl={wizardMode ? `/events/${eventId}/qr-styler?wizard=1` : `/events/${eventId}/dashboard`}>
       <AlertDialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -366,7 +366,7 @@ export default function CategoryManagementPage({ params }: { params: Promise<{ i
                   type="button"
                   variant="secondary"
                   size="sm"
-                  onClick={() => router.push(`/events/${eventId}/design?wizard=1`)}
+                  onClick={() => router.push(`/events/${eventId}/qr-styler?wizard=1`)}
                 >
                   Zurück
                 </Button>

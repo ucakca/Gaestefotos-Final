@@ -14,7 +14,9 @@ import {
   Users,
   User,
   Heart,
-  LayoutDashboard
+  LayoutDashboard,
+  Sparkles,
+  Mail
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Category, Event as EventType } from '@gaestefotos/shared';
