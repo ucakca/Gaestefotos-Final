@@ -184,7 +184,7 @@ importers:
         specifier: ^9.0.2
         version: 9.0.3
       multer:
-        specifier: ^1.4.5-lts.1
+        specifier: 1.4.5-lts.2
         version: 1.4.5-lts.2
       mysql2:
         specifier: ^3.14.0
@@ -242,7 +242,7 @@ importers:
         specifier: ^9.0.5
         version: 9.0.10
       '@types/multer':
-        specifier: ^1.4.11
+        specifier: ^1.4.13
         version: 1.4.13
       '@types/node':
         specifier: ^20.10.0
