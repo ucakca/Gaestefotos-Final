@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Switch } from '@/components/ui/Switch';
@@ -125,10 +125,10 @@ export default function PrintServiceSettingsPage() {
 
         <form onSubmit={handleSave} className="space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Aktivierung</CardTitle>
-            </CardHeader>
-            <CardContent>
+            <div className="p-6 border-b border-app-border">
+              <h3 className="text-lg font-semibold">Aktivierung</h3>
+            </div>
+            <div className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Druckservice aktivieren</p>
@@ -141,14 +141,14 @@ export default function PrintServiceSettingsPage() {
                   onCheckedChange={(enabled) => setSettings({ ...settings, enabled })}
                 />
               </div>
-            </CardContent>
+            </div>
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>WooCommerce Integration</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            <div className="p-6 border-b border-app-border">
+              <h3 className="text-lg font-semibold">WooCommerce Integration</h3>
+            </div>
+            <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
                   WordPress URL
@@ -193,14 +193,14 @@ export default function PrintServiceSettingsPage() {
               <p className="text-xs text-app-muted">
                 Finde die Product IDs in WooCommerce → Produkte → Bearbeiten (URL zeigt ?post=123)
               </p>
-            </CardContent>
+            </div>
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Preise (nur zur Anzeige)</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            <div className="p-6 border-b border-app-border">
+              <h3 className="text-lg font-semibold">Preise (nur zur Anzeige)</h3>
+            </div>
+            <div className="p-6 space-y-4">
               <p className="text-sm text-app-muted">
                 Diese Preise werden nur im QR-Styler angezeigt. Die echten Preise werden aus WooCommerce geladen.
               </p>
@@ -232,14 +232,14 @@ export default function PrintServiceSettingsPage() {
                   />
                 </div>
               </div>
-            </CardContent>
+            </div>
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Test Integration</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            <div className="p-6 border-b border-app-border">
+              <h3 className="text-lg font-semibold">Test Integration</h3>
+            </div>
+            <div className="p-6 space-y-4">
               <p className="text-sm text-app-muted">
                 Teste die Checkout URL Generierung (öffnet in neuem Tab)
               </p>
@@ -251,7 +251,7 @@ export default function PrintServiceSettingsPage() {
               >
                 Test Checkout URL generieren
               </Button>
-            </CardContent>
+            </div>
           </Card>
 
           <div className="flex gap-4">

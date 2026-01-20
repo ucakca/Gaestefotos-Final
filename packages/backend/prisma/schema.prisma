@@ -1009,3 +1009,55 @@ model InvoiceRecord {
   @@index([issuedAt])
   @@map("invoice_records")
 }
+
+model PrintServiceSettings {
+  id              String   @id @default(uuid())
+  enabled         Boolean  @default(false)
+  
+  // WooCommerce Product IDs
+  productIdA6     String?
+  productIdA5     String?
+  
+  // Preise (nur zur Anzeige, echte Preise in WooCommerce)
+  priceA6         Float?
+  priceA5         Float?
+  
+  // WordPress URL
+  wordpressUrl    String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("print_service_settings")
+}
+
+model QrDesign {
+  id              String   @id @default(uuid())
+  eventId         String   @unique
+  template        String
+  format          String   @default("A6")
+  
+  // Texte
+  headline        String?
+  subline         String?
+  eventName       String?
+  callToAction    String?
+  
+  // Farben
+  bgColor         String?
+  textColor       String?
+  accentColor     String?
+  
+  // Logo
+  logoUrl         String?
+  
+  // Druckservice
+  printOrderId    String?
+  printedAt       DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([eventId])
+  @@map("qr_designs")
+}
