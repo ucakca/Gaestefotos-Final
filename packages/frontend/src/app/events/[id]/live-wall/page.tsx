@@ -341,7 +341,16 @@ export default function LiveWallPage() {
         ) : (
           <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
             <AnimatePresence>
-              {photos.map((photo, index) => (
+              {photos
+                .filter(photo => {
+                  if (filter === 'all') return true;
+                  if (filter === 'guestbook') return photo.isGuestbookEntry;
+                  if (filter === 'challenges') return photo.isChallengeCompletion;
+                  if (filter === 'stories') return photo.isStory;
+                  return true;
+                })
+                .slice(0, 50)
+                .map((photo, index) => (
                 <motion.div
                   key={photo.id}
                   initial={{ opacity: 0, scale: 0.8, y: 20 }}
