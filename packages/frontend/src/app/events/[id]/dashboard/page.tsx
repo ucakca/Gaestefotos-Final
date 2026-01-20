@@ -74,6 +74,8 @@ const QRDesignerPanel = dynamic(
   }
 );
 
+const InstallPrompt = dynamic(() => import('@/components/InstallPrompt'), { ssr: false });
+
 interface PhotoStats {
   total: number;
   approved: number;
