@@ -481,7 +481,6 @@ router.post('/:id/qr/logo', authMiddleware, uploadSingleDesignImage('logo'), asy
     }
 
     const logoUrl = await storageService.uploadFile(eventId, req.file.originalname, req.file.buffer, req.file.mimetype);
-    const logoUrl = await storageService.uploadFile(eventId, req.file.originalname, req.file.buffer, req.file.mimetype);
     
     await prisma.qrDesign.upsert({
       where: { eventId },
