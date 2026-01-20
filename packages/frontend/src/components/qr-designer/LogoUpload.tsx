@@ -101,7 +101,6 @@ export default function LogoUpload({
             onClick={handleRemoveLogo}
             disabled={disabled || uploading}
             variant="outline"
-            size="sm"
             className="w-full"
           >
             <X className="h-4 w-4" />
