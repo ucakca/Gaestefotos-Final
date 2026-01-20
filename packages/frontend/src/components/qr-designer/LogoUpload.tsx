@@ -120,17 +120,15 @@ export default function LogoUpload({
             id="logo-upload-input"
           />
           
-          <label htmlFor="logo-upload-input">
-            <Button
-              as="span"
-              disabled={disabled || uploading}
-              variant="outline"
-              className="w-full cursor-pointer"
-            >
-              <Upload className="h-4 w-4" />
-              {uploading ? 'Lädt hoch…' : 'Logo hochladen'}
-            </Button>
-          </label>
+          <Button
+            onClick={() => document.getElementById('logo-upload-input')?.click()}
+            disabled={disabled || uploading}
+            variant="outline"
+            className="w-full"
+          >
+            <Upload className="h-4 w-4" />
+            {uploading ? 'Lädt hoch…' : 'Logo hochladen'}
+          </Button>
           
           <div className="text-xs text-app-muted">
             PNG, JPG oder SVG (max. 5MB)
