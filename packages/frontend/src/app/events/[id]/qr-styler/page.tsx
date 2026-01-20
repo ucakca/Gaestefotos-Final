@@ -647,6 +647,15 @@ export default function QrStylerPage({ params }: { params: Promise<{ id: string 
 
               <div className="pt-2 border-t border-app-border" />
 
+              <LogoUpload
+                eventId={eventId!}
+                currentLogoUrl={logoUrl || undefined}
+                onLogoChange={setLogoUrl}
+                disabled={loading}
+              />
+
+              <div className="pt-2 border-t border-app-border" />
+
               <div className="text-sm font-semibold text-app-fg">Format</div>
               <div className="flex gap-2">
                 {(['A6', 'A5'] as const).map((f) => (
