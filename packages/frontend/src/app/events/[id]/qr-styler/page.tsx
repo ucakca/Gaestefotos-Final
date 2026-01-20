@@ -12,22 +12,34 @@ import { Button } from '@/components/ui/Button';
 import { ColorInput } from '@/components/ui/ColorInput';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import ExportPanel from '@/components/qr-designer/ExportPanel';
+import LogoUpload from '@/components/qr-designer/LogoUpload';
 
 type Format = 'A6' | 'A5';
 
-type TemplateDef = { slug: string; label: string };
+type TemplateDef = { slug: string; label: string; category: 'minimal' | 'elegant' | 'natural' | 'festive' | 'modern' | 'classic' };
 
 const TEMPLATES: TemplateDef[] = [
-  { slug: 'minimal-classic', label: 'Minimal Classic' },
-  { slug: 'minimal-floral', label: 'Minimal Floral' },
-  { slug: 'minimal-modern', label: 'Minimal Modern' },
-  { slug: 'elegant-floral', label: 'Elegant Floral' },
-  { slug: 'elegant-gold', label: 'Elegant Gold' },
-  { slug: 'botanical-green', label: 'Botanical Green' },
-  { slug: 'rustic-wood', label: 'Rustic Wood' },
-  { slug: 'festive-celebration', label: 'Festive Celebration' },
-  { slug: 'modern-geometric', label: 'Modern Geometric' },
-  { slug: 'vintage-frame', label: 'Vintage Frame' },
+  { slug: 'minimal-classic', label: 'Minimal Classic', category: 'minimal' },
+  { slug: 'minimal-floral', label: 'Minimal Floral', category: 'minimal' },
+  { slug: 'minimal-modern', label: 'Minimal Modern', category: 'minimal' },
+  { slug: 'elegant-floral', label: 'Elegant Floral', category: 'elegant' },
+  { slug: 'elegant-gold', label: 'Elegant Gold', category: 'elegant' },
+  { slug: 'botanical-green', label: 'Botanical Green', category: 'natural' },
+  { slug: 'rustic-wood', label: 'Rustic Wood', category: 'natural' },
+  { slug: 'festive-celebration', label: 'Festive Celebration', category: 'festive' },
+  { slug: 'modern-geometric', label: 'Modern Geometric', category: 'modern' },
+  { slug: 'vintage-frame', label: 'Vintage Frame', category: 'classic' },
+];
+
+const TEMPLATE_CATEGORIES = [
+  { key: 'all', label: 'Alle Templates' },
+  { key: 'minimal', label: 'Minimal' },
+  { key: 'elegant', label: 'Elegant' },
+  { key: 'natural', label: 'Natürlich' },
+  { key: 'festive', label: 'Festlich' },
+  { key: 'modern', label: 'Modern' },
+  { key: 'classic', label: 'Klassisch' },
 ];
 
 type Preset = {
@@ -275,9 +287,17 @@ export default function QrStylerPage({ params }: { params: Promise<{ id: string 
   const [exportingPdf, setExportingPdf] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [templateFilter, setTemplateFilter] = useState<string>('all');
+
   const [savingConfig, setSavingConfig] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveOk, setSaveOk] = useState<string | null>(null);
+
+  const filteredTemplates = useMemo(() => {
+    if (templateFilter === 'all') return TEMPLATES;
+    return TEMPLATES.filter(t => t.category === templateFilter);
+  }, [templateFilter]);
 
   const didLoadConfigRef = useRef(false);
   const autosaveTimerRef = useRef<number | null>(null);
@@ -587,7 +607,7 @@ export default function QrStylerPage({ params }: { params: Promise<{ id: string 
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {TEMPLATES.map((t) => (
+                    {filteredTemplates.map((t) => (
                       <SelectItem key={t.slug} value={t.slug}>
                         {t.label}
                       </SelectItem>
@@ -670,6 +690,22 @@ export default function QrStylerPage({ params }: { params: Promise<{ id: string 
               {saveError && <div className="text-sm text-status-danger">{saveError}</div>}
 
               <div className="pt-2 border-t border-app-border" />
+
+              <div className="space-y-2">
+                <label className="text-xs text-app-muted">Kategorie</label>
+                <Select value={templateFilter} onValueChange={setTemplateFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TEMPLATE_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat.key} value={cat.key}>
+                        {cat.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
 
               <div className="pt-2 border-t border-app-border" />
