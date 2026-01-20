@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="105mm" height="148mm" viewBox="0 0 1050 1480">
   <style>
     :root {
-      --gf-bg: #ffffff;
-      --gf-text: #1a1a1a;
-      --gf-accent: #295B4D;
+      --gf-bg: #f9f6f0;
+      --gf-text: #4a4a4a;
+      --gf-accent: #8b7355;
     }
     #gf\:bg { fill: var(--gf-bg); }
     .gf-text { fill: var(--gf-text); }
@@ -12,16 +12,24 @@
 
   <rect id="gf:bg" x="0" y="0" width="1050" height="1480" />
 
-  <rect x="80" y="80" width="890" height="1320" rx="36" fill="none" class="gf-accent" stroke-width="8" stroke="var(--gf-accent)" />
+  <rect x="70" y="70" width="910" height="1340" rx="2" fill="none" class="gf-accent" stroke-width="14" stroke="var(--gf-accent)" opacity="0.7" />
+  <rect x="95" y="95" width="860" height="1290" rx="1" fill="none" class="gf-accent" stroke-width="2" stroke="var(--gf-accent)" opacity="0.5" />
+  <rect x="85" y="85" width="880" height="1310" rx="1" fill="none" class="gf-accent" stroke-width="1" stroke="var(--gf-accent)" opacity="0.3" />
+  
+  <circle cx="95" cy="95" r="6" class="gf-accent" opacity="0.6" />
+  <circle cx="955" cy="95" r="6" class="gf-accent" opacity="0.6" />
+  <circle cx="95" cy="1385" r="6" class="gf-accent" opacity="0.6" />
+  <circle cx="955" cy="1385" r="6" class="gf-accent" opacity="0.6" />
 
-  <text id="gf:text:headline" x="525" y="280" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="72" font-weight="700" class="gf-text">Unsere Fotogalerie</text>
-  <text id="gf:text:subline" x="525" y="360" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="36" font-weight="500" class="gf-text">Fotos & Videos sammeln</text>
+  <text id="gf:text:headline" x="525" y="270" text-anchor="middle" font-family="Georgia, serif" font-size="66" font-weight="700" class="gf-text">Zeitlose Erinnerungen</text>
+  <text id="gf:text:subline" x="525" y="350" text-anchor="middle" font-family="Georgia, serif" font-size="32" font-weight="400" class="gf-text" opacity="0.85">Im klassischen Stil</text>
 
   <text id="gf:text:eventName" x="525" y="460" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="40" font-weight="600" class="gf-accent">Anna & Ben</text>
 
-  <rect id="gf:qr" x="395" y="620" width="260" height="260" rx="18" fill="#ffffff" stroke="var(--gf-accent)" stroke-width="6" />
+  <rect x="385" y="610" width="280" height="280" rx="2" fill="none" class="gf-accent" stroke-width="8" stroke="var(--gf-accent)" opacity="0.5" />
+  <rect id="gf:qr" x="395" y="620" width="260" height="260" rx="1" fill="#ffffff" stroke="var(--gf-accent)" stroke-width="6" />
 
-  <text id="gf:text:callToAction" x="525" y="980" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="32" font-weight="500" class="gf-text">QR-Code scannen & los geht’s</text>
+  <text id="gf:text:callToAction" x="525" y="990" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="30" font-weight="500" class="gf-text">Scannen & mitmachen</text>
 
   <circle cx="525" cy="1220" r="10" class="gf-accent" />
   <text x="525" y="1280" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="22" font-weight="400" class="gf-text">gästefotos.com</text>
