@@ -32,6 +32,7 @@ import {
   Mail,
   Pencil,
   MoreVertical,
+  Monitor,
 } from 'lucide-react';
 import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
