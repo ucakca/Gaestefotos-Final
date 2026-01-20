@@ -753,7 +753,18 @@ export default function QrStylerPage({ params }: { params: Promise<{ id: string 
                   {qrOverlayStyle && publicUrl && (
                     <div className="absolute" style={qrOverlayStyle}>
                       <div className="w-full h-full bg-app-card p-[6%] rounded-[12px]">
-                        <QRCodeSVG value={publicUrl} level="H" includeMargin={true} className="w-full h-full" />
+                        <QRCodeSVG 
+                          value={publicUrl} 
+                          level="H" 
+                          includeMargin={true} 
+                          className="w-full h-full"
+                          imageSettings={logoUrl ? {
+                            src: logoUrl,
+                            height: 48,
+                            width: 48,
+                            excavate: true,
+                          } : undefined}
+                        />
                       </div>
                     </div>
                   )}

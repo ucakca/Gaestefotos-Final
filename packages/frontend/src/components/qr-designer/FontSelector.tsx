@@ -21,9 +21,16 @@ export function FontSelector({ value, onChange }: FontSelectorProps) {
             <SelectItem 
               key={key} 
               value={key}
-              style={{ fontFamily: font.fontFamily }}
             >
-              {font.name}
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium">{font.name}</span>
+                <span 
+                  className="text-xs text-app-muted"
+                  style={{ fontFamily: font.fontFamily }}
+                >
+                  Unsere Fotogalerie
+                </span>
+              </div>
             </SelectItem>
           ))}
         </SelectContent>
