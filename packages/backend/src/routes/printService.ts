@@ -59,6 +59,9 @@ router.post('/checkout-url', authMiddleware, async (req: AuthRequest, res: Respo
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // TODO: printServiceSettings table doesn't exist
+    return res.status(400).json({ error: 'Print service not enabled' });
+
     // Settings laden
     const settings = // await prisma.printServiceSettings.findFirst();
 

@@ -1871,5 +1871,4 @@ router.post('/:id/qr/save-design', authMiddleware, async (req: AuthRequest, res:
 });
 
 export default router;
-// */
 
