@@ -27,6 +27,11 @@ export interface Event {
   guestCount?: number;
   isStorageLocked?: boolean;
   storageEndsAt?: Date | string | null;
+  host?: {
+    id: string;
+    name: string;
+    email: string;
+  };
 }
 
 export interface EventDesignConfig {

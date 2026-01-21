@@ -16,27 +16,25 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  const featuresConfig = useMemo(() => (event ? ((event as any).featuresConfig as any) : null), [event]);
-  const hostName = useMemo(() => ((event as any)?.host?.name as string) || 'Gastgeber', [event]);
+  const featuresConfig = useMemo(() => (event ? event.featuresConfig : null), [event]);
+  const hostName = useMemo(() => event?.host?.name || 'Gastgeber', [event]);
 
   const isStorageLocked = useMemo(() => {
-    const e: any = event as any;
-    if (!e) return false;
-    if (typeof e.isStorageLocked === 'boolean') return e.isStorageLocked;
-    const endsAt = e.storageEndsAt ? new Date(e.storageEndsAt).getTime() : null;
+    if (!event) return false;
+    if (typeof event.isStorageLocked === 'boolean') return event.isStorageLocked;
+    const endsAt = event.storageEndsAt ? new Date(event.storageEndsAt).getTime() : null;
     if (!endsAt || Number.isNaN(endsAt)) return false;
     return Date.now() > endsAt;
   }, [event]);
 
   const withinUploadWindow = useMemo(() => {
-    const e: any = event as any;
-    if (!e?.dateTime) return true;
+    if (!event?.dateTime) return true;
     
     // Check if uploadDatePolicy is configured in featuresConfig
     const datePolicy = featuresConfig?.uploadDatePolicy;
     if (!datePolicy?.enabled) return true; // No date restriction if not explicitly enabled
     
-    const eventTime = new Date(e.dateTime).getTime();
+    const eventTime = new Date(event.dateTime).getTime();
     if (!Number.isFinite(eventTime)) return true;
     
     // Get tolerance from config (default: 7 days)
@@ -163,7 +161,7 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
       params.status = moderationRequired ? 'APPROVED' : 'all';
 
       const { data } = await api.get(`/events/${eventId}/photos`, { params });
-      const nextPhotos = ((data.photos || []) as Photo[]).filter((p) => !((p as any)?.isStoryOnly === true));
+      const nextPhotos = ((data.photos || []) as Photo[]).filter((p) => !(p?.isStoryOnly === true));
 
       if (reset) {
         try {
@@ -247,8 +245,8 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
       setCurrentPage(page + 1);
 
       setPhotos((prev) => {
-        const base = reset ? [] : (prev as any[]);
-        const existingIds = new Set(base.map((p: any) => p.id));
+        const base = reset ? [] : prev;
+        const existingIds = new Set(base.map((p) => p.id));
         const challengePhotoIds = new Set(
           (reset ? challengePhotosRef.current : [])
             .map((p: any) => p?.photoId)
@@ -257,7 +255,7 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
         );
 
         // Remove regular photos that are also represented as challenge photos (avoid duplicates)
-        const deduped = (nextPhotos as any[]).filter((p: any) => !existingIds.has(p.id) && !challengePhotoIds.has(String(p.id)));
+        const deduped = nextPhotos.filter((p) => !existingIds.has(p.id) && !challengePhotoIds.has(String(p.id)));
 
         const merged = [
           ...base,
@@ -360,10 +358,10 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
 
   const filteredPhotos = useMemo(() => {
     if (!selectedAlbum) return photos;
-    return (photos as any[]).filter((p: any) => {
-      if (p?.isGuestbookEntry) return false;
-      return p?.categoryId === selectedAlbum || p?.category?.id === selectedAlbum;
-    }) as any;
+    return photos.filter((p) => {
+      if ((p as any)?.isGuestbookEntry) return false;
+      return (p as any)?.categoryId === selectedAlbum || (p as any)?.category?.id === selectedAlbum;
+    });
   }, [photos, selectedAlbum]);
 
   return {

@@ -1,22 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { TrendingUp, Users, Calendar, Image } from 'lucide-react';
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from 'recharts';
+
+// Lazy load heavy chart components
+const LineChart = lazy(() => import('recharts').then(m => ({ default: m.LineChart })));
+const Line = lazy(() => import('recharts').then(m => ({ default: m.Line })));
+const BarChart = lazy(() => import('recharts').then(m => ({ default: m.BarChart })));
+const Bar = lazy(() => import('recharts').then(m => ({ default: m.Bar })));
+const XAxis = lazy(() => import('recharts').then(m => ({ default: m.XAxis })));
+const YAxis = lazy(() => import('recharts').then(m => ({ default: m.YAxis })));
+const CartesianGrid = lazy(() => import('recharts').then(m => ({ default: m.CartesianGrid })));
+const Tooltip = lazy(() => import('recharts').then(m => ({ default: m.Tooltip })));
+const Legend = lazy(() => import('recharts').then(m => ({ default: m.Legend })));
+const ResponsiveContainer = lazy(() => import('recharts').then(m => ({ default: m.ResponsiveContainer })));
 
 interface Analytics {
   topEventsByPhotos: Array<{

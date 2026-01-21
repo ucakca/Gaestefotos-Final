@@ -168,7 +168,7 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
     const uniqueUploaders = Array.from(
       new Set(
         photos
-          .map((p: any) => (p as any).uploadedBy || 'Unbekannt')
+          .map((p: any) => p.uploadedBy || 'Unbekannt')
           .filter((name): name is string => !!name)
       )
     ).sort();
@@ -460,23 +460,21 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
 
   // Check if moderation is enabled
   const featuresConfig = event?.featuresConfig && typeof event.featuresConfig === 'object' && 'moderationRequired' in event.featuresConfig
-    ? (event.featuresConfig as any)
+    ? event.featuresConfig
     : null;
   const moderationRequired = featuresConfig?.moderationRequired === true;
 
   const isStorageLocked = (() => {
-    const e: any = event as any;
-    if (!e) return false;
-    if (typeof e.isStorageLocked === 'boolean') return e.isStorageLocked;
-    const endsAt = e.storageEndsAt ? new Date(e.storageEndsAt).getTime() : null;
+    if (!event) return false;
+    if (typeof event.isStorageLocked === 'boolean') return event.isStorageLocked;
+    const endsAt = event.storageEndsAt ? new Date(event.storageEndsAt).getTime() : null;
     if (!endsAt || Number.isNaN(endsAt)) return false;
     return Date.now() > endsAt;
   })();
 
   const withinUploadWindow = (() => {
-    const e: any = event as any;
-    if (!e?.dateTime) return true;
-    const eventTime = new Date(e.dateTime).getTime();
+    if (!event?.dateTime) return true;
+    const eventTime = new Date(event.dateTime).getTime();
     if (!Number.isFinite(eventTime)) return true;
     const windowMs = 24 * 60 * 60 * 1000;
     const now = Date.now();
@@ -975,7 +973,7 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
                   )}
                 </div>
                 <div className="p-2 bg-app-bg border-t border-app-border">
-                  <p className="text-xs text-app-muted truncate">von {(photo as any).uploadedBy || 'Unbekannt'}</p>
+                  <p className="text-xs text-app-muted truncate">von {photo.uploadedBy || 'Unbekannt'}</p>
                 </div>
               </motion.div>
             ))}
@@ -1209,7 +1207,7 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
                     </div>
                     <div>
                       <p className="text-sm text-app-muted">Hochgeladen von</p>
-                      <p className="font-medium">{(selectedPhoto as any).uploadedBy || 'Unbekannt'}</p>
+                      <p className="font-medium">{selectedPhoto.uploadedBy || 'Unbekannt'}</p>
                     </div>
                     {(selectedPhoto as any).guest && (
                       <div>
