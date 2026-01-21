@@ -487,9 +487,6 @@ router.post('/:id/qr/logo', authMiddleware, uploadSingleDesignImage('logo'), asy
       where: { eventId },
       create: { eventId, template: 'default', logoUrl },
       update: { logoUrl },
-    });
-
-    return res.json({ logoUrl });
   } catch (error) {
     logger.error('Logo upload error', { message: (error as any)?.message || String(error), eventId: req.params.id });
     return res.status(500).json({ error: 'Logo upload failed' });

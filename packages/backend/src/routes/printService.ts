@@ -61,39 +61,9 @@ router.post('/checkout-url', authMiddleware, async (req: AuthRequest, res: Respo
 
     // TODO: printServiceSettings table doesn't exist
     return res.status(400).json({ error: 'Print service not enabled' });
+});
 
-    // Settings laden
-    const settings = // await prisma.printServiceSettings.findFirst();
-
-    if (!settings || !settings.enabled) {
-      return res.status(400).json({ error: 'Print service not enabled' });
-    }
-
-    if (!settings.wordpressUrl) {
-      return res.status(500).json({ error: 'WordPress URL not configured' });
-    }
-
-    // Product ID basierend auf Format
-    const productId = format === 'A5' ? settings.productIdA5 : settings.productIdA6;
-
-    if (!productId) {
-      return res.status(500).json({ error: `Product ID for ${format} not configured` });
-    }
-
-    // Checkout URL generieren
-    const baseUrl = settings.wordpressUrl.replace(/\/$/, ''); // trailing slash entfernen
-    const checkoutUrl = new URL('/checkout', baseUrl);
-
-    // WooCommerce Add-to-Cart Parameter
-    checkoutUrl.searchParams.set('add-to-cart', productId);
-    checkoutUrl.searchParams.set('quantity', quantity.toString());
-
-    // Custom Meta (für Design-Daten)
-    checkoutUrl.searchParams.set('qr_design_id', designId);
-    checkoutUrl.searchParams.set('qr_format', format);
-    checkoutUrl.searchParams.set('qr_event_id', eventId);
-
-    res.json({ checkoutUrl: checkoutUrl.toString() });
+export default router;
   } catch (error) {
     console.error('Error generating checkout URL:', error);
     res.status(500).json({ error: 'Failed to generate checkout URL' });
