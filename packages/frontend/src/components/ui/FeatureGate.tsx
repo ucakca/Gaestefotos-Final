@@ -1,9 +1,11 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { Lock, Sparkles } from 'lucide-react';
+import { Lock, Sparkles, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { FeatureKey, FEATURE_DESCRIPTIONS } from '@/hooks/usePackageFeatures';
 import { Button } from './Button';
+import { ProBadge } from '@/components/monetization/ProBadge';
 
 interface FeatureGateProps {
   feature: FeatureKey;
@@ -57,36 +59,48 @@ export function FeatureGate({
 
   return (
     <div className={`relative ${className}`}>
-      {/* Disabled overlay */}
-      <div className="opacity-40 pointer-events-none select-none blur-[1px]">
+      {/* Disabled content */}
+      <div className="opacity-30 pointer-events-none select-none blur-[1px] grayscale">
         {children}
       </div>
 
-      {/* Upgrade prompt overlay */}
-      <div className="absolute inset-0 flex items-center justify-center bg-app-bg/60 backdrop-blur-[2px] rounded-lg">
-        <div className="text-center p-4 max-w-xs">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-app-card border border-app-border flex items-center justify-center">
-            <Lock className="w-5 h-5 text-app-muted" />
+      {/* Enhanced upgrade prompt overlay */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.2 }}
+        className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-app-bg/80 via-app-bg/70 to-transparent backdrop-blur-sm rounded-lg"
+      >
+        <div className="text-center p-6 max-w-sm">
+          <div className="mb-3 flex justify-center">
+            <ProBadge size="lg" variant="crown" animated />
           </div>
-          <h4 className="font-semibold text-app-fg text-sm mb-1">
+          
+          <h4 className="font-bold text-app-fg text-lg mb-2">
             {featureInfo.name}
           </h4>
-          <p className="text-xs text-app-muted mb-3">
-            Nicht in {packageName} enthalten
+          
+          <p className="text-sm text-app-muted mb-2">
+            {featureInfo.description}
           </p>
+          
+          <p className="text-xs text-app-muted mb-4">
+            Nicht in <strong>{packageName}</strong> enthalten
+          </p>
+          
           {showUpgradeButton && (
             <Button
               variant="primary"
-              size="sm"
+              size="md"
               onClick={onUpgrade}
-              className="gap-1.5"
+              className="gap-2 shadow-lg hover:shadow-xl transition-shadow"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              Upgrade
+              <Zap className="w-4 h-4" />
+              Jetzt upgraden
             </Button>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

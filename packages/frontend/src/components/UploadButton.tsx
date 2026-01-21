@@ -160,7 +160,8 @@ export default function UploadButton({
     }
     return '';
   });
-  const [uploaderNameError, setUploaderNameError] = useState<string | null>(null);
+  const [showNamePrompt, setShowNamePrompt] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
   // Persist name to localStorage when it changes
   useEffect(() => {
@@ -172,7 +173,6 @@ export default function UploadButton({
   const [pendingQueueCount, setPendingQueueCount] = useState<number>(0);
 
   const nameOk = uploaderName.trim().length > 0;
-  const canPickFiles = !disabled && nameOk;
 
   const drainQueue = useCallback(async () => {
     try {
@@ -220,12 +220,21 @@ export default function UploadButton({
   }, [drainQueue, refreshQueueCount]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    // Progressive Flow: Fotos sofort akzeptieren
     const name = uploaderName.trim();
+    
     if (!name) {
-      setUploaderNameError('Bitte zuerst deinen Namen eingeben.');
+      // Kein Name → zeige Name-Prompt, speichere Files
+      setPendingFiles(acceptedFiles);
+      setShowNamePrompt(true);
       return;
     }
 
+    // Name vorhanden → direkt uploaden
+    startUploads(acceptedFiles);
+  }, [uploaderName]);
+
+  const startUploads = useCallback((acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map((file) => ({
       id: createUploadId(),
       file,
@@ -240,7 +249,24 @@ export default function UploadButton({
     newFiles.forEach((uploadFile) => {
       uploadMedia(uploadFile.id, uploadFile.file);
     });
-  }, [uploaderName]);
+  }, []);
+
+  const handleNameSubmit = useCallback(() => {
+    const name = uploaderName.trim();
+    if (!name || name.length < 2) return;
+
+    // Name in localStorage speichern
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('guestUploaderName', name);
+    }
+
+    // Prompt schließen, pending files uploaden
+    setShowNamePrompt(false);
+    if (pendingFiles.length > 0) {
+      startUploads(pendingFiles);
+      setPendingFiles([]);
+    }
+  }, [uploaderName, pendingFiles, startUploads]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -249,7 +275,7 @@ export default function UploadButton({
       'video/*': ['.mp4', '.mov', '.webm'],
     },
     multiple: true,
-    disabled: !canPickFiles,
+    disabled: disabled,
   });
 
   const capturePhotoInputRef = useRef<HTMLInputElement>(null);
@@ -267,22 +293,14 @@ export default function UploadButton({
   );
 
   const capturePhoto = useCallback(() => {
-    const name = uploaderName.trim();
-    if (!name) {
-      setUploaderNameError('Bitte zuerst deinen Namen eingeben.');
-      return;
-    }
+    if (disabled) return;
     capturePhotoInputRef.current?.click();
-  }, [uploaderName]);
+  }, [disabled]);
 
   const captureVideo = useCallback(() => {
-    const name = uploaderName.trim();
-    if (!name) {
-      setUploaderNameError('Bitte zuerst deinen Namen eingeben.');
-      return;
-    }
+    if (disabled) return;
     captureVideoInputRef.current?.click();
-  }, [uploaderName]);
+  }, [disabled]);
 
   const uploadMedia = async (uploadId: string, originalFile: File) => {
     const uploadStartTime = Date.now();
@@ -599,8 +617,8 @@ export default function UploadButton({
         onOpenChange={(open) => {
           if (open) return;
           setShowModal(false);
-          setUploaderName('');
-          setUploaderNameError(null);
+          setShowNamePrompt(false);
+          setPendingFiles([]);
         }}
       >
         <DialogContent className="max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
@@ -624,8 +642,8 @@ export default function UploadButton({
             <IconButton
               onClick={() => {
                 setShowModal(false);
-                setUploaderName('');
-                setUploaderNameError(null);
+                setShowNamePrompt(false);
+                setPendingFiles([]);
               }}
               icon={<X className="w-5 h-5 text-app-fg" />}
               variant="ghost"
@@ -650,72 +668,101 @@ export default function UploadButton({
             </div>
           )}
 
-          {/* Uploader Name - Auffällig als Pflichtfeld */}
-          <div className="mb-4">
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-2"
-            >
-              <label className="block text-sm font-semibold text-app-fg">
-                Dein Name <span className="text-status-danger">*</span>
-              </label>
-              <Input
-                type="text"
-                value={uploaderName}
-                onChange={(e) => {
-                  setUploaderName(e.target.value);
-                  if (uploaderNameError) setUploaderNameError(null);
-                }}
-                placeholder="z.B. Max Mustermann"
-                required
-                className="w-full rounded-lg border-2 border-app-accent bg-app-card px-4 py-3 font-medium text-app-fg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
-              />
-              {uploaderNameError && <p className="text-xs text-status-danger">{uploaderNameError}</p>}
-              <p className="text-xs text-app-muted">Damit der Gastgeber weiß, wer die Fotos hochgeladen hat</p>
-            </motion.div>
-          </div>
+          {/* Progressive Name Prompt - erscheint nur wenn Name fehlt UND Fotos ausgewählt */}
+          <AnimatePresence>
+            {showNamePrompt && (
+              <motion.div
+                initial={{ opacity: 0, y: -10, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: 'auto' }}
+                exit={{ opacity: 0, y: -10, height: 0 }}
+                className="mb-4 overflow-hidden"
+              >
+                <div className="rounded-lg border-2 border-app-accent bg-gradient-to-br from-app-card to-app-bg p-4 shadow-lg">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-app-accent/20 flex items-center justify-center">
+                      <span className="text-lg">📸</span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-bold text-app-fg mb-1">Fast geschafft!</h3>
+                      <p className="text-xs text-app-muted">
+                        {pendingFiles.length === 1 
+                          ? '1 Foto ausgewählt. Wie ist dein Name?'
+                          : `${pendingFiles.length} Fotos ausgewählt. Wie ist dein Name?`
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <Input
+                    type="text"
+                    value={uploaderName}
+                    onChange={(e) => setUploaderName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && uploaderName.trim().length >= 2) {
+                        handleNameSubmit();
+                      }
+                    }}
+                    placeholder="Dein Name (z.B. Max)"
+                    autoFocus
+                    className="w-full rounded-lg border-2 border-app-border bg-app-bg px-3 py-2 text-sm font-medium text-app-fg mb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-accent/30"
+                  />
+                  <Button
+                    onClick={handleNameSubmit}
+                    disabled={uploaderName.trim().length < 2}
+                    variant="primary"
+                    size="sm"
+                    className="w-full h-9 text-sm font-semibold"
+                  >
+                    Jetzt hochladen →
+                  </Button>
+                  <p className="text-xs text-app-muted mt-2 text-center">
+                    Dein Name wird gespeichert für's nächste Mal
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
               <div
                 {...getRootProps()}
-                className={`mb-4 ${canPickFiles ? '' : 'opacity-60 cursor-not-allowed'}`}
+                className={`mb-4 ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
                 <input {...getInputProps()} />
                 <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: disabled ? 1 : 1.02 }}
+                  whileTap={{ scale: disabled ? 1 : 0.98 }}
                   className={`
                     border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
                     ${isDragActive 
                       ? 'border-app-accent bg-app-bg' 
                       : 'border-app-border hover:border-app-accent hover:bg-app-bg'
                     }
+                    ${disabled ? 'pointer-events-none' : ''}
                   `}
                 >
                   <Upload className="w-12 h-12 mx-auto mb-4 text-app-muted" />
                   <p className="text-sm font-medium text-app-fg mb-2">
-                    {!nameOk
-                      ? 'Bitte zuerst deinen Namen eingeben'
+                    {disabled
+                      ? 'Upload nicht verfügbar'
                       : isDragActive
                         ? 'Fotos hier ablegen'
                         : 'Fotos hochladen'}
                   </p>
                   <p className="text-xs text-app-muted">
-                    {!nameOk ? 'Dann kannst du Dateien auswählen' : 'Drag & Drop oder klicken'}
+                    {disabled ? 'Siehe Hinweis oben' : 'Drag & Drop oder klicken'}
                   </p>
                 </motion.div>
               </div>
 
               <div className="space-y-3">
                 <MotionButton
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: disabled ? 1 : 1.02 }}
+                  whileTap={{ scale: disabled ? 1 : 0.98 }}
                   onClick={capturePhoto}
-                  disabled={!canPickFiles}
-                  variant={canPickFiles ? 'primary' : 'secondary'}
+                  disabled={disabled}
+                  variant={disabled ? 'secondary' : 'primary'}
                   size="sm"
                   className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition-colors ${
-                    !canPickFiles ? 'cursor-not-allowed opacity-60' : ''
+                    disabled ? 'cursor-not-allowed opacity-60' : ''
                   } h-auto`}
                 >
                   <Camera className="w-5 h-5" />
@@ -723,14 +770,14 @@ export default function UploadButton({
                 </MotionButton>
 
                 <MotionButton
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: disabled ? 1 : 1.02 }}
+                  whileTap={{ scale: disabled ? 1 : 0.98 }}
                   onClick={captureVideo}
-                  disabled={!canPickFiles}
+                  disabled={disabled}
                   variant="secondary"
                   size="sm"
                   className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg font-semibold transition-colors ${
-                    !canPickFiles ? 'cursor-not-allowed opacity-60' : ''
+                    disabled ? 'cursor-not-allowed opacity-60' : ''
                   } h-auto`}
                 >
                   <Video className="w-5 h-5" />

@@ -7,7 +7,7 @@ import {
   Grid3x3,
   BookOpen,
   Mail,
-  Sparkles,
+  QrCode,
   Video,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -49,12 +49,12 @@ export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterP
       id: 'invitation',
       label: 'Einladung',
       icon: Mail,
-      path: eventSlug ? `/e2/${eventSlug}/invite` : `/events/${eventId}/dashboard`,
+      path: `/events/${eventId}/invitation`,
     },
     {
       id: 'qr-styler',
       label: 'QR-Designer',
-      icon: Sparkles,
+      icon: QrCode,
       path: `/events/${eventId}/qr-styler`,
     },
   ];
