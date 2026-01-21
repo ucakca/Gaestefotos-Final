@@ -13,12 +13,12 @@ export interface Toast {
   type: ToastType;
 }
 
-interface ToastProps {
+interface ToastItemProps {
   toast: Toast;
   onRemove: (id: string) => void;
 }
 
-function ToastItem({ toast, onRemove }: ToastProps) {
+function ToastItem({ toast, onRemove }: ToastItemProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onRemove(toast.id);

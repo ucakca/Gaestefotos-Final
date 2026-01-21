@@ -159,7 +159,7 @@ export default function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.isArray(events) && events.map((event, index) => {
-                const designConfig = (event.designConfig as any) || {};
+                const designConfig = event.designConfig || {};
                 const profileImageStoragePath = designConfig.profileImageStoragePath;
                 const coverImageStoragePath = designConfig.coverImageStoragePath;
                 const profileImage = profileImageStoragePath 
@@ -215,8 +215,8 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </Link>
-                  </motion.div>
-                )
+                  </AnimatedCard>
+                );
               })}
             </div>
           )}
