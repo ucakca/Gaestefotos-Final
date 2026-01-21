@@ -76,7 +76,7 @@ export default function ModernPhotoGrid({
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
-  const handleShare = async (photo: ExtendedPhoto) => {
+  const handleShare = async (photo: Photo) => {
     const shareUrl = eventSlug
       ? `${window.location.origin}/e2/${eventSlug}?photo=${photo.id}`
       : photo.url || '';
@@ -247,7 +247,7 @@ export default function ModernPhotoGrid({
     }
   }, [allowComments, selectedPhoto]);
 
-  const getUnderlyingPhotoId = (photo: ExtendedPhoto | undefined | null): string | null => {
+  const getUnderlyingPhotoId = (photo: Photo | undefined | null): string | null => {
     if (!photo) return null;
     const isGuestbookEntry = !!photo.isGuestbookEntry;
     if (isGuestbookEntry) return null;

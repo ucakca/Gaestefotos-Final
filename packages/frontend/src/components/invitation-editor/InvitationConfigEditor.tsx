@@ -88,7 +88,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'basic' | 'groups' | 'schedule' | 'locations')}
                 className={`py-3 px-4 border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-rose text-rose font-medium'
@@ -138,7 +138,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                 <label className="block text-sm font-medium mb-2">Design-Theme</label>
                 <select
                   value={config.themePreset || 'classic'}
-                  onChange={(e) => setConfig({ ...config, themePreset: e.target.value as any })}
+                  onChange={(e) => setConfig({ ...config, themePreset: e.target.value })}
                   className="w-full px-4 py-2 border rounded-lg"
                 >
                   <option value="classic">Klassisch</option>
@@ -298,7 +298,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   value={config.ceremonyLocation?.name || ''}
                   onChange={(e) => setConfig({
                     ...config,
-                    ceremonyLocation: { ...(config.ceremonyLocation || {}), name: e.target.value } as any,
+                    ceremonyLocation: { ...(config.ceremonyLocation || {}), name: e.target.value },
                   })}
                   placeholder="Name der Location"
                   className="mb-2"
@@ -307,7 +307,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   value={config.ceremonyLocation?.address || ''}
                   onChange={(e) => setConfig({
                     ...config,
-                    ceremonyLocation: { ...(config.ceremonyLocation || {}), address: e.target.value } as any,
+                    ceremonyLocation: { ...(config.ceremonyLocation || {}), address: e.target.value },
                   })}
                   placeholder="Adresse"
                 />
@@ -319,7 +319,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   value={config.receptionLocation?.name || ''}
                   onChange={(e) => setConfig({
                     ...config,
-                    receptionLocation: { ...(config.receptionLocation || {}), name: e.target.value } as any,
+                    receptionLocation: { ...(config.receptionLocation || {}), name: e.target.value },
                   })}
                   placeholder="Name der Location"
                   className="mb-2"
@@ -328,7 +328,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   value={config.receptionLocation?.address || ''}
                   onChange={(e) => setConfig({
                     ...config,
-                    receptionLocation: { ...(config.receptionLocation || {}), address: e.target.value } as any,
+                    receptionLocation: { ...(config.receptionLocation || {}), address: e.target.value },
                   })}
                   placeholder="Adresse"
                 />
@@ -340,7 +340,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   value={config.partyLocation?.name || ''}
                   onChange={(e) => setConfig({
                     ...config,
-                    partyLocation: { ...(config.partyLocation || {}), name: e.target.value } as any,
+                    partyLocation: { ...(config.partyLocation || {}), name: e.target.value },
                   })}
                   placeholder="Name der Location"
                   className="mb-2"
@@ -349,7 +349,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   value={config.partyLocation?.address || ''}
                   onChange={(e) => setConfig({
                     ...config,
-                    partyLocation: { ...(config.partyLocation || {}), address: e.target.value } as any,
+                    partyLocation: { ...(config.partyLocation || {}), address: e.target.value },
                   })}
                   placeholder="Adresse"
                 />
