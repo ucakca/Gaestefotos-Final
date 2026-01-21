@@ -38,15 +38,18 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> &
   };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { className, variant, size, asChild = false, type = 'button', ...props },
+  { className, variant, size, asChild = false, type = 'button', disabled, ...props },
   ref
 ) {
-  const Comp = asChild ? Slot : 'button';
+  const Comp = asChild ? Slot : motion.button;
   return (
     <Comp
       ref={ref}
       className={cn(buttonVariants({ variant, size, className }))}
       {...(!asChild ? { type } : {})}
+      disabled={disabled}
+      whileHover={!disabled ? buttonHover : undefined}
+      whileTap={!disabled ? buttonTap : undefined}
       {...props}
     />
   );

@@ -415,6 +415,9 @@ export default function UploadButton({
           timestamp: Date.now(),
         });
 
+        // Celebrate with confetti!
+        triggerUploadConfetti();
+
         setTimeout(() => {
           setFiles((prev) => prev.filter((f) => f.id !== uploadId));
           onUploadSuccess?.();

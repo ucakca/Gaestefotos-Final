@@ -738,7 +738,9 @@ export default function EventDashboardPage({ params }: { params: Promise<{ id: s
                 <Clock className="w-5 h-5 text-status-warning" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-app-fg">{photoStats.pending}</div>
+                <div className="text-2xl font-bold text-app-fg">
+                  <AnimatedCounter value={photoStats.pending} />
+                </div>
                 <div className="text-xs text-app-muted">Ausstehend</div>
               </div>
             </div>
