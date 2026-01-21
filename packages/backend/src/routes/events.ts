@@ -482,11 +482,13 @@ router.post('/:id/qr/logo', authMiddleware, uploadSingleDesignImage('logo'), asy
 
     const logoUrl = await storageService.uploadFile(eventId, req.file.originalname, req.file.buffer, req.file.mimetype);
     
-    // TODO: qrDesign table doesn't exist
-    /* // await prisma.qrDesign.upsert({
+    await prisma.qrDesign.upsert({
       where: { eventId },
       create: { eventId, template: 'default', logoUrl },
       update: { logoUrl },
+    });
+
+    return res.json({ logoUrl });
   } catch (error) {
     logger.error('Logo upload error', { message: (error as any)?.message || String(error), eventId: req.params.id });
     return res.status(500).json({ error: 'Logo upload failed' });
@@ -498,7 +500,7 @@ router.delete('/:id/qr/logo', authMiddleware, async (req: AuthRequest, res: Resp
   try {
     const eventId = req.params.id;
     
-    // // await prisma.qrDesign.update({
+    await prisma.qrDesign.update({
       where: { eventId },
       data: { logoUrl: null },
     });
@@ -1831,7 +1833,7 @@ router.post('/:id/qr/save-design', authMiddleware, async (req: AuthRequest, res:
     }
 
     // Upsert QR Design
-    // // const design = await prisma.qrDesign.upsert({
+    const design = await prisma.qrDesign.upsert({
       where: { eventId: id },
       create: {
         eventId: id,
