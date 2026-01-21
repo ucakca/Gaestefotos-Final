@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import CountUp from 'react-countup';
 
 interface AnimatedCounterProps {
@@ -12,7 +12,7 @@ interface AnimatedCounterProps {
   className?: string;
 }
 
-export function AnimatedCounter({ 
+export const AnimatedCounter = memo(function AnimatedCounter({ 
   value, 
   duration = 2, 
   decimals = 0,
@@ -38,4 +38,4 @@ export function AnimatedCounter({
       preserveValue
     />
   );
-}
+});

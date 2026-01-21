@@ -41,6 +41,12 @@ export interface EventDesignConfig {
     body?: string;
   };
   coverImageUrl?: string;
+  // Runtime properties from uploads/storage
+  profileImage?: string;
+  coverImage?: string;
+  profileImageStoragePath?: string;
+  coverImageStoragePath?: string;
+  welcomeMessage?: string;
 }
 
 export interface EventFeaturesConfig {

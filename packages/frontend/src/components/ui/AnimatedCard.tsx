@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { cardHover } from '@/lib/animations';
@@ -11,7 +12,7 @@ interface AnimatedCardProps extends Omit<HTMLMotionProps<'div'>, 'children'> {
   clickable?: boolean;
 }
 
-export function AnimatedCard({ 
+export const AnimatedCard = memo(function AnimatedCard({ 
   children, 
   className, 
   hover = true,
@@ -31,4 +32,4 @@ export function AnimatedCard({
       {children}
     </motion.div>
   );
-}
+});
