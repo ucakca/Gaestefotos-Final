@@ -21,6 +21,12 @@ export interface Event {
   profileDescription?: string;
   createdAt: Date;
   updatedAt: Date;
+  // Runtime properties from API
+  isActive?: boolean;
+  password?: string;
+  guestCount?: number;
+  isStorageLocked?: boolean;
+  storageEndsAt?: Date | string | null;
 }
 
 export interface EventDesignConfig {
@@ -102,6 +108,41 @@ export interface Photo {
   isStoryOnly?: boolean;
   status: 'approved' | 'pending' | 'deleted';
   createdAt: Date;
+}
+
+// Extended Photo Types for Grid Display
+export interface ChallengeCompletion {
+  id: string;
+  uploaderName?: string;
+  guest?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+}
+
+export interface Challenge {
+  id: string;
+  title: string;
+  description?: string;
+}
+
+export interface GuestbookEntry {
+  id: string;
+  authorName: string;
+  message: string;
+}
+
+export interface ExtendedPhoto extends Photo {
+  // Challenge photo properties
+  isChallengePhoto?: boolean;
+  challenge?: Challenge;
+  completion?: ChallengeCompletion;
+  photoId?: string;
+  
+  // Guestbook entry properties
+  isGuestbookEntry?: boolean;
+  guestbookEntry?: GuestbookEntry;
 }
 
 // Category Types

@@ -821,7 +821,7 @@ export default function EventDashboardPage({ params }: { params: Promise<{ id: s
                   className="h-5 w-5"
                 />
               </label>
-              {event && (event as any).isActive === false && (
+              {event && event.isActive === false && (
                 <p className="text-xs text-app-muted mt-2">
                   Event ist deaktiviert – Gäste können keine Inhalte sehen.
                 </p>

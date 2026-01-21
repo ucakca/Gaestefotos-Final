@@ -2,6 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { TrendingUp, Users, Calendar, Image } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
 
 interface Analytics {
   topEventsByPhotos: Array<{
@@ -241,7 +256,7 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
 
-      {/* Daily Activity */}
+      {/* Daily Activity Chart */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
@@ -255,19 +270,78 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
         <div className="p-6">
-          <div className="space-y-2">
-            {analytics.dailyActivity.slice(0, 10).map((day, idx) => (
-              <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                <div className="text-sm font-medium text-gray-900">
-                  {new Date(day.date).toLocaleDateString('de-DE')}
-                </div>
-                <div className="flex gap-4 text-sm text-gray-600">
-                  <span>{day.photos} Fotos</span>
-                  <span>{day.events} Events</span>
-                </div>
-              </div>
-            ))}
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={analytics.dailyActivity}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis 
+                dataKey="date" 
+                tickFormatter={(value) => new Date(value).toLocaleDateString('de-DE', { month: 'short', day: 'numeric' })}
+                stroke="#6b7280"
+                style={{ fontSize: '12px' }}
+              />
+              <YAxis stroke="#6b7280" style={{ fontSize: '12px' }} />
+              <Tooltip 
+                labelFormatter={(value) => new Date(value).toLocaleDateString('de-DE')}
+                contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+              />
+              <Legend />
+              <Line 
+                type="monotone" 
+                dataKey="photos" 
+                stroke="#3b82f6" 
+                strokeWidth={2}
+                name="Fotos"
+                dot={{ fill: '#3b82f6', r: 3 }}
+                activeDot={{ r: 5 }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="events" 
+                stroke="#10b981" 
+                strokeWidth={2}
+                name="Events"
+                dot={{ fill: '#10b981', r: 3 }}
+                activeDot={{ r: 5 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Top Events Bar Chart */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-indigo-100 rounded-lg">
+              <TrendingUp size={24} className="text-indigo-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Event Performance</h2>
+              <p className="text-sm text-gray-600">Fotos vs. Gäste pro Event</p>
+            </div>
           </div>
+        </div>
+        <div className="p-6">
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart data={analytics.topEventsByPhotos.slice(0, 10)}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis 
+                dataKey="title" 
+                angle={-45}
+                textAnchor="end"
+                height={100}
+                stroke="#6b7280"
+                style={{ fontSize: '11px' }}
+              />
+              <YAxis stroke="#6b7280" style={{ fontSize: '12px' }} />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+              />
+              <Legend />
+              <Bar dataKey="_count.photos" fill="#3b82f6" name="Fotos" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="_count.guests" fill="#10b981" name="Gäste" radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>

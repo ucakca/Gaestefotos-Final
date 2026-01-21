@@ -70,13 +70,13 @@ export default function ModernPhotoGrid({
 
   const REACTION_KEYS = new Set(REACTIONS.map((r) => r.key));
 
-  const handleDownload = (photo: Photo) => {
+  const handleDownload = (photo: ExtendedPhoto) => {
     if (!downloadsEnabled) return;
     const url = buildApiUrl(`/photos/${photo.id}/download`);
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
-  const handleShare = async (photo: Photo) => {
+  const handleShare = async (photo: ExtendedPhoto) => {
     const shareUrl = eventSlug
       ? `${window.location.origin}/e2/${eventSlug}?photo=${photo.id}`
       : photo.url || '';
@@ -226,9 +226,9 @@ export default function ModernPhotoGrid({
         // Only load likes and comments for regular photos (not challenge or guestbook entries)
         // Challenge and guestbook entries have different ID formats (challenge-xxx, guestbook-xxx)
         // and may not have a valid photoId
-        const isGuestbookEntry = !!(photo as any).isGuestbookEntry;
-        const isChallengePhoto = !!(photo as any).isChallengePhoto;
-        const underlyingPhotoId = (photo as any).photoId || photo.id;
+        const isGuestbookEntry = !!photo.isGuestbookEntry;
+        const isChallengePhoto = !!photo.isChallengePhoto;
+        const underlyingPhotoId = photo.photoId || photo.id;
 
         // Likes/comments: allow regular photos, and challenge photos if they carry a real photoId.
         // Never allow guestbook items (they are a different entity).
@@ -247,11 +247,11 @@ export default function ModernPhotoGrid({
     }
   }, [allowComments, selectedPhoto]);
 
-  const getUnderlyingPhotoId = (photo: Photo | undefined | null): string | null => {
+  const getUnderlyingPhotoId = (photo: ExtendedPhoto | undefined | null): string | null => {
     if (!photo) return null;
-    const isGuestbookEntry = !!(photo as any).isGuestbookEntry;
+    const isGuestbookEntry = !!photo.isGuestbookEntry;
     if (isGuestbookEntry) return null;
-    const id = (photo as any).photoId || photo.id;
+    const id = photo.photoId || photo.id;
     if (!id || typeof id !== 'string') return null;
     if (id.startsWith('challenge-') || id.startsWith('guestbook-')) return null;
     return id;
@@ -334,11 +334,11 @@ export default function ModernPhotoGrid({
       <div className="grid grid-cols-3 gap-0.5 md:gap-1 max-w-md mx-auto">
         {/* Photo Grid */}
         {photos.map((photo, index) => {
-          const isGuestbookEntry = (photo as any).isGuestbookEntry;
-          const guestbookEntry = (photo as any).guestbookEntry;
-          const isChallengePhoto = (photo as any).isChallengePhoto;
-          const challenge = (photo as any).challenge;
-          const completion = (photo as any).completion;
+          const isGuestbookEntry = photo.isGuestbookEntry;
+          const guestbookEntry = photo.guestbookEntry;
+          const isChallengePhoto = photo.isChallengePhoto;
+          const challenge = photo.challenge;
+          const completion = photo.completion;
           
           return (
             <motion.div
@@ -550,7 +550,7 @@ export default function ModernPhotoGrid({
                     )}
 
                     {/* Guestbook Entry Speech Bubble on Full Image */}
-                    {(photos[selectedPhoto] as any)?.isGuestbookEntry && (photos[selectedPhoto] as any)?.guestbookEntry && (
+                    {photos[selectedPhoto]?.isGuestbookEntry && photos[selectedPhoto]?.guestbookEntry && (
                       <div className="absolute bottom-4 left-4 right-4">
                         <div className="bg-app-card border border-app-border rounded-lg px-4 py-3 shadow-xl max-w-md mx-auto">
                           <div className="flex items-center gap-2 mb-2">
@@ -558,11 +558,11 @@ export default function ModernPhotoGrid({
                               <User className="w-4 h-4 text-app-bg" />
                             </div>
                             <span className="text-sm font-semibold text-app-fg">
-                              {(photos[selectedPhoto] as any).guestbookEntry.authorName}
+                              {photos[selectedPhoto]?.guestbookEntry?.authorName}
                             </span>
                           </div>
                           <p className="text-sm text-app-fg whitespace-pre-wrap">
-                            {(photos[selectedPhoto] as any).guestbookEntry.message}
+                            {photos[selectedPhoto]?.guestbookEntry?.message}
                           </p>
                         </div>
                       </div>
@@ -575,19 +575,19 @@ export default function ModernPhotoGrid({
                           <div className="flex items-center gap-2 mb-2">
                             <Trophy className="w-5 h-5 text-status-warning" />
                             <span className="text-sm font-semibold text-app-fg">
-                              {(photos[selectedPhoto] as any).challenge.title}
+                              {photos[selectedPhoto]?.challenge?.title}
                             </span>
                           </div>
-                          {(photos[selectedPhoto] as any).challenge.description && (
+                          {photos[selectedPhoto]?.challenge?.description && (
                             <p className="text-sm text-app-fg mb-2 whitespace-pre-wrap">
-                              {(photos[selectedPhoto] as any).challenge.description}
+                              {photos[selectedPhoto]?.challenge?.description}
                             </p>
                           )}
-                          {(photos[selectedPhoto] as any).completion && (
+                          {photos[selectedPhoto]?.completion && (
                             <div className="text-xs text-app-muted">
-                              Erfüllt von: {(photos[selectedPhoto] as any).completion.guest 
-                                ? `${(photos[selectedPhoto] as any).completion.guest.firstName} ${(photos[selectedPhoto] as any).completion.guest.lastName}`
-                                : (photos[selectedPhoto] as any).completion.uploaderName || 'Anonym'}
+                              Erfüllt von: {photos[selectedPhoto]?.completion?.guest 
+                                ? `${photos[selectedPhoto]?.completion?.guest?.firstName} ${photos[selectedPhoto]?.completion?.guest?.lastName}`
+                                : photos[selectedPhoto]?.completion?.uploaderName || 'Anonym'}
                             </div>
                           )}
                         </div>
