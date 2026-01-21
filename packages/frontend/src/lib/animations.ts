@@ -40,6 +40,23 @@ export const scaleIn = {
   exit: { opacity: 0, scale: 0.9 }
 };
 
+export const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.05
+    }
+  }
+};
+
+export const staggerItem = {
+  initial: { opacity: 0, y: 20 },
+  animate: { 
+    opacity: 1, 
+    y: 0,
+    transition: { type: 'spring', stiffness: 300, damping: 25 }
+  }
+};
+
 // Confetti Configurations
 export const confettiConfig = {
   default: {

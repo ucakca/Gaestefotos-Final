@@ -13,6 +13,8 @@ import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Button } from '@/components/ui/Button';
 import GuidedTour from '@/components/ui/GuidedTour';
 import { HelpCircle, ClipboardCheck, PlusSquare, LogOut } from 'lucide-react';
+import { AnimatedCard } from '@/components/ui/AnimatedCard';
+import { staggerContainer, staggerItem } from '@/lib/animations';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -168,16 +170,16 @@ export default function DashboardPage() {
                   : designConfig.coverImage;
                 
                 return (
-                  <motion.div
+                  <AnimatedCard
                     key={event.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
+                    variants={staggerItem}
+                    clickable
+                    className="overflow-hidden"
                   >
                     <Link
                       href={`/events/${event.id}/dashboard`}
                       data-tour={index === 0 ? 'host-dashboard-event-card' : undefined}
-                      className="bg-app-card rounded-lg border border-app-border shadow-sm overflow-hidden hover:shadow-lg transition-all block"
+                      className="block"
                     >
                       {coverImage && (
                         <div className="relative w-full h-32 bg-app-bg overflow-hidden">

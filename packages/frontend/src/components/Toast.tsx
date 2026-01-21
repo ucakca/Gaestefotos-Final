@@ -41,9 +41,10 @@ function ToastItem({ toast, onRemove }: ToastProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+      initial={slideUp.initial}
+      animate={slideUp.animate}
+      exit={{ opacity: 0, x: 50, scale: 0.95 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
       className={`${bgColors[toast.type]} border rounded-lg shadow-lg p-4 min-w-[300px] max-w-md flex items-start gap-3`}
     >
       {icons[toast.type]}

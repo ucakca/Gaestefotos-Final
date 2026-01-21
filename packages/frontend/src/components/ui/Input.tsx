@@ -1,6 +1,7 @@
 'use client';
 
-import { forwardRef, type InputHTMLAttributes } from 'react';
+import { forwardRef, type InputHTMLAttributes, useState } from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;
