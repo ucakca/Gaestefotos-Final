@@ -46,7 +46,7 @@ const CONTENT_PRESETS = [
     label: '✨ Universal',
     headline: 'Unsere Fotogalerie',
     subline: 'Fotos & Videos sammeln',
-    callToAction: 'QR-Code scannen & los geht's',
+    callToAction: 'QR-Code scannen & los gehts',
   },
 ];
 
@@ -166,7 +166,7 @@ export default function Step2Content({
           <Input
             value={callToAction}
             onChange={(e) => onCallToActionChange(e.target.value)}
-            placeholder="z.B. QR-Code scannen & los geht's"
+            placeholder="z.B. QR-Code scannen & los gehts"
             className="text-base"
           />
         </motion.div>
