@@ -62,7 +62,7 @@ function ToastItem({ toast, onRemove }: ToastProps) {
       />
     </motion.div>
   );
-});
+}
 
 export default function ToastContainer({ toasts, onRemove }: { toasts: Toast[]; onRemove: (id: string) => void }) {
   return (
