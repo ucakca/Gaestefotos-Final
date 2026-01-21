@@ -293,7 +293,7 @@ export default function AdminDashboardPage() {
   const [emailTplTestTo, setEmailTplTestTo] = useState('');
   const [emailTplTestSending, setEmailTplTestSending] = useState(false);
 
-  const [cmsFaqKind, setCmsFaqKind] = useState<'pages' | 'posts'>('pages');
+  const [cmsFaqKind, setCmsFaqKind] = useState<'pages' | 'posts' | 'event' | 'general' | 'guest' | 'photo'>('pages');
   const [cmsFaqSlug, setCmsFaqSlug] = useState('faq');
   const [cmsFaqLoading, setCmsFaqLoading] = useState(false);
   const [cmsFaqError, setCmsFaqError] = useState<string | null>(null);
