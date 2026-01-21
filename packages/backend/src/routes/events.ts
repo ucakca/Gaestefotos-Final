@@ -482,11 +482,11 @@ router.post('/:id/qr/logo', authMiddleware, uploadSingleDesignImage('logo'), asy
 
     const logoUrl = await storageService.uploadFile(eventId, req.file.originalname, req.file.buffer, req.file.mimetype);
     
-    await prisma.qrDesign.upsert({
-      where: { eventId },
-      create: { eventId, template: 'default', logoUrl },
-      update: { logoUrl },
-    });
+//     await prisma.qrDesign.upsert({
+//       where: { eventId },
+//       create: { eventId, template: 'default', logoUrl },
+//       update: { logoUrl },
+//     });
 
     return res.json({ logoUrl });
   } catch (error) {
@@ -500,10 +500,10 @@ router.delete('/:id/qr/logo', authMiddleware, async (req: AuthRequest, res: Resp
   try {
     const eventId = req.params.id;
     
-    await prisma.qrDesign.update({
-      where: { eventId },
-      data: { logoUrl: null },
-    });
+//     await prisma.qrDesign.update({
+//       where: { eventId },
+//       data: { logoUrl: null },
+//     });
 
     return res.json({ success: true });
   } catch (error) {
@@ -1833,21 +1833,21 @@ router.post('/:id/qr/save-design', authMiddleware, async (req: AuthRequest, res:
     }
 
     // Upsert QR Design
-    const design = await prisma.qrDesign.upsert({
-      where: { eventId: id },
-      create: {
-        eventId: id,
-        template,
-        format,
-        headline,
-        subline,
-        eventName,
-        callToAction,
-        bgColor,
-        textColor,
-        accentColor,
-        logoUrl,
-      },
+//     const design = await prisma.qrDesign.upsert({
+//       where: { eventId: id },
+//       create: {
+//         eventId: id,
+//         template,
+//         format,
+//         headline,
+//         subline,
+//         eventName,
+//         callToAction,
+//         bgColor,
+//         textColor,
+//         accentColor,
+//         logoUrl,
+//       },
       update: {
         template,
         format,
