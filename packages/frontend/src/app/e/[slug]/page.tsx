@@ -10,7 +10,9 @@ import { useEventRealtime } from '@/hooks/useEventRealtime';
 import BottomNavigation from '@/components/BottomNavigation';
 import EventHeader from '@/components/EventHeader';
 import AlbumNavigation from '@/components/AlbumNavigation';
-import ModernPhotoGrid from '@/components/ModernPhotoGrid';
+const ModernPhotoGrid = dynamic(() => import('@/components/ModernPhotoGrid'), {
+  loading: () => <div className="text-center py-12 text-app-muted">Lade Fotos...</div>
+});
 import StoriesBar from '@/components/guest/StoriesBar';
 import InstallPrompt from '@/components/InstallPrompt';
 import { Trophy } from 'lucide-react';

@@ -5,7 +5,10 @@ import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import EventHeader from '@/components/EventHeader';
 import AlbumNavigation from '@/components/AlbumNavigation';
-import ModernPhotoGrid from '@/components/ModernPhotoGrid';
+
+const ModernPhotoGrid = dynamic(() => import('@/components/ModernPhotoGrid'), {
+  loading: () => <div className="text-center py-12 text-app-muted">Lade Fotos...</div>
+});
 import BottomNavigation from '@/components/BottomNavigation';
 import StoriesBar from '@/components/guest/StoriesBar';
 import { Alert } from '@/components/ui/Alert';
