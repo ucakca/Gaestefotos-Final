@@ -119,6 +119,22 @@ export interface Photo {
   isStoryOnly?: boolean;
   status: 'approved' | 'pending' | 'deleted';
   createdAt: Date;
+  // Populated relations from API
+  event?: {
+    id: string;
+    title: string;
+    slug: string;
+  };
+  guest?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+  category?: {
+    id: string;
+    name: string;
+  };
+  categoryId?: string;
 }
 
 // Extended Photo Types for Grid Display

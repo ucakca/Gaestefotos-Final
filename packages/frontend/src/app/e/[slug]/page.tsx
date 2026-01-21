@@ -375,7 +375,7 @@ export default function PublicEventPage() {
     
     try {
       // Check if moderation is required
-      const featuresConfig = event.featuresConfig as any;
+      const featuresConfig = event.featuresConfig;
       const moderationRequired = featuresConfig?.moderationRequired === true;
       
       // Load approved photos, or all photos if moderation is not required
@@ -673,14 +673,13 @@ export default function PublicEventPage() {
     );
   }
 
-  const featuresConfig = event.featuresConfig as any;
-  const hostName = (event as any).host?.name || 'Gastgeber';
+  const featuresConfig = event.featuresConfig;
+  const hostName = event.host?.name || 'Gastgeber';
 
   const isStorageLocked = (() => {
-    const e: any = event as any;
-    if (!e) return false;
-    if (typeof e.isStorageLocked === 'boolean') return e.isStorageLocked;
-    const endsAt = e.storageEndsAt ? new Date(e.storageEndsAt).getTime() : null;
+    if (!event) return false;
+    if (typeof event.isStorageLocked === 'boolean') return event.isStorageLocked;
+    const endsAt = event.storageEndsAt ? new Date(event.storageEndsAt).getTime() : null;
     if (!endsAt || Number.isNaN(endsAt)) return false;
     return Date.now() > endsAt;
   })();

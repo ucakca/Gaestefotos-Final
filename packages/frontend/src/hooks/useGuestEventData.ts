@@ -360,7 +360,7 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
     if (!selectedAlbum) return photos;
     return photos.filter((p) => {
       if ((p as any)?.isGuestbookEntry) return false;
-      return (p as any)?.categoryId === selectedAlbum || (p as any)?.category?.id === selectedAlbum;
+      return p?.categoryId === selectedAlbum || p?.category?.id === selectedAlbum;
     });
   }, [photos, selectedAlbum]);
 

@@ -278,7 +278,7 @@ export default function ModerationPage() {
                 >
                   <div className="mb-6">
                     <h2 className="text-xl font-semibold mb-2">
-                      {(selectedPhoto as any).event?.title || 'Foto'}
+                      {selectedPhoto.event?.title || 'Foto'}
                     </h2>
                     <p className="text-sm text-app-muted">
                       Hochgeladen: {new Date(selectedPhoto.createdAt).toLocaleString('de-DE')}
