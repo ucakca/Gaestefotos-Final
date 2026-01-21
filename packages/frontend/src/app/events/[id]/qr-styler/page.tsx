@@ -79,7 +79,7 @@ function getDefaultsForTemplate(templateSlug: string) {
     return {
       headline: 'Unsere Fotogalerie',
       subline: 'Fotos & Videos sammeln',
-      callToAction: 'QR-Code scannen & los geht's',
+      callToAction: 'QR-Code scannen & los gehts',
       bgColor: resolveRootCssVar('--app-card', '#ffffff'),
       textColor: resolveRootCssVar('--app-fg', '#111827'),
       accentColor: resolveRootCssVar('--status-info', '#2563eb'),
@@ -108,7 +108,7 @@ function getDefaultsForTemplate(templateSlug: string) {
   return {
     headline: 'Unsere Fotogalerie',
     subline: 'Fotos & Videos sammeln',
-    callToAction: 'QR-Code scannen & los geht's',
+    callToAction: 'QR-Code scannen & los gehts',
     bgColor: resolveRootCssVar('--app-card', '#ffffff'),
     textColor: resolveRootCssVar('--app-fg', '#111827'),
     accentColor: resolveRootCssVar('--app-accent', '#295B4D'),
@@ -269,7 +269,7 @@ export default function QrStylerPage({ params }: { params: Promise<{ id: string 
   const [headline, setHeadline] = useState('Unsere Fotogalerie');
   const [subline, setSubline] = useState('Fotos & Videos sammeln');
   const [eventName, setEventName] = useState('');
-  const [callToAction, setCallToAction] = useState('QR-Code scannen & los geht's');
+  const [callToAction, setCallToAction] = useState('QR-Code scannen & los gehts');
 
   const [bgColor, setBgColor] = useState(() => resolveRootCssVar('--app-card', '#ffffff'));
   const [textColor, setTextColor] = useState(() => resolveRootCssVar('--app-fg', '#111827'));
