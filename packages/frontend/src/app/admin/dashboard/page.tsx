@@ -675,8 +675,6 @@ export default function AdminDashboardPage() {
     try {
       setEmailTplError(null);
       setEmailTplSaving(true);
-      await api.put(`/admin/email-templates/${emailTplKind}`, {
-        name: (emailTplName || emailTplKind).trim() || emailTplKind,
         subject: emailTplSubject,
         html: emailTplHtml.trim() ? emailTplHtml : null,
         text: emailTplText.trim() ? emailTplText : null,
