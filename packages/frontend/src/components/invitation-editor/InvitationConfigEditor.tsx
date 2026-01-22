@@ -138,7 +138,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                 <label className="block text-sm font-medium mb-2">Design-Theme</label>
                 <select
                   value={config.themePreset || 'classic'}
-                  onChange={(e) => setConfig({ ...config, themePreset: e.target.value })}
+                  onChange={(e) => setConfig({ ...config, themePreset: e.target.value as 'classic' | 'boho' | 'modern' | 'minimal' })}
                   className="w-full px-4 py-2 border rounded-lg"
                 >
                   <option value="classic">Klassisch</option>
