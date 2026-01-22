@@ -75,6 +75,10 @@ const helpByHref: Record<string, { title: string; body: string }> = {
     title: 'Packages',
     body: 'Package Definitions verwalten (aktiv/inaktiv, Preise/Features). Änderungen beeinflussen Shop/Checkout.',
   },
+  '/feature-flags': {
+    title: 'Feature Flags',
+    body: 'Feature Flags für Package Tiers verwalten (Video Upload, Stories, Password Protect, Guestbook, Zip Download, Bulk Operations, Live Wall, Face Search, Guestlist, Full Invitation, Co-Hosts, Ad Free). Click-to-Toggle aktiviert Auto-Save.',
+  },
   '/api-keys': {
     title: 'API Keys',
     body: 'API Keys erstellen/anzeigen/widerrufen. Nutze Scopes und Expiry bewusst (least privilege).',
