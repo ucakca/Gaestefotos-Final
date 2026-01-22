@@ -251,6 +251,6 @@ export default function FeatureFlagsPage() {
           )}
         </div>
       </div>
-    </AppLayout>
+    </div>
   );
 }
