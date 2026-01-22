@@ -276,7 +276,7 @@ export default function AdminDashboardPage() {
   const [maintenanceSaving, setMaintenanceSaving] = useState(false);
   const [maintenanceError, setMaintenanceError] = useState<string | null>(null);
 
-  const [emailTplKind, setEmailTplKind] = useState<'INVITATION' | 'STORAGE_ENDS_REMINDER' | 'PHOTO_NOTIFICATION'>('INVITATION');
+  const [emailTplKind, setEmailTplKind] = useState<'INVITATION' | 'STORAGE_ENDS_REMINDER' | 'PHOTO_NOTIFICATION' | 'welcome' | 'reminder' | 'thankyou'>('INVITATION');
   const [emailTplLoading, setEmailTplLoading] = useState(false);
   const [emailTplSaving, setEmailTplSaving] = useState(false);
   const [emailTplError, setEmailTplError] = useState<string | null>(null);
