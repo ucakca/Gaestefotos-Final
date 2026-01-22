@@ -22,6 +22,8 @@ import {
   Package,
   LogOut,
   Flag,
+  TrendingUp,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
