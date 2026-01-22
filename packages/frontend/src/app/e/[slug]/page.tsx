@@ -680,8 +680,8 @@ export default function PublicEventPage() {
 
   const isStorageLocked = (() => {
     if (!event) return false;
-    if (typeof event.isStorageLocked === 'boolean') return event.isStorageLocked;
-    const endsAt = event.storageEndsAt ? new Date(event.storageEndsAt).getTime() : null;
+    if (typeof (event as any).isStorageLocked === 'boolean') return (event as any).isStorageLocked;
+    const endsAt = (event as any).storageEndsAt ? new Date((event as any).storageEndsAt).getTime() : null;
     if (!endsAt || Number.isNaN(endsAt)) return false;
     return Date.now() > endsAt;
   })();
