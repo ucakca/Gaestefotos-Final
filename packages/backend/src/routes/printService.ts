@@ -4,7 +4,6 @@ import prisma from '../config/database';
 
 const router = Router();
 
-// GET Settings
 router.get('/settings', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     if (!req.userId) {
@@ -34,7 +33,6 @@ router.get('/settings', authMiddleware, async (req: AuthRequest, res: Response) 
   }
 });
 
-// POST Update Settings
 router.post('/settings', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     if (!req.userId) {
@@ -82,7 +80,6 @@ router.post('/settings', authMiddleware, async (req: AuthRequest, res: Response)
   }
 });
 
-// POST Generate Checkout URL
 router.post('/checkout-url', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, designId, format, quantity = 1 } = req.body;

@@ -88,7 +88,6 @@ async function requireEventEditAccess(req: AuthRequest, res: Response, eventId: 
   return event;
 }
 
-// Validation schemas
 const uploadIssuesQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(200).optional().default(50),
   sinceHours: z.coerce.number().int().min(1).max(24 * 365).optional().default(72),
@@ -235,7 +234,6 @@ async function getUniqueEventSlug(preferredSlug: string): Promise<string> {
   return `event-${randomString(12).toLowerCase()}`;
 }
 
-// Get all events (for current user)
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const events = await prisma.event.findMany({
@@ -265,7 +263,6 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Get QR template config for an event (host/admin)
 router.get('/:id/qr/config', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const eventId = req.params.id;
@@ -281,7 +278,6 @@ router.get('/:id/qr/config', authMiddleware, async (req: AuthRequest, res: Respo
   }
 });
 
-// Save QR template config for an event (host/admin)
 router.put('/:id/qr/config', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const eventId = req.params.id;
@@ -312,7 +308,6 @@ router.put('/:id/qr/config', authMiddleware, async (req: AuthRequest, res: Respo
   }
 });
 
-// Export QR template as high-res PNG (print)
 router.post('/:id/qr/export.png', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const eventId = req.params.id;
@@ -376,7 +371,6 @@ router.post('/:id/qr/export.png', authMiddleware, async (req: AuthRequest, res: 
   }
 });
 
-// Export QR template as PDF (print)
 router.post('/:id/qr/export.pdf', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const eventId = req.params.id;
@@ -471,7 +465,6 @@ router.post('/:id/qr/export.pdf', authMiddleware, async (req: AuthRequest, res: 
   }
 });
 
-// Logo upload for QR design
 router.post('/:id/qr/logo', authMiddleware, uploadSingleDesignImage('logo'), async (req: AuthRequest, res: Response) => {
   try {
     const eventId = req.params.id;
@@ -482,11 +475,6 @@ router.post('/:id/qr/logo', authMiddleware, uploadSingleDesignImage('logo'), asy
 
     const logoUrl = await storageService.uploadFile(eventId, req.file.originalname, req.file.buffer, req.file.mimetype);
     
-    await prisma.qrDesign.upsert({
-      where: { eventId },
-      create: { eventId, template: 'default', logoUrl },
-      update: { logoUrl },
-    });
 
     return res.json({ logoUrl });
   } catch (error) {
@@ -495,15 +483,10 @@ router.post('/:id/qr/logo', authMiddleware, uploadSingleDesignImage('logo'), asy
   }
 });
 
-// Logo delete for QR design
 router.delete('/:id/qr/logo', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const eventId = req.params.id;
     
-    await prisma.qrDesign.update({
-      where: { eventId },
-      data: { logoUrl: null },
-    });
 
     return res.json({ success: true });
   } catch (error) {
@@ -659,8 +642,6 @@ router.get(
   }
 );
 
-// Backwards-compatible proxy route for event design assets.
-// Some frontend components expect /api/events/:eventId/design-image/:kind/:storagePath.
 router.get('/:eventId/design-image/:kind/:storagePath', async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, kind, storagePath } = req.params;
@@ -692,7 +673,6 @@ router.get('/:eventId/design-image/:kind/:storagePath', async (req: AuthRequest,
   }
 });
 
-// Proxy route for event design assets (avoid mixed-content by never returning presigned http:// urls)
 router.get('/:eventId/design/file/:storagePath', async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, storagePath } = req.params;
@@ -720,7 +700,6 @@ router.get('/:eventId/design/file/:storagePath', async (req: AuthRequest, res: R
   }
 });
 
-// Upload event logo (used for white-label branding)
 router.post(
   '/:id/logo',
   authMiddleware,
@@ -820,7 +799,6 @@ router.post(
   }
 );
 
-// Get event by ID
 router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const event = await prisma.event.findUnique({
@@ -859,7 +837,6 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Get event by slug (public)
 router.get('/slug/:slug', async (req: AuthRequest, res: Response) => {
   try {
     const event = await prisma.event.findUnique({
@@ -903,7 +880,6 @@ router.get('/slug/:slug', async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Get event traffic stats (host/admin)
 router.get('/:id/traffic', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const eventId = req.params.id;
@@ -933,7 +909,6 @@ router.get('/:id/traffic', authMiddleware, async (req: AuthRequest, res: Respons
   }
 });
 
-// Create event (with Wizard support)
 const wizardUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 },
@@ -946,7 +921,6 @@ const wizardUpload = multer({
   },
 });
 
-// Create event
 router.post(
   '/',
   authMiddleware,
@@ -1218,7 +1192,6 @@ router.post(
   }
 );
 
-// Alias: frontend uses PATCH for partial updates (e.g. design builder)
 router.patch(
   '/:id',
   authMiddleware,
@@ -1587,10 +1560,8 @@ router.post('/:id/invite-token', authMiddleware, async (req: AuthRequest, res: R
   }
 });
 
-// Backwards-compatible alias used by some frontend pages
 router.get('/:id/usage', optionalAuthMiddleware, handleEventStorageUsage);
 
-// Update event
 router.put(
   '/:id',
   authMiddleware,
@@ -1651,7 +1622,6 @@ router.put(
   }
 );
 
-// Delete event
 router.delete(
   '/:id',
   authMiddleware,
@@ -1682,9 +1652,6 @@ router.delete(
   }
 );
 
-// === PACKAGE INFO ENDPOINT ===
-// Gibt alle Feature-Flags und Limits für ein Event zurück
-// Nützlich für Frontend um UI basierend auf Paket anzupassen
 router.get(
   '/:id/package-info',
   authMiddleware,
@@ -1728,7 +1695,6 @@ router.get(
   }
 );
 
-// Get invitation design
 router.get(
   '/:eventId/invitation',
   authMiddleware,
@@ -1763,7 +1729,6 @@ router.get(
   }
 );
 
-// Update invitation design
 router.put(
   '/:eventId/invitation',
   authMiddleware,
@@ -1800,7 +1765,6 @@ router.put(
   }
 );
 
-// QR Design speichern für Druckservice
 router.post('/:id/qr/save-design', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -1832,35 +1796,19 @@ router.post('/:id/qr/save-design', authMiddleware, async (req: AuthRequest, res:
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    // Upsert QR Design
-    const design = await prisma.qrDesign.upsert({
-      where: { eventId: id },
-      create: {
-        eventId: id,
-        template,
-        format,
-        headline,
-        subline,
-        eventName,
-        callToAction,
-        bgColor,
-        textColor,
-        accentColor,
-        logoUrl,
-      },
-      update: {
-        template,
-        format,
-        headline,
-        subline,
-        eventName,
-        callToAction,
-        bgColor,
-        textColor,
-        accentColor,
-        logoUrl,
-      },
-    });
+    // TODO: qrDesign table not in schema - return mock
+    const design = {
+      eventId: id,
+      template,
+      format,
+      headline,
+      subline,
+      eventName,
+      callToAction,
+      bgColor,
+      fgColor,
+      logoUrl,
+    };
 
     res.json(design);
   } catch (error) {
