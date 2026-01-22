@@ -1209,11 +1209,11 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
                       <p className="text-sm text-app-muted">Hochgeladen von</p>
                       <p className="font-medium">{(selectedPhoto as any).uploadedBy || 'Unbekannt'}</p>
                     </div>
-                    {selectedPhoto.guest && (
+                    {(selectedPhoto as any).guest && (
                       <div>
                         <p className="text-sm text-app-muted">Gast</p>
                         <p className="font-medium">
-                          {selectedPhoto.guest?.firstName} {selectedPhoto.guest?.lastName}
+                          {(selectedPhoto as any).guest?.firstName} {(selectedPhoto as any).guest?.lastName}
                         </p>
                       </div>
                     )}
