@@ -211,7 +211,7 @@ export default function PhotosPage() {
                   </Button>
                   <Button
                     onClick={bulkDelete}
-                    variant="danger"
+                    variant="destructive"
                     size="sm"
                   >
                     Delete
