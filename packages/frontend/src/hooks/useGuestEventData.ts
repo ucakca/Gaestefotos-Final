@@ -161,7 +161,7 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
       params.status = moderationRequired ? 'APPROVED' : 'all';
 
       const { data } = await api.get(`/events/${eventId}/photos`, { params });
-      const nextPhotos = ((data.photos || []) as Photo[]).filter((p) => !(p?.isStoryOnly === true));
+      const nextPhotos = ((data.photos || []) as Photo[]).filter((p) => !((p as any)?.isStoryOnly === true));
 
       if (reset) {
         try {
