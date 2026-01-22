@@ -180,7 +180,7 @@ export default function PhotosPage() {
                   <SelectValue placeholder="Status Filter" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Alle</SelectItem>
+                  <SelectItem value="all">Alle</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="approved">Approved</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
