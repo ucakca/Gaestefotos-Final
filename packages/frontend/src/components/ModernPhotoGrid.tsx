@@ -226,9 +226,9 @@ export default function ModernPhotoGrid({
         // Only load likes and comments for regular photos (not challenge or guestbook entries)
         // Challenge and guestbook entries have different ID formats (challenge-xxx, guestbook-xxx)
         // and may not have a valid photoId
-        const isGuestbookEntry = !!photo.isGuestbookEntry;
-        const isChallengePhoto = !!photo.isChallengePhoto;
-        const underlyingPhotoId = photo.photoId || photo.id;
+        const isGuestbookEntry = !!(photo as any).isGuestbookEntry;
+        const isChallengePhoto = !!(photo as any).isChallengePhoto;
+        const underlyingPhotoId = (photo as any).photoId || photo.id;
 
         // Likes/comments: allow regular photos, and challenge photos if they carry a real photoId.
         // Never allow guestbook items (they are a different entity).
@@ -249,9 +249,9 @@ export default function ModernPhotoGrid({
 
   const getUnderlyingPhotoId = (photo: Photo | undefined | null): string | null => {
     if (!photo) return null;
-    const isGuestbookEntry = !!photo.isGuestbookEntry;
+    const isGuestbookEntry = !!(photo as any).isGuestbookEntry;
     if (isGuestbookEntry) return null;
-    const id = photo.photoId || photo.id;
+    const id = (photo as any).photoId || photo.id;
     if (!id || typeof id !== 'string') return null;
     if (id.startsWith('challenge-') || id.startsWith('guestbook-')) return null;
     return id;
@@ -334,11 +334,11 @@ export default function ModernPhotoGrid({
       <div className="grid grid-cols-3 gap-0.5 md:gap-1 max-w-md mx-auto">
         {/* Photo Grid */}
         {photos.map((photo, index) => {
-          const isGuestbookEntry = photo.isGuestbookEntry;
-          const guestbookEntry = photo.guestbookEntry;
-          const isChallengePhoto = photo.isChallengePhoto;
-          const challenge = photo.challenge;
-          const completion = photo.completion;
+          const isGuestbookEntry = (photo as any).isGuestbookEntry;
+          const guestbookEntry = (photo as any).guestbookEntry;
+          const isChallengePhoto = (photo as any).isChallengePhoto;
+          const challenge = (photo as any).challenge;
+          const completion = (photo as any).completion;
           
           return (
             <motion.div
