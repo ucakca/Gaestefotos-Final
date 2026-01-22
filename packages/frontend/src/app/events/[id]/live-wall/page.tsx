@@ -83,7 +83,7 @@ export default function LiveWallPage() {
       const url = window.location.href;
       QRCode.toDataURL(url, { width: 300, margin: 2 })
         .then(setQrDataUrl)
-        .catch(console.error);
+        .catch(() => {});
     }
   }, [eventId]);
 
@@ -92,7 +92,7 @@ export default function LiveWallPage() {
       const { data } = await api.get(`/events/${eventId}`);
       setEventTitle(data.event?.title || 'Live Wall');
     } catch (err) {
-      console.error('Failed to load event:', err);
+      // Error loading event
     }
   };
 
@@ -175,7 +175,7 @@ export default function LiveWallPage() {
       setPhotos(allPhotos.slice(0, 50));
       setLoading(false);
     } catch (err) {
-      console.error('Failed to load photos:', err);
+      // Error loading photos
       setLoading(false);
     }
   };

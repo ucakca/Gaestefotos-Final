@@ -1829,7 +1829,7 @@ router.post('/:id/qr/save-design', authMiddleware, async (req: AuthRequest, res:
 
     res.json(design);
   } catch (error) {
-    console.error('Error saving QR design:', error);
+    // console.error('Error saving QR design:', error);
     res.status(500).json({ error: 'Failed to save QR design' });
   }
 });

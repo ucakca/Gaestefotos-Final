@@ -19,7 +19,7 @@ router.get('/settings', authMiddleware, async (req: AuthRequest, res: Response) 
     const result = settings || { enabled: false, wordpressUrl: null, productIdA6: null, productIdA5: null, priceA6: null, priceA5: null };
     res.json(result);
   } catch (error) {
-    console.error('Error fetching print service settings:', error);
+    // console.error('Error fetching print service settings:', error);
     res.status(500).json({ error: 'Failed to fetch settings' });
   }
 });
@@ -49,7 +49,7 @@ router.post('/settings', authMiddleware, async (req: AuthRequest, res: Response)
     
     res.json(settings);
   } catch (error) {
-    console.error('Error updating print service settings:', error);
+    // console.error('Error updating print service settings:', error);
     res.status(500).json({ error: 'Failed to update settings' });
   }
 });
@@ -75,7 +75,7 @@ router.post('/checkout-url', authMiddleware, async (req: AuthRequest, res: Respo
     const checkoutUrl = `${settings.wordpressUrl}?add-to-cart=${productId}&quantity=${quantity}`;
     res.json({ checkoutUrl });
   } catch (error) {
-    console.error('Error generating checkout URL:', error);
+    // console.error('Error generating checkout URL:', error);
     res.status(500).json({ error: 'Failed to generate checkout URL' });
   }
 });
