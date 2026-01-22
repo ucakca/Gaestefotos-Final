@@ -551,7 +551,6 @@ app.use('/api/admin/qa-logs', adminQaLogsRoutes);
 app.use('/api/qa-logs', qaLogsRoutes);
 app.use('/api/admin/impersonation', adminImpersonationRoutes);
 app.use('/api/admin/marketing', adminMarketingRoutes);
-app.use('/api/admin/users', adminUsersRoutes);
 app.use('/api/admin/photos', adminPhotosRoutes);
 app.use('/api/admin/logs', adminLogsRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
