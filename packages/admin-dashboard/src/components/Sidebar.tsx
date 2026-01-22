@@ -21,6 +21,7 @@ import {
   Receipt,
   Package,
   LogOut,
+  Flag,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -40,6 +41,7 @@ const navigation = [
   { name: 'Ops', href: '/ops', icon: Activity },
   { name: 'Impersonation', href: '/impersonation', icon: UserCog },
   { name: 'Packages', href: '/packages', icon: Package },
+  { name: 'Feature Flags', href: '/feature-flags', icon: Flag },
   { name: 'API Keys', href: '/api-keys', icon: KeyRound },
   { name: 'E-Mail Templates', href: '/email-templates', icon: Mail },
   { name: 'Invitation Templates', href: '/invitation-templates', icon: FileText },
