@@ -676,7 +676,7 @@ export default function PublicEventPage() {
   }
 
   const featuresConfig = event.featuresConfig;
-  const hostName = event.host?.name || 'Gastgeber';
+  const hostName = (event as any).host?.name || 'Gastgeber';
 
   const isStorageLocked = (() => {
     if (!event) return false;
