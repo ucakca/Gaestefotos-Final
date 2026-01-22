@@ -237,7 +237,15 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     });
 
     logger.info('Feature flags package created', { packageId: created.id, adminId: req.userId });
-    res.status(201).json({ package: created });
+    
+    // Convert BigInt fields to Number for JSON serialization
+    const createdFormatted = {
+      ...created,
+      storageLimitBytes: created.storageLimitBytes ? Number(created.storageLimitBytes) : null,
+      priceEurCents: created.priceEurCents ? Number(created.priceEurCents) : null,
+    };
+    
+    res.status(201).json({ package: createdFormatted });
   } catch (error) {
     logger.error('Create feature flags error', { error });
     res.status(500).json({ error: 'Failed to create package' });
