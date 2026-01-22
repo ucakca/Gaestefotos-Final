@@ -340,7 +340,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   value={config.partyLocation?.name || ''}
                   onChange={(e) => setConfig({
                     ...config,
-                    partyLocation: { ...(config.partyLocation || {}), name: e.target.value },
+                    partyLocation: { ...(config.partyLocation || {}), name: e.target.value } as any,
                   })}
                   placeholder="Name der Location"
                   className="mb-2"
@@ -349,7 +349,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   value={config.partyLocation?.address || ''}
                   onChange={(e) => setConfig({
                     ...config,
-                    partyLocation: { ...(config.partyLocation || {}), address: e.target.value },
+                    partyLocation: { ...(config.partyLocation || {}), address: e.target.value } as any,
                   })}
                   placeholder="Adresse"
                 />
