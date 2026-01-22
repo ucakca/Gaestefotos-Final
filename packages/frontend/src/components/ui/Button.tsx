@@ -48,8 +48,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       className={cn(buttonVariants({ variant, size, className }))}
       {...(!asChild ? { type } : {})}
       disabled={disabled}
-      whileHover={!disabled ? buttonHover : undefined}
-      whileTap={!disabled ? buttonTap : undefined}
       {...props}
     />
   );
