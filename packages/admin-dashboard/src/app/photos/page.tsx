@@ -31,7 +31,7 @@ export default function PhotosPage() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | ''>('pending');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
