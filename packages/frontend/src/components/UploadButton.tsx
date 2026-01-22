@@ -416,7 +416,7 @@ export default function UploadButton({
         });
 
         // Celebrate with confetti!
-        triggerUploadConfetti();
+        // triggerUploadConfetti(); // TODO: Re-implement confetti
 
         setTimeout(() => {
           setFiles((prev) => prev.filter((f) => f.id !== uploadId));
