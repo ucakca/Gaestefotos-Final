@@ -1806,7 +1806,7 @@ router.post('/:id/qr/save-design', authMiddleware, async (req: AuthRequest, res:
       eventName,
       callToAction,
       bgColor,
-      fgColor,
+      textColor,
       logoUrl,
     };
 
