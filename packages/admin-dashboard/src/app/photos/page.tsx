@@ -46,8 +46,8 @@ export default function PhotosPage() {
         offset: (page * limit).toString(),
       });
       
-      if (status && status !== 'all') {
-        params.append('status', status);
+      if (statusFilter && statusFilter !== 'all') {
+        params.append('status', statusFilter);
       }
 
       if (search) params.set('q', search);
