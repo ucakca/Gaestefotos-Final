@@ -466,7 +466,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const loadEmailTemplate = async (kind: 'INVITATION' | 'STORAGE_ENDS_REMINDER' | 'PHOTO_NOTIFICATION') => {
+  const loadEmailTemplate = async (kind: 'INVITATION' | 'STORAGE_ENDS_REMINDER' | 'PHOTO_NOTIFICATION' | 'welcome' | 'reminder' | 'thankyou') => {
     try {
       setEmailTplError(null);
       setEmailTplLoading(true);
