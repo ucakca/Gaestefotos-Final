@@ -293,7 +293,7 @@ export default function AdminDashboardPage() {
   const [emailTplTestTo, setEmailTplTestTo] = useState('');
   const [emailTplTestSending, setEmailTplTestSending] = useState(false);
 
-  const [cmsFaqKind, setCmsFaqKind] = useState<'pages' | 'posts' | 'event' | 'general' | 'guest' | 'photo'>('pages');
+  const [cmsFaqKind, setCmsFaqKind] = useState<'pages' | 'posts'>('pages');
   const [cmsFaqSlug, setCmsFaqSlug] = useState('faq');
   const [cmsFaqLoading, setCmsFaqLoading] = useState(false);
   const [cmsFaqError, setCmsFaqError] = useState<string | null>(null);
@@ -675,6 +675,8 @@ export default function AdminDashboardPage() {
     try {
       setEmailTplError(null);
       setEmailTplSaving(true);
+      await api.put(`/admin/email-templates/${emailTplKind}`, {
+        name: (emailTplName || emailTplKind).trim() || emailTplKind,
         subject: emailTplSubject,
         html: emailTplHtml.trim() ? emailTplHtml : null,
         text: emailTplText.trim() ? emailTplText : null,
@@ -1480,7 +1482,7 @@ export default function AdminDashboardPage() {
                 ))}
                 <ActionButton
                   disabled={cmsSyncSaving || cmsSyncAllSaving}
-                  onClick={() => syncCmsPreset({ kind: cmsFaqKind as 'pages' | 'posts', slug: cmsFaqSlug.trim() || 'faq' })}
+                  onClick={() => syncCmsPreset({ kind: cmsFaqKind, slug: cmsFaqSlug.trim() || 'faq' })}
                 >
                   {cmsSyncSaving ? 'Sync…' : 'Sync preset'}
                 </ActionButton>
@@ -1733,7 +1735,7 @@ export default function AdminDashboardPage() {
               <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
-                    <Select value={emailTplKind} onValueChange={(value: any) => setEmailTplKind(value)}>
+                    <Select value={emailTplKind} onValueChange={(value) => setEmailTplKind(value as 'welcome' | 'reminder' | 'thankyou')}>
                       <SelectTrigger className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
                         <SelectValue placeholder="Kind" />
                       </SelectTrigger>
@@ -1993,7 +1995,7 @@ export default function AdminDashboardPage() {
                 <label className="flex items-center gap-2 text-sm font-semibold text-app-fg">
                   Format
                   <div className="min-w-[90px]">
-                    <Select value={qrFormat} onValueChange={(value: any) => setQrFormat(value)}>
+                    <Select value={qrFormat} onValueChange={(value) => setQrFormat(value as 'A4' | 'A5' | 'A6')}>
                       <SelectTrigger className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
                         <SelectValue placeholder="Format" />
                       </SelectTrigger>
