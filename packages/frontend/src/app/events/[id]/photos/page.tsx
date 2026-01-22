@@ -973,7 +973,7 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
                   )}
                 </div>
                 <div className="p-2 bg-app-bg border-t border-app-border">
-                  <p className="text-xs text-app-muted truncate">von {photo.uploadedBy || 'Unbekannt'}</p>
+                  <p className="text-xs text-app-muted truncate">von {(photo as any).uploadedBy || 'Unbekannt'}</p>
                 </div>
               </motion.div>
             ))}
