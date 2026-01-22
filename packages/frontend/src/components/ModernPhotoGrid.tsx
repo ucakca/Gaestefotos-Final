@@ -70,7 +70,7 @@ export default function ModernPhotoGrid({
 
   const REACTION_KEYS = new Set(REACTIONS.map((r) => r.key));
 
-  const handleDownload = (photo: ExtendedPhoto) => {
+  const handleDownload = (photo: Photo) => {
     if (!downloadsEnabled) return;
     const url = buildApiUrl(`/photos/${photo.id}/download`);
     window.open(url, '_blank', 'noopener,noreferrer');
