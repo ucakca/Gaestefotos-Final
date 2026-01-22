@@ -45,8 +45,12 @@ export default function PhotosPage() {
         limit: limit.toString(),
         offset: (page * limit).toString(),
       });
+      
+      if (status && status !== 'all') {
+        params.append('status', status);
+      }
+
       if (search) params.set('q', search);
-      if (status) params.set('status', status);
 
       const res = await fetch(`/api/admin/photos?${params}`, {
         headers: {
@@ -69,7 +73,7 @@ export default function PhotosPage() {
   useEffect(() => {
     loadPhotos();
     setSelectedPhotos(new Set());
-  }, [page, search, status]);
+  }, [page, search, statusFilter]);
 
   const toggleSelection = (photoId: string) => {
     const newSelection = new Set(selectedPhotos);
@@ -168,8 +172,8 @@ export default function PhotosPage() {
                   className="pl-10"
                 />
               </div>
-              <Select value={status} onValueChange={(v) => {
-                setStatus(v as any);
+              <Select value={statusFilter} onValueChange={(v) => {
+                setStatusFilter(v as any);
                 setPage(0);
               }}>
                 <SelectTrigger className="w-48">
