@@ -298,7 +298,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   value={config.ceremonyLocation?.name || ''}
                   onChange={(e) => setConfig({
                     ...config,
-                    ceremonyLocation: { ...(config.ceremonyLocation || {}), name: e.target.value },
+                    ceremonyLocation: { ...(config.ceremonyLocation || {}), name: e.target.value } as any as any,
                   })}
                   placeholder="Name der Location"
                   className="mb-2"
@@ -307,7 +307,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   value={config.ceremonyLocation?.address || ''}
                   onChange={(e) => setConfig({
                     ...config,
-                    ceremonyLocation: { ...(config.ceremonyLocation || {}), address: e.target.value },
+                    ceremonyLocation: { ...(config.ceremonyLocation || {}), address: e.target.value } as any,
                   })}
                   placeholder="Adresse"
                 />
@@ -319,7 +319,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   value={config.receptionLocation?.name || ''}
                   onChange={(e) => setConfig({
                     ...config,
-                    receptionLocation: { ...(config.receptionLocation || {}), name: e.target.value },
+                    receptionLocation: { ...(config.receptionLocation || {}), name: e.target.value } as any,
                   })}
                   placeholder="Name der Location"
                   className="mb-2"
@@ -328,7 +328,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   value={config.receptionLocation?.address || ''}
                   onChange={(e) => setConfig({
                     ...config,
-                    receptionLocation: { ...(config.receptionLocation || {}), address: e.target.value },
+                    receptionLocation: { ...(config.receptionLocation || {}), address: e.target.value } as any,
                   })}
                   placeholder="Adresse"
                 />
