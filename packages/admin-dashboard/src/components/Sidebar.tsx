@@ -39,6 +39,8 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'System', href: '/system', icon: Server },
   { name: 'Ops', href: '/ops', icon: Activity },
+  { name: 'Analytics', href: '/analytics', icon: TrendingUp },
+  { name: 'Photos', href: '/photos', icon: Image },
   { name: 'Impersonation', href: '/impersonation', icon: UserCog },
   { name: 'Packages', href: '/packages', icon: Package },
   { name: 'Feature Flags', href: '/feature-flags', icon: Flag },

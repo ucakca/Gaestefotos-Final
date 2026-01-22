@@ -27,7 +27,7 @@ interface Photo {
   };
 }
 
-export default function AdminPhotosPage() {
+export default function PhotosPage() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -40,7 +40,7 @@ export default function AdminPhotosPage() {
   const loadPhotos = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('admin_token');
       const params = new URLSearchParams({
         limit: limit.toString(),
         offset: (page * limit).toString(),
@@ -93,7 +93,7 @@ export default function AdminPhotosPage() {
     if (selectedPhotos.size === 0) return;
 
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('admin_token');
       const res = await fetch('/api/admin/photos/bulk-moderate', {
         method: 'POST',
         headers: {
@@ -121,7 +121,7 @@ export default function AdminPhotosPage() {
     if (!confirm(`${selectedPhotos.size} Fotos wirklich löschen?`)) return;
 
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('admin_token');
       const res = await fetch('/api/admin/photos/bulk-delete', {
         method: 'DELETE',
         headers: {
@@ -145,7 +145,7 @@ export default function AdminPhotosPage() {
   const totalPages = Math.ceil(total / limit);
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Content Moderation</h1>
         <p className="mt-2 text-gray-600">Verwalte und moderiere hochgeladene Fotos</p>

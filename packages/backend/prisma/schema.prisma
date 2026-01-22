@@ -549,35 +549,35 @@ model Challenge {
 }
 
 model QrDesign {
-  id            String   @id @default(uuid())
-  eventId       String   @unique
-  templateSlug  String?
-  format        String?  @default("A6")
-  headline      String?
-  subline       String?
-  eventName     String?
-  callToAction  String?
-  bgColor       String?
-  textColor     String?
-  accentColor   String?
-  logoUrl       String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(uuid())
+  eventId      String   @unique
+  templateSlug String?
+  format       String?  @default("A6")
+  headline     String?
+  subline      String?
+  eventName    String?
+  callToAction String?
+  bgColor      String?
+  textColor    String?
+  accentColor  String?
+  logoUrl      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([eventId])
   @@map("qr_designs")
 }
 
 model PrintServiceSettings {
-  id            String   @id @default(uuid())
-  enabled       Boolean  @default(false)
-  wordpressUrl  String?
-  productIdA6   String?
-  productIdA5   String?
-  priceA6       Float?
-  priceA5       Float?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(uuid())
+  enabled      Boolean  @default(false)
+  wordpressUrl String?
+  productIdA6  String?
+  productIdA5  String?
+  priceA6      Float?
+  priceA5      Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("print_service_settings")
 }
