@@ -17,12 +17,12 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
   const [passwordError, setPasswordError] = useState('');
 
   const featuresConfig = useMemo(() => (event ? event.featuresConfig : null), [event]);
-  const hostName = useMemo(() => event?.host?.name || 'Gastgeber', [event]);
+  const hostName = useMemo(() => (event as any)?.host?.name || 'Gastgeber', [event]);
 
   const isStorageLocked = useMemo(() => {
     if (!event) return false;
-    if (typeof event.isStorageLocked === 'boolean') return event.isStorageLocked;
-    const endsAt = event.storageEndsAt ? new Date(event.storageEndsAt).getTime() : null;
+    if (typeof (event as any).isStorageLocked === 'boolean') return (event as any).isStorageLocked;
+    const endsAt = (event as any).storageEndsAt ? new Date((event as any).storageEndsAt).getTime() : null;
     if (!endsAt || Number.isNaN(endsAt)) return false;
     return Date.now() > endsAt;
   }, [event]);
