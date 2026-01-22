@@ -550,7 +550,7 @@ export default function ModernPhotoGrid({
                     )}
 
                     {/* Guestbook Entry Speech Bubble on Full Image */}
-                    {photos[selectedPhoto]?.isGuestbookEntry && photos[selectedPhoto]?.guestbookEntry && (
+                    {(photos[selectedPhoto] as any)?.isGuestbookEntry && (photos[selectedPhoto] as any)?.guestbookEntry && (
                       <div className="absolute bottom-4 left-4 right-4">
                         <div className="bg-app-card border border-app-border rounded-lg px-4 py-3 shadow-xl max-w-md mx-auto">
                           <div className="flex items-center gap-2 mb-2">
@@ -558,11 +558,11 @@ export default function ModernPhotoGrid({
                               <User className="w-4 h-4 text-app-bg" />
                             </div>
                             <span className="text-sm font-semibold text-app-fg">
-                              {photos[selectedPhoto]?.guestbookEntry?.authorName}
+                              {(photos[selectedPhoto] as any)?.guestbookEntry?.authorName}
                             </span>
                           </div>
                           <p className="text-sm text-app-fg whitespace-pre-wrap">
-                            {photos[selectedPhoto]?.guestbookEntry?.message}
+                            {(photos[selectedPhoto] as any)?.guestbookEntry?.message}
                           </p>
                         </div>
                       </div>
@@ -575,19 +575,19 @@ export default function ModernPhotoGrid({
                           <div className="flex items-center gap-2 mb-2">
                             <Trophy className="w-5 h-5 text-status-warning" />
                             <span className="text-sm font-semibold text-app-fg">
-                              {photos[selectedPhoto]?.challenge?.title}
+                              {(photos[selectedPhoto] as any)?.challenge?.title}
                             </span>
                           </div>
-                          {photos[selectedPhoto]?.challenge?.description && (
+                          {(photos[selectedPhoto] as any)?.challenge?.description && (
                             <p className="text-sm text-app-fg mb-2 whitespace-pre-wrap">
-                              {photos[selectedPhoto]?.challenge?.description}
+                              {(photos[selectedPhoto] as any)?.challenge?.description}
                             </p>
                           )}
-                          {photos[selectedPhoto]?.completion && (
+                          {(photos[selectedPhoto] as any)?.completion && (
                             <div className="text-xs text-app-muted">
-                              Erfüllt von: {photos[selectedPhoto]?.completion?.guest 
-                                ? `${photos[selectedPhoto]?.completion?.guest?.firstName} ${photos[selectedPhoto]?.completion?.guest?.lastName}`
-                                : photos[selectedPhoto]?.completion?.uploaderName || 'Anonym'}
+                              Erfüllt von: {(photos[selectedPhoto] as any)?.completion?.guest 
+                                ? `${(photos[selectedPhoto] as any)?.completion?.guest?.firstName} ${(photos[selectedPhoto] as any)?.completion?.guest?.lastName}`
+                                : (photos[selectedPhoto] as any)?.completion?.uploaderName || 'Anonym'}
                             </div>
                           )}
                         </div>
