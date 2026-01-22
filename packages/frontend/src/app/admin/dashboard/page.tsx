@@ -1459,6 +1459,13 @@ export default function AdminDashboardPage() {
                     <ActionButton variant="secondary" onClick={loadCmsSnapshots} disabled={cmsSnapshotsLoading}>
                       {cmsSnapshotsLoading ? 'Lade…' : 'Snapshots'}
                     </ActionButton>
+                    <ActionButton onClick={() => router.push('/admin/users')}>User Management</ActionButton>
+                    <ActionButton onClick={() => router.push('/admin/events')}>Event Management</ActionButton>
+                    <ActionButton onClick={() => router.push('/admin/photos')}>Photo Moderation</ActionButton>
+                    <ActionButton onClick={() => router.push('/admin/feature-flags')}>Feature Flags</ActionButton>
+                    <ActionButton onClick={() => router.push('/admin/analytics')}>Analytics</ActionButton>
+                    <ActionButton onClick={() => router.push('/admin/logs')}>System Logs</ActionButton>
+                    <ActionButton onClick={() => router.push('/admin/settings')}>Settings</ActionButton>
                   </>
                 }
               />
