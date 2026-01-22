@@ -1735,7 +1735,7 @@ export default function AdminDashboardPage() {
               <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
-                    <Select value={emailTplKind} onValueChange={(value: any) => setEmailTplKind(value as 'welcome' | 'reminder' | 'thankyou')}>
+                    <Select value={emailTplKind} onValueChange={(value: any) => setEmailTplKind(value)}>
                       <SelectTrigger className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
                         <SelectValue placeholder="Kind" />
                       </SelectTrigger>
