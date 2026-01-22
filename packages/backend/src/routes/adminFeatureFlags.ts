@@ -25,7 +25,13 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       orderBy: { displayOrder: 'asc' },
     });
 
-    res.json({ packages });
+    const serializedPackages = packages.map(pkg => ({
+      ...pkg,
+      storageLimitBytes: pkg.storageLimitBytes ? Number(pkg.storageLimitBytes) : null,
+      priceEurCents: pkg.priceEurCents || null,
+    }));
+
+    res.json({ packages: serializedPackages });
   } catch (error) {
     logger.error('Get feature flags error', { error });
     res.status(500).json({ error: 'Failed to fetch feature flags' });
