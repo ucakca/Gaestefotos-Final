@@ -1482,7 +1482,7 @@ export default function AdminDashboardPage() {
                 ))}
                 <ActionButton
                   disabled={cmsSyncSaving || cmsSyncAllSaving}
-                  onClick={() => syncCmsPreset({ kind: cmsFaqKind, slug: cmsFaqSlug.trim() || 'faq' })}
+                  onClick={() => syncCmsPreset({ kind: cmsFaqKind as 'pages' | 'posts', slug: cmsFaqSlug.trim() || 'faq' })}
                 >
                   {cmsSyncSaving ? 'Sync…' : 'Sync preset'}
                 </ActionButton>
