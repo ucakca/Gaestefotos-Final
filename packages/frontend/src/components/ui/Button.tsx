@@ -41,7 +41,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   { className, variant, size, asChild = false, type = 'button', disabled, ...props },
   ref
 ) {
-  const Comp = asChild ? Slot : motion.button;
+  const Comp = asChild ? Slot : 'button';
   return (
     <Comp
       ref={ref}
