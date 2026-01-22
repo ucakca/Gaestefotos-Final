@@ -217,7 +217,7 @@ export default function AdminDashboardPage() {
   const [qrEventLoading, setQrEventLoading] = useState(false);
   const [qrEventError, setQrEventError] = useState<string | null>(null);
 
-  const [qrFormat, setQrFormat] = useState<'A6' | 'A5'>('A6');
+  const [qrFormat, setQrFormat] = useState<'A6' | 'A5' | 'A4'>('A6');
   const [qrBleedMm, setQrBleedMm] = useState('3');
   const [qrCropMarks, setQrCropMarks] = useState(true);
   const [qrExporting, setQrExporting] = useState(false);
