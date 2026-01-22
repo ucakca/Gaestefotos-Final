@@ -468,6 +468,8 @@ router.post('/:id/qr/export.pdf', authMiddleware, async (req: AuthRequest, res: 
 router.post('/:id/qr/logo', authMiddleware, uploadSingleDesignImage('logo'), async (req: AuthRequest, res: Response) => {
   try {
     const eventId = req.params.id;
+    const event = await requireEventEditAccess(req, res, eventId);
+    if (!event) return;
     
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -475,6 +477,11 @@ router.post('/:id/qr/logo', authMiddleware, uploadSingleDesignImage('logo'), asy
 
     const logoUrl = await storageService.uploadFile(eventId, req.file.originalname, req.file.buffer, req.file.mimetype);
     
+    await prisma.qrDesign.upsert({
+      where: { eventId },
+      create: { eventId, logoUrl },
+      update: { logoUrl },
+    });
 
     return res.json({ logoUrl });
   } catch (error) {
@@ -486,7 +493,17 @@ router.post('/:id/qr/logo', authMiddleware, uploadSingleDesignImage('logo'), asy
 router.delete('/:id/qr/logo', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const eventId = req.params.id;
+    const event = await requireEventEditAccess(req, res, eventId);
+    if (!event) return;
     
+    const qrDesign = await prisma.qrDesign.findUnique({ where: { eventId } });
+    if (qrDesign?.logoUrl) {
+      await storageService.deleteFile(qrDesign.logoUrl);
+      await prisma.qrDesign.update({
+        where: { eventId },
+        data: { logoUrl: null },
+      });
+    }
 
     return res.json({ success: true });
   } catch (error) {
