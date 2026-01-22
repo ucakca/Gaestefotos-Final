@@ -1995,7 +1995,7 @@ export default function AdminDashboardPage() {
                 <label className="flex items-center gap-2 text-sm font-semibold text-app-fg">
                   Format
                   <div className="min-w-[90px]">
-                    <Select value={qrFormat} onValueChange={(value) => setQrFormat(value as 'A4' | 'A5' | 'A6')}>
+                    <Select value={qrFormat} onValueChange={(value) => setQrFormat(value)}>
                       <SelectTrigger className="rounded-lg border border-app-border bg-app-card px-3 py-2 text-sm text-app-fg">
                         <SelectValue placeholder="Format" />
                       </SelectTrigger>
