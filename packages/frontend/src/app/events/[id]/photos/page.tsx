@@ -96,6 +96,7 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
   const [categories, setCategories] = useState<any[]>([]);
   const [uploaders, setUploaders] = useState<string[]>([]);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | string>('all');
+  const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null });
   const [loading, setLoading] = useState(true);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
