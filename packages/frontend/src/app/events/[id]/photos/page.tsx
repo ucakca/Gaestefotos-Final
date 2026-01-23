@@ -216,6 +216,7 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
         params.endDate = dateRange.end.toISOString().split('T')[0];
       }
 
+      if (filter === 'all' || filter === 'all-uploader' || filter === 'all-albums') {
         // No filter
       } else if (['pending', 'approved', 'rejected'].includes(filter)) {
         params.status = filter.toUpperCase();
