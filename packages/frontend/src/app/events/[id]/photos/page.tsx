@@ -17,6 +17,7 @@ import PageHeader from '@/components/PageHeader';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import FilterButtons from '@/components/FilterButtons';
 import UploadModal from '@/components/UploadModal';
+import DateRangeFilter from '@/components/DateRangeFilter';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import {
