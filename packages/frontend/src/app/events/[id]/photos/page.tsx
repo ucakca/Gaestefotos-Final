@@ -207,7 +207,15 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
       }
 
       const params: any = {};
-      if (filter === 'all' || filter === 'all-uploader' || filter === 'all-albums') {
+
+      // Date range filter
+      if (dateRange.start) {
+        params.startDate = dateRange.start.toISOString().split('T')[0];
+      }
+      if (dateRange.end) {
+        params.endDate = dateRange.end.toISOString().split('T')[0];
+      }
+
         // No filter
       } else if (['pending', 'approved', 'rejected'].includes(filter)) {
         params.status = filter.toUpperCase();
