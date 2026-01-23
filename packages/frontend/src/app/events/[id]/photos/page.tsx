@@ -637,6 +637,18 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
           />
         )}
 
+        {/* Date Range Filter */}
+        <DateRangeFilter
+          onApply={(start, end) => {
+            setDateRange({ start, end });
+            loadPhotos();
+          }}
+          onClear={() => {
+            setDateRange({ start: null, end: null });
+            loadPhotos();
+          }}
+        />
+
         {/* Filter Buttons - Albums */}
         {viewMode === 'active' && categories.length > 0 && (
           <FilterButtons
