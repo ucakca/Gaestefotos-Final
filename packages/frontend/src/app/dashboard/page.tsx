@@ -2,82 +2,67 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import { 
+  Plus, 
+  LogOut, 
+  HelpCircle, 
+  ClipboardCheck, 
+  Search,
+  Calendar,
+  Filter,
+  Grid3X3,
+  List,
+  Camera,
+  Users,
+  Clock,
+  AlertCircle,
+  Sparkles,
+  ChevronRight,
+  Info
+} from 'lucide-react';
 import api from '@/lib/api';
 import { Event } from '@gaestefotos/shared';
-import Link from 'next/link';
 import Logo from '@/components/Logo';
 import { useAuthStore } from '@/store/authStore';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Button } from '@/components/ui/Button';
-import GuidedTour from '@/components/ui/GuidedTour';
-import { HelpCircle, ClipboardCheck, PlusSquare, LogOut } from 'lucide-react';
-import { AnimatedCard } from '@/components/ui/AnimatedCard';
-import { staggerContainer, staggerItem } from '@/lib/animations';
+import { Input } from '@/components/ui/Input';
+import { EventCard } from '@/components/host-dashboard';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, logout } = useAuthStore(); // Hook muss VOR allen early returns sein!
+  const { user, logout } = useAuthStore();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  const tourSteps = [
-    {
-      id: 'faq',
-      target: '[data-tour="host-dashboard-faq"]',
-      title: 'Dashboard (1/4)',
-      body: 'FAQ öffnet die wichtigsten Antworten/How-Tos. Ideal als erster Einstieg.',
-      placement: 'bottom' as const,
-    },
-    {
-      id: 'moderation',
-      target: '[data-tour="host-dashboard-moderation"]',
-      title: 'Dashboard (2/4)',
-      body: 'Hier kannst du Uploads moderieren: freigeben/ablehnen, Probleme prüfen, Qualität sichern.',
-      placement: 'bottom' as const,
-    },
-    {
-      id: 'new-event',
-      target: '[data-tour="host-dashboard-new-event"]',
-      title: 'Dashboard (3/4)',
-      body: 'Neues Event anlegen – danach kannst du Design, Alben und Einladungen konfigurieren.',
-      placement: 'bottom' as const,
-    },
-    {
-      id: 'event-card',
-      target: '[data-tour="host-dashboard-event-card"]',
-      title: 'Dashboard (4/4)',
-      body: 'Klicke auf ein Event, um es zu verwalten (Fotos, Share-Link, Einladungen, Einstellungen).',
-      placement: 'top' as const,
-    },
-  ];
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'past' | 'draft'>('all');
+  const [showStatusInfo, setShowStatusInfo] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const tokenFromUrl = new URLSearchParams(window.location.search).get('token');
       const returnUrlFromUrl = new URLSearchParams(window.location.search).get('returnUrl');
       if (tokenFromUrl) {
-      try {
-        sessionStorage.setItem('token', tokenFromUrl);
-        localStorage.removeItem('token');
-      } catch {
-        // ignore
-      }
-      const next = returnUrlFromUrl && returnUrlFromUrl.startsWith('/') ? returnUrlFromUrl : '/dashboard';
-      window.location.href = next;
-      return;
+        try {
+          sessionStorage.setItem('token', tokenFromUrl);
+          localStorage.removeItem('token');
+        } catch {}
+        const next = returnUrlFromUrl && returnUrlFromUrl.startsWith('/') ? returnUrlFromUrl : '/dashboard';
+        window.location.href = next;
+        return;
       }
     }
-
     loadEvents();
   }, []);
 
   const loadEvents = async () => {
     try {
       const { data } = await api.get('/events');
-      // API gibt { events: [...] } zurück
       setEvents(Array.isArray(data?.events) ? data.events : (Array.isArray(data) ? data : []));
     } catch (err: any) {
       if (err.response?.status === 401) {
@@ -90,139 +75,351 @@ export default function DashboardPage() {
     }
   };
 
+  // Calculate totals
+  const totalPhotos = events.reduce((sum, e) => sum + ((e as any).photoCount || 0), 0);
+  const totalGuests = events.reduce((sum, e) => sum + ((e as any).guestCount || 0), 0);
+  const pendingPhotos = events.reduce((sum, e) => sum + ((e as any).pendingCount || 0), 0);
+  const activeEvents = events.filter(e => (e as any).isActive !== false);
+  const pastEvents = events.filter(e => e.dateTime && new Date(e.dateTime) < new Date());
+
+  const filteredEvents = events.filter(event => {
+    // Search filter
+    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.slug?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Status filter
+    if (statusFilter === 'active') {
+      return matchesSearch && (event as any).isActive !== false;
+    } else if (statusFilter === 'past') {
+      return matchesSearch && event.dateTime && new Date(event.dateTime) < new Date();
+    }
+    return matchesSearch;
+  });
+
   if (loading) {
-    return <FullPageLoader label="Lade..." />;
+    return <FullPageLoader label="Lade Dashboard..." />;
   }
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-app-bg">
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 pb-24 sm:pb-8">
-          {/* Header */}
-          <div className="bg-app-card rounded-lg border border-app-border shadow-sm p-6 mb-8">
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 min-w-0">
-                <Logo width={120} height={48} />
-                <div className="min-w-0">
-                  <h1 className="text-2xl font-bold text-app-fg">Dashboard</h1>
-                  {user && (
-                    <p className="text-sm text-app-muted break-words">{user.name || user.email}</p>
-                  )}
-                </div>
+      <div className="min-h-screen" style={{ background: 'hsl(30 20% 98%)' }}>
+        {/* Header */}
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-stone-200 shadow-sm"
+        >
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between gap-4">
+              {/* Left: Logo + User */}
+              <div className="flex items-center gap-4 min-w-0">
+                <Logo width={100} height={40} />
+                {user && (
+                  <div className="hidden sm:block min-w-0">
+                    <p className="text-sm font-medium text-stone-800 truncate">{user.name || 'Host'}</p>
+                    <p className="text-xs text-stone-500 truncate">{user.email}</p>
+                  </div>
+                )}
               </div>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 sm:justify-end">
-                <GuidedTour tourId="host_dashboard" steps={tourSteps} autoStart />
-                <Button asChild variant="secondary" size="sm" className="hidden sm:inline-flex">
-                  <a href="/faq" target="_blank" rel="noreferrer" data-tour="host-dashboard-faq">
+
+              {/* Right: Actions */}
+              <div className="flex items-center gap-2">
+                <Button asChild variant="ghost" size="sm" className="hidden sm:flex">
+                  <a href="/faq" target="_blank" rel="noreferrer">
+                    <HelpCircle className="w-4 h-4 mr-1" />
                     FAQ
                   </a>
                 </Button>
-                <Button asChild variant="primary" size="sm" className="w-full sm:w-auto px-4 py-2 rounded-md font-medium">
-                  <Link href="/moderation" data-tour="host-dashboard-moderation">
-                    Uploads prüfen
+                <Button asChild variant="secondary" size="sm" className="hidden sm:flex">
+                  <Link href="/moderation">
+                    <ClipboardCheck className="w-4 h-4 mr-1" />
+                    Moderation
                   </Link>
                 </Button>
-                <Button asChild variant="primary" size="sm" className="w-full sm:w-auto px-4 py-2 rounded-md font-medium">
-                  <Link href="/create-event" data-tour="host-dashboard-new-event">
-                    Neues Event
+                <Button asChild variant="primary" size="sm">
+                  <Link href="/create-event">
+                    <Plus className="w-4 h-4 mr-1" />
+                    <span className="hidden sm:inline">Neues Event</span>
+                    <span className="sm:hidden">Neu</span>
                   </Link>
                 </Button>
                 <Button
-                  onClick={logout}
-                  variant="secondary"
+                  variant="ghost"
                   size="sm"
-                  className="hidden sm:inline-flex"
+                  onClick={logout}
+                  className="hidden sm:flex"
                 >
-                  Abmelden
+                  <LogOut className="w-4 h-4" />
                 </Button>
               </div>
             </div>
           </div>
+        </motion.header>
 
-          {error && (
-            <div className="bg-app-bg border border-status-danger text-status-danger px-4 py-3 rounded mb-4">
-              {error}
-            </div>
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-4 py-6 pb-24">
+          {/* Welcome + Stats */}
+          {events.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
+            >
+              {/* Greeting */}
+              <div className="mb-4">
+                <h1 className="text-2xl font-bold text-stone-800">
+                  Hallo{user?.name ? `, ${user.name.split(' ')[0]}` : ''}! 👋
+                </h1>
+                <p className="text-stone-500">
+                  Du hast {activeEvents.length} aktive{activeEvents.length === 1 ? 's' : ''} Event{activeEvents.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+
+              {/* Quick Stats Row */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-3">
+                  <div className="flex items-center gap-2 text-blue-600 mb-1">
+                    <Camera className="w-4 h-4" />
+                    <span className="text-xs font-medium">FOTOS</span>
+                  </div>
+                  <p className="text-2xl font-bold text-blue-900">{totalPhotos}</p>
+                </div>
+                <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-3">
+                  <div className="flex items-center gap-2 text-green-600 mb-1">
+                    <Users className="w-4 h-4" />
+                    <span className="text-xs font-medium">GÄSTE</span>
+                  </div>
+                  <p className="text-2xl font-bold text-green-900">{totalGuests}</p>
+                </div>
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-3">
+                  <div className="flex items-center gap-2 text-purple-600 mb-1">
+                    <Sparkles className="w-4 h-4" />
+                    <span className="text-xs font-medium">EVENTS</span>
+                  </div>
+                  <p className="text-2xl font-bold text-purple-900">{events.length}</p>
+                </div>
+                {pendingPhotos > 0 ? (
+                  <Link href="/moderation" className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-300 rounded-xl p-3 hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2 text-orange-600 mb-1">
+                      <Clock className="w-4 h-4" />
+                      <span className="text-xs font-medium">AUSSTEHEND</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-2xl font-bold text-orange-900">{pendingPhotos}</p>
+                      <ChevronRight className="w-4 h-4 text-orange-500" />
+                    </div>
+                  </Link>
+                ) : (
+                  <div className="bg-gradient-to-br from-stone-50 to-stone-100 border border-stone-200 rounded-xl p-3">
+                    <div className="flex items-center gap-2 text-stone-500 mb-1">
+                      <Clock className="w-4 h-4" />
+                      <span className="text-xs font-medium">AUSSTEHEND</span>
+                    </div>
+                    <p className="text-2xl font-bold text-stone-400">0</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
           )}
 
-          {!Array.isArray(events) || events.length === 0 ? (
+          {/* Page Title + Search */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-6"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-semibold text-stone-800">Meine Events</h2>
+                  {/* Status Info Button */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowStatusInfo(!showStatusInfo)}
+                      className="p-1 rounded-full hover:bg-stone-100 transition-colors"
+                    >
+                      <Info className="w-4 h-4 text-stone-400" />
+                    </button>
+                    
+                    {/* Info Tooltip */}
+                    <AnimatePresence>
+                      {showStatusInfo && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -5 }}
+                          className="absolute left-0 top-full mt-2 z-50 w-64 p-3 bg-white rounded-xl shadow-lg border border-stone-200"
+                        >
+                          <h4 className="font-medium text-stone-800 text-sm mb-2">Event-Status Erklärung</h4>
+                          <div className="space-y-2 text-xs">
+                            <div className="flex items-start gap-2">
+                              <div className="w-2.5 h-2.5 rounded-full bg-green-500 mt-0.5 flex-shrink-0" />
+                              <div>
+                                <span className="font-medium text-green-700">Live</span>
+                                <p className="text-stone-500">Event läuft/kommt, Galerie aktiv</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <div className="w-2.5 h-2.5 rounded-full bg-orange-500 mt-0.5 flex-shrink-0" />
+                              <div>
+                                <span className="font-medium text-orange-700">Archiviert</span>
+                                <p className="text-stone-500">Event vorbei, Galerie noch zugänglich</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <div className="w-2.5 h-2.5 rounded-full bg-red-500 mt-0.5 flex-shrink-0" />
+                              <div>
+                                <span className="font-medium text-red-700">Gesperrt</span>
+                                <p className="text-stone-500">Galerie deaktiviert, kein Zugang</p>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+                {/* Filter Tabs */}
+                <div className="flex gap-2 mt-2">
+                  {[
+                    { id: 'all', label: 'Alle', count: events.length },
+                    { id: 'active', label: 'Aktive', count: activeEvents.length },
+                    { id: 'past', label: 'Vergangene', count: pastEvents.length },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setStatusFilter(tab.id as any)}
+                      className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                        statusFilter === tab.id
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                      }`}
+                    >
+                      {tab.label} ({tab.count})
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Search + View Toggle */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1 sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                  <Input
+                    placeholder="Event suchen..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 bg-white border-stone-200"
+                  />
+                </div>
+                <div className="flex bg-white border border-stone-200 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'text-stone-400 hover:text-stone-700'}`}
+                  >
+                    <Grid3X3 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'text-stone-400 hover:text-stone-700'}`}
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {error && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-12 bg-app-card rounded-lg border border-app-border shadow-sm"
+              className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6"
             >
-              <p className="mb-4 text-app-muted">Noch keine Events vorhanden</p>
-              <Button asChild variant="primary" size="sm" className="px-4 py-2 rounded-md font-medium inline-block">
-                <Link href="/create-event">Erstelle dein erstes Event</Link>
-              </Button>
+              {error}
+            </motion.div>
+          )}
+
+          {/* Events Grid/List */}
+          {filteredEvents.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-16"
+            >
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 border border-amber-200 mx-auto mb-6 flex items-center justify-center">
+                <Camera className="w-12 h-12 text-amber-600" />
+              </div>
+              {searchQuery ? (
+                <>
+                  <h3 className="text-xl font-semibold text-stone-800 mb-2">Keine Events gefunden</h3>
+                  <p className="text-stone-500 mb-4">Versuche einen anderen Suchbegriff</p>
+                  <Button variant="secondary" onClick={() => setSearchQuery('')}>
+                    Suche zurücksetzen
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-xl font-semibold text-stone-800 mb-2">Willkommen bei Gästefotos! 🎉</h3>
+                  <p className="text-stone-500 mb-6 max-w-md mx-auto">Erstelle dein erstes Event und sammle unvergessliche Momente mit deinen Gästen.</p>
+                  <Button asChild variant="primary" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0">
+                    <Link href="/create-event">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Erstes Event erstellen
+                    </Link>
+                  </Button>
+                </>
+              )}
             </motion.div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.isArray(events) && events.map((event, index) => {
-                const designConfig = event.designConfig || {};
-                const profileImageStoragePath = designConfig.profileImageStoragePath;
-                const coverImageStoragePath = designConfig.coverImageStoragePath;
-                const profileImage = profileImageStoragePath 
-                  ? `/api/events/${event.id}/design-image/profile/${encodeURIComponent(profileImageStoragePath)}`
-                  : designConfig.profileImage;
-                const coverImage = coverImageStoragePath
-                  ? `/api/events/${event.id}/design-image/cover/${encodeURIComponent(coverImageStoragePath)}`
-                  : designConfig.coverImage;
-                
-                return (
-                  <AnimatedCard
+            <div className={viewMode === 'grid' 
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4' 
+              : 'space-y-3'
+            }>
+              <AnimatePresence>
+                {filteredEvents.map((event, index) => (
+                  <EventCard
                     key={event.id}
-                    variants={staggerItem}
-                    clickable
-                    className="overflow-hidden"
-                  >
-                    <Link
-                      href={`/events/${event.id}/dashboard`}
-                      data-tour={index === 0 ? 'host-dashboard-event-card' : undefined}
-                      className="block"
-                    >
-                      {coverImage && (
-                        <div className="relative w-full h-32 bg-app-bg overflow-hidden">
-                          <img 
-                            src={coverImage} 
-                            alt={event.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                      <div className="p-6">
-                        <div className="flex items-start gap-3 mb-3">
-                          {profileImage && (
-                            <div className="w-12 h-12 rounded-full overflow-hidden bg-app-bg border-2 border-app-border flex-shrink-0">
-                              <img 
-                                src={profileImage} 
-                                alt={event.title}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <h2 className="text-xl font-semibold mb-1 text-app-fg truncate">
-                              {event.title}
-                            </h2>
-                            <p className="text-xs text-app-muted truncate">
-                              {event.slug}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-sm text-app-muted">
-                          Erstellt: {new Date(event.createdAt).toLocaleDateString('de-DE')}
-                        </div>
-                      </div>
-                    </Link>
-                  </AnimatedCard>
-                );
-              })}
+                    event={event}
+                    index={index}
+                    photoCount={(event as any).photoCount || 0}
+                    guestCount={(event as any).guestCount || 0}
+                    pendingCount={(event as any).pendingCount || 0}
+                  />
+                ))}
+              </AnimatePresence>
             </div>
           )}
-        </div>
+        </main>
+
+        {/* Mobile Bottom Nav */}
+        <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-stone-200 sm:hidden z-50 shadow-lg">
+          <div className="flex items-center justify-around py-3">
+            <Link href="/dashboard" className="flex flex-col items-center gap-1 text-blue-600">
+              <Grid3X3 className="w-5 h-5" />
+              <span className="text-xs font-medium">Events</span>
+            </Link>
+            <Link href="/moderation" className="flex flex-col items-center gap-1 text-stone-400">
+              <ClipboardCheck className="w-5 h-5" />
+              <span className="text-xs">Prüfen</span>
+            </Link>
+            <Link href="/create-event" className="flex flex-col items-center gap-1 text-stone-400">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center -mt-5 shadow-lg border-4 border-white">
+                <Plus className="w-6 h-6 text-white" />
+              </div>
+            </Link>
+            <a href="/faq" className="flex flex-col items-center gap-1 text-stone-400">
+              <HelpCircle className="w-5 h-5" />
+              <span className="text-xs">Hilfe</span>
+            </a>
+            <button onClick={logout} className="flex flex-col items-center gap-1 text-stone-400">
+              <LogOut className="w-5 h-5" />
+              <span className="text-xs">Logout</span>
+            </button>
+          </div>
+        </nav>
       </div>
     </ProtectedRoute>
   );
 }
-

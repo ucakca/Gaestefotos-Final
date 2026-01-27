@@ -299,7 +299,8 @@ export default function ModernPhotoGrid({
     <>
       {allowUploads && (
         <>
-          <div className="fixed left-1/2 -translate-x-1/2 z-50 bottom-[calc(env(safe-area-inset-bottom)+84px)]">
+          {/* Upload Button 1/3 über sticky footer (ca. 80px über Bottom Navigation) */}
+          <div className="fixed left-1/2 -translate-x-1/2 z-40" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 80px)' }}>
             <UploadButton
               eventId={eventId}
               onUploadSuccess={onUploadSuccess}

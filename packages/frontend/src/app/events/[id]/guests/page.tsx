@@ -3,9 +3,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  flexRender,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
+} from '@tanstack/react-table';
 import api from '@/lib/api';
 import { Guest, Event as EventType } from '@gaestefotos/shared';
-import { Trash2, Mail, UserPlus, Upload, FileText } from 'lucide-react';
+import { Trash2, Mail, UserPlus, Upload, FileText, ArrowUpDown, ChevronLeft, ChevronRight, User } from 'lucide-react';
+import GuestStatusBadge, { type GuestStatus } from '@/components/dashboard/GuestStatusBadge';
+import GuestActionMenu from '@/components/dashboard/GuestActionMenu';
+import BulkActionsToolbar from '@/components/dashboard/BulkActionsToolbar';
 import { useToastStore } from '@/store/toastStore';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Button } from '@/components/ui/Button';
@@ -22,6 +36,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 export default function GuestManagementPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -68,6 +90,9 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
   const [showImportForm, setShowImportForm] = useState(false);
   const [importText, setImportText] = useState('');
   const [importing, setImporting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -203,27 +228,98 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const mapStatusToGuestStatus = (status: string): GuestStatus => {
     switch (status) {
       case 'accepted':
-        return 'border border-status-success bg-app-bg text-status-success';
+        return 'ZUSAGE';
       case 'declined':
-        return 'border border-status-danger bg-app-bg text-status-danger';
+        return 'ABSAGE';
+      case 'pending':
+        return 'AUSSTEHEND';
       default:
-        return 'border border-status-warning bg-app-bg text-status-warning';
+        return 'UNBEKANNT';
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'accepted':
-        return 'Zusage';
-      case 'declined':
-        return 'Absage';
-      default:
-        return 'Ausstehend';
-    }
-  };
+  const columns: ColumnDef<Guest>[] = [
+    {
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="hover:bg-transparent p-0 h-auto font-medium"
+        >
+          Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="font-medium text-app-fg">
+          {row.original.firstName} {row.original.lastName}
+        </div>
+      ),
+      accessorFn: (row) => `${row.firstName} ${row.lastName}`,
+    },
+    {
+      accessorKey: 'email',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="hover:bg-transparent p-0 h-auto font-medium"
+        >
+          E-Mail
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="text-sm text-app-muted">{row.original.email || '-'}</div>
+      ),
+    },
+    {
+      accessorKey: 'plusOneCount',
+      header: 'Begleitung',
+      cell: ({ row }) => (
+        <div className="text-sm text-app-muted">
+          {(row.original.plusOneCount || 0) > 0 ? `+${row.original.plusOneCount}` : '-'}
+        </div>
+      ),
+    },
+    {
+      id: 'actions',
+      header: 'Aktionen',
+      cell: ({ row }) => (
+        <GuestActionMenu
+          onDelete={() => handleDelete(row.original.id)}
+          onSendEmail={() => {/* TODO: Implement email */}}
+          onViewDetails={() => {/* TODO: Implement details */}}
+        />
+      ),
+    },
+  ];
+
+  const table = useReactTable({
+    data: guests,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    state: {
+      sorting,
+      columnFilters,
+      globalFilter: searchQuery,
+    },
+    onGlobalFilterChange: setSearchQuery,
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
+  });
 
   if (loading) {
     return <FullPageLoader label="Laden..." />;
@@ -419,73 +515,94 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
           )}
         </AnimatePresence>
 
-        {/* Guests List */}
+        {/* Search */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4"
+        >
+          <Input
+            placeholder="Gäste durchsuchen..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="max-w-sm"
+          />
+        </motion.div>
+
+        {/* Guests Table with TanStack */}
         <div className="bg-app-card border border-app-border rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-app-border">
-            <thead className="bg-app-bg">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">
-                  E-Mail
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">
-                  Begleitung
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">
-                  Aktionen
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-app-card divide-y divide-app-border">
-              <AnimatePresence>
-                {guests.map((guest, index) => (
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} className="bg-app-bg">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row, index) => (
                   <motion.tr
-                    key={guest.id}
+                    key={row.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
                     transition={{ delay: index * 0.05 }}
+                    className="border-b border-app-border"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-app-fg">
-                        {guest.firstName} {guest.lastName}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-app-muted">{guest.email || '-'}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(guest.status || '')}`}>
-                        {getStatusText(guest.status || '')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-app-muted">
-                      {(guest.plusOneCount || 0) > 0 ? `+${guest.plusOneCount}` : '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <IconButton
-                        icon={<Trash2 className="h-5 w-5" />}
-                        variant="ghost"
-                        size="sm"
-                        aria-label="Gast löschen"
-                        title="Gast löschen"
-                        onClick={() => handleDelete(guest.id)}
-                        className="text-status-danger"
-                      />
-                    </td>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
                   </motion.tr>
-                ))}
-              </AnimatePresence>
-            </tbody>
-          </table>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center text-app-muted">
+                    Noch keine Gäste vorhanden.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
 
-          {guests.length === 0 && (
-            <div className="p-6 text-sm text-app-muted">Noch keine Gäste vorhanden.</div>
+          {/* Pagination */}
+          {table.getPageCount() > 1 && (
+            <div className="flex items-center justify-between px-6 py-4 bg-app-bg border-t border-app-border">
+              <div className="text-sm text-app-muted">
+                Seite {table.getState().pagination.pageIndex + 1} von {table.getPageCount()}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Zurück
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  Weiter
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       </div>

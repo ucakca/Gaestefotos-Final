@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import api from '@/lib/api';
@@ -10,6 +10,9 @@ import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { ErrorState } from '@/components/ui/ErrorState';
+import StatCard from '@/components/dashboard/StatCard';
+import ChartCard from '@/components/dashboard/ChartCard';
+import { Image as ImageIcon, Users, CheckCircle, Clock, XCircle, UserCheck, UserX, TrendingUp } from 'lucide-react';
 
 const BarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false });
 const Bar = dynamic(() => import('recharts').then(mod => mod.Bar), { ssr: false });
@@ -23,6 +26,7 @@ const Line = dynamic(() => import('recharts').then(mod => mod.Line), { ssr: fals
 const PieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false });
 const Pie = dynamic(() => import('recharts').then(mod => mod.Pie), { ssr: false });
 const Cell = dynamic(() => import('recharts').then(mod => mod.Cell), { ssr: false });
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
 
 interface Statistics {
   photos: {
@@ -47,14 +51,13 @@ interface Statistics {
   }>;
 }
 
-const STATUS_COLORS = {
-  success: 'var(--app-accent)',
-  warning: 'var(--app-fg)',
-  danger: 'var(--app-muted)',
-  info: 'var(--app-border)',
-} as const;
-
-const COLORS = [STATUS_COLORS.success, 'var(--app-accent)', 'var(--app-bg)', STATUS_COLORS.info];
+const COLORS = {
+  success: '#10b981',
+  warning: '#f59e0b',
+  danger: '#ef4444',
+  info: '#3b82f6',
+  primary: '#6366f1',
+};
 
 export default function StatisticsPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -96,24 +99,31 @@ export default function StatisticsPage({ params }: { params: Promise<{ id: strin
   };
 
   if (loading || !eventId) {
-    return <FullPageLoader label="Lade..." />;
+    return (
+      <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
+        <FullPageLoader label="Lade Statistiken..." />
+      </AppLayout>
+    );
   }
 
   if (!statistics) {
-    return <ErrorState message="Fehler beim Laden der Statistiken" />;
+    return (
+      <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
+        <ErrorState message="Fehler beim Laden der Statistiken" />
+      </AppLayout>
+    );
   }
 
-  // Prepare chart data
   const statusData = [
-    { name: 'Freigegeben', value: statistics.photos.approved, color: STATUS_COLORS.success },
-    { name: 'Ausstehend', value: statistics.photos.pending, color: STATUS_COLORS.warning },
-    { name: 'Abgelehnt', value: statistics.photos.rejected, color: STATUS_COLORS.danger },
+    { name: 'Freigegeben', value: statistics.photos.approved, color: COLORS.success },
+    { name: 'Ausstehend', value: statistics.photos.pending, color: COLORS.warning },
+    { name: 'Abgelehnt', value: statistics.photos.rejected, color: COLORS.danger },
   ];
 
   const guestStatusData = [
-    { name: 'Zugesagt', value: statistics.guests.accepted, color: STATUS_COLORS.success },
-    { name: 'Ausstehend', value: statistics.guests.pending, color: STATUS_COLORS.warning },
-    { name: 'Abgesagt', value: statistics.guests.declined, color: STATUS_COLORS.danger },
+    { name: 'Zugesagt', value: statistics.guests.accepted, color: COLORS.success },
+    { name: 'Ausstehend', value: statistics.guests.pending, color: COLORS.warning },
+    { name: 'Abgesagt', value: statistics.guests.declined, color: COLORS.danger },
   ];
 
   const trendData = Object.entries(statistics.uploadTrends)
@@ -131,174 +141,195 @@ export default function StatisticsPage({ params }: { params: Promise<{ id: strin
 
   return (
     <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
+          className="mb-8"
         >
-          <h1 className="text-2xl font-bold text-app-fg mb-2">
-            Statistiken
-          </h1>
+          <h1 className="text-3xl font-bold text-app-fg mb-2">Statistiken</h1>
           <p className="text-app-muted">{event?.title}</p>
         </motion.div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-app-card border border-app-border rounded-lg shadow p-6"
-          >
-            <h3 className="text-sm font-medium text-app-muted mb-2">Fotos gesamt</h3>
-            <p className="text-3xl font-bold text-app-fg">{statistics.photos.total}</p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
-            className="bg-app-card border border-app-border rounded-lg shadow p-6"
-          >
-            <h3 className="text-sm font-medium text-app-muted mb-2">Freigegeben</h3>
-            <p className="text-3xl font-bold text-status-success">{statistics.photos.approved}</p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="bg-app-card border border-app-border rounded-lg shadow p-6"
-          >
-            <h3 className="text-sm font-medium text-app-muted mb-2">Gäste gesamt</h3>
-            <p className="text-3xl font-bold text-app-fg">{statistics.guests.total}</p>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-            className="bg-app-card border border-app-border rounded-lg shadow p-6"
-          >
-            <h3 className="text-sm font-medium text-app-muted mb-2">Zugesagt</h3>
-            <p className="text-3xl font-bold text-status-success">{statistics.guests.accepted}</p>
-          </motion.div>
+        {/* Photo Stats */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-app-fg mb-4">📸 Foto-Statistiken</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              icon={ImageIcon}
+              label="Fotos gesamt"
+              value={statistics.photos.total}
+              iconColor="primary"
+            />
+            <StatCard
+              icon={CheckCircle}
+              label="Freigegeben"
+              value={statistics.photos.approved}
+              iconColor="success"
+            />
+            <StatCard
+              icon={Clock}
+              label="Ausstehend"
+              value={statistics.photos.pending}
+              iconColor="warning"
+            />
+            <StatCard
+              icon={XCircle}
+              label="Abgelehnt"
+              value={statistics.photos.rejected}
+              iconColor="danger"
+            />
+          </div>
+        </div>
+
+        {/* Guest Stats */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-app-fg mb-4">👥 Gäste-Statistiken</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              icon={Users}
+              label="Gäste gesamt"
+              value={statistics.guests.total}
+              iconColor="primary"
+            />
+            <StatCard
+              icon={UserCheck}
+              label="Zugesagt"
+              value={statistics.guests.accepted}
+              iconColor="success"
+            />
+            <StatCard
+              icon={Clock}
+              label="Ausstehend"
+              value={statistics.guests.pending}
+              iconColor="warning"
+            />
+            <StatCard
+              icon={UserX}
+              label="Abgesagt"
+              value={statistics.guests.declined}
+              iconColor="danger"
+            />
+          </div>
         </div>
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Photo Status Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-app-card border border-app-border rounded-lg shadow p-6"
-          >
-            <h2 className="text-xl font-semibold mb-4 text-app-fg">Foto-Status</h2>
-            <PieChart width={400} height={300}>
-              <Pie
-                data={statusData}
-                cx={200}
-                cy={150}
-                labelLine={false}
-                label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
-                outerRadius={80}
-                fill={COLORS[3]}
-                dataKey="value"
-              >
-                {statusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </motion.div>
-
-          {/* Guest Status Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-app-card border border-app-border rounded-lg shadow p-6"
-          >
-            <h2 className="text-xl font-semibold mb-4 text-app-fg">Gäste-Status</h2>
-            <PieChart width={400} height={300}>
-              <Pie
-                data={guestStatusData}
-                cx={200}
-                cy={150}
-                labelLine={false}
-                label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
-                outerRadius={80}
-                fill={COLORS[3]}
-                dataKey="value"
-              >
-                {guestStatusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </motion.div>
-
-          {/* Upload Trends */}
-          {trendData.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-app-card border border-app-border rounded-lg shadow p-6 lg:col-span-2"
-            >
-              <h2 className="text-xl font-semibold mb-4 text-app-fg">Upload-Trends (letzte 7 Tage)</h2>
-              <LineChart width={800} height={300} data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
+          {/* Photo Status Pie Chart */}
+          <ChartCard title="Foto-Status Verteilung" subtitle="Aktuelle Moderation">
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={statusData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill={COLORS.info}
+                  dataKey="value"
+                >
+                  {statusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
                 <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="Freigegeben" stroke={STATUS_COLORS.success} />
-                <Line type="monotone" dataKey="Ausstehend" stroke={STATUS_COLORS.warning} />
-              </LineChart>
-            </motion.div>
-          )}
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartCard>
 
-          {/* Categories */}
-          {categoryData.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-app-card border border-app-border rounded-lg shadow p-6 lg:col-span-2"
-            >
-              <h2 className="text-xl font-semibold mb-4 text-app-fg">Fotos nach Kategorie</h2>
-              <BarChart width={800} height={300} data={categoryData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
+          {/* Guest Status Pie Chart */}
+          <ChartCard title="Gäste-Status Verteilung" subtitle="Zusagen & Absagen">
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={guestStatusData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill={COLORS.info}
+                  dataKey="value"
+                >
+                  {guestStatusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
                 <Tooltip />
-                <Bar dataKey="Fotos" fill={STATUS_COLORS.success} />
-              </BarChart>
-            </motion.div>
-          )}
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartCard>
         </div>
+
+        {/* Upload Trends Line Chart */}
+        {trendData.length > 0 && (
+          <div className="mb-8">
+            <ChartCard 
+              title="Upload-Trends" 
+              subtitle="Letzte 7 Tage"
+            >
+              <ResponsiveContainer width="100%" height={350}>
+                <LineChart data={trendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="date" stroke="#6b7280" />
+                  <YAxis stroke="#6b7280" />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'var(--app-card)',
+                      border: '1px solid var(--app-border)',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="Freigegeben" 
+                    stroke={COLORS.success} 
+                    strokeWidth={2}
+                    dot={{ fill: COLORS.success, r: 4 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="Ausstehend" 
+                    stroke={COLORS.warning} 
+                    strokeWidth={2}
+                    dot={{ fill: COLORS.warning, r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+        )}
+
+        {/* Categories Bar Chart */}
+        {categoryData.length > 0 && (
+          <div className="mb-8">
+            <ChartCard 
+              title="Fotos nach Kategorie" 
+              subtitle="Verteilung auf Alben"
+            >
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={categoryData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="name" stroke="#6b7280" />
+                  <YAxis stroke="#6b7280" />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: 'var(--app-card)',
+                      border: '1px solid var(--app-border)',
+                      borderRadius: '8px',
+                    }}
+                  />
+                  <Bar dataKey="Fotos" fill={COLORS.primary} radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
+        )}
       </div>
 
-      {/* Sticky Footer Navigation */}
       <DashboardFooter eventId={eventId!} />
-      
-      {/* Padding for footer */}
-      <div className="h-20" />
     </AppLayout>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

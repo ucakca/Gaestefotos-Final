@@ -165,10 +165,15 @@ export default function Sidebar({
 
   return (
     <div className={cn('flex min-h-0 w-64 flex-col bg-app-card text-app-fg', className)}>
-      <div className="flex h-16 items-center justify-center border-b border-app-border">
-        <h1 className="text-xl font-bold">Admin Dashboard</h1>
+      <div className="flex h-16 items-center justify-center border-b border-app-border/50 bg-gradient-to-r from-app-accent/5 to-transparent">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-app-accent/10 flex items-center justify-center">
+            <LayoutDashboard className="w-4 h-4 text-app-accent" />
+          </div>
+          <h1 className="text-lg font-bold">Admin</h1>
+        </div>
       </div>
-      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-2 py-4">
+      <nav className="min-h-0 flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
         {navigation.map((item) => {
           const isActive = pathname === item.href;
           const help = helpByHref[item.href] || { title: item.name, body: `Keine Hilfe hinterlegt für: ${item.href}` };
@@ -178,14 +183,14 @@ export default function Sidebar({
                 asChild
                 variant="ghost"
                 className={cn(
-                  'w-full justify-start px-3 py-2 text-sm font-medium transition-colors',
+                  'w-full justify-start px-3 py-2.5 text-sm font-medium transition-all rounded-xl',
                   isActive
-                    ? 'bg-app-accent text-app-bg hover:opacity-90'
-                    : 'text-app-muted hover:bg-app-bg hover:text-app-fg'
+                    ? 'bg-app-accent text-app-bg hover:opacity-90 shadow-sm'
+                    : 'text-app-muted hover:bg-app-accent/10 hover:text-app-fg'
                 )}
               >
-                <Link href={item.href} onClick={() => onNavigate?.()} className="flex items-center gap-2">
-                  <item.icon className="h-5 w-5" />
+                <Link href={item.href} onClick={() => onNavigate?.()} className="flex items-center gap-3">
+                  <item.icon className={cn('h-4 w-4', isActive ? '' : 'opacity-70')} />
                   <span>{item.name}</span>
                 </Link>
               </Button>
@@ -218,31 +223,34 @@ export default function Sidebar({
           );
         })}
       </nav>
-      <div className="border-t border-app-border p-4">
+      <div className="border-t border-app-border/50 p-3 space-y-3">
         {admin && (
-          <div className="mb-2 px-3 py-2 text-xs text-app-muted">
-            <p className="font-medium text-app-fg">{admin.name}</p>
-            <p className="text-app-muted">{admin.email}</p>
+          <div className="rounded-xl bg-app-bg/50 p-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-app-accent/10 flex items-center justify-center">
+                <Users className="w-4 h-4 text-app-accent" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-sm text-app-fg truncate">{admin.name}</p>
+                <p className="text-xs text-app-muted truncate">{admin.email}</p>
+              </div>
+            </div>
           </div>
         )}
 
-        <div className="mb-2 px-3 py-2 text-[11px] text-app-muted">
+        <div className="rounded-xl bg-app-bg/50 p-3 text-[11px] space-y-1.5">
           <div className="flex items-center justify-between gap-2">
             <span className="text-app-muted">Build</span>
-            <span className="truncate text-app-fg">{buildSha ? buildSha.slice(0, 8) : '—'}</span>
+            <span className="truncate text-app-fg font-mono">{buildSha ? buildSha.slice(0, 8) : '—'}</span>
           </div>
           <div className="flex items-center justify-between gap-2">
             <span className="text-app-muted">Zeit</span>
             <span className="truncate text-app-fg">
-              {buildTime ? new Date(buildTime).toLocaleString() : '—'}
+              {buildTime ? new Date(buildTime).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : '—'}
             </span>
           </div>
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-app-muted">Origin</span>
-            <span className="truncate text-app-fg">{origin || '—'}</span>
-          </div>
-
-          <Button onClick={handleReload} variant="outline" size="sm" className="mt-2 h-8 w-full">
+          <Button onClick={handleReload} variant="outline" size="sm" className="mt-2 h-8 w-full rounded-lg text-xs">
+            <RefreshCw className="w-3 h-3 mr-1.5" />
             Neu laden (Cache)
           </Button>
         </div>
@@ -250,9 +258,9 @@ export default function Sidebar({
         <Button
           onClick={handleLogout}
           variant="ghost"
-          className="w-full justify-start px-3 py-2 text-sm font-medium text-app-muted hover:bg-app-bg hover:text-app-fg"
+          className="w-full justify-start px-3 py-2.5 text-sm font-medium text-app-muted hover:bg-red-500/10 hover:text-red-500 rounded-xl transition-all"
         >
-          <LogOut className="h-5 w-5" />
+          <LogOut className="h-4 w-4 mr-2" />
           <span>Abmelden</span>
         </Button>
       </div>

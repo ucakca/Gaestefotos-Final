@@ -869,6 +869,7 @@ router.get('/slug/:slug', async (req: AuthRequest, res: Response) => {
           select: {
             photos: true,
             guests: true,
+            videos: true,
           },
         },
       },
@@ -884,13 +885,27 @@ router.get('/slug/:slug', async (req: AuthRequest, res: Response) => {
       await trackEventTrafficBySource(event.id, parsedSource.data.toLowerCase());
     }
 
+    // Increment visit count (fire and forget)
+    prisma.event.update({
+      where: { id: event.id },
+      data: { visitCount: { increment: 1 } },
+    }).catch(() => {});
+
     const storageEndsAt = await getEventStorageEndsAt(event.id);
     const isStorageLocked = storageEndsAt ? Date.now() > storageEndsAt.getTime() : false;
     const effectivePackage = await getEffectiveEventPackage(event.id);
 
     // Issue access cookie for guests so follow-up public endpoints work in a fresh browser.
     issueEventAccessCookie(res, event.id);
-    res.json({ event: { ...event, storageEndsAt, isStorageLocked, effectivePackage } });
+    res.json({ 
+      event: { 
+        ...event, 
+        storageEndsAt, 
+        isStorageLocked, 
+        effectivePackage,
+        visitCount: (event as any).visitCount || 0,
+      } 
+    });
   } catch (error) {
     logger.error('Get event by slug error', { message: (error as any)?.message || String(error), slug: req.params.slug });
     res.status(500).json({ error: 'Internal server error' });

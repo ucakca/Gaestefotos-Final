@@ -1,0 +1,390 @@
+import { createObjectCsvStringifier } from 'csv-writer';
+// @ts-ignore - pdfkit has no type declarations
+import PDFDocument from 'pdfkit';
+import { Readable } from 'stream';
+import prisma from '../config/database';
+import { logger } from '../utils/logger';
+
+export interface EventAnalytics {
+  eventId: string;
+  eventTitle: string;
+  eventDate: Date | null;
+  totalPhotos: number;
+  totalVideos: number;
+  totalGuests: number;
+  totalUploads: number;
+  totalDownloads: number;
+  totalViews: number;
+  storageUsedMB: number;
+  uploadsByDay: Array<{ date: string; count: number }>;
+  topUploaders: Array<{ name: string; uploadCount: number }>;
+  categoryBreakdown: Array<{ category: string; photoCount: number }>;
+}
+
+/**
+ * Fetch comprehensive analytics for an event
+ */
+export async function fetchEventAnalytics(eventId: string): Promise<EventAnalytics | null> {
+  try {
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: {
+        id: true,
+        title: true,
+        dateTime: true,
+        deletedAt: true,
+      },
+    });
+
+    if (!event || event.deletedAt) {
+      return null;
+    }
+
+    // Total photos & videos
+    const totalPhotos = await prisma.photo.count({
+      where: { eventId, status: 'APPROVED' },
+    });
+
+    const totalVideos = await prisma.video.count({
+      where: { eventId, status: 'APPROVED' },
+    });
+
+    // Total guests
+    const totalGuests = await prisma.guest.count({
+      where: { eventId },
+    });
+
+    // Storage used
+    const storageStats = await prisma.photo.aggregate({
+      where: { eventId },
+      _sum: { sizeBytes: true },
+    });
+
+    const videoStorageStats = await prisma.video.aggregate({
+      where: { eventId },
+      _sum: { sizeBytes: true },
+    });
+
+    const totalStorageBytes = Number(storageStats._sum?.sizeBytes || 0) + Number(videoStorageStats._sum?.sizeBytes || 0);
+    const storageUsedMB = totalStorageBytes / (1024 * 1024);
+
+    // Uploads by day
+    const photos = await prisma.photo.findMany({
+      where: { eventId },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const uploadsByDay = photos.reduce((acc, photo) => {
+      const date = new Date(photo.createdAt).toISOString().split('T')[0];
+      const existing = acc.find((item) => item.date === date);
+      if (existing) {
+        existing.count++;
+      } else {
+        acc.push({ date, count: 1 });
+      }
+      return acc;
+    }, [] as Array<{ date: string; count: number }>);
+
+    // Top uploaders
+    const uploaderStats = await prisma.photo.groupBy({
+      by: ['uploadedBy'],
+      where: { eventId, uploadedBy: { not: null } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 10,
+    });
+
+    const topUploaders = uploaderStats.map((stat) => ({
+      name: stat.uploadedBy || 'Unbekannt',
+      uploadCount: stat._count.id,
+    }));
+
+    // Category breakdown
+    const categoryStats = await prisma.category.findMany({
+      where: { eventId },
+      include: {
+        _count: {
+          select: { photos: true },
+        },
+      },
+      orderBy: { order: 'asc' },
+    });
+
+    const categoryBreakdown = categoryStats.map((cat) => ({
+      category: cat.name,
+      photoCount: cat._count?.photos || 0,
+    }));
+
+    return {
+      eventId: event.id,
+      eventTitle: event.title,
+      eventDate: event.dateTime,
+      totalPhotos,
+      totalVideos,
+      totalGuests,
+      totalUploads: totalPhotos + totalVideos,
+      totalDownloads: 0, // Would need download tracking
+      totalViews: 0, // Would need view tracking
+      storageUsedMB: Math.round(storageUsedMB * 100) / 100,
+      uploadsByDay,
+      topUploaders,
+      categoryBreakdown,
+    };
+  } catch (error) {
+    logger.error('[analyticsExport] Failed to fetch analytics', {
+      error: (error as Error).message,
+      eventId,
+    });
+    return null;
+  }
+}
+
+/**
+ * Export analytics as CSV
+ */
+export async function exportAnalyticsCSV(eventId: string): Promise<string> {
+  const analytics = await fetchEventAnalytics(eventId);
+  
+  if (!analytics) {
+    throw new Error('Analytics nicht verfügbar');
+  }
+
+  // Summary section
+  const summaryData = [
+    { key: 'Event', value: analytics.eventTitle },
+    { key: 'Datum', value: analytics.eventDate?.toLocaleDateString('de-DE') || 'N/A' },
+    { key: 'Gesamt Fotos', value: analytics.totalPhotos },
+    { key: 'Gesamt Videos', value: analytics.totalVideos },
+    { key: 'Gesamt Gäste', value: analytics.totalGuests },
+    { key: 'Speicher (MB)', value: analytics.storageUsedMB },
+    { key: '', value: '' }, // Empty row
+  ];
+
+  const summaryStringifier = createObjectCsvStringifier({
+    header: [
+      { id: 'key', title: 'Kategorie' },
+      { id: 'value', title: 'Wert' },
+    ],
+  });
+
+  let csv: string = summaryStringifier.getHeaderString() || '';
+  csv += summaryStringifier.stringifyRecords(summaryData);
+
+  // Uploads by day section
+  csv += '\n\nUploads pro Tag\n';
+  const uploadsStringifier = createObjectCsvStringifier({
+    header: [
+      { id: 'date', title: 'Datum' },
+      { id: 'count', title: 'Anzahl' },
+    ],
+  });
+
+  csv += uploadsStringifier.getHeaderString();
+  csv += uploadsStringifier.stringifyRecords(analytics.uploadsByDay);
+
+  // Top uploaders section
+  csv += '\n\nTop Uploader\n';
+  const uploadersStringifier = createObjectCsvStringifier({
+    header: [
+      { id: 'name', title: 'Name' },
+      { id: 'uploadCount', title: 'Uploads' },
+    ],
+  });
+
+  csv += uploadersStringifier.getHeaderString();
+  csv += uploadersStringifier.stringifyRecords(analytics.topUploaders);
+
+  // Category breakdown section
+  if (analytics.categoryBreakdown.length > 0) {
+    csv += '\n\nKategorien\n';
+    const categoriesStringifier = createObjectCsvStringifier({
+      header: [
+        { id: 'category', title: 'Kategorie' },
+        { id: 'photoCount', title: 'Fotos' },
+      ],
+    });
+
+    csv += categoriesStringifier.getHeaderString();
+    csv += categoriesStringifier.stringifyRecords(analytics.categoryBreakdown);
+  }
+
+  return csv;
+}
+
+/**
+ * Export analytics as PDF (stream)
+ */
+export async function exportAnalyticsPDF(eventId: string): Promise<Readable> {
+  const analytics = await fetchEventAnalytics(eventId);
+  
+  if (!analytics) {
+    throw new Error('Analytics nicht verfügbar');
+  }
+
+  const doc = new PDFDocument({
+    size: 'A4',
+    margin: 50,
+  });
+
+  // Title
+  doc
+    .fontSize(24)
+    .font('Helvetica-Bold')
+    .text('Event Analytics', { align: 'center' });
+
+  doc.moveDown();
+
+  // Event info
+  doc
+    .fontSize(16)
+    .font('Helvetica-Bold')
+    .text(analytics.eventTitle, { align: 'center' });
+
+  if (analytics.eventDate) {
+    doc
+      .fontSize(12)
+      .font('Helvetica')
+      .text(analytics.eventDate.toLocaleDateString('de-DE'), { align: 'center' });
+  }
+
+  doc.moveDown(2);
+
+  // Summary statistics
+  doc
+    .fontSize(14)
+    .font('Helvetica-Bold')
+    .text('Übersicht');
+
+  doc.moveDown(0.5);
+
+  const summaryStats = [
+    { label: 'Gesamt Fotos:', value: analytics.totalPhotos },
+    { label: 'Gesamt Videos:', value: analytics.totalVideos },
+    { label: 'Gesamt Uploads:', value: analytics.totalUploads },
+    { label: 'Gesamt Gäste:', value: analytics.totalGuests },
+    { label: 'Speicherverbrauch:', value: `${analytics.storageUsedMB} MB` },
+  ];
+
+  summaryStats.forEach((stat) => {
+    doc
+      .fontSize(11)
+      .font('Helvetica-Bold')
+      .text(stat.label, 50, doc.y, { continued: true, width: 200 })
+      .font('Helvetica')
+      .text(String(stat.value));
+  });
+
+  doc.moveDown(2);
+
+  // Uploads by day chart (simple table)
+  if (analytics.uploadsByDay.length > 0) {
+    doc
+      .fontSize(14)
+      .font('Helvetica-Bold')
+      .text('Uploads pro Tag');
+
+    doc.moveDown(0.5);
+
+    const maxUploadsToShow = 15;
+    analytics.uploadsByDay.slice(0, maxUploadsToShow).forEach((day) => {
+      doc
+        .fontSize(10)
+        .font('Helvetica')
+        .text(`${day.date}: ${day.count} Uploads`);
+    });
+
+    if (analytics.uploadsByDay.length > maxUploadsToShow) {
+      doc
+        .fontSize(10)
+        .font('Helvetica-Oblique')
+        .text(`... und ${analytics.uploadsByDay.length - maxUploadsToShow} weitere Tage`);
+    }
+
+    doc.moveDown(2);
+  }
+
+  // Top uploaders
+  if (analytics.topUploaders.length > 0) {
+    doc
+      .fontSize(14)
+      .font('Helvetica-Bold')
+      .text('Top Uploader');
+
+    doc.moveDown(0.5);
+
+    analytics.topUploaders.forEach((uploader, index) => {
+      doc
+        .fontSize(10)
+        .font('Helvetica')
+        .text(`${index + 1}. ${uploader.name}: ${uploader.uploadCount} Uploads`);
+    });
+
+    doc.moveDown(2);
+  }
+
+  // Category breakdown
+  if (analytics.categoryBreakdown.length > 0) {
+    doc
+      .fontSize(14)
+      .font('Helvetica-Bold')
+      .text('Kategorien');
+
+    doc.moveDown(0.5);
+
+    analytics.categoryBreakdown.forEach((cat) => {
+      doc
+        .fontSize(10)
+        .font('Helvetica')
+        .text(`${cat.category}: ${cat.photoCount} Fotos`);
+    });
+  }
+
+  // Footer
+  doc.moveDown(3);
+  doc
+    .fontSize(8)
+    .font('Helvetica-Oblique')
+    .text(`Erstellt am ${new Date().toLocaleDateString('de-DE')}`, { align: 'center' });
+
+  doc.end();
+
+  return doc;
+}
+
+/**
+ * Schedule recurring analytics reports via email
+ */
+export async function scheduleAnalyticsReport(
+  eventId: string,
+  recipientEmail: string,
+  frequency: 'daily' | 'weekly' | 'monthly'
+): Promise<boolean> {
+  try {
+    // This would integrate with a job scheduler (e.g., Bull, Agenda)
+    // For now, just log the intent
+    logger.info('[analyticsExport] Analytics report scheduled', {
+      eventId,
+      recipientEmail,
+      frequency,
+    });
+
+    // TODO: Create scheduled job in job queue
+    // await jobQueue.add('analytics-report', {
+    //   eventId,
+    //   recipientEmail,
+    //   frequency,
+    // }, {
+    //   repeat: { cron: getCronExpression(frequency) }
+    // });
+
+    return true;
+  } catch (error) {
+    logger.error('[analyticsExport] Failed to schedule report', {
+      error: (error as Error).message,
+      eventId,
+      recipientEmail,
+    });
+    return false;
+  }
+}

@@ -150,17 +150,35 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
             lastName: true,
           },
         },
+        challengeCompletions: {
+          select: {
+            challengeId: true,
+            challenge: {
+              select: {
+                id: true,
+                title: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
 
-    // Always serve via backend proxy URL to avoid mixed content (presigned SeaweedFS URLs may be http://)
-    const photosWithProxyUrls = photos.map((photo: any) => ({
-      ...photo,
-      url: photo.id ? `/api/photos/${photo.id}/file` : photo.url,
-    }));
+    // Use direct URL if it's an external URL (e.g. Unsplash), otherwise proxy via backend
+    // Also flatten challenge info for easier frontend consumption
+    const photosWithProxyUrls = photos.map((photo: any) => {
+      const challengeCompletion = photo.challengeCompletions;
+      return {
+        ...photo,
+        url: photo.url?.startsWith('http') ? photo.url : (photo.id ? `/api/photos/${photo.id}/file` : photo.url),
+        challengeId: challengeCompletion?.challengeId || null,
+        challengeTitle: challengeCompletion?.challenge?.title || null,
+        challengeCompletions: undefined, // Remove nested object
+      };
+    });
 
     res.json({ photos: serializeBigInt(photosWithProxyUrls) });
   } catch (error: any) {
@@ -203,6 +221,9 @@ router.post(
 
       const rawCategoryId = typeof (req as any).body?.categoryId === 'string' ? String((req as any).body.categoryId) : '';
       const categoryId = rawCategoryId.trim() || null;
+      
+      const rawChallengeId = typeof (req as any).body?.challengeId === 'string' ? String((req as any).body.challengeId) : '';
+      const challengeId = rawChallengeId.trim() || null;
 
       // Process image
       const processed = await imageProcessor.processImage(file.buffer);
@@ -267,12 +288,35 @@ router.post(
       const photoWithProxyUrl = {
         ...photo,
         url: `/api/photos/${photo.id}/file`,
+        challengeId: null as string | null,
+        challengeTitle: null as string | null,
       };
 
       await prisma.photo.update({
         where: { id: photo.id },
         data: { url: photoWithProxyUrl.url },
       });
+
+      // Create ChallengeCompletion if challengeId was provided
+      if (challengeId) {
+        const challenge = await prisma.challenge.findFirst({
+          where: { id: challengeId, eventId, isActive: true },
+          select: { id: true, title: true },
+        });
+        
+        if (challenge) {
+          const uploaderName = (req.body?.uploaderName || 'Ein Gast').trim();
+          await prisma.challengeCompletion.create({
+            data: {
+              challengeId: challenge.id,
+              photoId: photo.id,
+              uploaderName,
+            },
+          });
+          photoWithProxyUrl.challengeId = challenge.id;
+          photoWithProxyUrl.challengeTitle = challenge.title;
+        }
+      }
 
       // Emit WebSocket event
       io.to(`event:${eventId}`).emit('photo_uploaded', {

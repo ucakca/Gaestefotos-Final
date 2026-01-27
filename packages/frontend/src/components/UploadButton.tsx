@@ -624,7 +624,7 @@ export default function UploadButton({
           setPendingFiles([]);
         }}
       >
-        <DialogContent className="max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bottom-4 top-auto left-1/2 -translate-x-1/2 translate-y-0 w-[calc(100vw-2rem)] max-w-md rounded-2xl bg-app-card border border-app-border p-6 shadow-xl max-h-[85vh] overflow-y-auto">
           <Input
             ref={capturePhotoInputRef}
             type="file"

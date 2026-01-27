@@ -218,7 +218,7 @@ export default function EventHeader({
 
   if (variant === 'hero') {
     return (
-      <div className="relative">
+      <div className="relative" key={`hero-${event.id}-v3`}>
         <div className="relative overflow-hidden">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -251,17 +251,16 @@ export default function EventHeader({
 
             <div className="pt-safe-top" />
 
-            <div className="relative px-4 pt-4 pb-24">
+            <div className="relative px-4 pt-4" style={{ minHeight: '50vh', paddingBottom: '6rem' }}>
               <div className="flex items-center justify-between gap-3">
                 {logoUrl ? (
-                  <img src={logoUrl} alt={appName} className="h-7 max-w-[160px] object-contain" />
+                  <img src={logoUrl} alt={appName} className="h-7 max-w-[160px] object-contain drop-shadow-lg" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))' }} />
                 ) : (
-                  <div className="text-app-bg/90 text-xs font-semibold tracking-wide">{appName}</div>
+                  <div className="text-white text-xs font-semibold tracking-wide" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.8)' }}>{appName}</div>
                 )}
 
                 <div className="text-right text-app-bg/90">
-                  <div className="text-xs font-semibold truncate">{event.title}</div>
-                  <div className="text-[11px] text-app-bg/75 truncate">{hostName ? `von ${hostName}` : 'von Gastgeber'}</div>
+                  {/* Event-Titel entfernt - wird nur in Sprechblase angezeigt */}
                 </div>
               </div>
             </div>
@@ -271,81 +270,93 @@ export default function EventHeader({
         </div>
 
         <div className="bg-app-bg">
-          <div className="max-w-md mx-auto px-4 -mt-16 relative">
-            <div className="flex flex-col items-center">
-              <Button
-                type="button"
-                onClick={onProfileClick}
-                disabled={!onProfileClick}
-                variant="ghost"
-                size="sm"
-                className="relative p-0 h-auto w-auto"
-              >
-                <div className="relative w-28 h-28">
-                  {hasStories ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ repeat: Infinity, duration: 6, ease: 'linear' }}
-                      className="absolute inset-0 rounded-full p-[3px]"
-                      style={storyRingStyle}
-                    />
-                  ) : (
-                    <div className="absolute inset-0 rounded-full p-[3px]" style={storyRingStyle} />
-                  )}
-                  <div className="absolute inset-[3px] rounded-full bg-app-bg overflow-hidden flex items-center justify-center">
-                    {profileImage ? (
-                      <img src={profileImage} alt={event.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-app-bg flex items-center justify-center">
-                        <User className="w-10 h-10 text-app-muted" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Button>
-
-              <div className="mt-3 flex items-center gap-2">
+          <div className="max-w-md mx-auto px-4 -mt-20 relative">
+            <div className="flex items-start gap-4">
+              {/* Profilbild links */}
+              <div className="flex flex-col items-center flex-shrink-0 relative">
                 <Button
                   type="button"
-                  onClick={openStoryModal}
-                  variant="secondary"
+                  onClick={onProfileClick}
+                  disabled={!onProfileClick}
+                  variant="ghost"
                   size="sm"
-                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-sm text-sm font-semibold h-auto"
+                  className="relative p-0 h-auto w-auto"
                 >
-                  <Plus className="w-4 h-4" />
-                  Story
+                  <div className="relative w-32 h-32">
+                    {hasStories ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 6, ease: 'linear' }}
+                        className="absolute inset-0 rounded-full p-[3px]"
+                        style={storyRingStyle}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 rounded-full p-[3px]" style={storyRingStyle} />
+                    )}
+                    <div className="absolute inset-[3px] rounded-full bg-app-bg overflow-hidden flex items-center justify-center">
+                      {profileImage ? (
+                        <img src={profileImage} alt={event.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-app-bg flex items-center justify-center">
+                          <User className="w-10 h-10 text-app-muted" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </Button>
+
+                {/* + Story Button - Instagram-Style, direkt am Profilbild (weiter oben) */}
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
+                  <Button
+                    type="button"
+                    onClick={openStoryModal}
+                    variant="secondary"
+                    size="sm"
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-lg text-sm font-semibold h-auto border-2 border-app-bg"
+                    style={{ backgroundColor: headerColor || '#ef4444', color: '#ffffff', borderColor: 'var(--app-bg)' }}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Story
+                  </Button>
+                </div>
+
+                {!hasStories && (
+                  <div className="mt-10 text-xs text-app-muted text-center">Sei der Erste</div>
+                )}
               </div>
 
-              {!hasStories && (
-                <div className="mt-2 text-xs text-app-muted">Sei der Erste</div>
-              )}
-
-              <div className="mt-4 w-full rounded-2xl border border-app-border bg-app-card shadow-sm px-4 py-4">
-                <div className="text-base font-semibold text-app-fg leading-snug">{event.title}</div>
-
+              {/* Willkommensnachricht rechts vom Profilbild */}
+              <div className="flex-1 pt-2">
                 {((event as any)?.profileDescription || welcomeMessage) && (
-                  <div className="mt-2 text-sm text-app-fg leading-relaxed">
+                  <div className="text-sm text-app-fg leading-relaxed">
                     {(event as any)?.profileDescription || welcomeMessage}
                   </div>
                 )}
-
-                {(event.locationName || (event as any).locationGoogleMapsLink || event.dateTime) && (
-                  <div className="mt-3 text-xs text-app-muted">
-                    {event.dateTime ? new Date(event.dateTime as any).toLocaleDateString('de-DE') : null}
-                    {event.locationName ? ` · ${event.locationName}` : null}
-                  </div>
-                )}
-
-                {isStorageLocked && (
-                  <div className="mt-4 rounded-2xl bg-app-bg border border-app-border px-4 py-3">
-                    <p className="text-app-fg text-sm font-semibold">Speicherzeit abgelaufen</p>
-                    <p className="text-app-muted text-xs mt-0.5">
-                      Fotos sind als Vorschau weiterhin sichtbar, aber unscharf.
-                    </p>
-                  </div>
-                )}
               </div>
+            </div>
+
+            {/* Sprechblase (Event-Info-Karte) unter Profilbild - nur Event-Info, kein Titel */}
+            <div className="mt-20 w-full rounded-2xl border border-app-border bg-app-card shadow-lg px-4 py-4">
+              <div className="text-base font-semibold text-app-fg leading-snug">{event.title}</div>
+              {hostName && (
+                <div className="text-xs text-app-muted mt-1">von {hostName}</div>
+              )}
+
+              {(event.locationName || (event as any).locationGoogleMapsLink || event.dateTime) && (
+                <div className="mt-3 text-xs text-app-muted">
+                  {event.dateTime ? new Date(event.dateTime as any).toLocaleDateString('de-DE') : null}
+                  {event.locationName ? ` · ${event.locationName}` : null}
+                </div>
+              )}
+
+              {isStorageLocked && (
+                <div className="mt-4 rounded-2xl bg-app-bg border border-app-border px-4 py-3">
+                  <p className="text-app-fg text-sm font-semibold">Speicherzeit abgelaufen</p>
+                  <p className="text-app-muted text-xs mt-0.5">
+                    Fotos sind als Vorschau weiterhin sichtbar, aber unscharf.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,0 +1,130 @@
+import { Router, Response } from 'express';
+import { authMiddleware, AuthRequest, hasEventManageAccess } from '../middleware/auth';
+import { exportAnalyticsCSV, exportAnalyticsPDF, fetchEventAnalytics } from '../services/analyticsExport';
+import { logger } from '../utils/logger';
+import prisma from '../config/database';
+
+const router = Router();
+
+/**
+ * GET /events/:eventId/analytics
+ * Fetch analytics data as JSON
+ */
+router.get('/:eventId/analytics', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+
+    // Check if user has access to event
+    const event = await prisma.event.findFirst({
+      where: { 
+        id: eventId,
+        OR: [
+          { hostId: req.userId },
+          { members: { some: { userId: req.userId } } }
+        ]
+      }
+    });
+    
+    if (!event) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    const analytics = await fetchEventAnalytics(eventId);
+
+    if (!analytics) {
+      return res.status(404).json({ error: 'Analytics nicht verfügbar' });
+    }
+
+    res.json(analytics);
+  } catch (error) {
+    logger.error('[analytics] Fetch analytics error', {
+      error: (error as Error).message,
+      eventId: req.params.eventId,
+    });
+    res.status(500).json({ error: 'Fehler beim Laden der Analytics' });
+  }
+});
+
+/**
+ * GET /events/:eventId/analytics/export/csv
+ * Export analytics as CSV file
+ */
+router.get('/:eventId/analytics/export/csv', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+
+    // Check if user has access to event
+    const event = await prisma.event.findFirst({
+      where: { 
+        id: eventId,
+        OR: [
+          { hostId: req.userId },
+          { members: { some: { userId: req.userId } } }
+        ]
+      }
+    });
+    
+    if (!event) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    const csv = await exportAnalyticsCSV(eventId);
+
+    const filename = `analytics-${eventId}-${Date.now()}.csv`;
+    
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send('\uFEFF' + csv); // UTF-8 BOM for Excel compatibility
+  } catch (error) {
+    logger.error('[analytics] CSV export error', {
+      error: (error as Error).message,
+      eventId: req.params.eventId,
+    });
+    res.status(500).json({ error: 'Fehler beim Exportieren der Analytics' });
+  }
+});
+
+/**
+ * GET /events/:eventId/analytics/export/pdf
+ * Export analytics as PDF file
+ */
+router.get('/:eventId/analytics/export/pdf', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+
+    // Check if user has access to event
+    const event = await prisma.event.findFirst({
+      where: { 
+        id: eventId,
+        OR: [
+          { hostId: req.userId },
+          { members: { some: { userId: req.userId } } }
+        ]
+      }
+    });
+    
+    if (!event) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    const pdfStream = await exportAnalyticsPDF(eventId);
+
+    const filename = `analytics-${eventId}-${Date.now()}.pdf`;
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    
+    pdfStream.pipe(res);
+  } catch (error) {
+    logger.error('[analytics] PDF export error', {
+      error: (error as Error).message,
+      eventId: req.params.eventId,
+    });
+    
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Fehler beim Exportieren der Analytics' });
+    }
+  }
+});
+
+export default router;

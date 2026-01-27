@@ -1,0 +1,239 @@
+/**
+ * Guest Groups Routes
+ * 
+ * API endpoints für Gästegruppen-Verwaltung
+ */
+
+import express from 'express';
+import { authMiddleware } from '../middleware/auth';
+import * as guestGroupService from '../services/guestGroups';
+import { logger } from '../utils/logger';
+import { z } from 'zod';
+
+const router = express.Router();
+
+// Validation schemas
+const createGroupSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+});
+
+const updateGroupSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().max(500).nullable().optional(),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  order: z.number().int().min(0).optional(),
+});
+
+const assignGuestSchema = z.object({
+  groupId: z.string().uuid().nullable(),
+});
+
+const bulkAssignSchema = z.object({
+  guestIds: z.array(z.string().uuid()).min(1),
+  groupId: z.string().uuid().nullable(),
+});
+
+const reorderSchema = z.object({
+  groups: z.array(z.object({
+    id: z.string().uuid(),
+    order: z.number().int().min(0),
+  })),
+});
+
+/**
+ * GET /api/events/:eventId/guest-groups
+ * Get all guest groups for an event
+ */
+router.get('/events/:eventId/guest-groups', authMiddleware, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    // Check access
+    // TODO: Add hasEventAccess check
+
+    const groups = await guestGroupService.getGuestGroups(eventId);
+
+    res.json(groups);
+  } catch (error) {
+    logger.error('[GuestGroups] GET /guest-groups error', {
+      error: (error as Error).message,
+      eventId: req.params.eventId,
+    });
+    res.status(500).json({ error: 'Fehler beim Laden der Gruppen' });
+  }
+});
+
+/**
+ * GET /api/events/:eventId/guest-groups/:groupId
+ * Get single guest group with members
+ */
+router.get('/events/:eventId/guest-groups/:groupId', authMiddleware, async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    const group = await guestGroupService.getGuestGroup(groupId);
+
+    if (!group) {
+      return res.status(404).json({ error: 'Gruppe nicht gefunden' });
+    }
+
+    res.json(group);
+  } catch (error) {
+    logger.error('[GuestGroups] GET /guest-groups/:id error', {
+      error: (error as Error).message,
+      groupId: req.params.groupId,
+    });
+    res.status(500).json({ error: 'Fehler beim Laden der Gruppe' });
+  }
+});
+
+/**
+ * POST /api/events/:eventId/guest-groups
+ * Create new guest group
+ */
+router.post('/events/:eventId/guest-groups', authMiddleware, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const validation = createGroupSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Ungültige Daten', details: validation.error });
+    }
+
+    const group = await guestGroupService.createGuestGroup(eventId, validation.data);
+
+    res.status(201).json(group);
+  } catch (error) {
+    logger.error('[GuestGroups] POST /guest-groups error', {
+      error: (error as Error).message,
+      eventId: req.params.eventId,
+    });
+    res.status(500).json({ error: 'Fehler beim Erstellen der Gruppe' });
+  }
+});
+
+/**
+ * PUT /api/events/:eventId/guest-groups/:groupId
+ * Update guest group
+ */
+router.put('/events/:eventId/guest-groups/:groupId', authMiddleware, async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const validation = updateGroupSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Ungültige Daten', details: validation.error });
+    }
+
+    const group = await guestGroupService.updateGuestGroup(groupId, validation.data);
+
+    res.json(group);
+  } catch (error) {
+    logger.error('[GuestGroups] PUT /guest-groups/:id error', {
+      error: (error as Error).message,
+      groupId: req.params.groupId,
+    });
+    res.status(500).json({ error: 'Fehler beim Aktualisieren der Gruppe' });
+  }
+});
+
+/**
+ * DELETE /api/events/:eventId/guest-groups/:groupId
+ * Delete guest group
+ */
+router.delete('/events/:eventId/guest-groups/:groupId', authMiddleware, async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    await guestGroupService.deleteGuestGroup(groupId);
+
+    res.status(204).send();
+  } catch (error) {
+    logger.error('[GuestGroups] DELETE /guest-groups/:id error', {
+      error: (error as Error).message,
+      groupId: req.params.groupId,
+    });
+    res.status(500).json({ error: 'Fehler beim Löschen der Gruppe' });
+  }
+});
+
+/**
+ * PUT /api/events/:eventId/guests/:guestId/group
+ * Assign guest to group
+ */
+router.put('/events/:eventId/guests/:guestId/group', authMiddleware, async (req, res) => {
+  try {
+    const { guestId } = req.params;
+    const validation = assignGuestSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Ungültige Daten', details: validation.error });
+    }
+
+    const guest = await guestGroupService.assignGuestToGroup(guestId, validation.data.groupId);
+
+    res.json(guest);
+  } catch (error) {
+    logger.error('[GuestGroups] PUT /guests/:id/group error', {
+      error: (error as Error).message,
+      guestId: req.params.guestId,
+    });
+    res.status(500).json({ error: 'Fehler beim Zuweisen des Gastes' });
+  }
+});
+
+/**
+ * POST /api/events/:eventId/guests/bulk-assign
+ * Bulk assign guests to group
+ */
+router.post('/events/:eventId/guests/bulk-assign', authMiddleware, async (req, res) => {
+  try {
+    const validation = bulkAssignSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Ungültige Daten', details: validation.error });
+    }
+
+    const result = await guestGroupService.bulkAssignGuests(
+      validation.data.guestIds,
+      validation.data.groupId
+    );
+
+    res.json({ updated: result.count });
+  } catch (error) {
+    logger.error('[GuestGroups] POST /guests/bulk-assign error', {
+      error: (error as Error).message,
+      eventId: req.params.eventId,
+    });
+    res.status(500).json({ error: 'Fehler beim Zuweisen der Gäste' });
+  }
+});
+
+/**
+ * POST /api/events/:eventId/guest-groups/reorder
+ * Reorder guest groups
+ */
+router.post('/events/:eventId/guest-groups/reorder', authMiddleware, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const validation = reorderSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res.status(400).json({ error: 'Ungültige Daten', details: validation.error });
+    }
+
+    await guestGroupService.reorderGuestGroups(eventId, validation.data.groups);
+
+    res.json({ success: true });
+  } catch (error) {
+    logger.error('[GuestGroups] POST /guest-groups/reorder error', {
+      error: (error as Error).message,
+      eventId: req.params.eventId,
+    });
+    res.status(500).json({ error: 'Fehler beim Umsortieren der Gruppen' });
+  }
+});
+
+export default router;

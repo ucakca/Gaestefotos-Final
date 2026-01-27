@@ -331,7 +331,7 @@ export default function BottomNavigation({
         }}
       >
         {activeView === 'challenges' && (
-          <DialogContent className="fixed inset-0 z-50 flex flex-col bg-app-bg p-0">
+          <DialogContent className="fixed inset-0 z-50 flex flex-col bg-app-bg p-0 rounded-none max-w-none translate-x-0 translate-y-0">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col flex-1 min-h-0">
               <div className="sticky top-0 bg-app-card border-b border-app-border px-4 py-4 flex items-center justify-between z-10 flex-shrink-0">
                 <h2 className="text-lg font-semibold text-app-fg">Foto Challenges</h2>

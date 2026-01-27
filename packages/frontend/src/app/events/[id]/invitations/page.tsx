@@ -2,6 +2,17 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  flexRender,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
+} from '@tanstack/react-table';
 import api from '@/lib/api';
 import AppLayout from '@/components/AppLayout';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
@@ -17,6 +28,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useToastStore } from '@/store/toastStore';
 import {
   Eye,
@@ -30,6 +49,11 @@ import {
   QrCode,
   Calendar,
   Settings,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  Lock,
 } from 'lucide-react';
 import { InvitationConfigEditor } from '@/components/invitation-editor/InvitationConfigEditor';
 import { InvitationConfig } from '@gaestefotos/shared';
@@ -57,6 +81,11 @@ export default function InvitationsPage({ params }: { params: Promise<{ id: stri
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // TanStack Table State
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Create new invitation
   const [newName, setNewName] = useState('');
@@ -212,6 +241,186 @@ export default function InvitationsPage({ params }: { params: Promise<{ id: stri
     await copyToClipboard(url, 'Link kopiert');
   };
 
+  // TanStack Table Column Definitions
+  const columns: ColumnDef<Invitation>[] = [
+    {
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="hover:bg-transparent p-0 h-auto font-medium"
+        >
+          Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const inv = row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <LinkIcon className="w-4 h-4 text-muted-foreground" />
+            <span className="font-medium">{inv.name}</span>
+            {!inv.isActive && (
+              <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded">
+                Inaktiv
+              </span>
+            )}
+            {inv.hasPassword && (
+              <Lock className="w-3 h-3 text-warning" />
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'opens',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="hover:bg-transparent p-0 h-auto font-medium"
+        >
+          Aufrufe
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Eye className="w-4 h-4" />
+          <span>{row.original.opens}</span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'visibility',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="hover:bg-transparent p-0 h-auto font-medium"
+        >
+          Sichtbarkeit
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const isPublic = row.original.visibility === 'PUBLIC';
+        return (
+          <span className={`text-xs px-2 py-0.5 rounded ${isPublic ? 'bg-green-500/10 text-green-700' : 'bg-muted text-muted-foreground'}`}>
+            {isPublic ? 'Öffentlich' : 'Unlisted'}
+          </span>
+        );
+      },
+    },
+    {
+      id: 'rsvp',
+      header: 'RSVP',
+      cell: ({ row }) => {
+        const rsvp = row.original.rsvp;
+        return (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="text-green-600">✓ {rsvp?.yes ?? 0}</span>
+            <span className="text-red-600">✗ {rsvp?.no ?? 0}</span>
+            <span className="text-yellow-600">? {rsvp?.maybe ?? 0}</span>
+          </div>
+        );
+      },
+    },
+    {
+      id: 'actions',
+      header: 'Aktionen',
+      cell: ({ row }) => {
+        const inv = row.original;
+        const shortUrl = inv.shortLinks?.[0]?.url;
+        const publicUrl = typeof window !== 'undefined'
+          ? `${window.location.origin}/i/${inv.slug}`
+          : `/i/${inv.slug}`;
+        
+        return (
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => editingId === inv.id ? cancelEdit() : startEdit(inv)}
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <IconButton
+                  icon={<MoreVertical className="w-4 h-4" />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Mehr"
+                  title="Mehr"
+                />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => openConfigEditor(inv)}>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Konfigurieren
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => generateShortlink(inv.id)}
+                  disabled={generatingShortlink === inv.id}
+                >
+                  <QrCode className="w-4 h-4 mr-2" />
+                  {generatingShortlink === inv.id ? 'Generiere...' : 'Neuer Shortlink'}
+                </DropdownMenuItem>
+                {shortUrl && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => copyToClipboard(shortUrl, 'Shortlink kopiert')}>
+                      <Copy className="w-4 h-4 mr-2" />
+                      Shortlink kopieren
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => shareLink(shortUrl, `Einladung: ${inv.name}`)}>
+                      <Share2 className="w-4 h-4 mr-2" />
+                      Teilen
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {inv.visibility === 'PUBLIC' && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => copyToClipboard(publicUrl, 'Direktlink kopiert')}>
+                      <Copy className="w-4 h-4 mr-2" />
+                      Direktlink kopieren
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
+    },
+  ];
+
+  const table = useReactTable({
+    data: invitations,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    state: {
+      sorting,
+      columnFilters,
+      globalFilter: searchQuery,
+    },
+    onGlobalFilterChange: setSearchQuery,
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
+  });
+
   if (loading) {
     return (
       <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
@@ -267,8 +476,18 @@ export default function InvitationsPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        {/* Invitations List */}
-        <div className="space-y-4">
+        {/* Search */}
+        <div className="mb-4">
+          <Input
+            placeholder="Einladungen durchsuchen..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="max-w-sm"
+          />
+        </div>
+
+        {/* Invitations Table with TanStack */}
+        <div className="bg-card border border-border rounded-lg shadow overflow-hidden">
           {invitations.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -278,228 +497,162 @@ export default function InvitationsPage({ params }: { params: Promise<{ id: stri
               </p>
             </div>
           ) : (
-            invitations.map((inv) => {
-              const shortUrl = inv.shortLinks?.[0]?.url;
-              const publicUrl = typeof window !== 'undefined'
-                ? `${window.location.origin}/i/${inv.slug}`
-                : `/i/${inv.slug}`;
-              const isEditing = editingId === inv.id;
+            <>
+              <Table>
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => {
+                      const inv = row.original;
+                      const isEditing = editingId === inv.id;
+                      
+                      return (
+                        <React.Fragment key={row.id}>
+                          <TableRow className="border-b border-border">
+                            {row.getVisibleCells().map((cell) => (
+                              <TableCell key={cell.id}>
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                          {isEditing && (
+                            <TableRow>
+                              <TableCell colSpan={columns.length} className="bg-muted/30 p-4">
+                                <div className="space-y-4 max-w-2xl">
+                                  <div>
+                                    <label className="text-sm font-medium text-foreground block mb-1">Name</label>
+                                    <Input
+                                      value={editName}
+                                      onChange={(e) => setEditName(e.target.value)}
+                                      placeholder="Name der Einladung"
+                                    />
+                                  </div>
 
-              return (
-                <div
-                  key={inv.id}
-                  className="rounded-xl border border-border bg-card overflow-hidden"
-                >
-                  {/* Header Row */}
-                  <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <LinkIcon className="w-5 h-5 text-muted-foreground" />
-                      <span className="font-medium text-foreground">{inv.name}</span>
-                      {!inv.isActive && (
-                        <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded">
-                          Inaktiv
-                        </span>
-                      )}
-                      {inv.hasPassword && (
-                        <span className="text-xs bg-warning/10 text-warning px-2 py-0.5 rounded">
-                          🔒 Passwort
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => isEditing ? cancelEdit() : startEdit(inv)}
-                      >
-                        {isEditing ? 'Abbrechen' : 'Bearbeiten'}
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <IconButton
-                            icon={<MoreVertical className="w-4 h-4" />}
-                            variant="ghost"
-                            size="sm"
-                            aria-label="Mehr Optionen"
-                            title="Mehr Optionen"
-                          />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openConfigEditor(inv)}>
-                            <Settings className="w-4 h-4 mr-2" />
-                            Einladungsseite konfigurieren
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => generateShortlink(inv.id)}
-                            disabled={generatingShortlink === inv.id}
-                          >
-                            <QrCode className="w-4 h-4 mr-2" />
-                            {generatingShortlink === inv.id ? 'Generiere...' : 'Neuer Shortlink'}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          {shortUrl && (
-                            <DropdownMenuItem onClick={() => copyToClipboard(shortUrl, 'Shortlink kopiert')}>
-                              <Copy className="w-4 h-4 mr-2" />
-                              Shortlink kopieren
-                            </DropdownMenuItem>
+                                  <div className="flex items-center gap-4">
+                                    <label className="flex items-center gap-2 text-sm">
+                                      <Checkbox
+                                        checked={editIsActive}
+                                        onCheckedChange={(checked) => setEditIsActive(Boolean(checked))}
+                                      />
+                                      Aktiv
+                                    </label>
+                                    <label className="flex items-center gap-2 text-sm">
+                                      <Checkbox
+                                        checked={editVisibility === 'PUBLIC'}
+                                        onCheckedChange={(checked) => setEditVisibility(checked ? 'PUBLIC' : 'UNLISTED')}
+                                      />
+                                      Öffentlich
+                                    </label>
+                                  </div>
+
+                                  <div>
+                                    <label className="text-sm font-medium text-foreground block mb-1">
+                                      Passwort (optional)
+                                    </label>
+                                    <div className="relative">
+                                      <Input
+                                        type={showPassword[inv.id] ? 'text' : 'password'}
+                                        value={editPassword}
+                                        onChange={(e) => setEditPassword(e.target.value)}
+                                        placeholder={editHasPassword ? 'Neues Passwort (leer = unverändert)' : 'Passwort setzen'}
+                                        className="pr-10"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={() => setShowPassword((p) => ({ ...p, [inv.id]: !p[inv.id] }))}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                      >
+                                        {showPassword[inv.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                      </button>
+                                    </div>
+                                    {editHasPassword && (
+                                      <Button
+                                        variant="danger"
+                                        size="sm"
+                                        className="mt-2"
+                                        onClick={() => saveInvitation(inv.id, { removePassword: true })}
+                                        disabled={saving}
+                                      >
+                                        Passwort entfernen
+                                      </Button>
+                                    )}
+                                  </div>
+
+                                  <div className="flex items-center gap-2 pt-2">
+                                    <Button
+                                      onClick={() => saveInvitation(inv.id)}
+                                      disabled={saving || !editName.trim()}
+                                    >
+                                      {saving ? 'Speichere...' : 'Speichern'}
+                                    </Button>
+                                    <Button variant="ghost" onClick={cancelEdit}>
+                                      Abbrechen
+                                    </Button>
+                                  </div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
                           )}
-                          {shortUrl && (
-                            <DropdownMenuItem onClick={() => shareLink(shortUrl, `Einladung: ${inv.name}`)}>
-                              <Share2 className="w-4 h-4 mr-2" />
-                              Teilen
-                            </DropdownMenuItem>
-                          )}
-                          {inv.visibility === 'PUBLIC' && (
-                            <>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => copyToClipboard(publicUrl, 'Direktlink kopiert')}>
-                                <Copy className="w-4 h-4 mr-2" />
-                                Direktlink kopieren
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
+                        </React.Fragment>
+                      );
+                    })
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
+                        {searchQuery ? 'Keine Einladungen gefunden.' : 'Noch keine Einladungen vorhanden.'}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+
+              {/* Pagination */}
+              {table.getPageCount() > 1 && (
+                <div className="flex items-center justify-between px-6 py-4 border-t border-border">
+                  <div className="text-sm text-muted-foreground">
+                    Seite {table.getState().pagination.pageIndex + 1} von {table.getPageCount()}
                   </div>
-
-                  {/* Content */}
-                  <div className="p-4">
-                    {isEditing ? (
-                      /* Edit Form */
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium text-foreground block mb-1">Name</label>
-                          <Input
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            placeholder="Name der Einladung"
-                          />
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                          <label className="flex items-center gap-2 text-sm">
-                            <Checkbox
-                              checked={editIsActive}
-                              onCheckedChange={(checked) => setEditIsActive(Boolean(checked))}
-                            />
-                            Aktiv
-                          </label>
-                          <label className="flex items-center gap-2 text-sm">
-                            <Checkbox
-                              checked={editVisibility === 'PUBLIC'}
-                              onCheckedChange={(checked) => setEditVisibility(checked ? 'PUBLIC' : 'UNLISTED')}
-                            />
-                            Öffentlich
-                          </label>
-                        </div>
-
-                        <div>
-                          <label className="text-sm font-medium text-foreground block mb-1">
-                            Passwort (optional)
-                          </label>
-                          <div className="relative">
-                            <Input
-                              type={showPassword[inv.id] ? 'text' : 'password'}
-                              value={editPassword}
-                              onChange={(e) => setEditPassword(e.target.value)}
-                              placeholder={editHasPassword ? 'Neues Passwort (leer = unverändert)' : 'Passwort setzen'}
-                              className="pr-10"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword((p) => ({ ...p, [inv.id]: !p[inv.id] }))}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            >
-                              {showPassword[inv.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            </button>
-                          </div>
-                          {editHasPassword && (
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              className="mt-2"
-                              onClick={() => saveInvitation(inv.id, { removePassword: true })}
-                              disabled={saving}
-                            >
-                              Passwort entfernen
-                            </Button>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-2 pt-2">
-                          <Button
-                            onClick={() => saveInvitation(inv.id)}
-                            disabled={saving || !editName.trim()}
-                          >
-                            {saving ? 'Speichere...' : 'Speichern'}
-                          </Button>
-                          <Button variant="ghost" onClick={cancelEdit}>
-                            Abbrechen
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      /* View Mode */
-                      <div className="space-y-3">
-                        {/* Stats Row */}
-                        <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1.5">
-                            <Eye className="w-4 h-4" />
-                            <span>{inv.opens} Aufrufe</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="w-4 h-4" />
-                            <span>
-                              RSVP: {inv.rsvp?.yes ?? 0} Ja / {inv.rsvp?.no ?? 0} Nein / {inv.rsvp?.maybe ?? 0} Vielleicht
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Links */}
-                        {shortUrl && (
-                          <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                            <LinkIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                            <span className="text-sm text-foreground truncate flex-1 font-mono">
-                              {shortUrl}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(shortUrl, 'Shortlink kopiert')}
-                            >
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => shareLink(shortUrl, `Einladung: ${inv.name}`)}
-                            >
-                              <Share2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        )}
-
-                        {inv.visibility === 'PUBLIC' && (
-                          <div className="text-xs text-muted-foreground">
-                            Direktlink: <span className="font-mono">{publicUrl}</span>
-                          </div>
-                        )}
-
-                        {inv.visibility !== 'PUBLIC' && (
-                          <p className="text-xs text-muted-foreground">
-                            Diese Einladung ist nur über den Shortlink erreichbar.
-                          </p>
-                        )}
-                      </div>
-                    )}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => table.previousPage()}
+                      disabled={!table.getCanPreviousPage()}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Zurück
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => table.nextPage()}
+                      disabled={!table.getCanNextPage()}
+                    >
+                      Weiter
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-              );
-            })
+              )}
+            </>
           )}
         </div>
+
       </div>
 
       {/* Config Editor Modal */}

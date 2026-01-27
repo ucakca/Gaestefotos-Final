@@ -1,0 +1,87 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import { ArrowLeft, Settings, MoreVertical } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+interface DashboardHeaderProps {
+  title: string;
+  subtitle?: string;
+  backUrl?: string;
+  status?: 'active' | 'inactive' | 'locked';
+  onSettingsClick?: () => void;
+  actions?: React.ReactNode;
+}
+
+export default function DashboardHeader({
+  title,
+  subtitle,
+  backUrl = '/dashboard',
+  status = 'active',
+  onSettingsClick,
+  actions,
+}: DashboardHeaderProps) {
+  const statusConfig = {
+    active: { label: 'Aktiv', className: 'bg-green-500/10 text-green-600' },
+    inactive: { label: 'Inaktiv', className: 'bg-yellow-500/10 text-yellow-600' },
+    locked: { label: 'Gesperrt', className: 'bg-red-500/10 text-red-600' },
+  };
+
+  const currentStatus = statusConfig[status];
+
+  return (
+    <motion.header
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="sticky top-0 z-40 bg-app-bg/80 backdrop-blur-xl border-b border-app-border"
+    >
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="flex items-center justify-between gap-4">
+          {/* Left: Back + Title */}
+          <div className="flex items-center gap-3 min-w-0">
+            <Link
+              href={backUrl}
+              className="p-2 -ml-2 rounded-full hover:bg-app-card transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 text-app-fg" />
+            </Link>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold text-app-fg truncate">{title}</h1>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${currentStatus.className}`}>
+                  {currentStatus.label}
+                </span>
+              </div>
+              {subtitle && (
+                <p className="text-sm text-app-muted truncate">{subtitle}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-2">
+            {actions}
+            {onSettingsClick && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onSettingsClick}
+                className="gap-2"
+              >
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline">Einstellungen</span>
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    </motion.header>
+  );
+}

@@ -101,37 +101,37 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-app-border bg-app-bg/90 px-4 backdrop-blur">
+        <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-3 border-b border-app-border/50 bg-app-bg/95 px-4 backdrop-blur-md">
           <div className="flex min-w-0 items-center gap-3">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => setMobileOpen(true)}
-              className="h-10 w-10 p-0 lg:hidden"
+              className="h-10 w-10 p-0 lg:hidden rounded-xl hover:bg-app-accent/10"
               aria-label="Menü öffnen"
             >
               <Menu className="h-5 w-5" />
             </Button>
 
             <div className="min-w-0">
-              <div className="truncate text-sm font-semibold">Admin</div>
-              <div className="truncate text-xs text-app-muted">{pathname}</div>
+              <div className="truncate text-sm font-semibold text-app-fg">{help.title}</div>
+              <div className="truncate text-xs text-app-muted font-mono">{pathname}</div>
             </div>
           </div>
 
           <Dialog>
             <DialogTrigger asChild>
-              <Button type="button" variant="outline" size="sm" className="h-10 w-10 p-0" aria-label="Hilfe">
-                <HelpCircle className="h-5 w-5" />
+              <Button type="button" variant="ghost" size="sm" className="h-10 w-10 p-0 rounded-xl hover:bg-app-accent/10" aria-label="Hilfe">
+                <HelpCircle className="h-5 w-5 text-app-muted" />
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="rounded-2xl">
               <DialogHeader>
                 <DialogTitle>{help.title}</DialogTitle>
-                <DialogDescription>{help.body}</DialogDescription>
+                <DialogDescription className="text-app-muted">{help.body}</DialogDescription>
               </DialogHeader>
-              <div className="text-xs text-app-muted">Route: {pathname}</div>
+              <div className="text-xs text-app-muted font-mono bg-app-bg/50 p-2 rounded-lg">Route: {pathname}</div>
             </DialogContent>
           </Dialog>
         </header>

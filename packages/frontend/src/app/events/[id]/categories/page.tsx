@@ -3,12 +3,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  flexRender,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
+} from '@tanstack/react-table';
 import api from '@/lib/api';
 import { Event as EventType } from '@gaestefotos/shared';
 import { 
   Plus, Trash2, Edit2, X, Eye, EyeOff, Lock, Unlock, Calendar, Search, ChevronDown, ChevronUp,
   Camera, Heart, Star, Gift, Music, Coffee, Beer, Cake, Utensils, Home, User, Users,
-  Image, Video, MessageCircle, FileText, MapPin, Clock, Award, Sparkles
+  Image, Video, MessageCircle, FileText, MapPin, Clock, Award, Sparkles, ArrowUpDown, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import DashboardFooter from '@/components/DashboardFooter';
@@ -30,6 +41,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 const LucideIcons = {
   Camera, Heart, Star, Gift, Music, Coffee, Beer, Cake, Utensils, Home, User, Users,
@@ -143,6 +162,9 @@ export default function CategoryManagementPage({ params }: { params: Promise<{ i
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     iconKey: '' as string,
@@ -323,6 +345,160 @@ export default function CategoryManagementPage({ params }: { params: Promise<{ i
     });
   };
 
+  // TanStack Table Column Definitions
+  const columns: ColumnDef<Category>[] = [
+    {
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="hover:bg-transparent p-0 h-auto font-medium"
+        >
+          Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const category = row.original;
+        const IconComp = getLucideIconComponent(category.iconKey);
+        return (
+          <div className="flex items-center gap-2">
+            <IconButton
+              icon={
+                expandedCategory === category.id ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )
+              }
+              variant="ghost"
+              size="sm"
+              aria-label={expandedCategory === category.id ? 'Details schließen' : 'Details öffnen'}
+              title={expandedCategory === category.id ? 'Details schließen' : 'Details öffnen'}
+              onClick={() =>
+                setExpandedCategory(expandedCategory === category.id ? null : category.id)
+              }
+              className="text-app-muted hover:text-app-fg"
+            />
+            {IconComp && (
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-app-bg border border-app-border flex items-center justify-center">
+                <IconComp className="w-4 h-4 text-app-fg" />
+              </div>
+            )}
+            <div>
+              <div className="text-sm font-medium text-app-fg">{category.name}</div>
+              <div className="text-xs text-app-muted mt-1">Reihenfolge: {category.order}</div>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'isVisible',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="hover:bg-transparent p-0 h-auto font-medium"
+        >
+          Status
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const category = row.original;
+        return (
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              {category.isVisible ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-app-bg text-app-fg border border-app-border">
+                  <Eye className="w-3 h-3" />
+                  Sichtbar
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-app-bg text-app-muted border border-app-border">
+                  <EyeOff className="w-3 h-3" />
+                  Versteckt
+                </span>
+              )}
+            </div>
+            {category.uploadLocked && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-app-bg text-status-danger border border-app-border">
+                <Lock className="w-3 h-3" />
+                Upload gesperrt
+              </span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: '_count.photos',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          className="hover:bg-transparent p-0 h-auto font-medium"
+        >
+          Fotos
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="text-sm text-app-muted">{row.original._count?.photos || 0}</div>
+      ),
+      accessorFn: (row) => row._count?.photos || 0,
+    },
+    {
+      id: 'actions',
+      header: 'Aktionen',
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          <IconButton
+            icon={<Edit2 className="h-5 w-5" />}
+            variant="ghost"
+            size="sm"
+            aria-label="Album bearbeiten"
+            title="Album bearbeiten"
+            onClick={() => startEdit(row.original)}
+            className="text-app-fg"
+          />
+          <IconButton
+            icon={<Trash2 className="h-4 w-4" />}
+            variant="ghost"
+            size="sm"
+            aria-label="Album löschen"
+            title="Album löschen"
+            onClick={() => handleDelete(row.original.id)}
+            className="text-status-danger"
+          />
+        </div>
+      ),
+    },
+  ];
+
+  const table = useReactTable({
+    data: categories,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    state: {
+      sorting,
+      columnFilters,
+      globalFilter: searchQuery,
+    },
+    onGlobalFilterChange: setSearchQuery,
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
+  });
 
   if (loading || !eventId) {
     return <FullPageLoader label="Lade..." />;
@@ -746,193 +922,151 @@ export default function CategoryManagementPage({ params }: { params: Promise<{ i
           )}
         </AnimatePresence>
 
+        {/* Search */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4"
+        >
+          <Input
+            placeholder="Alben durchsuchen..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="max-w-sm"
+          />
+        </motion.div>
 
-        {/* Categories List */}
-        {/* Desktop Table View */}
-        <div className="hidden md:block overflow-hidden rounded-lg border border-app-border bg-app-card">
-          <table className="min-w-full divide-y divide-app-border">
-            <thead className="bg-app-bg">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">
-                  Fotos
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-app-muted uppercase tracking-wider">
-                  Aktionen
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-app-border bg-app-card">
-              <AnimatePresence>
-                {categories.map((category, index) => (
+        {/* Categories Table with TanStack */}
+        <div className="bg-app-card border border-app-border rounded-lg shadow overflow-hidden">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} className="bg-app-bg">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row, index) => (
                   <motion.tr
-                    key={category.id}
+                    key={row.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
                     transition={{ delay: index * 0.05 }}
+                    className="border-b border-app-border"
                   >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <IconButton
-                          icon={
-                            expandedCategory === category.id ? (
-                              <ChevronUp className="h-4 w-4" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4" />
-                            )
-                          }
-                          variant="ghost"
-                          size="sm"
-                          aria-label={expandedCategory === category.id ? 'Details schließen' : 'Details öffnen'}
-                          title={expandedCategory === category.id ? 'Details schließen' : 'Details öffnen'}
-                          onClick={() =>
-                            setExpandedCategory(expandedCategory === category.id ? null : category.id)
-                          }
-                          className="text-app-muted hover:text-app-fg"
-                        />
-                        {(() => {
-                          const IconComp = getLucideIconComponent(category.iconKey);
-                          return IconComp ? (
-                            <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-app-bg border border-app-border flex items-center justify-center">
-                              <IconComp className="w-4 h-4 text-app-fg" />
-                            </div>
-                          ) : null;
-                        })()}
-                        <div>
-                          <div className="text-sm font-medium text-app-fg">
-                            {category.name}
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {expandedCategory === row.original.id && cell.column.id === 'name' && (
+                          <div className="mt-4 ml-6 rounded-lg border border-app-border bg-app-bg p-3">
+                            <p className="text-xs text-app-muted">
+                              💡 Tipp: Challenges können in der separaten Challenge-Verwaltung erstellt und diesem Album zugewiesen werden.
+                            </p>
                           </div>
-                          <div className="text-xs text-app-muted mt-1">
-                            Reihenfolge: {category.order}
-                          </div>
-                        </div>
-                      </div>
-                      {expandedCategory === category.id && (
-                        <div className="mt-4 ml-6 rounded-lg border border-app-border bg-app-bg p-3">
-                          <p className="text-xs text-app-muted">
-                            💡 Tipp: Challenges können in der separaten Challenge-Verwaltung erstellt und diesem Album zugewiesen werden.
-                          </p>
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                          {category.isVisible ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-app-bg text-app-fg border border-app-border">
-                              <Eye className="w-3 h-3" />
-                              Sichtbar
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-app-bg text-app-muted border border-app-border">
-                              <EyeOff className="w-3 h-3" />
-                              Versteckt
-                            </span>
-                          )}
-                        </div>
-                        {category.uploadLocked && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-app-bg text-status-danger border border-app-border">
-                            <Lock className="w-3 h-3" />
-                            Upload gesperrt
-                          </span>
                         )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-app-muted">
-                        {category._count?.photos || 0}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-2">
-                        <IconButton
-                          icon={<Edit2 className="h-5 w-5" />}
-                          variant="ghost"
-                          size="sm"
-                          aria-label="Album bearbeiten"
-                          title="Album bearbeiten"
-                          onClick={() => startEdit(category)}
-                          className="text-app-fg"
-                        />
-                        <IconButton
-                          icon={<Trash2 className="h-4 w-4" />}
-                          variant="ghost"
-                          size="sm"
-                          aria-label="Album löschen"
-                          title="Album löschen"
-                          onClick={() => handleDelete(category.id)}
-                          className="text-status-danger"
-                        />
-                      </div>
-                    </td>
+                      </TableCell>
+                    ))}
                   </motion.tr>
-                ))}
-              </AnimatePresence>
-            </tbody>
-          </table>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center text-app-muted">
+                    {searchQuery ? 'Keine Alben gefunden.' : 'Noch keine Alben vorhanden.'}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
 
-          {categories.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-app-muted">Noch keine Alben hinzugefügt</p>
+          {/* Pagination */}
+          {table.getPageCount() > 1 && (
+            <div className="flex items-center justify-between px-6 py-4 bg-app-bg border-t border-app-border">
+              <div className="text-sm text-app-muted">
+                Seite {table.getState().pagination.pageIndex + 1} von {table.getPageCount()}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Zurück
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  Weiter
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Mobile Card View */}
-        <div className="md:hidden space-y-3">
+        {/* Mobile Card View - keep old implementation */}
+        <div className="md:hidden space-y-3 mt-4">
           <AnimatePresence>
             {categories.map((category, index) => (
               <motion.div
                 key={category.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
+                exit={{ opacity: 0, y: 20 }}
                 transition={{ delay: index * 0.05 }}
-                className="rounded-lg border border-app-border bg-app-card p-4"
+                className="bg-app-card border border-app-border rounded-lg p-4"
               >
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      {(() => {
-                        const IconComp = getLucideIconComponent(category.iconKey);
-                        return IconComp ? <IconComp className="w-4 h-4 text-app-muted flex-shrink-0" /> : null;
-                      })()}
-                      <h3 className="text-sm font-semibold text-app-fg truncate">{category.name}</h3>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-app-muted">
-                      <span>Reihenfolge: {category.order}</span>
-                      <span>•</span>
-                      <span>{category._count?.photos || 0} Fotos</span>
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    {(() => {
+                      const IconComp = getLucideIconComponent(category.iconKey);
+                      return IconComp ? (
+                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-app-bg border border-app-border flex items-center justify-center">
+                          <IconComp className="w-4 h-4 text-app-fg" />
+                        </div>
+                      ) : null;
+                    })()}
+                    <div>
+                      <div className="text-sm font-medium text-app-fg">{category.name}</div>
+                      <div className="text-xs text-app-muted">Reihenfolge: {category.order}</div>
                     </div>
                   </div>
-                  <div className="flex gap-1 flex-shrink-0">
+                  <div className="flex gap-1">
                     <IconButton
                       icon={<Edit2 className="h-4 w-4" />}
                       variant="ghost"
                       size="sm"
-                      aria-label="Album bearbeiten"
-                      title="Album bearbeiten"
+                      aria-label="Bearbeiten"
+                      title="Bearbeiten"
                       onClick={() => startEdit(category)}
-                      className="text-app-fg"
                     />
                     <IconButton
                       icon={<Trash2 className="h-4 w-4" />}
                       variant="ghost"
                       size="sm"
-                      aria-label="Album löschen"
-                      title="Album löschen"
+                      aria-label="Löschen"
+                      title="Löschen"
                       onClick={() => handleDelete(category.id)}
                       className="text-status-danger"
                     />
                   </div>
                 </div>
-
                 <div className="flex flex-wrap gap-2">
                   {category.isVisible ? (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-app-bg text-app-fg border border-app-border">

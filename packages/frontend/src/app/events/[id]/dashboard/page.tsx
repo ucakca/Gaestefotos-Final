@@ -709,59 +709,63 @@ export default function EventDashboardPage({ params }: { params: Promise<{ id: s
         </div>
 
         {/* Quick Stats Cards */}
-        <div className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Link href={`/events/${eventId}/photos`} className="rounded-xl border border-app-border bg-app-card p-4 hover:bg-app-card/80 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-app-accent/10 flex items-center justify-center">
-                <Camera className="w-5 h-5 text-app-accent" />
+        <div className="mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <Link href={`/events/${eventId}/photos`} className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-600/5 p-5 border border-blue-500/20 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/10 transition-all">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-blue-500/20 transition-colors" />
+            <div className="relative flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                <Camera className="w-6 h-6 text-blue-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-app-fg">{photoStats.total}</div>
-                <div className="text-xs text-app-muted">Fotos</div>
+                <div className="text-3xl font-bold text-app-fg">{photoStats.total}</div>
+                <div className="text-sm text-app-muted">Fotos</div>
               </div>
             </div>
           </Link>
-          <Link href={`/events/${eventId}/guests`} className="rounded-xl border border-app-border bg-app-card p-4 hover:bg-app-card/80 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-status-success/10 flex items-center justify-center">
-                <Users className="w-5 h-5 text-status-success" />
+          <Link href={`/events/${eventId}/guests`} className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-500/10 to-green-600/5 p-5 border border-green-500/20 hover:border-green-500/40 hover:shadow-lg hover:shadow-green-500/10 transition-all">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-green-500/20 transition-colors" />
+            <div className="relative flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+                <Users className="w-6 h-6 text-green-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-app-fg">{(event as any)?.guestCount || 0}</div>
-                <div className="text-xs text-app-muted">Gäste</div>
+                <div className="text-3xl font-bold text-app-fg">{(event as any)?.guestCount || 0}</div>
+                <div className="text-sm text-app-muted">Gäste</div>
               </div>
             </div>
           </Link>
-          <div className="rounded-xl border border-app-border bg-app-card p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-status-warning/10 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-status-warning" />
+          <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 p-5 border border-yellow-500/20">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-yellow-500/10 rounded-full blur-2xl -mr-10 -mt-10" />
+            <div className="relative flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+                <Clock className="w-6 h-6 text-yellow-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-app-fg">
-                  {photoStats.pending}
-                </div>
-                <div className="text-xs text-app-muted">Ausstehend</div>
+                <div className="text-3xl font-bold text-app-fg">{photoStats.pending}</div>
+                <div className="text-sm text-app-muted">Ausstehend</div>
               </div>
             </div>
           </div>
-          <Link href={`/events/${eventId}/statistics`} className="rounded-xl border border-app-border bg-app-card p-4 hover:bg-app-card/80 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-app-fg/10 flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-app-fg" />
+          <Link href={`/events/${eventId}/statistics`} className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500/10 to-purple-600/5 p-5 border border-purple-500/20 hover:border-purple-500/40 hover:shadow-lg hover:shadow-purple-500/10 transition-all">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-purple-500/20 transition-colors" />
+            <div className="relative flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                <BarChart3 className="w-6 h-6 text-purple-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-app-fg">{usage ? formatBytes(usage.totalBytes) : '—'}</div>
-                <div className="text-xs text-app-muted">Speicher</div>
+                <div className="text-3xl font-bold text-app-fg">{usage ? formatBytes(usage.totalBytes) : '—'}</div>
+                <div className="text-sm text-app-muted">Speicher</div>
               </div>
             </div>
           </Link>
         </div>
 
         {event && (event as any).isActive === false && (
-          <div className="mb-4 rounded-xl border border-app-border bg-app-card p-4">
+          <div className="mb-4 rounded-2xl border border-yellow-500/30 bg-yellow-500/5 p-4">
             <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-app-muted mt-0.5" />
+              <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
+                <Info className="w-4 h-4 text-yellow-500" />
+              </div>
               <div>
                 <p className="font-semibold text-sm text-app-fg">Event ist deaktiviert</p>
                 <p className="text-xs text-app-muted mt-1">
@@ -773,9 +777,11 @@ export default function EventDashboardPage({ params }: { params: Promise<{ id: s
         )}
 
         {isStorageLocked && (
-          <div className="mb-4 rounded-xl border border-app-border bg-app-card p-4">
+          <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/5 p-4">
             <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-app-muted mt-0.5" />
+              <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                <Info className="w-4 h-4 text-red-500" />
+              </div>
               <div>
                 <p className="font-semibold text-sm text-app-fg">Speicherperiode beendet</p>
                 <p className="text-xs text-app-muted mt-1">
@@ -787,9 +793,11 @@ export default function EventDashboardPage({ params }: { params: Promise<{ id: s
         )}
 
         {!isStorageLocked && featuresConfig?.allowUploads !== false && !withinUploadWindow && (
-          <div className="mb-4 rounded-xl border border-app-border bg-app-card p-4">
+          <div className="mb-4 rounded-2xl border border-blue-500/30 bg-blue-500/5 p-4">
             <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-app-muted mt-0.5" />
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                <Info className="w-4 h-4 text-blue-500" />
+              </div>
               <div>
                 <p className="font-semibold text-sm text-app-fg">Upload-Fenster ist aktuell geschlossen</p>
                 <p className="text-xs text-app-muted mt-1">
@@ -801,10 +809,17 @@ export default function EventDashboardPage({ params }: { params: Promise<{ id: s
         )}
 
         {/* 1. Event Status & Quick Actions */}
-        <div className="mb-6 overflow-hidden rounded-xl border border-app-border bg-app-card">
-          <div className="border-b border-app-border px-4 py-3">
-            <div className="text-sm font-semibold text-app-fg">Event Status & Schnell-Einladung</div>
-            <div className="text-xs text-app-muted">Event-Status und direkter Share-Link</div>
+        <div className="mb-6 overflow-hidden rounded-2xl border border-app-border/50 bg-app-card/80 backdrop-blur-sm">
+          <div className="border-b border-app-border/50 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-app-accent/10 flex items-center justify-center">
+                <Globe className="w-5 h-5 text-app-accent" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-app-fg">Event Status & Schnell-Einladung</div>
+                <div className="text-xs text-app-muted">Event-Status und direkter Share-Link</div>
+              </div>
+            </div>
           </div>
 
           <div className="divide-y divide-app-border">
@@ -877,10 +892,17 @@ export default function EventDashboardPage({ params }: { params: Promise<{ id: s
         </div>
 
         {/* 2. Event Branding (Titelbild + Profil kombiniert) */}
-        <div className="mb-6 overflow-hidden rounded-xl border border-app-border bg-app-card">
-          <div className="border-b border-app-border px-4 py-3">
-            <div className="text-sm font-semibold text-app-fg">Event Branding</div>
-            <div className="text-xs text-app-muted">Titelbild, Profilbild und Willkommensnachricht</div>
+        <div className="mb-6 overflow-hidden rounded-2xl border border-app-border/50 bg-app-card/80 backdrop-blur-sm">
+          <div className="border-b border-app-border/50 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center">
+                <ImageIcon className="w-5 h-5 text-pink-500" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-app-fg">Event Branding</div>
+                <div className="text-xs text-app-muted">Titelbild, Profilbild und Willkommensnachricht</div>
+              </div>
+            </div>
           </div>
 
           <div className="divide-y divide-app-border">
@@ -1006,13 +1028,17 @@ export default function EventDashboardPage({ params }: { params: Promise<{ id: s
         </div>
 
         {/* 3. Event Details */}
-        <div className="mb-6 overflow-hidden rounded-xl border border-app-border bg-app-card">
-          <div className="border-b border-app-border px-4 py-3">
-            <div className="flex items-center gap-2">
-              <div className="text-sm font-semibold text-app-fg">Event Details</div>
-              <Pencil className="w-3.5 h-3.5 text-app-muted" />
+        <div className="mb-6 overflow-hidden rounded-2xl border border-app-border/50 bg-app-card/80 backdrop-blur-sm">
+          <div className="border-b border-app-border/50 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-blue-500" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-app-fg">Event Details</div>
+                <div className="text-xs text-app-muted">Datum, Uhrzeit, Ort und mehr - Klicke zum Bearbeiten</div>
+              </div>
             </div>
-            <div className="text-xs text-app-muted">Datum, Uhrzeit, Ort, URL und Passwort - Zum Bearbeiten klicken</div>
           </div>
 
           <div className="divide-y divide-app-border">
@@ -1274,11 +1300,16 @@ export default function EventDashboardPage({ params }: { params: Promise<{ id: s
         </div>
 
         {/* 4. Einladungsseiten */}
-        <div className="mb-6 overflow-hidden rounded-xl border border-app-border bg-app-card" data-tour="host-event-dashboard-invitations">
-          <div className="border-b border-app-border px-4 py-3">
-            <div className="text-sm font-semibold text-app-fg">Einladungsseiten</div>
-            <div className="text-xs text-app-muted">
-              Erstelle mehrere Einladungen (z.B. Familie, Freunde) und teile Shortlinks.
+        <div className="mb-6 overflow-hidden rounded-2xl border border-app-border/50 bg-app-card/80 backdrop-blur-sm" data-tour="host-event-dashboard-invitations">
+          <div className="border-b border-app-border/50 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                <Mail className="w-5 h-5 text-green-500" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-app-fg">Einladungsseiten</div>
+                <div className="text-xs text-app-muted">Erstelle personalisierte Einladungen für verschiedene Gruppen</div>
+              </div>
             </div>
           </div>
 
@@ -1523,10 +1554,17 @@ export default function EventDashboardPage({ params }: { params: Promise<{ id: s
         </div>
 
         {/* 5. Tools */}
-        <div className="mb-6 overflow-hidden rounded-xl border border-app-border bg-app-card">
-          <div className="border-b border-app-border px-4 py-3">
-            <div className="text-sm font-semibold text-app-fg">Tools</div>
-            <div className="text-xs text-app-muted">Schnellzugriff auf die wichtigsten Bereiche</div>
+        <div className="mb-6 overflow-hidden rounded-2xl border border-app-border/50 bg-app-card/80 backdrop-blur-sm">
+          <div className="border-b border-app-border/50 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-purple-500" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-app-fg">Tools & Bereiche</div>
+                <div className="text-xs text-app-muted">Schnellzugriff auf alle wichtigen Funktionen</div>
+              </div>
+            </div>
           </div>
 
           <div className="divide-y divide-app-border">
@@ -1626,10 +1664,17 @@ export default function EventDashboardPage({ params }: { params: Promise<{ id: s
         </div>
 
         {/* 6. Event Einstellungen */}
-        <div className="mb-6 overflow-hidden rounded-xl border border-app-border bg-app-card">
-          <div className="border-b border-app-border px-4 py-3">
-            <div className="text-sm font-semibold text-app-fg">Event Einstellungen</div>
-            <div className="text-xs text-app-muted">Verhalten und Features konfigurieren</div>
+        <div className="mb-6 overflow-hidden rounded-2xl border border-app-border/50 bg-app-card/80 backdrop-blur-sm">
+          <div className="border-b border-app-border/50 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gray-500/10 flex items-center justify-center">
+                <Settings className="w-5 h-5 text-gray-500" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-app-fg">Event Einstellungen</div>
+                <div className="text-xs text-app-muted">Verhalten und Features konfigurieren</div>
+              </div>
+            </div>
           </div>
 
           <div className="divide-y divide-app-border">

@@ -1,0 +1,11 @@
+# /e3/ Components
+# 
+# Clean Slate Components für Event Gallery v3
+# Keine Dependencies zu /e/ oder /e2/
+#
+# Planned:
+# - EventHeader3.tsx
+# - PhotoGrid3.tsx  
+# - StoriesBar3.tsx
+# - UploadButton3.tsx
+# - Lightbox3.tsx

@@ -757,7 +757,7 @@ export default function PublicEventPage() {
           )}
 
       {/* Modern Photo Grid */}
-      <div className="pb-24">
+      <div className="pb-32">
                   {featuresConfig?.mysteryMode ? (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}

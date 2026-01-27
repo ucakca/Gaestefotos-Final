@@ -346,4 +346,59 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* V0 Design - Masonry Grid */
+  .masonry-grid {
+    column-count: 2;
+    column-gap: 0.5rem;
+  }
+
+  .masonry-item {
+    break-inside: avoid;
+    margin-bottom: 0.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .masonry-grid {
+      column-count: 3;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .masonry-grid {
+      column-count: 4;
+    }
+  }
+
+  /* V0 Design - Gradient Ring Animation (Story Ring) */
+  @keyframes rotate-gradient {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .animate-gradient-ring {
+    animation: rotate-gradient 3s linear infinite;
+  }
+
+  /* V0 Design - Safe Area Top */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* V0 Design - Skeleton Shimmer */
+  @keyframes skeleton-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted) / 0.5) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+  }
 }
