@@ -30,6 +30,10 @@ const ShareWizardModal = dynamic(() => import('@/components/qr-designer/ShareWiz
   ssr: false,
 });
 
+const LogoUpload = dynamic(() => import('@/components/qr-designer/LogoUpload'), {
+  ssr: false,
+});
+
 // Import for export functionality
 import { generateQRSvgString } from '@/components/qr-designer/StyledQRCode';
 
@@ -1045,14 +1049,14 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                       </div>
                     </div>
                     
-                    {/* Logo Upload (Placeholder) */}
-                    <div>
-                      <label className="text-sm font-medium text-app-fg mb-2 block">Logo in QR-Mitte</label>
-                      <div className="border-2 border-dashed border-app-border rounded-lg p-4 text-center text-app-muted text-sm hover:border-primary transition-colors cursor-pointer">
-                        <Image className="w-6 h-6 mx-auto mb-2 opacity-50" />
-                        Logo hochladen (optional)
-                      </div>
-                    </div>
+                    {/* Logo Upload */}
+                    {eventId && (
+                      <LogoUpload
+                        eventId={eventId}
+                        logoUrl={design.logoUrl}
+                        onLogoChange={(url) => updateDesign({ logoUrl: url })}
+                      />
+                    )}
                   </div>
                 )}
                 
@@ -1530,6 +1534,15 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                 ))}
               </div>
             </div>
+            
+            {/* Logo Upload - Mobile */}
+            {eventId && (
+              <LogoUpload
+                eventId={eventId}
+                logoUrl={design.logoUrl}
+                onLogoChange={(url) => updateDesign({ logoUrl: url })}
+              />
+            )}
           </div>
         </BottomSheet>
         
