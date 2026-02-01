@@ -1,5 +1,6 @@
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 
 let scanTimer: NodeJS.Timeout | null = null;
 
@@ -50,7 +51,7 @@ async function processPendingPhotoScans(): Promise<void> {
       });
     } catch (error) {
       logger.warn('[VirusScan] failed to update scan status', {
-        message: (error as any)?.message || String(error),
+        message: getErrorMessage(error),
         photoId: item.id,
       });
     }
@@ -96,7 +97,7 @@ async function processPendingVideoScans(): Promise<void> {
       });
     } catch (error) {
       logger.warn('[VirusScan] failed to update video scan status', {
-        message: (error as any)?.message || String(error),
+        message: getErrorMessage(error),
         videoId: item.id,
       });
     }
@@ -119,7 +120,7 @@ export function startVirusScanWorker(): void {
 
   scanTimer = setInterval(() => {
     Promise.all([processPendingPhotoScans(), processPendingVideoScans()]).catch((error) => {
-      logger.warn('[VirusScan] worker tick failed', { message: (error as any)?.message || String(error) });
+      logger.warn('[VirusScan] worker tick failed', { message: getErrorMessage(error) });
     });
   }, safeIntervalMs);
 

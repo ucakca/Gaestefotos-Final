@@ -5,6 +5,7 @@ import prisma from '../config/database';
 import { authMiddleware, AuthRequest, hasEventManageAccess } from '../middleware/auth';
 import { emailService } from '../services/email';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 
 const router = Router();
 
@@ -31,7 +32,7 @@ router.post('/test', authMiddleware, async (req: AuthRequest, res: Response) => 
 
     res.json({ success: true, message: 'Email-Konfiguration ist gültig' });
   } catch (error) {
-    logger.error('Fehler beim Testen der Email-Konfiguration', { message: (error as any)?.message || String(error) });
+    logger.error('Fehler beim Testen der Email-Konfiguration', { message: getErrorMessage(error) });
     res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
@@ -96,7 +97,7 @@ router.post(
       if (error.message.includes('nicht konfiguriert')) {
         return res.status(400).json({ error: 'Email-Service ist nicht konfiguriert' });
       }
-      logger.error('Fehler beim Versenden der Einladung', { message: (error as any)?.message || String(error) });
+      logger.error('Fehler beim Versenden der Einladung', { message: getErrorMessage(error) });
       res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
@@ -165,7 +166,7 @@ router.post(
           results.push({ guestId: guest.id, success: true });
         } catch (error: any) {
           logger.error('Fehler beim Versenden einer Bulk-Einladung', {
-            message: (error as any)?.message || String(error),
+            message: getErrorMessage(error),
             eventId,
             guestId: guest.id,
           });
@@ -184,7 +185,7 @@ router.post(
         results,
       });
     } catch (error) {
-      logger.error('Fehler beim Bulk-Versenden der Einladungen', { message: (error as any)?.message || String(error), eventId: req.params.eventId });
+      logger.error('Fehler beim Bulk-Versenden der Einladungen', { message: getErrorMessage(error), eventId: req.params.eventId });
       res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }

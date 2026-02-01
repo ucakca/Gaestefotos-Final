@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 import { getWordPressUserByEmail } from '../config/wordpress';
 
 const router = Router();
@@ -481,14 +482,14 @@ export async function processWooOrderPaidWebhook(params: {
     }
 
     logger.error('WooCommerce webhook error', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
     });
 
     if (logId) {
       await (prisma as any).wooWebhookEventLog
         .update({
           where: { id: logId },
-          data: { status: 'FAILED', reason: 'unhandled', error: ((error as any)?.message || String(error)).slice(0, 2000) },
+          data: { status: 'FAILED', reason: 'unhandled', error: (getErrorMessage(error)).slice(0, 2000) },
         })
         .catch(() => null);
     }

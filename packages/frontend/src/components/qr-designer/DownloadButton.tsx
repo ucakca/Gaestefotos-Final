@@ -21,7 +21,7 @@ export function DownloadButton({ config, eventId, eventSlug }: DownloadButtonPro
       setDownloading(true);
 
       // Generate real QR code SVG
-      const publicUrl = `${window.location.origin}/e/${eventSlug}`;
+      const publicUrl = `${window.location.origin}/e3/${eventSlug}`;
       const qrMarkup = await renderQrToSvgMarkup(publicUrl);
       
       // Load template SVG and embed QR code

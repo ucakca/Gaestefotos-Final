@@ -34,7 +34,7 @@ export default function MasonryGallery({
 
   const handleShare = async (photo: Photo) => {
     const shareUrl = eventSlug 
-      ? `${window.location.origin}/e/${eventSlug}?photo=${photo.id}`
+      ? `${window.location.origin}/e3/${eventSlug}?photo=${photo.id}`
       : photo.url || '';
 
     if (navigator.share && photo.url) {

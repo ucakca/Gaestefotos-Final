@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 'use client';
 
 /**
@@ -48,7 +49,7 @@ export function GuestGroupManager({ eventId }: GuestGroupManagerProps) {
       const response = await api.get(`/events/${eventId}/guest-groups`);
       setGroups(response.data);
     } catch (error) {
-      console.error('Failed to load groups:', error);
+      logger.error('Failed to load groups:', error);
     } finally {
       setLoading(false);
     }
@@ -60,7 +61,7 @@ export function GuestGroupManager({ eventId }: GuestGroupManagerProps) {
       await loadGroups();
       setShowCreateDialog(false);
     } catch (error) {
-      console.error('Failed to create group:', error);
+      logger.error('Failed to create group:', error);
       throw error;
     }
   };
@@ -71,7 +72,7 @@ export function GuestGroupManager({ eventId }: GuestGroupManagerProps) {
       await loadGroups();
       setEditingGroup(null);
     } catch (error) {
-      console.error('Failed to update group:', error);
+      logger.error('Failed to update group:', error);
       throw error;
     }
   };
@@ -84,7 +85,7 @@ export function GuestGroupManager({ eventId }: GuestGroupManagerProps) {
       await loadGroups();
       setDeletingGroup(null);
     } catch (error) {
-      console.error('Failed to delete group:', error);
+      logger.error('Failed to delete group:', error);
     }
   };
 

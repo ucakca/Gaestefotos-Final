@@ -156,29 +156,67 @@ async function verifyWordPressPasswordREST(email: string, password: string): Pro
 }
 
 // WordPress password verification using PHP script as fallback
-// This calls a PHP script that uses WordPress's own password verification
+// SECURITY: Uses stdin to pass credentials (prevents command injection)
 async function verifyWordPressPasswordPHP(email: string, password: string): Promise<boolean> {
-  try {
-    const { exec } = require('child_process');
-    const { promisify } = require('util');
-    const execAsync = promisify(exec);
-    
-    // Use PHP to verify password via WordPress
-    const phpScript = path.resolve(__dirname, '../../verify-wp-password.php');
-    const { stdout, stderr } = await execAsync(
-      `php ${phpScript} "${email}" "${password.replace(/"/g, '\\"')}" 2>&1`
-    );
-    
-    // PHP script returns exit code 0 for success, 1 for failure
-    return stdout.includes('TRUE') || stdout.includes('Verification result: 1');
-  } catch (error: any) {
-    // Exit code 1 means password is wrong, which is expected
-    if (error.code === 1) {
-      return false;
+  return new Promise((resolve) => {
+    try {
+      const { spawn } = require('child_process');
+      const phpScript = path.resolve(__dirname, '../../verify-wp-password.php');
+      
+      // Spawn PHP process - credentials passed via stdin (SECURE)
+      const php = spawn('php', [phpScript], {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 10000,
+      });
+      
+      let stdout = '';
+      let stderr = '';
+      
+      php.stdout.on('data', (data: Buffer) => {
+        stdout += data.toString();
+      });
+      
+      php.stderr.on('data', (data: Buffer) => {
+        stderr += data.toString();
+      });
+      
+      php.on('close', (code: number) => {
+        try {
+          // Parse JSON response from PHP script
+          const result = JSON.parse(stdout.trim());
+          if (result.success === true) {
+            logger.debug('[WordPress Auth] PHP verification: success', { method: result.method });
+            resolve(true);
+          } else {
+            logger.debug('[WordPress Auth] PHP verification: failed', { error: result.error });
+            resolve(false);
+          }
+        } catch (parseError) {
+          // Fallback: check for legacy TRUE/FALSE in output
+          if (stdout.includes('TRUE') || stdout.includes('"success":true')) {
+            resolve(true);
+          } else {
+            logger.debug('[WordPress Auth] PHP verification: parse error or failed');
+            resolve(false);
+          }
+        }
+      });
+      
+      php.on('error', (err: Error) => {
+        logger.warn('[WordPress Auth] PHP spawn error', { message: err.message });
+        resolve(false);
+      });
+      
+      // Send credentials via stdin as JSON (SECURE - not in command line)
+      const input = JSON.stringify({ email, password });
+      php.stdin.write(input);
+      php.stdin.end();
+      
+    } catch (error: any) {
+      logger.warn('[WordPress Auth] PHP verification error', { message: error.message });
+      resolve(false);
     }
-    logger.warn('[WordPress Auth] PHP verification error', { message: error.message });
-    return false;
-  }
+  });
 }
 
 // WordPress password verification - PRIMARY METHOD: PHP-based (most reliable)

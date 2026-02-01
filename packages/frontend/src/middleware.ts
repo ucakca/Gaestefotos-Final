@@ -60,10 +60,17 @@ export async function middleware(request: NextRequest) {
   const publicRoutes = ['/login', '/e', '/e2', '/i', '/s', '/s2'];
   
   const { pathname } = request.nextUrl;
+  const host = (request.headers.get('host') || '').toLowerCase();
+
+  // Redirect root path on app.* to /login (landing page is on main WordPress site)
+  if (pathname === '/' && host.includes('app.')) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/login';
+    return NextResponse.redirect(url);
+  }
 
   // Hard-disable legacy /admin UI on the public app domain.
   // Admin/host operations live on the dedicated dash domain.
-  const host = (request.headers.get('host') || '').toLowerCase();
   if (pathname.startsWith('/admin') && host.includes('app.')) {
     const url = new URL(request.url);
     url.hostname = host.replace(/^app\./, 'dash.');

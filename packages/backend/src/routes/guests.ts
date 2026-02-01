@@ -4,6 +4,7 @@ import { randomString } from '@gaestefotos/shared';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, hasEventManageAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 
 const router = Router();
 
@@ -39,7 +40,7 @@ router.get('/:eventId/guests', async (req: AuthRequest, res: Response) => {
 
     res.json({ guests });
   } catch (error) {
-    logger.error('Get guests error', { error: (error as any)?.message || String(error), eventId: req.params.eventId });
+    logger.error('Get guests error', { error: getErrorMessage(error), eventId: req.params.eventId });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -79,7 +80,7 @@ router.post('/:eventId/guests', async (req: AuthRequest, res: Response) => {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    logger.error('Create guest error', { error: (error as any)?.message || String(error), eventId: req.params.eventId });
+    logger.error('Create guest error', { error: getErrorMessage(error), eventId: req.params.eventId });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -115,7 +116,7 @@ router.put(
 
       res.json({ guest: updatedGuest });
     } catch (error) {
-      logger.error('Update guest error', { error: (error as any)?.message || String(error), eventId: req.params.eventId, guestId: req.params.guestId });
+      logger.error('Update guest error', { error: getErrorMessage(error), eventId: req.params.eventId, guestId: req.params.guestId });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -148,7 +149,7 @@ router.delete(
 
       res.json({ message: 'Guest deleted' });
     } catch (error) {
-      logger.error('Delete guest error', { error: (error as any)?.message || String(error), eventId: req.params.eventId, guestId: req.params.guestId });
+      logger.error('Delete guest error', { error: getErrorMessage(error), eventId: req.params.eventId, guestId: req.params.guestId });
       res.status(500).json({ error: 'Internal server error' });
     }
   }

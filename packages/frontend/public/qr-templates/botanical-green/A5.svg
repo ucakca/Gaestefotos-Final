@@ -26,9 +26,9 @@
   <circle cx="560" cy="570" r="5" class="gf-accent" opacity="0.5" />
   <circle cx="920" cy="570" r="5" class="gf-accent" opacity="0.5" />
 
-  <text id="gf:text:eventName" x="740" y="680" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="58" font-weight="600" class="gf-accent">Anna & Ben</text>
+  <text id="gf:text:eventName" x="740" y="680" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="58" font-weight="600" class="gf-accent">Anna &amp; Ben</text>
 
-  <rect id="gf:qr" x="515" y="860" width="450" height="450" rx="28" fill="#ffffff" stroke="var(--gf-accent)" stroke-width="7" />
+  <rect id="gf:qr" x="335" y="580" width="380" height="380" rx="28" fill="#ffffff" stroke="var(--gf-accent)" stroke-width="7" />
 
   <text id="gf:text:callToAction" x="740" y="1460" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="42" font-weight="500" class="gf-text">Fotos jetzt teilen</text>
 

@@ -24,6 +24,9 @@ import {
   Flag,
   TrendingUp,
   Image as ImageIcon,
+  Shield,
+  Palette,
+  QrCode,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -40,11 +43,13 @@ import {
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'System', href: '/system', icon: Server },
+  { name: 'Rate Limits', href: '/system/rate-limits', icon: Shield },
   { name: 'Ops', href: '/ops', icon: Activity },
   { name: 'Analytics', href: '/analytics', icon: TrendingUp },
   { name: 'Photos', href: '/photos', icon: ImageIcon },
   { name: 'Impersonation', href: '/impersonation', icon: UserCog },
   { name: 'Packages', href: '/packages', icon: Package },
+  { name: 'QR-Templates', href: '/manage/qr-templates', icon: QrCode },
   { name: 'Feature Flags', href: '/feature-flags', icon: Flag },
   { name: 'API Keys', href: '/api-keys', icon: KeyRound },
   { name: 'E-Mail Templates', href: '/email-templates', icon: Mail },
@@ -58,6 +63,7 @@ const navigation = [
   { name: 'CMS Sync', href: '/cms', icon: RefreshCw },
   { name: 'Logs', href: '/logs', icon: FileText },
   { name: 'Einstellungen', href: '/settings', icon: Settings },
+  { name: 'Theme', href: '/settings/theme', icon: Palette },
 ];
 
 const helpByHref: Record<string, { title: string; body: string }> = {
@@ -68,6 +74,10 @@ const helpByHref: Record<string, { title: string; body: string }> = {
   '/system': {
     title: 'System',
     body: 'Health-Checks für app/dash/API und _next Assets. Wenn hier Fehler auftauchen: Deploy-Reihenfolge (stop → build → start) prüfen.',
+  },
+  '/system/rate-limits': {
+    title: 'Rate Limits',
+    body: 'Übersicht aller aktiven Rate Limits für API, Auth, Uploads. Zeigt Fenster-Dauer und Max-Requests pro Kategorie.',
   },
   '/ops': {
     title: 'Ops',
@@ -132,6 +142,14 @@ const helpByHref: Record<string, { title: string; body: string }> = {
   '/settings': {
     title: 'Einstellungen',
     body: 'Globale App Settings (Theme Tokens, Texte, Consent). Änderungen wirken sofort – vorsichtig speichern.',
+  },
+  '/settings/theme': {
+    title: 'Theme',
+    body: 'CSS-Variablen für App-Farben anpassen. Änderungen wirken auf Host-Dashboard und Gäste-Seiten.',
+  },
+  '/manage/qr-templates': {
+    title: 'QR-Templates',
+    body: 'SVG-Vorlagen für QR-Code-Designer verwalten. Templates können für verschiedene Formate (A6, A5, Story, Square) erstellt werden.',
   },
 };
 

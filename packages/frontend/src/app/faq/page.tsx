@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { sanitizeCmsHtml } from '@/lib/sanitize';
 
 const localizeCmsHtml = (html: string): string => {
   const rules: Array<[RegExp, string]> = [
@@ -75,7 +76,7 @@ export default function FaqPage() {
       {!loading && !error && snapshot?.html ? (
         <div
           className="prose prose-invert mt-4 max-w-none"
-          dangerouslySetInnerHTML={{ __html: localizeCmsHtml(String(snapshot.html)) }}
+          dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(localizeCmsHtml(String(snapshot.html))) }}
         />
       ) : null}
     </div>

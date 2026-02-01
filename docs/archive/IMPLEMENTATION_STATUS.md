@@ -1,193 +1,185 @@
-# 🚀 Gästefotos V2 - Implementation Status
+# 📊 Implementierungs-Status: Optionen 1+2+3
 
-## ✅ Vollständig implementiert
-
-### Backend (100%)
-- ✅ **Database**: Prisma Schema mit PostgreSQL
-- ✅ **Authentication**: JWT-basiert (Register, Login, Me)
-- ✅ **Events**: CRUD vollständig
-- ✅ **Guests**: CRUD + RSVP
-- ✅ **Photos**: Upload, Approve, Reject, Delete
-- ✅ **Storage**: SeaweedFS S3 Integration
-- ✅ **Image Processing**: Sharp (Thumbnails, Resize, Optimierung)
-- ✅ **WebSocket**: Socket.io für Realtime Updates
-
-### Frontend (100%)
-- ✅ **Authentication**: Login/Register Pages
-- ✅ **Dashboard**: Event-Übersicht
-- ✅ **Event Management**: Create, Edit, Detail, Delete
-- ✅ **Photo Management**: Upload, Gallery, Moderation
-- ✅ **Guest Management**: List, Add, Delete, RSVP
-- ✅ **Public Pages**: Event Page, Invitation, Live Wall, Camera
-- ✅ **Components**: Envelope, PhotoUpload, Gallery, QRCode, Toast
-- ✅ **Realtime**: WebSocket Integration mit Hooks
-- ✅ **Animations**: Framer Motion überall
-
-### Features
-- ✅ **Digitaler Umschlag**: 3D-Animation mit Framer Motion
-- ✅ **RSVP Flow**: Mit Optimistic UI
-- ✅ **Photo Upload**: Drag & Drop mit Progress
-- ✅ **Mystery Mode**: Configurierbar per Event
-- ✅ **Live Wall**: Grid & Slideshow mit Auto-Advance
-- ✅ **Camera Page**: Dark Mode UI für Events
-- ✅ **Photo Moderation**: Admin-Interface
-- ✅ **QR-Code**: Generator für Event-URLs
-- ✅ **Toast Notifications**: Global Notification System
+**Letzte Aktualisierung:** 23. Januar 2026, 23:58 Uhr  
+**Gesamtfortschritt:** ~70% abgeschlossen
 
 ---
 
-## 📦 Dependencies
+## ✅ ABGESCHLOSSEN
 
-### Backend
-```json
-{
-  "express": "^4.18.2",
-  "socket.io": "^4.7.2",
-  "prisma": "^5.7.1",
-  "@prisma/client": "^5.7.0",
-  "bcryptjs": "^2.4.3",
-  "jsonwebtoken": "^9.0.2",
-  "@aws-sdk/client-s3": "^3.490.0",
-  "@aws-sdk/s3-request-presigner": "^3.490.0",
-  "sharp": "^0.32.6",
-  "multer": "^1.4.5-lts.1"
+### Phase 0: Type-Safety (100%)
+- ✅ Frontend: triggerUploadConfetti Import
+- ✅ Backend: 69 Type-Errors behoben
+- ✅ Prisma Schema: Alle Felder korrekt
+- ✅ Build-Tests: Frontend + Backend erfolgreich
+
+### Phase 1: Deployment-Prep (100%)
+- ✅ Frontend Build erfolgreich (44 routes)
+- ✅ Dependencies installiert
+- ✅ Dokumentation erstellt
+
+### Phase 2: Performance-Optimierungen (100%)
+
+#### 2.1 Redis-Caching ✅
+**Dateien:**
+- `backend/src/services/cache/redis.ts` - Redis Client + Helpers
+- `backend/src/middleware/cacheMiddleware.ts` - Express Middleware
+- `backend/src/utils/cacheInvalidation.ts` - Cache Invalidierung
+- `backend/src/index.ts` - Redis Init + Shutdown
+
+**Features:**
+- Redis Client mit Auto-Reconnect
+- Cache Get/Set/Delete/Invalidate
+- Cache TTL Presets (2min, 5min, 10min, 30min)
+- Mock Redis für Development
+- Graceful Shutdown Integration
+
+#### 2.2 Image-Optimization ✅
+**Dateien:**
+- `frontend/src/components/OptimizedImage.tsx`
+- `frontend/src/components/OptimizedImage.tsx::GalleryImage`
+
+**Features:**
+- Next.js Image Component
+- Lazy Loading
+- Blur Placeholder
+- Responsive Sizes
+- Loading Skeleton
+- Error States
+
+#### 2.3 CDN-Integration ✅
+**Dateien:**
+- `backend/src/config/cdn.ts`
+
+**Features:**
+- Cloudflare CDN Config
+- getCdnUrl() Helper
+- Cache-Control Headers
+- CDN-Cache-Control Headers
+
+### Phase 3: Gästegruppen-System (100%)
+
+#### 3.1 Database Schema ✅
+**Dateien:**
+- `backend/prisma/schema.prisma` - GuestGroup Model + Guest.groupId
+- `backend/prisma/migrations/add_guest_groups/migration.sql`
+
+**Models:**
+```prisma
+model GuestGroup {
+  id          String   @id @default(uuid())
+  eventId     String
+  name        String
+  description String?
+  color       String?
+  order       Int      @default(0)
+  guests      Guest[]
+}
+
+model Guest {
+  // + groupId String?
+  // + group   GuestGroup?
 }
 ```
 
-### Frontend
-```json
-{
-  "next": "14.0.4",
-  "react": "^18",
-  "react-dom": "^18",
-  "tailwindcss": "^3.3.0",
-  "framer-motion": "^10.16.16",
-  "zustand": "^4.4.7",
-  "socket.io-client": "^4.6.0",
-  "qrcode.react": "^3.1.0",
-  "react-dropzone": "^14.2.3",
-  "axios": "^1.6.2"
-}
-```
+#### 3.2 Backend API ✅
+**Dateien:**
+- `backend/src/services/guestGroups.ts` - Business Logic
+- `backend/src/routes/guestGroups.ts` - API Routes
+- `backend/src/index.ts` - Route Registration
+
+**Endpoints:**
+- `GET /api/events/:id/guest-groups` - List all
+- `GET /api/events/:id/guest-groups/:groupId` - Get one
+- `POST /api/events/:id/guest-groups` - Create
+- `PUT /api/events/:id/guest-groups/:groupId` - Update
+- `DELETE /api/events/:id/guest-groups/:groupId` - Delete
+- `PUT /api/events/:id/guests/:guestId/group` - Assign
+- `POST /api/events/:id/guests/bulk-assign` - Bulk assign
+- `POST /api/events/:id/guest-groups/reorder` - Reorder
+
+**Features:**
+- Auto-generated colors
+- Bulk assignment
+- Drag & drop reordering
+- Cache invalidation
+
+#### 3.3 Frontend UI ✅
+**Dateien:**
+- `frontend/src/components/guest-groups/GuestGroupManager.tsx`
+- `frontend/src/components/guest-groups/GuestGroupForm.tsx`
+- `frontend/src/components/guest-groups/GuestGroupBadge.tsx`
+
+**Features:**
+- CRUD Operations
+- Color Picker (8 Presets)
+- Guest Count Display
+- Delete Confirmation
+- Responsive Design
 
 ---
 
-## 🔧 Setup-Schritte
+## 🔧 IN ARBEIT
 
-### 1. Dependencies installieren
-```bash
-cd /root/gaestefotos-app-v2
-pnpm install
-```
+### Phase 4: Dynamische Einladungen (~30%)
 
-### 2. Backend Setup
-```bash
-cd packages/backend
-
-# .env erstellen
-cp .env.example .env
-# .env anpassen:
-# - DATABASE_URL (PostgreSQL)
-# - JWT_SECRET
-# - SEAWEEDFS_ENDPOINT (z.B. localhost:8333)
-# - SEAWEEDFS_ACCESS_KEY
-# - SEAWEEDFS_SECRET_KEY
-
-# Database migrieren
-pnpm prisma generate
-pnpm prisma migrate dev --name init
-```
-
-### 3. Frontend Setup
-```bash
-cd packages/frontend
-
-# .env.local erstellen
-cp .env.example .env.local
-# .env.local anpassen:
-# - NEXT_PUBLIC_API_URL (z.B. http://localhost:8001)
-# - NEXT_PUBLIC_WS_URL (z.B. http://localhost:8001)
-```
-
-### 4. Shared Package builden
-```bash
-cd packages/shared
-pnpm build
-```
-
-### 5. Development starten
-```bash
-# Root
-pnpm dev
-
-# Oder einzeln:
-pnpm --filter @gaestefotos/backend dev
-pnpm --filter @gaestefotos/frontend dev
-```
+#### 4.1 Database Schema (Next)
+**TODO:**
+- InvitationSection Model
+- SectionGroupAccess Model
+- SectionType Enum
+- Migration erstellen
 
 ---
 
-## 🌐 SeaweedFS Konfiguration
+## ⏳ AUSSTEHEND
 
-### Endpoint
-Standard: `localhost:8333` (S3 API Port)
+### Phase 4.2-4.4: Invitation Features (0%)
+- Section Editor UI
+- Drag & Drop Builder
+- Conditional Rendering
+- Templates & Presets
 
-### Bucket
-Standard: `gaestefotos-v2`
-
-### Environment Variables
-```env
-SEAWEEDFS_ENDPOINT=localhost:8333
-SEAWEEDFS_ACCESS_KEY=admin
-SEAWEEDFS_SECRET_KEY=password
-SEAWEEDFS_BUCKET=gaestefotos-v2
-SEAWEEDFS_SECURE=false
-```
+### Phase 5: Testing + Dokumentation (0%)
+- Integration Tests
+- E2E Tests
+- API-Dokumentation
+- User-Guide
 
 ---
 
-## 📁 Projekt-Struktur
+## 📈 Metrics
 
-```
-gaestefotos-app-v2/
-├── packages/
-│   ├── shared/          # Shared Types & Utils
-│   ├── backend/         # Node.js/Express Backend
-│   │   ├── src/
-│   │   │   ├── routes/  # API Routes
-│   │   │   ├── services/ # Storage, Image Processing
-│   │   │   ├── middleware/ # Auth
-│   │   │   └── index.ts
-│   │   └── prisma/      # Database Schema
-│   └── frontend/        # Next.js Frontend
-│       └── src/
-│           ├── app/     # Next.js App Router
-│           ├── components/ # React Components
-│           ├── lib/     # API Client, WebSocket
-│           ├── store/   # Zustand Stores
-│           └── hooks/   # Custom Hooks
-└── package.json         # Monorepo Root
-```
+**Dateien erstellt:** 15  
+**Dateien modifiziert:** 6  
+**Zeilen Code:** ~2.500  
+**Zeit investiert:** ~2,5 Stunden  
+**Geschätzte verbleibende Zeit:** ~20 Stunden
 
 ---
 
-## 🎯 Nächste Schritte (Optional)
+## 🚀 Nächste Schritte
 
-1. ⏭️ Email Integration (Einladungen versenden)
-2. ⏭️ Bulk Operations (Photo Moderation)
-3. ⏭️ Analytics Dashboard
-4. ⏭️ Export-Funktionen (Photos, Guest List)
-5. ⏭️ Multi-Language Support
-6. ⏭️ Testing (Jest, Playwright)
+1. ✅ Prisma Generate ausführen
+2. 🔧 InvitationSection Schema erstellen
+3. 🔧 Section Service + Routes
+4. 🔧 Section Editor UI
+5. ⏳ Testing + Dokumentation
 
 ---
 
-## ✅ Status: PRODUKTIONSBEREIT
+## ✅ Deployment-Ready Features
 
-Alle geplanten Features sind implementiert! 🎉
+**Sofort deploybar:**
+- ✅ Type-Safety Fixes
+- ✅ Quick Wins (Package A)
+- ✅ Gallery Improvements (Package B.2)
+- ✅ Redis-Caching (Optional, via REDIS_ENABLED)
+- ✅ Gästegruppen-System (nach Migration)
 
-Die App ist bereit für:
-- ✅ Development Testing
-- ✅ SeaweedFS Integration
-- ✅ Production Deployment
+**Erfordert Migration:**
+- Gästegruppen: `npx prisma migrate deploy`
 
+**Erfordert Env-Vars:**
+- Redis: `REDIS_URL`, `REDIS_ENABLED`
+- CDN: `CDN_ENABLED`, `CDN_DOMAIN`

@@ -400,7 +400,7 @@ Dashboard: ${dashboardUrl}
     photoCount: number;
   }) {
     if (!this.transporter || !this.config) {
-      console.warn('Email-Service nicht konfiguriert - Upload-Benachrichtigung übersprungen');
+      logger.warn('Email-Service nicht konfiguriert - Upload-Benachrichtigung übersprungen');
       return;
     }
 

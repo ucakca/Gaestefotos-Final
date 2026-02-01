@@ -127,7 +127,7 @@ export default function CameraPage() {
       <MotionIconButton
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        onClick={() => router.push(`/e/${slug}`)}
+        onClick={() => router.push(`/e3/${slug}`)}
         icon={<ArrowLeft className="w-6 h-6" />}
         variant="ghost"
         size="lg"

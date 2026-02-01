@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/compone
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import api from '@/lib/api';
+import { useUploadStore } from '@/store/uploadStore';
 
 /**
  * UploadModal - v0-Style Upload Modal
@@ -65,6 +66,9 @@ export default function UploadModal({
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Global upload store for background uploads
+  const { addUpload, updateProgress, setStatus } = useUploadStore();
 
   // Handle file selection
   const handleFiles = useCallback((newFiles: FileList | File[]) => {
@@ -140,95 +144,6 @@ export default function UploadModal({
     });
   }, []);
 
-  // Upload files
-  const uploadFiles = useCallback(async () => {
-    if (files.length === 0) return;
-    if (!uploaderName.trim()) return;
-
-    setIsUploading(true);
-
-    // Save uploader name to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('guestUploaderName', uploaderName.trim());
-    }
-
-    // Upload each file
-    for (const uploadFile of files) {
-      if (uploadFile.status !== 'pending') continue;
-
-      try {
-        // Update status to uploading
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === uploadFile.id ? { ...f, status: 'uploading' as const } : f
-          )
-        );
-
-        // Create form data
-        const formData = new FormData();
-        formData.append('file', uploadFile.file);
-        formData.append('uploaderName', uploaderName.trim());
-        if (selectedCategory) {
-          formData.append('categoryId', selectedCategory);
-        }
-        if (challengeId) {
-          formData.append('challengeId', challengeId);
-        }
-
-        // Upload with progress tracking
-        await api.post(`/events/${eventId}/photos/upload`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-          onUploadProgress: (progressEvent) => {
-            const progress = progressEvent.total
-              ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
-              : 0;
-            setFiles((prev) =>
-              prev.map((f) =>
-                f.id === uploadFile.id ? { ...f, progress } : f
-              )
-            );
-          },
-        });
-
-        // Mark as success
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === uploadFile.id
-              ? { ...f, status: 'success' as const, progress: 100 }
-              : f
-          )
-        );
-      } catch (error: any) {
-        // Mark as error
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === uploadFile.id
-              ? {
-                  ...f,
-                  status: 'error' as const,
-                  error: error?.response?.data?.error || 'Upload fehlgeschlagen',
-                }
-              : f
-          )
-        );
-      }
-    }
-
-    setIsUploading(false);
-
-    // Check if all successful
-    const allSuccess = files.every((f) => f.status === 'success');
-    if (allSuccess) {
-      onUploadSuccess?.();
-      // Close after short delay
-      setTimeout(() => {
-        handleClose();
-      }, 1000);
-    }
-  }, [files, uploaderName, selectedCategory, eventId, onUploadSuccess]);
-
   // Close modal
   const handleClose = useCallback(() => {
     // Revoke all preview URLs
@@ -237,6 +152,64 @@ export default function UploadModal({
     setSelectedCategory('');
     onClose();
   }, [files, onClose]);
+
+  // Upload files - now uses global store for background uploads
+  const uploadFiles = useCallback(async () => {
+    if (files.length === 0) return;
+    if (!uploaderName.trim()) return;
+
+    // Save uploader name to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('guestUploaderName', uploaderName.trim());
+    }
+
+    // Add all files to global upload store
+    const pendingFiles = files.filter(f => f.status === 'pending');
+    pendingFiles.forEach(f => addUpload(f.id, f.file.name));
+    
+    // Close modal immediately - uploads continue in background
+    const filesToUpload = [...pendingFiles];
+    const categoryToUse = selectedCategory;
+    const nameToUse = uploaderName.trim();
+    handleClose();
+
+    // Upload each file sequentially (less server load)
+    for (const uploadFile of filesToUpload) {
+      try {
+        // Create form data
+        const formData = new FormData();
+        formData.append('file', uploadFile.file);
+        formData.append('uploaderName', nameToUse);
+        if (categoryToUse) {
+          formData.append('categoryId', categoryToUse);
+        }
+        if (challengeId) {
+          formData.append('challengeId', challengeId);
+        }
+
+        // Upload with progress tracking to global store
+        await api.post(`/events/${eventId}/photos/upload`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          onUploadProgress: (progressEvent) => {
+            const progress = progressEvent.total
+              ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
+              : 0;
+            updateProgress(uploadFile.id, progress);
+          },
+        });
+
+        // Mark as success in global store
+        setStatus(uploadFile.id, 'success');
+      } catch (error: any) {
+        // Mark as error in global store
+        setStatus(uploadFile.id, 'error', error?.response?.data?.error || 'Upload fehlgeschlagen');
+      }
+    }
+
+    onUploadSuccess?.();
+  }, [files, uploaderName, selectedCategory, eventId, challengeId, onUploadSuccess, addUpload, updateProgress, setStatus, handleClose]);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -298,7 +271,7 @@ export default function UploadModal({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`relative border-2 border-dashed rounded-2xl p-12 text-center transition-colors ${
+            className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-colors ${
               isDragging
                 ? 'border-app-accent bg-app-accent/10'
                 : 'border-app-border hover:border-app-accent/50'
@@ -319,8 +292,8 @@ export default function UploadModal({
               animate={{ scale: isDragging ? 1.05 : 1 }}
               className="flex flex-col items-center gap-4"
             >
-              <div className="w-16 h-16 rounded-full bg-app-accent/10 flex items-center justify-center">
-                <Upload className="w-8 h-8 text-app-accent" />
+              <div className="w-12 h-12 rounded-full bg-app-accent/10 flex items-center justify-center">
+                <Upload className="w-6 h-6 text-app-accent" />
               </div>
 
               <div>
@@ -352,7 +325,7 @@ export default function UploadModal({
                 {files.length} Datei{files.length !== 1 ? 'en' : ''} ausgewählt
               </h3>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 <AnimatePresence>
                   {files.map((uploadFile) => (
                     <motion.div

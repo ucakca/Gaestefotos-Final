@@ -1,5 +1,7 @@
 'use client';
 
+import logger from '@/lib/logger';
+
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { InvitationDesignConfig, INVITATION_SIZES, InvitationSizePreset, CanvasElementUnion, TextElement, ImageElement, ShapeElement } from '@gaestefotos/shared';
 import { InvitationCanvas } from './InvitationCanvas';
@@ -69,7 +71,7 @@ export function InvitationEditorPanel({
             body: JSON.stringify(design),
           });
         } catch (error) {
-          console.error('Failed to save invitation design:', error);
+          logger.error('Failed to save invitation design:', error);
         }
       }, 1000),
     [eventId]

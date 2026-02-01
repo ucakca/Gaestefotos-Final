@@ -25,7 +25,7 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
 
   const handleShare = async (photo: Photo) => {
     const shareUrl = eventSlug 
-      ? `${window.location.origin}/e/${eventSlug}?photo=${photo.id}`
+      ? `${window.location.origin}/e3/${eventSlug}?photo=${photo.id}`
       : photo.url || '';
 
     if (navigator.share && photo.url) {

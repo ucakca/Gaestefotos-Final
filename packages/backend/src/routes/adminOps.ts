@@ -348,4 +348,97 @@ router.get('/server', authMiddleware, requireRole('ADMIN'), async (_req: AuthReq
   });
 });
 
+router.get('/rate-limits', authMiddleware, requireRole('ADMIN'), async (_req: AuthRequest, res: Response) => {
+  const isDev = process.env.NODE_ENV === 'development';
+  const devMultiplier = isDev ? 10 : 1;
+
+  const limits = [
+    {
+      name: 'API General',
+      key: 'api',
+      windowMs: 15 * 60 * 1000,
+      max: 2000 * devMultiplier,
+      description: 'Allgemeine API-Anfragen',
+    },
+    {
+      name: 'Auth Login',
+      key: 'auth',
+      windowMs: 15 * 60 * 1000,
+      max: 20 * devMultiplier,
+      description: 'Login-Versuche (nur fehlgeschlagene zählen)',
+    },
+    {
+      name: 'WordPress SSO',
+      key: 'wordpress-sso',
+      windowMs: 15 * 60 * 1000,
+      max: 60 * devMultiplier,
+      description: 'SSO-Anfragen von WordPress',
+    },
+    {
+      name: '2FA Verify',
+      key: '2fa-verify',
+      windowMs: 10 * 60 * 1000,
+      max: 30 * devMultiplier,
+      description: '2FA-Verifizierungsversuche',
+    },
+    {
+      name: '2FA Setup',
+      key: '2fa-setup',
+      windowMs: 10 * 60 * 1000,
+      max: 20 * devMultiplier,
+      description: '2FA-Einrichtungsversuche',
+    },
+    {
+      name: 'Photo Upload (IP)',
+      key: 'photo-ip',
+      windowMs: 5 * 60 * 1000,
+      max: 120 * devMultiplier,
+      description: 'Foto-Uploads pro IP',
+    },
+    {
+      name: 'Photo Upload (Event)',
+      key: 'photo-event',
+      windowMs: 5 * 60 * 1000,
+      max: 1000 * devMultiplier,
+      description: 'Foto-Uploads pro Event',
+    },
+    {
+      name: 'Video Upload (IP)',
+      key: 'video-ip',
+      windowMs: 10 * 60 * 1000,
+      max: 20 * devMultiplier,
+      description: 'Video-Uploads pro IP',
+    },
+    {
+      name: 'Video Upload (Event)',
+      key: 'video-event',
+      windowMs: 10 * 60 * 1000,
+      max: 150 * devMultiplier,
+      description: 'Video-Uploads pro Event',
+    },
+    {
+      name: 'Password Verify',
+      key: 'password',
+      windowMs: 15 * 60 * 1000,
+      max: 10 * devMultiplier,
+      description: 'Passwort-Überprüfungen',
+    },
+    {
+      name: 'Admin Auth',
+      key: 'admin-auth',
+      windowMs: 15 * 60 * 1000,
+      max: 20,
+      description: 'Admin-Login-Versuche',
+    },
+  ];
+
+  res.json({
+    ok: true,
+    checkedAt: new Date().toISOString(),
+    environment: isDev ? 'development' : 'production',
+    devMultiplier,
+    limits,
+  });
+});
+
 export default router;

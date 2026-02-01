@@ -7,6 +7,7 @@ import prisma from '../config/database';
 import { authMiddleware, AuthRequest, issueEventAccessCookie, hasEventAccess, optionalAuthMiddleware, hasEventManageAccess } from '../middleware/auth';
 import { passwordLimiter } from '../middleware/rateLimit';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 import { randomString, slugify } from '@gaestefotos/shared';
 
 const router = Router();
@@ -257,7 +258,7 @@ router.get('/events/:eventId/invitations', authMiddleware, async (req: AuthReque
       })),
     });
   } catch (error) {
-    logger.error('List invitations error', { message: (error as any)?.message || String(error) });
+    logger.error('List invitations error', { message: getErrorMessage(error) });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -300,7 +301,7 @@ router.post('/events/:eventId/invitations/:invitationId/shortlinks', authMiddlew
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    logger.error('Create invitation shortlink error', { message: (error as any)?.message || String(error) });
+    logger.error('Create invitation shortlink error', { message: getErrorMessage(error) });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -383,7 +384,7 @@ router.post('/events/:eventId/invitations', authMiddleware, async (req: AuthRequ
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    logger.error('Create invitation error', { message: (error as any)?.message || String(error) });
+    logger.error('Create invitation error', { message: getErrorMessage(error) });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -434,7 +435,7 @@ router.put('/events/:eventId/invitations/:invitationId', authMiddleware, async (
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    logger.error('Update invitation error', { message: (error as any)?.message || String(error) });
+    logger.error('Update invitation error', { message: getErrorMessage(error) });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -481,7 +482,7 @@ router.get('/events/slug/:slug/invitations/public', async (req: AuthRequest, res
       invitations: invitations.map(serializeInvitation),
     });
   } catch (error) {
-    logger.error('Public list invitations error', { message: (error as any)?.message || String(error) });
+    logger.error('Public list invitations error', { message: getErrorMessage(error) });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -573,7 +574,7 @@ router.get('/invitations/slug/:slug', passwordLimiter, async (req: AuthRequest, 
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    logger.error('Public get invitation error', { message: (error as any)?.message || String(error) });
+    logger.error('Public get invitation error', { message: getErrorMessage(error) });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -650,7 +651,7 @@ router.post('/invitations/slug/:slug/rsvp', passwordLimiter, async (req: AuthReq
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    logger.error('Submit invitation RSVP error', { message: (error as any)?.message || String(error) });
+    logger.error('Submit invitation RSVP error', { message: getErrorMessage(error) });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -727,7 +728,7 @@ router.get('/invitations/slug/:slug/ics', passwordLimiter, async (req: AuthReque
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    logger.error('Invitation ICS error', { message: (error as any)?.message || String(error) });
+    logger.error('Invitation ICS error', { message: getErrorMessage(error) });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -798,7 +799,7 @@ router.get('/shortlinks/:code', async (req: AuthRequest, res: Response) => {
       },
     });
   } catch (error) {
-    logger.error('Resolve shortlink error', { message: (error as any)?.message || String(error) });
+    logger.error('Resolve shortlink error', { message: getErrorMessage(error) });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

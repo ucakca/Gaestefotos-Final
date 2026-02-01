@@ -8,6 +8,7 @@ import { storageService } from '../services/storage';
 import { imageProcessor } from '../services/imageProcessor';
 import { assertUploadWithinLimit } from '../services/packageLimits';
 import { logger } from '../utils/logger';
+import { io } from '../index';
 
 const router = Router();
 
@@ -55,11 +56,15 @@ const tusServer = new Server({
  */
 async function processCompletedUpload(upload: Upload): Promise<void> {
   const metadata = upload.metadata || {};
+  logger.info('TUS upload metadata received', { uploadId: upload.id, metadata: JSON.stringify(metadata) });
+  
   const eventId = metadata.eventId;
   const filename = metadata.filename || 'upload.jpg';
   const filetype = metadata.filetype || 'image/jpeg';
   const uploadedBy = metadata.uploadedBy || '';
   const categoryId = metadata.categoryId || null;
+
+  logger.info('TUS upload parsed values', { eventId, filename, uploadedBy, categoryId });
 
   if (!eventId) {
     logger.error('No eventId in upload metadata', { uploadId: upload.id, metadata });
@@ -131,10 +136,23 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
       });
       
       // Update URL
-      await prisma.photo.update({
+      const updatedPhoto = await prisma.photo.update({
         where: { id: photo.id },
         data: { url: `/api/photos/${photo.id}/file` },
       });
+      
+      // Emit WebSocket event for real-time updates
+      try {
+        io.to(`event:${eventId}`).emit('photo_uploaded', {
+          photo: {
+            ...updatedPhoto,
+            sizeBytes: updatedPhoto.sizeBytes?.toString(),
+          },
+        });
+        logger.info('TUS upload WebSocket event emitted', { eventId, photoId: photo.id });
+      } catch (wsError: any) {
+        logger.warn('Failed to emit WebSocket event for TUS upload', { error: wsError.message });
+      }
     }
     
     // Clean up temp file

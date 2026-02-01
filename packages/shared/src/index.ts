@@ -66,7 +66,7 @@ export type Category = {
   createdAt: Date;
 };
 export { formatDate, formatDateTime } from './utils/date';
-export { slugify, generateRandomCode, randomString } from './utils/string';
+export { slugify, generateRandomCode, randomString, generateEventSlug } from './utils/string';
 
 // Event helpers
 export const DEFAULT_EVENT_FEATURES_CONFIG = {

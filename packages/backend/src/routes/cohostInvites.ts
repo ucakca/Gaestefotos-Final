@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 import { assertFeatureEnabled, assertWithinLimit } from '../services/featureGate';
 
 const router = Router();
@@ -100,7 +101,7 @@ router.post('/accept', authMiddleware, async (req: AuthRequest, res: Response) =
     }
 
     logger.error('Accept cohost invite error', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
     });
     return res.status(500).json({ error: 'Internal server error' });
   }

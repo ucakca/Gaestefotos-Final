@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import AlbumNavigation from '@/components/AlbumNavigation';
 import BottomNavigation from '@/components/BottomNavigation';
+import { WifiBanner } from '@/components/WifiBanner';
 
 const EventHeader = dynamic(() => import('@/components/EventHeader'), { ssr: false });
 const ModernPhotoGrid = dynamic(() => import('@/components/ModernPhotoGrid'), { ssr: false });
@@ -322,6 +323,8 @@ export default function PublicEventPageV2() {
         guestId={undefined}
         uploaderName={undefined}
       />
+
+      <WifiBanner eventId={event.id} />
 
       <StoryViewer
         stories={stories}

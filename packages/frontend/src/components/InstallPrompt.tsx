@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -73,7 +74,7 @@ export default function InstallPrompt({ variant = 'guest' }: InstallPromptProps)
         setDeferredPrompt(null);
       }
     } catch (error) {
-      console.error('Install prompt error:', error);
+      logger.error('Install prompt error:', error);
     }
   };
 

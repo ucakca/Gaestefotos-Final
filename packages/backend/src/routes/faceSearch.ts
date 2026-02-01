@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { AuthRequest, hasEventAccess, optionalAuthMiddleware } from '../middleware/auth';
 import { extractFaceDescriptorFromImage, searchPhotosByFace } from '../services/faceSearch';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 import prisma from '../config/database';
 import { validateUploadedFile } from '../middleware/uploadSecurity';
 import { assertFeatureEnabled } from '../services/featureGate';
@@ -177,7 +178,7 @@ router.get(
       if (isHost || isAdmin) return res.json({ accepted: true });
       return res.json({ accepted: await isValidDbConsent(req, eventId) });
     } catch (error) {
-      logger.error('Error reading face search consent', { message: (error as any)?.message || String(error), eventId: req.params.eventId });
+      logger.error('Error reading face search consent', { message: getErrorMessage(error), eventId: req.params.eventId });
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -248,7 +249,7 @@ router.post(
       logger.info('Face search consent accepted', { eventId, ipHash });
       return res.json({ ok: true, accepted: true });
     } catch (error) {
-      logger.error('Error accepting face search consent', { message: (error as any)?.message || String(error), eventId: req.params.eventId });
+      logger.error('Error accepting face search consent', { message: getErrorMessage(error), eventId: req.params.eventId });
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -310,7 +311,7 @@ router.delete(
       logger.info('Face search consent revoked', { eventId, ipHash });
       return res.json({ ok: true, accepted: false });
     } catch (error) {
-      logger.error('Error revoking face search consent', { message: (error as any)?.message || String(error), eventId: req.params.eventId });
+      logger.error('Error revoking face search consent', { message: getErrorMessage(error), eventId: req.params.eventId });
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -430,7 +431,7 @@ router.post(
         message: `${results.length} Foto${results.length !== 1 ? 's' : ''} gefunden`,
       });
     } catch (error) {
-      logger.error('Error in face search', { message: (error as any)?.message || String(error), eventId: req.params.eventId });
+      logger.error('Error in face search', { message: getErrorMessage(error), eventId: req.params.eventId });
       res.status(500).json({ error: 'Fehler bei der Gesichtssuche' });
     }
   }

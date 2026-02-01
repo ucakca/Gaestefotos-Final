@@ -367,7 +367,7 @@ export default function PhotoLightbox({
                   src={currentPhoto.url}
                   alt={`Foto ${(selectedIndex ?? 0) + 1}`}
                   className="max-w-full max-h-full object-contain rounded-sm"
-                  style={{ maxHeight: 'calc(100vh - 200px)' }}
+                  style={{ maxHeight: 'calc(100vh - 280px)' }}
                 />
                 
                 {/* Challenge Badge */}
@@ -385,8 +385,8 @@ export default function PhotoLightbox({
             </AnimatePresence>
           </div>
 
-          {/* Bottom Bar - Instagram Style Actions */}
-          <div className="flex-shrink-0 bg-black/80 backdrop-blur-sm border-t border-white/10">
+          {/* Bottom Bar - Instagram Style Actions - Fixed at bottom with max-height */}
+          <div className="flex-shrink-0 bg-black/80 backdrop-blur-sm border-t border-white/10 max-h-[40vh] overflow-y-auto">
             <div className="p-4 space-y-2">
               {/* Action Buttons Row */}
               <div className="flex items-center justify-between">

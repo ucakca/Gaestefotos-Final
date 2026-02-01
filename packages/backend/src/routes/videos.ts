@@ -4,6 +4,7 @@ import prisma from '../config/database';
 import { authMiddleware, requireRole, AuthRequest, optionalAuthMiddleware, hasEventAccess, hasEventManageAccess, hasEventPermission, isPrivilegedRole } from '../middleware/auth';
 import { storageService } from '../services/storage';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 import { cache } from '../services/cache';
 import archiver from 'archiver';
 import { validateUploadedFile } from '../middleware/uploadSecurity';
@@ -293,7 +294,7 @@ router.post(
     res.status(201).json({ story });
   } catch (error: any) {
     logger.error('Fehler beim Erstellen der Story', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
       videoId: req.params.videoId,
     });
     res.status(500).json({ error: 'Interner Serverfehler' });
@@ -603,7 +604,7 @@ router.post(
       res.status(201).json({ video });
     } catch (error: any) {
       logger.error('Fehler beim Hochladen des Videos', {
-        message: (error as any)?.message || String(error),
+        message: getErrorMessage(error),
         eventId: req.params.eventId,
       });
       res.status(500).json({ error: 'Interner Serverfehler' });
@@ -664,7 +665,7 @@ router.get(
       res.send(fileBuffer);
     } catch (error: any) {
       logger.error('Error serving video', {
-        message: (error as any)?.message || String(error),
+        message: getErrorMessage(error),
         eventId: req.params.eventId,
         storagePath: (req.params as any).storagePath,
       });
@@ -772,7 +773,7 @@ router.get(
     res.send(fileBuffer);
   } catch (error: any) {
     logger.error('Fehler beim Download des Videos', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
       videoId: req.params.videoId,
     });
     res.status(500).json({ error: 'Ein interner Serverfehler ist aufgetreten' });
@@ -1259,11 +1260,11 @@ router.get(
         res.setHeader('Accept-Ranges', 'bytes');
         res.send(fileBuffer);
       } catch (error: any) {
-        logger.error('Error serving video file', { message: (error as any)?.message || String(error), videoId });
+        logger.error('Error serving video file', { message: getErrorMessage(error), videoId });
         res.status(500).json({ error: 'Fehler beim Laden des Videos' });
       }
     } catch (error: any) {
-      logger.error('Fehler beim Bereitstellen des Videos', { message: (error as any)?.message || String(error), videoId: req.params.videoId });
+      logger.error('Fehler beim Bereitstellen des Videos', { message: getErrorMessage(error), videoId: req.params.videoId });
       res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
@@ -1315,7 +1316,7 @@ router.post(
 
       res.json({ ok: true, videoId });
     } catch (error: any) {
-      logger.error('Mark video scan CLEAN failed', { message: (error as any)?.message || String(error), videoId: req.params.videoId });
+      logger.error('Mark video scan CLEAN failed', { message: getErrorMessage(error), videoId: req.params.videoId });
       res.status(500).json({ error: 'Internal server error' });
     }
   }

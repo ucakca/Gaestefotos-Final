@@ -33,15 +33,22 @@ export default function EventCard({ event, index = 0, photoCount = 0, guestCount
     : null;
   
   // Get package info (mock for now - would come from event data)
-  const packageType = (event as any).packageType || 'Basic';
+  const packageType = (event as any).packageType || 'Free';
   const isPast = event.dateTime && new Date(event.dateTime) < new Date();
   
-  // Calculate days until deletion (mock: 365 days after event date, or 90 days after deactivation)
+  // Calculate days until deletion based on package
+  // Free: 14 days after event, Premium: 365 days after event
   const getDaysUntilDeletion = (): number | null => {
     if (!event.dateTime) return null;
-    const eventDate = new Date(event.dateTime);
-    const deletionDate = new Date(eventDate);
-    deletionDate.setFullYear(deletionDate.getFullYear() + 1); // 1 year after event
+    if (!isPast) return null; // Only show for past events
+    
+    const eventEndDate = new Date(event.dateTime);
+    eventEndDate.setDate(eventEndDate.getDate() + 1); // +1 day buffer after event
+    
+    const deletionDate = new Date(eventEndDate);
+    const retentionDays = packageType === 'Free' ? 14 : 365;
+    deletionDate.setDate(deletionDate.getDate() + retentionDays);
+    
     const today = new Date();
     const diffTime = deletionDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));

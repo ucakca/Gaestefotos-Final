@@ -16,7 +16,7 @@ export default function LiveWallPage() {
   const [event, setEvent] = useState<EventType | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'grid' | 'slideshow'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'slideshow' | 'collage' | 'masonry' | 'floating'>('grid');
   const [sortMode, setSortMode] = useState<'newest' | 'random'>('newest');
   const [currentSlide, setCurrentSlide] = useState(0);
   const [realtimeEnabled, setRealtimeEnabled] = useState(true);
@@ -161,7 +161,7 @@ export default function LiveWallPage() {
   }
 
   const publicUrl = typeof window !== 'undefined' 
-    ? `${window.location.origin}/e/${slug}?source=qr`
+    ? `${window.location.origin}/e3/${slug}?source=qr`
     : '';
 
   return (
@@ -170,26 +170,39 @@ export default function LiveWallPage() {
       <div className="absolute top-0 left-0 right-0 z-10 bg-app-fg/50 p-4 flex justify-between items-center">
         <h1 className="text-2xl font-bold">{event.title}</h1>
         
-        <div className="flex gap-4 items-center">
-          <Button
-            onClick={() => setViewMode(viewMode === 'grid' ? 'slideshow' : 'grid')}
-            className="px-4 py-2 bg-app-bg/20 rounded hover:bg-app-bg/30"
-          >
-            {viewMode === 'grid' ? 'Slideshow' : 'Grid'}
-          </Button>
+        <div className="flex gap-2 items-center flex-wrap">
+          {/* View Mode Selector */}
+          <div className="flex bg-app-bg/10 rounded-lg p-1">
+            {(['grid', 'collage', 'masonry', 'floating', 'slideshow'] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                  viewMode === mode 
+                    ? 'bg-app-bg text-app-fg' 
+                    : 'text-app-bg/70 hover:text-app-bg'
+                }`}
+              >
+                {mode === 'grid' ? 'Grid' : 
+                 mode === 'collage' ? 'Collage' :
+                 mode === 'masonry' ? 'Masonry' :
+                 mode === 'floating' ? 'Floating' : 'Slideshow'}
+              </button>
+            ))}
+          </div>
 
           <Button
             onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
-            className="px-4 py-2 bg-app-bg/20 rounded hover:bg-app-bg/30"
+            className="px-3 py-1.5 bg-app-bg/20 rounded text-sm hover:bg-app-bg/30"
           >
-            {sortMode === 'newest' ? 'Neueste' : 'Zufall'}
+            {sortMode === 'newest' ? '🕐 Neu' : '🎲 Zufall'}
           </Button>
 
           <Button
             onClick={() => setRealtimeEnabled((v) => !v)}
-            className="px-4 py-2 bg-app-bg/20 rounded hover:bg-app-bg/30"
+            className={`px-3 py-1.5 rounded text-sm ${realtimeEnabled ? 'bg-green-500/30 text-green-200' : 'bg-app-bg/20'}`}
           >
-            {realtimeEnabled ? 'Realtime' : 'Polling'}
+            {realtimeEnabled ? '⚡ Live' : '🔄 Polling'}
           </Button>
           
           {/* QR Code */}
@@ -200,7 +213,7 @@ export default function LiveWallPage() {
       </div>
 
       {/* Content */}
-      {viewMode === 'grid' ? (
+      {viewMode === 'grid' && (
         <div className="pt-20 px-4 pb-4">
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
             <AnimatePresence initial={false}>
@@ -236,7 +249,145 @@ export default function LiveWallPage() {
             </AnimatePresence>
           </div>
         </div>
-      ) : (
+      )}
+
+      {/* Collage Mode - Mixed sizes with featured photos */}
+      {viewMode === 'collage' && (
+        <div className="pt-20 px-4 pb-4">
+          <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 auto-rows-[100px] md:auto-rows-[120px] lg:auto-rows-[150px]">
+            <AnimatePresence initial={false}>
+              {displayPhotos.slice(0, 24).map((photo, index) => {
+                // Make some photos larger for visual interest
+                const isLarge = index === 0 || index === 5 || index === 12;
+                const isMedium = index === 2 || index === 7 || index === 15;
+                
+                return (
+                  <motion.div
+                    key={photo.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+                    animate={{ 
+                      opacity: 1, 
+                      scale: 1, 
+                      rotate: newIds.has(photo.id) ? [0, 3, -3, 0] : 0,
+                    }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                    className={`bg-app-bg/10 rounded-lg overflow-hidden shadow-lg ${
+                      isLarge ? 'col-span-2 row-span-2' : 
+                      isMedium ? 'col-span-2' : ''
+                    } ${newIds.has(photo.id) ? 'ring-4 ring-yellow-400' : ''}`}
+                  >
+                    {photo.url && (
+                      <img
+                        src={photo.url}
+                        alt="Event Foto"
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                      />
+                    )}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+        </div>
+      )}
+
+      {/* Masonry Mode - Pinterest-style layout */}
+      {viewMode === 'masonry' && (
+        <div className="pt-20 px-4 pb-4">
+          <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3 space-y-3">
+            <AnimatePresence initial={false}>
+              {displayPhotos.map((photo, index) => (
+                <motion.div
+                  key={photo.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: 0,
+                    scale: newIds.has(photo.id) ? [1, 1.02, 1] : 1,
+                  }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4, delay: index * 0.03 }}
+                  className={`break-inside-avoid rounded-xl overflow-hidden shadow-lg bg-app-bg/10 ${
+                    newIds.has(photo.id) ? 'ring-4 ring-yellow-400' : ''
+                  }`}
+                >
+                  {photo.url && (
+                    <img
+                      src={photo.url}
+                      alt="Event Foto"
+                      className="w-full h-auto"
+                    />
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Mode - Animated floating photos */}
+      {viewMode === 'floating' && (
+        <div className="pt-20 min-h-screen relative overflow-hidden">
+          <AnimatePresence>
+            {displayPhotos.slice(0, 15).map((photo, index) => {
+              const randomX = (index * 17 + 10) % 80;
+              const randomY = (index * 23 + 5) % 70;
+              const randomRotate = ((index * 7) % 30) - 15;
+              const randomScale = 0.8 + (index % 3) * 0.15;
+              const randomDelay = index * 0.2;
+              
+              return (
+                <motion.div
+                  key={photo.id}
+                  initial={{ opacity: 0, scale: 0, rotate: randomRotate - 20 }}
+                  animate={{ 
+                    opacity: 1, 
+                    scale: randomScale,
+                    rotate: randomRotate,
+                    x: [0, 10, -10, 0],
+                    y: [0, -10, 10, 0],
+                  }}
+                  exit={{ opacity: 0, scale: 0 }}
+                  transition={{ 
+                    duration: 0.6, 
+                    delay: randomDelay,
+                    x: { duration: 8 + index, repeat: Infinity, ease: 'easeInOut' },
+                    y: { duration: 10 + index, repeat: Infinity, ease: 'easeInOut' },
+                  }}
+                  style={{
+                    position: 'absolute',
+                    left: `${randomX}%`,
+                    top: `${randomY + 10}%`,
+                  }}
+                  className={`w-48 md:w-64 lg:w-80 rounded-xl overflow-hidden shadow-2xl bg-white p-2 ${
+                    newIds.has(photo.id) ? 'ring-4 ring-yellow-400 z-50' : ''
+                  }`}
+                >
+                  {photo.url && (
+                    <img
+                      src={photo.url}
+                      alt="Event Foto"
+                      className="w-full h-auto rounded-lg"
+                    />
+                  )}
+                  {/* Polaroid-style caption area */}
+                  <div className="h-8 mt-2" />
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+          
+          {/* Photo count badge */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-app-fg/80 backdrop-blur px-6 py-3 rounded-full">
+            <span className="text-app-bg font-medium">{photos.length} Fotos</span>
+          </div>
+        </div>
+      )}
+
+      {/* Slideshow Mode */}
+      {viewMode === 'slideshow' && (
         <div className="min-h-screen flex items-center justify-center relative">
           <AnimatePresence mode="wait">
             {displayPhotos.length > 0 && (

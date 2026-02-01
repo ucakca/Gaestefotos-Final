@@ -5,9 +5,11 @@ import archiver from 'archiver';
 import multer from 'multer';
 import prisma from '../config/database';
 import { authMiddleware, requireRole, AuthRequest, issueEventAccessCookie, optionalAuthMiddleware, hasEventAccess, isPrivilegedRole, hasEventManageAccess, hasEventPermission } from '../middleware/auth';
-import { randomString, slugify, DEFAULT_EVENT_FEATURES_CONFIG, normalizeEventFeaturesConfig } from '@gaestefotos/shared';
+import { randomString, slugify, generateEventSlug, DEFAULT_EVENT_FEATURES_CONFIG, normalizeEventFeaturesConfig } from '@gaestefotos/shared';
 
 import { logger } from '../utils/logger';
+import { getErrorMessage, getJsonField } from '../utils/typeHelpers';
+import { DesignConfig, FeaturesConfig } from '../schemas/jsonFields';
 import { getActiveEventEntitlement, getEffectiveEventPackage, getEventUsageBreakdown, bigintToString } from '../services/packageLimits';
 import { getEventFeatures } from '../services/featureGate';
 import { getEventStorageEndsAt } from '../services/storagePolicy';
@@ -121,7 +123,7 @@ async function trackEventTrafficBySource(eventId: string, source: string) {
     });
   } catch (error) {
     logger.error('trackEventTrafficBySource failed', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
       eventId,
       source,
     });
@@ -141,7 +143,7 @@ const qrPdfOptionsSchema = z.object({
 
 const qrTemplateConfigSchema = z.object({
   templateSlug: z.string().min(1).max(100),
-  format: z.enum(['A6', 'A5']),
+  format: z.enum(['A6', 'A5', 'story', 'square']),
   headline: z.string().min(1).max(120),
   subline: z.string().min(0).max(160),
   eventName: z.string().min(0).max(120),
@@ -149,6 +151,8 @@ const qrTemplateConfigSchema = z.object({
   bgColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   textColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  qrDotStyle: z.enum(['square', 'rounded', 'dots', 'classy', 'classy-rounded']).optional(),
+  qrCornerStyle: z.enum(['square', 'extra-rounded', 'dot']).optional(),
 });
 
 function getPrintPixels(format: 'A6' | 'A5') {
@@ -195,6 +199,40 @@ function drawCropMarks(page: any, trim: { x: number; y: number; w: number; h: nu
   page.drawLine({ start: { x: right + offset, y: top }, end: { x: right + offset + markLen, y: top }, thickness, color });
   page.drawLine({ start: { x: right, y: top + offset }, end: { x: right, y: top + offset + markLen }, thickness, color });
 }
+
+function drawFoldLines(page: any, pageW: number, pageH: number, foldY: number) {
+  // Draw dashed fold line across the page
+  const dashLen = 8;
+  const gapLen = 4;
+  const thickness = 0.5;
+  const color = rgb(0.6, 0.6, 0.6);
+  
+  let x = 10;
+  while (x < pageW - 10) {
+    const endX = Math.min(x + dashLen, pageW - 10);
+    page.drawLine({ start: { x, y: foldY }, end: { x: endX, y: foldY }, thickness, color });
+    x += dashLen + gapLen;
+  }
+  
+  // Add scissors icon hint at the edge
+  page.drawLine({ start: { x: 5, y: foldY - 3 }, end: { x: 10, y: foldY }, thickness: 0.8, color });
+  page.drawLine({ start: { x: 5, y: foldY + 3 }, end: { x: 10, y: foldY }, thickness: 0.8, color });
+}
+
+function getDiyFormatMm(format: string): { widthMm: number; heightMm: number; foldable: boolean } {
+  switch (format) {
+    case 'a6-tent': return { widthMm: 105, heightMm: 148 * 2, foldable: true }; // A6 doubled for tent card
+    case 'a5-tent': return { widthMm: 148, heightMm: 210 * 2, foldable: true }; // A5 doubled for tent card
+    case 'a4-poster': return { widthMm: 210, heightMm: 297, foldable: false };
+    case 'a3-poster': return { widthMm: 297, heightMm: 420, foldable: false };
+    default: return { widthMm: 105, heightMm: 148 * 2, foldable: true };
+  }
+}
+
+const diyExportSchema = z.object({
+  format: z.enum(['a6-tent', 'a5-tent', 'a4-poster', 'a3-poster', 'cards']),
+  svg: z.string().min(10).max(2_000_000),
+});
 
 function isSvgObviouslyUnsafe(svg: string): boolean {
   const s = svg.toLowerCase();
@@ -256,9 +294,33 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       },
     });
 
-    res.json({ events });
+    // Map _count to frontend-friendly fields and add viewCount
+    const eventsWithCounts = events.map(event => ({
+      ...event,
+      photoCount: event._count?.photos || 0,
+      guestCount: event._count?.guests || 0,
+      viewCount: (event as any).visitCount || 0,
+      pendingCount: 0, // Will be computed below
+    }));
+
+    // Get pending counts for all events
+    const pendingCounts = await prisma.photo.groupBy({
+      by: ['eventId'],
+      where: {
+        eventId: { in: events.map(e => e.id) },
+        status: 'PENDING',
+      },
+      _count: true,
+    });
+
+    const pendingMap = new Map(pendingCounts.map(p => [p.eventId, p._count]));
+    eventsWithCounts.forEach(event => {
+      event.pendingCount = pendingMap.get(event.id) || 0;
+    });
+
+    res.json({ events: eventsWithCounts });
   } catch (error) {
-    logger.error('Get events error', { message: (error as any)?.message || String(error) });
+    logger.error('Get events error', { message: getErrorMessage(error) });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -273,7 +335,7 @@ router.get('/:id/qr/config', authMiddleware, async (req: AuthRequest, res: Respo
     const qrTemplateConfig = designConfig.qrTemplateConfig || null;
     return res.json({ ok: true, qrTemplateConfig });
   } catch (error) {
-    logger.error('Get QR config error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+    logger.error('Get QR config error', { message: getErrorMessage(error), eventId: req.params.id });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -303,7 +365,7 @@ router.put('/:id/qr/config', authMiddleware, async (req: AuthRequest, res: Respo
 
     return res.json({ ok: true, event: updated });
   } catch (error) {
-    logger.error('Save QR config error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+    logger.error('Save QR config error', { message: getErrorMessage(error), eventId: req.params.id });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -366,7 +428,7 @@ router.post('/:id/qr/export.png', authMiddleware, async (req: AuthRequest, res: 
     res.setHeader('Content-Disposition', `attachment; filename="qr-aufsteller-${eventId}-${format}.png"`);
     return res.send(png);
   } catch (error) {
-    logger.error('QR export PNG error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+    logger.error('QR export PNG error', { message: getErrorMessage(error), eventId: req.params.id });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -460,7 +522,133 @@ router.post('/:id/qr/export.pdf', authMiddleware, async (req: AuthRequest, res: 
     res.setHeader('Content-Disposition', `attachment; filename="qr-aufsteller-${eventId}-${format}.pdf"`);
     return res.send(Buffer.from(pdfBytes));
   } catch (error) {
-    logger.error('QR export PDF error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+    logger.error('QR export PDF error', { message: getErrorMessage(error), eventId: req.params.id });
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/:id/qr/export-diy.pdf', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const eventId = req.params.id;
+    const parsed = diyExportSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Ungültige Export-Daten' });
+    }
+
+    const event = await requireHostOrAdmin(req, res, eventId);
+    if (!event) return;
+
+    const { format, svg } = parsed.data;
+    if (isSvgObviouslyUnsafe(svg)) {
+      return res.status(400).json({ error: 'SVG enthält unsichere Inhalte' });
+    }
+
+    const { widthMm, heightMm, foldable } = getDiyFormatMm(format);
+    const pageWidthPt = mmToPt(widthMm);
+    const pageHeightPt = mmToPt(heightMm);
+    
+    // For foldable tent cards, the design height is half the page
+    const designHeightMm = foldable ? heightMm / 2 : heightMm;
+    const designHeightPt = mmToPt(designHeightMm);
+
+    // Render SVG to PNG
+    const dpi = 300;
+    const renderWidthPx = Math.round((widthMm / 25.4) * dpi);
+
+    let png: Buffer | null = null;
+    try {
+      const { Resvg } = require('@resvg/resvg-js');
+      const vb = getViewBoxSize(svg);
+      const scale = vb ? renderWidthPx / vb.w : 1;
+      const resvg = new Resvg(svg, {
+        background: 'white',
+        fitTo: { mode: 'zoom', value: scale },
+        font: { loadSystemFonts: true },
+      });
+      png = Buffer.from(resvg.render().asPng());
+    } catch (e) {
+      logger.warn('QR DIY export: resvg failed', { message: (e as any)?.message || String(e) });
+    }
+
+    if (!png) {
+      return res.status(501).json({ error: 'PDF Export ist auf diesem Server nicht verfügbar.' });
+    }
+
+    const pdf = await PDFDocument.create();
+    const page = pdf.addPage([pageWidthPt, pageHeightPt]);
+    const img = await pdf.embedPng(png);
+
+    const marginPt = mmToPt(6);
+    
+    if (foldable) {
+      // Tent card: design on top half, upside-down design on bottom half
+      const imgW = img.width;
+      const imgH = img.height;
+      
+      // Top half (normal orientation)
+      const topTargetW = pageWidthPt - 2 * marginPt;
+      const topTargetH = designHeightPt - 2 * marginPt;
+      const topScale = Math.min(topTargetW / imgW, topTargetH / imgH);
+      const topDrawW = imgW * topScale;
+      const topDrawH = imgH * topScale;
+      const topDrawX = marginPt + (topTargetW - topDrawW) / 2;
+      const topDrawY = designHeightPt + marginPt + (topTargetH - topDrawH) / 2;
+      
+      page.drawImage(img, { x: topDrawX, y: topDrawY, width: topDrawW, height: topDrawH });
+      
+      // Bottom half (upside-down for tent card fold)
+      // We need to draw the image rotated 180 degrees
+      const botTargetW = pageWidthPt - 2 * marginPt;
+      const botTargetH = designHeightPt - 2 * marginPt;
+      const botScale = Math.min(botTargetW / imgW, botTargetH / imgH);
+      const botDrawW = imgW * botScale;
+      const botDrawH = imgH * botScale;
+      const botCenterX = pageWidthPt / 2;
+      const botCenterY = designHeightPt / 2;
+      
+      // Draw rotated image using transformation
+      page.pushOperators();
+      page.drawImage(img, {
+        x: botCenterX - botDrawW / 2,
+        y: botCenterY - botDrawH / 2,
+        width: botDrawW,
+        height: botDrawH,
+        rotate: { type: 'degrees' as any, angle: 180 } as any,
+      });
+      
+      // Draw fold line in the middle
+      drawFoldLines(page, pageWidthPt, pageHeightPt, designHeightPt);
+      
+      // Add fold instruction text
+      const fontSize = 8;
+      page.drawText('✂ Hier falten', {
+        x: pageWidthPt - 60,
+        y: designHeightPt + 3,
+        size: fontSize,
+        color: rgb(0.5, 0.5, 0.5),
+      });
+    } else {
+      // Regular poster: single design centered
+      const imgW = img.width;
+      const imgH = img.height;
+      const targetW = pageWidthPt - 2 * marginPt;
+      const targetH = pageHeightPt - 2 * marginPt;
+      const scale = Math.min(targetW / imgW, targetH / imgH);
+      const drawW = imgW * scale;
+      const drawH = imgH * scale;
+      const drawX = marginPt + (targetW - drawW) / 2;
+      const drawY = marginPt + (targetH - drawH) / 2;
+      
+      page.drawImage(img, { x: drawX, y: drawY, width: drawW, height: drawH });
+    }
+
+    const pdfBytes = await pdf.save();
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="qr-diy-${format}-${eventId}.pdf"`);
+    return res.send(Buffer.from(pdfBytes));
+  } catch (error) {
+    logger.error('QR DIY export error', { message: getErrorMessage(error), eventId: req.params.id });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -485,7 +673,7 @@ router.post('/:id/qr/logo', authMiddleware, uploadSingleDesignImage('logo'), asy
 
     return res.json({ logoUrl });
   } catch (error) {
-    logger.error('Logo upload error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+    logger.error('Logo upload error', { message: getErrorMessage(error), eventId: req.params.id });
     return res.status(500).json({ error: 'Logo upload failed' });
   }
 });
@@ -507,8 +695,119 @@ router.delete('/:id/qr/logo', authMiddleware, async (req: AuthRequest, res: Resp
 
     return res.json({ success: true });
   } catch (error) {
-    logger.error('Logo delete error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+    logger.error('Logo delete error', { message: getErrorMessage(error), eventId: req.params.id });
     return res.status(500).json({ error: 'Logo delete failed' });
+  }
+});
+
+// QR Code preview image (for img src)
+router.get('/:id/qr', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const eventId = req.params.id;
+    const size = Math.min(Math.max(parseInt(req.query.size as string) || 200, 50), 1000);
+    
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, slug: true, hostId: true, deletedAt: true, isActive: true },
+    });
+
+    if (!event || event.deletedAt || event.isActive === false) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    // Generate QR code URL
+    const baseUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
+    const eventUrl = `${baseUrl}/e3/${event.slug}`;
+
+    // Use qrcode library to generate PNG
+    const QRCode = require('qrcode');
+    const qrBuffer = await QRCode.toBuffer(eventUrl, {
+      width: size,
+      margin: 1,
+      color: {
+        dark: '#000000',
+        light: '#ffffff',
+      },
+    });
+
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.send(qrBuffer);
+  } catch (error) {
+    logger.error('QR code preview error', { message: getErrorMessage(error), eventId: req.params.id });
+    return res.status(500).json({ error: 'QR code generation failed' });
+  }
+});
+
+// Design cover image upload
+router.post('/:id/design/cover', authMiddleware, uploadSingleDesignImage('file'), async (req: AuthRequest, res: Response) => {
+  try {
+    const eventId = req.params.id;
+    const event = await requireEventEditAccess(req, res, eventId);
+    if (!event) return;
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const coverUrl = await storageService.uploadFile(
+      eventId, 
+      `cover-${Date.now()}-${req.file.originalname}`, 
+      req.file.buffer, 
+      req.file.mimetype
+    );
+    
+    const designConfig = (event.designConfig as any) || {};
+    await prisma.event.update({
+      where: { id: eventId },
+      data: {
+        designConfig: {
+          ...designConfig,
+          coverImage: coverUrl,
+        },
+      },
+    });
+
+    return res.json({ coverUrl });
+  } catch (error) {
+    logger.error('Cover upload error', { message: getErrorMessage(error), eventId: req.params.id });
+    return res.status(500).json({ error: 'Cover upload failed' });
+  }
+});
+
+// Design profile image upload
+router.post('/:id/design/profile', authMiddleware, uploadSingleDesignImage('file'), async (req: AuthRequest, res: Response) => {
+  try {
+    const eventId = req.params.id;
+    const event = await requireEventEditAccess(req, res, eventId);
+    if (!event) return;
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const profileUrl = await storageService.uploadFile(
+      eventId, 
+      `profile-${Date.now()}-${req.file.originalname}`, 
+      req.file.buffer, 
+      req.file.mimetype
+    );
+    
+    const designConfig = (event.designConfig as any) || {};
+    await prisma.event.update({
+      where: { id: eventId },
+      data: {
+        designConfig: {
+          ...designConfig,
+          profileImage: profileUrl,
+        },
+      },
+    });
+
+    return res.json({ profileUrl });
+  } catch (error) {
+    logger.error('Profile upload error', { message: getErrorMessage(error), eventId: req.params.id });
+    return res.status(500).json({ error: 'Profile upload failed' });
   }
 });
 
@@ -565,7 +864,7 @@ async function handleEventStorageUsage(req: AuthRequest, res: Response) {
     });
   } catch (error) {
     logger.error('Get storage limits error', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
       eventId: req.params.id,
     });
     return res.status(500).json({ error: 'Internal server error' });
@@ -653,15 +952,17 @@ router.get(
 
       await archive.finalize();
     } catch (error) {
-      logger.error('Download zip error', { message: (error as any)?.message || String(error) });
+      logger.error('Download zip error', { message: getErrorMessage(error) });
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
 );
 
-router.get('/:eventId/design-image/:kind/:storagePath', async (req: AuthRequest, res: Response) => {
+router.get('/:eventId/design-image/:kind/*', async (req: AuthRequest, res: Response) => {
   try {
-    const { eventId, kind, storagePath } = req.params;
+    const { eventId, kind } = req.params;
+    // Get the rest of the path after /kind/ as storagePath (handles slashes in path)
+    const storagePath = req.params[0] || '';
     if (!['profile', 'cover', 'logo'].includes(kind)) {
       return res.status(404).json({ error: 'Nicht gefunden' });
     }
@@ -685,14 +986,15 @@ router.get('/:eventId/design-image/:kind/:storagePath', async (req: AuthRequest,
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     return res.status(200).send(buf);
   } catch (error) {
-    logger.error('Design image proxy error', { message: (error as any)?.message || String(error) });
+    logger.error('Design image proxy error', { message: getErrorMessage(error) });
     return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
-router.get('/:eventId/design/file/:storagePath', async (req: AuthRequest, res: Response) => {
+router.get('/:eventId/design/file/*', async (req: AuthRequest, res: Response) => {
   try {
-    const { eventId, storagePath } = req.params;
+    const { eventId } = req.params;
+    const storagePath = req.params[0] || '';
     const decoded = decodeURIComponent(storagePath);
 
     const event = await prisma.event.findUnique({
@@ -712,7 +1014,7 @@ router.get('/:eventId/design/file/:storagePath', async (req: AuthRequest, res: R
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     return res.status(200).send(buf);
   } catch (error) {
-    logger.error('Design asset proxy error', { message: (error as any)?.message || String(error) });
+    logger.error('Design asset proxy error', { message: getErrorMessage(error) });
     return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
@@ -744,7 +1046,7 @@ router.post(
 
       return res.status(200).json({ ok: true, event: updated });
     } catch (error) {
-      logger.error('Upload logo error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+      logger.error('Upload logo error', { message: getErrorMessage(error), eventId: req.params.id });
       return res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
@@ -777,7 +1079,7 @@ router.post(
 
       return res.status(200).json({ ok: true, event: updated });
     } catch (error) {
-      logger.error('Upload profile image error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+      logger.error('Upload profile image error', { message: getErrorMessage(error), eventId: req.params.id });
       return res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
@@ -810,7 +1112,7 @@ router.post(
 
       return res.status(200).json({ ok: true, event: updated });
     } catch (error) {
-      logger.error('Upload cover image error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+      logger.error('Upload cover image error', { message: getErrorMessage(error), eventId: req.params.id });
       return res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
@@ -849,7 +1151,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     const effectivePackage = await getEffectiveEventPackage(event.id);
     res.json({ event: { ...event, storageEndsAt, isStorageLocked, effectivePackage } });
   } catch (error) {
-    logger.error('Get event error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+    logger.error('Get event error', { message: getErrorMessage(error), eventId: req.params.id });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -907,7 +1209,42 @@ router.get('/slug/:slug', async (req: AuthRequest, res: Response) => {
       } 
     });
   } catch (error) {
-    logger.error('Get event by slug error', { message: (error as any)?.message || String(error), slug: req.params.slug });
+    logger.error('Get event by slug error', { message: getErrorMessage(error), slug: req.params.slug });
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// WiFi info for guests (public endpoint)
+router.get('/:id/wifi', async (req: AuthRequest, res: Response) => {
+  try {
+    const event = await prisma.event.findUnique({
+      where: { id: req.params.id },
+      select: { 
+        id: true, 
+        wifiName: true, 
+        wifiPassword: true,
+        deletedAt: true,
+        isActive: true,
+      },
+    });
+
+    if (!event || event.deletedAt || event.isActive === false) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    // Only return WiFi info if configured
+    if (!event.wifiName) {
+      return res.json({ wifi: null });
+    }
+
+    res.json({ 
+      wifi: {
+        name: event.wifiName,
+        password: event.wifiPassword || null,
+      }
+    });
+  } catch (error) {
+    logger.error('Get WiFi info error', { message: getErrorMessage(error), eventId: req.params.id });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -936,7 +1273,7 @@ router.get('/:id/traffic', authMiddleware, async (req: AuthRequest, res: Respons
 
     return res.json({ ok: true, stats });
   } catch (error) {
-    logger.error('Get event traffic stats error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+    logger.error('Get event traffic stats error', { message: getErrorMessage(error), eventId: req.params.id });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -951,6 +1288,58 @@ const wizardUpload = multer({
       cb(new Error('Nur Bilddateien sind erlaubt'));
     }
   },
+});
+
+// Check event limit before creating (early warning)
+router.get('/check-limit', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const freeLimit = Number(process.env.FREE_EVENT_LIMIT || 3);
+    if (!Number.isFinite(freeLimit) || freeLimit <= 0) {
+      return res.json({ limitReached: false, limit: 0, current: 0 });
+    }
+
+    const host = await prisma.user.findUnique({
+      where: { id: req.userId! },
+      select: { wordpressUserId: true },
+    });
+
+    const freeEventCount = await prisma.event.count({
+      where: {
+        hostId: req.userId!,
+        deletedAt: null,
+        isActive: true,
+        ...(host?.wordpressUserId
+          ? {
+              NOT: {
+                entitlements: {
+                  some: {
+                    status: 'ACTIVE',
+                    wpUserId: host.wordpressUserId,
+                  },
+                },
+              },
+            }
+          : {
+              NOT: {
+                entitlements: {
+                  some: {
+                    status: 'ACTIVE',
+                  },
+                },
+              },
+            }),
+      },
+    });
+
+    res.json({
+      limitReached: freeEventCount >= freeLimit,
+      limit: freeLimit,
+      current: freeEventCount,
+    });
+  } catch (error) {
+    logger.error('Check event limit error', { message: getErrorMessage(error) });
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 router.post(
@@ -1019,11 +1408,8 @@ router.post(
         }
       }
 
-      // Generate slug if not provided
-      let preferredSlug = data.slug || slugify(data.title);
-      if (!preferredSlug || preferredSlug.length < 3) {
-        preferredSlug = `event-${randomString(8).toLowerCase()}`;
-      }
+      // Generate slug from title with 4-char hash (e.g. "hochzeit-anna-max-x7jt")
+      let preferredSlug = data.slug || generateEventSlug(data.title);
       const slug = await getUniqueEventSlug(preferredSlug);
 
       // Handle password hashing if provided
@@ -1218,7 +1604,7 @@ router.post(
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      logger.error('Create event error', { message: (error as any)?.message || String(error) });
+      logger.error('Create event error', { message: getErrorMessage(error) });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -1275,7 +1661,7 @@ router.patch(
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      logger.error('Patch event error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+      logger.error('Patch event error', { message: getErrorMessage(error), eventId: req.params.id });
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -1305,7 +1691,7 @@ router.get(
       const effectivePackage = await getEffectiveEventPackage(eventId);
       res.json({ storageEndsAt, isStorageLocked, effectivePackage });
     } catch (error) {
-      logger.error('Get storage limits error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+      logger.error('Get storage limits error', { message: getErrorMessage(error), eventId: req.params.id });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -1481,7 +1867,7 @@ router.get(
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      logger.error('Get upload issues error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+      logger.error('Get upload issues error', { message: getErrorMessage(error), eventId: req.params.id });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -1542,7 +1928,7 @@ router.post('/:id/access', async (req: AuthRequest, res: Response) => {
     return res.json({ ok: true });
   } catch (error) {
     logger.error('Issue event access cookie error', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
       eventId: req.params.id,
     });
     return res.status(500).json({ error: 'Internal server error' });
@@ -1585,7 +1971,7 @@ router.post('/:id/invite-token', authMiddleware, async (req: AuthRequest, res: R
     return res.json({ ok: true, eventId, inviteToken, shareUrl });
   } catch (error) {
     logger.error('Mint event invite token error', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
       eventId: req.params.id,
     });
     return res.status(500).json({ error: 'Internal server error' });
@@ -1648,7 +2034,7 @@ router.put(
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      logger.error('Update event error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+      logger.error('Update event error', { message: getErrorMessage(error), eventId: req.params.id });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -1678,7 +2064,7 @@ router.delete(
 
       res.json({ message: 'Event deleted' });
     } catch (error) {
-      logger.error('Delete event error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+      logger.error('Delete event error', { message: getErrorMessage(error), eventId: req.params.id });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -1721,7 +2107,7 @@ router.get(
         isStorageLocked: storageEndsAt ? Date.now() > storageEndsAt.getTime() : false,
       });
     } catch (error) {
-      logger.error('Get package info error', { message: (error as any)?.message || String(error), eventId: req.params.id });
+      logger.error('Get package info error', { message: getErrorMessage(error), eventId: req.params.id });
       res.status(500).json({ error: 'Internal server error' });
     }
   }

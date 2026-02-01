@@ -306,6 +306,11 @@ export default function UploadButton({
     const uploadStartTime = Date.now();
     setFiles((prev) => prev.map((f) => (f.id === uploadId ? { ...f, uploading: true, progress: 0, startTime: uploadStartTime } : f)));
 
+    // Notify gallery that upload started - show placeholder
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('uploadStarted', { detail: { id: uploadId } }));
+    }
+
     const startTime = Date.now();
     const originalSize = originalFile.size;
 

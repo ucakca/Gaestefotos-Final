@@ -46,6 +46,25 @@ export function randomString(length: number = 8): string {
 }
 
 /**
+ * Generate an event slug from title with 4-char hash
+ * Example: "Hochzeit Anna & Max" -> "hochzeit-anna-max-x7jt"
+ */
+export function generateEventSlug(title: string): string {
+  const baseSlug = slugify(title);
+  const hash = randomString(4).toLowerCase();
+  
+  // If title produces a valid slug, use it with hash
+  if (baseSlug && baseSlug.length >= 2) {
+    // Limit slug length to keep URLs manageable
+    const truncatedSlug = baseSlug.substring(0, 30);
+    return `${truncatedSlug}-${hash}`;
+  }
+  
+  // Fallback for empty/invalid titles
+  return `event-${hash}`;
+}
+
+/**
  * Truncate string with ellipsis
  */
 export function truncate(text: string, maxLength: number): string {

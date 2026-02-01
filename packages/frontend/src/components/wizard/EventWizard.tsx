@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 'use client';
 
 import { useState } from 'react';
@@ -149,7 +150,7 @@ export default function EventWizard() {
       }
       router.push(`/events/${eventId}/dashboard?created=true`);
     } catch (error) {
-      console.error('Error creating event:', error);
+      logger.error('Error creating event:', error);
       const errorMessage = error instanceof Error ? error.message : 'Ein unbekannter Fehler ist aufgetreten';
       setError(errorMessage);
       setIsCreating(false);

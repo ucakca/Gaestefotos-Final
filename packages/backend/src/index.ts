@@ -37,6 +37,8 @@ import adminApiKeysRoutes from './routes/adminApiKeys';
 import adminInvoicesRoutes from './routes/adminInvoices';
 import adminEmailTemplatesRoutes from './routes/adminEmailTemplates';
 import adminInvitationTemplatesRoutes from './routes/adminInvitationTemplates';
+import adminQrTemplatesRoutes from './routes/adminQrTemplates';
+import qrTemplatesRoutes from './routes/qrTemplates';
 import adminCmsSyncRoutes from './routes/adminCmsSync';
 import cmsPublicRoutes from './routes/cmsPublic';
 import maintenanceRoutes from './routes/maintenance';
@@ -56,9 +58,13 @@ import adminPhotosRoutes from './routes/adminPhotos';
 import adminLogsRoutes from './routes/adminLogs';
 import adminEventsRoutes from './routes/adminEvents';
 import adminUsersRoutes from './routes/adminUsers';
+import adminDashboardRoutes from './routes/adminDashboard';
 import cohostInvitesRoutes from './routes/cohostInvites';
 import uploadsRoutes from './routes/uploads';
+import aiRoutes from './routes/ai';
 import qrDesignsRoutes from './routes/qrDesigns';
+import highlightReelsRoutes from './routes/highlightReels';
+import healthRoutes from './routes/health';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -331,7 +337,7 @@ app.use(cors({
       return callback(null, true);
     }
 
-    console.warn(`[CORS] Blocked origin: ${origin}`);
+    logger.warn(`[CORS] Blocked origin: ${origin}`);
     // IMPORTANT: do not throw here; deny via CORS without crashing the process
     return callback(null, false);
   },
@@ -505,8 +511,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
  // API Routes with rate limiting
  // Note: authLimiter is applied per-route in auth.ts for more granular control
- app.use('/api/auth', authRoutes);
- app.use('/api', maintenanceRoutes);
+ app.use('/api/health', healthRoutes); // Health checks (no auth required)
+app.use('/api/auth', authRoutes);
+app.use('/api', maintenanceRoutes);
  app.use('/api', wpConsentRoutes);
  app.use('/api/theme', themeRoutes);
  app.use('/api/face-search-consent', faceSearchConsentRoutes);
@@ -537,12 +544,15 @@ app.use('/api/cohosts', cohostInvitesRoutes); // Co-host invite accept: /api/coh
 app.use('/api/videos', videoRoutes); // Video files: /api/videos/:eventId/file/*
 app.use('/api', invitationRoutes);
 app.use('/api', qrDesignsRoutes);
+app.use('/api/events', highlightReelsRoutes); // Highlight reels: /api/events/:eventId/generate, etc.
 app.use('/api/admin/package-definitions', packageDefinitionsRoutes);
 app.use('/api/admin/webhooks/woocommerce', adminWooWebhooksRoutes);
 app.use('/api/admin/api-keys', adminApiKeysRoutes);
 app.use('/api/admin/invoices', adminInvoicesRoutes);
 app.use('/api/admin/email-templates', adminEmailTemplatesRoutes);
 app.use('/api/admin/invitation-templates', adminInvitationTemplatesRoutes);
+app.use('/api/admin/qr-templates', adminQrTemplatesRoutes);
+app.use('/api/qr-templates', qrTemplatesRoutes);
 app.use('/api/admin/cms', adminCmsSyncRoutes);
 app.use('/api/cms', cmsPublicRoutes);
 app.use('/api/admin/maintenance', adminMaintenanceRoutes);
@@ -558,7 +568,11 @@ app.use('/api/admin/feature-flags', adminFeatureFlagsRoutes);
 app.use('/api/admin/logs', adminLogsRoutes);
 app.use('/api/admin/events', adminEventsRoutes);
 app.use('/api/admin/users', adminUsersRoutes);
+app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
+
+// AI Routes (KI-Assistent)
+app.use('/api/ai', aiRoutes);
 
 // Tus.io resumable uploads
 app.use('/api/uploads', uploadsRoutes);

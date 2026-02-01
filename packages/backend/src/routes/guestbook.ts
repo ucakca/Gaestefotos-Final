@@ -4,6 +4,7 @@ import multer from 'multer';
 import prisma from '../config/database';
 import { AuthRequest, authMiddleware, optionalAuthMiddleware, requireEventAccess, hasEventAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 import { storageService } from '../services/storage';
 import { imageProcessor } from '../services/imageProcessor';
 import { validateUploadedFile } from '../middleware/uploadSecurity';
@@ -263,7 +264,7 @@ router.get(
       return res.send(fileBuffer);
     } catch (error: any) {
       logger.error('Fehler beim Abrufen des Audios', {
-        message: (error as any)?.message || String(error),
+        message: getErrorMessage(error),
         eventId,
         storagePath,
       });
@@ -271,7 +272,7 @@ router.get(
     }
   } catch (error: any) {
     logger.error('Fehler beim Abrufen des Gästebuch-Audios', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
       eventId: req.params.eventId,
     });
     res.status(500).json({ error: 'Interner Serverfehler' });
@@ -712,7 +713,7 @@ router.post(
     res.json({ photoUrl, storagePath, uploadId: pending.id, photoSizeBytes: uploadBytes.toString() });
   } catch (error: any) {
     logger.error('Fehler beim Hochladen des Fotos', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
       eventId: req.params.eventId,
     });
     res.status(500).json({ error: 'Interner Serverfehler' });
@@ -815,7 +816,7 @@ router.post(
     });
   } catch (error: any) {
     logger.error('Fehler beim Hochladen des Audios', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
       eventId: req.params.eventId,
     });
     res.status(500).json({ error: 'Interner Serverfehler' });
@@ -866,7 +867,7 @@ router.put('/:eventId/guestbook/host-message', authMiddleware, async (req: AuthR
       return res.status(400).json({ error: error.errors });
     }
     logger.error('Fehler beim Aktualisieren der Host-Nachricht', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
       eventId: req.params.eventId,
     });
     res.status(500).json({ error: 'Interner Serverfehler' });
@@ -945,7 +946,7 @@ router.get(
       res.send(fileBuffer);
     } catch (error: any) {
       logger.error('Fehler beim Abrufen des Fotos', {
-        message: (error as any)?.message || String(error),
+        message: getErrorMessage(error),
         eventId,
         storagePath,
       });
@@ -953,7 +954,7 @@ router.get(
     }
   } catch (error: any) {
     logger.error('Fehler beim Abrufen des Gästebuch-Fotos', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
       eventId: req.params.eventId,
     });
     res.status(500).json({ error: 'Interner Serverfehler' });

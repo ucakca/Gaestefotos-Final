@@ -28,6 +28,7 @@ interface ModernPhotoGridProps {
   isStorageLocked?: boolean;
   uploadDisabled?: boolean;
   uploadDisabledReason?: string;
+  uploadingCount?: number;
 }
 
 export default function ModernPhotoGrid({
@@ -42,6 +43,7 @@ export default function ModernPhotoGrid({
   isStorageLocked = false,
   uploadDisabled = false,
   uploadDisabledReason,
+  uploadingCount = 0,
 }: ModernPhotoGridProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
   const [showUploadDisabled, setShowUploadDisabled] = useState(false);
@@ -333,6 +335,18 @@ export default function ModernPhotoGrid({
 
       {/* Modern 3-Column Grid with Upload Button */}
       <div className="grid grid-cols-3 gap-0.5 md:gap-1 max-w-md mx-auto">
+        {/* Upload Placeholders - show spinning loader during uploads */}
+        {Array.from({ length: uploadingCount }).map((_, i) => (
+          <div
+            key={`uploading-${i}`}
+            className="aspect-square bg-app-bg border border-app-border relative flex items-center justify-center"
+          >
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs text-app-muted">Lädt...</span>
+            </div>
+          </div>
+        ))}
         {/* Photo Grid */}
         {photos.map((photo, index) => {
           const isGuestbookEntry = (photo as any).isGuestbookEntry;

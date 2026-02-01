@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { sanitizeCmsHtml } from '@/lib/sanitize';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 
@@ -99,7 +100,7 @@ export default function Home() {
         <div className="max-w-[980px] mx-auto p-5">
           <div
             className="prose prose-invert mt-4 max-w-none"
-            dangerouslySetInnerHTML={{ __html: localizeCmsHtml(String(snapshot.html)) }}
+            dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(localizeCmsHtml(String(snapshot.html))) }}
           />
         </div>
       </div>

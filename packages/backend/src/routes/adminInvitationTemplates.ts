@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 
 const router = Router();
 
@@ -22,7 +23,7 @@ function handleError(res: Response, error: unknown) {
   }
 
   logger.error('[adminInvitationTemplates] request failed', {
-    message: (error as any)?.message || String(error),
+    message: getErrorMessage(error),
     stack: (error as any)?.stack,
   });
   return res.status(500).json({ error: 'Internal Server Error' });

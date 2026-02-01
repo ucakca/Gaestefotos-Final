@@ -1,36 +1,55 @@
 'use client';
 
-import { useState } from 'react';
+import logger from '@/lib/logger';
+
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { Wifi, X, Check } from 'lucide-react';
 
 interface WifiNotificationProps {
   ssid: string;
   password: string;
+  eventId: string;
+  forceShow?: boolean;
   onDismiss?: () => void;
 }
 
-export default function WifiNotification({ ssid, password, onDismiss }: WifiNotificationProps) {
-  const [visible, setVisible] = useState(true);
+export default function WifiNotification({ ssid, password, eventId, forceShow, onDismiss }: WifiNotificationProps) {
+  const [visible, setVisible] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Check sessionStorage on mount
+  useEffect(() => {
+    if (forceShow) {
+      setVisible(true);
+      return;
+    }
+    const dismissedKey = `wifi-dismissed-${eventId}`;
+    const wasDismissed = sessionStorage.getItem(dismissedKey);
+    if (!wasDismissed) {
+      setVisible(true);
+    }
+  }, [eventId, forceShow]);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(password);
       setCopied(true);
       
-      // Show "Kopiert!" for 2 seconds, then dismiss
+      // Show "Kopiert!" for 5 seconds, then reset (allow re-copy)
       setTimeout(() => {
-        setVisible(false);
-        onDismiss?.();
-      }, 2000);
+        setCopied(false);
+      }, 5000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      logger.error('Failed to copy:', err);
     }
   };
 
   const handleDismiss = () => {
     setVisible(false);
+    // Save to sessionStorage so it won't show again this session
+    const dismissedKey = `wifi-dismissed-${eventId}`;
+    sessionStorage.setItem(dismissedKey, 'true');
     onDismiss?.();
   };
 
@@ -55,8 +74,8 @@ export default function WifiNotification({ ssid, password, onDismiss }: WifiNoti
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.3}
           onDragEnd={handleDragEnd}
-          onClick={!copied ? handleCopy : undefined}
-          className="mx-4 mb-3 cursor-pointer select-none"
+          onClick={handleCopy}
+          className="fixed top-[72px] left-0 right-0 mx-4 cursor-pointer select-none z-50"
         >
           <div className={`
             relative overflow-hidden
@@ -119,7 +138,7 @@ export default function WifiNotification({ ssid, password, onDismiss }: WifiNoti
                     >
                       <p className="font-semibold text-white">Passwort kopiert!</p>
                       <p className="text-sm text-white/80">
-                        Gehe zu Einstellungen → WLAN → {ssid}
+                        Gehe zu Einstellungen → WLAN → <span className="font-bold">{ssid}</span> → einfügen
                       </p>
                     </motion.div>
                   ) : (
@@ -129,7 +148,7 @@ export default function WifiNotification({ ssid, password, onDismiss }: WifiNoti
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                     >
-                      <p className="font-semibold text-white">WLAN: {ssid}</p>
+                      <p className="font-semibold text-white">WLAN: <span className="font-bold">{ssid}</span></p>
                       <p className="text-sm text-white/80">
                         Tippe hier um das Passwort zu kopieren
                       </p>

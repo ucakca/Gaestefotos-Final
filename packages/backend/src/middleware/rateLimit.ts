@@ -3,17 +3,21 @@ import rateLimit from 'express-rate-limit';
 import { logger } from '../utils/logger';
 import prisma from '../config/database';
 
+// Helper: Check if running in development mode
+const isDev = () => process.env.NODE_ENV === 'development';
+
+// Development multiplier: Higher limits in dev, but still enforced
+const devMultiplier = (base: number) => isDev() ? base * 10 : base;
+
 // General API rate limiter - sehr großzügig für normale Nutzung
 export const apiLimiter: any = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 Minuten
-  max: 2000, // 2000 Requests pro IP (erhöht für Photo-Feed)
+  max: devMultiplier(2000), // 2000 in prod, 20000 in dev
   message: 'Zu viele Anfragen, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
-  // Skip rate limiting for development and file requests
+  // Skip rate limiting for file requests (they are served via proxy)
   skip: (req: Request) => {
-    if (process.env.NODE_ENV === 'development') return true;
-    // Skip rate limiting for file requests (they are served via proxy)
     if (req.path.includes('/file') || req.path.includes('/photo/')) return true;
     return false;
   },
@@ -22,34 +26,30 @@ export const apiLimiter: any = rateLimit({
 // Stricter limiter for authentication endpoints
 export const authLimiter: any = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 Minuten
-  max: 20, // 20 Login-Versuche pro 15 Minuten
+  max: devMultiplier(20), // 20 in prod, 200 in dev
   skipSuccessfulRequests: true,
   message: 'Zu viele Anmeldeversuche, bitte versuchen Sie es in 15 Minuten erneut.',
   standardHeaders: true,
   legacyHeaders: false,
-  // Skip rate limiting for development
-  skip: (req: Request) => process.env.NODE_ENV === 'development',
 });
 
 // Dedicated limiter for WordPress SSO bridge (WP → App)
 export const wordpressSsoLimiter: any = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 Minuten
-  max: 60, // moderate burst allowance for WP/plugin retries
+  max: devMultiplier(60), // 60 in prod, 600 in dev
   skipSuccessfulRequests: true,
   message: 'Zu viele SSO-Anfragen, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req: Request) => process.env.NODE_ENV === 'development',
 });
 
 export const twoFactorVerifyLimiter: any = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 Minuten
-  max: 30, // 30 Versuche pro 10 Minuten
+  max: devMultiplier(30), // 30 in prod, 300 in dev
   skipSuccessfulRequests: true,
   message: 'Zu viele 2FA-Versuche, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req: Request) => process.env.NODE_ENV === 'development',
   handler: (req: Request, res: Response) => {
     logRateLimitHit('2fa:verify', req);
     res.status(429).json({ error: 'Zu viele 2FA-Versuche, bitte versuchen Sie es später erneut.' });
@@ -58,12 +58,11 @@ export const twoFactorVerifyLimiter: any = rateLimit({
 
 export const twoFactorSetupLimiter: any = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 Minuten
-  max: 20, // Setup ist seltener, daher strenger
+  max: devMultiplier(20), // 20 in prod, 200 in dev
   skipSuccessfulRequests: true,
   message: 'Zu viele 2FA-Setup-Versuche, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req: Request) => process.env.NODE_ENV === 'development',
   handler: (req: Request, res: Response) => {
     logRateLimitHit('2fa:setup', req);
     res.status(429).json({ error: 'Zu viele 2FA-Setup-Versuche, bitte versuchen Sie es später erneut.' });
@@ -142,12 +141,12 @@ export const photoUploadIpLimiter: any = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: (req: Request) => {
     const override = Number((req as any)?.uploadRateLimits?.photoIpMax);
-    return Number.isFinite(override) && override > 0 ? override : 120;
+    const base = Number.isFinite(override) && override > 0 ? override : 120;
+    return devMultiplier(base);
   },
   message: 'Zu viele Uploads, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req: Request) => process.env.NODE_ENV === 'development',
   handler: (req: Request, res: Response) => {
     logRateLimitHit('photo:ip', req);
     res.status(429).json({ error: 'Zu viele Uploads, bitte versuchen Sie es später erneut.' });
@@ -158,12 +157,13 @@ export const photoUploadEventLimiter: any = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: (req: Request) => {
     const override = Number((req as any)?.uploadRateLimits?.photoEventMax);
-    return Number.isFinite(override) && override > 0 ? override : 1000;
+    const base = Number.isFinite(override) && override > 0 ? override : 1000;
+    return devMultiplier(base);
   },
   message: 'Zu viele Uploads, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req: Request) => process.env.NODE_ENV === 'development' || !getEventIdFromRequest(req),
+  skip: (req: Request) => !getEventIdFromRequest(req),
   keyGenerator: (req: Request) => {
     const eventId = getEventIdFromRequest(req);
     return eventId ? `event:${eventId}:photo` : (req.ip || 'unknown');
@@ -178,12 +178,12 @@ export const videoUploadIpLimiter: any = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: (req: Request) => {
     const override = Number((req as any)?.uploadRateLimits?.videoIpMax);
-    return Number.isFinite(override) && override > 0 ? override : 20;
+    const base = Number.isFinite(override) && override > 0 ? override : 20;
+    return devMultiplier(base);
   },
   message: 'Zu viele Video-Uploads, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req: Request) => process.env.NODE_ENV === 'development',
   handler: (req: Request, res: Response) => {
     logRateLimitHit('video:ip', req);
     res.status(429).json({ error: 'Zu viele Video-Uploads, bitte versuchen Sie es später erneut.' });
@@ -194,12 +194,13 @@ export const videoUploadEventLimiter: any = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: (req: Request) => {
     const override = Number((req as any)?.uploadRateLimits?.videoEventMax);
-    return Number.isFinite(override) && override > 0 ? override : 150;
+    const base = Number.isFinite(override) && override > 0 ? override : 150;
+    return devMultiplier(base);
   },
   message: 'Zu viele Video-Uploads, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req: Request) => process.env.NODE_ENV === 'development' || !getEventIdFromRequest(req),
+  skip: (req: Request) => !getEventIdFromRequest(req),
   keyGenerator: (req: Request) => {
     const eventId = getEventIdFromRequest(req);
     return eventId ? `event:${eventId}:video` : (req.ip || 'unknown');
@@ -213,12 +214,12 @@ export const videoUploadEventLimiter: any = rateLimit({
 // Very strict limiter for password verification
 export const passwordLimiter: any = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 Minuten
-  max: 10, // 10 Versuche pro 15 Minuten
+  max: devMultiplier(10), // 10 in prod, 100 in dev
   message: 'Zu viele Passwort-Versuche, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
-  // Skip in development/E2E to avoid test flakiness and to keep local dev convenient.
-  skip: (req: Request) => process.env.NODE_ENV === 'development' || process.env.E2E === 'true',
+  // Skip in E2E to avoid test flakiness
+  skip: (req: Request) => process.env.E2E === 'true',
 });
 
 // Less strict limiter for admin login (more attempts allowed)

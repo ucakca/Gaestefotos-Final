@@ -1,5 +1,7 @@
 'use client';
 
+import logger from '@/lib/logger';
+
 import { useState } from 'react';
 import { InvitationConfig, InvitationGuestGroup, InvitationScheduleItem } from '@gaestefotos/shared';
 import { Button } from '@/components/ui/Button';
@@ -26,7 +28,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
       await onSave(config);
       onClose();
     } catch (err) {
-      console.error('Save error:', err);
+      logger.error('Save error:', err);
     } finally {
       setSaving(false);
     }

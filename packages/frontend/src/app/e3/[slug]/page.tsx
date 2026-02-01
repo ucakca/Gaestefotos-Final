@@ -54,6 +54,7 @@ export default function PublicEventPageV2() {
   const [uploadChallengeId, setUploadChallengeId] = useState<string | null>(null);
   const [uploadChallengeTitle, setUploadChallengeTitle] = useState<string | null>(null);
   const [likeUpdates, setLikeUpdates] = useState<Record<string, { liked: boolean; count: number }>>({});
+  const [forceShowWifi, setForceShowWifi] = useState(false);
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const { isHeaderVisible, showJumpToTop, scrollToTop } = useScrollHeader(300);
@@ -300,6 +301,8 @@ export default function PublicEventPageV2() {
         uploadDisabledReason={uploadDisabledReason}
         dashboardUrl={`/events/${event.id}/dashboard`}
         onShare={() => setQrCodeOpen(true)}
+        hasWifi={!!((event as any).wifiName && (event as any).wifiPassword)}
+        onWifiClick={() => setForceShowWifi(true)}
       />
 
       {/* Tab Content */}
@@ -309,10 +312,13 @@ export default function PublicEventPageV2() {
           <StoriesBar stories={stories} onSelect={setSelectedStoryIndex} />
 
           {/* WiFi Notification - if configured */}
-          {(event.designConfig as any)?.wifiSsid && (event.designConfig as any)?.wifiPassword && (
+          {(event as any).wifiName && (event as any).wifiPassword && (
             <WifiNotification
-              ssid={(event.designConfig as any).wifiSsid}
-              password={(event.designConfig as any).wifiPassword}
+              ssid={(event as any).wifiName}
+              password={(event as any).wifiPassword}
+              eventId={event.id}
+              forceShow={forceShowWifi}
+              onDismiss={() => setForceShowWifi(false)}
             />
           )}
 

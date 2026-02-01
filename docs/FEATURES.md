@@ -71,8 +71,29 @@
 
 - **Design Tokens (Theme System v1)**
   - Token-basierte Farben (Tailwind + CSS-Variablen) für konsistente UI
+  - Admin-UI zum Anpassen der App-Farben (`/settings/theme`)
 - **Status Tokens (UI Konvention)**
   - Status-Farben über Tokens/Utilities (`*-status-*`) statt direkter `var(--status-*)` Klassen
+
+## PWA / Offline
+
+- **Service Worker**
+  - Smart Caching: Network-First für API, Cache-First für Bilder
+  - Offline-Fallback-Seite (`/offline`)
+  - Update-Banner bei neuer Version
+- **Manifest**
+  - Installierbar als App (iOS/Android/Desktop)
+  - App-Icon und Splash-Screen
+
+## QR-Code Designer
+
+- **Share Wizard**
+  - Digital: PNG/PDF Export für Social Media
+  - DIY Print: Tischaufsteller mit Faltlinien (A6/A5 Tent, A4/A3 Poster, Visitenkarten)
+- **Templates**
+  - Kategorien: Minimal, Elegant, Natur, Festlich, Modern, Rustikal
+  - Premium Templates für höhere Pakete
+  - SVG-basierte Vorlagen mit anpassbaren Farben
 
 ## Integrationen
 

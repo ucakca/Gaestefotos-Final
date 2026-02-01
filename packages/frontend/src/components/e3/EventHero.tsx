@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Event as EventType } from '@gaestefotos/shared';
-import { MapPin, Calendar, Users, Camera, Plus, Play, ImageIcon, X, Share2, Clock, Gift, Shirt, User, Video, Eye } from "lucide-react";
+import { MapPin, Calendar, Users, Camera, Plus, Play, ImageIcon, X, Share2, Clock, Gift, Shirt, User, Video, Eye, Moon, Sun, Wifi } from "lucide-react";
+import { useTheme } from 'next-themes';
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -31,6 +32,8 @@ export interface EventHeroProps {
   dressCode?: string;
   dashboardUrl?: string;
   onShare?: () => void;
+  hasWifi?: boolean;
+  onWifiClick?: () => void;
 }
 
 export default function EventHero({
@@ -52,12 +55,20 @@ export default function EventHero({
   dressCode,
   dashboardUrl,
   onShare,
+  hasWifi,
+  onWifiClick,
 }: EventHeroProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showAvatarLightbox, setShowAvatarLightbox] = useState(false);
   const [showCoverLightbox, setShowCoverLightbox] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const designConfig = event.designConfig as any || {};
   const welcomeMessage = designConfig.welcomeMessage || 'Schön, dass ihr alle hier seid! Lasst uns gemeinsam unvergessliche Erinnerungen schaffen ❤️';
@@ -151,6 +162,38 @@ export default function EventHero({
             aria-label="Event teilen"
           >
             <Share2 className="h-5 w-5" />
+          </button>
+        )}
+
+        {/* WiFi Button */}
+        {hasWifi && onWifiClick && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onWifiClick();
+            }}
+            className="absolute top-4 right-16 z-10 rounded-full bg-blue-500/80 p-2.5 text-white backdrop-blur-sm transition-colors hover:bg-blue-600/80"
+            aria-label="WLAN anzeigen"
+          >
+            <Wifi className="h-5 w-5" />
+          </button>
+        )}
+
+        {/* Dark Mode Toggle */}
+        {mounted && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setTheme(theme === 'dark' ? 'light' : 'dark');
+            }}
+            className={`absolute top-4 z-10 rounded-full bg-black/40 p-2.5 text-white backdrop-blur-sm transition-colors hover:bg-black/60 ${hasWifi && onWifiClick ? 'right-28' : 'right-16'}`}
+            aria-label={theme === 'dark' ? 'Hell-Modus' : 'Dunkel-Modus'}
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
           </button>
         )}
       </div>

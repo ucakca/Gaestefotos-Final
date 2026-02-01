@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -46,7 +47,7 @@ export default function InfiniteScrollGallery({
       setPhotos((prev) => [...prev, ...newPhotos]);
       setHasMore(photos.length + newPhotos.length < totalCount);
     } catch (error) {
-      console.error('Failed to load more photos:', error);
+      logger.error('Failed to load more photos:', error);
     } finally {
       setLoading(false);
     }

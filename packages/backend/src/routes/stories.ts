@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import prisma from '../config/database';
 import { AuthRequest, hasEventAccess, optionalAuthMiddleware } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 import { assertFeatureEnabled } from '../services/featureGate';
 
 const router = Router();
@@ -90,7 +91,7 @@ router.get(
       res.json({ stories: stories.map(withProxyUrls) });
     } catch (error) {
       logger.error('Fehler beim Abrufen der Stories', {
-        message: (error as any)?.message || String(error),
+        message: getErrorMessage(error),
         eventId: req.params.eventId,
       });
       res.status(500).json({ error: 'Interner Serverfehler' });
@@ -190,7 +191,7 @@ router.post(
       res.status(status).json({ story: withProxyUrls(story) });
     } catch (error) {
       logger.error('Fehler beim Erstellen der Story', {
-        message: (error as any)?.message || String(error),
+        message: getErrorMessage(error),
         photoId: req.params.photoId,
       });
       res.status(500).json({ error: 'Interner Serverfehler' });
@@ -258,7 +259,7 @@ router.put(
       res.json({ story: withProxyUrls(updatedStory) });
     } catch (error) {
       logger.error('Fehler beim Aktualisieren der Story', {
-        message: (error as any)?.message || String(error),
+        message: getErrorMessage(error),
         storyId: req.params.storyId,
       });
       res.status(500).json({ error: 'Interner Serverfehler' });

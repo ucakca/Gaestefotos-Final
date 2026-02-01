@@ -14,6 +14,7 @@ import {
 import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
 import { getWordPressUserById, verifyWordPressUser, WordPressAuthUnavailableError } from '../config/wordpress';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 import {
   buildOtpAuthUrl,
   buildRecoveryCodesPayload,
@@ -213,7 +214,7 @@ router.post('/2fa/verify', passwordLimiter, twoFactorVerifyLimiter, async (req: 
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    logger.warn('[auth] 2fa verify failed', { message: (error as any)?.message || String(error) });
+    logger.warn('[auth] 2fa verify failed', { message: getErrorMessage(error) });
     return res.status(401).json({ error: 'Invalid 2FA token' });
   }
 });
@@ -325,7 +326,7 @@ router.post('/2fa/setup/confirm', authMiddleware, requireRole('ADMIN'), twoFacto
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    logger.error('[auth] 2fa setup confirm error', { message: (error as any)?.message || String(error) });
+    logger.error('[auth] 2fa setup confirm error', { message: getErrorMessage(error) });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -444,7 +445,7 @@ router.post('/2fa/setup/start-challenge', passwordLimiter, twoFactorSetupLimiter
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    const message = (error as any)?.message || String(error);
+    const message = getErrorMessage(error);
     logger.warn('[auth] 2fa setup start-challenge failed', { message });
 
     // If the server is misconfigured (e.g. missing TWO_FACTOR_ENCRYPTION_KEY), do NOT hide it behind
@@ -544,7 +545,7 @@ router.post('/2fa/setup/confirm-challenge', passwordLimiter, twoFactorSetupLimit
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    logger.warn('[auth] 2fa setup confirm-challenge failed', { message: (error as any)?.message || String(error) });
+    logger.warn('[auth] 2fa setup confirm-challenge failed', { message: getErrorMessage(error) });
     return res.status(401).json({ error: 'Invalid 2FA token' });
   }
 });

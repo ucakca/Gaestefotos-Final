@@ -1,6 +1,5 @@
-import EventWizard from '@/components/wizard/EventWizard';
+import SetupWizard from '@/components/setup-wizard/SetupWizard';
 
 export default function NewEventPage() {
-  return <EventWizard />;
+  return <SetupWizard />;
 }
-

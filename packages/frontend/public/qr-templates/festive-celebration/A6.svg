@@ -25,11 +25,11 @@
   <text id="gf:text:headline" x="525" y="270" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="74" font-weight="800" class="gf-text">Feiert mit uns!</text>
   <text id="gf:text:subline" x="525" y="350" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="36" font-weight="600" class="gf-text" opacity="0.9">Unvergessliche Augenblicke</text>
 
-  <text id="gf:text:eventName" x="525" y="460" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="40" font-weight="600" class="gf-accent">Anna & Ben</text>
+  <text id="gf:text:eventName" x="525" y="460" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="40" font-weight="600" class="gf-accent">Anna &amp; Ben</text>
 
-  <rect id="gf:qr" x="385" y="620" width="280" height="280" rx="24" fill="#ffffff" stroke="var(--gf-accent)" stroke-width="6" />
+  <rect id="gf:qr" x="335" y="580" width="380" height="380" rx="24" fill="#ffffff" stroke="var(--gf-accent)" stroke-width="6" />
 
-  <text id="gf:text:callToAction" x="525" y="990" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="34" font-weight="600" class="gf-text">Scannen & feiern</text>
+  <text id="gf:text:callToAction" x="525" y="990" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="34" font-weight="600" class="gf-text">Scannen &amp; feiern</text>
 
   <circle cx="480" cy="1210" r="8" class="gf-accent" opacity="0.6" />
   <circle cx="525" cy="1210" r="10" class="gf-accent" />

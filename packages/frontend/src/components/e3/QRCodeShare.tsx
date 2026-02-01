@@ -1,5 +1,7 @@
 'use client';
 
+import logger from '@/lib/logger';
+
 import { useState } from 'react';
 import { QrCode, X, Copy, Check, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -25,7 +27,7 @@ export default function QRCodeShare({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      logger.error('Failed to copy:', err);
     }
   };
 
@@ -39,7 +41,7 @@ export default function QRCodeShare({
         });
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
-          console.error('Share failed:', err);
+          logger.error('Share failed:', err);
         }
       }
     } else {

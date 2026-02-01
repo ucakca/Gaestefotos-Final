@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, optionalAuthMiddleware, hasEventAccess, hasEventManageAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 import { assertWithinLimit } from '../services/featureGate';
 
 const router = Router();
@@ -92,7 +93,7 @@ router.get(
 
     res.json({ challenges });
   } catch (error) {
-    logger.error('Fehler beim Abrufen der Challenges', { message: (error as any)?.message || String(error) });
+    logger.error('Fehler beim Abrufen der Challenges', { message: getErrorMessage(error) });
     res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
@@ -177,7 +178,7 @@ router.post(
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      logger.error('Fehler beim Erstellen der Challenge', { message: (error as any)?.message || String(error), eventId: req.params.eventId });
+      logger.error('Fehler beim Erstellen der Challenge', { message: getErrorMessage(error), eventId: req.params.eventId });
       res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
@@ -259,7 +260,7 @@ router.put(
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      logger.error('Fehler beim Aktualisieren der Challenge', { message: (error as any)?.message || String(error), eventId: req.params.eventId, challengeId: req.params.challengeId });
+      logger.error('Fehler beim Aktualisieren der Challenge', { message: getErrorMessage(error), eventId: req.params.eventId, challengeId: req.params.challengeId });
       res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
@@ -293,7 +294,7 @@ router.delete(
       res.json({ message: 'Challenge gelöscht' });
     } catch (error) {
       logger.error('Fehler beim Löschen der Challenge', {
-        message: (error as any)?.message || String(error),
+        message: getErrorMessage(error),
         eventId: req.params.eventId,
         challengeId: req.params.challengeId,
       });
@@ -380,7 +381,7 @@ router.post(
       res.json({ challenges: copies });
     } catch (error) {
       logger.error('Fehler beim Kopieren der Challenge', {
-        message: (error as any)?.message || String(error),
+        message: getErrorMessage(error),
         eventId: req.params.eventId,
         challengeId: req.params.challengeId,
       });
@@ -507,7 +508,7 @@ router.post(
       res.status(201).json({ completion });
     } catch (error) {
       logger.error('Fehler beim Erfüllen der Challenge', {
-        message: (error as any)?.message || String(error),
+        message: getErrorMessage(error),
         eventId: req.params.eventId,
         challengeId: req.params.challengeId,
       });
@@ -608,7 +609,7 @@ router.post(
       res.json({ success: true, averageRating, ratingCount: ratings.length });
     } catch (error) {
       logger.error('Fehler beim Bewerten', {
-        message: (error as any)?.message || String(error),
+        message: getErrorMessage(error),
         eventId: req.params.eventId,
         completionId: req.params.completionId,
       });

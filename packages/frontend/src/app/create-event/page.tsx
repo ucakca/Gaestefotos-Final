@@ -1,5 +1,13 @@
-import EventWizard from '@/components/wizard/EventWizard';
+import { Suspense } from 'react';
+import SetupWizard from '@/components/setup-wizard/SetupWizard';
+import { FullPageLoader } from '@/components/ui/FullPageLoader';
+
+export const dynamic = 'force-dynamic';
 
 export default function CreateEventPage() {
-  return <EventWizard />;
+  return (
+    <Suspense fallback={<FullPageLoader />}>
+      <SetupWizard />
+    </Suspense>
+  );
 }

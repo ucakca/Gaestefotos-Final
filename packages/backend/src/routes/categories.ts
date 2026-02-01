@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, optionalAuthMiddleware, hasEventAccess, hasEventManageAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 import { assertWithinLimit } from '../services/featureGate';
 
 const router = Router();
@@ -92,7 +93,7 @@ router.get(
 
     res.json({ categories });
   } catch (error) {
-    logger.error('Fehler beim Abrufen der Kategorien', { message: (error as any)?.message || String(error) });
+    logger.error('Fehler beim Abrufen der Kategorien', { message: getErrorMessage(error) });
     res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
@@ -178,11 +179,11 @@ router.post(
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      const message = (error as any)?.message || String(error);
+      const message = getErrorMessage(error);
       if (typeof message === 'string' && message.includes('Zeitfenster überschneidet sich')) {
         return res.status(400).json({ error: message });
       }
-      logger.error('Fehler beim Erstellen der Kategorie', { message: (error as any)?.message || String(error) });
+      logger.error('Fehler beim Erstellen der Kategorie', { message: getErrorMessage(error) });
       res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
@@ -266,11 +267,11 @@ router.put(
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
-      const message = (error as any)?.message || String(error);
+      const message = getErrorMessage(error);
       if (typeof message === 'string' && message.includes('Zeitfenster überschneidet sich')) {
         return res.status(400).json({ error: message });
       }
-      logger.error('Fehler beim Aktualisieren der Kategorie', { message: (error as any)?.message || String(error), eventId: req.params.eventId, categoryId: req.params.categoryId });
+      logger.error('Fehler beim Aktualisieren der Kategorie', { message: getErrorMessage(error), eventId: req.params.eventId, categoryId: req.params.categoryId });
       res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
@@ -307,7 +308,7 @@ router.delete(
 
       res.json({ message: 'Kategorie gelöscht' });
     } catch (error) {
-      logger.error('Fehler beim Löschen der Kategorie', { message: (error as any)?.message || String(error), eventId: req.params.eventId, categoryId: req.params.categoryId });
+      logger.error('Fehler beim Löschen der Kategorie', { message: getErrorMessage(error), eventId: req.params.eventId, categoryId: req.params.categoryId });
       res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
@@ -361,7 +362,7 @@ router.put(
 
       res.json({ photo: updatedPhoto });
     } catch (error) {
-      logger.error('Fehler beim Zuweisen der Kategorie', { message: (error as any)?.message || String(error), photoId: req.params.photoId });
+      logger.error('Fehler beim Zuweisen der Kategorie', { message: getErrorMessage(error), photoId: req.params.photoId });
       res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }

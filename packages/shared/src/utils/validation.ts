@@ -28,6 +28,6 @@ export const guestCreateSchema = z.object({
 // Photo validation schemas
 export const photoUploadSchema = z.object({
   eventId: z.string().uuid(),
-  file: z.instanceof(File),
+  file: z.any(), // File is a browser-only API
 });
 

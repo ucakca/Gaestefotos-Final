@@ -5,7 +5,7 @@ import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
 
 type Size = 'sm' | 'md' | 'lg';
 
@@ -16,6 +16,7 @@ const buttonVariants = cva(
       variant: {
         primary: 'btn-festive text-white shadow-lg hover:shadow-xl',
         secondary: 'bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80 shadow-sm hover:shadow-md',
+        outline: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 shadow-sm',
         ghost: 'bg-transparent text-foreground hover:bg-accent/10',
         danger: 'bg-destructive text-destructive-foreground hover:opacity-90 shadow-md hover:shadow-lg',
       },

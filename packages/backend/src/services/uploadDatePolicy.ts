@@ -1,4 +1,5 @@
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 
 export type CapturedAtSource = 'EXIF_DATE_TIME_ORIGINAL' | 'EXIF_CREATE_DATE' | 'UPLOAD_TIME';
 
@@ -46,7 +47,7 @@ export async function extractCapturedAtFromImage(
     }
   } catch (error) {
     logger.warn('[Upload Date Policy] EXIF parse failed, falling back to upload time', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
     });
   }
 

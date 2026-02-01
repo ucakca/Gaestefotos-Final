@@ -31,6 +31,7 @@ import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { EventCard } from '@/components/host-dashboard';
+import { AIFloatingButton } from '@/components/ai-chat';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -60,6 +61,27 @@ export default function DashboardPage() {
     loadEvents();
   }, []);
 
+  // Refresh events when page becomes visible (e.g., after returning from wizard)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadEvents();
+      }
+    };
+    
+    const handleFocus = () => {
+      loadEvents();
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
+
   const loadEvents = async () => {
     try {
       const { data } = await api.get('/events');
@@ -76,8 +98,8 @@ export default function DashboardPage() {
   };
 
   // Calculate totals
-  const totalPhotos = events.reduce((sum, e) => sum + ((e as any).photoCount || 0), 0);
-  const totalGuests = events.reduce((sum, e) => sum + ((e as any).guestCount || 0), 0);
+  const totalMedia = events.reduce((sum, e) => sum + ((e as any).photoCount || 0), 0);
+  const totalVisitors = events.reduce((sum, e) => sum + ((e as any).viewCount || 0), 0);
   const pendingPhotos = events.reduce((sum, e) => sum + ((e as any).pendingCount || 0), 0);
   const activeEvents = events.filter(e => (e as any).isActive !== false);
   const pastEvents = events.filter(e => e.dateTime && new Date(e.dateTime) < new Date());
@@ -136,13 +158,6 @@ export default function DashboardPage() {
                     Moderation
                   </Link>
                 </Button>
-                <Button asChild variant="primary" size="sm">
-                  <Link href="/create-event">
-                    <Plus className="w-4 h-4 mr-1" />
-                    <span className="hidden sm:inline">Neues Event</span>
-                    <span className="sm:hidden">Neu</span>
-                  </Link>
-                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -176,20 +191,20 @@ export default function DashboardPage() {
               </div>
 
               {/* Quick Stats Row */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+              <div className="grid grid-cols-3 gap-3 mb-4">
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-3">
                   <div className="flex items-center gap-2 text-blue-600 mb-1">
                     <Camera className="w-4 h-4" />
-                    <span className="text-xs font-medium">FOTOS</span>
+                    <span className="text-xs font-medium">MEDIEN</span>
                   </div>
-                  <p className="text-2xl font-bold text-blue-900">{totalPhotos}</p>
+                  <p className="text-2xl font-bold text-blue-900">{totalMedia}</p>
                 </div>
                 <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-3">
                   <div className="flex items-center gap-2 text-green-600 mb-1">
                     <Users className="w-4 h-4" />
-                    <span className="text-xs font-medium">GÄSTE</span>
+                    <span className="text-xs font-medium">BESUCHER</span>
                   </div>
-                  <p className="text-2xl font-bold text-green-900">{totalGuests}</p>
+                  <p className="text-2xl font-bold text-green-900">{totalVisitors}</p>
                 </div>
                 <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-3">
                   <div className="flex items-center gap-2 text-purple-600 mb-1">
@@ -198,26 +213,6 @@ export default function DashboardPage() {
                   </div>
                   <p className="text-2xl font-bold text-purple-900">{events.length}</p>
                 </div>
-                {pendingPhotos > 0 ? (
-                  <Link href="/moderation" className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-300 rounded-xl p-3 hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-2 text-orange-600 mb-1">
-                      <Clock className="w-4 h-4" />
-                      <span className="text-xs font-medium">AUSSTEHEND</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <p className="text-2xl font-bold text-orange-900">{pendingPhotos}</p>
-                      <ChevronRight className="w-4 h-4 text-orange-500" />
-                    </div>
-                  </Link>
-                ) : (
-                  <div className="bg-gradient-to-br from-stone-50 to-stone-100 border border-stone-200 rounded-xl p-3">
-                    <div className="flex items-center gap-2 text-stone-500 mb-1">
-                      <Clock className="w-4 h-4" />
-                      <span className="text-xs font-medium">AUSSTEHEND</span>
-                    </div>
-                    <p className="text-2xl font-bold text-stone-400">0</p>
-                  </div>
-                )}
               </div>
             </motion.div>
           )}
@@ -313,7 +308,7 @@ export default function DashboardPage() {
                     className="pl-9 bg-white border-stone-200"
                   />
                 </div>
-                <div className="flex bg-white border border-stone-200 rounded-lg p-1">
+                <div className="hidden sm:flex bg-white border border-stone-200 rounded-lg p-1">
                   <button
                     onClick={() => setViewMode('grid')}
                     className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'text-stone-400 hover:text-stone-700'}`}
@@ -364,7 +359,7 @@ export default function DashboardPage() {
                   <h3 className="text-xl font-semibold text-stone-800 mb-2">Willkommen bei Gästefotos! 🎉</h3>
                   <p className="text-stone-500 mb-6 max-w-md mx-auto">Erstelle dein erstes Event und sammle unvergessliche Momente mit deinen Gästen.</p>
                   <Button asChild variant="primary" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0">
-                    <Link href="/create-event">
+                    <Link href="/create-event?new=true">
                       <Plus className="w-4 h-4 mr-2" />
                       Erstes Event erstellen
                     </Link>
@@ -374,7 +369,7 @@ export default function DashboardPage() {
             </motion.div>
           ) : (
             <div className={viewMode === 'grid' 
-              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4' 
+              ? 'space-y-3 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-4 sm:space-y-0' 
               : 'space-y-3'
             }>
               <AnimatePresence>
@@ -393,8 +388,17 @@ export default function DashboardPage() {
           )}
         </main>
 
-        {/* Mobile Bottom Nav */}
-        <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-stone-200 sm:hidden z-50 shadow-lg">
+        {/* Floating "+ Event" Button - above bottom nav */}
+        <Link 
+          href="/create-event?new=true" 
+          className="fixed bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full font-semibold text-sm shadow-lg hover:from-pink-600 hover:to-rose-600 transition-all z-50"
+        >
+          <Plus className="w-5 h-5" />
+          Event
+        </Link>
+
+        {/* Bottom Nav */}
+        <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-stone-200 z-50 shadow-lg">
           <div className="flex items-center justify-around py-3">
             <Link href="/dashboard" className="flex flex-col items-center gap-1 text-blue-600">
               <Grid3X3 className="w-5 h-5" />
@@ -403,11 +407,6 @@ export default function DashboardPage() {
             <Link href="/moderation" className="flex flex-col items-center gap-1 text-stone-400">
               <ClipboardCheck className="w-5 h-5" />
               <span className="text-xs">Prüfen</span>
-            </Link>
-            <Link href="/create-event" className="flex flex-col items-center gap-1 text-stone-400">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center -mt-5 shadow-lg border-4 border-white">
-                <Plus className="w-6 h-6 text-white" />
-              </div>
             </Link>
             <a href="/faq" className="flex flex-col items-center gap-1 text-stone-400">
               <HelpCircle className="w-5 h-5" />
@@ -420,6 +419,9 @@ export default function DashboardPage() {
           </div>
         </nav>
       </div>
+      
+      {/* KI-Assistent Floating Button */}
+      <AIFloatingButton />
     </ProtectedRoute>
   );
 }

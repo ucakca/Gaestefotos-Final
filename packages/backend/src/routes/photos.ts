@@ -150,6 +150,12 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
             lastName: true,
           },
         },
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         challengeCompletions: {
           select: {
             challengeId: true,
@@ -263,6 +269,8 @@ router.post(
       const moderationRequired = featuresConfig?.moderationRequired === true;
       const status = moderationRequired && !isManager ? 'PENDING' : 'APPROVED';
 
+      const photoUploaderName = (req.body?.uploaderName || '').trim() || null;
+      
       const photo = await prisma.photo.create({
         data: {
           eventId,
@@ -273,6 +281,7 @@ router.post(
           url: '',
           status,
           sizeBytes: uploadBytes,
+          uploadedBy: photoUploaderName,
         },
         include: {
           guest: {

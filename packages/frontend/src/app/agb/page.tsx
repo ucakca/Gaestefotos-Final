@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { sanitizeCmsHtml } from '@/lib/sanitize';
 
 const localizeCmsHtml = (html: string): string => {
   const rules: Array<[RegExp, string]> = [
@@ -73,7 +74,7 @@ export default function AgbPage() {
       {loading ? <p className="mt-3 text-app-muted">Lade…</p> : null}
       {error ? <p className="mt-3 text-status-danger">{error}</p> : null}
       {!loading && !error && snapshot?.html ? (
-        <div className="prose prose-invert mt-4 max-w-none" dangerouslySetInnerHTML={{ __html: localizeCmsHtml(String(snapshot.html)) }} />
+        <div className="prose prose-invert mt-4 max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(localizeCmsHtml(String(snapshot.html))) }} />
       ) : null}
     </div>
   );

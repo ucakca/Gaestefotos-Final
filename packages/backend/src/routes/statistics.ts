@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, hasEventManageAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 
 const router = Router();
 
@@ -157,7 +158,7 @@ router.get('/events/:eventId/statistics', authMiddleware, async (req: AuthReques
       })),
     });
   } catch (error) {
-    logger.error('Fehler beim Abrufen der Statistiken', { message: (error as any)?.message || String(error) });
+    logger.error('Fehler beim Abrufen der Statistiken', { message: getErrorMessage(error) });
     res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
@@ -234,7 +235,7 @@ router.get('/statistics', authMiddleware, async (req: AuthRequest, res: Response
       })),
     });
   } catch (error) {
-    logger.error('Fehler beim Abrufen der Benutzer-Statistiken', { message: (error as any)?.message || String(error) });
+    logger.error('Fehler beim Abrufen der Benutzer-Statistiken', { message: getErrorMessage(error) });
     res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
@@ -363,7 +364,7 @@ router.get('/events/:eventId/analytics/guests', authMiddleware, async (req: Auth
         .sort((a, b) => a.hour - b.hour),
     });
   } catch (error) {
-    logger.error('Fehler beim Abrufen der Gast-Analytics', { message: (error as any)?.message || String(error) });
+    logger.error('Fehler beim Abrufen der Gast-Analytics', { message: getErrorMessage(error) });
     res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });

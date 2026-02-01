@@ -1,3 +1,4 @@
+import logger from '@/lib/logger';
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -42,7 +43,7 @@ export function QRDesignerPanel({ eventId, eventSlug, galleryUrl }: QRDesignerPa
         setActiveDesign(data.designs[0]);
       }
     } catch (err) {
-      console.error('Load QR designs error:', err);
+      logger.error('Load QR designs error:', err);
     } finally {
       setLoading(false);
     }

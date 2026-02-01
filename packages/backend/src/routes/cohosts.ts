@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, hasEventManageAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { getErrorMessage } from '../utils/typeHelpers';
 import { assertFeatureEnabled, assertWithinLimit } from '../services/featureGate';
 import { emailService } from '../services/email';
 
@@ -71,7 +72,7 @@ router.get('/:eventId/cohosts', authMiddleware, async (req: AuthRequest, res: Re
 
     return res.json({ cohosts: members });
   } catch (error) {
-    logger.error('List cohosts error', { message: (error as any)?.message || String(error), eventId: req.params.eventId });
+    logger.error('List cohosts error', { message: getErrorMessage(error), eventId: req.params.eventId });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -136,7 +137,7 @@ router.put('/:eventId/cohosts/:userId/permissions', authMiddleware, async (req: 
     if (code === 'P2025') {
       return res.status(404).json({ error: 'Co-Host nicht gefunden' });
     }
-    logger.error('Update cohost permissions error', { message: (error as any)?.message || String(error), eventId: req.params.eventId, userId: req.params.userId });
+    logger.error('Update cohost permissions error', { message: getErrorMessage(error), eventId: req.params.eventId, userId: req.params.userId });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -226,7 +227,7 @@ router.post('/:eventId/cohosts', authMiddleware, async (req: AuthRequest, res: R
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
     }
-    logger.error('Add cohost error', { message: (error as any)?.message || String(error), eventId: req.params.eventId });
+    logger.error('Add cohost error', { message: getErrorMessage(error), eventId: req.params.eventId });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -266,7 +267,7 @@ router.delete('/:eventId/cohosts/:userId', authMiddleware, async (req: AuthReque
     if (code === 'P2025') {
       return res.status(404).json({ error: 'Co-Host nicht gefunden' });
     }
-    logger.error('Remove cohost error', { message: (error as any)?.message || String(error), eventId: req.params.eventId, userId: req.params.userId });
+    logger.error('Remove cohost error', { message: getErrorMessage(error), eventId: req.params.eventId, userId: req.params.userId });
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -336,7 +337,7 @@ router.post('/:eventId/cohosts/invite-token', authMiddleware, async (req: AuthRe
     return res.json({ ok: true, eventId, inviteToken, shareUrl });
   } catch (error) {
     logger.error('Mint cohost invite token error', {
-      message: (error as any)?.message || String(error),
+      message: getErrorMessage(error),
       eventId: req.params.eventId,
     });
     return res.status(500).json({ error: 'Internal server error' });

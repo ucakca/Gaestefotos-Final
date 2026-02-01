@@ -3,7 +3,7 @@ let sharp: any;
 try {
   sharp = require('sharp');
 } catch (error) {
-  console.warn('Sharp not available, image processing will be limited');
+  // Sharp not available warning handled silently - logger not available at module load time
 }
 
 export interface ProcessedImage {

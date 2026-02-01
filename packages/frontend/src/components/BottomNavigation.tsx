@@ -16,17 +16,23 @@ import {
   Heart,
   LayoutDashboard,
   Sparkles,
-  Mail
+  Mail,
+  ScanFace,
+  Home,
+  Moon,
+  Sun
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { Category, Event as EventType } from '@gaestefotos/shared';
 import Guestbook from './Guestbook';
 import ChallengeCompletion from './ChallengeCompletion';
+import FaceSearch from './FaceSearch';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog';
+import { ThemeToggleText } from '@/components/ThemeToggle';
 
 interface BottomNavigationProps {
   eventId: string;
@@ -67,21 +73,22 @@ export default function BottomNavigation({
   uploaderName,
 }: BottomNavigationProps) {
   const router = useRouter();
-  const { user, isAuthenticated, loadUser, token } = useAuthStore();
+  const { user, isAuthenticated, loadUser } = useAuthStore();
   const [activeView, setActiveView] = useState<'feed' | 'albums' | 'challenges' | 'guestbook' | 'info'>('feed');
   const [showAlbums, setShowAlbums] = useState(false);
   const [showChallenges, setShowChallenges] = useState(false);
+  const [showFaceSearch, setShowFaceSearch] = useState(false);
   const [feedEntries, setFeedEntries] = useState<FeedEntry[]>([]);
   const [loadingFeed, setLoadingFeed] = useState(false);
   const [challenges, setChallenges] = useState<any[]>([]);
   const [loadingChallenges, setLoadingChallenges] = useState(false);
 
-  // Load user on mount if token exists but user is not loaded
+  // Load user on mount if not already loaded
   useEffect(() => {
-    if (token && !user && !isAuthenticated) {
+    if (!user && !isAuthenticated) {
       loadUser();
     }
-  }, [token, user, isAuthenticated, loadUser]);
+  }, [user, isAuthenticated, loadUser]);
 
   // Check if current user is the host
   const isHost = isAuthenticated && user && event && (user.id === (event as any).hostId);
@@ -171,26 +178,26 @@ export default function BottomNavigation({
 
   return (
     <>
-      {/* Bottom Navigation Bar */}
+      {/* Bottom Navigation Bar - Redesigned */}
       <motion.div
         initial={{ y: 100 }}
         animate={{ y: 0 }}
-        className="fixed bottom-0 left-0 right-0 bg-app-card/90 backdrop-blur border-t border-app-border z-50 safe-area-bottom pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_24px_color-mix(in_srgb,var(--app-fg)_6%,transparent)]"
+        className="fixed bottom-0 left-0 right-0 bg-app-card/95 backdrop-blur-lg border-t border-app-border z-50 safe-area-bottom pb-[env(safe-area-inset-bottom)]"
       >
-        <div className="max-w-4xl mx-auto px-2">
-          <div className="flex items-center justify-around py-2">
-            {/* Feed */}
+        <div className="max-w-lg mx-auto px-4">
+          <div className="flex items-center justify-between py-2 relative">
+            {/* Left: Feed */}
             <MotionButton
               whileTap={{ scale: 0.9 }}
               onClick={() => handleViewChange('feed')}
-              variant={activeView === 'feed' ? 'primary' : 'ghost'}
+              variant="ghost"
               size="sm"
-              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full ${
-                activeView === 'feed' ? 'bg-app-accent text-app-bg' : 'text-app-muted bg-transparent'
+              className={`h-auto flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${
+                activeView === 'feed' ? 'text-app-accent' : 'text-app-muted'
               }`}
             >
-              <Grid3x3 className="w-5 h-5" />
-              <span className="text-xs font-medium">Feed</span>
+              <Home className={`w-6 h-6 ${activeView === 'feed' ? 'fill-app-accent/20' : ''}`} />
+              <span className="text-[10px] font-medium">Feed</span>
             </MotionButton>
 
             {/* Challenges */}
@@ -198,51 +205,71 @@ export default function BottomNavigation({
               whileTap={{ scale: 0.9 }}
               onClick={() => {
                 const featuresConfig = event?.featuresConfig as any;
-                if (featuresConfig?.enableChallenges === false) {
-                  return;
-                }
+                if (featuresConfig?.enableChallenges === false) return;
                 handleViewChange('challenges');
               }}
-              variant={activeView === 'challenges' ? 'primary' : 'ghost'}
+              variant="ghost"
               size="sm"
-              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full ${
-                activeView === 'challenges' ? 'bg-app-accent text-app-bg' : 'text-app-muted bg-transparent'
+              className={`h-auto flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${
+                activeView === 'challenges' ? 'text-app-accent' : 'text-app-muted'
               }`}
             >
-              <Trophy className="w-5 h-5" />
-              <span className="text-xs font-medium">Challenges</span>
+              <Trophy className={`w-6 h-6 ${activeView === 'challenges' ? 'fill-app-accent/20' : ''}`} />
+              <span className="text-[10px] font-medium">Challenges</span>
             </MotionButton>
+
+            {/* Center: Finde mein Foto - Prominent Button */}
+            {(event?.featuresConfig as any)?.faceSearch !== false && (
+              <MotionButton
+                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.05 }}
+                onClick={() => setShowFaceSearch(true)}
+                variant="primary"
+                size="sm"
+                className="absolute left-1/2 -translate-x-1/2 -top-5 h-auto flex flex-col items-center gap-0.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-app-accent to-purple-500 text-white shadow-lg shadow-app-accent/30"
+              >
+                <ScanFace className="w-6 h-6" />
+                <span className="text-[10px] font-semibold whitespace-nowrap">Finde mich</span>
+              </MotionButton>
+            )}
 
             {/* Gästebuch */}
             <MotionButton
               whileTap={{ scale: 0.9 }}
               onClick={() => handleViewChange('guestbook')}
-              variant={activeView === 'guestbook' ? 'primary' : 'ghost'}
+              variant="ghost"
               size="sm"
-              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full ${
-                activeView === 'guestbook' ? 'bg-app-accent text-app-bg' : 'text-app-muted bg-transparent'
+              className={`h-auto flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${
+                activeView === 'guestbook' ? 'text-app-accent' : 'text-app-muted'
               }`}
             >
-              <BookOpen className="w-5 h-5" />
-              <span className="text-xs font-medium">Gästebuch</span>
+              <BookOpen className={`w-6 h-6 ${activeView === 'guestbook' ? 'fill-app-accent/20' : ''}`} />
+              <span className="text-[10px] font-medium">Gästebuch</span>
             </MotionButton>
 
-            {/* Info/Share */}
+            {/* Right: Info */}
             <MotionButton
               whileTap={{ scale: 0.9 }}
               onClick={() => handleViewChange('info')}
-              variant={activeView === 'info' ? 'primary' : 'ghost'}
+              variant="ghost"
               size="sm"
-              className={`h-auto flex flex-col items-center gap-1 px-4 py-2 rounded-full ${
-                activeView === 'info' ? 'bg-app-accent text-app-bg' : 'text-app-muted bg-transparent'
+              className={`h-auto flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${
+                activeView === 'info' ? 'text-app-accent' : 'text-app-muted'
               }`}
             >
-              <Info className="w-5 h-5" />
-              <span className="text-xs font-medium">Info</span>
+              <Info className={`w-6 h-6 ${activeView === 'info' ? 'fill-app-accent/20' : ''}`} />
+              <span className="text-[10px] font-medium">Info</span>
             </MotionButton>
           </div>
         </div>
       </motion.div>
+      
+      {/* Face Search Modal */}
+      <FaceSearch 
+        eventId={eventId} 
+        open={showFaceSearch}
+        onClose={() => setShowFaceSearch(false)}
+      />
 
       {/* Albums Modal */}
       <Dialog open={showAlbums} onOpenChange={(open) => (open ? null : setShowAlbums(false))}>
@@ -447,37 +474,23 @@ export default function BottomNavigation({
             <MotionButton
               whileTap={{ scale: 0.98 }}
               onClick={async () => {
-                // Prüfe zuerst ob Token vorhanden ist (auch wenn isAuthenticated noch false ist)
-                const hasToken = token || (
-                  typeof window !== 'undefined' &&
-                  (sessionStorage.getItem('token') || localStorage.getItem('token'))
-                );
-                
-                if (hasToken && !isAuthenticated) {
-                  // Token vorhanden, aber User noch nicht geladen - lade User zuerst
+                // Auth is cookie-based - try to load user first if not authenticated
+                if (!isAuthenticated) {
                   try {
                     await loadUser();
-                    // Nach erfolgreichem Laden, prüfe nochmal den aktuellen State
                     const currentState = useAuthStore.getState();
                     if (currentState.isAuthenticated && currentState.user) {
                       router.push(`/events/${eventId}/dashboard`);
                     } else {
-                      // Token ungültig - zur Login-Seite
                       const returnUrl = `/events/${eventId}/dashboard`;
                       router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
                     }
                   } catch (error) {
-                    // Fehler beim Laden - zur Login-Seite
                     const returnUrl = `/events/${eventId}/dashboard`;
                     router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
                   }
-                } else if (isAuthenticated) {
-                  // Eingeloggt - direkt zum Dashboard
-                  router.push(`/events/${eventId}/dashboard`);
                 } else {
-                  // Nicht eingeloggt - zur Login-Seite mit Return-URL
-                  const returnUrl = `/events/${eventId}/dashboard`;
-                  router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+                  router.push(`/events/${eventId}/dashboard`);
                 }
               }}
               variant="ghost"
@@ -497,6 +510,12 @@ export default function BottomNavigation({
               <Share2 className="w-5 h-5" />
               <span className="font-medium text-app-fg">Event teilen</span>
             </MotionButton>
+            
+            {/* Dark Mode Toggle */}
+            <div className="w-full bg-app-bg hover:bg-app-card rounded-lg transition-colors">
+              <ThemeToggleText className="w-full p-4 justify-start" />
+            </div>
+            
             <div className="text-sm text-app-muted space-y-3">
               <div>
                 <p className="font-semibold text-app-fg mb-1">Über diese App</p>

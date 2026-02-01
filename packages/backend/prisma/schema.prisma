@@ -73,6 +73,8 @@ model Event {
   stories                 Story[]
   videos                  Video[]
   visitCount              Int                         @default(0)
+  wifiName                String?
+  wifiPassword            String?
 
   @@index([slug])
   @@index([hostId])
@@ -910,23 +912,43 @@ model design_templates {
 }
 
 model qr_templates {
-  id               String   @id
+  id               String   @id @default(uuid())
+  slug             String   @unique
   name             String
   description      String?
-  category         String
+  category         String   @default("MINIMAL")
+  
+  // SVG content per format
+  svgA6            String?  @db.Text
+  svgA5            String?  @db.Text
+  svgStory         String?  @db.Text
+  svgSquare        String?  @db.Text
+  
+  // Default colors
+  defaultBgColor     String @default("#ffffff")
+  defaultTextColor   String @default("#1a1a1a")
+  defaultAccentColor String @default("#295B4D")
+  
+  // Metadata
   isPremium        Boolean  @default(false)
   isPublic         Boolean  @default(true)
+  isActive         Boolean  @default(true)
+  sortOrder        Int      @default(0)
   previewUrl       String?
+  
+  // Legacy fields (keep for compatibility)
   templateImageUrl String?
-  config           String
+  config           String?
   usageCount       Int      @default(0)
   rating           Float?   @db.Real
+  
   createdAt        DateTime @default(now())
-  updatedAt        DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
 
   @@index([category])
   @@index([isPublic])
-  @@index([usageCount])
+  @@index([isActive])
+  @@index([sortOrder])
 }
 
 enum UserRole {

@@ -15,11 +15,11 @@
   <text id="gf:text:headline" x="740" y="430" text-anchor="middle" font-family="Playfair Display, Georgia, 'Times New Roman', serif" font-size="108" font-weight="700" class="gf-text">Unsere Fotogalerie</text>
   <text id="gf:text:subline" x="740" y="550" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="44" font-weight="500" class="gf-text" opacity="0.9">Teilt eure Fotos mit uns</text>
 
-  <text id="gf:text:eventName" x="740" y="690" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="54" font-weight="600" class="gf-accent">Anna & Ben</text>
+  <text id="gf:text:eventName" x="740" y="690" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="54" font-weight="600" class="gf-accent">Anna &amp; Ben</text>
 
-  <rect id="gf:qr" x="560" y="900" width="360" height="360" rx="24" fill="#ffffff" stroke="var(--gf-accent)" stroke-width="8" opacity="0.95"/>
+  <rect id="gf:qr" x="335" y="580" width="380" height="380" rx="24" fill="#ffffff" stroke="var(--gf-accent)" stroke-width="8" opacity="0.95"/>
 
-  <text id="gf:text:callToAction" x="740" y="1480" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="40" font-weight="500" class="gf-text">Einfach scannen & hochladen</text>
+  <text id="gf:text:callToAction" x="740" y="1480" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="40" font-weight="500" class="gf-text">Einfach scannen &amp; hochladen</text>
 
   <text x="740" y="1820" text-anchor="middle" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" font-size="28" font-weight="400" class="gf-text" opacity="0.75">gästefotos.com</text>
 </svg>

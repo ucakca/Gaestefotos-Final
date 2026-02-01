@@ -2,9 +2,19 @@ import { create } from 'zustand';
 import { User } from '@gaestefotos/shared';
 import { authApi } from '@/lib/auth';
 
+/**
+ * Auth Store - Cookie-based Authentication
+ * 
+ * Token storage strategy:
+ * - PRIMARY: httpOnly cookie (set by backend, most secure)
+ * - FALLBACK: localStorage (for backwards compatibility with existing sessions)
+ * 
+ * The backend sets an httpOnly cookie 'auth_token' on login/register.
+ * This store no longer manages the token directly - it relies on cookies.
+ */
+
 interface AuthState {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
   loading: boolean;
   hasCheckedAuth: boolean;
@@ -14,29 +24,27 @@ interface AuthState {
   loadUser: () => Promise<void>;
 }
 
+// Helper to clear legacy token storage
+const clearLegacyTokens = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
+  }
+};
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  token:
-    typeof window !== 'undefined'
-      ? (sessionStorage.getItem('token') || localStorage.getItem('token'))
-      : null,
-  isAuthenticated:
-    typeof window !== 'undefined'
-      ? Boolean(sessionStorage.getItem('token') || localStorage.getItem('token'))
-      : false,
+  isAuthenticated: false,
   loading: false,
   hasCheckedAuth: false,
 
   login: async (email: string, password: string) => {
     set({ loading: true });
     try {
-      const { user, token } = await authApi.login({ email, password });
-      if (typeof window !== 'undefined') {
-        // Default: persist in localStorage for consistency with E2E and existing token usage.
-        localStorage.setItem('token', token);
-        sessionStorage.removeItem('token');
-      }
-      set({ user, token, isAuthenticated: true, loading: false, hasCheckedAuth: true });
+      const { user } = await authApi.login({ email, password });
+      // Backend sets httpOnly cookie - no need to store token client-side
+      clearLegacyTokens();
+      set({ user, isAuthenticated: true, loading: false, hasCheckedAuth: true });
     } catch (error) {
       set({ loading: false });
       throw error;
@@ -46,12 +54,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (name: string, email: string, password: string) => {
     set({ loading: true });
     try {
-      const { user, token } = await authApi.register({ name, email, password });
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('token', token);
-        sessionStorage.removeItem('token');
-      }
-      set({ user, token, isAuthenticated: true, loading: false, hasCheckedAuth: true });
+      const { user } = await authApi.register({ name, email, password });
+      // Backend sets httpOnly cookie - no need to store token client-side
+      clearLegacyTokens();
+      set({ user, isAuthenticated: true, loading: false, hasCheckedAuth: true });
     } catch (error) {
       set({ loading: false });
       throw error;
@@ -60,28 +66,20 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     await authApi.logout();
-    set({ user: null, token: null, isAuthenticated: false, hasCheckedAuth: true });
+    clearLegacyTokens();
+    set({ user: null, isAuthenticated: false, hasCheckedAuth: true });
   },
 
   loadUser: async () => {
-    if (typeof window !== 'undefined') {
-      const t = sessionStorage.getItem('token') || localStorage.getItem('token');
-      if (!t) {
-        set({ user: null, token: null, isAuthenticated: false, loading: false, hasCheckedAuth: true });
-        return;
-      }
-    }
-
     set({ loading: true });
     try {
+      // Auth is determined by httpOnly cookie - just try to fetch user
       const { user } = await authApi.getMe();
+      clearLegacyTokens(); // Clean up any legacy tokens
       set({ user, isAuthenticated: true, loading: false, hasCheckedAuth: true });
     } catch (error) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        sessionStorage.removeItem('token');
-      }
-      set({ user: null, token: null, isAuthenticated: false, loading: false, hasCheckedAuth: true });
+      clearLegacyTokens();
+      set({ user: null, isAuthenticated: false, loading: false, hasCheckedAuth: true });
     }
   },
 }));
