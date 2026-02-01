@@ -52,7 +52,7 @@ const navigation = [
   { name: 'QR-Templates', href: '/manage/qr-templates', icon: QrCode },
   { name: 'Feature Flags', href: '/feature-flags', icon: Flag },
   { name: 'API Keys', href: '/api-keys', icon: KeyRound },
-  { name: 'E-Mail Templates', href: '/email-templates', icon: Mail },
+  { name: 'E-Mail Templates', href: '/manage/email-templates', icon: Mail },
   { name: 'Invitation Templates', href: '/invitation-templates', icon: FileText },
   { name: 'Maintenance', href: '/maintenance', icon: Wrench },
   { name: 'Marketing', href: '/marketing', icon: Megaphone },
