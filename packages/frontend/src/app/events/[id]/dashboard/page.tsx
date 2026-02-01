@@ -65,6 +65,7 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { useRealtimePhotos } from '@/hooks/useRealtimePhotos';
 import { AIFloatingButton } from '@/components/ai-chat';
 import { CoHostsSection } from '@/components/dashboard/CoHostsSection';
+import SetupTabV2 from '@/components/dashboard/SetupTabV2';
 
 type TabType = 'overview' | 'gallery' | 'guestbook' | 'setup';
 type GalleryFilter = 'all' | 'photos' | 'videos' | 'albums' | 'guests' | 'challenges' | 'top' | 'pending' | 'trash';
@@ -513,7 +514,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
             <GuestbookTab key="guestbook" eventId={eventId || ''} />
           )}
           {activeTab === 'setup' && (
-            <SetupTab key="setup" event={event} eventId={eventId || ''} />
+            <SetupTabV2 key="setup" event={event} eventId={eventId || ''} onEventUpdate={loadEvent} />
           )}
         </AnimatePresence>
       </main>
