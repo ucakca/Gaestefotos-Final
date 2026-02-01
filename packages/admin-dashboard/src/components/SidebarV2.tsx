@@ -23,6 +23,9 @@ import {
   RefreshCw,
   Menu,
   X,
+  Mail,
+  Flag,
+  QrCode,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -58,6 +61,10 @@ const navigation: NavGroup[] = [
       { name: 'Events', href: '/manage/events', icon: Calendar },
       { name: 'Pakete', href: '/manage/packages', icon: Package },
       { name: 'Impersonation', href: '/manage/impersonation', icon: UserCog },
+      { name: 'QR-Templates', href: '/manage/qr-templates', icon: QrCode },
+      { name: 'E-Mail Templates', href: '/manage/email-templates', icon: Mail },
+      { name: 'Einladungs-Templates', href: '/invitation-templates', icon: FileText },
+      { name: 'Feature Flags', href: '/feature-flags', icon: Flag },
     ],
   },
   {
