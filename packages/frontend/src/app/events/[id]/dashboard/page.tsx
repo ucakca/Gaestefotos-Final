@@ -498,6 +498,10 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
               onMintCohostInvite={mintCohostInvite}
               mintingCohostInvite={mintingCohostInvite}
               eventId={eventId || ''}
+              onGoToSetup={() => {
+                setActiveTab('setup');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
           )}
           {activeTab === 'gallery' && (
@@ -630,6 +634,7 @@ function OverviewTab({
   onMintCohostInvite,
   mintingCohostInvite,
   eventId,
+  onGoToSetup,
 }: {
   event: EventType;
   eventDate: string | null;
@@ -650,6 +655,7 @@ function OverviewTab({
   onMintCohostInvite: () => void;
   mintingCohostInvite: boolean;
   eventId: string;
+  onGoToSetup: () => void;
 }) {
   const [showStatusInfo, setShowStatusInfo] = useState(false);
   const [showAllSteps, setShowAllSteps] = useState(completedSteps < totalSteps); // Open until complete
@@ -804,29 +810,56 @@ function OverviewTab({
               className="overflow-hidden"
             >
               <div className="p-4 space-y-1">
-                {onboardingSteps.map((step, index) => (
-                  <Link
-                    key={step.id}
-                    href={step.link || '#'}
-                    className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${
-                      step.completed ? 'bg-green-50' : step.current ? 'bg-amber-50' : 'hover:bg-stone-50'
-                    }`}
-                  >
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                      step.completed ? 'bg-green-500 text-white' : step.current ? 'bg-amber-500 text-white' : 'bg-stone-200 text-stone-500'
-                    }`}>
-                      {step.completed ? <Check className="w-4 h-4" /> : index + 1}
-                    </div>
-                    <span className={`text-sm flex-1 ${
-                      step.completed ? 'text-green-700' : step.current ? 'text-amber-700 font-medium' : 'text-stone-500'
-                    }`}>
-                      {step.label}
-                    </span>
-                    {step.current && (
-                      <ChevronRight className="w-4 h-4 text-amber-500" />
-                    )}
-                  </Link>
-                ))}
+                {onboardingSteps.map((step, index) => {
+                  // Steps that can be edited in Setup Tab
+                  const setupSteps = ['title', 'date'];
+                  const isSetupStep = setupSteps.includes(step.id);
+                  
+                  const content = (
+                    <>
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                        step.completed ? 'bg-green-500 text-white' : step.current ? 'bg-amber-500 text-white' : 'bg-stone-200 text-stone-500'
+                      }`}>
+                        {step.completed ? <Check className="w-4 h-4" /> : index + 1}
+                      </div>
+                      <span className={`text-sm flex-1 ${
+                        step.completed ? 'text-green-700' : step.current ? 'text-amber-700 font-medium' : 'text-stone-500'
+                      }`}>
+                        {step.label}
+                      </span>
+                      {step.current && (
+                        <ChevronRight className="w-4 h-4 text-amber-500" />
+                      )}
+                    </>
+                  );
+                  
+                  const className = `flex items-center gap-3 p-3 rounded-xl transition-colors ${
+                    step.completed ? 'bg-green-50' : step.current ? 'bg-amber-50' : 'hover:bg-stone-50'
+                  }`;
+                  
+                  // Navigate to Setup Tab for title/date, external link for others
+                  if (isSetupStep) {
+                    return (
+                      <button
+                        key={step.id}
+                        onClick={onGoToSetup}
+                        className={`${className} w-full text-left`}
+                      >
+                        {content}
+                      </button>
+                    );
+                  }
+                  
+                  return (
+                    <Link
+                      key={step.id}
+                      href={step.link || '#'}
+                      className={className}
+                    >
+                      {content}
+                    </Link>
+                  );
+                })}
               </div>
             </motion.div>
           )}
