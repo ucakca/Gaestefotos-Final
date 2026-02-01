@@ -13,7 +13,9 @@ import {
   Send,
   User,
   Trophy,
+  Star,
 } from 'lucide-react';
+import StarRating from '@/components/ui/StarRating';
 import { Photo } from '@gaestefotos/shared';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/Input';
@@ -85,6 +87,7 @@ export default function PhotoLightbox({
   const [authorName, setAuthorName] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [showAllComments, setShowAllComments] = useState(false);
+  const [photoRatings, setPhotoRatings] = useState<Record<string, { average: number; count: number; userRating: number | null }>>({}); 
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
@@ -141,6 +144,23 @@ export default function PhotoLightbox({
             ...prev,
             [currentPhoto.id]: commentsRes.data.comments || [],
           }));
+        }
+
+        // Load ratings
+        if (!photoRatings[currentPhoto.id]) {
+          try {
+            const ratingsRes = await api.get(`/photos/${realId}/votes`);
+            setPhotoRatings((prev) => ({
+              ...prev,
+              [currentPhoto.id]: {
+                average: ratingsRes.data.averageRating || 0,
+                count: ratingsRes.data.voteCount || 0,
+                userRating: ratingsRes.data.userVote || null,
+              },
+            }));
+          } catch {
+            // Votes endpoint might not exist for all photos
+          }
         }
       } catch (err) {
         void err;
@@ -211,6 +231,27 @@ export default function PhotoLightbox({
       setSubmittingComment(false);
     }
   }, [currentPhoto, commentText, authorName]);
+
+  // Rate photo
+  const handleRate = useCallback(async (rating: number) => {
+    if (!currentPhoto) return;
+    const realId = getRealPhotoId(currentPhoto);
+    if (!realId) return;
+
+    try {
+      const response = await api.post(`/photos/${realId}/vote`, { rating });
+      setPhotoRatings((prev) => ({
+        ...prev,
+        [currentPhoto.id]: {
+          average: response.data.averageRating || 0,
+          count: response.data.voteCount || 0,
+          userRating: rating,
+        },
+      }));
+    } catch (err) {
+      void err;
+    }
+  }, [currentPhoto]);
 
   // Download photo
   const handleDownload = useCallback(() => {
@@ -291,6 +332,7 @@ export default function PhotoLightbox({
   const isLiked = likedPhotos.has(currentPhoto.id);
   const likeCount = likeCounts[currentPhoto.id] || 0;
   const photoComments = comments[currentPhoto.id] || [];
+  const currentRating = photoRatings[currentPhoto.id] || { average: 0, count: 0, userRating: null };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -441,6 +483,18 @@ export default function PhotoLightbox({
                   : 'Sei der Erste, dem das gefällt'
                 }
               </p>
+
+              {/* Star Rating */}
+              <div className="flex items-center gap-2 py-1">
+                <span className="text-white/60 text-sm">Bewerten:</span>
+                <StarRating
+                  rating={currentRating.average}
+                  userRating={currentRating.userRating}
+                  voteCount={currentRating.count}
+                  onRate={handleRate}
+                  size="md"
+                />
+              </div>
 
               {/* Uploader attribution - always visible */}
               <p className="text-white/80 text-sm">
