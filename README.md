@@ -2,185 +2,219 @@
 
 **Version:** 2.0.0  
 **Status:** ✅ Produktionsbereit  
-**Letzte Aktualisierung:** 2026-01-15
+**Letzte Aktualisierung:** 2026-02-01
 
 ---
 
 ## 📋 Inhaltsverzeichnis
 
 - [Überblick](#überblick)
+- [Architektur](#architektur)
 - [Features](#features)
 - [Technologie-Stack](#technologie-stack)
 - [Projektstruktur](#projektstruktur)
 - [Installation](#installation)
-- [Konfiguration](#konfiguration)
-- [Entwicklung](#entwicklung)
 - [API-Dokumentation](#api-dokumentation)
+- [Admin Dashboard](#admin-dashboard)
 - [Deployment](#deployment)
-- [Ops Runbooks](#ops-runbooks)
-- [Troubleshooting](#troubleshooting)
-
-## Kurze Doku-Links (empfohlen)
-
-- `docs/INDEX.md` (Start hier)
-- `docs/API_MAP.md` (Endpoints → Dateien)
-- `docs/GAP_ANALYSIS.md` (Spec → Status → Pfade)
-- `docs/FEATURES.md`
-- `docs/DEPLOYMENT.md`
-- `docs/DB_FIELD_MEANINGS.md`
+- [Testing](#testing)
 
 ---
 
 ## Überblick
 
-Gästefotos ist eine moderne, vollständig funktionsfähige Web-Anwendung für Event-Foto-Sharing. Die Plattform ermöglicht es Event-Organisatoren, Fotos von ihren Veranstaltungen zu sammeln, zu moderieren und mit Gästen zu teilen.
+Gästefotos ist eine Enterprise-grade Event-Foto-Sharing Plattform. Die Anwendung ermöglicht Event-Organisatoren (Hosts), Fotos und Videos von Veranstaltungen zu sammeln, zu moderieren und mit Gästen zu teilen.
 
-### Hauptfunktionen
+### Architektur
 
-- 📷 **Foto-Upload & -Verwaltung**: Gäste können Fotos hochladen, Organisatoren können sie moderieren
-- 🔐 **Passwort-Schutz**: Events können mit Passwörtern geschützt werden
-- 📊 **Statistiken & Analytics**: Detaillierte Statistiken zu Events, Fotos und Gästen
-- 📧 **Email-Integration**: Automatische Einladungen und Benachrichtigungen
-- 🏷️ **Kategorien-System**: Fotos können in Kategorien organisiert werden
-- 📥 **Download-Funktionalität**: Einzelne Fotos oder ZIP-Archive herunterladen
-- 🔗 **Social Sharing**: Fotos auf Facebook, WhatsApp teilen oder Link kopieren
-- 📱 **PWA-Unterstützung**: Progressive Web App für mobile Geräte
-- 💌 **Einladungsseiten**: Dynamische Einladungen mit Gästegruppen-Differenzierung
-- 🎨 **QR-Code Designer**: Visuelle QR-Code Erstellung mit 5 Templates und PDF-Export
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Gästefotos Platform                       │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │  Frontend   │  │    Admin    │  │        Backend          │  │
+│  │  Next.js 16 │  │  Dashboard  │  │       Express.js        │  │
+│  │  Port 3002  │  │  Port 3003  │  │       Port 8002         │  │
+│  └──────┬──────┘  └──────┬──────┘  └───────────┬─────────────┘  │
+│         │                │                      │                │
+│         └────────────────┴──────────────────────┘                │
+│                          │                                       │
+│  ┌───────────────────────┴───────────────────────────────────┐  │
+│  │                      PostgreSQL + Prisma                   │  │
+│  │                        43 Models                           │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│  ┌───────────────────────┐  ┌────────────────────────────────┐  │
+│  │      SeaweedFS        │  │           Redis                │  │
+│  │    (S3 Storage)       │  │    (Cache/Sessions)            │  │
+│  └───────────────────────┘  └────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Rollen
+
+| Rolle | Beschreibung |
+|-------|-------------|
+| **Host** | Erstellt Events, verwaltet Inhalte, Gäste-Settings, Downloads |
+| **Co-Host** | Verwaltet ein Event im Auftrag des Hosts |
+| **Gast** | Lädt Medien hoch, sieht Galerie, kann herunterladen |
+| **Admin** | Administrative Funktionen im Admin-Dashboard |
+| **Superadmin** | Voller Systemzugriff, 2FA erforderlich |
+
+### Dokumentation
+
+| Dokument | Beschreibung |
+|----------|-------------|
+| `docs/INDEX.md` | Start hier |
+| `docs/API_MAP.md` | Endpoints → Dateien |
+| `docs/FEATURES.md` | Feature-Übersicht |
+| `docs/DEPLOYMENT.md` | Deployment-Anleitung |
+| `docs/DB_FIELD_MEANINGS.md` | Datenbank-Felder |
 
 ---
 
 ## ✨ Features
 
-### Für Event-Organisatoren
+### Core Features
 
-- ✅ Event-Erstellung und -Verwaltung
-- ✅ Passwort-Schutz für Events
-- ✅ Foto-Moderation (Approve/Reject)
-- ✅ Bulk-Operationen (Mehrfach-Auswahl)
-- ✅ Gästelisten-Verwaltung
-- ✅ Kategorien-Management
-- ✅ Statistiken-Dashboard
-- ✅ Email-Einladungen versenden
-- ✅ Bulk-Einladungen
-- ✅ Download-Funktionalität (ZIP)
-- ✅ QR-Code Designer (5 Templates, PDF/PNG Export)
-- ✅ Einladungs-Konfiguration mit Gästegruppen
+| Feature | Beschreibung |
+|---------|-------------|
+| 📷 **Foto-Upload** | TUS-Resumable Upload, EXIF-Extraktion, Auto-Rotation |
+| 🎬 **Video-Upload** | MP4/MOV Support, Thumbnail-Generierung |
+| 🔐 **Event-Schutz** | Passwort, Shortlinks, QR-Codes |
+| 📊 **Statistiken** | Event-Analytics, Gäste-Aktivität, Upload-Trends |
+| 🏷️ **Kategorien** | Album-Organisation, Drag & Drop Sortierung |
+| 📥 **Downloads** | Einzel-Downloads, Bulk-ZIP (bis 10GB) |
+| 💬 **Gästebuch** | Text, Audio, Foto-Uploads |
+| 🏆 **Challenges** | Foto-Wettbewerbe mit Voting |
+| 📖 **Stories** | Instagram-Style Stories |
+| 🖼️ **Live Wall** | Echtzeit Foto-Projektion via WebSocket |
+| 👥 **Co-Hosts** | Event-Mitverwalter mit Einladungs-Flow |
+| ✉️ **Einladungen** | Dynamische Seiten, RSVP, Gästegruppen |
 
-### Für Gäste
+### QR-Code Designer
 
-- ✅ Foto-Upload
-- ✅ Event-Galerie ansehen
-- ✅ Fotos herunterladen
-- ✅ Social Sharing (Facebook, WhatsApp)
-- ✅ Live Wall (Echtzeit-Updates)
-- ✅ Digitale Einladungen (gruppenbasiert)
-- ✅ RSVP-Formulare mit dynamischen Fragen
-- ✅ QR-Code Scan für direkten Event-Zugang
+- **10+ SVG Templates** in 6 Kategorien (Minimal, Elegant, Natur, Festlich, Modern, Rustikal)
+- **Formate**: A6/A5 Tischaufsteller, Story, Square
+- **Export**: PNG, PDF (Druckqualität)
+- **Anpassbar**: Farben, QR-Stil, Logo-Integration
 
-### Technische Features
+### PWA / Offline
 
-- ✅ RESTful API
-- ✅ WebSocket für Echtzeit-Updates
-- ✅ JWT Authentication
-- ✅ Image Processing (Sharp)
-- ✅ S3-kompatible Storage (SeaweedFS)
-- ✅ PostgreSQL Database
-- ✅ PWA mit Service Worker
-- ✅ Responsive Design
+- **Service Worker**: Network-First API, Cache-First Images
+- **Offline-Fallback**: `/offline` Seite
+- **Installierbar**: iOS, Android, Desktop
+- **Update-Banner**: Automatische Aktualisierung
 
-### Auth / Login (kurz)
+### Sicherheit
 
-- **Login** läuft über `POST /api/auth/login` und setzt ein httpOnly Cookie (`auth_token`).
-- **WordPress Login/Verifikation**: je nach Konfiguration wird das Passwort gegen WordPress verifiziert.
-- **Unicode/IDN Emails** werden unterstützt (z.B. `test@gästefotos.com`), indem Unicode- und Punycode-Varianten geprüft werden.
-- **Admin Flow**: Admins/Superadmins landen nach Login auf `/admin/dashboard`.
-- **Registrierung** ist in der UI deaktiviert; Backend-Register ist standardmäßig gesperrt (optional via `ALLOW_SELF_REGISTER=true`).
-- **Production Routing**: Frontend macht API Calls same-origin (Browser: `'/api'`), `NEXT_PUBLIC_API_URL` ist nur für Dev/E2E.
+| Feature | Details |
+|---------|---------|
+| **JWT Auth** | httpOnly Cookies, 7d Expiry |
+| **2FA (TOTP)** | Für Admins verpflichtend, AES-256-GCM verschlüsselt |
+| **Rate Limiting** | Per-Endpoint Limits |
+| **Helmet.js** | Security Headers |
+| **Zod Validation** | Input-Validierung auf allen Endpoints |
+| **WordPress Auth** | Optional: Passwort-Verifikation via WP REST |
 
 ---
 
 ## 🛠️ Technologie-Stack
 
-### Backend
+### Packages
 
-- **Runtime**: Node.js 24+
-- **Framework**: Express.js
-- **Language**: TypeScript
-- **Database**: PostgreSQL mit Prisma ORM
-- **Storage**: SeaweedFS (S3-kompatibel)
-- **Image Processing**: Sharp
-- **Email**: Nodemailer
-- **WebSocket**: Socket.io
-- **Authentication**: JWT
+| Package | Stack | Port |
+|---------|-------|------|
+| `@gaestefotos/backend` | Express.js, Prisma, Socket.io | 8002 |
+| `@gaestefotos/frontend` | Next.js 16, React 18, TailwindCSS | 3002 |
+| `@gaestefotos/admin-dashboard` | Next.js 16, React 18, TailwindCSS | 3003 |
+| `@gaestefotos/shared` | TypeScript Types & Utils | - |
 
-### Frontend
+### Backend Stack
 
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Styling**: CSS Modules / Tailwind CSS
-- **UI Components**: React
-- **Charts**: Recharts
-- **PWA**: Service Worker, Manifest
+```
+Express.js          - Web Framework
+Prisma              - ORM (43 Models, 50 Migrations)
+Socket.io           - Realtime WebSockets
+Sharp               - Image Processing
+@tus/server         - Resumable Uploads
+@aws-sdk/client-s3  - S3 Storage (SeaweedFS)
+pdf-lib             - PDF Generation
+qrcode              - QR Code Generation
+nodemailer          - Email
+winston             - Logging
+zod                 - Input Validation
+bcryptjs            - Password Hashing
+jsonwebtoken        - JWT Auth
+```
 
-### DevOps
+### Frontend Stack
 
-- **Package Manager**: pnpm (Workspace)
-- **Build Tool**: TypeScript Compiler
-- **Process Manager**: systemd / PM2
+```
+Next.js 16          - React Framework (App Router)
+React 18            - UI Library
+TailwindCSS         - Utility-First CSS
+Radix UI            - Accessible Components
+Framer Motion       - Animations
+React Query         - Server State Management
+Lucide React        - Icons
+react-hook-form     - Form Handling
+qr-code-styling     - QR Code Rendering
+```
+
+### Infrastruktur
+
+| Service | Verwendung |
+|---------|-----------|
+| PostgreSQL 14+ | Hauptdatenbank |
+| SeaweedFS | S3-kompatibler Objektspeicher |
+| Redis | Cache, Rate Limiting, Sessions |
+| Nginx | Reverse Proxy, SSL Termination |
+| systemd | Process Management |
 
 ---
 
 ## 📁 Projektstruktur
 
 ```
-<repo-root>/
+gaestefotos-app-v2/
 ├── packages/
-│   ├── backend/              # Backend API Server
+│   ├── backend/                 # Express.js API Server
 │   │   ├── src/
-│   │   │   ├── routes/       # API Routes
-│   │   │   │   ├── auth.ts
-│   │   │   │   ├── events.ts
-│   │   │   │   ├── photos.ts
-│   │   │   │   ├── guests.ts
-│   │   │   │   ├── categories.ts
-│   │   │   │   ├── statistics.ts
-│   │   │   │   └── email.ts
-│   │   │   ├── services/     # Business Logic
-│   │   │   │   ├── email.ts
-│   │   │   │   ├── storage.ts
-│   │   │   │   └── imageProcessor.ts
-│   │   │   ├── middleware/    # Middleware
-│   │   │   │   └── auth.ts
-│   │   │   ├── config/       # Configuration
-│   │   │   │   └── database.ts
-│   │   │   └── index.ts      # Entry Point
-│   │   ├── prisma/           # Database Schema
-│   │   │   ├── schema.prisma
-│   │   │   └── migrations/
-│   │   └── package.json
+│   │   │   ├── routes/          # 55 API Route Files
+│   │   │   ├── services/        # Business Logic
+│   │   │   ├── middleware/      # Auth, Rate Limit, Validation
+│   │   │   └── index.ts         # Entry Point
+│   │   ├── prisma/
+│   │   │   ├── schema.prisma    # 43 Database Models
+│   │   │   └── migrations/      # 50 Migrations
+│   │   └── uploads/             # Temp Upload Directory
 │   │
-│   ├── frontend/             # Next.js Frontend
+│   ├── frontend/                # Next.js User App
 │   │   ├── src/
-│   │   │   └── app/          # Next.js App Router
-│   │   │       ├── (auth)/  # Auth Pages
-│   │   │       ├── dashboard/
-│   │   │       ├── events/
-│   │   │       ├── e/        # Public Event Pages
-│   │   │       └── live/     # Live Wall
-│   │   ├── public/           # Static Assets
-│   │   └── package.json
+│   │   │   ├── app/             # 30+ Routes (App Router)
+│   │   │   │   ├── events/[id]/ # Event Management
+│   │   │   │   ├── e3/[slug]/   # Public Event Gallery
+│   │   │   │   ├── i/[slug]/    # Invitation Pages
+│   │   │   │   ├── live/[slug]/ # Live Wall + Camera
+│   │   │   │   └── dashboard/   # Host Dashboard
+│   │   │   ├── components/      # 200+ React Components
+│   │   │   └── hooks/           # Custom React Hooks
+│   │   └── public/
+│   │       └── qr-templates/    # 10+ SVG Templates
 │   │
-│   └── shared/               # Shared Utilities
-│       ├── src/
-│       │   ├── utils/        # Utility Functions
-│       │   ├── types/       # TypeScript Types
-│       │   └── constants/   # Constants
-│       └── package.json
+│   ├── admin-dashboard/         # Admin UI
+│   │   └── src/app/(admin)/
+│   │       ├── dashboard/       # Overview, Stats
+│   │       ├── manage/          # Events, Users, QR-Templates, Packages
+│   │       ├── settings/        # API Keys, Theme, WooCommerce, Maintenance
+│   │       └── system/          # Health, Logs, AI-Analyse, Rate Limits
+│   │
+│   └── shared/                  # Shared TypeScript Types
 │
-├── pnpm-workspace.yaml       # pnpm Workspace Config
-├── package.json              # Root Package
-└── README.md                 # Diese Datei
+├── e2e/                         # Playwright E2E Tests (12 Specs)
+├── scripts/                     # Deploy & Ops Scripts (16 Files)
+├── docs/                        # Documentation (23 Files)
+└── photo-booth/                 # Photo Booth Konzept
 ```
 
 ---
@@ -374,204 +408,159 @@ pnpm build
 
 ## 📡 API-Dokumentation
 
-### Base URL
+**Base URL:** `http://localhost:8002/api` (Dev) | `/api` (Prod, same-origin)
+
+### API Routes (55 Dateien)
+
+| Bereich | Routes | Beschreibung |
+|---------|--------|--------------|
+| **Core** | `auth`, `events`, `photos`, `videos`, `uploads` | Hauptfunktionen |
+| **Social** | `likes`, `comments`, `votes`, `guestbook`, `stories` | Interaktionen |
+| **Organization** | `categories`, `challenges`, `guests`, `cohosts` | Event-Verwaltung |
+| **Invitations** | `invitations`, `cohostInvites` | Einladungssystem |
+| **Downloads** | `downloads` | ZIP-Downloads, Einzeldownloads |
+| **Statistics** | `statistics` | Analytics |
+| **AI** | `ai`, `faceSearch`, `duplicates` | KI-Features |
+| **QR/Design** | `qrDesigns`, `qrTemplates`, `theme` | QR-Codes, Branding |
+| **Admin** | `admin*` (20 Routes) | Admin-Dashboard APIs |
+| **Integrations** | `woocommerceWebhooks`, `cmsPublic`, `wpConsent` | WordPress/WooCommerce |
+
+### Admin API Routes
 
 ```
-http://localhost:8002/api
+/api/admin/dashboard      - Stats & Übersicht
+/api/admin/events         - Event-Management
+/api/admin/users          - User-Management
+/api/admin/photos         - Foto-Moderation
+/api/admin/qr-templates   - QR-Template CRUD
+/api/admin/theme          - Theme-Tokens
+/api/admin/api-keys       - API-Key Management
+/api/admin/logs           - System-Logs
+/api/admin/maintenance    - Wartungsmodus
+/api/admin/impersonation  - User-Impersonation
 ```
 
-### Authentifizierung
+Vollständige API-Dokumentation: `docs/API_MAP.md`
 
-Die meisten Endpoints benötigen einen JWT-Token im Authorization Header:
+---
 
-```
-Authorization: Bearer <token>
-```
+## 🎛️ Admin Dashboard
 
-### Haupt-Endpoints
+Das Admin-Dashboard (`dash.gästefotos.com`) bietet vollständige Plattform-Verwaltung:
 
-#### Authentication
-
-- `POST /api/auth/register` - Benutzer registrieren (standardmäßig deaktiviert; optional via `ALLOW_SELF_REGISTER=true`)
-- `POST /api/auth/login` - Einloggen
-- `GET /api/auth/me` - Aktueller Benutzer
-
-#### Events
-
-- `GET /api/events` - Alle Events abrufen
-- `POST /api/events` - Event erstellen
-- `GET /api/events/:id` - Event abrufen
-- `PUT /api/events/:id` - Event aktualisieren
-- `DELETE /api/events/:id` - Event löschen
-- `POST /api/events/:id/verify-password` - Passwort verifizieren
-
-#### Photos
-
-- `GET /api/events/:eventId/photos` - Fotos abrufen
-- `POST /api/events/:eventId/photos/upload` - Foto hochladen
-- `POST /api/photos/:photoId/approve` - Foto genehmigen
-- `POST /api/photos/:photoId/reject` - Foto ablehnen
-- `DELETE /api/photos/:photoId` - Foto löschen
-- `GET /api/photos/:photoId/download` - Foto herunterladen
-- `GET /api/events/:eventId/download-zip` - ZIP herunterladen
-
-#### Guests
-
-- `GET /api/events/:eventId/guests` - Gäste abrufen
-- `POST /api/events/:eventId/guests` - Gast hinzufügen
-- `PUT /api/events/:eventId/guests/:guestId` - Gast aktualisieren
-- `DELETE /api/events/:eventId/guests/:guestId` - Gast löschen
-
-#### Categories
-
-- `GET /api/events/:eventId/categories` - Kategorien abrufen
-- `POST /api/events/:eventId/categories` - Kategorie erstellen
-- `PUT /api/events/:eventId/categories/:categoryId` - Kategorie aktualisieren
-- `DELETE /api/events/:eventId/categories/:categoryId` - Kategorie löschen
-- `PUT /api/photos/:photoId/category` - Foto Kategorie zuweisen
-
-#### Statistics
-
-- `GET /api/events/:eventId/statistics` - Event-Statistiken
-- `GET /api/statistics` - Benutzer-Statistiken
-
-#### Email
-
-- `POST /api/email/test` - Test-Email senden
-- `POST /api/events/:eventId/invite` - Einladung senden
-
-Vollständige API-Dokumentation: Siehe `/api` Endpoint für interaktive Dokumentation.
+| Bereich | Funktionen |
+|---------|-----------|
+| **Dashboard** | Statistiken, aktive Events, System-Health |
+| **Events** | Liste, Details, Moderation, Löschen |
+| **Users** | Übersicht, Rollen, Impersonation |
+| **QR-Templates** | CRUD, SVG-Upload, Kategorien, Premium-Flags |
+| **Packages** | Paket-Definitionen verwalten |
+| **Theme** | CSS-Token-Editor mit Live-Preview |
+| **API Keys** | Key-Management für Integrationen |
+| **WooCommerce** | Webhook-Logs, Replay, Event-Zuordnung |
+| **Maintenance** | Wartungsmodus aktivieren |
+| **Health** | System-Status, Service-Checks |
+| **Logs** | QA-Logs, System-Logs |
 
 ---
 
 ## 🚢 Deployment
 
-### Produktions-Build
+### Deploy Scripts (empfohlen)
 
 ```bash
-# Backend
-cd packages/backend
-pnpm build
-pnpm start
-
 # Frontend
-cd packages/frontend
-pnpm build
-pnpm start
-```
-
-### Produktion (systemd) – WICHTIGER Deploy-Ablauf
-
-In Produktion darf **niemals** ein `next build` / `pnpm build:prod` laufen, während `gaestefotos-frontend.service` bereits läuft.
-Sonst können gemischte/inkonsistente Next-Assets ausgeliefert werden (typisch: `ChunkLoadError` / 404 auf `/_next/static/*`, ggf. durch CDN-Cache verstärkt).
-
-Empfohlen: Deploy über Script (erzwingt die Reihenfolge):
-
-```bash
 bash ./scripts/deploy-frontend-prod.sh
-```
 
-Admin-Dashboard (dash) analog:
-
-```bash
+# Admin-Dashboard  
 bash ./scripts/deploy-admin-dashboard-prod.sh
+
+# Backend
+bash ./scripts/deploy-backend-prod.sh
 ```
 
+### Wichtig: Build-Reihenfolge
+
+**Niemals** `next build` während der Service läuft! Sonst: `ChunkLoadError` / 404.
+
 ```bash
+# Korrekte Reihenfolge:
 sudo systemctl stop gaestefotos-frontend.service
-
-cd packages/frontend
 pnpm build:prod
-
 sudo systemctl start gaestefotos-frontend.service
 ```
 
-### Mit PM2
+### Services
+
+| Service | Port | systemd Unit |
+|---------|------|--------------|
+| Backend | 8002 | `gaestefotos-backend.service` |
+| Frontend | 3002 | `gaestefotos-frontend.service` |
+| Admin | 3003 | `gaestefotos-admin.service` |
+
+---
+
+## 🧪 Testing
+
+### E2E Tests (Playwright)
 
 ```bash
-# Backend
-pm2 start packages/backend/dist/index.js --name gaestefotos-backend
+# Alle Tests (startet Server automatisch)
+pnpm run e2e:stable
 
-# Frontend
-pm2 start packages/frontend/.next/standalone/server.js --name gaestefotos-frontend
+# Mit UI
+pnpm run e2e:ui
+
+# Report anzeigen
+pnpm run e2e:report
 ```
 
-### Mit systemd
-
-Siehe `RESTART_SERVICES.sh` für systemd Service-Konfiguration.
-
-### Docker (optional)
-
-```dockerfile
-# Dockerfile Beispiel
-FROM node:24-alpine
-WORKDIR /app
-COPY . .
-RUN pnpm install && pnpm build
-EXPOSE 8001 3000
-CMD ["pnpm", "start"]
-```
-
----
-
-## 🔧 Troubleshooting
-
-### Backend startet nicht
-
-1. Prüfe `.env` Datei
-2. Prüfe Datenbank-Verbindung
-3. Prüfe Port 8002 (nicht belegt)
-4. Prüfe Logs: `/tmp/backend.log`
-
-### Frontend startet nicht
-
-1. Prüfe Port 3002 (nicht belegt)
-2. In Produktion: API Calls sind same-origin (`/api`). In Dev/E2E kann `NEXT_PUBLIC_API_URL` genutzt werden.
-3. Prüfe Logs: `/tmp/frontend.log`
-
-### Sharp Image Processing Fehler
+### Git Pre-Push Hook
 
 ```bash
-cd packages/backend
-pnpm remove sharp
-pnpm add sharp@latest
+# Installieren (führt e2e:stable vor push aus)
+pnpm run hooks:install
+
+# Überspringen
+SKIP_E2E_HOOK=1 git push
 ```
 
-### Datenbank-Fehler
+### Test-Specs (12)
 
-```bash
-cd packages/backend
-pnpm prisma migrate reset  # ACHTUNG: Löscht alle Daten!
-pnpm prisma migrate dev
-```
-
-### Weitere Hilfe
-
-- Prüfe Logs in `/tmp/`
-- Siehe `docs/` für detaillierte Dokumentation
+- `auth-flows.spec.ts` - Login/Logout
+- `cohost-invitation.spec.ts` - Co-Host Flow
+- `invitation-flow.spec.ts` - Einladungen
+- `security.spec.ts` - Security Tests
+- `stories.spec.ts` - Stories Feature
+- `tus-resumable.spec.ts` - Upload Tests
+- ...
 
 ---
 
-## 📚 Weitere Dokumentation
+## 📚 Dokumentation
 
-- [Bedienungsanleitung](BEDIENUNGSANLEITUNG.md) - Für Endbenutzer
-- [Design System](DESIGN_SYSTEM.md) - UI/UX Dokumentation
-- [API Map](docs/API_MAP.md) - Endpoint Übersicht
-- [Feature Matrix](docs/FEATURE_MATRIX.md) - Feature-Übersicht
-- [Deployment](docs/DEPLOYMENT.md) - Deployment-Anleitung
-
----
-
-## 📝 Lizenz
-
-[Lizenz hier einfügen]
+| Dokument | Beschreibung |
+|----------|-------------|
+| `BEDIENUNGSANLEITUNG.md` | Endbenutzer-Anleitung |
+| `CHANGELOG.md` | Versionshistorie |
+| `docs/INDEX.md` | Dokumentations-Index |
+| `docs/FEATURES.md` | Feature-Übersicht |
+| `docs/API_MAP.md` | API-Endpoints |
+| `docs/DEPLOYMENT.md` | Deploy-Anleitung |
+| `docs/DB_FIELD_MEANINGS.md` | Datenbank-Felder |
 
 ---
 
-## 👥 Kontakt & Support
+## � Troubleshooting
 
-[Kontaktinformationen hier einfügen]
+| Problem | Lösung |
+|---------|--------|
+| Backend startet nicht | `.env` prüfen, DB-Verbindung, Port 8002 |
+| Frontend startet nicht | Port 3002, Logs in `/tmp/frontend.log` |
+| ChunkLoadError | Service stoppen → Build → Service starten |
+| Sharp Fehler | `pnpm remove sharp && pnpm add sharp@latest` |
+| DB Fehler | `pnpm prisma migrate dev` |
 
 ---
 
-**Version 2.0.0** - Vollständig funktionsfähig und produktionsbereit! 🎉
+**Version 2.0.0** | **Status:** ✅ Produktionsbereit | **Stand:** 2026-02-01
