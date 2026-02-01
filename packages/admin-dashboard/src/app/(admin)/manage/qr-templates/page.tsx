@@ -18,6 +18,7 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import api from '@/lib/api';
 
 interface QrTemplate {
   id: string;
@@ -85,12 +86,10 @@ export default function QrTemplatesAdminPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/admin/qr-templates', { credentials: 'include' });
-      if (!res.ok) throw new Error('Fehler beim Laden');
-      const data = await res.json();
-      setTemplates(data.templates || []);
+      const res = await api.get('/admin/qr-templates');
+      setTemplates(res.data.templates || []);
     } catch (err: any) {
-      setError(err?.message || 'Unbekannter Fehler');
+      setError(err?.response?.data?.error || err?.message || 'Unbekannter Fehler');
     } finally {
       setLoading(false);
     }
@@ -98,10 +97,8 @@ export default function QrTemplatesAdminPage() {
 
   async function loadTemplateDetails(slug: string) {
     try {
-      const res = await fetch(`/api/admin/qr-templates/${slug}`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Fehler beim Laden');
-      const data = await res.json();
-      setEditingTemplate(data.template);
+      const res = await api.get(`/admin/qr-templates/${slug}`);
+      setEditingTemplate(res.data.template);
       setIsCreating(false);
     } catch (err: any) {
       toast.error('Fehler beim Laden des Templates');
@@ -114,20 +111,11 @@ export default function QrTemplatesAdminPage() {
     try {
       setSaving(true);
       const isNew = isCreating;
-      const url = isNew 
-        ? '/api/admin/qr-templates' 
-        : `/api/admin/qr-templates/${editingTemplate.slug}`;
       
-      const res = await fetch(url, {
-        method: isNew ? 'POST' : 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(editingTemplate),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Speichern fehlgeschlagen');
+      if (isNew) {
+        await api.post('/admin/qr-templates', editingTemplate);
+      } else {
+        await api.put(`/admin/qr-templates/${editingTemplate.slug}`, editingTemplate);
       }
 
       toast.success(isNew ? 'Template erstellt!' : 'Template gespeichert!');
@@ -135,7 +123,7 @@ export default function QrTemplatesAdminPage() {
       setIsCreating(false);
       loadTemplates();
     } catch (err: any) {
-      toast.error(err?.message || 'Fehler beim Speichern');
+      toast.error(err?.response?.data?.error || err?.message || 'Fehler beim Speichern');
     } finally {
       setSaving(false);
     }
@@ -145,44 +133,27 @@ export default function QrTemplatesAdminPage() {
     if (!confirm(`Template "${slug}" wirklich löschen?`)) return;
     
     try {
-      const res = await fetch(`/api/admin/qr-templates/${slug}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-
-      if (!res.ok) throw new Error('Löschen fehlgeschlagen');
+      await api.delete(`/admin/qr-templates/${slug}`);
       toast.success('Template gelöscht!');
       loadTemplates();
     } catch (err: any) {
-      toast.error(err?.message || 'Fehler beim Löschen');
+      toast.error(err?.response?.data?.error || err?.message || 'Fehler beim Löschen');
     }
   }
 
   async function duplicateTemplate(slug: string) {
     try {
-      const res = await fetch(`/api/admin/qr-templates/${slug}/duplicate`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (!res.ok) throw new Error('Duplizieren fehlgeschlagen');
+      await api.post(`/admin/qr-templates/${slug}/duplicate`);
       toast.success('Template dupliziert!');
       loadTemplates();
     } catch (err: any) {
-      toast.error(err?.message || 'Fehler beim Duplizieren');
+      toast.error(err?.response?.data?.error || err?.message || 'Fehler beim Duplizieren');
     }
   }
 
   async function toggleActive(template: QrTemplate) {
     try {
-      const res = await fetch(`/api/admin/qr-templates/${template.slug}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ isActive: !template.isActive }),
-      });
-
-      if (!res.ok) throw new Error('Fehler');
+      await api.put(`/admin/qr-templates/${template.slug}`, { isActive: !template.isActive });
       toast.success(template.isActive ? 'Deaktiviert' : 'Aktiviert');
       loadTemplates();
     } catch (err: any) {
