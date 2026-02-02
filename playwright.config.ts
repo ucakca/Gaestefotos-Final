@@ -50,7 +50,7 @@ export default defineConfig({
     ? {
         command: `bash -lc "${frontendEnv} pnpm --filter frontend dev & ${backendEnv} pnpm --filter backend dev"`,
         url: baseURL,
-        reuseExistingServer: false,
+        reuseExistingServer: true,
         timeout: 180_000,
       }
     : undefined,

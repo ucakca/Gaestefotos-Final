@@ -16,5 +16,14 @@ if [ "${FORCE_E2E_HOOK:-}" != "1" ]; then
   fi
 fi
 
-echo "[pre-push] running e2e:stable..."
-pnpm run -s e2e:stable
+# Check if production servers are running (ports 3002 for frontend, 8001 for backend)
+frontend_running=$(ss -tlnp 2>/dev/null | grep -c ':3002' || true)
+backend_running=$(ss -tlnp 2>/dev/null | grep -c ':8001' || true)
+
+if [ "$frontend_running" -gt 0 ] && [ "$backend_running" -gt 0 ]; then
+  echo "[pre-push] Production servers detected on ports 3002/8001; running e2e:stable against existing servers..."
+  E2E_START_WEB_SERVER=false E2E_BASE_URL=http://localhost:3002 E2E_API_URL=http://localhost:8001 pnpm run -s e2e:stable
+else
+  echo "[pre-push] running e2e:stable..."
+  pnpm run -s e2e:stable
+fi
