@@ -94,11 +94,11 @@ export default function EventTypeStep({
         <motion.h2
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-gray-900 mb-2"
+          className="text-2xl font-bold text-app-fg mb-2"
         >
           Was feierst du? 🎉
         </motion.h2>
-        <p className="text-gray-500">Wähle den Anlass für dein Event</p>
+        <p className="text-app-muted">Wähle den Anlass für dein Event</p>
       </div>
 
       {/* Event Type Grid */}
@@ -121,18 +121,18 @@ export default function EventTypeStep({
               className={`relative p-4 rounded-2xl border-2 transition-all text-left ${
                 isSelected
                   ? 'border-amber-500 bg-amber-50 shadow-lg shadow-amber-100'
-                  : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50'
+                  : 'border-app-border bg-app-card hover:border-app-border hover:bg-app-bg'
               }`}
             >
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-2 ${
-                isSelected ? 'bg-amber-500' : 'bg-gray-100'
+                isSelected ? 'bg-amber-500' : 'bg-app-bg'
               }`}>
-                <IconComponent className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-gray-500'}`} />
+                <IconComponent className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-app-muted'}`} />
               </div>
-              <p className={`font-semibold ${isSelected ? 'text-amber-900' : 'text-gray-900'}`}>
+              <p className={`font-semibold ${isSelected ? 'text-amber-900' : 'text-app-fg'}`}>
                 {config.label}
               </p>
-              <p className="text-xs text-gray-500 mt-0.5">{config.description}</p>
+              <p className="text-xs text-app-muted mt-0.5">{config.description}</p>
               
               {isSelected && (
                 <motion.div
@@ -155,7 +155,7 @@ export default function EventTypeStep({
           animate={{ opacity: 1, height: 'auto' }}
           className="space-y-3"
         >
-          <p className="text-sm font-medium text-gray-700">Welche Art?</p>
+          <p className="text-sm font-medium text-app-fg">Welche Art?</p>
           <div className="grid grid-cols-2 gap-2">
             {eventConfig.subtypes!.map((subtype) => {
               const isSelected = selectedSubtype === subtype.id;
@@ -167,10 +167,10 @@ export default function EventTypeStep({
                   className={`px-4 py-3 rounded-xl border-2 text-left transition-all ${
                     isSelected
                       ? 'border-amber-500 bg-amber-50'
-                      : 'border-gray-100 hover:border-gray-200'
+                      : 'border-app-border hover:border-app-border'
                   }`}
                 >
-                  <span className={`text-sm font-medium ${isSelected ? 'text-amber-700' : 'text-gray-700'}`}>
+                  <span className={`text-sm font-medium ${isSelected ? 'text-amber-700' : 'text-app-fg'}`}>
                     {subtype.label}
                   </span>
                 </motion.button>

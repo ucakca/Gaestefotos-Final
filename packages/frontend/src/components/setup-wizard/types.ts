@@ -2,7 +2,7 @@
 
 export type EventCategory = 'wedding' | 'family' | 'milestone' | 'business' | 'party' | 'custom';
 
-export type SetupPhase = 1 | 2 | 3 | 4;
+export type SetupPhase = 1 | 2 | 3 | 4 | 5;
 
 export type StepStatus = 'pending' | 'active' | 'completed';
 
@@ -32,6 +32,14 @@ export interface ChallengeConfig {
   isCustom?: boolean;
 }
 
+export interface FeaturesConfig {
+  allowUploads: boolean;
+  allowDownloads: boolean;
+  moderationRequired: boolean;
+  mysteryMode: boolean;
+  showGuestlist: boolean;
+}
+
 export interface SetupState {
   // Progress
   currentPhase: SetupPhase;
@@ -52,16 +60,19 @@ export interface SetupState {
   profileImagePreview: string | null;
   colorScheme: string;
   
-  // Phase 3: QR & Teilen
-  qrStyle: string;
-  invitationText: string;
-  
-  // Phase 4: Erweiterte Features
+  // Phase 3: Galerie einrichten
   albums: AlbumConfig[];
   challenges: ChallengeConfig[];
   guestbookEnabled: boolean;
   guestbookMessage: string;
+  featuresConfig: FeaturesConfig;
+  
+  // Phase 4: Team
   coHostEmails: string[];
+  
+  // Phase 5: QR & Teilen
+  qrStyle: string;
+  invitationText: string;
   
   // Meta
   eventId?: string;
@@ -69,6 +80,14 @@ export interface SetupState {
   isCreating: boolean;
   error: string | null;
 }
+
+export const DEFAULT_FEATURES: FeaturesConfig = {
+  allowUploads: true,
+  allowDownloads: true,
+  moderationRequired: false,
+  mysteryMode: false,
+  showGuestlist: false,
+};
 
 export const INITIAL_SETUP_STATE: SetupState = {
   currentPhase: 1,
@@ -87,14 +106,16 @@ export const INITIAL_SETUP_STATE: SetupState = {
   profileImagePreview: null,
   colorScheme: 'elegant',
   
-  qrStyle: 'default',
-  invitationText: '',
-  
   albums: [],
   challenges: [],
   guestbookEnabled: true,
   guestbookMessage: '',
+  featuresConfig: { ...DEFAULT_FEATURES },
+  
   coHostEmails: [],
+  
+  qrStyle: 'default',
+  invitationText: '',
   
   eventId: undefined,
   eventSlug: undefined,
@@ -103,30 +124,34 @@ export const INITIAL_SETUP_STATE: SetupState = {
 };
 
 export const SETUP_STEPS: SetupStep[] = [
-  // Phase 1: Grundlagen
+  // Phase 1: Erstellen
   { id: 'event-type', phase: 1, title: 'Eventtyp wählen', status: 'active', isRequired: true, icon: 'Sparkles' },
   { id: 'title', phase: 1, title: 'Titel festlegen', status: 'pending', isRequired: true, icon: 'Type' },
   { id: 'date-location', phase: 1, title: 'Datum & Ort', status: 'pending', isRequired: false, icon: 'Calendar' },
   
-  // Phase 2: Design
+  // Phase 2: Gestalten
   { id: 'cover-image', phase: 2, title: 'Cover-Bild', status: 'pending', isRequired: false, icon: 'Image' },
   { id: 'profile-image', phase: 2, title: 'Profilbild', status: 'pending', isRequired: false, icon: 'User' },
   { id: 'color-scheme', phase: 2, title: 'Farbschema', status: 'pending', isRequired: false, icon: 'Palette' },
   
-  // Phase 3: QR & Teilen
-  { id: 'qr-code', phase: 3, title: 'QR-Code erstellen', status: 'pending', isRequired: false, icon: 'QrCode' },
-  { id: 'share', phase: 3, title: 'Event teilen', status: 'pending', isRequired: false, icon: 'Share2' },
+  // Phase 3: Einrichten
+  { id: 'albums', phase: 3, title: 'Alben einrichten', status: 'pending', isRequired: false, icon: 'FolderOpen' },
+  { id: 'guestbook', phase: 3, title: 'Gästebuch', status: 'pending', isRequired: false, icon: 'BookOpen' },
+  { id: 'challenges', phase: 3, title: 'Challenges', status: 'pending', isRequired: false, icon: 'Trophy' },
+  { id: 'features', phase: 3, title: 'Galerie-Optionen', status: 'pending', isRequired: false, icon: 'Settings' },
   
-  // Phase 4: Erweiterte Features
-  { id: 'albums', phase: 4, title: 'Alben einrichten', status: 'pending', isRequired: false, icon: 'FolderOpen' },
-  { id: 'challenges', phase: 4, title: 'Challenges', status: 'pending', isRequired: false, icon: 'Trophy' },
-  { id: 'guestbook', phase: 4, title: 'Gästebuch', status: 'pending', isRequired: false, icon: 'BookOpen' },
-  { id: 'cohosts', phase: 4, title: 'Co-Hosts', status: 'pending', isRequired: false, icon: 'Users' },
+  // Phase 4: Team
+  { id: 'cohosts', phase: 4, title: 'Co-Hosts einladen', status: 'pending', isRequired: false, icon: 'Users' },
+  
+  // Phase 5: Teilen
+  { id: 'qr-code', phase: 5, title: 'QR-Code erstellen', status: 'pending', isRequired: false, icon: 'QrCode' },
+  { id: 'share', phase: 5, title: 'Event teilen', status: 'pending', isRequired: false, icon: 'Share2' },
 ];
 
 export const PHASE_INFO: Record<SetupPhase, { title: string; icon: string; milestone: string }> = {
-  1: { title: 'Event-Grundlagen', icon: '🎉', milestone: 'Dein Event ist angelegt!' },
-  2: { title: 'Design & Branding', icon: '🎨', milestone: 'Sieht fantastisch aus!' },
-  3: { title: 'QR-Code & Teilen', icon: '📤', milestone: 'Bereit zum Teilen!' },
-  4: { title: 'Erweiterte Features', icon: '⭐', milestone: 'Pro-Setup komplett!' },
+  1: { title: 'Erstellen', icon: '🎉', milestone: 'Dein Event ist angelegt!' },
+  2: { title: 'Gestalten', icon: '🎨', milestone: 'Sieht fantastisch aus!' },
+  3: { title: 'Einrichten', icon: '⚙️', milestone: 'Galerie ist startklar!' },
+  4: { title: 'Team', icon: '👥', milestone: 'Dein Team ist bereit!' },
+  5: { title: 'Teilen', icon: '🚀', milestone: 'Alles bereit — Event ist live!' },
 };

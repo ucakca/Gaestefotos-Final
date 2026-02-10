@@ -45,32 +45,7 @@ export default function AIAnalysePage() {
       setResult(res.data);
       toast.success('Analyse abgeschlossen');
     } catch (err: any) {
-      // Mock result for demo if endpoint doesn't exist
-      setResult({
-        summary: 'System läuft größtenteils stabil. Einige kleinere Probleme erkannt.',
-        healthScore: 87,
-        issues: [
-          {
-            id: '1',
-            severity: 'warning',
-            title: 'Hohe Speicherauslastung',
-            description: 'RAM-Auslastung liegt bei 78%, was über dem empfohlenen Wert von 70% liegt.',
-            recommendation: 'Überprüfe laufende Prozesse und erwäge einen Neustart des Backend-Services.',
-            canAutoFix: false,
-          },
-          {
-            id: '2',
-            severity: 'info',
-            title: 'Rate Limit Hits erkannt',
-            description: '127 Rate-Limit-Hits in den letzten 24 Stunden.',
-            recommendation: 'Prüfe ob legitimer Traffic oder Bot-Aktivität.',
-            canAutoFix: false,
-          },
-        ],
-        analyzedLogs: 1247,
-        analyzedAt: new Date().toISOString(),
-      });
-      toast.success('Demo-Analyse geladen');
+      toast.error(err?.response?.data?.error || 'Analyse fehlgeschlagen');
     } finally {
       setLoading(false);
     }

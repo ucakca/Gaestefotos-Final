@@ -59,9 +59,11 @@ import adminLogsRoutes from './routes/adminLogs';
 import adminEventsRoutes from './routes/adminEvents';
 import adminUsersRoutes from './routes/adminUsers';
 import adminDashboardRoutes from './routes/adminDashboard';
+import adminSettingsRoutes from './routes/adminSettings';
 import cohostInvitesRoutes from './routes/cohostInvites';
 import uploadsRoutes from './routes/uploads';
 import aiRoutes from './routes/ai';
+import adminAiAnalysisRoutes from './routes/adminAiAnalysis';
 import qrDesignsRoutes from './routes/qrDesigns';
 import highlightReelsRoutes from './routes/highlightReels';
 import healthRoutes from './routes/health';
@@ -569,10 +571,12 @@ app.use('/api/admin/logs', adminLogsRoutes);
 app.use('/api/admin/events', adminEventsRoutes);
 app.use('/api/admin/users', adminUsersRoutes);
 app.use('/api/admin/dashboard', adminDashboardRoutes);
+app.use('/api/admin/settings', adminSettingsRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
 
 // AI Routes (KI-Assistent)
 app.use('/api/ai', aiRoutes);
+app.use('/api/admin/ai', adminAiAnalysisRoutes);
 
 // Tus.io resumable uploads
 app.use('/api/uploads', uploadsRoutes);

@@ -217,4 +217,49 @@ router.post('/replay/:logId', authMiddleware, requireRole('ADMIN'), async (req: 
   });
 });
 
+router.get('/sku-mapping', authMiddleware, requireRole('ADMIN'), async (_req: AuthRequest, res: Response) => {
+  try {
+    const packages = await prisma.packageDefinition.findMany({
+      orderBy: { displayOrder: 'asc' },
+      select: {
+        id: true,
+        sku: true,
+        name: true,
+        type: true,
+        resultingTier: true,
+        isActive: true,
+        priceEurCents: true,
+      },
+    });
+
+    // Count orders per SKU from webhook logs
+    const skuCounts = await (prisma as any).$queryRawUnsafe(`
+      SELECT "wcSku" as sku, COUNT(*)::int as count
+      FROM woo_webhook_event_logs
+      WHERE "wcSku" IS NOT NULL AND status = 'PROCESSED'
+      GROUP BY "wcSku"
+    `).catch(() => []);
+
+    const countMap = new Map<string, number>();
+    for (const row of skuCounts as any[]) {
+      if (row.sku) countMap.set(row.sku, row.count);
+    }
+
+    // Find orphaned SKUs (in webhook logs but no PackageDefinition)
+    const packageSkus = new Set(packages.map((p: any) => p.sku));
+    const orphanedSkus = Array.from(countMap.entries())
+      .filter(([sku]) => !packageSkus.has(sku))
+      .map(([sku, count]) => ({ sku, orderCount: count }));
+
+    const mapping = packages.map((pkg: any) => ({
+      ...pkg,
+      orderCount: countMap.get(pkg.sku) || 0,
+    }));
+
+    return res.json({ ok: true, mapping, orphanedSkus });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

@@ -337,17 +337,47 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
           </div>
         </motion.div>
 
-        {!challengesEnabled && (
-          <div className="bg-app-card border border-app-border rounded-lg p-4 mb-6">
+        <div className="bg-app-card border border-app-border rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-app-fg">
               <Trophy className="w-5 h-5" />
-              <p className="font-medium">Challenges sind deaktiviert</p>
+              <div>
+                <p className="font-medium">Challenges {challengesEnabled ? 'aktiviert' : 'deaktiviert'}</p>
+                <p className="text-sm text-app-muted">
+                  {challengesEnabled ? 'Gäste können an Challenges teilnehmen.' : 'Aktiviere Challenges, damit Gäste teilnehmen können.'}
+                </p>
+              </div>
             </div>
-            <p className="text-sm text-app-muted mt-1">
-              Aktiviere Challenges in den erweiterten Einstellungen, um sie zu verwenden.
-            </p>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={challengesEnabled}
+              onClick={async () => {
+                try {
+                  await api.put(`/events/${eventId}`, {
+                    featuresConfig: { challengesEnabled: !challengesEnabled },
+                  });
+                  setEvent((prev: any) => prev ? {
+                    ...prev,
+                    featuresConfig: { ...(prev.featuresConfig as any || {}), challengesEnabled: !challengesEnabled },
+                  } : prev);
+                  showToast(challengesEnabled ? 'Challenges deaktiviert' : 'Challenges aktiviert', 'success');
+                } catch {
+                  showToast('Fehler beim Speichern', 'error');
+                }
+              }}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                challengesEnabled ? 'bg-app-accent' : 'bg-app-border'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+                  challengesEnabled ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
           </div>
-        )}
+        </div>
 
         {/* Add/Edit Form */}
         <AnimatePresence>

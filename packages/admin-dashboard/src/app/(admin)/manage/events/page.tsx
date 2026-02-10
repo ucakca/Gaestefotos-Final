@@ -8,15 +8,17 @@ import { Input } from '@/components/ui/Input';
 
 interface Event {
   id: string;
-  name: string;
-  slug: string;
-  eventDate: string | null;
+  title: string;
+  slug: string | null;
+  dateTime: string | null;
   createdAt: string;
   _count?: {
     photos: number;
     guests: number;
+    videos: number;
   };
-  user?: {
+  host?: {
+    id: string;
     email: string;
     name: string | null;
   };
@@ -32,7 +34,7 @@ export default function EventsPage() {
     setLoading(true);
     try {
       const res = await api.get<{ events: Event[]; total: number }>('/admin/events', {
-        params: { search, limit: 50 },
+        params: { q: search || undefined, limit: 50 },
       });
       setEvents(res.data.events || []);
       setTotal(res.data.total || 0);
@@ -49,8 +51,8 @@ export default function EventsPage() {
 
   const filteredEvents = events.filter(
     (e) =>
-      e.name.toLowerCase().includes(search.toLowerCase()) ||
-      e.slug.toLowerCase().includes(search.toLowerCase())
+      (e.title || '').toLowerCase().includes(search.toLowerCase()) ||
+      (e.slug || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -100,7 +102,8 @@ export default function EventsPage() {
             {filteredEvents.map((event) => (
               <div
                 key={event.id}
-                className="p-4 hover:bg-app-bg/50 transition-colors"
+                className="p-4 hover:bg-app-bg/50 transition-colors cursor-pointer"
+                onClick={() => window.location.href = `/manage/events/${event.id}`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -108,16 +111,16 @@ export default function EventsPage() {
                       <Calendar className="w-6 h-6 text-app-accent" />
                     </div>
                     <div>
-                      <p className="font-medium text-app-fg">{event.name}</p>
+                      <p className="font-medium text-app-fg">{event.title}</p>
                       <div className="flex items-center gap-3 text-xs text-app-muted">
-                        <span>/{event.slug}</span>
-                        {event.eventDate && (
+                        <span>/{event.slug || '—'}</span>
+                        {event.dateTime && (
                           <span>
-                            {new Date(event.eventDate).toLocaleDateString('de-DE')}
+                            {new Date(event.dateTime).toLocaleDateString('de-DE')}
                           </span>
                         )}
-                        {event.user && (
-                          <span>{event.user.name || event.user.email}</span>
+                        {event.host && (
+                          <span>{event.host.name || event.host.email}</span>
                         )}
                       </div>
                     </div>
@@ -134,10 +137,11 @@ export default function EventsPage() {
                       </span>
                     </div>
                     <a
-                      href={`https://gaestefotos.com/events/${event.id}/dashboard`}
+                      href={`https://app.xn--gstefotos-v2a.com/events/${event.id}/dashboard`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="p-2 rounded-lg hover:bg-app-bg transition-colors"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <ExternalLink className="w-4 h-4 text-app-muted" />
                     </a>

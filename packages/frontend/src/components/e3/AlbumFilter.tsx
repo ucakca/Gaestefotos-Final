@@ -62,7 +62,7 @@ export default function AlbumFilter({
             className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all ${
               selectedAlbum === null
                 ? 'bg-app-accent text-white shadow-lg'
-                : 'bg-app-card text-app-fg hover:bg-app-card-hover'
+                : 'bg-app-card text-app-fg border border-app-border hover:bg-app-bg'
             }`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -72,8 +72,8 @@ export default function AlbumFilter({
             {totalPhotos > 0 && (
               <span className={`text-xs px-2 py-0.5 rounded-full ${
                 selectedAlbum === null
-                  ? 'bg-white/20'
-                  : 'bg-app-bg'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-app-bg text-app-muted'
               }`}>
                 {totalPhotos}
               </span>
@@ -92,7 +92,7 @@ export default function AlbumFilter({
                 className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all ${
                   isActive
                     ? 'bg-app-accent text-white shadow-lg'
-                    : 'bg-app-card text-app-fg hover:bg-app-card-hover'
+                    : 'bg-app-card text-app-fg border border-app-border hover:bg-app-bg'
                 }`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -102,8 +102,8 @@ export default function AlbumFilter({
                 {(category.photoCount || 0) > 0 && (
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
                     isActive
-                      ? 'bg-white/20'
-                      : 'bg-app-bg'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-app-bg text-app-muted'
                   }`}>
                     {category.photoCount}
                   </span>

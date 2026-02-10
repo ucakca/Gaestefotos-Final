@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 // framer-motion removed to fix hydration/removeChild errors
 import api from '@/lib/api';
 import AppLayout from '@/components/AppLayout';
@@ -9,10 +10,11 @@ import {
   ChevronLeft, RotateCcw, Download, FileImage, FileText, 
   Undo2, Redo2, Check, AlertCircle, Smartphone, Monitor,
   Palette, Type, QrCode, Share2, Loader2, Sparkles, Image,
-  ChevronDown, Eye, Settings2
+  ChevronDown, Eye, Settings2, ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { BottomSheet } from '@/components/ui/BottomSheet';
+
 import { sanitizeSvg } from '@/lib/sanitize';
 import dynamic from 'next/dynamic';
 
@@ -154,6 +156,14 @@ function serializeSvg(svg: SVGSVGElement): string {
   return new XMLSerializer().serializeToString(svg);
 }
 
+// Inline CSS custom properties for resvg compatibility (resvg doesn't support var())
+function inlineCssVars(svgString: string, colors: { bg: string; text: string; accent: string }): string {
+  return svgString
+    .replace(/var\(--gf-bg\)/g, colors.bg)
+    .replace(/var\(--gf-text\)/g, colors.text)
+    .replace(/var\(--gf-accent\)/g, colors.accent);
+}
+
 // AI-Light Design Check (kostenlos, client-side)
 function analyzeDesign(state: DesignState, eventType?: string): DesignFeedback {
   const feedback: DesignFeedback = { warnings: [], tips: [] };
@@ -196,6 +206,10 @@ function analyzeDesign(state: DesignState, eventType?: string): DesignFeedback {
 // Main Component
 // ============================================================================
 export default function QrStylerClient({ eventId: initialEventId }: { eventId: string }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const fromWizard = searchParams.get('from') === 'wizard';
+  
   const [eventId, setEventId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [eventSlug, setEventSlug] = useState('');
@@ -414,12 +428,14 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
       return '';
     }
     
-    // Extract viewBox
+    // Extract original viewBox
     const vb = svg.getAttribute('viewBox');
+    let origW = 1050, origH = 1480;
     if (vb) {
       const parts = vb.split(/\s+/).map(Number);
       if (parts.length === 4 && parts.every(Number.isFinite)) {
-        setViewBox({ w: parts[2], h: parts[3] });
+        origW = parts[2];
+        origH = parts[3];
       }
     }
     
@@ -451,20 +467,77 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
     setText('gf:text:eventName', design.eventName);
     setText('gf:text:callToAction', design.callToAction);
     
-    // Get QR placeholder position and hide the placeholder rect
+    // Get QR placeholder position
     const qr = doc.getElementById('gf:qr');
+    let qrX = 0, qrY = 0, qrW = 0, qrH = 0;
     if (qr) {
-      const x = getAttrNumber(qr, 'x');
-      const y = getAttrNumber(qr, 'y');
-      const w = getAttrNumber(qr, 'width');
-      const h = getAttrNumber(qr, 'height');
-      if (x != null && y != null && w != null && h != null) {
-        setQrBox({ x, y, w, h });
-      }
+      qrX = getAttrNumber(qr, 'x') ?? 0;
+      qrY = getAttrNumber(qr, 'y') ?? 0;
+      qrW = getAttrNumber(qr, 'width') ?? 0;
+      qrH = getAttrNumber(qr, 'height') ?? 0;
       // Hide the placeholder rect - the real QR will be overlaid
       qr.setAttribute('fill', 'white');
       qr.setAttribute('stroke', 'none');
       qr.setAttribute('stroke-width', '0');
+    }
+    
+    // Adapt layout for story/square formats
+    const needsTransform = design.format === 'story' || design.format === 'square';
+    let targetW = origW;
+    let targetH = origH;
+    
+    if (needsTransform) {
+      const formatOption = FORMAT_OPTIONS.find(f => f.key === design.format);
+      const targetAspect = formatOption?.aspect || 1;
+      // Keep width, adjust height based on target aspect ratio
+      targetH = Math.round(origW * targetAspect);
+      targetW = origW;
+      
+      // Calculate scale and offset to fit original content into new viewBox
+      const scale = Math.min(targetW / origW, targetH / origH);
+      const dx = (targetW - origW * scale) / 2;
+      const dy = (targetH - origH * scale) / 2;
+      
+      // Collect all child elements (except <style>)
+      const children = Array.from(svg.childNodes);
+      
+      // Create wrapper group with transform
+      const g = doc.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('transform', `translate(${dx.toFixed(1)}, ${dy.toFixed(1)}) scale(${scale.toFixed(4)})`);
+      
+      // Move all non-style children into the group
+      for (const child of children) {
+        if (child.nodeType === 1 && (child as Element).tagName !== 'style') {
+          g.appendChild(child);
+        }
+      }
+      svg.appendChild(g);
+      
+      // Add new full-size background rect BEHIND the group
+      const bgRect = doc.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bgRect.setAttribute('x', '0');
+      bgRect.setAttribute('y', '0');
+      bgRect.setAttribute('width', String(targetW));
+      bgRect.setAttribute('height', String(targetH));
+      bgRect.setAttribute('fill', `var(--gf-bg, ${clampColor(design.bgColor)})`);
+      svg.insertBefore(bgRect, g);
+      
+      // Update viewBox and dimensions
+      svg.setAttribute('viewBox', `0 0 ${targetW} ${targetH}`);
+      svg.removeAttribute('width');
+      svg.removeAttribute('height');
+      
+      // Adjust QR box coordinates for the transform
+      qrX = dx + qrX * scale;
+      qrY = dy + qrY * scale;
+      qrW = qrW * scale;
+      qrH = qrH * scale;
+    }
+    
+    // Set final viewBox and QR box
+    setViewBox({ w: targetW, h: targetH });
+    if (qrW > 0 && qrH > 0) {
+      setQrBox({ x: qrX, y: qrY, w: qrW, h: qrH });
     }
     
     return serializeSvg(svg);
@@ -555,7 +628,11 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
         });
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus(null), 2000);
-      } catch {
+      } catch (err: any) {
+        const status = err?.response?.status;
+        if (status === 404 || status === 403 || status === 500) {
+          didLoadRef.current = false;
+        }
         setSaveStatus('error');
       }
     }, 1500);
@@ -584,7 +661,12 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
       });
       
       // Embed QR into template SVG by replacing the QR placeholder
-      let exportSvg = computedSvg;
+      // Inline CSS variables for resvg compatibility
+      let exportSvg = inlineCssVars(computedSvg, {
+        bg: design.bgColor,
+        text: design.textColor,
+        accent: design.accentColor,
+      });
       
       // Find and replace the gf:qr rect with the actual QR code
       if (qrBox) {
@@ -598,9 +680,10 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
       }
       
       const endpoint = type === 'png' ? 'export.png' : 'export.pdf';
+      const token = typeof window !== 'undefined' ? (sessionStorage.getItem('token') || localStorage.getItem('token')) : null;
       const res = await fetch(`/api/events/${eventId}/qr/${endpoint}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ 
           format: design.format === 'story' || design.format === 'square' ? 'A6' : design.format, 
           svg: exportSvg 
@@ -631,10 +714,17 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
       setExportError(null);
       setExporting(format);
       
+      // Inline CSS variables for resvg compatibility
+      const inlinedSvg = inlineCssVars(svg, {
+        bg: design.bgColor,
+        text: design.textColor,
+        accent: design.accentColor,
+      });
+      const token = typeof window !== 'undefined' ? (sessionStorage.getItem('token') || localStorage.getItem('token')) : null;
       const res = await fetch(`/api/events/${eventId}/qr/export-diy.pdf`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ format, svg }),
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ format, svg: inlinedSvg }),
       });
       
       if (!res.ok) throw new Error('DIY Export fehlgeschlagen');
@@ -726,9 +816,16 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
             {/* Header */}
             <div className="p-4 border-b border-app-border flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Link href={`/events/${eventId}/dashboard`} className="p-2 -ml-2 hover:bg-app-bg rounded-lg">
-                  <ChevronLeft className="w-5 h-5" />
-                </Link>
+                {fromWizard ? (
+                  <button onClick={() => router.back()} className="p-2 -ml-2 hover:bg-app-bg rounded-lg flex items-center gap-1 text-primary">
+                    <ArrowLeft className="w-5 h-5" />
+                    <span className="text-xs font-medium">Wizard</span>
+                  </button>
+                ) : (
+                  <Link href={`/events/${eventId}/dashboard`} className="p-2 -ml-2 hover:bg-app-bg rounded-lg">
+                    <ChevronLeft className="w-5 h-5" />
+                  </Link>
+                )}
                 <div>
                   <h1 className="font-semibold text-app-fg">QR-Designer</h1>
                   <p className="text-xs text-app-muted truncate max-w-[150px]">{eventTitle}</p>
@@ -1121,9 +1218,16 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
             {/* Mobile Header */}
             <div className="lg:hidden flex items-center justify-between p-3 border-b border-app-border bg-app-card/80 backdrop-blur-sm">
               <div className="flex items-center gap-2">
-                <Link href={`/events/${eventId}/dashboard`} className="p-2 -ml-2 hover:bg-app-bg rounded-lg">
-                  <ChevronLeft className="w-5 h-5" />
-                </Link>
+                {fromWizard ? (
+                  <button onClick={() => router.back()} className="p-2 -ml-2 hover:bg-app-bg rounded-lg flex items-center gap-1 text-primary">
+                    <ArrowLeft className="w-4 h-4" />
+                    <span className="text-xs font-medium">Wizard</span>
+                  </button>
+                ) : (
+                  <Link href={`/events/${eventId}/dashboard`} className="p-2 -ml-2 hover:bg-app-bg rounded-lg">
+                    <ChevronLeft className="w-5 h-5" />
+                  </Link>
+                )}
                 <div>
                   <h1 className="font-semibold text-app-fg text-sm">QR-Designer</h1>
                   <p className="text-[10px] text-app-muted truncate max-w-[120px]">{eventTitle}</p>

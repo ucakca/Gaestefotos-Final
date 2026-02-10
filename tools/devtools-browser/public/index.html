@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevTools Browser</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .tab-btn.active { border-bottom-color: #3b82f6; color: #3b82f6; }
+    .log-error { color: #ef4444; }
+    .log-warning { color: #f59e0b; }
+    .log-info { color: #3b82f6; }
+    .log-log { color: #9ca3af; }
+    .status-2xx { color: #22c55e; }
+    .status-3xx { color: #3b82f6; }
+    .status-4xx { color: #f59e0b; }
+    .status-5xx { color: #ef4444; }
+    pre code { font-size: 12px; }
+    .network-row:hover { background: #1f2937; }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+  <div class="flex flex-col h-screen">
+    <!-- Header -->
+    <header class="bg-gray-800 border-b border-gray-700 p-3">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🔧</span>
+          <h1 class="text-lg font-semibold">DevTools Browser</h1>
+        </div>
+        <div class="flex-1 flex items-center gap-2">
+          <button id="btn-back" class="p-2 hover:bg-gray-700 rounded" title="Back">←</button>
+          <button id="btn-forward" class="p-2 hover:bg-gray-700 rounded" title="Forward">→</button>
+          <button id="btn-refresh" class="p-2 hover:bg-gray-700 rounded" title="Refresh">🔄</button>
+          <input type="text" id="url-input" 
+            class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+            placeholder="https://gaestefotos.com">
+          <button id="btn-go" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm font-medium">
+            Go
+          </button>
+        </div>
+        <div id="status" class="text-sm text-gray-400">Ready</div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex flex-1 overflow-hidden">
+      <!-- Preview Panel -->
+      <div class="w-1/2 border-r border-gray-700 flex flex-col">
+        <div class="bg-gray-800 px-3 py-2 text-sm font-medium border-b border-gray-700 flex items-center justify-between">
+          <span>📸 Preview</span>
+          <div class="flex gap-2">
+            <button id="btn-fullpage" class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded">Full Page</button>
+            <button id="btn-download" class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded">Download</button>
+          </div>
+        </div>
+        <div class="flex-1 overflow-auto p-2 bg-gray-950">
+          <img id="screenshot" class="max-w-full border border-gray-700 rounded" alt="Screenshot">
+          <div id="no-screenshot" class="flex items-center justify-center h-full text-gray-500">
+            Navigate to a URL to see preview
+          </div>
+        </div>
+      </div>
+
+      <!-- DevTools Panel -->
+      <div class="w-1/2 flex flex-col">
+        <!-- Tabs -->
+        <div class="bg-gray-800 border-b border-gray-700 flex">
+          <button class="tab-btn active px-4 py-2 text-sm border-b-2 border-transparent hover:bg-gray-700" data-tab="console">
+            Console <span id="console-count" class="text-xs bg-gray-700 px-1.5 rounded ml-1">0</span>
+          </button>
+          <button class="tab-btn px-4 py-2 text-sm border-b-2 border-transparent hover:bg-gray-700" data-tab="network">
+            Network <span id="network-count" class="text-xs bg-gray-700 px-1.5 rounded ml-1">0</span>
+          </button>
+          <button class="tab-btn px-4 py-2 text-sm border-b-2 border-transparent hover:bg-gray-700" data-tab="source">
+            Source
+          </button>
+          <button class="tab-btn px-4 py-2 text-sm border-b-2 border-transparent hover:bg-gray-700" data-tab="dom">
+            DOM
+          </button>
+          <button class="tab-btn px-4 py-2 text-sm border-b-2 border-transparent hover:bg-gray-700" data-tab="storage">
+            Storage
+          </button>
+          <button class="tab-btn px-4 py-2 text-sm border-b-2 border-transparent hover:bg-gray-700" data-tab="evaluate">
+            Evaluate
+          </button>
+        </div>
+
+        <!-- Tab Contents -->
+        <div class="flex-1 overflow-hidden">
+          <!-- Console Tab -->
+          <div id="tab-console" class="tab-content active h-full flex flex-col">
+            <div class="p-2 border-b border-gray-700 flex gap-2">
+              <button id="btn-clear-console" class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded">Clear</button>
+              <label class="text-xs flex items-center gap-1">
+                <input type="checkbox" id="filter-errors" checked> Errors
+              </label>
+              <label class="text-xs flex items-center gap-1">
+                <input type="checkbox" id="filter-warnings" checked> Warnings
+              </label>
+              <label class="text-xs flex items-center gap-1">
+                <input type="checkbox" id="filter-logs" checked> Logs
+              </label>
+            </div>
+            <div id="console-output" class="flex-1 overflow-auto p-2 font-mono text-xs space-y-1"></div>
+          </div>
+
+          <!-- Network Tab -->
+          <div id="tab-network" class="tab-content h-full flex flex-col">
+            <div class="p-2 border-b border-gray-700 flex gap-2">
+              <button id="btn-clear-network" class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded">Clear</button>
+              <select id="filter-type" class="text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1">
+                <option value="all">All Types</option>
+                <option value="document">Document</option>
+                <option value="xhr">XHR</option>
+                <option value="fetch">Fetch</option>
+                <option value="script">Script</option>
+                <option value="stylesheet">Stylesheet</option>
+                <option value="image">Image</option>
+                <option value="font">Font</option>
+              </select>
+            </div>
+            <div class="flex-1 overflow-auto">
+              <table class="w-full text-xs">
+                <thead class="bg-gray-800 sticky top-0">
+                  <tr>
+                    <th class="text-left p-2">Status</th>
+                    <th class="text-left p-2">Method</th>
+                    <th class="text-left p-2">URL</th>
+                    <th class="text-left p-2">Type</th>
+                  </tr>
+                </thead>
+                <tbody id="network-output" class="divide-y divide-gray-800"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Source Tab -->
+          <div id="tab-source" class="tab-content h-full overflow-auto">
+            <pre><code id="source-output" class="language-html"></code></pre>
+          </div>
+
+          <!-- DOM Tab -->
+          <div id="tab-dom" class="tab-content h-full overflow-auto p-2">
+            <div id="dom-output" class="font-mono text-xs"></div>
+          </div>
+
+          <!-- Storage Tab -->
+          <div id="tab-storage" class="tab-content h-full overflow-auto p-2">
+            <div class="space-y-4">
+              <div>
+                <h3 class="font-medium mb-2">🍪 Cookies</h3>
+                <div id="cookies-output" class="bg-gray-800 rounded p-2 text-xs font-mono"></div>
+              </div>
+              <div>
+                <h3 class="font-medium mb-2">💾 Local Storage</h3>
+                <div id="localstorage-output" class="bg-gray-800 rounded p-2 text-xs font-mono"></div>
+              </div>
+              <div>
+                <h3 class="font-medium mb-2">📋 Session Storage</h3>
+                <div id="sessionstorage-output" class="bg-gray-800 rounded p-2 text-xs font-mono"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Evaluate Tab -->
+          <div id="tab-evaluate" class="tab-content h-full flex flex-col p-2">
+            <textarea id="eval-input" 
+              class="flex-1 bg-gray-800 border border-gray-700 rounded p-2 font-mono text-xs resize-none focus:outline-none focus:border-blue-500"
+              placeholder="// Enter JavaScript to evaluate in page context&#10;document.title"></textarea>
+            <div class="flex gap-2 mt-2">
+              <button id="btn-evaluate" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">
+                Run (Ctrl+Enter)
+              </button>
+            </div>
+            <div class="mt-2">
+              <div class="text-xs text-gray-400 mb-1">Result:</div>
+              <pre id="eval-output" class="bg-gray-800 rounded p-2 text-xs font-mono overflow-auto max-h-40"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '';
+    let ws;
+    let consoleLogs = [];
+    let networkRequests = [];
+
+    // WebSocket connection
+    function connectWebSocket() {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${protocol}//${location.host}`);
+      
+      ws.onmessage = (event) => {
+        const { type, data } = JSON.parse(event.data);
+        
+        if (type === 'console') {
+          consoleLogs.push(data);
+          renderConsole();
+        } else if (type === 'request') {
+          networkRequests.push(data);
+          renderNetwork();
+        } else if (type === 'response') {
+          const req = networkRequests.find(r => r.url === data.url);
+          if (req) req.response = data;
+          renderNetwork();
+        } else if (type === 'clear') {
+          consoleLogs = [];
+          networkRequests = [];
+          renderConsole();
+          renderNetwork();
+        }
+      };
+      
+      ws.onclose = () => {
+        setTimeout(connectWebSocket, 1000);
+      };
+    }
+    
+    connectWebSocket();
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+      });
+    });
+
+    // Navigation
+    async function navigate(url) {
+      if (!url.startsWith('http')) url = 'https://' + url;
+      document.getElementById('url-input').value = url;
+      document.getElementById('status').textContent = 'Loading...';
+      document.getElementById('no-screenshot').style.display = 'none';
+      
+      try {
+        const res = await fetch(`${API_BASE}/api/navigate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          document.getElementById('status').textContent = data.title || 'Loaded';
+          consoleLogs = data.consoleLogs || [];
+          networkRequests = data.networkRequests || [];
+          renderConsole();
+          renderNetwork();
+          loadScreenshot();
+          loadSource();
+          loadDOM();
+          loadStorage();
+        } else {
+          document.getElementById('status').textContent = 'Error: ' + data.error;
+        }
+      } catch (error) {
+        document.getElementById('status').textContent = 'Error: ' + error.message;
+      }
+    }
+
+    // Screenshot
+    async function loadScreenshot(fullPage = false) {
+      const img = document.getElementById('screenshot');
+      img.src = `${API_BASE}/api/screenshot?t=${Date.now()}&fullPage=${fullPage}`;
+      img.style.display = 'block';
+    }
+
+    // Source
+    async function loadSource() {
+      try {
+        const res = await fetch(`${API_BASE}/api/source`);
+        const data = await res.json();
+        const code = document.getElementById('source-output');
+        code.textContent = data.source;
+        hljs.highlightElement(code);
+      } catch (error) {
+        console.error('Failed to load source:', error);
+      }
+    }
+
+    // DOM
+    async function loadDOM() {
+      try {
+        const res = await fetch(`${API_BASE}/api/dom`);
+        const data = await res.json();
+        document.getElementById('dom-output').innerHTML = renderDOMTree(data.dom);
+      } catch (error) {
+        console.error('Failed to load DOM:', error);
+      }
+    }
+
+    function renderDOMTree(node, depth = 0) {
+      if (!node) return '';
+      const indent = '  '.repeat(depth);
+      const idStr = node.id ? `#${node.id}` : '';
+      const classStr = node.classes?.length ? `.${node.classes.join('.')}` : '';
+      
+      let html = `<div class="hover:bg-gray-800 px-1">${indent}&lt;<span class="text-blue-400">${node.tag}</span><span class="text-yellow-400">${idStr}</span><span class="text-green-400">${classStr}</span>&gt;`;
+      
+      if (node.childCount) {
+        html += ` <span class="text-gray-500">(${node.childCount} children)</span>`;
+      }
+      
+      html += '</div>';
+      
+      if (node.children) {
+        for (const child of node.children) {
+          html += renderDOMTree(child, depth + 1);
+        }
+        html += `<div class="hover:bg-gray-800 px-1">${indent}&lt;/<span class="text-blue-400">${node.tag}</span>&gt;</div>`;
+      }
+      
+      return html;
+    }
+
+    // Storage
+    async function loadStorage() {
+      try {
+        const [cookiesRes, storageRes] = await Promise.all([
+          fetch(`${API_BASE}/api/cookies`),
+          fetch(`${API_BASE}/api/storage`)
+        ]);
+        
+        const cookies = await cookiesRes.json();
+        const storage = await storageRes.json();
+        
+        document.getElementById('cookies-output').innerHTML = 
+          cookies.cookies?.map(c => `<div>${c.name}: ${c.value.substring(0, 50)}${c.value.length > 50 ? '...' : ''}</div>`).join('') || 'No cookies';
+        
+        document.getElementById('localstorage-output').innerHTML = 
+          Object.entries(storage.localStorage || {}).map(([k, v]) => `<div><span class="text-blue-400">${k}</span>: ${String(v).substring(0, 100)}</div>`).join('') || 'Empty';
+        
+        document.getElementById('sessionstorage-output').innerHTML = 
+          Object.entries(storage.sessionStorage || {}).map(([k, v]) => `<div><span class="text-blue-400">${k}</span>: ${String(v).substring(0, 100)}</div>`).join('') || 'Empty';
+      } catch (error) {
+        console.error('Failed to load storage:', error);
+      }
+    }
+
+    // Console rendering
+    function renderConsole() {
+      const output = document.getElementById('console-output');
+      const showErrors = document.getElementById('filter-errors').checked;
+      const showWarnings = document.getElementById('filter-warnings').checked;
+      const showLogs = document.getElementById('filter-logs').checked;
+      
+      const filtered = consoleLogs.filter(log => {
+        if (log.type === 'error' && !showErrors) return false;
+        if (log.type === 'warning' && !showWarnings) return false;
+        if ((log.type === 'log' || log.type === 'info') && !showLogs) return false;
+        return true;
+      });
+      
+      output.innerHTML = filtered.map(log => {
+        const time = new Date(log.timestamp).toLocaleTimeString();
+        return `<div class="log-${log.type} flex">
+          <span class="text-gray-500 mr-2">[${time}]</span>
+          <span class="text-gray-400 mr-2">[${log.type}]</span>
+          <span class="flex-1">${escapeHtml(log.text)}</span>
+          ${log.location ? `<span class="text-gray-600">${log.location.url?.split('/').pop()}:${log.location.lineNumber}</span>` : ''}
+        </div>`;
+      }).join('');
+      
+      document.getElementById('console-count').textContent = consoleLogs.length;
+      output.scrollTop = output.scrollHeight;
+    }
+
+    // Network rendering
+    function renderNetwork() {
+      const output = document.getElementById('network-output');
+      const typeFilter = document.getElementById('filter-type').value;
+      
+      const filtered = networkRequests.filter(req => {
+        if (typeFilter === 'all') return true;
+        return req.resourceType === typeFilter;
+      });
+      
+      output.innerHTML = filtered.map(req => {
+        const status = req.response?.status || '-';
+        const statusClass = status >= 500 ? 'status-5xx' : status >= 400 ? 'status-4xx' : status >= 300 ? 'status-3xx' : 'status-2xx';
+        const url = new URL(req.url);
+        const shortUrl = url.pathname + url.search;
+        
+        return `<tr class="network-row cursor-pointer" title="${req.url}">
+          <td class="p-2 ${statusClass}">${status}</td>
+          <td class="p-2">${req.method}</td>
+          <td class="p-2 truncate max-w-xs">${shortUrl}</td>
+          <td class="p-2 text-gray-400">${req.resourceType}</td>
+        </tr>`;
+      }).join('');
+      
+      document.getElementById('network-count').textContent = networkRequests.length;
+    }
+
+    // Evaluate
+    async function evaluate() {
+      const script = document.getElementById('eval-input').value;
+      const output = document.getElementById('eval-output');
+      
+      try {
+        const res = await fetch(`${API_BASE}/api/evaluate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ script })
+        });
+        
+        const data = await res.json();
+        output.textContent = JSON.stringify(data.result, null, 2);
+      } catch (error) {
+        output.textContent = 'Error: ' + error.message;
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Event listeners
+    document.getElementById('btn-go').addEventListener('click', () => {
+      navigate(document.getElementById('url-input').value);
+    });
+
+    document.getElementById('url-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') navigate(e.target.value);
+    });
+
+    document.getElementById('btn-refresh').addEventListener('click', () => {
+      navigate(document.getElementById('url-input').value);
+    });
+
+    document.getElementById('btn-fullpage').addEventListener('click', () => loadScreenshot(true));
+    
+    document.getElementById('btn-download').addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.href = document.getElementById('screenshot').src;
+      link.download = 'screenshot.png';
+      link.click();
+    });
+
+    document.getElementById('btn-clear-console').addEventListener('click', () => {
+      consoleLogs = [];
+      renderConsole();
+    });
+
+    document.getElementById('btn-clear-network').addEventListener('click', () => {
+      networkRequests = [];
+      renderNetwork();
+    });
+
+    document.getElementById('btn-evaluate').addEventListener('click', evaluate);
+    
+    document.getElementById('eval-input').addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'Enter') evaluate();
+    });
+
+    ['filter-errors', 'filter-warnings', 'filter-logs'].forEach(id => {
+      document.getElementById(id).addEventListener('change', renderConsole);
+    });
+
+    document.getElementById('filter-type').addEventListener('change', renderNetwork);
+
+    // Quick access buttons for common URLs
+    const urlInput = document.getElementById('url-input');
+    urlInput.value = 'https://gaestefotos.com';
+  </script>
+</body>
+</html>

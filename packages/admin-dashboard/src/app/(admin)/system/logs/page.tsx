@@ -21,7 +21,7 @@ interface LogEntry {
   id: string;
   level: 'info' | 'warn' | 'error';
   message: string;
-  timestamp: string;
+  createdAt: string;
   context?: Record<string, unknown>;
 }
 
@@ -45,7 +45,7 @@ export default function LogsPage() {
   const loadLogs = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get<{ logs: LogEntry[] }>('/admin/logs', {
+      const res = await api.get<{ logs: LogEntry[] }>('/admin/logs/errors', {
         params: { limit: 100, level: levelFilter !== 'all' ? levelFilter : undefined },
       });
       setLogs(res.data.logs || []);
@@ -61,14 +61,14 @@ export default function LogsPage() {
   }, [loadLogs]);
 
   const filteredLogs = logs.filter((log) =>
-    log.message.toLowerCase().includes(search.toLowerCase())
+    (log.message || '').toLowerCase().includes(search.toLowerCase())
   );
 
   const handleExport = () => {
     const csv = [
       ['Timestamp', 'Level', 'Message'].join(','),
       ...filteredLogs.map((log) =>
-        [log.timestamp, log.level, `"${log.message.replace(/"/g, '""')}"`].join(',')
+        [log.createdAt, log.level, `"${(log.message || '').replace(/"/g, '""')}"`].join(',')
       ),
     ].join('\n');
 
@@ -162,7 +162,7 @@ export default function LogsPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-app-fg break-words">{log.message}</p>
                     <p className="text-xs text-app-muted mt-1">
-                      {new Date(log.timestamp).toLocaleString('de-DE')}
+                      {new Date(log.createdAt).toLocaleString('de-DE')}
                     </p>
                   </div>
                 </div>

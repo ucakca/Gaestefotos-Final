@@ -100,6 +100,7 @@ export default function EventCard({ event, index = 0, photoCount = 0, guestCount
     >
       <Link
         href={`/events/${event.id}/dashboard`}
+        prefetch={false}
         className="group block bg-white border border-stone-200 rounded-2xl overflow-hidden hover:border-blue-300 hover:shadow-lg transition-all"
       >
         {/* Cover Image */}

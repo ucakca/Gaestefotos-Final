@@ -45,8 +45,14 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
   const [eventId, setEventId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    params.then(p => setEventId(p.id));
-  }, []);
+    params.then(p => {
+      setEventId(p.id);
+      // Redirect to dashboard setup tab unless in wizard mode
+      if (!isWizardMode()) {
+        router.replace(`/events/${p.id}/dashboard?tab=setup`);
+      }
+    });
+  }, [router]);
   const { showToast } = useToastStore();
 
   const wizardMode = isWizardMode();
@@ -289,77 +295,54 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
   return (
     <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
       <div className="bg-app-bg">
-        {/* Header */}
+        {/* Modern Header */}
         <div className="bg-app-card border-b border-app-border sticky top-16 z-30">
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold">Design & Branding - Live Builder</h1>
-            </div>
-            <div className="flex items-center gap-2">
+            <div>
+              <h1 className="text-lg font-bold text-app-fg">Galerie-Design</h1>
               {wizardMode && (
-                <div className="hidden md:flex items-center gap-2 mr-2">
-                  <span className="text-xs font-semibold text-app-muted">Wizard:</span>
-                  <span className="text-xs font-semibold text-app-fg">1/2 Design</span>
-                  <span className="text-xs text-app-muted">→</span>
-                  <span className="text-xs font-semibold text-app-muted">2/2 Alben</span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-1">
+                    <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold">1</div>
+                    <span className="text-xs font-medium text-amber-600">Design</span>
+                  </div>
+                  <div className="w-6 h-px bg-app-border" />
+                  <div className="flex items-center gap-1">
+                    <div className="w-5 h-5 rounded-full bg-app-border text-app-muted flex items-center justify-center text-[10px] font-bold">2</div>
+                    <span className="text-xs text-app-muted">Kategorien</span>
+                  </div>
                 </div>
               )}
-
-              {wizardMode && (
-                <motion.div whileTap={{ scale: 0.95 }}>
-                  <Button
-                    type="button"
-                    onClick={() => router.push(`/events/${eventId}/categories?wizard=1`)}
-                    variant="primary"
-                  >
-                    Weiter
-                  </Button>
-                </motion.div>
-              )}
-
-              <motion.div whileTap={{ scale: 0.95 }}>
-                <IconButton
-                  icon={<Smartphone className="h-5 w-5" />}
-                  variant="ghost"
-                  size="sm"
-                  aria-label={previewMode === 'mobile' ? 'Desktop-Vorschau' : 'Mobile Vorschau'}
-                  title={previewMode === 'mobile' ? 'Desktop-Vorschau' : 'Mobile Vorschau'}
-                  onClick={() => setPreviewMode(previewMode === 'mobile' ? 'desktop' : 'mobile')}
-                  className={previewMode === 'mobile' ? 'bg-app-fg text-app-bg' : 'bg-app-bg text-app-muted'}
-                />
-              </motion.div>
-              <motion.div whileTap={{ scale: 0.95 }}>
-                <IconButton
-                  icon={<QrCode className="h-5 w-5" />}
-                  variant="ghost"
-                  size="sm"
-                  aria-label={showQRCode ? 'QR schließen' : 'QR anzeigen'}
-                  title={showQRCode ? 'QR schließen' : 'QR anzeigen'}
-                  onClick={() => setShowQRCode(!showQRCode)}
-                  className="hover:bg-app-bg"
-                />
-              </motion.div>
-              <a
-                href={`/e2/${event.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 hover:bg-app-bg rounded-lg"
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPreviewMode(previewMode === 'mobile' ? 'desktop' : 'mobile')}
+                className={`p-2 rounded-lg transition-colors ${previewMode === 'mobile' ? 'bg-app-accent/10 text-app-accent' : 'text-app-muted hover:bg-app-bg'}`}
+                title={previewMode === 'mobile' ? 'Desktop-Vorschau' : 'Mobile Vorschau'}
               >
+                <Smartphone className="w-5 h-5" />
+              </button>
+              <a href={`/e2/${event.slug}`} target="_blank" rel="noopener noreferrer" className="p-2 text-app-muted hover:bg-app-bg rounded-lg transition-colors">
                 <Eye className="w-5 h-5" />
               </a>
+              {wizardMode && (
+                <Button type="button" onClick={() => router.push(`/events/${eventId}/categories?wizard=1`)} variant="primary" className="ml-1">
+                  Weiter →
+                </Button>
+              )}
             </div>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Preview - Like Public Page */}
+          {/* Preview */}
           <div className="lg:col-span-2">
-            <div className="bg-app-card rounded-lg shadow-lg overflow-hidden">
-              <div className={`bg-app-bg p-4 flex items-center justify-center ${
+            <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+              <div className={`bg-app-bg p-6 flex items-center justify-center ${
                 previewMode === 'mobile' ? 'max-w-sm mx-auto' : 'w-full'
               }`}>
-                <div className={`bg-app-card rounded-lg shadow-xl overflow-hidden ${
+                <div className={`bg-app-card rounded-2xl shadow-xl overflow-hidden ${
                   previewMode === 'mobile' ? 'w-full max-w-sm' : 'w-full'
                 }`}>
                   {/* Public Event Preview - Like /e/[slug] */}
@@ -502,302 +485,114 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
             </div>
           </div>
 
-          {/* Settings Panel */}
-          <div className="lg:col-span-1">
-            <div className="bg-app-card rounded-lg shadow-lg p-6 space-y-6 sticky top-24">
-              <h2 className="text-xl font-semibold">Einstellungen</h2>
-
-              <div className="border-t border-app-border pt-6">
-                <h3 className="font-semibold mb-3">Design Preset</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {DESIGN_PRESETS.map((p) => {
-                    const isSelected = (designConfig.designPresetKey || 'classic') === p.key;
-                    return (
-                      <Button
-                        key={p.key}
-                        type="button"
-                        variant="secondary"
-                        onClick={() => updateDesignConfig({ 
-                          designPresetKey: p.key,
-                          colors: p.colors
-                        })}
-                        className={`h-auto w-full rounded-lg border p-2 text-left transition-colors ${
-                          isSelected
-                            ? 'border-app-fg bg-app-bg text-app-fg'
-                            : 'border-app-border bg-app-card text-app-fg hover:border-app-muted'
-                        }`}
-                      >
-                        <div className="h-10 w-full rounded-md" style={{ backgroundImage: p.heroGradient }} />
-                        <div className="mt-2 text-xs font-semibold text-app-fg">{p.label}</div>
-                      </Button>
-                    );
-                  })}
-                </div>
-                <p className="mt-2 text-xs text-app-muted">
-                  Presets setzen automatisch passende Farben und beeinflussen Hero-Hintergrund sowie Akzente (z.B. Story-Ring).
-                </p>
-              </div>
-
-              <div className="border-t border-app-border pt-6">
-                <h3 className="font-semibold mb-3">Branding</h3>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-app-fg mb-2">Logo</label>
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-28 rounded-lg border border-app-border bg-app-card flex items-center justify-center overflow-hidden">
-                        {logoUrl ? (
-                          <img src={logoUrl} alt="Logo" className="max-h-10 max-w-[100px] object-contain" />
-                        ) : (
-                          <span className="text-xs text-app-muted">Kein Logo</span>
-                        )}
-                      </div>
-                      <motion.div whileTap={{ scale: 0.95 }}>
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          onClick={() => logoImageInputRef.current?.click()}
-                          disabled={uploadingImage === 'logo'}
-                        >
-                          {uploadingImage === 'logo' ? 'Lädt…' : 'Logo hochladen'}
-                        </Button>
-                      </motion.div>
-                      <Input
-                        ref={logoImageInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleLogoUpload(file);
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-app-fg mb-2">Farben</label>
-                    <div className="grid grid-cols-1 gap-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 text-xs text-app-muted">Primary</div>
-                        <ColorInput
-                          value={colors.primary || '#8B1538'}
-                          onChange={(value) => updateDesignConfig({ colors: { ...colors, primary: value } })}
-                        />
-                        <Input
-                          type="text"
-                          value={colors.primary || '#8B1538'}
-                          onChange={(e) => updateDesignConfig({ colors: { ...colors, primary: e.target.value } })}
-                          className="flex-1"
-                        />
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 text-xs text-app-muted">Secondary</div>
-                        <ColorInput
-                          value={colors.secondary || '#FFFFFF'}
-                          onChange={(value) => updateDesignConfig({ colors: { ...colors, secondary: value } })}
-                        />
-                        <Input
-                          type="text"
-                          value={colors.secondary || '#FFFFFF'}
-                          onChange={(e) => updateDesignConfig({ colors: { ...colors, secondary: e.target.value } })}
-                          className="flex-1"
-                        />
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 text-xs text-app-muted">Accent</div>
-                        <ColorInput
-                          value={colors.accent || '#EC4899'}
-                          onChange={(value) => updateDesignConfig({ colors: { ...colors, accent: value } })}
-                        />
-                        <Input
-                          type="text"
-                          value={colors.accent || '#EC4899'}
-                          onChange={(e) => updateDesignConfig({ colors: { ...colors, accent: e.target.value } })}
-                          className="flex-1"
-                        />
-                      </div>
-                    </div>
-                    <p className="mt-2 text-xs text-app-muted">
-                      Primary beeinflusst z.B. die Kopfzeile der Gast-Seite.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* QR Code Section */}
-              {showQRCode && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="border-t border-app-border pt-6"
-                >
-                  <h3 className="font-semibold mb-3">QR-Code Design</h3>
-                  <div className="flex flex-col items-center gap-4">
-                    {/* QR Code Preview */}
-                    <div className="bg-app-card p-4 rounded-lg border-2 border-app-border">
-                      <QRCodeSVG 
-                        id="qr-code-svg"
-                        value={eventUrl} 
-                        size={qrCodeConfig.size}
-                        fgColor={qrCodeConfig.fgColor}
-                        bgColor={qrCodeConfig.bgColor}
-                        level={qrCodeConfig.level}
-                      />
-                    </div>
-
-                    {/* Design Options */}
-                    <div className="w-full space-y-4">
-                      {/* Foreground Color */}
-                      <div>
-                        <label className="block text-sm font-medium text-app-fg mb-2">
-                          Vordergrundfarbe
-                        </label>
-                        <div className="flex gap-2">
-                          <ColorInput
-                            value={qrCodeConfig.fgColor}
-                            onChange={(value) => setQrCodeConfig({ ...qrCodeConfig, fgColor: value })}
-                          />
-                          <Input
-                            type="text"
-                            value={qrCodeConfig.fgColor}
-                            onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, fgColor: e.target.value })}
-                            className="flex-1"
-                            placeholder={resolveRootCssVar('--app-fg', '#000000')}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Background Color */}
-                      <div>
-                        <label className="block text-sm font-medium text-app-fg mb-2">
-                          Hintergrundfarbe
-                        </label>
-                        <div className="flex gap-2">
-                          <ColorInput
-                            value={qrCodeConfig.bgColor}
-                            onChange={(value) => setQrCodeConfig({ ...qrCodeConfig, bgColor: value })}
-                          />
-                          <Input
-                            type="text"
-                            value={qrCodeConfig.bgColor}
-                            onChange={(e) => setQrCodeConfig({ ...qrCodeConfig, bgColor: e.target.value })}
-                            className="flex-1"
-                            placeholder={resolveRootCssVar('--app-card', '#FFFFFF')}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Size */}
-                      <div>
-                        <label className="block text-sm font-medium text-app-fg mb-2">
-                          Größe: {qrCodeConfig.size}px
-                        </label>
-                        <Slider
-                          min={100}
-                          max={400}
-                          step={10}
-                          value={[qrCodeConfig.size]}
-                          onValueChange={([value]) => setQrCodeConfig({ ...qrCodeConfig, size: value ?? 100 })}
-                        />
-                      </div>
-
-                      {/* Error Correction Level */}
-                      <div>
-                        <label className="block text-sm font-medium text-app-fg mb-2">
-                          Fehlerkorrektur
-                        </label>
-                        <Select
-                          value={qrCodeConfig.level}
-                          onValueChange={(value) => setQrCodeConfig({ ...qrCodeConfig, level: value as any })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="L">Niedrig (L)</SelectItem>
-                            <SelectItem value="M">Mittel (M)</SelectItem>
-                            <SelectItem value="Q">Hoch (Q)</SelectItem>
-                            <SelectItem value="H">Sehr hoch (H)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-app-muted mt-1">
-                          Höhere Stufen = mehr Fehlerkorrektur, aber größerer Code
-                        </p>
-                      </div>
-                    </div>
-
-                    <motion.div whileTap={{ scale: 0.95 }} className="w-full">
-                      <Button
-                        type="button"
-                        onClick={downloadQRCode}
-                        className="w-full bg-app-fg text-app-bg hover:opacity-90"
-                      >
-                        <Download className="w-4 h-4" />
-                        QR-Code herunterladen
-                      </Button>
-                    </motion.div>
-
-                    <motion.div whileTap={{ scale: 0.95 }} className="w-full">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={downloadA5StandeePdf}
-                        className="w-full gap-2"
-                      >
-                        <Download className="w-4 h-4" />
-                        Aufsteller (A5) als PDF
-                      </Button>
-                    </motion.div>
-
-                    <motion.div whileTap={{ scale: 0.95 }} className="w-full">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={saveQrCodeConfig}
-                        className="w-full gap-2"
-                      >
-                        <Save className="w-4 h-4" />
-                        QR-Einstellungen speichern
-                      </Button>
-                    </motion.div>
-                    <p className="text-xs text-app-muted text-center">
-                      Teilen Sie diesen QR-Code, damit Gäste direkt zum Event gelangen
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Event URL */}
-              <div className="border-t border-app-border pt-6">
-                <h3 className="font-semibold mb-2">Event-URL</h3>
-                <div className="flex gap-2">
-                  <Input type="text" value={eventUrl} readOnly className="flex-1 bg-app-bg" />
-                  <motion.div whileTap={{ scale: 0.95 }}>
-                    <Button
+          {/* Settings Sidebar */}
+          <div className="lg:col-span-1 space-y-4">
+            {/* Design Presets */}
+            <div className="rounded-2xl border border-app-border bg-app-card p-5 sticky top-24">
+              <h3 className="text-sm font-semibold text-app-fg mb-3">Design Preset</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {DESIGN_PRESETS.map((p) => {
+                  const isSelected = (designConfig.designPresetKey || 'classic') === p.key;
+                  return (
+                    <button
+                      key={p.key}
                       type="button"
-                      variant="secondary"
-                      onClick={() => {
-                        navigator.clipboard.writeText(eventUrl);
-                        showToast('URL kopiert', 'success');
-                      }}
+                      onClick={() => updateDesignConfig({ designPresetKey: p.key, colors: p.colors })}
+                      className={`rounded-xl border-2 p-2 transition-all ${
+                        isSelected
+                          ? 'border-app-accent shadow-md scale-[1.02]'
+                          : 'border-app-border hover:border-app-muted'
+                      }`}
                     >
-                      Kopieren
+                      <div className="h-8 w-full rounded-lg" style={{ backgroundImage: p.heroGradient }} />
+                      <div className="mt-1.5 text-[11px] font-medium text-app-fg">{p.label}</div>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[11px] text-app-muted">
+                Presets setzen Farben für Hero-Hintergrund und Akzente.
+              </p>
+            </div>
+
+            {/* Branding */}
+            <div className="rounded-2xl border border-app-border bg-app-card p-5">
+              <h3 className="text-sm font-semibold text-app-fg mb-3">Branding</h3>
+              <div className="space-y-4">
+                {/* Logo */}
+                <div>
+                  <label className="block text-xs font-medium text-app-muted mb-1.5">Logo</label>
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-24 rounded-lg border border-app-border bg-app-bg flex items-center justify-center overflow-hidden">
+                      {logoUrl ? (
+                        <img src={logoUrl} alt="Logo" className="max-h-8 max-w-[80px] object-contain" />
+                      ) : (
+                        <span className="text-[10px] text-app-muted">Kein Logo</span>
+                      )}
+                    </div>
+                    <Button type="button" size="sm" variant="outline" onClick={() => logoImageInputRef.current?.click()} disabled={uploadingImage === 'logo'}>
+                      {uploadingImage === 'logo' ? 'Lädt…' : 'Hochladen'}
                     </Button>
-                  </motion.div>
+                    <Input ref={logoImageInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleLogoUpload(file); }} />
+                  </div>
+                </div>
+
+                {/* Colors */}
+                <div>
+                  <label className="block text-xs font-medium text-app-muted mb-1.5">Farben</label>
+                  <div className="space-y-2">
+                    {[
+                      { key: 'primary', label: 'Primary', fallback: '#8B1538' },
+                      { key: 'secondary', label: 'Secondary', fallback: '#FFFFFF' },
+                      { key: 'accent', label: 'Akzent', fallback: '#EC4899' },
+                    ].map(({ key, label, fallback }) => (
+                      <div key={key} className="flex items-center gap-2">
+                        <span className="w-16 text-[11px] text-app-muted">{label}</span>
+                        <ColorInput
+                          value={colors[key] || fallback}
+                          onChange={(value) => updateDesignConfig({ colors: { ...colors, [key]: value } })}
+                        />
+                        <Input
+                          type="text"
+                          value={colors[key] || fallback}
+                          onChange={(e) => updateDesignConfig({ colors: { ...colors, [key]: e.target.value } })}
+                          className="flex-1 h-8 text-xs"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
+            </div>
 
-              {/* Quick Actions */}
-              <div className="border-t border-app-border pt-6 space-y-2">
-                <h3 className="font-semibold mb-2">Schnellaktionen</h3>
-                <Button asChild type="button" variant="secondary" className="w-full">
-                  <a href={`/e2/${event.slug}`} target="_blank" rel="noopener noreferrer">
-                    Öffentliche Seite öffnen
-                  </a>
+            {/* QR Code — Compact with link to dashboard */}
+            <div className="rounded-2xl border border-app-border bg-app-card p-5">
+              <h3 className="text-sm font-semibold text-app-fg mb-3 flex items-center gap-2">
+                <QrCode className="w-4 h-4 text-app-accent" />
+                QR-Code
+              </h3>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="bg-app-bg p-2 rounded-xl border border-app-border">
+                  <QRCodeSVG id="qr-code-svg" value={eventUrl} size={80} fgColor={qrCodeConfig.fgColor} bgColor={qrCodeConfig.bgColor} level={qrCodeConfig.level} />
+                </div>
+                <div className="flex-1 space-y-1.5">
+                  <Button type="button" size="sm" variant="outline" onClick={downloadQRCode} className="w-full gap-1.5 text-xs">
+                    <Download className="w-3.5 h-3.5" /> PNG Download
+                  </Button>
+                  <Button type="button" size="sm" variant="outline" onClick={downloadA5StandeePdf} className="w-full gap-1.5 text-xs">
+                    <Download className="w-3.5 h-3.5" /> A5 Aufsteller
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Event URL */}
+            <div className="rounded-2xl border border-app-border bg-app-card p-5">
+              <h3 className="text-sm font-semibold text-app-fg mb-2">Event-URL</h3>
+              <div className="flex gap-2">
+                <Input type="text" value={eventUrl} readOnly className="flex-1 bg-app-bg h-8 text-xs" />
+                <Button type="button" size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(eventUrl); showToast('URL kopiert', 'success'); }}>
+                  Kopieren
                 </Button>
               </div>
             </div>

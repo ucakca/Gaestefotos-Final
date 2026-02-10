@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
+import SvgImportTool from './SvgImportTool';
 
 interface QrTemplate {
   id: string;
@@ -77,6 +78,7 @@ export default function QrTemplatesAdminPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showImportTool, setShowImportTool] = useState(false);
 
   useEffect(() => {
     loadTemplates();
@@ -477,6 +479,12 @@ export default function QrTemplatesAdminPage() {
             <RefreshCw className="w-5 h-5 text-gray-600" />
           </button>
           <button
+            onClick={() => setShowImportTool(true)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center gap-2"
+          >
+            <Upload className="w-4 h-4" /> SVG importieren
+          </button>
+          <button
             onClick={startCreate}
             className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium flex items-center gap-2"
           >
@@ -484,6 +492,91 @@ export default function QrTemplatesAdminPage() {
           </button>
         </div>
       </div>
+
+      {/* How-To Banner */}
+      <div className="rounded-2xl border border-blue-500/20 bg-blue-50 p-5 space-y-4">
+        <h3 className="font-semibold text-blue-900 flex items-center gap-2">
+          <QrCode className="w-5 h-5" />
+          So funktionieren QR-Templates
+        </h3>
+        <div className="text-sm text-blue-800 space-y-2">
+          <p>
+            QR-Templates sind SVG-Vorlagen, die Hosts für ihre Event-QR-Codes verwenden können.
+            Jedes Template besteht aus bis zu 4 Formaten: <strong>A6</strong> (Tischkarte), <strong>A5</strong> (Poster), <strong>Story</strong> (Instagram 9:16) und <strong>Quadrat</strong> (1:1).
+          </p>
+          <p><strong>Neues Template erstellen:</strong></p>
+          <ol className="list-decimal list-inside space-y-1 ml-2">
+            <li>Klicke auf <strong>&quot;Neues Template&quot;</strong> oben rechts</li>
+            <li>Vergib einen <strong>Slug</strong> (URL-freundlich, z.B. <code className="bg-blue-100 px-1 rounded text-xs">eleganz-gold</code>) und <strong>Namen</strong></li>
+            <li>Wähle eine <strong>Kategorie</strong> und setze die <strong>Standard-Farben</strong></li>
+            <li>Lade <strong>SVG-Dateien</strong> hoch — das QR-Code-Rechteck muss <code className="bg-blue-100 px-1 rounded text-xs">id=&quot;gf:qr&quot;</code> enthalten</li>
+            <li>Setze <strong>Aktiv</strong> + <strong>Öffentlich</strong> damit Hosts das Template sehen</li>
+          </ol>
+        </div>
+
+        <details className="group">
+          <summary className="cursor-pointer text-sm font-semibold text-blue-900 hover:text-blue-700 select-none flex items-center gap-1">
+            <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform" />
+            SVG aus Canva / Figma erstellen — Schritt-für-Schritt
+          </summary>
+          <div className="mt-3 text-sm text-blue-800 space-y-4 pl-5 border-l-2 border-blue-200">
+            <div>
+              <p className="font-semibold mb-1">Option A: Canva</p>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Erstelle ein Design in der gewünschten Größe (A6: 105×148mm, A5: 148×210mm)</li>
+                <li>Gestalte das Template — lasse einen <strong>freien Bereich</strong> für den QR-Code</li>
+                <li>Exportiere als <strong>SVG</strong> (Download → Dateityp: SVG)</li>
+                <li>Öffne die SVG in einem Texteditor</li>
+                <li>Füge an der QR-Position ein Rechteck ein:<br />
+                  <code className="bg-blue-100 px-2 py-1 rounded text-xs block mt-1 font-mono">
+                    {'<rect id="gf:qr" x="50" y="200" width="200" height="200" fill="none" />'}
+                  </code>
+                </li>
+                <li>Oder nutze den <strong>SVG-Import unten</strong> um den QR-Platzhalter visuell zu setzen</li>
+              </ol>
+            </div>
+            <div>
+              <p className="font-semibold mb-1">Option B: Figma</p>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Erstelle ein Frame in der gewünschten Größe</li>
+                <li>Platziere ein Rechteck wo der QR-Code hin soll</li>
+                <li>Benenne es <code className="bg-blue-100 px-1 rounded text-xs">gf:qr</code> im Layers-Panel</li>
+                <li>Exportiere als SVG — Figma setzt automatisch <code className="bg-blue-100 px-1 rounded text-xs">id=&quot;gf:qr&quot;</code></li>
+              </ol>
+            </div>
+            <div>
+              <p className="font-semibold mb-1">Option C: Beliebiges SVG + Import-Tool</p>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Exportiere dein Design als SVG aus jedem Tool</li>
+                <li>Nutze den <strong>&quot;SVG importieren&quot;</strong>-Button unten</li>
+                <li>Positioniere den QR-Platzhalter per Drag &amp; Drop</li>
+                <li>Das Tool fügt automatisch <code className="bg-blue-100 px-1 rounded text-xs">id=&quot;gf:qr&quot;</code> ein</li>
+              </ol>
+            </div>
+            <p className="text-blue-600 text-xs">
+              <strong>Tipp:</strong> QR-Code-Bereich sollte quadratisch sein (gleiche Breite und Höhe) und mindestens 25% der kürzeren Seite einnehmen.
+              Premium-Templates sind nur für zahlende Kunden verfügbar.
+            </p>
+          </div>
+        </details>
+      </div>
+
+      {/* SVG Import Tool */}
+      {showImportTool && (
+        <SvgImportTool
+          onClose={() => setShowImportTool(false)}
+          onImport={(svgContent, format) => {
+            setShowImportTool(false);
+            const tpl: Partial<QrTemplate> = {
+              ...EMPTY_TEMPLATE,
+              [format]: svgContent,
+            };
+            setEditingTemplate(tpl);
+            setIsCreating(true);
+            toast.success(`SVG als ${format.replace('svg', '')} importiert — bitte Slug und Name vergeben`);
+          }}
+        />
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">

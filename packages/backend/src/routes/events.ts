@@ -276,6 +276,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const events = await prisma.event.findMany({
       where: {
+        deletedAt: null,
         OR: [
           { hostId: req.userId },
           { members: { some: { userId: req.userId } } },
@@ -621,7 +622,7 @@ router.post('/:id/qr/export-diy.pdf', authMiddleware, async (req: AuthRequest, r
       
       // Add fold instruction text
       const fontSize = 8;
-      page.drawText('✂ Hier falten', {
+      page.drawText('--- Hier falten ---', {
         x: pageWidthPt - 60,
         y: designHeightPt + 3,
         size: fontSize,
@@ -1118,6 +1119,59 @@ router.post(
   }
 );
 
+// Check event limit before creating (early warning)
+// IMPORTANT: Must be defined BEFORE /:id to avoid Express matching 'check-limit' as :id
+router.get('/check-limit', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const freeLimit = Number(process.env.FREE_EVENT_LIMIT || 3);
+    if (!Number.isFinite(freeLimit) || freeLimit <= 0) {
+      return res.json({ limitReached: false, limit: 0, current: 0 });
+    }
+
+    const host = await prisma.user.findUnique({
+      where: { id: req.userId! },
+      select: { wordpressUserId: true },
+    });
+
+    const freeEventCount = await prisma.event.count({
+      where: {
+        hostId: req.userId!,
+        deletedAt: null,
+        isActive: true,
+        ...(host?.wordpressUserId
+          ? {
+              NOT: {
+                entitlements: {
+                  some: {
+                    status: 'ACTIVE',
+                    wpUserId: host.wordpressUserId,
+                  },
+                },
+              },
+            }
+          : {
+              NOT: {
+                entitlements: {
+                  some: {
+                    status: 'ACTIVE',
+                  },
+                },
+              },
+            }),
+      },
+    });
+
+    res.json({
+      limitReached: freeEventCount >= freeLimit,
+      limit: freeLimit,
+      current: freeEventCount,
+    });
+  } catch (error) {
+    logger.error('Check event limit error', { message: getErrorMessage(error) });
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const event = await prisma.event.findUnique({
@@ -1288,58 +1342,6 @@ const wizardUpload = multer({
       cb(new Error('Nur Bilddateien sind erlaubt'));
     }
   },
-});
-
-// Check event limit before creating (early warning)
-router.get('/check-limit', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const freeLimit = Number(process.env.FREE_EVENT_LIMIT || 3);
-    if (!Number.isFinite(freeLimit) || freeLimit <= 0) {
-      return res.json({ limitReached: false, limit: 0, current: 0 });
-    }
-
-    const host = await prisma.user.findUnique({
-      where: { id: req.userId! },
-      select: { wordpressUserId: true },
-    });
-
-    const freeEventCount = await prisma.event.count({
-      where: {
-        hostId: req.userId!,
-        deletedAt: null,
-        isActive: true,
-        ...(host?.wordpressUserId
-          ? {
-              NOT: {
-                entitlements: {
-                  some: {
-                    status: 'ACTIVE',
-                    wpUserId: host.wordpressUserId,
-                  },
-                },
-              },
-            }
-          : {
-              NOT: {
-                entitlements: {
-                  some: {
-                    status: 'ACTIVE',
-                  },
-                },
-              },
-            }),
-      },
-    });
-
-    res.json({
-      limitReached: freeEventCount >= freeLimit,
-      limit: freeLimit,
-      current: freeEventCount,
-    });
-  } catch (error) {
-    logger.error('Check event limit error', { message: getErrorMessage(error) });
-    res.status(500).json({ error: 'Internal server error' });
-  }
 });
 
 router.post(
@@ -2002,6 +2004,14 @@ router.put(
 
       // Categories are managed via dedicated category endpoints, not via event update.
       const { categories: _categories, ...eventData } = data as any;
+
+      // Block dateTime changes if the event has already started
+      if (eventData.dateTime !== undefined && existingEvent.dateTime) {
+        const eventStart = new Date(existingEvent.dateTime);
+        if (eventStart < new Date()) {
+          return res.status(400).json({ error: 'Das Datum kann nicht mehr geändert werden, da das Event bereits gestartet ist.' });
+        }
+      }
 
       const nextFeaturesConfig =
         eventData.featuresConfig && typeof eventData.featuresConfig === 'object'

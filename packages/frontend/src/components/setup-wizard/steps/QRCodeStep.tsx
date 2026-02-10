@@ -1,8 +1,11 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowRight, ArrowLeft, QrCode, Download, ExternalLink, Palette, SkipForward } from 'lucide-react';
+import { ArrowRight, ArrowLeft, QrCode, Download, ExternalLink, Palette, SkipForward, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import api from '@/lib/api';
 
 interface QRCodeStepProps {
   eventId?: string;
@@ -24,17 +27,35 @@ export default function QRCodeStep({
   onSkip,
 }: QRCodeStepProps) {
   const qrUrl = eventSlug ? `https://app.gästefotos.com/e3/${eventSlug}` : '';
+  const router = useRouter();
+  const [downloading, setDownloading] = useState(false);
+  const [qrLoaded, setQrLoaded] = useState(false);
+  const [qrError, setQrError] = useState(false);
 
-  const handleDownloadQR = () => {
-    if (eventId) {
-      window.open(`/api/events/${eventId}/qr/export.pdf?format=A4`, '_blank');
+  const handleDownloadQR = async () => {
+    if (!eventId) return;
+    setDownloading(true);
+    try {
+      const res = await api.get(`/events/${eventId}/qr?size=800`, { responseType: 'blob' });
+      const url = URL.createObjectURL(res.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `qr-code-${eventSlug || eventId}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // Fallback: open QR styler
+      window.open(`/events/${eventId}/qr-styler`, '_blank');
+    } finally {
+      setDownloading(false);
     }
   };
 
   const handleOpenDesigner = () => {
     if (eventId) {
-      // Open QR Designer in new window
-      window.open(`/events/${eventId}/qr-styler`, '_blank');
+      router.push(`/events/${eventId}/qr-styler?from=wizard`);
     }
   };
 
@@ -45,48 +66,53 @@ export default function QRCodeStep({
         <motion.h2
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-gray-900 mb-2"
+          className="text-2xl font-bold text-app-fg mb-2"
         >
           QR-Code erstellen 📱
         </motion.h2>
-        <p className="text-gray-500">Gäste können den Code scannen und sofort Fotos hochladen</p>
+        <p className="text-app-muted">Gäste können den Code scannen und sofort Fotos hochladen</p>
       </div>
 
       {/* QR Preview */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl border-2 border-gray-100 p-6 text-center"
+        className="bg-app-card rounded-2xl border-2 border-app-border p-6 text-center"
       >
         {eventSlug ? (
           <>
-            <div className="w-48 h-48 mx-auto bg-gray-100 rounded-xl flex items-center justify-center mb-4">
-              {/* QR Code placeholder - will be replaced with actual QR */}
-              <img 
-                src={`/api/events/${eventId}/qr?size=200`} 
-                alt="QR Code"
-                className="w-40 h-40"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
-              <QrCode className="w-32 h-32 text-gray-300" />
+            <div className="w-48 h-48 mx-auto bg-app-bg rounded-xl flex items-center justify-center mb-4">
+              {!qrError && (
+                <img 
+                  src={`/api/events/${eventId}/qr?size=200`} 
+                  alt="QR Code"
+                  className="w-40 h-40"
+                  onLoad={() => setQrLoaded(true)}
+                  onError={() => setQrError(true)}
+                />
+              )}
+              {(qrError || !qrLoaded) && <QrCode className="w-32 h-32 text-app-muted" />}
             </div>
-            <p className="text-sm text-gray-600 mb-2">{qrUrl}</p>
+            <p className="text-sm text-app-muted mb-2">{qrUrl}</p>
             <Button
               onClick={handleDownloadQR}
               variant="ghost"
               size="sm"
               className="text-amber-600"
+              disabled={downloading}
             >
-              <Download className="w-4 h-4 mr-2" />
-              QR-Code herunterladen
+              {downloading ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 mr-2" />
+              )}
+              {downloading ? 'Wird heruntergeladen...' : 'QR-Code herunterladen'}
             </Button>
           </>
         ) : (
           <div className="py-8">
-            <QrCode className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500">QR-Code wird nach Event-Erstellung verfügbar</p>
+            <QrCode className="w-16 h-16 mx-auto text-app-muted mb-4" />
+            <p className="text-app-muted">QR-Code wird nach Event-Erstellung verfügbar</p>
           </div>
         )}
       </motion.div>
@@ -150,7 +176,7 @@ export default function QRCodeStep({
         
         <button
           onClick={onSkip}
-          className="w-full py-2 text-sm text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1"
+          className="w-full py-2 text-sm text-app-muted hover:text-app-fg flex items-center justify-center gap-1"
         >
           <SkipForward className="w-4 h-4" />
           Überspringen

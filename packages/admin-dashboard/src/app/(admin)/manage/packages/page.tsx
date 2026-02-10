@@ -17,30 +17,61 @@ import toast from 'react-hot-toast';
 
 interface PackageDefinition {
   id: string;
+  sku: string;
   name: string;
-  slug: string;
-  active: boolean;
-  maxPhotos: number;
-  maxVideos: number;
-  maxGuests: number;
-  storageLimitGb: number;
-  features: Record<string, boolean>;
+  type: string;
+  resultingTier: string;
+  upgradeFromTier: string | null;
+  isActive: boolean;
+  storageLimitBytes: string | null;
+  storageLimitPhotos: number | null;
+  storageDurationDays: number | null;
+  allowVideoUpload: boolean;
+  allowStories: boolean;
+  allowPasswordProtect: boolean;
+  allowGuestbook: boolean;
+  allowZipDownload: boolean;
+  allowBulkOperations: boolean;
+  allowLiveWall: boolean;
+  allowFaceSearch: boolean;
+  allowGuestlist: boolean;
+  allowFullInvitation: boolean;
+  allowCoHosts: boolean;
+  isAdFree: boolean;
+  maxCategories: number | null;
+  maxChallenges: number | null;
+  maxZipDownloadPhotos: number | null;
+  maxCoHosts: number | null;
+  displayOrder: number;
+  priceEurCents: number | null;
+  description: string | null;
 }
 
-const FEATURE_LABELS: Record<string, string> = {
-  videoUpload: 'Video Upload',
-  stories: 'Stories',
-  passwordProtect: 'Passwortschutz',
-  guestbook: 'Gästebuch',
-  zipDownload: 'ZIP Download',
-  bulkOperations: 'Bulk Operations',
-  liveWall: 'Live Wall',
-  faceSearch: 'Face Search',
-  guestList: 'Gästeliste',
-  fullInvitation: 'Einladungen',
-  coHosts: 'Co-Hosts',
-  adFree: 'Werbefrei',
-};
+const FEATURE_FIELDS: { key: keyof PackageDefinition; label: string }[] = [
+  { key: 'allowVideoUpload', label: 'Video Upload' },
+  { key: 'allowStories', label: 'Stories' },
+  { key: 'allowPasswordProtect', label: 'Passwortschutz' },
+  { key: 'allowGuestbook', label: 'Gästebuch' },
+  { key: 'allowZipDownload', label: 'ZIP Download' },
+  { key: 'allowBulkOperations', label: 'Bulk Operations' },
+  { key: 'allowLiveWall', label: 'Live Wall' },
+  { key: 'allowFaceSearch', label: 'Face Search' },
+  { key: 'allowGuestlist', label: 'Gästeliste' },
+  { key: 'allowFullInvitation', label: 'Einladungen' },
+  { key: 'allowCoHosts', label: 'Co-Hosts' },
+  { key: 'isAdFree', label: 'Werbefrei' },
+];
+
+function formatStorage(bytes: string | null): string {
+  if (!bytes) return '—';
+  const gb = Number(bytes) / (1024 * 1024 * 1024);
+  return gb >= 1 ? `${gb.toFixed(1)} GB` : `${(Number(bytes) / (1024 * 1024)).toFixed(0)} MB`;
+}
+
+function formatPrice(cents: number | null): string {
+  if (cents === null || cents === undefined) return '—';
+  return `${(cents / 100).toFixed(2)} €`;
+}
 
 export default function PackagesPage() {
   const [loading, setLoading] = useState(true);
@@ -51,7 +82,7 @@ export default function PackagesPage() {
   const loadPackages = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get<{ packages: PackageDefinition[] }>('/admin/packages');
+      const res = await api.get<{ packages: PackageDefinition[] }>('/admin/package-definitions');
       setPackages(res.data.packages || []);
     } catch (err) {
       console.error('Failed to load packages:', err);
@@ -68,7 +99,7 @@ export default function PackagesPage() {
   const handleSave = async (pkg: PackageDefinition) => {
     setSaving(pkg.id);
     try {
-      await api.put(`/admin/packages/${pkg.id}`, pkg);
+      await api.put(`/admin/package-definitions/${pkg.id}`, pkg);
       toast.success(`${pkg.name} gespeichert`);
       setEditingPackage(null);
       loadPackages();
@@ -79,26 +110,14 @@ export default function PackagesPage() {
     }
   };
 
-  const toggleFeature = (pkg: PackageDefinition, feature: string) => {
-    if (!editingPackage || editingPackage.id !== pkg.id) {
-      setEditingPackage({
-        ...pkg,
-        features: { ...pkg.features, [feature]: !pkg.features[feature] },
-      });
-    } else {
-      setEditingPackage({
-        ...editingPackage,
-        features: { ...editingPackage.features, [feature]: !editingPackage.features[feature] },
-      });
-    }
+  const toggleFeature = (pkg: PackageDefinition, field: keyof PackageDefinition) => {
+    const base = editingPackage?.id === pkg.id ? editingPackage : pkg;
+    setEditingPackage({ ...base, [field]: !base[field] });
   };
 
-  const updateLimit = (pkg: PackageDefinition, field: keyof PackageDefinition, value: number) => {
-    if (!editingPackage || editingPackage.id !== pkg.id) {
-      setEditingPackage({ ...pkg, [field]: value });
-    } else {
-      setEditingPackage({ ...editingPackage, [field]: value });
-    }
+  const updateField = (pkg: PackageDefinition, field: keyof PackageDefinition, value: any) => {
+    const base = editingPackage?.id === pkg.id ? editingPackage : pkg;
+    setEditingPackage({ ...base, [field]: value });
   };
 
   const getDisplayPackage = (pkg: PackageDefinition) => {
@@ -143,6 +162,10 @@ export default function PackagesPage() {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-6 h-6 animate-spin text-app-accent" />
         </div>
+      ) : packages.length === 0 ? (
+        <div className="text-center py-12 text-app-muted">
+          Keine Paket-Definitionen vorhanden
+        </div>
       ) : (
         <div className="space-y-6">
           {packages.map((pkg) => {
@@ -161,18 +184,30 @@ export default function PackagesPage() {
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        displayPkg.active ? 'bg-green-500/10' : 'bg-gray-500/10'
+                        displayPkg.isActive ? 'bg-green-500/10' : 'bg-gray-500/10'
                       }`}
                     >
                       <Package
                         className={`w-6 h-6 ${
-                          displayPkg.active ? 'text-green-500' : 'text-gray-500'
+                          displayPkg.isActive ? 'text-green-500' : 'text-gray-500'
                         }`}
                       />
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold">{displayPkg.name}</h3>
-                      <p className="text-sm text-app-muted">/{displayPkg.slug}</p>
+                      <div className="flex items-center gap-2 text-sm text-app-muted">
+                        <span className="font-mono">{displayPkg.sku}</span>
+                        <span>·</span>
+                        <span>{displayPkg.resultingTier}</span>
+                        <span>·</span>
+                        <span>{formatStorage(displayPkg.storageLimitBytes)}</span>
+                        {displayPkg.priceEurCents != null && (
+                          <>
+                            <span>·</span>
+                            <span className="text-green-400">{formatPrice(displayPkg.priceEurCents)}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                   {hasChanges && (
@@ -206,36 +241,40 @@ export default function PackagesPage() {
                     <label className="text-xs text-app-muted mb-1 block">Max Fotos</label>
                     <Input
                       type="number"
-                      value={displayPkg.maxPhotos}
-                      onChange={(e) => updateLimit(pkg, 'maxPhotos', parseInt(e.target.value) || 0)}
+                      value={displayPkg.storageLimitPhotos ?? ''}
+                      onChange={(e) => updateField(pkg, 'storageLimitPhotos', e.target.value ? parseInt(e.target.value) : null)}
                       className="text-center"
+                      placeholder="∞"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-app-muted mb-1 block">Max Videos</label>
+                    <label className="text-xs text-app-muted mb-1 block">Max Co-Hosts</label>
                     <Input
                       type="number"
-                      value={displayPkg.maxVideos}
-                      onChange={(e) => updateLimit(pkg, 'maxVideos', parseInt(e.target.value) || 0)}
+                      value={displayPkg.maxCoHosts ?? ''}
+                      onChange={(e) => updateField(pkg, 'maxCoHosts', e.target.value ? parseInt(e.target.value) : null)}
                       className="text-center"
+                      placeholder="∞"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-app-muted mb-1 block">Max Gäste</label>
+                    <label className="text-xs text-app-muted mb-1 block">Max Kategorien</label>
                     <Input
                       type="number"
-                      value={displayPkg.maxGuests}
-                      onChange={(e) => updateLimit(pkg, 'maxGuests', parseInt(e.target.value) || 0)}
+                      value={displayPkg.maxCategories ?? ''}
+                      onChange={(e) => updateField(pkg, 'maxCategories', e.target.value ? parseInt(e.target.value) : null)}
                       className="text-center"
+                      placeholder="∞"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-app-muted mb-1 block">Speicher (GB)</label>
+                    <label className="text-xs text-app-muted mb-1 block">Laufzeit (Tage)</label>
                     <Input
                       type="number"
-                      value={displayPkg.storageLimitGb}
-                      onChange={(e) => updateLimit(pkg, 'storageLimitGb', parseInt(e.target.value) || 0)}
+                      value={displayPkg.storageDurationDays ?? ''}
+                      onChange={(e) => updateField(pkg, 'storageDurationDays', e.target.value ? parseInt(e.target.value) : null)}
                       className="text-center"
+                      placeholder="∞"
                     />
                   </div>
                 </div>
@@ -244,8 +283,8 @@ export default function PackagesPage() {
                 <div>
                   <label className="text-xs text-app-muted mb-2 block">Features</label>
                   <div className="flex flex-wrap gap-2">
-                    {Object.entries(FEATURE_LABELS).map(([key, label]) => {
-                      const isEnabled = displayPkg.features?.[key] ?? false;
+                    {FEATURE_FIELDS.map(({ key, label }) => {
+                      const isEnabled = !!displayPkg[key];
                       return (
                         <button
                           key={key}

@@ -122,6 +122,13 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
   const [cohostsLoading, setCohostsLoading] = useState(false);
   const [mintingCohostInvite, setMintingCohostInvite] = useState(false);
   const [lastCohostInviteUrl, setLastCohostInviteUrl] = useState<string | null>(null);
+  
+  // Direct edit sheets from overview
+  const [activeSheet, setActiveSheet] = useState<'title' | 'date-location' | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDateTime, setEditDateTime] = useState<Date | null>(null);
+  const [editLocation, setEditLocation] = useState('');
+  const [savingSheet, setSavingSheet] = useState(false);
 
   // Load event ID from params
   React.useEffect(() => {
@@ -348,7 +355,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
         label: 'Design anpassen',
         completed: designCompleted,
         current: firstIncomplete === 'design',
-        link: `/events/${eventId}/design`,
+        link: `/events/${eventId}/design?wizard=1`,
       },
       {
         id: 'qr',
@@ -394,8 +401,8 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
           <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
             <X className="w-8 h-8 text-red-500" />
           </div>
-          <h2 className="text-lg font-semibold text-stone-800 mb-2">Event nicht gefunden</h2>
-          <p className="text-stone-500 mb-4">{error || 'Das Event konnte nicht geladen werden.'}</p>
+          <h2 className="text-lg font-semibold text-app-fg mb-2">Event nicht gefunden</h2>
+          <p className="text-app-muted mb-4">{error || 'Das Event konnte nicht geladen werden.'}</p>
           <button
             onClick={() => router.push('/dashboard')}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
@@ -425,20 +432,20 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
   ];
 
   return (
-    <div className="min-h-screen bg-[hsl(30_20%_98%)] text-stone-800">
+    <div className="min-h-screen bg-[hsl(30_20%_98%)] text-app-fg">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-stone-200 shadow-sm">
+      <header className="sticky top-0 z-50 bg-app-card/90 backdrop-blur-xl border-b border-app-border shadow-sm">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3 min-w-0">
             <button 
               onClick={() => router.push('/dashboard')}
-              className="p-2 -ml-2 rounded-lg hover:bg-stone-100 transition-colors"
+              className="p-2 -ml-2 rounded-lg hover:bg-app-bg transition-colors"
             >
-              <ChevronRight className="w-5 h-5 text-stone-400 rotate-180" />
+              <ChevronRight className="w-5 h-5 text-app-muted rotate-180" />
             </button>
             <div className="min-w-0">
-              <h1 className="font-semibold text-stone-800 truncate">{event.title}</h1>
-              <div className="flex items-center gap-2 text-xs text-stone-500">
+              <h1 className="font-semibold text-app-fg truncate">{event.title}</h1>
+              <div className="flex items-center gap-2 text-xs text-app-muted">
                 <span className={`w-2 h-2 rounded-full ${(event as any).isActive !== false ? 'bg-green-500' : 'bg-red-500'}`} />
                 <span>{(event as any).isActive !== false ? 'Live' : 'Gesperrt'}</span>
               </div>
@@ -447,10 +454,10 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
           
           <div className="flex items-center gap-2">
             <button 
-              className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
+              className="p-2 rounded-lg hover:bg-app-bg transition-colors"
               title="Gesichtserkennung"
             >
-              <ScanFace className="w-5 h-5 text-stone-600" />
+              <ScanFace className="w-5 h-5 text-app-muted" />
             </button>
             <button 
               onClick={() => setShowQRModal(true)}
@@ -502,6 +509,15 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
                 setActiveTab('setup');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
+              onOpenSheet={(sheetId) => {
+                if (sheetId === 'title') {
+                  setEditTitle(event.title || '');
+                } else {
+                  setEditDateTime(event.dateTime ? new Date(event.dateTime) : null);
+                  setEditLocation((event as any).location || '');
+                }
+                setActiveSheet(sheetId);
+              }}
             />
           )}
           {activeTab === 'gallery' && (
@@ -524,7 +540,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-stone-200 z-40">
+      <nav className="fixed bottom-0 left-0 right-0 bg-app-card/95 backdrop-blur-xl border-t border-app-border z-40">
         <div className="flex items-center justify-around py-2">
           {tabs.map(tab => (
             <button
@@ -536,7 +552,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
               className={`flex flex-col items-center gap-1 py-2 px-4 rounded-lg transition-colors ${
                 activeTab === tab.id 
                   ? 'text-blue-600' 
-                  : 'text-stone-400 hover:text-stone-600'
+                  : 'text-app-muted hover:text-app-muted'
               }`}
             >
               <tab.icon className="w-5 h-5" />
@@ -560,17 +576,17 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl p-6 max-w-sm w-full"
+              className="bg-app-card rounded-2xl p-6 max-w-sm w-full"
               onClick={e => e.stopPropagation()}
             >
               <div className="text-center">
-                <h3 className="text-lg font-semibold text-stone-800 mb-4">QR-Code</h3>
-                <div className="bg-stone-100 rounded-xl p-8 mb-4">
-                  <div className="w-48 h-48 mx-auto bg-white rounded-lg flex items-center justify-center">
-                    <QrCode className="w-32 h-32 text-stone-800" />
+                <h3 className="text-lg font-semibold text-app-fg mb-4">QR-Code</h3>
+                <div className="bg-app-bg rounded-xl p-8 mb-4">
+                  <div className="w-48 h-48 mx-auto bg-app-card rounded-lg flex items-center justify-center">
+                    <QrCode className="w-32 h-32 text-app-fg" />
                   </div>
                 </div>
-                <p className="text-sm text-stone-500 mb-4">
+                <p className="text-sm text-app-muted mb-4">
                   Scanne diesen Code um Fotos hochzuladen
                 </p>
                 <div className="flex gap-2">
@@ -582,7 +598,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
                   </Link>
                   <button
                     onClick={() => setShowQRModal(false)}
-                    className="py-2 px-4 bg-stone-100 text-stone-700 rounded-lg font-medium hover:bg-stone-200 transition-colors"
+                    className="py-2 px-4 bg-app-bg text-app-fg rounded-lg font-medium hover:bg-app-border transition-colors"
                   >
                     Schließen
                   </button>
@@ -600,7 +616,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-stone-800 text-white rounded-full text-sm font-medium shadow-lg"
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-app-fg text-white rounded-full text-sm font-medium shadow-lg"
           >
             {copyFeedback}
           </motion.div>
@@ -609,6 +625,153 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
 
       {/* KI-Assistent Floating Button */}
       <AIFloatingButton />
+
+      {/* Direct Edit Sheets from Overview */}
+      <AnimatePresence>
+        {activeSheet === 'title' && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50"
+              onClick={() => setActiveSheet(null)}
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-50 bg-app-card rounded-t-2xl max-h-[85vh] flex flex-col"
+            >
+              <div className="flex items-center justify-between px-4 py-4 border-b border-app-border">
+                <button onClick={() => setActiveSheet(null)} className="p-2 -ml-2 rounded-lg hover:bg-app-bg transition-colors">
+                  <X className="w-5 h-5 text-app-muted" />
+                </button>
+                <h3 className="font-semibold text-app-fg">Event-Titel</h3>
+                <div className="w-9" />
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="z.B. Mein Event"
+                    className="w-full px-4 py-4 text-lg border-2 border-app-border bg-app-card text-app-fg rounded-2xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors placeholder:text-app-muted"
+                    autoFocus
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-app-muted">
+                    {editTitle.length}/50
+                  </span>
+                </div>
+                <p className="text-center text-sm text-app-muted mt-4">Der Titel wird auf der Event-Seite angezeigt</p>
+              </div>
+              <div className="p-4 border-t border-app-border bg-app-card">
+                <button
+                  onClick={async () => {
+                    if (editTitle.trim().length < 3) return;
+                    setSavingSheet(true);
+                    try {
+                      await api.put(`/events/${eventId}`, { title: editTitle });
+                      showToast('Titel gespeichert', 'success');
+                      loadEvent();
+                      setActiveSheet(null);
+                    } catch (err: any) {
+                      showToast(err.response?.data?.error || 'Fehler beim Speichern', 'error');
+                    } finally {
+                      setSavingSheet(false);
+                    }
+                  }}
+                  disabled={editTitle.trim().length < 3 || savingSheet}
+                  className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {savingSheet ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                  Speichern
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+        {activeSheet === 'date-location' && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50"
+              onClick={() => setActiveSheet(null)}
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-50 bg-app-card rounded-t-2xl max-h-[85vh] flex flex-col"
+            >
+              <div className="flex items-center justify-between px-4 py-4 border-b border-app-border">
+                <button onClick={() => setActiveSheet(null)} className="p-2 -ml-2 rounded-lg hover:bg-app-bg transition-colors">
+                  <X className="w-5 h-5 text-app-muted" />
+                </button>
+                <h3 className="font-semibold text-app-fg">Datum & Ort</h3>
+                <div className="w-9" />
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-app-fg mb-2">
+                    <Calendar className="w-4 h-4" />
+                    Datum & Uhrzeit
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={editDateTime ? `${editDateTime.getFullYear()}-${String(editDateTime.getMonth() + 1).padStart(2, '0')}-${String(editDateTime.getDate()).padStart(2, '0')}T${String(editDateTime.getHours()).padStart(2, '0')}:${String(editDateTime.getMinutes()).padStart(2, '0')}` : ''}
+                    onChange={(e) => e.target.value ? setEditDateTime(new Date(e.target.value)) : setEditDateTime(null)}
+                    className="w-full px-4 py-3 border-2 border-app-border bg-app-card text-app-fg rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-app-fg mb-2">
+                    <MapPin className="w-4 h-4" />
+                    Ort / Location
+                  </label>
+                  <input
+                    type="text"
+                    value={editLocation}
+                    onChange={(e) => setEditLocation(e.target.value)}
+                    placeholder="z.B. Schloss Neuschwanstein"
+                    className="w-full px-4 py-3 border-2 border-app-border bg-app-card text-app-fg rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors placeholder:text-app-muted"
+                  />
+                </div>
+              </div>
+              <div className="p-4 border-t border-app-border bg-app-card">
+                <button
+                  onClick={async () => {
+                    setSavingSheet(true);
+                    try {
+                      await api.put(`/events/${eventId}`, { 
+                        dateTime: editDateTime?.toISOString() || null,
+                        location: editLocation || null,
+                      });
+                      showToast('Datum & Ort gespeichert', 'success');
+                      loadEvent();
+                      setActiveSheet(null);
+                    } catch (err: any) {
+                      showToast(err.response?.data?.error || 'Fehler beim Speichern', 'error');
+                    } finally {
+                      setSavingSheet(false);
+                    }
+                  }}
+                  disabled={savingSheet}
+                  className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {savingSheet ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                  Speichern
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -635,6 +798,7 @@ function OverviewTab({
   mintingCohostInvite,
   eventId,
   onGoToSetup,
+  onOpenSheet,
 }: {
   event: EventType;
   eventDate: string | null;
@@ -656,6 +820,7 @@ function OverviewTab({
   mintingCohostInvite: boolean;
   eventId: string;
   onGoToSetup: () => void;
+  onOpenSheet?: (sheetId: 'title' | 'date-location') => void;
 }) {
   const [showStatusInfo, setShowStatusInfo] = useState(false);
   const [showAllSteps, setShowAllSteps] = useState(completedSteps < totalSteps); // Open until complete
@@ -688,7 +853,7 @@ function OverviewTab({
           <div className="flex items-start gap-3">
             {/* Profile Image */}
             <div className="relative group">
-              <div className="w-16 h-16 rounded-xl bg-white/20 backdrop-blur-sm overflow-hidden flex items-center justify-center border-2 border-white/30">
+              <div className="w-16 h-16 rounded-xl bg-app-card/20 backdrop-blur-sm overflow-hidden flex items-center justify-center border-2 border-white/30">
                 {(designConfig.profileImage || (event as any).profileImageUrl) ? (
                   <img src={designConfig.profileImage || (event as any).profileImageUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
@@ -696,7 +861,7 @@ function OverviewTab({
                 )}
               </div>
               <Link
-                href={`/events/${eventId}/design`}
+                href={`/events/${eventId}/design?wizard=1`}
                 className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"
               >
                 <Upload className="w-5 h-5 text-white" />
@@ -723,14 +888,14 @@ function OverviewTab({
               <Link
                 href={`/e3/${event.slug}`}
                 target="_blank"
-                className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1 hover:bg-white/30 transition-colors"
+                className="px-3 py-1.5 rounded-full bg-app-card/20 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1 hover:bg-app-card/30 transition-colors"
               >
                 <Eye className="w-3.5 h-3.5" />
                 Vorschau
               </Link>
               <Link
-                href={`/events/${eventId}/design`}
-                className="px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1 hover:bg-white/30 transition-colors"
+                href={`/events/${eventId}/design?wizard=1`}
+                className="px-3 py-1.5 rounded-full bg-app-card/20 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1 hover:bg-app-card/30 transition-colors"
               >
                 <Palette className="w-3.5 h-3.5" />
                 Design
@@ -759,7 +924,7 @@ function OverviewTab({
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <span className="font-medium text-stone-800">Event einrichten</span>
+                <span className="font-medium text-app-fg">Event einrichten</span>
                 <span className="text-xs text-amber-600 font-medium">{progressPercent}%</span>
               </div>
               <div className="h-1.5 bg-amber-200 rounded-full mt-1">
@@ -770,35 +935,35 @@ function OverviewTab({
               </div>
             </div>
           </div>
-          {currentStep && currentStep.link && (
+          {currentStep && (
             <Link
-              href={currentStep.link}
-              className="flex items-center gap-3 p-3 rounded-xl bg-white border border-amber-200"
+              href={`/create-event?eventId=${eventId}`}
+              className="flex items-center gap-3 p-3 rounded-xl bg-app-card border border-amber-200"
             >
               <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center">
                 <ChevronRight className="w-4 h-4" />
               </div>
               <div className="flex-1 text-left">
-                <div className="font-medium text-stone-800">Nächster Schritt</div>
-                <div className="text-sm text-stone-500">{currentStep.label}</div>
+                <div className="font-medium text-app-fg">Nächster Schritt</div>
+                <div className="text-sm text-app-muted">{currentStep.label}</div>
               </div>
-              <ChevronRight className="w-5 h-5 text-stone-400" />
+              <ChevronRight className="w-5 h-5 text-app-muted" />
             </Link>
           )}
         </div>
       )}
 
       {/* All Steps - Collapsible */}
-      <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
         <button
           onClick={() => setShowAllSteps(!showAllSteps)}
-          className="w-full p-4 border-b border-stone-100 flex items-center justify-between hover:bg-stone-50 transition-colors"
+          className="w-full p-4 border-b border-app-border flex items-center justify-between hover:bg-app-bg transition-colors"
         >
           <div className="text-left">
-            <h3 className="font-semibold text-stone-800">Setup-Checkliste</h3>
-            <p className="text-sm text-stone-500">{completedSteps}/{totalSteps} abgeschlossen</p>
+            <h3 className="font-semibold text-app-fg">Setup-Checkliste</h3>
+            <p className="text-sm text-app-muted">{completedSteps}/{totalSteps} abgeschlossen</p>
           </div>
-          <ChevronDown className={`w-5 h-5 text-stone-400 transition-transform ${showAllSteps ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`w-5 h-5 text-app-muted transition-transform ${showAllSteps ? 'rotate-180' : ''}`} />
         </button>
         <AnimatePresence>
           {showAllSteps && (
@@ -811,19 +976,15 @@ function OverviewTab({
             >
               <div className="p-4 space-y-1">
                 {onboardingSteps.map((step, index) => {
-                  // Steps that can be edited in Setup Tab
-                  const setupSteps = ['title', 'date'];
-                  const isSetupStep = setupSteps.includes(step.id);
-                  
                   const content = (
                     <>
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                        step.completed ? 'bg-green-500 text-white' : step.current ? 'bg-amber-500 text-white' : 'bg-stone-200 text-stone-500'
+                        step.completed ? 'bg-green-500 text-white' : step.current ? 'bg-amber-500 text-white' : 'bg-app-border text-app-muted'
                       }`}>
                         {step.completed ? <Check className="w-4 h-4" /> : index + 1}
                       </div>
                       <span className={`text-sm flex-1 ${
-                        step.completed ? 'text-green-700' : step.current ? 'text-amber-700 font-medium' : 'text-stone-500'
+                        step.completed ? 'text-green-700' : step.current ? 'text-amber-700 font-medium' : 'text-app-muted'
                       }`}>
                         {step.label}
                       </span>
@@ -834,26 +995,13 @@ function OverviewTab({
                   );
                   
                   const className = `flex items-center gap-3 p-3 rounded-xl transition-colors ${
-                    step.completed ? 'bg-green-50' : step.current ? 'bg-amber-50' : 'hover:bg-stone-50'
+                    step.completed ? 'bg-green-50' : step.current ? 'bg-amber-50' : 'hover:bg-app-bg'
                   }`;
-                  
-                  // Navigate to Setup Tab for title/date, external link for others
-                  if (isSetupStep) {
-                    return (
-                      <button
-                        key={step.id}
-                        onClick={onGoToSetup}
-                        className={`${className} w-full text-left`}
-                      >
-                        {content}
-                      </button>
-                    );
-                  }
                   
                   return (
                     <Link
                       key={step.id}
-                      href={step.link || '#'}
+                      href={`/create-event?eventId=${eventId}`}
                       className={className}
                     >
                       {content}
@@ -875,12 +1023,12 @@ function OverviewTab({
           href={`/events/${eventId}/live-wall`}
           className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-200 p-4"
         >
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-purple-500">
+          <div className="w-10 h-10 rounded-xl bg-app-card flex items-center justify-center shadow-sm text-purple-500">
             <Play className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-medium text-stone-800">Live Wall</div>
-            <div className="text-xs text-stone-500">Slideshow starten</div>
+            <div className="font-medium text-app-fg">Live Wall</div>
+            <div className="text-xs text-app-muted">Slideshow starten</div>
           </div>
         </Link>
         <button
@@ -888,12 +1036,12 @@ function OverviewTab({
           disabled={shareLoading}
           className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-200 p-4 text-left disabled:opacity-50"
         >
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-blue-500">
+          <div className="w-10 h-10 rounded-xl bg-app-card flex items-center justify-center shadow-sm text-blue-500">
             {shareLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Share2 className="w-5 h-5" />}
           </div>
           <div>
-            <div className="font-medium text-stone-800">Share-Link</div>
-            <div className="text-xs text-stone-500">{shareUrl ? 'Erneut kopieren' : 'Link erzeugen'}</div>
+            <div className="font-medium text-app-fg">Share-Link</div>
+            <div className="text-xs text-app-muted">{shareUrl ? 'Erneut kopieren' : 'Link erzeugen'}</div>
           </div>
         </button>
       </div>
@@ -914,15 +1062,15 @@ function OverviewTab({
       )}
 
       {/* Invitations Overview */}
-      <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-stone-100 flex items-center justify-between">
+      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-app-border flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
               <Mail className="w-4 h-4 text-green-600" />
             </div>
             <div>
-              <h3 className="font-medium text-stone-800">Einladungen</h3>
-              <p className="text-xs text-stone-500">{invitations.length} erstellt</p>
+              <h3 className="font-medium text-app-fg">Einladungen</h3>
+              <p className="text-xs text-app-muted">{invitations.length} erstellt</p>
             </div>
           </div>
           <Link
@@ -933,36 +1081,36 @@ function OverviewTab({
           </Link>
         </div>
         {invitations.length > 0 ? (
-          <div className="divide-y divide-stone-100">
+          <div className="divide-y divide-app-border">
             {invitations.slice(0, 3).map((inv: any) => (
               <div key={inv.id} className="px-4 py-3 flex items-center justify-between">
                 <div>
-                  <div className="font-medium text-sm text-stone-700">{inv.name}</div>
-                  <div className="text-xs text-stone-400">
+                  <div className="font-medium text-sm text-app-fg">{inv.name}</div>
+                  <div className="text-xs text-app-muted">
                     {inv.opens || 0} Aufrufe • RSVP: {inv?.rsvp?.yes || 0}/{inv?.rsvp?.no || 0}/{inv?.rsvp?.maybe || 0}
                   </div>
                 </div>
-                <div className={`w-2 h-2 rounded-full ${inv.isActive !== false ? 'bg-green-500' : 'bg-stone-300'}`} />
+                <div className={`w-2 h-2 rounded-full ${inv.isActive !== false ? 'bg-green-500' : 'bg-app-border'}`} />
               </div>
             ))}
           </div>
         ) : (
-          <div className="p-4 text-center text-sm text-stone-400">
+          <div className="p-4 text-center text-sm text-app-muted">
             Noch keine Einladungen erstellt
           </div>
         )}
       </div>
 
       {/* Co-Hosts Overview */}
-      <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-stone-100 flex items-center justify-between">
+      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-app-border flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
               <UserPlus className="w-4 h-4 text-purple-600" />
             </div>
             <div>
-              <h3 className="font-medium text-stone-800">Co-Hosts</h3>
-              <p className="text-xs text-stone-500">{cohosts.length} Mitverwalter</p>
+              <h3 className="font-medium text-app-fg">Co-Hosts</h3>
+              <p className="text-xs text-app-muted">{cohosts.length} Mitverwalter</p>
             </div>
           </div>
           <button
@@ -975,21 +1123,21 @@ function OverviewTab({
           </button>
         </div>
         {cohosts.length > 0 ? (
-          <div className="divide-y divide-stone-100">
+          <div className="divide-y divide-app-border">
             {cohosts.map((cohost: any) => (
               <div key={cohost.id} className="px-4 py-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-stone-500 text-xs font-medium">
+                <div className="w-8 h-8 rounded-full bg-app-border flex items-center justify-center text-app-muted text-xs font-medium">
                   {cohost.user?.email?.charAt(0).toUpperCase() || '?'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm text-stone-700 truncate">{cohost.user?.email || 'Unbekannt'}</div>
-                  <div className="text-xs text-stone-400">Co-Host</div>
+                  <div className="font-medium text-sm text-app-fg truncate">{cohost.user?.email || 'Unbekannt'}</div>
+                  <div className="text-xs text-app-muted">Co-Host</div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="p-4 text-center text-sm text-stone-400">
+          <div className="p-4 text-center text-sm text-app-muted">
             Noch keine Co-Hosts eingeladen
           </div>
         )}
@@ -1014,6 +1162,7 @@ function GalleryTab({
 }) {
   const [selectedAlbum, setSelectedAlbum] = useState<string | null>(null);
   const [selectedGuest, setSelectedGuest] = useState<string | null>(null);
+  const [lightboxPhoto, setLightboxPhoto] = useState<any | null>(null);
   
   // Count for filters
   const challengePhotos = photos.filter(p => p.challengeId && p.status === 'APPROVED');
@@ -1118,14 +1267,14 @@ function GalleryTab({
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
               filter === f.id
                 ? 'bg-blue-500 text-white'
-                : 'bg-white border border-stone-200 text-stone-600 hover:border-blue-300'
+                : 'bg-app-card border border-app-border text-app-muted hover:border-blue-300'
             }`}
           >
             <f.icon className="w-4 h-4" />
             {f.label}
             {f.count !== undefined && f.count > 0 && (
               <span className={`px-1.5 py-0.5 rounded-full text-xs ${
-                filter === f.id ? 'bg-white/20' : 'bg-orange-100 text-orange-600'
+                filter === f.id ? 'bg-app-card/20' : 'bg-orange-100 text-orange-600'
               }`}>
                 {f.count}
               </span>
@@ -1159,7 +1308,7 @@ function GalleryTab({
             >
               {album.name}
               <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
-                selectedAlbum === album.id ? 'bg-white/20' : 'bg-purple-100'
+                selectedAlbum === album.id ? 'bg-app-card/20' : 'bg-purple-100'
               }`}>
                 {album.count}
               </span>
@@ -1193,7 +1342,7 @@ function GalleryTab({
             >
               {guest.name}
               <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
-                selectedGuest === guest.id ? 'bg-white/20' : 'bg-green-100'
+                selectedGuest === guest.id ? 'bg-app-card/20' : 'bg-green-100'
               }`}>
                 {guest.count}
               </span>
@@ -1205,19 +1354,19 @@ function GalleryTab({
       {/* Gallery Grid */}
       {filteredPhotos.length === 0 ? (
         <div className="text-center py-16">
-          <Camera className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-          <p className="text-stone-500">Keine Medien gefunden</p>
+          <Camera className="w-12 h-12 text-app-muted mx-auto mb-3" />
+          <p className="text-app-muted">Keine Medien gefunden</p>
           {filter === 'pending' && (
-            <p className="text-sm text-stone-400 mt-1">Alle Fotos wurden bereits freigegeben</p>
+            <p className="text-sm text-app-muted mt-1">Alle Fotos wurden bereits freigegeben</p>
           )}
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-1 rounded-2xl overflow-hidden">
           {filteredPhotos.slice(0, 12).map((photo, i) => (
-            <Link 
-              key={photo.id || i} 
-              href={`/events/${eventId}/photos?photo=${photo.id}`}
-              className="aspect-square relative bg-stone-200 group cursor-pointer overflow-hidden"
+            <button 
+              key={photo.id || i}
+              onClick={() => setLightboxPhoto(photo)}
+              className="aspect-square relative bg-app-border group cursor-pointer overflow-hidden"
             >
               <img
                 src={photo.thumbnailUrl || photo.url || '/placeholder.jpg'}
@@ -1252,7 +1401,7 @@ function GalleryTab({
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                 </div>
               )}
-            </Link>
+            </button>
           ))}
         </div>
       )}
@@ -1267,6 +1416,47 @@ function GalleryTab({
           <ChevronRight className="w-4 h-4" />
         </Link>
       )}
+
+      {/* Photo Lightbox */}
+      <AnimatePresence>
+        {lightboxPhoto && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+            onClick={() => setLightboxPhoto(null)}
+          >
+            <button
+              onClick={() => setLightboxPhoto(null)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-app-card/20 text-white hover:bg-app-card/30 z-10"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <motion.img
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              src={lightboxPhoto.url || lightboxPhoto.thumbnailUrl}
+              alt=""
+              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
+              <span className="text-white/70 text-sm">
+                {lightboxPhoto.uploadedBy || 'Unbekannt'} • {new Date(lightboxPhoto.createdAt).toLocaleDateString('de-DE')}
+              </span>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                lightboxPhoto.status === 'APPROVED' ? 'bg-green-500/20 text-green-300' :
+                lightboxPhoto.status === 'REJECTED' ? 'bg-red-500/20 text-red-300' :
+                'bg-orange-500/20 text-orange-300'
+              }`}>
+                {lightboxPhoto.status === 'APPROVED' ? 'Freigegeben' : lightboxPhoto.status === 'REJECTED' ? 'Abgelehnt' : 'Ausstehend'}
+              </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -1281,9 +1471,9 @@ function GuestbookTab({ eventId }: { eventId: string }) {
       className="p-4"
     >
       <div className="text-center py-16">
-        <BookOpen className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-        <h3 className="font-medium text-stone-800 mb-1">Gästebuch</h3>
-        <p className="text-stone-500 text-sm">Demnächst verfügbar</p>
+        <BookOpen className="w-12 h-12 text-app-muted mx-auto mb-3" />
+        <h3 className="font-medium text-app-fg mb-1">Gästebuch</h3>
+        <p className="text-app-muted text-sm">Demnächst verfügbar</p>
         <Link
           href={`/events/${eventId}/guestbook`}
           className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
@@ -1308,22 +1498,22 @@ function SetupTab({ event, eventId }: { event: EventType; eventId: string }) {
       className="p-4 space-y-4"
     >
       {/* Design Section */}
-      <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-stone-100 bg-stone-50">
-          <h3 className="font-semibold text-stone-700 flex items-center gap-2">
+      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
+          <h3 className="font-semibold text-app-fg flex items-center gap-2">
             <Palette className="w-4 h-4" />
             Design
           </h3>
         </div>
-        <SetupRow icon={Palette} label="Galerie-Design" link={`/events/${eventId}/design`} />
+        <SetupRow icon={Palette} label="Galerie-Design" link={`/events/${eventId}/design?wizard=1`} />
         <SetupRow icon={QrCode} label="QR-Code Designer" link={`/events/${eventId}/qr-styler`} />
         <SetupRow icon={Mail} label="Einladungen" link={`/events/${eventId}/invitations`} />
       </div>
 
       {/* Event Info Section */}
-      <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-stone-100 bg-stone-50">
-          <h3 className="font-semibold text-stone-700 flex items-center gap-2">
+      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
+          <h3 className="font-semibold text-app-fg flex items-center gap-2">
             <Info className="w-4 h-4" />
             Event-Info
           </h3>
@@ -1333,9 +1523,9 @@ function SetupTab({ event, eventId }: { event: EventType; eventId: string }) {
       </div>
 
       {/* Features Section */}
-      <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-stone-100 bg-stone-50">
-          <h3 className="font-semibold text-stone-700 flex items-center gap-2">
+      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
+          <h3 className="font-semibold text-app-fg flex items-center gap-2">
             <Sparkles className="w-4 h-4" />
             Features
           </h3>
@@ -1347,9 +1537,9 @@ function SetupTab({ event, eventId }: { event: EventType; eventId: string }) {
       </div>
 
       {/* Settings Section */}
-      <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-stone-100 bg-stone-50">
-          <h3 className="font-semibold text-stone-700 flex items-center gap-2">
+      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
+          <h3 className="font-semibold text-app-fg flex items-center gap-2">
             <Settings className="w-4 h-4" />
             Einstellungen
           </h3>
@@ -1380,7 +1570,7 @@ function SetupTab({ event, eventId }: { event: EventType; eventId: string }) {
       {/* Legacy Dashboard Link */}
       <Link
         href={`/events/${eventId}/dashboard-legacy`}
-        className="flex items-center justify-center gap-2 py-3 text-stone-400 text-sm"
+        className="flex items-center justify-center gap-2 py-3 text-app-muted text-sm"
       >
         Zum alten Dashboard
         <ExternalLink className="w-3 h-3" />
@@ -1443,7 +1633,7 @@ function StatCard({ icon: Icon, value, label, color, highlight, onClick }: {
         <Icon className={`w-5 h-5 ${styles.icon}`} />
       </div>
       <div className={`text-2xl font-bold ${styles.text}`}>{value}</div>
-      <div className="text-[10px] text-stone-500 font-medium tracking-wide">{label}</div>
+      <div className="text-[10px] text-app-muted font-medium tracking-wide">{label}</div>
     </button>
   );
 }
@@ -1457,23 +1647,23 @@ function SetupRow({ icon: Icon, label, danger, link }: {
   const content = (
     <>
       <div className="flex items-center gap-3">
-        <Icon className={`w-5 h-5 ${danger ? 'text-red-500' : 'text-stone-400'}`} />
-        <span className={danger ? 'text-red-600' : 'text-stone-700'}>{label}</span>
+        <Icon className={`w-5 h-5 ${danger ? 'text-red-500' : 'text-app-muted'}`} />
+        <span className={danger ? 'text-red-600' : 'text-app-fg'}>{label}</span>
       </div>
-      <ChevronRight className="w-5 h-5 text-stone-400" />
+      <ChevronRight className="w-5 h-5 text-app-muted" />
     </>
   );
 
   if (link) {
     return (
-      <Link href={link} className="flex items-center justify-between w-full px-4 py-4 border-b border-stone-100 last:border-0 text-left hover:bg-stone-50 transition-colors">
+      <Link href={link} className="flex items-center justify-between w-full px-4 py-4 border-b border-app-border last:border-0 text-left hover:bg-app-bg transition-colors">
         {content}
       </Link>
     );
   }
 
   return (
-    <button className="flex items-center justify-between w-full px-4 py-4 border-b border-stone-100 last:border-0 text-left hover:bg-stone-50 transition-colors">
+    <button className="flex items-center justify-between w-full px-4 py-4 border-b border-app-border last:border-0 text-left hover:bg-app-bg transition-colors">
       {content}
     </button>
   );
@@ -1491,12 +1681,12 @@ function EventStatusCard({
   setShowInfo: (show: boolean) => void;
 }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
-      <div className="p-4 border-b border-stone-100">
+    <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+      <div className="p-4 border-b border-app-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={`w-3 h-3 rounded-full ${(event as any).isActive !== false ? 'bg-green-500' : 'bg-red-500'}`} />
-            <span className="font-semibold text-stone-800">Event Status</span>
+            <span className="font-semibold text-app-fg">Event Status</span>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
             <input 
@@ -1505,18 +1695,18 @@ function EventStatusCard({
               onChange={onToggleActive}
               className="sr-only peer" 
             />
-            <div className="w-11 h-6 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+            <div className="w-11 h-6 bg-app-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-app-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
           </label>
         </div>
         <div className="flex items-center gap-2 mt-1 ml-6">
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-app-muted">
             {(event as any).isActive !== false ? 'Gäste können Fotos hochladen' : 'Event ist deaktiviert'}
           </p>
           <button 
             onClick={() => setShowInfo(!showInfo)}
-            className="p-1 rounded-full hover:bg-stone-100 transition-colors"
+            className="p-1 rounded-full hover:bg-app-bg transition-colors"
           >
-            <Info className="w-4 h-4 text-stone-400" />
+            <Info className="w-4 h-4 text-app-muted" />
           </button>
         </div>
         
@@ -1555,14 +1745,14 @@ function EventStatusCard({
       
       <div className="p-4 space-y-3">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-stone-500">Erstellt am</span>
-          <span className="text-stone-700">
+          <span className="text-app-muted">Erstellt am</span>
+          <span className="text-app-fg">
             {event.createdAt ? new Date(event.createdAt).toLocaleDateString('de-DE') : '-'}
           </span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-stone-500">Event-Datum</span>
-          <span className="text-stone-700">
+          <span className="text-app-muted">Event-Datum</span>
+          <span className="text-app-fg">
             {event.dateTime ? new Date(event.dateTime).toLocaleDateString('de-DE') : '-'}
           </span>
         </div>

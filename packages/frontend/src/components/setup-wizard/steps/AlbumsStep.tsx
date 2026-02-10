@@ -90,11 +90,11 @@ export default function AlbumsStep({
         <motion.h2
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-gray-900 mb-2"
+          className="text-2xl font-bold text-app-fg mb-2"
         >
           Alben einrichten 📁
         </motion.h2>
-        <p className="text-gray-500">Organisiere die Fotos in Kategorien</p>
+        <p className="text-app-muted">Organisiere die Fotos in Kategorien</p>
       </div>
 
       {/* AI Suggestion Button - Always visible when not showing AI card */}
@@ -156,17 +156,17 @@ export default function AlbumsStep({
             className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-colors ${
               album.enabled
                 ? 'border-amber-200 bg-amber-50'
-                : 'border-gray-100 bg-white'
+                : 'border-app-border bg-app-card'
             }`}
           >
-            <GripVertical className="w-4 h-4 text-gray-300 cursor-grab" />
+            <GripVertical className="w-4 h-4 text-app-muted cursor-grab" />
             
             <button
               onClick={() => handleToggleAlbum(album.id)}
               className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${
                 album.enabled
                   ? 'border-amber-500 bg-amber-500'
-                  : 'border-gray-300'
+                  : 'border-app-border'
               }`}
             >
               {album.enabled && (
@@ -176,16 +176,16 @@ export default function AlbumsStep({
               )}
             </button>
             
-            <FolderOpen className={`w-5 h-5 ${album.enabled ? 'text-amber-600' : 'text-gray-400'}`} />
+            <FolderOpen className={`w-5 h-5 ${album.enabled ? 'text-amber-600' : 'text-app-muted'}`} />
             
-            <span className={`flex-1 font-medium ${album.enabled ? 'text-gray-900' : 'text-gray-500'}`}>
+            <span className={`flex-1 font-medium ${album.enabled ? 'text-app-fg' : 'text-app-muted'}`}>
               {album.name}
             </span>
             
             {album.isCustom && (
               <button
                 onClick={() => handleRemoveAlbum(album.id)}
-                className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                className="p-1 text-app-muted hover:text-red-500 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -201,7 +201,7 @@ export default function AlbumsStep({
           value={newAlbumName}
           onChange={(e) => setNewAlbumName(e.target.value)}
           placeholder="Neues Album hinzufügen..."
-          className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-amber-500 focus:outline-none"
+          className="flex-1 px-4 py-2 border-2 border-app-border rounded-xl focus:border-amber-500 focus:outline-none"
           onKeyDown={(e) => e.key === 'Enter' && handleAddAlbum()}
         />
         <Button
@@ -215,7 +215,7 @@ export default function AlbumsStep({
       </div>
 
       {/* Counter */}
-      <p className="text-sm text-gray-500 text-center">
+      <p className="text-sm text-app-muted text-center">
         {enabledCount} Album{enabledCount !== 1 ? 's' : ''} ausgewählt
       </p>
 
@@ -243,7 +243,7 @@ export default function AlbumsStep({
         
         <button
           onClick={onSkip}
-          className="w-full py-2 text-sm text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1"
+          className="w-full py-2 text-sm text-app-muted hover:text-app-fg flex items-center justify-center gap-1"
         >
           <SkipForward className="w-4 h-4" />
           Überspringen

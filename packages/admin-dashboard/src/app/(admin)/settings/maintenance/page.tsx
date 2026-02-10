@@ -23,8 +23,8 @@ export default function MaintenancePage() {
   const loadSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get<{ settings: MaintenanceSettings }>('/admin/settings/maintenance');
-      setSettings(res.data.settings);
+      const res = await api.get<MaintenanceSettings>('/admin/maintenance');
+      setSettings(res.data);
     } catch {
       // Use defaults
     } finally {
@@ -40,7 +40,7 @@ export default function MaintenancePage() {
     setSaving(true);
     try {
       const newState = !settings.enabled;
-      await api.post('/admin/settings/maintenance', {
+      await api.put('/admin/maintenance', {
         ...settings,
         enabled: newState,
       });
@@ -56,7 +56,7 @@ export default function MaintenancePage() {
   const handleSaveMessage = async () => {
     setSaving(true);
     try {
-      await api.post('/admin/settings/maintenance', settings);
+      await api.put('/admin/maintenance', settings);
       toast.success('Nachricht gespeichert');
     } catch (err: any) {
       toast.error(err?.response?.data?.error || 'Fehler');

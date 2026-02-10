@@ -28,14 +28,16 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Event as EventType } from '@gaestefotos/shared';
+
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import api from '@/lib/api';
 import { useToastStore } from '@/store/toastStore';
 import { TitleContent, isTitleValid } from '@/components/setup-wizard/content';
 import DateLocationContent from '@/components/setup-wizard/content/DateLocationContent';
 import { CoHostsSection } from '@/components/dashboard/CoHostsSection';
 
-type SetupSheet = 'title' | 'date-location' | 'design' | 'qr' | null;
+type SetupSheet = 'title' | 'date-location' | 'design' | 'qr' | 'advanced' | null;
 
 interface SetupTabV2Props {
   event: EventType;
@@ -54,12 +56,16 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
   );
   const [location, setLocation] = useState((event as any).location || '');
   const [saving, setSaving] = useState(false);
+  const [slug, setSlug] = useState(event.slug || '');
+  const [featuresConfig, setFeaturesConfig] = useState<any>((event as any).featuresConfig || {});
 
   // Reset state when event changes
   useEffect(() => {
     setTitle(event.title || '');
     setDateTime(event.dateTime ? new Date(event.dateTime) : null);
     setLocation((event as any).location || '');
+    setSlug(event.slug || '');
+    setFeaturesConfig((event as any).featuresConfig || {});
   }, [event]);
 
   const handleSaveTitle = async () => {
@@ -102,9 +108,9 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
       className="p-4 space-y-4"
     >
       {/* Event-Info Section - Now with inline editing */}
-      <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-stone-100 bg-stone-50">
-          <h3 className="font-semibold text-stone-700 flex items-center gap-2">
+      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
+          <h3 className="font-semibold text-app-fg flex items-center gap-2">
             <Info className="w-4 h-4" />
             Event-Info
           </h3>
@@ -127,22 +133,22 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
       </div>
 
       {/* Design Section */}
-      <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-stone-100 bg-stone-50">
-          <h3 className="font-semibold text-stone-700 flex items-center gap-2">
+      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
+          <h3 className="font-semibold text-app-fg flex items-center gap-2">
             <Palette className="w-4 h-4" />
             Design
           </h3>
         </div>
-        <SetupRow icon={Palette} label="Galerie-Design" link={`/events/${eventId}/design`} />
+        <SetupRow icon={Palette} label="Galerie-Design" link={`/events/${eventId}/design?wizard=1`} />
         <SetupRow icon={QrCode} label="QR-Code Designer" link={`/events/${eventId}/qr-styler`} />
         <SetupRow icon={Mail} label="Einladungen" link={`/events/${eventId}/invitations`} />
       </div>
 
       {/* Features Section */}
-      <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-stone-100 bg-stone-50">
-          <h3 className="font-semibold text-stone-700 flex items-center gap-2">
+      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
+          <h3 className="font-semibold text-app-fg flex items-center gap-2">
             <Sparkles className="w-4 h-4" />
             Features
           </h3>
@@ -153,15 +159,15 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
       </div>
 
       {/* Settings Section */}
-      <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-stone-100 bg-stone-50">
-          <h3 className="font-semibold text-stone-700 flex items-center gap-2">
+      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
+          <h3 className="font-semibold text-app-fg flex items-center gap-2">
             <Settings className="w-4 h-4" />
             Einstellungen
           </h3>
         </div>
         <SetupRow icon={Wifi} label="WLAN für Gäste" link={`/events/${eventId}/wifi`} />
-        <SetupRow icon={Eye} label="Erweiterte Optionen" link={`/events/${eventId}/edit`} />
+        <SetupRow icon={Eye} label="Erweiterte Optionen" onClick={() => setActiveSheet('advanced')} />
       </div>
 
       {/* Co-Hosts Section */}
@@ -221,7 +227,78 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
               onLocationChange={setLocation}
               showHeader={false}
               showTip={true}
+              dateLocked={!!event.dateTime && new Date(event.dateTime) < new Date()}
             />
+          </SetupSheet>
+        )}
+      </AnimatePresence>
+      {/* Advanced Options Sheet */}
+      <AnimatePresence>
+        {activeSheet === 'advanced' && (
+          <SetupSheet
+            title="Erweiterte Optionen"
+            onClose={() => setActiveSheet(null)}
+            onSave={async () => {
+              setSaving(true);
+              try {
+                await api.put(`/events/${eventId}`, {
+                  slug,
+                  featuresConfig,
+                });
+                showToast('Einstellungen gespeichert', 'success');
+                onEventUpdate?.();
+                setActiveSheet(null);
+              } catch (err: any) {
+                showToast(err.response?.data?.error || 'Fehler beim Speichern', 'error');
+              } finally {
+                setSaving(false);
+              }
+            }}
+            saving={saving}
+            isValid={!!slug.trim()}
+          >
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium mb-1 text-app-fg">URL-Slug</label>
+                <Input
+                  type="text"
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  className="px-4 py-3"
+                />
+                <p className="mt-1 text-xs text-app-muted">Bestimmt die URL deiner Galerie</p>
+              </div>
+
+              <div className="border-t border-app-border pt-4 space-y-3">
+                <h4 className="text-sm font-semibold text-app-fg">Features</h4>
+                {[
+                  { key: 'allowUploads', label: 'Foto-Uploads erlauben' },
+                  { key: 'allowDownloads', label: 'Downloads erlauben' },
+                  { key: 'moderationRequired', label: 'Moderation erforderlich' },
+                  { key: 'mysteryMode', label: 'Mystery Mode (Fotos erst später sichtbar)' },
+                  { key: 'showGuestlist', label: 'Gästeliste anzeigen' },
+                ].map(({ key, label }) => (
+                  <label key={key} className="flex items-center justify-between py-2">
+                    <span className="text-sm text-app-fg">{label}</span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={!!featuresConfig[key]}
+                      onClick={() => setFeaturesConfig((prev: any) => ({ ...prev, [key]: !prev[key] }))}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        featuresConfig[key] ? 'bg-app-accent' : 'bg-app-border'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+                          featuresConfig[key] ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </label>
+                ))}
+              </div>
+            </div>
           </SetupSheet>
         )}
       </AnimatePresence>
@@ -249,19 +326,19 @@ function SetupRow({
   const content = (
     <>
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        <Icon className={`w-5 h-5 flex-shrink-0 ${danger ? 'text-red-500' : 'text-stone-400'}`} />
+        <Icon className={`w-5 h-5 flex-shrink-0 ${danger ? 'text-red-500' : 'text-app-muted'}`} />
         <div className="flex-1 min-w-0">
-          <span className={`block ${danger ? 'text-red-600' : 'text-stone-700'}`}>{label}</span>
+          <span className={`block ${danger ? 'text-red-600' : 'text-app-fg'}`}>{label}</span>
           {value && (
-            <span className="block text-xs text-stone-400 truncate">{value}</span>
+            <span className="block text-xs text-app-muted truncate">{value}</span>
           )}
         </div>
       </div>
-      <ChevronRight className="w-5 h-5 text-stone-400 flex-shrink-0" />
+      <ChevronRight className="w-5 h-5 text-app-muted flex-shrink-0" />
     </>
   );
 
-  const className = "flex items-center justify-between w-full px-4 py-4 border-b border-stone-100 last:border-0 text-left hover:bg-stone-50 transition-colors";
+  const className = "flex items-center justify-between w-full px-4 py-4 border-b border-app-border/50 last:border-0 text-left hover:bg-app-bg transition-colors";
 
   if (link) {
     return (
@@ -314,22 +391,22 @@ function SetupSheet({
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl max-h-[85vh] flex flex-col"
+        className="fixed bottom-0 left-0 right-0 z-50 bg-app-card rounded-t-2xl max-h-[85vh] flex flex-col"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-stone-200">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-app-border">
           <button
             onClick={onClose}
-            className="p-2 -ml-2 rounded-lg hover:bg-stone-100 transition-colors"
+            className="p-2 -ml-2 rounded-lg hover:bg-app-bg transition-colors"
           >
-            <ChevronLeft className="w-5 h-5 text-stone-500" />
+            <ChevronLeft className="w-5 h-5 text-app-muted" />
           </button>
-          <h3 className="font-semibold text-stone-800">{title}</h3>
+          <h3 className="font-semibold text-app-fg">{title}</h3>
           <button
             onClick={onClose}
-            className="p-2 -mr-2 rounded-lg hover:bg-stone-100 transition-colors"
+            className="p-2 -mr-2 rounded-lg hover:bg-app-bg transition-colors"
           >
-            <X className="w-5 h-5 text-stone-500" />
+            <X className="w-5 h-5 text-app-muted" />
           </button>
         </div>
 
@@ -339,7 +416,7 @@ function SetupSheet({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-stone-200 bg-white">
+        <div className="p-4 border-t border-app-border bg-app-card">
           <Button
             onClick={onSave}
             disabled={!isValid || saving}

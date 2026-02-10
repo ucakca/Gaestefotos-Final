@@ -30,20 +30,35 @@ export function useSetupProgress() {
 
   // Save to localStorage on state change (with quota protection)
   useEffect(() => {
-    if (typeof window !== 'undefined' && state.title) {
+    if (typeof window !== 'undefined' && (state.title || state.completedSteps.length > 0)) {
       try {
-        // Only save essential fields, exclude large data
+        // Save all serializable fields — exclude File objects only
         const toSave = {
           eventId: state.eventId,
           eventSlug: state.eventSlug,
           title: state.title,
           eventType: state.eventType,
+          eventSubtype: state.eventSubtype,
           dateTime: state.dateTime,
           location: state.location,
           currentStepId: state.currentStepId,
           currentPhase: state.currentPhase,
           completedSteps: state.completedSteps,
-          // Explicitly exclude: coverImage, profileImage, colorScheme (large), aiSuggestions
+          // Phase 2: Design (previews only, not File objects)
+          coverImagePreview: state.coverImagePreview,
+          profileImagePreview: state.profileImagePreview,
+          colorScheme: state.colorScheme,
+          // Phase 3: Galerie einrichten
+          albums: state.albums,
+          challenges: state.challenges,
+          guestbookEnabled: state.guestbookEnabled,
+          guestbookMessage: state.guestbookMessage,
+          featuresConfig: state.featuresConfig,
+          // Phase 4: Team
+          coHostEmails: state.coHostEmails,
+          // Phase 5: QR & Teilen
+          qrStyle: state.qrStyle,
+          invitationText: state.invitationText,
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
       } catch (e) {

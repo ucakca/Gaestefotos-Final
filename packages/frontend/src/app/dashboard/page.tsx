@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -43,6 +43,8 @@ export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'past' | 'draft'>('all');
   const [showStatusInfo, setShowStatusInfo] = useState(false);
+  const [limitMessage, setLimitMessage] = useState<string | null>(null);
+  const lastLoadRef = useRef(0);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -62,28 +64,39 @@ export default function DashboardPage() {
   }, []);
 
   // Refresh events when page becomes visible (e.g., after returning from wizard)
+  // Debounced: only reload if >5s since last load to prevent re-render flooding
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === 'visible' && Date.now() - lastLoadRef.current > 5000) {
         loadEvents();
       }
     };
     
-    const handleFocus = () => {
-      loadEvents();
-    };
-    
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleFocus);
     
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleFocus);
     };
   }, []);
 
+  const handleCreateEvent = async () => {
+    try {
+      setLimitMessage(null);
+      const { data } = await api.get('/events/check-limit');
+      if (data?.limitReached) {
+        setLimitMessage(`Du hast das Limit von ${data.limit} kostenlosen Events erreicht. Bitte upgrade dein Paket, um weitere Events zu erstellen.`);
+        return;
+      }
+      router.push('/create-event?new=true');
+    } catch {
+      // If check fails, let them try — the backend will block creation anyway
+      router.push('/create-event?new=true');
+    }
+  };
+
   const loadEvents = async () => {
     try {
+      lastLoadRef.current = Date.now();
       const { data } = await api.get('/events');
       setEvents(Array.isArray(data?.events) ? data.events : (Array.isArray(data) ? data : []));
     } catch (err: any) {
@@ -124,12 +137,12 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen" style={{ background: 'hsl(30 20% 98%)' }}>
+      <div className="min-h-screen bg-app-bg">
         {/* Header */}
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-stone-200 shadow-sm"
+          className="sticky top-0 z-40 bg-app-card/90 backdrop-blur-xl border-b border-app-border shadow-sm"
         >
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="flex items-center justify-between gap-4">
@@ -138,8 +151,8 @@ export default function DashboardPage() {
                 <Logo width={100} height={40} />
                 {user && (
                   <div className="hidden sm:block min-w-0">
-                    <p className="text-sm font-medium text-stone-800 truncate">{user.name || 'Host'}</p>
-                    <p className="text-xs text-stone-500 truncate">{user.email}</p>
+                    <p className="text-sm font-medium text-app-fg truncate">{user.name || 'Host'}</p>
+                    <p className="text-xs text-app-muted truncate">{user.email}</p>
                   </div>
                 )}
               </div>
@@ -182,10 +195,10 @@ export default function DashboardPage() {
             >
               {/* Greeting */}
               <div className="mb-4">
-                <h1 className="text-2xl font-bold text-stone-800">
+                <h1 className="text-2xl font-bold text-app-fg">
                   Hallo{user?.name ? `, ${user.name.split(' ')[0]}` : ''}! 👋
                 </h1>
-                <p className="text-stone-500">
+                <p className="text-app-muted">
                   Du hast {activeEvents.length} aktive{activeEvents.length === 1 ? 's' : ''} Event{activeEvents.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -227,14 +240,14 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-stone-800">Meine Events</h2>
+                  <h2 className="text-lg font-semibold text-app-fg">Meine Events</h2>
                   {/* Status Info Button */}
                   <div className="relative">
                     <button
                       onClick={() => setShowStatusInfo(!showStatusInfo)}
                       className="p-1 rounded-full hover:bg-stone-100 transition-colors"
                     >
-                      <Info className="w-4 h-4 text-stone-400" />
+                      <Info className="w-4 h-4 text-app-muted" />
                     </button>
                     
                     {/* Info Tooltip */}
@@ -244,29 +257,29 @@ export default function DashboardPage() {
                           initial={{ opacity: 0, y: -5 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -5 }}
-                          className="absolute left-0 top-full mt-2 z-50 w-64 p-3 bg-white rounded-xl shadow-lg border border-stone-200"
+                          className="absolute left-0 top-full mt-2 z-50 w-64 p-3 bg-app-card rounded-xl shadow-lg border border-app-border"
                         >
-                          <h4 className="font-medium text-stone-800 text-sm mb-2">Event-Status Erklärung</h4>
+                          <h4 className="font-medium text-app-fg text-sm mb-2">Event-Status Erklärung</h4>
                           <div className="space-y-2 text-xs">
                             <div className="flex items-start gap-2">
                               <div className="w-2.5 h-2.5 rounded-full bg-green-500 mt-0.5 flex-shrink-0" />
                               <div>
                                 <span className="font-medium text-green-700">Live</span>
-                                <p className="text-stone-500">Event läuft/kommt, Galerie aktiv</p>
+                                <p className="text-app-muted">Event läuft/kommt, Galerie aktiv</p>
                               </div>
                             </div>
                             <div className="flex items-start gap-2">
                               <div className="w-2.5 h-2.5 rounded-full bg-orange-500 mt-0.5 flex-shrink-0" />
                               <div>
                                 <span className="font-medium text-orange-700">Archiviert</span>
-                                <p className="text-stone-500">Event vorbei, Galerie noch zugänglich</p>
+                                <p className="text-app-muted">Event vorbei, Galerie noch zugänglich</p>
                               </div>
                             </div>
                             <div className="flex items-start gap-2">
                               <div className="w-2.5 h-2.5 rounded-full bg-red-500 mt-0.5 flex-shrink-0" />
                               <div>
                                 <span className="font-medium text-red-700">Gesperrt</span>
-                                <p className="text-stone-500">Galerie deaktiviert, kein Zugang</p>
+                                <p className="text-app-muted">Galerie deaktiviert, kein Zugang</p>
                               </div>
                             </div>
                           </div>
@@ -288,7 +301,7 @@ export default function DashboardPage() {
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                         statusFilter === tab.id
                           ? 'bg-blue-500 text-white'
-                          : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                          : 'bg-app-card text-app-muted hover:bg-app-border'
                       }`}
                     >
                       {tab.label} ({tab.count})
@@ -300,24 +313,24 @@ export default function DashboardPage() {
               {/* Search + View Toggle */}
               <div className="flex items-center gap-2">
                 <div className="relative flex-1 sm:w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted" />
                   <Input
                     placeholder="Event suchen..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 bg-white border-stone-200"
+                    className="pl-9 bg-app-card border-app-border"
                   />
                 </div>
-                <div className="hidden sm:flex bg-white border border-stone-200 rounded-lg p-1">
+                <div className="hidden sm:flex bg-app-card border border-app-border rounded-lg p-1">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'text-stone-400 hover:text-stone-700'}`}
+                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'text-app-muted hover:text-app-fg'}`}
                   >
                     <Grid3X3 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'text-stone-400 hover:text-stone-700'}`}
+                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'text-app-muted hover:text-app-fg'}`}
                   >
                     <List className="w-4 h-4" />
                   </button>
@@ -348,21 +361,19 @@ export default function DashboardPage() {
               </div>
               {searchQuery ? (
                 <>
-                  <h3 className="text-xl font-semibold text-stone-800 mb-2">Keine Events gefunden</h3>
-                  <p className="text-stone-500 mb-4">Versuche einen anderen Suchbegriff</p>
+                  <h3 className="text-xl font-semibold text-app-fg mb-2">Keine Events gefunden</h3>
+                  <p className="text-app-muted mb-4">Versuche einen anderen Suchbegriff</p>
                   <Button variant="secondary" onClick={() => setSearchQuery('')}>
                     Suche zurücksetzen
                   </Button>
                 </>
               ) : (
                 <>
-                  <h3 className="text-xl font-semibold text-stone-800 mb-2">Willkommen bei Gästefotos! 🎉</h3>
-                  <p className="text-stone-500 mb-6 max-w-md mx-auto">Erstelle dein erstes Event und sammle unvergessliche Momente mit deinen Gästen.</p>
-                  <Button asChild variant="primary" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0">
-                    <Link href="/create-event?new=true">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Erstes Event erstellen
-                    </Link>
+                  <h3 className="text-xl font-semibold text-app-fg mb-2">Willkommen bei Gästefotos! 🎉</h3>
+                  <p className="text-app-muted mb-6 max-w-md mx-auto">Erstelle dein erstes Event und sammle unvergessliche Momente mit deinen Gästen.</p>
+                  <Button variant="primary" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0" onClick={handleCreateEvent}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Erstes Event erstellen
                   </Button>
                 </>
               )}
@@ -379,7 +390,7 @@ export default function DashboardPage() {
                     event={event}
                     index={index}
                     photoCount={(event as any).photoCount || 0}
-                    guestCount={(event as any).guestCount || 0}
+                    guestCount={(event as any).viewCount || 0}
                     pendingCount={(event as any).pendingCount || 0}
                   />
                 ))}
@@ -388,31 +399,54 @@ export default function DashboardPage() {
           )}
         </main>
 
+        {/* Limit reached banner */}
+        <AnimatePresence>
+          {limitMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed top-16 left-4 right-4 z-50 bg-amber-50 border border-amber-300 rounded-xl p-4 shadow-lg"
+            >
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-amber-800">{limitMessage}</p>
+                  <div className="flex gap-2 mt-2">
+                    <a href="https://gästefotos.com/pakete" className="text-xs font-medium text-amber-600 hover:text-amber-700 underline">Pakete ansehen →</a>
+                    <button onClick={() => setLimitMessage(null)} className="text-xs text-amber-500 hover:text-amber-700 ml-auto">Schließen</button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Floating "+ Event" Button - above bottom nav */}
-        <Link 
-          href="/create-event?new=true" 
+        <button 
+          onClick={handleCreateEvent}
           className="fixed bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full font-semibold text-sm shadow-lg hover:from-pink-600 hover:to-rose-600 transition-all z-50"
         >
           <Plus className="w-5 h-5" />
           Event
-        </Link>
+        </button>
 
         {/* Bottom Nav */}
-        <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-stone-200 z-50 shadow-lg">
+        <nav className="fixed bottom-0 left-0 right-0 bg-app-card/95 backdrop-blur-xl border-t border-app-border z-50 shadow-lg">
           <div className="flex items-center justify-around py-3">
             <Link href="/dashboard" className="flex flex-col items-center gap-1 text-blue-600">
               <Grid3X3 className="w-5 h-5" />
               <span className="text-xs font-medium">Events</span>
             </Link>
-            <Link href="/moderation" className="flex flex-col items-center gap-1 text-stone-400">
+            <Link href="/moderation" className="flex flex-col items-center gap-1 text-app-muted">
               <ClipboardCheck className="w-5 h-5" />
               <span className="text-xs">Prüfen</span>
             </Link>
-            <a href="/faq" className="flex flex-col items-center gap-1 text-stone-400">
+            <a href="/faq" className="flex flex-col items-center gap-1 text-app-muted">
               <HelpCircle className="w-5 h-5" />
               <span className="text-xs">Hilfe</span>
             </a>
-            <button onClick={logout} className="flex flex-col items-center gap-1 text-stone-400">
+            <button onClick={logout} className="flex flex-col items-center gap-1 text-app-muted">
               <LogOut className="w-5 h-5" />
               <span className="text-xs">Logout</span>
             </button>

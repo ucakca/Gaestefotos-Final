@@ -89,11 +89,11 @@ export default function ProfileImageStep({
         <motion.h2
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-gray-900 mb-2"
+          className="text-2xl font-bold text-app-fg mb-2"
         >
           Profilbild hinzufügen 👤
         </motion.h2>
-        <p className="text-gray-500">Das kleine runde Bild für dein Event</p>
+        <p className="text-app-muted">Das kleine runde Bild für dein Event</p>
       </div>
 
       {/* Upload Area */}
@@ -137,11 +137,11 @@ export default function ProfileImageStep({
             className={`w-32 h-32 rounded-full border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors ${
               isDragging
                 ? 'border-amber-500 bg-amber-50'
-                : 'border-gray-300 hover:border-amber-400 hover:bg-amber-50/50'
+                : 'border-app-border hover:border-amber-400 hover:bg-amber-50/50'
             }`}
           >
-            <User className="w-10 h-10 text-gray-400 mb-1" />
-            <span className="text-xs text-gray-500">Hochladen</span>
+            <User className="w-10 h-10 text-app-muted mb-1" />
+            <span className="text-xs text-app-muted">Hochladen</span>
           </div>
         )}
 
@@ -164,10 +164,10 @@ export default function ProfileImageStep({
         transition={{ delay: 0.2 }}
         className="text-center space-y-2"
       >
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-app-muted">
           Das Profilbild erscheint mittig auf deiner Event-Seite
         </p>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-app-muted">
           Ideal: Logo, Paar-Foto oder Event-Symbol
         </p>
       </motion.div>
@@ -196,7 +196,7 @@ export default function ProfileImageStep({
         
         <button
           onClick={onSkip}
-          className="w-full py-2 text-sm text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1"
+          className="w-full py-2 text-sm text-app-muted hover:text-app-fg flex items-center justify-center gap-1"
         >
           <SkipForward className="w-4 h-4" />
           Überspringen

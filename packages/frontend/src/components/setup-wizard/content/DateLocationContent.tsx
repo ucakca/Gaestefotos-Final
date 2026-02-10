@@ -7,8 +7,8 @@ import { Calendar, MapPin } from 'lucide-react';
 const LocationMap = dynamic(() => import('../LocationMap'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-48 rounded-xl border-2 border-gray-200 bg-gray-50 flex items-center justify-center">
-      <div className="text-gray-400 text-sm">Karte wird geladen...</div>
+    <div className="w-full h-48 rounded-xl border-2 border-app-border bg-app-bg flex items-center justify-center">
+      <div className="text-app-muted text-sm">Karte wird geladen...</div>
     </div>
   ),
 });
@@ -20,6 +20,7 @@ interface DateLocationContentProps {
   onLocationChange: (location: string) => void;
   showHeader?: boolean;
   showTip?: boolean;
+  dateLocked?: boolean;
 }
 
 export default function DateLocationContent({
@@ -29,6 +30,7 @@ export default function DateLocationContent({
   onLocationChange,
   showHeader = true,
   showTip = true,
+  dateLocked = false,
 }: DateLocationContentProps) {
   const formatDateForInput = (date: Date | null) => {
     if (!date) return '';
@@ -59,11 +61,11 @@ export default function DateLocationContent({
           <motion.h2
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-2xl font-bold text-gray-900 mb-2"
+            className="text-2xl font-bold text-app-fg mb-2"
           >
             Wann & Wo? 📍
           </motion.h2>
-          <p className="text-gray-500">Diese Angaben sind optional</p>
+          <p className="text-app-muted">Diese Angaben sind optional</p>
         </div>
       )}
 
@@ -73,7 +75,7 @@ export default function DateLocationContent({
         className="space-y-4"
       >
         <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-app-fg mb-2">
             <Calendar className="w-4 h-4" />
             Datum & Uhrzeit
           </label>
@@ -83,12 +85,16 @@ export default function DateLocationContent({
             onChange={(e) => handleDateChange(e.target.value)}
             min="2020-01-01T00:00"
             max="2099-12-31T23:59"
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors"
+            disabled={dateLocked}
+            className={`w-full px-4 py-3 border-2 border-app-border bg-app-card text-app-fg rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors ${dateLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
+          {dateLocked && (
+            <p className="mt-1 text-xs text-amber-600">Das Datum kann nicht mehr geändert werden, da das Event bereits gestartet ist.</p>
+          )}
         </div>
 
         <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-app-fg mb-2">
             <MapPin className="w-4 h-4" />
             Ort / Location
           </label>
@@ -97,7 +103,7 @@ export default function DateLocationContent({
             value={location}
             onChange={(e) => onLocationChange(e.target.value)}
             placeholder="z.B. Schloss Neuschwanstein"
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors"
+            className="w-full px-4 py-3 border-2 border-app-border bg-app-card text-app-fg rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors placeholder:text-app-muted"
           />
         </div>
 

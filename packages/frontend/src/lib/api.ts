@@ -47,13 +47,12 @@ const api = axios.create({
 });
 
 export function buildApiUrl(path: string): string {
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
   const base = (api.defaults.baseURL || '').replace(/\/+$/, '');
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
 
   if (!base) return normalizedPath;
-  if (base.startsWith('http://') || base.startsWith('https://')) {
-    return `${base}${normalizedPath}`;
-  }
+  if (base !== '/' && normalizedPath.startsWith(`${base}/`)) return normalizedPath;
   return `${base}${normalizedPath}`;
 }
 

@@ -131,13 +131,12 @@ export default function EventHero({
           className="absolute top-3 left-1/2 -translate-x-1/2 z-10 transition-all hover:scale-105"
           aria-label="Gästefotos.com"
         >
-          <div className="bg-black/50 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2">
+          <div className="bg-black/50 backdrop-blur-sm rounded-full px-3 py-2">
             <img
               src="https://xn--gstefotos-v2a.com/wp-content/uploads/2025/11/logo-Kopie.webp"
               alt="Gästefotos.com"
               className="h-5 w-auto brightness-0 invert"
             />
-            <span className="text-white text-sm font-medium">gästefotos.com</span>
           </div>
         </Link>
 
@@ -217,7 +216,7 @@ export default function EventHero({
         </div>
       )}
 
-      <div className="relative z-10 -mt-16 flex flex-col items-center px-4">
+      <div className={`relative -mt-16 flex flex-col items-center px-4 ${showAvatarMenu ? 'z-[60]' : 'z-10'}`}>
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowAvatarMenu(!showAvatarMenu)}
@@ -263,7 +262,7 @@ export default function EventHero({
           </button>
 
           {showAvatarMenu && (
-            <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 z-50 min-w-48 rounded-xl border bg-card p-1 shadow-xl animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
+            <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 z-[60] min-w-48 rounded-xl border bg-card p-1 shadow-xl animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
               {hasStories && (
                 <button
                   onClick={() => {

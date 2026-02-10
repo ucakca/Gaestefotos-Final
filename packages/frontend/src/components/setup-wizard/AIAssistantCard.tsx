@@ -62,18 +62,18 @@ export default function AIAssistantCard({
       {/* Gradient Border Effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 opacity-50" />
       
-      <div className="relative m-[2px] bg-white rounded-[14px] p-4">
+      <div className="relative m-[2px] bg-app-card rounded-[14px] p-4">
         {/* Header */}
         <div className="flex items-center gap-2 mb-3">
           <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div className="flex-1">
-            <h4 className="font-semibold text-gray-900 flex items-center gap-1">
+            <h4 className="font-semibold text-app-fg flex items-center gap-1">
               ✨ {title}
             </h4>
             {description && (
-              <p className="text-xs text-gray-500">{description}</p>
+              <p className="text-xs text-app-muted">{description}</p>
             )}
           </div>
           {selectedItems.size > 0 && (
@@ -94,7 +94,7 @@ export default function AIAssistantCard({
               className="py-6 flex flex-col items-center justify-center gap-2"
             >
               <Loader2 className="w-6 h-6 text-purple-500 animate-spin" />
-              <p className="text-sm text-gray-500">KI generiert Vorschläge...</p>
+              <p className="text-sm text-app-muted">KI generiert Vorschläge...</p>
             </motion.div>
           ) : (
             <motion.div
@@ -104,8 +104,8 @@ export default function AIAssistantCard({
               exit={{ opacity: 0 }}
             >
               {type === 'text' ? (
-                <div className="bg-gray-50 rounded-xl p-3 mb-4">
-                  <p className="text-gray-700 text-sm italic">"{suggestions[0]}"</p>
+                <div className="bg-app-bg rounded-xl p-3 mb-4">
+                  <p className="text-app-fg text-sm italic">"{suggestions[0]}"</p>
                 </div>
               ) : (
                 <ul className="space-y-2 mb-4">
@@ -123,17 +123,17 @@ export default function AIAssistantCard({
                           className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all ${
                             isSelected 
                               ? 'bg-purple-50 border-2 border-purple-400' 
-                              : 'bg-gray-50 border-2 border-transparent hover:border-purple-200'
+                              : 'bg-app-bg border-2 border-transparent hover:border-purple-200'
                           }`}
                         >
                           <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-colors ${
                             isSelected 
                               ? 'bg-purple-500' 
-                              : 'border-2 border-gray-300'
+                              : 'border-2 border-app-border'
                           }`}>
                             {isSelected && <Check className="w-3 h-3 text-white" />}
                           </div>
-                          <span className={`text-sm ${isSelected ? 'text-purple-900 font-medium' : 'text-gray-700'}`}>
+                          <span className={`text-sm ${isSelected ? 'text-purple-900 font-medium' : 'text-app-fg'}`}>
                             {suggestion}
                           </span>
                         </button>
@@ -174,7 +174,7 @@ export default function AIAssistantCard({
                       onClick={onCustomInput}
                       size="sm"
                       variant="ghost"
-                      className="flex-1 border border-gray-200"
+                      className="flex-1 border border-app-border"
                     >
                       <PenLine className="w-4 h-4 mr-1" />
                       Eigene
@@ -187,7 +187,7 @@ export default function AIAssistantCard({
         </AnimatePresence>
 
         {/* Powered by KI Badge */}
-        <div className="mt-3 flex items-center justify-end gap-1 text-xs text-gray-400">
+        <div className="mt-3 flex items-center justify-end gap-1 text-xs text-app-muted">
           <Zap className="w-3 h-3" />
           <span>Powered by KI</span>
         </div>

@@ -16,6 +16,9 @@ import {
   AlertTriangle,
   ArrowRight,
   Zap,
+  TrendingUp,
+  TrendingDown,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
@@ -405,35 +408,116 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Secondary Stats */}
+      {/* App Stats with Growth */}
       {stats && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-app-border bg-app-card p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                <Users className="w-5 h-5 text-indigo-500" />
-              </div>
-              <div className="text-sm font-medium text-app-muted">Benutzer</div>
-            </div>
-            <div className="text-3xl font-bold text-app-fg">{stats.stats?.total?.users?.toLocaleString('de-DE') ?? '—'}</div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <StatCard icon={Users} label="Benutzer" value={stats.stats?.total?.users ?? 0} todayValue={stats.stats?.today?.users} color="indigo" />
+          <StatCard icon={Calendar} label="Events" value={stats.stats?.total?.events ?? 0} todayValue={stats.stats?.today?.events} growth={stats.stats?.growth?.eventsGrowth} color="pink" />
+          <StatCard icon={ImageIcon} label="Fotos" value={stats.stats?.total?.photos ?? 0} todayValue={stats.stats?.today?.photos} growth={stats.stats?.growth?.photosGrowth} color="cyan" />
+          <StatCard icon={Activity} label="Aktive Events" value={stats.stats?.total?.activeEvents ?? 0} color="green" />
+        </div>
+      )}
+
+      {/* Activity Chart + Storage */}
+      {stats && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Daily Activity Chart */}
+          <div className="lg:col-span-2 rounded-2xl border border-app-border bg-app-card p-5">
+            <h3 className="text-sm font-semibold text-app-fg mb-4 flex items-center gap-2">
+              <Activity className="w-4 h-4 text-app-accent" />
+              Aktivität (30 Tage)
+            </h3>
+            <ActivityChart />
           </div>
+
+          {/* Storage */}
           <div className="rounded-2xl border border-app-border bg-app-card p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-pink-500" />
+            <h3 className="text-sm font-semibold text-app-fg mb-4 flex items-center gap-2">
+              <HardDrive className="w-4 h-4 text-app-accent" />
+              Speicher
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-xs text-app-muted mb-1">
+                  <span>Fotos</span>
+                  <span>{fmtBytes(stats.stats?.storage?.photosBytes ?? 0)}</span>
+                </div>
+                <div className="h-2 rounded-full bg-app-border overflow-hidden">
+                  <div className="h-full rounded-full bg-cyan-500" style={{ width: stats.stats?.storage?.totalBytes ? `${Math.min(100, (stats.stats.storage.photosBytes / stats.stats.storage.totalBytes) * 100)}%` : '0%' }} />
+                </div>
               </div>
-              <div className="text-sm font-medium text-app-muted">Events</div>
+              <div>
+                <div className="flex justify-between text-xs text-app-muted mb-1">
+                  <span>Videos</span>
+                  <span>{fmtBytes(stats.stats?.storage?.videosBytes ?? 0)}</span>
+                </div>
+                <div className="h-2 rounded-full bg-app-border overflow-hidden">
+                  <div className="h-full rounded-full bg-purple-500" style={{ width: stats.stats?.storage?.totalBytes ? `${Math.min(100, (stats.stats.storage.videosBytes / stats.stats.storage.totalBytes) * 100)}%` : '0%' }} />
+                </div>
+              </div>
+              <div className="pt-3 border-t border-app-border">
+                <div className="text-2xl font-bold text-app-fg">{fmtBytes(stats.stats?.storage?.totalBytes ?? 0)}</div>
+                <div className="text-xs text-app-muted">Gesamtspeicher</div>
+              </div>
             </div>
-            <div className="text-3xl font-bold text-app-fg">{stats.stats?.total?.events?.toLocaleString('de-DE') ?? '—'}</div>
           </div>
+        </div>
+      )}
+
+      {/* Recent Activity */}
+      {stats?.recent && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Recent Events */}
           <div className="rounded-2xl border border-app-border bg-app-card p-5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
-                <ImageIcon className="w-5 h-5 text-cyan-500" />
-              </div>
-              <div className="text-sm font-medium text-app-muted">Fotos</div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-app-fg flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-pink-500" />
+                Neueste Events
+              </h3>
+              <Link href="/manage/events" className="text-xs text-app-accent hover:underline">Alle →</Link>
             </div>
-            <div className="text-3xl font-bold text-app-fg">{stats.stats?.total?.photos?.toLocaleString('de-DE') ?? '—'}</div>
+            <div className="space-y-3">
+              {stats.recent.events.map((evt) => (
+                <Link key={evt.id} href={`/manage/events/${evt.id}`} className="flex items-center justify-between p-2 rounded-lg hover:bg-app-bg transition-colors">
+                  <div>
+                    <p className="text-sm font-medium text-app-fg">{evt.title}</p>
+                    <p className="text-xs text-app-muted">/{evt.slug} · {new Date(evt.createdAt).toLocaleDateString('de-DE')}</p>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-xs ${evt.isActive ? 'bg-green-500/10 text-green-500' : 'bg-yellow-500/10 text-yellow-600'}`}>
+                    {evt.isActive ? 'Aktiv' : 'Inaktiv'}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Users */}
+          <div className="rounded-2xl border border-app-border bg-app-card p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-app-fg flex items-center gap-2">
+                <Users className="w-4 h-4 text-indigo-500" />
+                Neueste Benutzer
+              </h3>
+              <Link href="/manage/users" className="text-xs text-app-accent hover:underline">Alle →</Link>
+            </div>
+            <div className="space-y-3">
+              {stats.recent.users.map((u) => (
+                <div key={u.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-app-bg transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-app-accent/10 flex items-center justify-center text-app-accent font-semibold text-xs">
+                      {(u.name || u.email)[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-app-fg">{u.name || u.email}</p>
+                      <p className="text-xs text-app-muted">{new Date(u.createdAt).toLocaleDateString('de-DE')}</p>
+                    </div>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.role === 'ADMIN' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>
+                    {u.role}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -442,6 +526,107 @@ export default function DashboardPage() {
       <div className="text-center text-xs text-app-muted py-4">
         Letzte Aktualisierung: {server?.checkedAt ? new Date(server.checkedAt).toLocaleTimeString('de-DE') : '—'}
         {' • '}Auto-Refresh alle 30 Sekunden
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ icon: Icon, label, value, todayValue, growth, color }: {
+  icon: any; label: string; value: number; todayValue?: number; growth?: string; color: string;
+}) {
+  const colorMap: Record<string, string> = {
+    indigo: 'bg-indigo-500/10 text-indigo-500',
+    pink: 'bg-pink-500/10 text-pink-500',
+    cyan: 'bg-cyan-500/10 text-cyan-500',
+    green: 'bg-green-500/10 text-green-500',
+  };
+  const growthNum = growth ? parseFloat(growth) : 0;
+
+  return (
+    <div className="rounded-2xl border border-app-border bg-app-card p-4 hover:border-app-accent/30 transition-all">
+      <div className="flex items-center gap-2 mb-2">
+        <div className={`w-8 h-8 rounded-lg ${colorMap[color]} flex items-center justify-center`}>
+          <Icon className="w-4 h-4" />
+        </div>
+        <span className="text-xs font-medium text-app-muted">{label}</span>
+      </div>
+      <div className="text-2xl font-bold text-app-fg">{value.toLocaleString('de-DE')}</div>
+      <div className="flex items-center gap-2 mt-1">
+        {todayValue !== undefined && (
+          <span className="text-xs text-app-muted">+{todayValue} heute</span>
+        )}
+        {growth && growthNum !== 0 && (
+          <span className={`text-xs font-medium flex items-center gap-0.5 ${growthNum > 0 ? 'text-green-500' : 'text-red-500'}`}>
+            {growthNum > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+            {growthNum > 0 ? '+' : ''}{growth}%
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ActivityChart() {
+  const [data, setData] = useState<{ date: string; photos: number; events: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get<{ analytics: { dailyActivity: typeof data } }>('/admin/dashboard/analytics');
+        setData(res.data.analytics?.dailyActivity || []);
+      } catch {
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <Loader2 className="w-5 h-5 animate-spin text-app-accent" />
+      </div>
+    );
+  }
+
+  if (data.length === 0) {
+    return <div className="text-center text-sm text-app-muted py-8">Keine Aktivitätsdaten</div>;
+  }
+
+  const maxPhotos = Math.max(1, ...data.map((d) => d.photos));
+
+  return (
+    <div>
+      <div className="flex items-end gap-[2px] h-32">
+        {data.map((d, i) => {
+          const h = (d.photos / maxPhotos) * 100;
+          const date = new Date(d.date);
+          return (
+            <div
+              key={i}
+              className="flex-1 group relative"
+              title={`${date.toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}: ${d.photos} Fotos, ${d.events} Events`}
+            >
+              <div
+                className="w-full rounded-t bg-cyan-500/70 hover:bg-cyan-500 transition-colors"
+                style={{ height: `${Math.max(2, h)}%` }}
+              />
+              {d.events > 0 && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-pink-500 rounded-t" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex justify-between mt-2 text-[10px] text-app-muted">
+        <span>{data.length > 0 ? new Date(data[0].date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' }) : ''}</span>
+        <div className="flex items-center gap-3">
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-cyan-500 inline-block" /> Fotos</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-pink-500 inline-block" /> Events</span>
+        </div>
+        <span>{data.length > 0 ? new Date(data[data.length - 1].date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' }) : ''}</span>
       </div>
     </div>
   );

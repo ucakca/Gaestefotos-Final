@@ -46,10 +46,10 @@ export function EventInfoCard({
   const eventId = (event as any).id;
   
   const profileImage = profileImageStoragePath
-    ? `/api/events/${eventId}/design-image/profile/${profileImageStoragePath}`
+    ? `/api/events/${eventId}/design-image/profile/${encodeURIComponent(profileImageStoragePath)}`
     : designConfig.profileImage || null;
   const coverImage = coverImageStoragePath
-    ? `/api/events/${eventId}/design-image/cover/${coverImageStoragePath}`
+    ? `/api/events/${eventId}/design-image/cover/${encodeURIComponent(coverImageStoragePath)}`
     : designConfig.coverImage || null;
   const welcomeMessage = designConfig.welcomeMessage || '';
 

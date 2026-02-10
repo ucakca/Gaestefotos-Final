@@ -92,11 +92,11 @@ export default function ChallengesStep({
         <motion.h2
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-gray-900 mb-2"
+          className="text-2xl font-bold text-app-fg mb-2"
         >
           Foto-Challenges 🏆
         </motion.h2>
-        <p className="text-gray-500">Motiviere Gäste mit lustigen Aufgaben</p>
+        <p className="text-app-muted">Motiviere Gäste mit lustigen Aufgaben</p>
       </div>
 
       {/* Custom Input Mode */}
@@ -104,15 +104,15 @@ export default function ChallengesStep({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gray-50 rounded-xl p-4 space-y-3"
+          className="bg-app-bg rounded-xl p-4 space-y-3"
         >
-          <h4 className="font-medium text-gray-900">Eigene Challenge erstellen</h4>
+          <h4 className="font-medium text-app-fg">Eigene Challenge erstellen</h4>
           <input
             type="text"
             value={customTitle}
             onChange={(e) => setCustomTitle(e.target.value)}
             placeholder="Challenge-Titel (z.B. 'Bestes Selfie')"
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full px-3 py-2 border border-app-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
             autoFocus
           />
           <input
@@ -120,12 +120,12 @@ export default function ChallengesStep({
             value={customDescription}
             onChange={(e) => setCustomDescription(e.target.value)}
             placeholder="Beschreibung (optional)"
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full px-3 py-2 border border-app-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
           />
           <div className="flex gap-2">
             <button
               onClick={() => setShowCustomInput(false)}
-              className="flex-1 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex-1 py-2 text-sm text-app-muted hover:bg-app-bg rounded-lg transition-colors"
             >
               Abbrechen
             </button>
@@ -158,7 +158,7 @@ export default function ChallengesStep({
           </button>
           <button
             onClick={() => setShowCustomInput(true)}
-            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-app-border text-app-muted hover:bg-app-bg transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span className="text-sm font-medium">Eigene</span>
@@ -211,7 +211,7 @@ export default function ChallengesStep({
             className={`p-4 rounded-xl border-2 transition-colors ${
               challenge.enabled
                 ? 'border-amber-200 bg-amber-50'
-                : 'border-gray-100 bg-white'
+                : 'border-app-border bg-app-card'
             }`}
           >
             <div className="flex items-start gap-3">
@@ -220,7 +220,7 @@ export default function ChallengesStep({
                 className={`mt-1 w-6 h-6 rounded-lg border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
                   challenge.enabled
                     ? 'border-amber-500 bg-amber-500'
-                    : 'border-gray-300'
+                    : 'border-app-border'
                 }`}
               >
                 {challenge.enabled && (
@@ -232,19 +232,19 @@ export default function ChallengesStep({
               
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <Trophy className={`w-4 h-4 ${challenge.enabled ? 'text-amber-600' : 'text-gray-400'}`} />
-                  <span className={`font-medium ${challenge.enabled ? 'text-gray-900' : 'text-gray-500'}`}>
+                  <Trophy className={`w-4 h-4 ${challenge.enabled ? 'text-amber-600' : 'text-app-muted'}`} />
+                  <span className={`font-medium ${challenge.enabled ? 'text-app-fg' : 'text-app-muted'}`}>
                     {challenge.title}
                   </span>
                 </div>
-                <p className={`text-sm mt-1 ${challenge.enabled ? 'text-gray-600' : 'text-gray-400'}`}>
+                <p className={`text-sm mt-1 ${challenge.enabled ? 'text-app-muted' : 'text-app-muted'}`}>
                   {challenge.description}
                 </p>
               </div>
               
               <button
                 onClick={() => handleRemoveChallenge(challenge.id)}
-                className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                className="p-1 text-app-muted hover:text-red-500 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -254,7 +254,7 @@ export default function ChallengesStep({
       </motion.div>
 
       {challenges.length === 0 && !showAI && (
-        <div className="text-center py-8 text-gray-400">
+        <div className="text-center py-8 text-app-muted">
           <Trophy className="w-12 h-12 mx-auto mb-2 opacity-50" />
           <p>Noch keine Challenges</p>
         </div>
@@ -262,7 +262,7 @@ export default function ChallengesStep({
 
       {/* Counter */}
       {challenges.length > 0 && (
-        <p className="text-sm text-gray-500 text-center">
+        <p className="text-sm text-app-muted text-center">
           {enabledCount} Challenge{enabledCount !== 1 ? 's' : ''} aktiv
         </p>
       )}
@@ -290,7 +290,7 @@ export default function ChallengesStep({
         
         <button
           onClick={onSkip}
-          className="w-full py-2 text-sm text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1"
+          className="w-full py-2 text-sm text-app-muted hover:text-app-fg flex items-center justify-center gap-1"
         >
           <SkipForward className="w-4 h-4" />
           Überspringen

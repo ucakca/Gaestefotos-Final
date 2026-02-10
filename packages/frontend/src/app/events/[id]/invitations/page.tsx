@@ -56,6 +56,7 @@ import {
   Lock,
 } from 'lucide-react';
 import { InvitationConfigEditor } from '@/components/invitation-editor/InvitationConfigEditor';
+import DashboardFooter from '@/components/DashboardFooter';
 import { InvitationConfig } from '@gaestefotos/shared';
 
 interface Invitation {
@@ -667,6 +668,7 @@ export default function InvitationsPage({ params }: { params: Promise<{ id: stri
           }}
         />
       )}
+      <DashboardFooter eventId={eventId!} />
     </AppLayout>
   );
 }
