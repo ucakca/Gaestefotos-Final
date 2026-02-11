@@ -1261,7 +1261,7 @@ router.get('/:eventId/mosaic/tile-image/:tileId', async (req: AuthRequest, res: 
     res.set({
       'Content-Type': 'image/jpeg',
       'Content-Length': buffer.length.toString(),
-      'Cache-Control': 'public, max-age=86400',
+      'Cache-Control': 'public, max-age=300',
     });
     res.send(buffer);
   } catch (error) {
