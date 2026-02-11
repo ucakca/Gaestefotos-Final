@@ -57,7 +57,7 @@ export default function MosaicGrid({
   gridWidth,
   gridHeight,
   targetImageUrl,
-  overlayIntensity = 30,
+  overlayIntensity = 10,
   animation = 'ZOOM_FLY',
   progress = 0,
   className = '',
@@ -188,7 +188,8 @@ export default function MosaicGrid({
             backgroundImage: `url(${targetImageUrl})`,
             backgroundSize: '100% 100%',
             backgroundPosition: 'center',
-            opacity: Math.max(overlayIntensity / 100, progress < 50 ? 0.25 : 0.1),
+            opacity: overlayIntensity / 100,
+            filter: 'blur(1px)',
           }}
         />
       )}
@@ -244,7 +245,7 @@ export default function MosaicGrid({
                       )}
                     </motion.div>
                   ) : (
-                    <div className="w-full h-full bg-white/[0.03] border border-white/[0.06]" />
+                    <div className="w-full h-full bg-black/20" />
                   )}
                 </div>
               );

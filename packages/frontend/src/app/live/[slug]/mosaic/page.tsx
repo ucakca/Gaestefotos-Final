@@ -214,22 +214,9 @@ export default function LiveMosaicPage() {
           className="w-full h-full"
         />
 
-        {/* Event title + progress overlay - top left */}
+        {/* Event title overlay - top left */}
         <div className="absolute top-4 left-4 z-50">
           <h1 className="text-white/80 text-xl font-bold drop-shadow-lg">{eventTitle}</h1>
-          {progress < 100 && (
-            <div className="mt-2 flex items-center gap-3">
-              <div className="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full transition-all duration-1000"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <span className="text-white/50 text-xs font-medium">
-                {progress}% — noch {stats ? stats.remaining : '?'} Fotos
-              </span>
-            </div>
-          )}
         </div>
 
         {/* QR Code overlay - top right */}

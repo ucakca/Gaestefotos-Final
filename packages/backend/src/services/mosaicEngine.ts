@@ -200,6 +200,75 @@ export class MosaicEngine {
   }
 
   /**
+   * Blend the target-image section for a grid cell onto a cropped tile.
+   * This creates the mosaic effect where each photo tile is tinted with
+   * the corresponding area of the target image.
+   */
+  async blendTargetOverlay(
+    croppedTile: Buffer,
+    targetImageBuffer: Buffer,
+    gridX: number,
+    gridY: number,
+    gridWidth: number,
+    gridHeight: number,
+    overlayIntensity: number, // 0-100
+    tileResolution: number = 300,
+  ): Promise<Buffer> {
+    if (overlayIntensity <= 0) return croppedTile;
+
+    try {
+      // Get target image dimensions
+      const targetMeta = await sharp(targetImageBuffer).metadata();
+      const tW = targetMeta.width || gridWidth;
+      const tH = targetMeta.height || gridHeight;
+
+      // Calculate the pixel region of the target image for this cell
+      const cellW = Math.floor(tW / gridWidth);
+      const cellH = Math.floor(tH / gridHeight);
+      const left = gridX * cellW;
+      const top = gridY * cellH;
+
+      // Extract and resize the target section to tile resolution
+      const targetSection = await sharp(targetImageBuffer)
+        .extract({
+          left: Math.min(left, tW - cellW),
+          top: Math.min(top, tH - cellH),
+          width: cellW,
+          height: cellH,
+        })
+        .resize(tileResolution, tileResolution, { fit: 'fill' })
+        .ensureAlpha()
+        .toBuffer();
+
+      // Set opacity on the target section overlay
+      const alpha = Math.round((overlayIntensity / 100) * 255);
+      const overlayWithAlpha = await sharp(targetSection)
+        .composite([{
+          input: Buffer.from([0, 0, 0, 255 - alpha]),
+          raw: { width: 1, height: 1, channels: 4 },
+          tile: true,
+          blend: 'dest-in',
+        }])
+        .toBuffer();
+
+      // Composite: photo underneath, target section on top with reduced opacity
+      return sharp(croppedTile)
+        .ensureAlpha()
+        .composite([{
+          input: overlayWithAlpha,
+          blend: 'over',
+        }])
+        .jpeg({ quality: 90 })
+        .toBuffer();
+    } catch (err) {
+      logger.warn('MosaicEngine: blendTargetOverlay failed, using unblended tile', {
+        error: (err as Error).message,
+      });
+      return croppedTile;
+    }
+  }
+
+  /**
    * Find the best empty grid cell for a photo based on color distance.
    */
   findBestPosition(
@@ -297,11 +366,32 @@ export class MosaicEngine {
       return null;
     }
 
+    // 2b. Blend target image overlay onto the cropped tile
+    let finalTile = croppedBuffer;
+    if (wall.targetImagePath && wall.overlayIntensity > 0) {
+      try {
+        const targetBuffer = await storageService.getFile(wall.targetImagePath);
+        finalTile = await this.blendTargetOverlay(
+          croppedBuffer,
+          targetBuffer,
+          position.x,
+          position.y,
+          wall.gridWidth,
+          wall.gridHeight,
+          wall.overlayIntensity,
+        );
+      } catch (err) {
+        logger.warn('MosaicEngine: Could not blend target overlay, using plain tile', {
+          error: (err as Error).message,
+        });
+      }
+    }
+
     // 3. Upload cropped tile to storage
     const croppedPath = await storageService.uploadFile(
       wall.eventId,
       `mosaic-tile-${position.x}-${position.y}.jpg`,
-      croppedBuffer,
+      finalTile,
       'image/jpeg'
     );
 
