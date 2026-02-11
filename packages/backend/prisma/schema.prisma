@@ -1361,3 +1361,96 @@ enum InvoiceStatus {
   VOID
   REFUNDED
 }
+
+// ─────────────────────────────────────────────────────────────
+// AI Provider Management
+// ─────────────────────────────────────────────────────────────
+
+model AiProvider {
+  id              String            @id @default(uuid())
+  slug            String            @unique         // z.B. "groq", "openai", "replicate", "stability"
+  name            String                            // Anzeigename z.B. "Groq (Llama 3.1)"
+  type            AiProviderType                    // LLM, IMAGE_GEN, FACE_RECOGNITION, VIDEO_GEN, STT, TTS
+  baseUrl         String?                           // Custom Endpoint URL (optional)
+  apiKeyEncrypted String?                           // AES-256-GCM verschlüsselt
+  apiKeyIv        String?                           // IV für Entschlüsselung
+  apiKeyTag       String?                           // Auth-Tag für AES-GCM
+  apiKeyHint      String?                           // Letzte 4 Zeichen des Keys zur Anzeige
+  defaultModel    String?                           // Default-Modell z.B. "llama-3.1-70b-versatile"
+  models          Json?                             // Verfügbare Modelle [{id, name, costPer1kTokens}]
+  isActive        Boolean           @default(true)
+  isDefault       Boolean           @default(false) // Default-Provider pro Typ
+  // Rate Limits
+  rateLimitPerMinute  Int?                          // Max Requests/Min
+  rateLimitPerDay     Int?                          // Max Requests/Tag
+  monthlyBudgetCents  Int?                          // Budget-Limit in Cent/Monat
+  // Config
+  config          Json?                             // Provider-spezifische Konfiguration
+  // Timestamps
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  // Relations
+  usageLogs       AiUsageLog[]
+  featureMappings AiFeatureMapping[]
+
+  @@index([type, isActive])
+  @@index([slug])
+  @@map("ai_providers")
+}
+
+model AiUsageLog {
+  id              String    @id @default(uuid())
+  providerId      String
+  feature         String                            // z.B. "chat", "face_search", "style_transfer", "highlight_reel"
+  model           String?                           // Verwendetes Modell
+  // Token/Cost Tracking
+  inputTokens     Int       @default(0)
+  outputTokens    Int       @default(0)
+  totalTokens     Int       @default(0)
+  costCents       Float     @default(0)             // Geschätzte Kosten in Cent
+  // Request Info
+  durationMs      Int       @default(0)             // Antwortzeit in ms
+  statusCode      Int?                              // HTTP Status (200, 429, 500 etc.)
+  success         Boolean   @default(true)
+  errorMessage    String?
+  // Context
+  eventId         String?
+  userId          String?
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  // Relations
+  provider        AiProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId, createdAt])
+  @@index([feature, createdAt])
+  @@index([createdAt])
+  @@map("ai_usage_logs")
+}
+
+model AiFeatureMapping {
+  id              String      @id @default(uuid())
+  feature         String      @unique               // z.B. "chat", "album_suggest", "style_transfer"
+  providerId      String
+  model           String?                           // Override des Default-Modells
+  isEnabled       Boolean     @default(true)
+  maxTokens       Int?
+  temperature     Float?
+  config          Json?                             // Feature-spezifische Config
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  // Relations
+  provider        AiProvider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([feature])
+  @@index([providerId])
+  @@map("ai_feature_mappings")
+}
+
+enum AiProviderType {
+  LLM
+  IMAGE_GEN
+  FACE_RECOGNITION
+  VIDEO_GEN
+  STT
+  TTS
+}

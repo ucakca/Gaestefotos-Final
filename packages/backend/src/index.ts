@@ -64,6 +64,7 @@ import cohostInvitesRoutes from './routes/cohostInvites';
 import uploadsRoutes from './routes/uploads';
 import aiRoutes from './routes/ai';
 import adminAiAnalysisRoutes from './routes/adminAiAnalysis';
+import adminAiProvidersRoutes from './routes/adminAiProviders';
 import qrDesignsRoutes from './routes/qrDesigns';
 import highlightReelsRoutes from './routes/highlightReels';
 import mosaicRoutes from './routes/mosaic';
@@ -581,6 +582,7 @@ app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
 // AI Routes (KI-Assistent)
 app.use('/api/ai', aiRoutes);
 app.use('/api/admin/ai', adminAiAnalysisRoutes);
+app.use('/api/admin/ai-providers', adminAiProvidersRoutes);
 
 // Tus.io resumable uploads
 app.use('/api/uploads', uploadsRoutes);

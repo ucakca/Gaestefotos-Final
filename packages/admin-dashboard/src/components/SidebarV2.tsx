@@ -26,6 +26,7 @@ import {
   Mail,
   QrCode,
   Building2,
+  Brain,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -65,6 +66,7 @@ const navigation: NavGroup[] = [
       { name: 'E-Mail Templates', href: '/manage/email-templates', icon: Mail },
       { name: 'Einladungs-Templates', href: '/invitation-templates', icon: FileText },
       { name: 'Partner', href: '/manage/partners', icon: Building2 },
+      { name: 'AI Provider', href: '/manage/ai-providers', icon: Brain },
     ],
   },
   {
