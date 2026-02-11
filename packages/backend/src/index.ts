@@ -65,6 +65,8 @@ import uploadsRoutes from './routes/uploads';
 import aiRoutes from './routes/ai';
 import adminAiAnalysisRoutes from './routes/adminAiAnalysis';
 import adminAiProvidersRoutes from './routes/adminAiProviders';
+import styleTransferRoutes from './routes/styleTransfer';
+import boothGamesRoutes from './routes/boothGames';
 import qrDesignsRoutes from './routes/qrDesigns';
 import highlightReelsRoutes from './routes/highlightReels';
 import mosaicRoutes from './routes/mosaic';
@@ -583,6 +585,8 @@ app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/admin/ai', adminAiAnalysisRoutes);
 app.use('/api/admin/ai-providers', adminAiProvidersRoutes);
+app.use('/api/style-transfer', styleTransferRoutes);
+app.use('/api/booth-games', boothGamesRoutes);
 
 // Tus.io resumable uploads
 app.use('/api/uploads', uploadsRoutes);

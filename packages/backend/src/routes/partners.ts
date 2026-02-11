@@ -497,4 +497,142 @@ router.put('/:partnerId/billing/:periodId', authMiddleware, async (req: AuthRequ
   }
 });
 
+// ─── SUBSCRIPTIONS ──────────────────────────────────────────────────────────
+
+const DEVICE_PRICES: Record<string, number> = {
+  MOSAIC_WALL: 5900,   // 59€/mo
+  PHOTO_BOOTH: 6900,   // 69€/mo
+  MIRROR_BOOTH: 7900,  // 79€/mo
+  KI_BOOTH: 7900,      // 79€/mo
+  DRAWBOT: 9900,       // 99€/mo
+};
+
+// List subscriptions for a partner
+router.get('/:partnerId/subscriptions', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { partnerId } = req.params;
+    if (!await requirePartnerAccess(req, res, partnerId)) return;
+
+    const subscriptions = await prisma.partnerSubscription.findMany({
+      where: { partnerId },
+      orderBy: { createdAt: 'desc' },
+      include: { devices: true },
+    });
+
+    res.json({ subscriptions });
+  } catch (error) {
+    logger.error('List subscriptions error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Laden der Abos' });
+  }
+});
+
+// Create subscription (Admin only)
+router.post('/:partnerId/subscriptions', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!requireAdmin(req, res)) return;
+    const { partnerId } = req.params;
+    const { plan, interval, pricePerMonthCents, notes } = req.body;
+
+    const now = new Date();
+    const periodEnd = new Date(now);
+    if (interval === 'YEARLY') {
+      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+    } else {
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+    }
+
+    const sub = await prisma.partnerSubscription.create({
+      data: {
+        partnerId,
+        plan: plan || 'BASE',
+        interval: interval || 'MONTHLY',
+        pricePerMonthCents: pricePerMonthCents ?? 4900, // Default 49€
+        discountPct: interval === 'YEARLY' ? 20 : 0,
+        currentPeriodStart: now,
+        currentPeriodEnd: periodEnd,
+        notes,
+      },
+      include: { devices: true },
+    });
+
+    res.status(201).json({ subscription: sub });
+  } catch (error) {
+    logger.error('Create subscription error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Erstellen des Abos' });
+  }
+});
+
+// Update subscription status
+router.put('/:partnerId/subscriptions/:subId', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!requireAdmin(req, res)) return;
+    const { subId } = req.params;
+    const { status, plan, interval, pricePerMonthCents, notes } = req.body;
+
+    const data: any = {};
+    if (status) {
+      data.status = status;
+      if (status === 'CANCELLED') data.cancelledAt = new Date();
+    }
+    if (plan) data.plan = plan;
+    if (interval) {
+      data.interval = interval;
+      data.discountPct = interval === 'YEARLY' ? 20 : 0;
+    }
+    if (pricePerMonthCents !== undefined) data.pricePerMonthCents = pricePerMonthCents;
+    if (notes !== undefined) data.notes = notes;
+
+    const sub = await prisma.partnerSubscription.update({
+      where: { id: subId },
+      data,
+      include: { devices: true },
+    });
+
+    res.json({ subscription: sub });
+  } catch (error) {
+    logger.error('Update subscription error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Aktualisieren' });
+  }
+});
+
+// Add device license to subscription
+router.post('/:partnerId/subscriptions/:subId/devices', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!requireAdmin(req, res)) return;
+    const { subId } = req.params;
+    const { deviceType, hardwareId } = req.body;
+
+    const priceCents = DEVICE_PRICES[deviceType] || 5900;
+
+    const license = await prisma.partnerDeviceLicense.create({
+      data: {
+        subscriptionId: subId,
+        deviceType,
+        hardwareId: hardwareId || null,
+        pricePerMonthCents: priceCents,
+      },
+    });
+
+    res.status(201).json({ license });
+  } catch (error) {
+    logger.error('Add device license error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Hinzufügen der Gerätelizenz' });
+  }
+});
+
+// Remove device license
+router.delete('/:partnerId/subscriptions/:subId/devices/:licenseId', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!requireAdmin(req, res)) return;
+    await prisma.partnerDeviceLicense.update({
+      where: { id: req.params.licenseId },
+      data: { isActive: false, deactivatedAt: new Date() },
+    });
+    res.json({ success: true });
+  } catch (error) {
+    logger.error('Remove device license error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Entfernen' });
+  }
+});
+
 export default router;

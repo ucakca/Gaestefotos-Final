@@ -1241,6 +1241,7 @@ model Partner {
   events          Event[]
   hardware        PartnerHardware[]
   billingPeriods  BillingPeriod[]
+  subscriptions   PartnerSubscription[]
 
   @@map("partners")
 }
@@ -1348,6 +1349,69 @@ enum BillingPeriodStatus {
   SENT
   PAID
   CANCELLED
+}
+
+// ─── PARTNER SUBSCRIPTIONS ───────────────────────────────────────────────────
+
+model PartnerSubscription {
+  id              String                    @id @default(uuid())
+  partnerId       String
+  plan            SubscriptionPlan
+  interval        SubscriptionInterval      @default(MONTHLY)
+  status          SubscriptionStatus        @default(ACTIVE)
+  // Pricing
+  pricePerMonthCents Int                    // Monatspreis in Cent
+  discountPct     Float                     @default(0)  // z.B. 20 für Jahresrabatt
+  // Period
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelledAt     DateTime?
+  // Metadata
+  notes           String?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  // Relations
+  partner         Partner                   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  devices         PartnerDeviceLicense[]
+
+  @@index([partnerId])
+  @@index([status])
+  @@map("partner_subscriptions")
+}
+
+model PartnerDeviceLicense {
+  id              String    @id @default(uuid())
+  subscriptionId  String
+  hardwareId      String?   // Link to PartnerHardware (optional)
+  deviceType      String    // MOSAIC_WALL, PHOTO_BOOTH, MIRROR_BOOTH, KI_BOOTH, DRAWBOT
+  pricePerMonthCents Int    // Gerätepreis in Cent
+  isActive        Boolean   @default(true)
+  activatedAt     DateTime  @default(now())
+  deactivatedAt   DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  // Relations
+  subscription    PartnerSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+  @@map("partner_device_licenses")
+}
+
+enum SubscriptionPlan {
+  BASE            // 49€/mo — Dashboard, Team, Hardware Mgmt
+  PROFESSIONAL    // Custom pricing — erweiterte Features
+}
+
+enum SubscriptionInterval {
+  MONTHLY
+  YEARLY          // -20% Rabatt
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  PAUSED
 }
 
 enum InvoiceSource {
