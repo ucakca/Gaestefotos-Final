@@ -58,12 +58,18 @@ async function main() {
         newIntensity,
       );
 
-      await storageService.uploadFile(
+      const newPath = await storageService.uploadFile(
         wall.eventId,
         `mosaic-tile-${tile.gridX}-${tile.gridY}.jpg`,
         blended,
         'image/jpeg',
       );
+
+      // Update DB to point to the new blended tile
+      await prisma.mosaicTile.update({
+        where: { id: tile.id },
+        data: { croppedImagePath: newPath },
+      });
 
       ok++;
       process.stdout.write(`✅ ${tile.gridX},${tile.gridY}  `);

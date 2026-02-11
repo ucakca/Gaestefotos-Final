@@ -120,13 +120,18 @@ async function main() {
           wall.overlayIntensity,
         );
 
-        // Re-upload
-        await storageService.uploadFile(
+        // Re-upload and update DB path
+        const newPath = await storageService.uploadFile(
           wall.eventId,
           `mosaic-tile-${tile.gridX}-${tile.gridY}.jpg`,
           blended,
           'image/jpeg',
         );
+
+        await prisma.mosaicTile.update({
+          where: { id: tile.id },
+          data: { croppedImagePath: newPath },
+        });
 
         totalProcessed++;
         process.stdout.write(`  ✅ ${tile.gridX},${tile.gridY}`);
