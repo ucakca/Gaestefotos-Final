@@ -22,7 +22,10 @@ export type FeatureKey =
   | 'guestlist'
   | 'fullInvitation'
   | 'coHosts'
-  | 'adFree';
+  | 'adFree'
+  | 'mosaicWall'
+  | 'mosaicPrint'
+  | 'mosaicExport';
 
 // Limit Keys die geprüft werden können
 export type LimitKey =
@@ -46,6 +49,9 @@ const featureToFieldMap: Record<FeatureKey, string> = {
   fullInvitation: 'allowFullInvitation',
   coHosts: 'allowCoHosts',
   adFree: 'isAdFree',
+  mosaicWall: 'allowMosaicWall',
+  mosaicPrint: 'allowMosaicPrint',
+  mosaicExport: 'allowMosaicExport',
 };
 
 // Features die im Free-Tier immer aktiviert sind
@@ -230,6 +236,9 @@ export async function getEventFeatures(eventId: string): Promise<{
     fullInvitation: false,
     coHosts: false,
     adFree: false,
+    mosaicWall: false,
+    mosaicPrint: false,
+    mosaicExport: false,
   };
   
   const limits: Record<LimitKey, number | null> = {

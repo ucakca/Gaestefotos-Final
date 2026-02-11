@@ -1,0 +1,20 @@
+[Unit]
+Description=Gästefotos Print Terminal (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/gaestefotos-app-v2/packages/print-terminal
+Environment=NODE_ENV=production
+Environment=PORT=3002
+Environment=NEXT_PUBLIC_API_URL=https://app.xn--gstefotos-v2a.com
+
+ExecStart=/usr/bin/node /root/gaestefotos-app-v2/packages/print-terminal/node_modules/next/dist/bin/next start -p 3002
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

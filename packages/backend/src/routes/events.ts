@@ -319,7 +319,32 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       event.pendingCount = pendingMap.get(event.id) || 0;
     });
 
-    res.json({ events: eventsWithCounts });
+    // Enrich with package tier info
+    const eventIds = events.map(e => e.id);
+    const entitlements = await prisma.eventEntitlement.findMany({
+      where: { eventId: { in: eventIds }, status: 'ACTIVE' },
+      orderBy: { createdAt: 'desc' },
+      select: { eventId: true, wcSku: true },
+      distinct: ['eventId'],
+    });
+
+    const skus = [...new Set(entitlements.map(e => e.wcSku).filter(Boolean))] as string[];
+    const pkgDefs = skus.length > 0
+      ? await prisma.packageDefinition.findMany({
+          where: { sku: { in: skus }, isActive: true },
+          select: { sku: true, name: true, resultingTier: true },
+        })
+      : [];
+
+    const skuToName = new Map(pkgDefs.map(p => [p.sku, p.name]));
+    const entMap = new Map(entitlements.map(e => [e.eventId, e.wcSku]));
+
+    const enriched = eventsWithCounts.map(event => ({
+      ...event,
+      packageType: skuToName.get(entMap.get(event.id) || '') || 'Free',
+    }));
+
+    res.json({ events: enriched });
   } catch (error) {
     logger.error('Get events error', { message: getErrorMessage(error) });
     res.status(500).json({ error: 'Internal server error' });
@@ -2096,8 +2121,14 @@ router.get(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      // Require at least view access to the event
-      if (!(await hasEventAccess(req, eventId))) {
+      // Require host, admin, member, or guest access
+      const isHost = !!req.userId && req.userId === event.hostId;
+      const isAdmin = req.userRole === 'ADMIN';
+      const isMember = !!req.userId && !!(await prisma.eventMember.findUnique({
+        where: { eventId_userId: { eventId, userId: req.userId } },
+      }));
+      const isGuest = hasEventAccess(req, eventId);
+      if (!isHost && !isAdmin && !isMember && !isGuest) {
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
@@ -2119,6 +2150,151 @@ router.get(
     } catch (error) {
       logger.error('Get package info error', { message: getErrorMessage(error), eventId: req.params.id });
       res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+// ─── Paket-Wechsel für Event ─────────────────────────────────────────────────
+
+router.get(
+  '/:id/available-packages',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const eventId = req.params.id;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+
+      const packages = await prisma.packageDefinition.findMany({
+        where: { isActive: true, type: 'BASE' },
+        orderBy: { displayOrder: 'asc' },
+        select: {
+          id: true,
+          sku: true,
+          name: true,
+          resultingTier: true,
+          description: true,
+          priceEurCents: true,
+          displayOrder: true,
+          storageLimitBytes: true,
+          storageLimitPhotos: true,
+          storageDurationDays: true,
+          allowVideoUpload: true,
+          allowStories: true,
+          allowPasswordProtect: true,
+          allowGuestbook: true,
+          allowZipDownload: true,
+          allowBulkOperations: true,
+          allowLiveWall: true,
+          allowFaceSearch: true,
+          allowGuestlist: true,
+          allowFullInvitation: true,
+          allowCoHosts: true,
+          isAdFree: true,
+          allowMosaicWall: true,
+          allowMosaicPrint: true,
+          allowMosaicExport: true,
+          maxCategories: true,
+          maxChallenges: true,
+          maxCoHosts: true,
+          maxZipDownloadPhotos: true,
+        },
+      });
+
+      // Serialize BigInt fields
+      const serialized = packages.map(p => ({
+        ...p,
+        storageLimitBytes: p.storageLimitBytes?.toString() || null,
+      }));
+
+      res.json({ packages: serialized });
+    } catch (error) {
+      logger.error('Get available packages error', { message: getErrorMessage(error) });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+router.put(
+  '/:id/change-package',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const eventId = req.params.id;
+      const { sku } = req.body;
+
+      if (!sku || typeof sku !== 'string') {
+        return res.status(400).json({ error: 'SKU ist erforderlich' });
+      }
+
+      // Only event owner can change package
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+
+      // Verify the target package exists and is active
+      const targetPkg = await prisma.packageDefinition.findFirst({
+        where: { sku, isActive: true, type: 'BASE' },
+      });
+      if (!targetPkg) {
+        return res.status(404).json({ error: 'Paket nicht gefunden' });
+      }
+
+      // Get current entitlement
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { hostId: true, host: { select: { wordpressUserId: true } } },
+      });
+      if (!event) {
+        return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      const wpUserId = event.host?.wordpressUserId ?? 0;
+
+      // Find existing active entitlement
+      const existing = await prisma.eventEntitlement.findFirst({
+        where: { eventId, status: 'ACTIVE' },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (existing) {
+        // Update existing entitlement
+        await prisma.eventEntitlement.update({
+          where: { id: existing.id },
+          data: {
+            wcSku: sku,
+            storageLimitBytes: targetPkg.storageLimitBytes,
+            source: `manual_switch_from_${existing.wcSku || 'free'}`,
+          },
+        });
+      } else {
+        // Create new entitlement
+        await prisma.eventEntitlement.create({
+          data: {
+            eventId,
+            wpUserId,
+            status: 'ACTIVE',
+            source: 'manual_switch_from_free',
+            wcSku: sku,
+            storageLimitBytes: targetPkg.storageLimitBytes,
+          },
+        });
+      }
+
+      logger.info('Package changed', {
+        eventId,
+        newSku: sku,
+        previousSku: existing?.wcSku || 'free',
+        userId: req.userId,
+      });
+
+      // Return updated package info
+      const packageInfo = await getEventFeatures(eventId);
+      res.json({ success: true, ...packageInfo });
+    } catch (error) {
+      logger.error('Change package error', { message: getErrorMessage(error), eventId: req.params.id });
+      res.status(500).json({ error: 'Fehler beim Paketwechsel' });
     }
   }
 );

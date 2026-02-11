@@ -1,13 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { Event as EventType, Photo } from '@gaestefotos/shared';
 import { useEventRealtime } from '@/hooks/useEventRealtime';
+import { wsManager } from '@/lib/websocket';
 import QRCode from '@/components/QRCode';
 import { Button } from '@/components/ui/Button';
+import MosaicGrid, { MosaicTileData } from '@/components/mosaic/MosaicGrid';
+import MosaicTicker from '@/components/mosaic/MosaicTicker';
 
 export default function LiveWallPage() {
   const params = useParams();
@@ -16,12 +19,29 @@ export default function LiveWallPage() {
   const [event, setEvent] = useState<EventType | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'grid' | 'slideshow' | 'collage' | 'masonry' | 'floating'>('grid');
+  const searchParams = useSearchParams();
+  const initialMode = (searchParams.get('mode') || 'grid') as any;
+  const [viewMode, setViewMode] = useState<'grid' | 'slideshow' | 'collage' | 'masonry' | 'floating' | 'mosaic' | 'mixed'>(initialMode);
   const [sortMode, setSortMode] = useState<'newest' | 'random'>('newest');
   const [currentSlide, setCurrentSlide] = useState(0);
   const [realtimeEnabled, setRealtimeEnabled] = useState(true);
   const prevIdsRef = useRef<Set<string>>(new Set());
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
+
+  // Mosaic state (for mosaic + mixed modes)
+  const [mosaicWall, setMosaicWall] = useState<any>(null);
+  const [mosaicTiles, setMosaicTiles] = useState<MosaicTileData[]>([]);
+  const [mosaicStats, setMosaicStats] = useState<any>(null);
+  const [mosaicProgress, setMosaicProgress] = useState(0);
+  const [hasMosaic, setHasMosaic] = useState(false);
+  const lastTileTimeRef = useRef<string | null>(null);
+
+  // Mixed mode: alternate between gallery slideshow and mosaic view
+  const [mixedPhase, setMixedPhase] = useState<'mosaic' | 'photos'>('mosaic');
+  const [mixedPhotoIndex, setMixedPhotoIndex] = useState(0);
+  const mixedPhotosPerCycle = 3;
+  const mixedMosaicDuration = 10000; // 10s mosaic
+  const mixedPhotoDuration = 5000;   // 5s per photo
 
   useEffect(() => {
     loadEvent();
@@ -81,6 +101,111 @@ export default function LiveWallPage() {
     }, 10_000);
     return () => clearInterval(interval);
   }, [event?.id, realtimeEnabled]);
+
+  // ── Mosaic data loading ──
+  const loadMosaicDisplay = useCallback(async (evId: string) => {
+    try {
+      const { data } = await api.get(`/events/${evId}/mosaic/display`);
+      setMosaicWall(data.wall);
+      setMosaicTiles(data.tiles || []);
+      setMosaicProgress(data.progress || 0);
+      setHasMosaic(true);
+      const tileList = data.tiles || [];
+      if (tileList.length > 0) {
+        const maxT = Math.max(...tileList.map((t: MosaicTileData) => t.t));
+        lastTileTimeRef.current = new Date(maxT).toISOString();
+      }
+    } catch {
+      setHasMosaic(false);
+    }
+  }, []);
+
+  const loadMosaicStats = useCallback(async (evId: string) => {
+    try {
+      const { data } = await api.get(`/events/${evId}/mosaic/stats`);
+      setMosaicStats(data.stats);
+    } catch { /* non-critical */ }
+  }, []);
+
+  const loadNewMosaicTiles = useCallback(async (evId: string) => {
+    if (!lastTileTimeRef.current) return;
+    try {
+      const { data } = await api.get(`/events/${evId}/mosaic/tiles`, {
+        params: { since: lastTileTimeRef.current },
+      });
+      const newTiles = (data.tiles || []).map((t: any) => ({
+        id: t.id, x: t.gridX, y: t.gridY, url: t.croppedImageUrl,
+        hero: t.isHero, auto: t.isAutoFilled, t: new Date(t.createdAt).getTime(),
+      }));
+      if (newTiles.length > 0) {
+        setMosaicTiles(prev => {
+          const existing = new Set(prev.map(t => t.id));
+          const merged = [...prev];
+          for (const nt of newTiles) { if (!existing.has(nt.id)) merged.push(nt); }
+          return merged;
+        });
+        const maxT = Math.max(...newTiles.map((t: MosaicTileData) => t.t));
+        lastTileTimeRef.current = new Date(maxT).toISOString();
+        if (mosaicWall) {
+          const total = mosaicWall.gridWidth * mosaicWall.gridHeight;
+          setMosaicTiles(prev => { setMosaicProgress(Math.round((prev.length / total) * 100)); return prev; });
+        }
+      }
+    } catch { /* non-critical */ }
+  }, [mosaicWall]);
+
+  // Load mosaic on event load (for mosaic/mixed modes)
+  useEffect(() => {
+    if (!event?.id) return;
+    loadMosaicDisplay(event.id);
+    loadMosaicStats(event.id);
+  }, [event?.id, loadMosaicDisplay, loadMosaicStats]);
+
+  // WebSocket for mosaic tile events
+  useEffect(() => {
+    if (!event?.id || !hasMosaic) return;
+    wsManager.connect();
+    wsManager.joinEvent(event.id);
+    const unsub = wsManager.on('mosaic_tile_placed', () => {
+      loadNewMosaicTiles(event.id);
+      loadMosaicStats(event.id);
+    });
+    return () => { unsub(); wsManager.leaveEvent(event.id); };
+  }, [event?.id, hasMosaic, loadNewMosaicTiles, loadMosaicStats]);
+
+  // Mosaic polling fallback
+  useEffect(() => {
+    if (!event?.id || !hasMosaic) return;
+    const interval = setInterval(() => {
+      loadNewMosaicTiles(event.id);
+      loadMosaicStats(event.id);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [event?.id, hasMosaic, loadNewMosaicTiles, loadMosaicStats]);
+
+  // ── Mixed mode timer ──
+  useEffect(() => {
+    if (viewMode !== 'mixed' || !hasMosaic) return;
+    let timer: NodeJS.Timeout;
+
+    if (mixedPhase === 'mosaic') {
+      timer = setTimeout(() => {
+        setMixedPhase('photos');
+        setMixedPhotoIndex(0);
+      }, mixedMosaicDuration);
+    } else {
+      timer = setTimeout(() => {
+        const nextIdx = mixedPhotoIndex + 1;
+        if (nextIdx >= mixedPhotosPerCycle || nextIdx >= displayPhotos.length) {
+          setMixedPhase('mosaic');
+        } else {
+          setMixedPhotoIndex(nextIdx);
+        }
+      }, mixedPhotoDuration);
+    }
+
+    return () => clearTimeout(timer);
+  }, [viewMode, mixedPhase, mixedPhotoIndex, hasMosaic]);
 
   // Track newly-arrived photos for a subtle highlight animation
   useEffect(() => {
@@ -173,10 +298,10 @@ export default function LiveWallPage() {
         <div className="flex gap-2 items-center flex-wrap">
           {/* View Mode Selector */}
           <div className="flex bg-app-bg/10 rounded-lg p-1">
-            {(['grid', 'collage', 'masonry', 'floating', 'slideshow'] as const).map((mode) => (
+            {(['grid', 'collage', 'masonry', 'floating', 'slideshow', ...(hasMosaic ? ['mosaic', 'mixed'] as const : [])] as const).map((mode) => (
               <button
                 key={mode}
-                onClick={() => setViewMode(mode)}
+                onClick={() => setViewMode(mode as any)}
                 className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                   viewMode === mode 
                     ? 'bg-app-bg text-app-fg' 
@@ -186,7 +311,9 @@ export default function LiveWallPage() {
                 {mode === 'grid' ? 'Grid' : 
                  mode === 'collage' ? 'Collage' :
                  mode === 'masonry' ? 'Masonry' :
-                 mode === 'floating' ? 'Floating' : 'Slideshow'}
+                 mode === 'floating' ? 'Floating' :
+                 mode === 'mosaic' ? '🧩 Mosaik' :
+                 mode === 'mixed' ? '🔀 Mix' : 'Slideshow'}
               </button>
             ))}
           </div>
@@ -419,6 +546,87 @@ export default function LiveWallPage() {
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-app-fg/50 px-4 py-2 rounded">
               {currentSlide + 1} / {displayPhotos.length}
             </div>
+          )}
+        </div>
+      )}
+
+      {/* Mosaic Mode (embedded in wall page) */}
+      {viewMode === 'mosaic' && hasMosaic && mosaicWall && (
+        <div className="pt-20 px-0 pb-0 h-screen flex flex-col">
+          <div className="flex-1 relative">
+            <MosaicGrid
+              tiles={mosaicTiles}
+              gridWidth={mosaicWall.gridWidth}
+              gridHeight={mosaicWall.gridHeight}
+              targetImageUrl={mosaicWall.targetImageUrl}
+              overlayIntensity={mosaicWall.overlayIntensity}
+              animation={mosaicWall.displayAnimation}
+              progress={mosaicProgress}
+              className="w-full h-full"
+            />
+          </div>
+          {mosaicWall.showTicker && (
+            <MosaicTicker stats={mosaicStats} />
+          )}
+        </div>
+      )}
+
+      {/* Mixed Mode: alternating mosaic and photo slideshow */}
+      {viewMode === 'mixed' && hasMosaic && mosaicWall && (
+        <div className="pt-20 px-0 pb-0 h-screen flex flex-col">
+          <div className="flex-1 relative overflow-hidden">
+            <AnimatePresence mode="wait">
+              {mixedPhase === 'mosaic' ? (
+                <motion.div
+                  key="mosaic-phase"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1 }}
+                  className="absolute inset-0"
+                >
+                  <MosaicGrid
+                    tiles={mosaicTiles}
+                    gridWidth={mosaicWall.gridWidth}
+                    gridHeight={mosaicWall.gridHeight}
+                    targetImageUrl={mosaicWall.targetImageUrl}
+                    overlayIntensity={mosaicWall.overlayIntensity}
+                    animation={mosaicWall.displayAnimation}
+                    progress={mosaicProgress}
+                    className="w-full h-full"
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={`photo-${mixedPhotoIndex}`}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.05 }}
+                  transition={{ duration: 0.8 }}
+                  className="absolute inset-0 flex items-center justify-center bg-black"
+                >
+                  {displayPhotos.length > 0 && displayPhotos[mixedPhotoIndex % displayPhotos.length] && (
+                    <div className="relative max-w-5xl mx-auto">
+                      <img
+                        src={displayPhotos[mixedPhotoIndex % displayPhotos.length]?.url || ''}
+                        alt="Event Foto"
+                        className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+                      />
+                      {(displayPhotos[mixedPhotoIndex % displayPhotos.length] as any)?.uploadedBy && (
+                        <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-lg">
+                          <span className="text-white text-sm">
+                            📸 {(displayPhotos[mixedPhotoIndex % displayPhotos.length] as any).uploadedBy}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          {mosaicWall.showTicker && (
+            <MosaicTicker stats={mosaicStats} />
           )}
         </div>
       )}

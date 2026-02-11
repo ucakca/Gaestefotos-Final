@@ -14,6 +14,7 @@ import { extractCapturedAtFromImage } from '../services/uploadDatePolicy';
 import { emailService } from '../services/email';
 import { serializeBigInt } from '../utils/serializers';
 import { selectSmartCategoryId } from '../services/smartAlbum';
+import { mosaicEngine } from '../services/mosaicEngine';
 import archiver from 'archiver';
 import { logger } from '../utils/logger';
 
@@ -125,7 +126,7 @@ const uploadSinglePhoto = (req: AuthRequest, res: Response, next: any) => {
 router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
-    const { status } = req.query;
+    const { status, limit, skip } = req.query;
 
     const where: any = { eventId, isStoryOnly: false };
 
@@ -139,6 +140,9 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
         }
       }
     }
+
+    const limitNum = limit ? Math.min(parseInt(limit as string, 10) || 100, 200) : undefined;
+    const skipNum = skip ? parseInt(skip as string, 10) || 0 : 0;
 
     const photos = await prisma.photo.findMany({
       where,
@@ -171,11 +175,15 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
       orderBy: {
         createdAt: 'desc',
       },
+      ...(limitNum ? { take: limitNum + 1, skip: skipNum } : {}),
     });
+
+    const hasMore = limitNum ? photos.length > limitNum : false;
+    const resultPhotos = hasMore ? photos.slice(0, limitNum) : photos;
 
     // Use direct URL if it's an external URL (e.g. Unsplash), otherwise proxy via backend
     // Also flatten challenge info for easier frontend consumption
-    const photosWithProxyUrls = photos.map((photo: any) => {
+    const photosWithProxyUrls = resultPhotos.map((photo: any) => {
       const challengeCompletion = photo.challengeCompletions;
       return {
         ...photo,
@@ -186,7 +194,10 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
       };
     });
 
-    res.json({ photos: serializeBigInt(photosWithProxyUrls) });
+    res.json({
+      photos: serializeBigInt(photosWithProxyUrls),
+      pagination: { hasMore, skip: skipNum, limit: limitNum || resultPhotos.length },
+    });
   } catch (error: any) {
     logger.error('Get photos error', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Internal server error' });
@@ -331,6 +342,31 @@ router.post(
       io.to(`event:${eventId}`).emit('photo_uploaded', {
         photo: serializeBigInt(photoWithProxyUrl),
       });
+
+      // Mosaic Wall auto-hook: place photo as tile if event has active mosaic (async, non-blocking)
+      if (photo.status === 'APPROVED') {
+        prisma.mosaicWall.findUnique({
+          where: { eventId },
+          select: { id: true, status: true },
+        }).then(async (wall) => {
+          if (wall?.status === 'ACTIVE') {
+            try {
+              const photoBuffer = await storageService.getFile(storagePath);
+              const result = await mosaicEngine.placePhoto(wall.id, photo.id, photoBuffer, 'SMARTPHONE');
+              if (result) {
+                io.to(`event:${eventId}`).emit('mosaic_tile_placed', {
+                  tileId: result.tileId,
+                  position: result.position,
+                  printNumber: result.printNumber,
+                  photoId: photo.id,
+                });
+              }
+            } catch (err: any) {
+              logger.warn('Mosaic auto-place failed', { error: err.message, eventId, photoId: photo.id });
+            }
+          }
+        }).catch(() => {});
+      }
 
       // Send upload notification to host (async, non-blocking)
       const uploaderName = (req.body?.uploaderName || 'Ein Gast').trim();

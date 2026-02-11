@@ -34,7 +34,13 @@ export default function EventCard({ event, index = 0, photoCount = 0, guestCount
   
   // Get package info (mock for now - would come from event data)
   const packageType = (event as any).packageType || 'Free';
-  const isPast = event.dateTime && new Date(event.dateTime) < new Date();
+  // Event is only "past" after the event day has fully ended (next day midnight)
+  const isPast = (() => {
+    if (!event.dateTime) return false;
+    const eventDay = new Date(event.dateTime);
+    eventDay.setHours(23, 59, 59, 999);
+    return eventDay < new Date();
+  })();
   
   // Calculate days until deletion based on package
   // Free: 14 days after event, Premium: 365 days after event

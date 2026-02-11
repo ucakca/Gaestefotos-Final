@@ -15,7 +15,10 @@ export type FeatureKey =
   | 'guestlist'
   | 'fullInvitation'
   | 'coHosts'
-  | 'adFree';
+  | 'adFree'
+  | 'mosaicWall'
+  | 'mosaicPrint'
+  | 'mosaicExport';
 
 export type LimitKey =
   | 'maxCategories'
@@ -57,6 +60,9 @@ const DEFAULT_PACKAGE_INFO: PackageInfo = {
     fullInvitation: false,
     coHosts: false,
     adFree: false,
+    mosaicWall: false,
+    mosaicPrint: false,
+    mosaicExport: false,
   },
   limits: {
     maxCategories: 1,
@@ -81,6 +87,9 @@ export const FEATURE_DESCRIPTIONS: Record<FeatureKey, { name: string; descriptio
   fullInvitation: { name: 'Erweiterte Einladungen', description: 'Einladungen per E-Mail versenden' },
   coHosts: { name: 'Co-Hosts', description: 'Andere Personen als Mitverwalter einladen' },
   adFree: { name: 'Werbefrei', description: 'Keine Werbung für Gäste' },
+  mosaicWall: { name: 'Mosaic Wall', description: 'Foto-Mosaik aus Gäste-Fotos erstellen' },
+  mosaicPrint: { name: 'Mosaic Print', description: 'Tiles als Labels drucken (Print-Station)' },
+  mosaicExport: { name: 'Mosaic Export', description: 'HD-Poster des fertigen Mosaiks herunterladen' },
 };
 
 export function usePackageFeatures(eventId: string | null) {

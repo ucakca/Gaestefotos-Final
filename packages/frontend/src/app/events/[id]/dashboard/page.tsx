@@ -58,6 +58,7 @@ import {
   Upload,
   RefreshCw,
   Wifi,
+  LayoutGrid,
 } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
@@ -1044,6 +1045,30 @@ function OverviewTab({
             <div className="text-xs text-app-muted">{shareUrl ? 'Erneut kopieren' : 'Link erzeugen'}</div>
           </div>
         </button>
+        <Link
+          href={`/events/${eventId}/mosaic`}
+          className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-pink-500/10 to-pink-600/5 border border-pink-200 p-4"
+        >
+          <div className="w-10 h-10 rounded-xl bg-app-card flex items-center justify-center shadow-sm text-pink-500">
+            <LayoutGrid className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-medium text-app-fg">Mosaic Wall</div>
+            <div className="text-xs text-app-muted">Foto-Mosaik</div>
+          </div>
+        </Link>
+        <Link
+          href={`/events/${eventId}/package`}
+          className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-amber-500/10 to-amber-600/5 border border-amber-200 p-4"
+        >
+          <div className="w-10 h-10 rounded-xl bg-app-card flex items-center justify-center shadow-sm text-amber-500">
+            <Package className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-medium text-app-fg">Paket</div>
+            <div className="text-xs text-app-muted">Upgrade & Wechsel</div>
+          </div>
+        </Link>
       </div>
 
       {/* Share URL Display */}

@@ -38,6 +38,7 @@ import { useToastStore } from '@/store/toastStore';
 
 const StoryViewer = dynamic(() => import('@/components/guest/StoryViewer'), { ssr: false });
 const FaceSearch = dynamic(() => import('@/components/FaceSearch'), { ssr: false });
+const MosaicPrintUpload = dynamic(() => import('@/components/mosaic/MosaicPrintUpload'), { ssr: false });
 
 export default function PublicEventPageV2() {
   const params = useParams();
@@ -55,6 +56,7 @@ export default function PublicEventPageV2() {
   const [uploadChallengeTitle, setUploadChallengeTitle] = useState<string | null>(null);
   const [likeUpdates, setLikeUpdates] = useState<Record<string, { liked: boolean; count: number }>>({});
   const [forceShowWifi, setForceShowWifi] = useState(false);
+  const [mosaicPrintEnabled, setMosaicPrintEnabled] = useState(false);
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const { isHeaderVisible, showJumpToTop, scrollToTop } = useScrollHeader(300);
@@ -102,6 +104,19 @@ export default function PublicEventPageV2() {
     onStoryResume,
     reloadStories,
   } = useStoriesViewer(event?.id ?? null, inviteExchangeBump);
+
+  // Check if mosaic print is enabled for this event
+  useEffect(() => {
+    if (!event?.id) return;
+    api.get(`/events/${event.id}/mosaic/display`)
+      .then(res => {
+        const wall = res.data?.wall;
+        if (wall?.printEnabled && wall?.status === 'ACTIVE') {
+          setMosaicPrintEnabled(true);
+        }
+      })
+      .catch(() => {});
+  }, [event?.id]);
 
   // Load guestbook entries
   useEffect(() => {
@@ -320,6 +335,13 @@ export default function PublicEventPageV2() {
               forceShow={forceShowWifi}
               onDismiss={() => setForceShowWifi(false)}
             />
+          )}
+
+          {/* Mosaic Print Upload - if print terminal mode is active */}
+          {mosaicPrintEnabled && event?.id && (
+            <div className="px-4 mb-3">
+              <MosaicPrintUpload eventId={event.id} eventSlug={slug} />
+            </div>
           )}
 
           {/* V0 Album Filter (Pills) - only on Feed */}

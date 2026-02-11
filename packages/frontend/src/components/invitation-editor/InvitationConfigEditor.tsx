@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Checkbox } from '@/components/ui/Checkbox';
-import { Plus, Trash2, Calendar, MapPin, Users, Settings } from 'lucide-react';
+import { Plus, Trash2, Calendar, MapPin, Users, Settings, Palette } from 'lucide-react';
 
 interface InvitationConfigEditorProps {
   invitationId: string;
@@ -20,7 +20,7 @@ interface InvitationConfigEditorProps {
 export function InvitationConfigEditor({ invitationId, initialConfig, onSave, onClose }: InvitationConfigEditorProps) {
   const [config, setConfig] = useState<Partial<InvitationConfig>>(initialConfig || {});
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'basic' | 'groups' | 'schedule' | 'locations'>('basic');
+  const [activeTab, setActiveTab] = useState<'basic' | 'design' | 'groups' | 'schedule' | 'locations'>('basic');
 
   const handleSave = async () => {
     try {
@@ -82,6 +82,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
         <div className="border-b border-gray-200 px-6 flex gap-4 overflow-x-auto">
           {[
             { id: 'basic', label: 'Basis', icon: Settings },
+            { id: 'design', label: 'Design', icon: Palette },
             { id: 'groups', label: 'Gästegruppen', icon: Users },
             { id: 'schedule', label: 'Zeitplan', icon: Calendar },
             { id: 'locations', label: 'Locations', icon: MapPin },
@@ -90,7 +91,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as 'basic' | 'groups' | 'schedule' | 'locations')}
+                onClick={() => setActiveTab(tab.id as 'basic' | 'design' | 'groups' | 'schedule' | 'locations')}
                 className={`py-3 px-4 border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-rose text-rose font-medium'
@@ -102,6 +103,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
               </button>
             );
           })}
+
         </div>
 
         {/* Content */}
@@ -172,6 +174,65 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   onCheckedChange={(checked) => setConfig({ ...config, showGalleryLink: !!checked })}
                 />
                 <label className="text-sm font-medium">Link zur Foto-Galerie anzeigen</label>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'design' && (
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">Persönliche Nachricht</label>
+                <Textarea
+                  value={(config as any).message || ''}
+                  onChange={(e) => setConfig({ ...config, message: e.target.value } as any)}
+                  placeholder="Wir freuen uns auf euch! Bitte bringt gute Laune mit."
+                  rows={3}
+                />
+                <p className="text-xs text-gray-400 mt-1">Wird unter dem Titel auf der Einladungskarte angezeigt</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Akzentfarbe</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={(config as any).design?.accentColor || '#6366f1'}
+                    onChange={(e) => setConfig({ ...config, design: { ...((config as any).design || {}), accentColor: e.target.value } } as any)}
+                    className="w-10 h-10 rounded-lg border cursor-pointer"
+                  />
+                  <Input
+                    value={(config as any).design?.accentColor || '#6366f1'}
+                    onChange={(e) => setConfig({ ...config, design: { ...((config as any).design || {}), accentColor: e.target.value } } as any)}
+                    placeholder="#6366f1"
+                    className="flex-1"
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Hauptfarbe des Einladungsdesigns</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Hintergrundbild (URL)</label>
+                <Input
+                  value={(config as any).design?.backgroundImage || ''}
+                  onChange={(e) => setConfig({ ...config, design: { ...((config as any).design || {}), backgroundImage: e.target.value } } as any)}
+                  placeholder="https://example.com/bild.jpg"
+                />
+                <p className="text-xs text-gray-400 mt-1">Wird als Hero-Hintergrund auf der Einladungskarte verwendet</p>
+                {(config as any).design?.backgroundImage && (
+                  <div className="mt-3 rounded-xl overflow-hidden border h-32">
+                    <img
+                      src={(config as any).design.backgroundImage}
+                      alt="Vorschau"
+                      className="w-full h-full object-cover"
+                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
+                <h4 className="text-sm font-medium text-indigo-800 mb-1">Vorschau-Tipp</h4>
+                <p className="text-xs text-indigo-600">Die Einladungskarte ist unter /i/[slug] erreichbar. Änderungen werden sofort sichtbar.</p>
               </div>
             </div>
           )}

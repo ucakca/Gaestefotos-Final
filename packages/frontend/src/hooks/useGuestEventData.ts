@@ -71,7 +71,7 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
   const challengePhotosRef = useRef<any[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
+  const currentPageRef = useRef(0);
   const photosPerPage = 30;
 
   const extractInviteTokenFromUrl = (): string | null => {
@@ -146,12 +146,12 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
     loadingRef.current = true;
 
     if (reset) {
-      setCurrentPage(0);
+      currentPageRef.current = 0;
       setHasMore(true);
       setPhotos([]);
     }
 
-    const page = reset ? 0 : currentPage;
+    const page = reset ? 0 : currentPageRef.current;
     const skip = page * photosPerPage;
 
     setLoadingMore(true);
@@ -242,7 +242,7 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
       const hasMorePhotos =
         typeof data?.pagination?.hasMore === 'boolean' ? data.pagination.hasMore : nextPhotos.length >= photosPerPage;
       setHasMore(hasMorePhotos);
-      setCurrentPage(page + 1);
+      currentPageRef.current = page + 1;
 
       setPhotos((prev) => {
         const base = reset ? [] : prev;

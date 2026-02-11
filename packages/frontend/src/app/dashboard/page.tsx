@@ -20,7 +20,8 @@ import {
   AlertCircle,
   Sparkles,
   ChevronRight,
-  Info
+  Info,
+  Building2
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Event } from '@gaestefotos/shared';
@@ -115,7 +116,12 @@ export default function DashboardPage() {
   const totalVisitors = events.reduce((sum, e) => sum + ((e as any).viewCount || 0), 0);
   const pendingPhotos = events.reduce((sum, e) => sum + ((e as any).pendingCount || 0), 0);
   const activeEvents = events.filter(e => (e as any).isActive !== false);
-  const pastEvents = events.filter(e => e.dateTime && new Date(e.dateTime) < new Date());
+  const pastEvents = events.filter(e => {
+    if (!e.dateTime) return false;
+    const d = new Date(e.dateTime);
+    d.setHours(23, 59, 59, 999);
+    return d < new Date();
+  });
 
   const filteredEvents = events.filter(event => {
     // Search filter
@@ -126,7 +132,10 @@ export default function DashboardPage() {
     if (statusFilter === 'active') {
       return matchesSearch && (event as any).isActive !== false;
     } else if (statusFilter === 'past') {
-      return matchesSearch && event.dateTime && new Date(event.dateTime) < new Date();
+      if (!event.dateTime) return false;
+      const d = new Date(event.dateTime);
+      d.setHours(23, 59, 59, 999);
+      return matchesSearch && d < new Date();
     }
     return matchesSearch;
   });
@@ -159,6 +168,14 @@ export default function DashboardPage() {
 
               {/* Right: Actions */}
               <div className="flex items-center gap-2">
+                {user?.role === 'PARTNER' && (
+                  <Button asChild variant="secondary" size="sm" className="hidden sm:flex">
+                    <Link href="/partner">
+                      <Building2 className="w-4 h-4 mr-1" />
+                      Partner
+                    </Link>
+                  </Button>
+                )}
                 <Button asChild variant="ghost" size="sm" className="hidden sm:flex">
                   <a href="/faq" target="_blank" rel="noreferrer">
                     <HelpCircle className="w-4 h-4 mr-1" />

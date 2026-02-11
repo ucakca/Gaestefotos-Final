@@ -66,6 +66,8 @@ import aiRoutes from './routes/ai';
 import adminAiAnalysisRoutes from './routes/adminAiAnalysis';
 import qrDesignsRoutes from './routes/qrDesigns';
 import highlightReelsRoutes from './routes/highlightReels';
+import mosaicRoutes from './routes/mosaic';
+import partnerRoutes from './routes/partners';
 import healthRoutes from './routes/health';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middleware/rateLimit';
@@ -547,6 +549,8 @@ app.use('/api/videos', videoRoutes); // Video files: /api/videos/:eventId/file/*
 app.use('/api', invitationRoutes);
 app.use('/api', qrDesignsRoutes);
 app.use('/api/events', highlightReelsRoutes); // Highlight reels: /api/events/:eventId/generate, etc.
+app.use('/api/events', mosaicRoutes); // Mosaic Wall: /api/events/:eventId/mosaic/*
+app.use('/api/partners', partnerRoutes); // Partner/Franchise: /api/partners/*
 app.use('/api/admin/package-definitions', packageDefinitionsRoutes);
 app.use('/api/admin/webhooks/woocommerce', adminWooWebhooksRoutes);
 app.use('/api/admin/api-keys', adminApiKeysRoutes);
