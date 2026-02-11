@@ -24,8 +24,8 @@ import {
   Menu,
   X,
   Mail,
-  Flag,
   QrCode,
+  Building2,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -59,12 +59,12 @@ const navigation: NavGroup[] = [
     items: [
       { name: 'Benutzer', href: '/manage/users', icon: Users },
       { name: 'Events', href: '/manage/events', icon: Calendar },
-      { name: 'Pakete', href: '/manage/packages', icon: Package },
+      { name: 'Pakete & Features', href: '/manage/packages', icon: Package },
       { name: 'Impersonation', href: '/manage/impersonation', icon: UserCog },
       { name: 'QR-Templates', href: '/manage/qr-templates', icon: QrCode },
       { name: 'E-Mail Templates', href: '/manage/email-templates', icon: Mail },
       { name: 'Einladungs-Templates', href: '/invitation-templates', icon: FileText },
-      { name: 'Feature Flags', href: '/feature-flags', icon: Flag },
+      { name: 'Partner', href: '/manage/partners', icon: Building2 },
     ],
   },
   {

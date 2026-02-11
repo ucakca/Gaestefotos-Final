@@ -28,6 +28,7 @@ model User {
   events                       Event[]
   impersonationAuditsAsAdmin   ImpersonationAuditLog[] @relation("ImpersonationAuditAdmin")
   impersonationAuditsAsTarget  ImpersonationAuditLog[] @relation("ImpersonationAuditTarget")
+  partnerMemberships           PartnerMember[]
 
   @@map("users")
 }
@@ -75,9 +76,13 @@ model Event {
   visitCount              Int                         @default(0)
   wifiName                String?
   wifiPassword            String?
+  mosaicWall              MosaicWall?
+  partnerId               String?
+  partner                 Partner?                    @relation(fields: [partnerId], references: [id])
 
   @@index([slug])
   @@index([hostId])
+  @@index([partnerId])
   @@index([deletedAt])
   @@index([purgeAfter])
   @@map("events")
@@ -240,6 +245,9 @@ model PackageDefinition {
   allowGuestbook       Boolean               @default(false)
   allowGuestlist       Boolean               @default(false)
   allowLiveWall        Boolean               @default(false)
+  allowMosaicWall      Boolean               @default(false)
+  allowMosaicPrint     Boolean               @default(false)
+  allowMosaicExport    Boolean               @default(false)
   allowPasswordProtect Boolean               @default(false)
   allowStories         Boolean               @default(false)
   allowVideoUpload     Boolean               @default(false)
@@ -322,6 +330,8 @@ model Photo {
   event                Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
   guest                Guest?               @relation(fields: [guestId], references: [id])
   stories              Story[]
+  mosaicTiles          MosaicTile[]
+  mosaicPrintJobs      MosaicPrintJob[]
 
   @@index([eventId])
   @@index([status])
@@ -951,8 +961,145 @@ model qr_templates {
   @@index([sortOrder])
 }
 
+model MosaicWall {
+  id                 String              @id @default(uuid())
+  eventId            String              @unique
+  targetImageUrl     String?
+  targetImagePath    String?
+  gridWidth          Int                 @default(24)
+  gridHeight         Int                 @default(24)
+  tileSizeMm         Int                 @default(50)
+  boardWidthMm       Int?
+  boardHeightMm      Int?
+  gridColors         Json?
+  overlayIntensity   Int                 @default(10)
+  status             MosaicWallStatus    @default(DRAFT)
+  fillMode           MosaicFillMode      @default(COLOR_MATCH)
+  autoFillEnabled    Boolean             @default(true)
+  autoFillThreshold  Int                 @default(85)
+  displayAnimation   MosaicAnimation     @default(ZOOM_FLY)
+  showTicker         Boolean             @default(true)
+  showQrOverlay      Boolean             @default(true)
+  nextPrintNumber    Int                 @default(1)
+  sourceModes        String[]            @default(["GUEST_UPLOAD"])
+  printEnabled       Boolean             @default(false)
+  printConfirmation  Boolean             @default(false)
+  reservationTimeout Int                 @default(15)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  event              Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tiles              MosaicTile[]
+  printJobs          MosaicPrintJob[]
+
+  @@index([eventId])
+  @@index([status])
+  @@map("mosaic_walls")
+}
+
+model MosaicTile {
+  id               String            @id @default(uuid())
+  mosaicWallId     String
+  photoId          String?
+  gridX            Int
+  gridY            Int
+  positionLabel    String
+  croppedImageUrl  String?
+  croppedImagePath String?
+  dominantColor    Json?
+  targetColor      Json?
+  colorDistance     Float?
+  isAutoFilled     Boolean           @default(false)
+  isHero           Boolean           @default(false)
+  printStatus      MosaicPrintStatus @default(PENDING)
+  printNumber      Int?
+  source           MosaicTileSource  @default(SMARTPHONE)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  mosaicWall       MosaicWall        @relation(fields: [mosaicWallId], references: [id], onDelete: Cascade)
+  photo            Photo?            @relation(fields: [photoId], references: [id], onDelete: SetNull)
+  printJob         MosaicPrintJob?
+
+  @@unique([mosaicWallId, gridX, gridY])
+  @@index([mosaicWallId])
+  @@index([photoId])
+  @@index([printStatus])
+  @@index([isAutoFilled])
+  @@index([createdAt])
+  @@map("mosaic_tiles")
+}
+
+enum MosaicWallStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+}
+
+enum MosaicFillMode {
+  COLOR_MATCH
+  HYBRID
+}
+
+enum MosaicAnimation {
+  PUZZLE
+  FLIP
+  PARTICLES
+  ZOOM_FLY
+  RIPPLE
+}
+
+enum MosaicPrintStatus {
+  PENDING
+  PRINTING
+  PRINTED
+  PLACED
+}
+
+enum MosaicTileSource {
+  SMARTPHONE
+  BOOTH
+  ADMIN
+  AUTO_FILL
+  PRINT_TERMINAL
+}
+
+model MosaicPrintJob {
+  id              String              @id @default(uuid())
+  wallId          String
+  photoId         String
+  tileId          String?             @unique
+  pinCode         String
+  qrPayload       String
+  status          MosaicPrintJobStatus @default(PENDING)
+  gridX           Int?
+  gridY           Int?
+  reservedAt      DateTime?
+  printedAt       DateTime?
+  expiresAt       DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  wall            MosaicWall          @relation(fields: [wallId], references: [id], onDelete: Cascade)
+  photo           Photo               @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  tile            MosaicTile?         @relation(fields: [tileId], references: [id], onDelete: SetNull)
+
+  @@unique([wallId, pinCode])
+  @@index([wallId])
+  @@index([photoId])
+  @@index([status])
+  @@index([pinCode])
+  @@index([expiresAt])
+  @@map("mosaic_print_jobs")
+}
+
+enum MosaicPrintJobStatus {
+  PENDING
+  PRINTING
+  PRINTED
+  EXPIRED
+}
+
 enum UserRole {
   ADMIN
+  PARTNER
   HOST
 }
 
@@ -973,6 +1120,7 @@ enum EntitlementStatus {
 
 enum PackageDefinitionType {
   BASE
+  ADDON
   UPGRADE
 }
 
@@ -1058,6 +1206,148 @@ enum ApiKeyAuditAction {
 enum FaceSearchConsentAction {
   ACCEPTED
   REVOKED
+}
+
+// ─── PARTNER / FRANCHISE MODEL ───────────────────────────────────────────────
+
+model Partner {
+  id              String          @id @default(uuid())
+  name            String
+  slug            String          @unique
+  tier            PartnerTier     @default(BRANDED)
+  status          PartnerStatus   @default(ACTIVE)
+  contactEmail    String
+  contactPhone    String?
+  companyName     String?
+  taxId           String?
+  // Branding (white-label tier)
+  logoUrl         String?
+  primaryColor    String?         @default("#6366f1")
+  accentColor     String?         @default("#10b981")
+  customDomain    String?         @unique
+  // Limits & config
+  maxEvents       Int             @default(50)
+  maxStorageGb    Int             @default(100)
+  commissionPct   Float           @default(20)
+  // Billing
+  billingEmail    String?
+  billingAddress  Json?
+  // Metadata
+  notes           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  // Relations
+  members         PartnerMember[]
+  events          Event[]
+  hardware        PartnerHardware[]
+  billingPeriods  BillingPeriod[]
+
+  @@map("partners")
+}
+
+model PartnerMember {
+  id          String              @id @default(uuid())
+  partnerId   String
+  userId      String
+  role        PartnerMemberRole   @default(OPERATOR)
+  createdAt   DateTime            @default(now())
+  partner     Partner             @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerId, userId])
+  @@index([partnerId])
+  @@index([userId])
+  @@map("partner_members")
+}
+
+model PartnerHardware {
+  id            String    @id @default(uuid())
+  partnerId     String
+  type          String    // e.g. 'PRINT_TERMINAL', 'PHOTO_BOOTH', 'DISPLAY'
+  serialNumber  String?   @unique
+  name          String
+  status        String    @default("AVAILABLE") // AVAILABLE, ASSIGNED, MAINTENANCE
+  assignedEventId String?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  partner       Partner   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([partnerId])
+  @@index([assignedEventId])
+  @@map("partner_hardware")
+}
+
+enum PartnerTier {
+  BRANDED      // Works under gästefotos.com branding
+  WHITE_LABEL  // Own branding, custom domain
+}
+
+enum PartnerStatus {
+  ACTIVE
+  SUSPENDED
+  TRIAL
+}
+
+enum PartnerMemberRole {
+  OWNER       // Full access, billing
+  MANAGER     // Manage events, hardware
+  OPERATOR    // Operate events on-site
+}
+
+// ─── PARTNER BILLING ─────────────────────────────────────────────────────────
+
+model BillingPeriod {
+  id              String              @id @default(uuid())
+  partnerId       String
+  periodStart     DateTime
+  periodEnd       DateTime
+  status          BillingPeriodStatus @default(DRAFT)
+  // Computed totals
+  totalEvents     Int                 @default(0)
+  totalPhotos     Int                 @default(0)
+  totalPrintJobs  Int                 @default(0)
+  totalRevenue    Float               @default(0)     // gross revenue
+  commissionPct   Float               @default(20)    // snapshot of partner's rate
+  commissionAmount Float              @default(0)     // totalRevenue * commissionPct / 100
+  partnerPayout   Float               @default(0)     // totalRevenue - commissionAmount
+  // Payment
+  paidAt          DateTime?
+  invoiceNumber   String?             @unique
+  notes           String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  // Relations
+  partner         Partner             @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  lineItems       BillingLineItem[]
+
+  @@index([partnerId])
+  @@index([periodStart, periodEnd])
+  @@map("billing_periods")
+}
+
+model BillingLineItem {
+  id              String          @id @default(uuid())
+  billingPeriodId String
+  type            String          // EVENT_FEE, PRINT_JOB, STORAGE, CUSTOM
+  description     String
+  quantity        Int             @default(1)
+  unitPrice       Float           @default(0)
+  total           Float           @default(0)
+  eventId         String?
+  createdAt       DateTime        @default(now())
+  billingPeriod   BillingPeriod   @relation(fields: [billingPeriodId], references: [id], onDelete: Cascade)
+
+  @@index([billingPeriodId])
+  @@map("billing_line_items")
+}
+
+enum BillingPeriodStatus {
+  DRAFT
+  FINALIZED
+  SENT
+  PAID
+  CANCELLED
 }
 
 enum InvoiceSource {

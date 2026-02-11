@@ -8,7 +8,7 @@ const router = Router();
 const createSchema = z.object({
   sku: z.string().min(1),
   name: z.string().min(1),
-  type: z.enum(['BASE', 'UPGRADE']).optional(),
+  type: z.enum(['BASE', 'ADDON', 'UPGRADE']).optional(),
   resultingTier: z.string().min(1),
   upgradeFromTier: z.string().min(1).optional().nullable(),
   
@@ -30,6 +30,9 @@ const createSchema = z.object({
   allowFullInvitation: z.boolean().optional(),
   allowCoHosts: z.boolean().optional(),
   isAdFree: z.boolean().optional(),
+  allowMosaicWall: z.boolean().optional(),
+  allowMosaicPrint: z.boolean().optional(),
+  allowMosaicExport: z.boolean().optional(),
   
   // Limits
   maxCategories: z.number().int().nonnegative().optional().nullable(),
@@ -97,6 +100,9 @@ router.post('/', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, 
       allowFullInvitation: data.allowFullInvitation ?? false,
       allowCoHosts: data.allowCoHosts ?? false,
       isAdFree: data.isAdFree ?? false,
+      allowMosaicWall: data.allowMosaicWall ?? false,
+      allowMosaicPrint: data.allowMosaicPrint ?? false,
+      allowMosaicExport: data.allowMosaicExport ?? false,
       
       // Limits
       maxCategories: data.maxCategories ?? null,
