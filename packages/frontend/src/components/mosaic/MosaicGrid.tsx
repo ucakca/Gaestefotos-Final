@@ -180,7 +180,17 @@ export default function MosaicGrid({
           height: '100%',
         }}
       >
-      {/* Target image overlay removed — overlay is now baked into each tile by the backend */}
+      {/* Target image as background — visible through empty cells, covered by filled tiles */}
+      {targetImageUrl && (
+        <div
+          className="absolute inset-0 pointer-events-none z-0"
+          style={{
+            backgroundImage: `url(${targetImageUrl})`,
+            backgroundSize: '100% 100%',
+            backgroundPosition: 'center',
+          }}
+        />
+      )}
 
       {/* Grid */}
       <div
@@ -233,7 +243,7 @@ export default function MosaicGrid({
                       )}
                     </motion.div>
                   ) : (
-                    <div className="w-full h-full bg-black" />
+                    <div className="w-full h-full bg-black/60" />
                   )}
                 </div>
               );
