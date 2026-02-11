@@ -188,6 +188,7 @@ export default function MosaicGrid({
             backgroundImage: `url(${targetImageUrl})`,
             backgroundSize: '100% 100%',
             backgroundPosition: 'center',
+            opacity: 0.2,
           }}
         />
       )}
@@ -243,7 +244,7 @@ export default function MosaicGrid({
                       )}
                     </motion.div>
                   ) : (
-                    <div className="w-full h-full bg-black/60" />
+                    <div className="w-full h-full" />
                   )}
                 </div>
               );
