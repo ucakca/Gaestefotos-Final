@@ -244,7 +244,7 @@ export class MosaicEngine {
       const alpha = Math.round((overlayIntensity / 100) * 255);
       const overlayWithAlpha = await sharp(targetSection)
         .composite([{
-          input: Buffer.from([0, 0, 0, 255 - alpha]),
+          input: Buffer.from([0, 0, 0, alpha]),
           raw: { width: 1, height: 1, channels: 4 },
           tile: true,
           blend: 'dest-in',
