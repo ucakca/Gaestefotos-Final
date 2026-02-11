@@ -180,22 +180,9 @@ export default function MosaicGrid({
           height: '100%',
         }}
       >
-      {/* Target image as background — visible through empty cells, covered by filled tiles */}
-      {targetImageUrl && (
-        <div
-          className="absolute inset-0 pointer-events-none z-0"
-          style={{
-            backgroundImage: `url(${targetImageUrl})`,
-            backgroundSize: '100% 100%',
-            backgroundPosition: 'center',
-            opacity: 0.2,
-          }}
-        />
-      )}
-
       {/* Grid */}
       <div
-        className="relative z-10 w-full h-full grid"
+        className="relative w-full h-full grid"
         style={{
           gridTemplateColumns: `repeat(${gridWidth}, 1fr)`,
           gridTemplateRows: `repeat(${gridHeight}, 1fr)`,
@@ -243,8 +230,18 @@ export default function MosaicGrid({
                         <div className="absolute inset-0 border-2 border-yellow-400 pointer-events-none" />
                       )}
                     </motion.div>
+                  ) : targetImageUrl ? (
+                    <div
+                      className="w-full h-full"
+                      style={{
+                        backgroundImage: `url(${targetImageUrl})`,
+                        backgroundSize: `${gridWidth * 100}% ${gridHeight * 100}%`,
+                        backgroundPosition: `${gridWidth > 1 ? (x / (gridWidth - 1)) * 100 : 0}% ${gridHeight > 1 ? (y / (gridHeight - 1)) * 100 : 0}%`,
+                        opacity: 0.25,
+                      }}
+                    />
                   ) : (
-                    <div className="w-full h-full" />
+                    <div className="w-full h-full bg-black" />
                   )}
                 </div>
               );
