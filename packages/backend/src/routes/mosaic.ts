@@ -160,15 +160,16 @@ router.put('/:eventId/mosaic', authMiddleware, async (req: AuthRequest, res: Res
       'gridWidth', 'gridHeight', 'tileSizeMm', 'boardWidthMm', 'boardHeightMm',
       'overlayIntensity', 'status', 'fillMode', 'displayAnimation',
       'autoFillEnabled', 'autoFillThreshold', 'showTicker', 'showQrOverlay',
+      'printEnabled', 'printConfirmation', 'reservationTimeout',
     ];
 
     const data: any = {};
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
         const val = req.body[field];
-        if (['gridWidth', 'gridHeight', 'tileSizeMm', 'boardWidthMm', 'boardHeightMm', 'overlayIntensity', 'autoFillThreshold'].includes(field)) {
+        if (['gridWidth', 'gridHeight', 'tileSizeMm', 'boardWidthMm', 'boardHeightMm', 'overlayIntensity', 'autoFillThreshold', 'reservationTimeout'].includes(field)) {
           data[field] = val !== null ? Number(val) : null;
-        } else if (['autoFillEnabled', 'showTicker', 'showQrOverlay'].includes(field)) {
+        } else if (['autoFillEnabled', 'showTicker', 'showQrOverlay', 'printEnabled', 'printConfirmation'].includes(field)) {
           data[field] = Boolean(val);
         } else {
           data[field] = val;
@@ -339,6 +340,111 @@ router.post('/:eventId/mosaic/analyze-overlay', authMiddleware, async (req: Auth
   } catch (error) {
     logger.error('Analyze overlay error', { message: getErrorMessage(error) });
     res.status(500).json({ error: 'Fehler bei der Overlay-Analyse' });
+  }
+});
+
+// ─── RE-RENDER Tiles (nach Overlay-Änderung) ─────────────────────────────────
+
+router.post('/:eventId/mosaic/rerender-tiles', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!await requireEventAccess(req, res, eventId)) return;
+
+    const wall = await prisma.mosaicWall.findUnique({ where: { eventId } });
+    if (!wall) {
+      return res.status(404).json({ error: 'Keine Mosaic Wall für dieses Event' });
+    }
+
+    // Get all non-auto-filled tiles
+    const tiles = await prisma.mosaicTile.findMany({
+      where: {
+        mosaicWallId: wall.id,
+        isAutoFilled: false,
+        croppedImagePath: { not: null },
+      },
+      select: {
+        id: true,
+        gridX: true,
+        gridY: true,
+        croppedImagePath: true,
+        photoId: true,
+      },
+    });
+
+    if (tiles.length === 0) {
+      return res.json({ success: true, rerendered: 0, message: 'Keine Tiles zum Re-Rendern' });
+    }
+
+    // Return immediately, process in background
+    res.json({ success: true, queued: tiles.length, message: `${tiles.length} Tiles werden neu gerendert...` });
+
+    // Background processing
+    (async () => {
+      try {
+        if (!wall.targetImagePath || wall.overlayIntensity <= 0) {
+          logger.info(`Rerender skipped: no target image or intensity=0 for wall ${wall.id}`);
+          return;
+        }
+
+        const targetBuffer = await storageService.getFile(wall.targetImagePath);
+        let processed = 0;
+        let failed = 0;
+
+        for (const tile of tiles) {
+          try {
+            // Load original photo to avoid double overlay
+            let sourceBuffer: Buffer;
+            if (tile.photoId) {
+              const photo = await prisma.photo.findUnique({
+                where: { id: tile.photoId },
+                select: { storagePath: true },
+              });
+              if (photo?.storagePath) {
+                sourceBuffer = await storageService.getFile(photo.storagePath);
+                sourceBuffer = await mosaicEngine.cropTile(sourceBuffer);
+              } else {
+                sourceBuffer = await storageService.getFile(tile.croppedImagePath!);
+              }
+            } else {
+              sourceBuffer = await storageService.getFile(tile.croppedImagePath!);
+            }
+
+            const blended = await mosaicEngine.blendTargetOverlay(
+              sourceBuffer,
+              targetBuffer,
+              tile.gridX,
+              tile.gridY,
+              wall.gridWidth,
+              wall.gridHeight,
+              wall.overlayIntensity,
+            );
+
+            const newPath = await storageService.uploadFile(
+              wall.eventId,
+              `mosaic-tile-${tile.gridX}-${tile.gridY}.jpg`,
+              blended,
+              'image/jpeg',
+            );
+
+            await prisma.mosaicTile.update({
+              where: { id: tile.id },
+              data: { croppedImagePath: newPath },
+            });
+
+            processed++;
+          } catch (err) {
+            failed++;
+            logger.error(`Rerender tile ${tile.id} failed`, { message: (err as Error).message });
+          }
+        }
+
+        logger.info(`Rerender complete for wall ${wall.id}: ${processed} OK, ${failed} failed`);
+      } catch (err) {
+        logger.error(`Rerender background error for wall ${wall.id}`, { message: (err as Error).message });
+      }
+    })();
+  } catch (error) {
+    handleRouteError(error, res, 'Fehler beim Re-Render der Tiles');
   }
 });
 

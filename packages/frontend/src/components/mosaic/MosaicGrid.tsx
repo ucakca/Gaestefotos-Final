@@ -25,7 +25,9 @@ interface MosaicGridProps {
   interactive?: boolean;
 }
 
-const ANIMATION_VARIANTS = {
+const ANIMATION_KEYS = ['PUZZLE', 'FLIP', 'PARTICLES', 'ZOOM_FLY', 'RIPPLE'] as const;
+
+const ANIMATION_VARIANTS: Record<string, { initial: any; animate: any; transition: any }> = {
   PUZZLE: {
     initial: { opacity: 0, scale: 0, rotate: -180 },
     animate: { opacity: 1, scale: 1, rotate: 0 },
@@ -42,8 +44,8 @@ const ANIMATION_VARIANTS = {
     transition: { duration: 0.8, ease: 'easeOut' },
   },
   ZOOM_FLY: {
-    initial: { opacity: 0, scale: 3, x: 0, y: 0 },
-    animate: { opacity: 1, scale: 1, x: 0, y: 0 },
+    initial: { opacity: 0, scale: 3 },
+    animate: { opacity: 1, scale: 1 },
     transition: { duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] },
   },
   RIPPLE: {
@@ -52,6 +54,10 @@ const ANIMATION_VARIANTS = {
     transition: { type: 'spring', stiffness: 300, damping: 20 },
   },
 };
+
+function getRandomAnim() {
+  return ANIMATION_KEYS[Math.floor(Math.random() * ANIMATION_KEYS.length)];
+}
 
 export default function MosaicGrid({
   tiles,
@@ -65,10 +71,14 @@ export default function MosaicGrid({
   interactive = false,
 }: MosaicGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+  const gridWrapperRef = useRef<HTMLDivElement>(null);
   const [newTileIds, setNewTileIds] = useState<Set<string>>(new Set());
   const prevTileIdsRef = useRef<Set<string>>(new Set());
+  const initialLoadRef = useRef(true);
   const [heroTile, setHeroTile] = useState<MosaicTileData | null>(null);
+
+  // Per-tile random animation lookup (stable across renders)
+  const tileAnimRef = useRef<Map<string, string>>(new Map());
 
   // ── Zoom & pan state ───────────────────────────────────────────
   const [zoom, setZoom] = useState(1);
@@ -87,10 +97,8 @@ export default function MosaicGrid({
     try {
       if (!document.fullscreenElement) {
         await containerRef.current?.requestFullscreen();
-        setIsFullscreen(true);
       } else {
         await document.exitFullscreen();
-        setIsFullscreen(false);
       }
     } catch { /* ignore */ }
   }, []);
@@ -110,18 +118,32 @@ export default function MosaicGrid({
     return map;
   }, [tiles]);
 
-  // Detect newly arrived tiles for animation
+  // Detect newly arrived tiles for animation — skip initial bulk load
   useEffect(() => {
     const currentIds = new Set(tiles.map(t => t.id));
     const prevIds = prevTileIdsRef.current;
-    const added = new Set<string>();
 
+    // On first load, just record IDs without triggering animations
+    if (initialLoadRef.current) {
+      prevTileIdsRef.current = currentIds;
+      initialLoadRef.current = false;
+      return;
+    }
+
+    const added = new Set<string>();
     for (const id of currentIds) {
       if (!prevIds.has(id)) added.add(id);
     }
     prevTileIdsRef.current = currentIds;
 
     if (added.size > 0) {
+      // Assign random animation to each new tile
+      for (const id of added) {
+        if (!tileAnimRef.current.has(id)) {
+          tileAnimRef.current.set(id, getRandomAnim());
+        }
+      }
+
       setNewTileIds(prev => {
         const next = new Set(prev);
         for (const id of added) next.add(id);
@@ -146,13 +168,11 @@ export default function MosaicGrid({
     }
   }, [tiles]);
 
-  const animConfig = ANIMATION_VARIANTS[animation] || ANIMATION_VARIANTS.ZOOM_FLY;
-
   // Milestone glow effect
   const showMilestoneGlow = progress >= 80;
   const milestones = [25, 50, 75, 100];
   const [showMilestone, setShowMilestone] = useState<number | null>(null);
-  const prevProgressRef = useRef(0);
+  const prevProgressRef = useRef(progress);
 
   useEffect(() => {
     for (const m of milestones) {
@@ -164,33 +184,6 @@ export default function MosaicGrid({
     }
     prevProgressRef.current = progress;
   }, [progress]);
-
-  // ── Aspect-ratio containment ──────────────────────────────────
-  const gridAspect = gridWidth / gridHeight;
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
-      setContainerSize({ w: width, h: height });
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  const { w: cw, h: ch } = containerSize;
-  let innerW = 0, innerH = 0;
-  if (cw > 0 && ch > 0) {
-    const ca = cw / ch;
-    if (gridAspect >= ca) {
-      innerW = cw;
-      innerH = cw / gridAspect;
-    } else {
-      innerH = ch;
-      innerW = ch * gridAspect;
-    }
-  }
 
   // ── Zoom handlers ──────────────────────────────────────────────
   const handleZoomIn = useCallback(() => setZoom(z => Math.min(z * 1.4, 10)), []);
@@ -221,7 +214,7 @@ export default function MosaicGrid({
     return () => el.removeEventListener('wheel', handleWheel);
   }, [interactive, handleWheel]);
 
-  // ── Pan handlers ───────────────────────────────────────────────
+  // ── Pan handlers (on grid wrapper only, not container) ─────────
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (!interactive || zoom <= 1) return;
     setIsPanning(true);
@@ -257,30 +250,40 @@ export default function MosaicGrid({
     return () => window.removeEventListener('keydown', h);
   }, [previewTile]);
 
+  // Get animation config for a tile (random or default)
+  const getAnimConfig = useCallback((tileId: string) => {
+    const key = tileAnimRef.current.get(tileId) || animation;
+    return ANIMATION_VARIANTS[key] || ANIMATION_VARIANTS.ZOOM_FLY;
+  }, [animation]);
+
   return (
     <div
       ref={containerRef}
       className={`relative w-full h-full flex items-center justify-center bg-black overflow-hidden ${className}`}
       style={{
-        perspective: animation === 'FLIP' ? '1000px' : undefined,
-        cursor: interactive ? (zoom > 1 ? (isPanning ? 'grabbing' : 'grab') : 'pointer') : 'none',
+        perspective: '1000px',
       }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp}
     >
-      {/* Aspect-ratio wrapper — object-fit: contain */}
+      {/* Aspect-ratio wrapper using CSS aspect-ratio — no ResizeObserver needed */}
       <div
+        ref={gridWrapperRef}
         className="relative"
-        style={innerW > 0 && innerH > 0 ? {
-          width: `${innerW}px`,
-          height: `${innerH}px`,
+        style={{
+          width: '100%',
+          height: '100%',
+          maxWidth: `calc(100vh * ${gridWidth / gridHeight})`,
+          maxHeight: `calc(100vw * ${gridHeight / gridWidth})`,
+          aspectRatio: `${gridWidth} / ${gridHeight}`,
           transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
           transformOrigin: 'center center',
           transition: isPanning ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
           willChange: zoom > 1 ? 'transform' : undefined,
-        } : { width: '100%', height: '100%' }}
+          cursor: interactive ? (zoom > 1 ? (isPanning ? 'grabbing' : 'grab') : 'pointer') : 'default',
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
       >
         {/* Grid */}
         <div
@@ -291,35 +294,41 @@ export default function MosaicGrid({
             gap: 0,
           }}
         >
-          <AnimatePresence>
-            {Array.from({ length: gridHeight }, (_, y) =>
-              Array.from({ length: gridWidth }, (_, x) => {
-                const key = `${x},${y}`;
-                const tile = tileMap.get(key);
-                const isNew = tile ? newTileIds.has(tile.id) : false;
+          {Array.from({ length: gridHeight }, (_, y) =>
+            Array.from({ length: gridWidth }, (_, x) => {
+              const key = `${x},${y}`;
+              const tile = tileMap.get(key);
+              const isNew = tile ? newTileIds.has(tile.id) : false;
+              const anim = tile && isNew ? getAnimConfig(tile.id) : null;
 
-                return (
-                  <div
-                    key={key}
-                    className="relative overflow-hidden"
-                    style={{ gridColumn: x + 1, gridRow: y + 1 }}
-                    onClick={tile?.url ? () => handleTileClick(tile) : undefined}
-                  >
-                    {tile?.url ? (
+              return (
+                <div
+                  key={key}
+                  className="relative overflow-hidden"
+                  style={{ gridColumn: x + 1, gridRow: y + 1 }}
+                  onClick={tile?.url ? () => handleTileClick(tile) : undefined}
+                >
+                  {tile?.url ? (
+                    isNew && anim ? (
                       <motion.div
-                        layoutId={tile.id}
-                        initial={isNew ? animConfig.initial : false}
+                        initial={anim.initial}
                         animate={{
-                          ...(animConfig.animate as any),
-                          boxShadow: isNew
-                            ? '0 0 12px 4px rgba(255,215,0,0.6)'
-                            : tile.hero
-                              ? '0 0 8px 2px rgba(255,215,0,0.3)'
-                              : 'none',
+                          ...anim.animate,
+                          boxShadow: '0 0 12px 4px rgba(255,215,0,0.6)',
                         }}
-                        transition={isNew ? animConfig.transition : { duration: 0 }}
+                        transition={anim.transition}
                         className="w-full h-full"
                       >
+                        <img
+                          src={tile.url}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          draggable={false}
+                        />
+                      </motion.div>
+                    ) : (
+                      <div className="w-full h-full">
                         <img
                           src={tile.url}
                           alt=""
@@ -330,61 +339,61 @@ export default function MosaicGrid({
                         {tile.hero && (
                           <div className="absolute inset-0 border-2 border-yellow-400 pointer-events-none" />
                         )}
-                      </motion.div>
-                    ) : targetImageUrl ? (
-                      <div
-                        className="w-full h-full"
-                        style={{
-                          backgroundImage: `url(${targetImageUrl})`,
-                          backgroundSize: `${gridWidth * 100}% ${gridHeight * 100}%`,
-                          backgroundPosition: `${gridWidth > 1 ? (x / (gridWidth - 1)) * 100 : 0}% ${gridHeight > 1 ? (y / (gridHeight - 1)) * 100 : 0}%`,
-                          opacity: 0.25,
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-black" />
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </AnimatePresence>
+                      </div>
+                    )
+                  ) : targetImageUrl ? (
+                    <div
+                      className="w-full h-full"
+                      style={{
+                        backgroundImage: `url(${targetImageUrl})`,
+                        backgroundSize: `${gridWidth * 100}% ${gridHeight * 100}%`,
+                        backgroundPosition: `${gridWidth > 1 ? (x / (gridWidth - 1)) * 100 : 0}% ${gridHeight > 1 ? (y / (gridHeight - 1)) * 100 : 0}%`,
+                        opacity: 0.25,
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-black" />
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 
-      {/* ── Zoom & fullscreen controls ──────────────────────────── */}
+      {/* ── Controls — outside grid wrapper so always clickable ─── */}
       {interactive && (
-        <div className="absolute bottom-4 right-4 z-50 flex items-center gap-1.5">
+        <div className="absolute bottom-4 right-4 z-[60] flex items-center gap-1.5 pointer-events-auto">
           <button
-            onClick={(e) => { e.stopPropagation(); handleZoomIn(); }}
-            className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm transition-colors"
+            onClick={handleZoomIn}
+            className="w-10 h-10 rounded-full bg-black/70 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-sm transition-colors shadow-lg"
             title="Zoom In"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); handleZoomOut(); }}
-            className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm transition-colors"
+            onClick={handleZoomOut}
+            className="w-10 h-10 rounded-full bg-black/70 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-sm transition-colors shadow-lg"
             title="Zoom Out"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); handleZoomHome(); }}
-            className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm transition-colors"
+            onClick={handleZoomHome}
+            className="w-10 h-10 rounded-full bg-black/70 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-sm transition-colors shadow-lg"
             title="Fit to Screen"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
-            className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm transition-colors"
-            title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+            onClick={toggleFullscreen}
+            className="w-10 h-10 rounded-full bg-black/70 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-sm transition-colors shadow-lg"
+            title={isFullscreen ? 'Vollbild beenden' : 'Vollbild'}
           >
             {isFullscreen ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
             ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
             )}
           </button>
         </div>
@@ -393,7 +402,7 @@ export default function MosaicGrid({
       {/* Coming to Life pulse at 80%+ */}
       {showMilestoneGlow && (
         <motion.div
-          className="absolute inset-0 z-20 pointer-events-none rounded"
+          className="absolute inset-0 z-20 pointer-events-none"
           animate={{
             boxShadow: [
               'inset 0 0 30px rgba(255,215,0,0)',
@@ -409,7 +418,7 @@ export default function MosaicGrid({
       <AnimatePresence>
         {heroTile && heroTile.url && (
           <motion.div
-            className="absolute inset-0 z-30 flex items-center justify-center bg-black/60"
+            className="absolute inset-0 z-30 flex items-center justify-center bg-black/60 pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -458,11 +467,11 @@ export default function MosaicGrid({
         )}
       </AnimatePresence>
 
-      {/* ── Tile preview lightbox ─────────────────────────────────── */}
+      {/* ── Tile preview lightbox — large, centered ────────────────── */}
       <AnimatePresence>
         {previewTile && previewTile.url && (
           <motion.div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md"
             style={{ cursor: 'default' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -470,28 +479,29 @@ export default function MosaicGrid({
             onClick={() => setPreviewTile(null)}
           >
             <motion.div
-              className="relative"
-              initial={{ scale: 0.5, opacity: 0 }}
+              className="relative flex items-center justify-center"
+              style={{ width: '80vmin', height: '80vmin' }}
+              initial={{ scale: 0.3, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.5, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              exit={{ scale: 0.3, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 22 }}
               onClick={(e) => e.stopPropagation()}
             >
               <img
                 src={previewTile.url}
                 alt={`Tile ${previewTile.x},${previewTile.y}`}
-                className="max-w-[85vw] max-h-[80vh] object-contain rounded-lg shadow-2xl"
+                className="w-full h-full object-contain rounded-xl shadow-2xl"
               />
               <button
                 onClick={() => setPreviewTile(null)}
-                className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white/90 text-black flex items-center justify-center shadow-lg hover:bg-white transition-colors text-lg font-bold leading-none"
+                className="absolute -top-4 -right-4 w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-xl hover:bg-gray-100 transition-colors text-xl font-bold leading-none"
               >
                 &times;
               </button>
-              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-3 rounded-b-lg">
-                <p className="text-white/80 text-sm">
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-4 rounded-b-xl">
+                <p className="text-white text-sm font-medium">
                   Position: {previewTile.x + 1}, {previewTile.y + 1}
-                  {previewTile.hero && ' \u00B7 Hero'}
+                  {previewTile.hero && ' · Hero'}
                 </p>
               </div>
             </motion.div>

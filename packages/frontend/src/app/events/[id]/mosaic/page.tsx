@@ -158,6 +158,7 @@ export default function MosaicManagementPage() {
   const updateWall = async () => {
     setSaving(true);
     try {
+      const prevIntensity = wall?.overlayIntensity;
       const { data } = await api.put(`/events/${eventId}/mosaic`, {
         gridWidth,
         gridHeight,
@@ -173,6 +174,10 @@ export default function MosaicManagementPage() {
         reservationTimeout,
       });
       setWall(data.wall);
+      // If overlay intensity changed, re-render existing tiles in background
+      if (prevIntensity !== undefined && prevIntensity !== overlayIntensity && tileCount > 0) {
+        api.post(`/events/${eventId}/mosaic/rerender-tiles`).catch(() => {});
+      }
     } catch (err) {
       console.error('Failed to update mosaic wall', err);
     } finally {
@@ -602,10 +607,27 @@ export default function MosaicManagementPage() {
                           </span>
                         </div>
                         <button
-                          onClick={() => setOverlayIntensity(aiRecommendation.intensity)}
+                          onClick={async () => {
+                            setOverlayIntensity(aiRecommendation.intensity);
+                            setSaving(true);
+                            try {
+                              // 1. Save new intensity to DB
+                              const { data } = await api.put(`/events/${eventId}/mosaic`, {
+                                overlayIntensity: aiRecommendation.intensity,
+                              });
+                              setWall(data.wall);
+                              setAiRecommendation(null);
+                              // 2. Trigger background re-render of all tiles
+                              await api.post(`/events/${eventId}/mosaic/rerender-tiles`);
+                            } catch (err) {
+                              console.error('Failed to apply overlay', err);
+                            } finally {
+                              setSaving(false);
+                            }
+                          }}
                           className="text-xs bg-purple-600 text-white px-2.5 py-1 rounded-md hover:bg-purple-700 transition-colors font-medium"
                         >
-                          Anwenden
+                          Anwenden & Speichern
                         </button>
                       </div>
                       <p className="text-xs text-purple-600 mt-1">{aiRecommendation.reasoning}</p>
