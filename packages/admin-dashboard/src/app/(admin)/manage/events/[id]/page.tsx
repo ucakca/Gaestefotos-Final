@@ -544,54 +544,78 @@ export default function EventDetailPage() {
               Paketverwaltung
             </button>.
           </div>
-        ) : (
-          <div className="space-y-2">
-            {addons.map((addon: any) => (
-              <div
-                key={addon.sku}
-                className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                  addon.isActive
-                    ? 'border-purple-500/30 bg-purple-500/5'
-                    : 'border-app-border bg-app-bg'
-                }`}
-              >
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                  addon.isActive ? 'bg-purple-500/10' : 'bg-app-bg'
-                }`}>
-                  <Puzzle className={`w-5 h-5 ${addon.isActive ? 'text-purple-500' : 'text-app-muted'}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-app-fg text-sm">{addon.name}</div>
-                  {addon.description && (
-                    <div className="text-xs text-app-muted truncate">{addon.description}</div>
-                  )}
-                  {addon.priceEurCents && (
-                    <div className="text-xs text-green-500 font-medium mt-0.5">
-                      {(addon.priceEurCents / 100).toFixed(0)} €
+        ) : (() => {
+          const printAddonActive = addons.some((a: any) => a.isActive && a.allowMosaicPrint);
+          return (
+            <div className="space-y-2">
+              {addons.map((addon: any) => {
+                const isDigitalOnly = addon.allowMosaicWall && !addon.allowMosaicPrint;
+                const coveredByPrint = isDigitalOnly && printAddonActive && !addon.isActive;
+
+                return (
+                  <div
+                    key={addon.sku}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                      coveredByPrint
+                        ? 'border-blue-500/20 bg-blue-500/5 opacity-60'
+                        : addon.isActive
+                          ? 'border-purple-500/30 bg-purple-500/5'
+                          : 'border-app-border bg-app-bg'
+                    }`}
+                  >
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+                      coveredByPrint ? 'bg-blue-500/10' : addon.isActive ? 'bg-purple-500/10' : 'bg-app-bg'
+                    }`}>
+                      <Puzzle className={`w-5 h-5 ${
+                        coveredByPrint ? 'text-blue-500' : addon.isActive ? 'text-purple-500' : 'text-app-muted'
+                      }`} />
                     </div>
-                  )}
-                </div>
-                <button
-                  onClick={() => toggleAddon(addon)}
-                  disabled={togglingAddon === addon.sku}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${
-                    addon.isActive
-                      ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
-                      : 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20'
-                  }`}
-                >
-                  {togglingAddon === addon.sku ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                  ) : addon.isActive ? (
-                    <><Minus className="w-3 h-3" /> Entfernen</>
-                  ) : (
-                    <><Plus className="w-3 h-3" /> Hinzufügen</>
-                  )}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-app-fg text-sm">{addon.name}</div>
+                      {coveredByPrint ? (
+                        <div className="text-xs text-blue-500 font-medium">Bereits in Print + Digital enthalten</div>
+                      ) : (
+                        <>
+                          {addon.description && (
+                            <div className="text-xs text-app-muted truncate">{addon.description}</div>
+                          )}
+                          {addon.priceEurCents && (
+                            <div className="text-xs text-green-500 font-medium mt-0.5">
+                              {(addon.priceEurCents / 100).toFixed(0)} €
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    {coveredByPrint ? (
+                      <span className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-500/10 text-blue-500">
+                        <Check className="w-3 h-3" /> Enthalten
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => toggleAddon(addon)}
+                        disabled={togglingAddon === addon.sku}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${
+                          addon.isActive
+                            ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
+                            : 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20'
+                        }`}
+                      >
+                        {togglingAddon === addon.sku ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : addon.isActive ? (
+                          <><Minus className="w-3 h-3" /> Entfernen</>
+                        ) : (
+                          <><Plus className="w-3 h-3" /> Hinzufügen</>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Actions */}

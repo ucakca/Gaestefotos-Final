@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Monitor, Printer, Lock, Crown, LayoutGrid, ChevronDown, ChevronUp } from 'lucide-react';
+import { Monitor, Printer, Lock, Crown, LayoutGrid, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { MosaicWizardState, GRID_PRESETS, PRINT_BOARD_PRESETS, TILE_SIZE_PRESETS } from './types';
 
 interface Props {
@@ -80,7 +80,11 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, on
                 </p>
               </div>
             </div>
-            {canMosaic ? (
+            {canPrint ? (
+              <span className="absolute top-2 right-2 flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
+                <Check className="w-2.5 h-2.5" /> In Print enthalten
+              </span>
+            ) : canMosaic ? (
               <span className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
                 Gebucht
               </span>
@@ -91,7 +95,7 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, on
             )}
           </button>
 
-          {/* Print */}
+          {/* Print + Digital */}
           <button
             type="button"
             onClick={() => selectMode('PRINT')}
@@ -113,9 +117,9 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, on
                 }`} />
               </div>
               <div className="min-w-0">
-                <div className="font-semibold text-sm sm:text-base">Print</div>
+                <div className="font-semibold text-sm sm:text-base">Print + Digital</div>
                 <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                  Sticker drucken + digital
+                  Sticker drucken + Live-Display
                 </p>
               </div>
             </div>
