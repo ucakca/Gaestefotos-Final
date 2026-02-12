@@ -546,6 +546,10 @@ model Challenge {
   categoryId  String?
   title       String
   description String?
+  type        ChallengeType         @default(PHOTO)
+  gameConfig  Json?
+  icon        String?
+  templateId  String?
   order       Int                   @default(0)
   isActive    Boolean               @default(true)
   isVisible   Boolean               @default(true)
@@ -558,7 +562,16 @@ model Challenge {
   @@index([eventId])
   @@index([categoryId])
   @@index([isActive])
+  @@index([type])
   @@map("challenges")
+}
+
+enum ChallengeType {
+  PHOTO
+  PHOTOBOMB
+  STATUE
+  TEAM_BATTLE
+  COVER_SHOOT
 }
 
 model QrDesign {

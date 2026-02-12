@@ -618,5 +618,85 @@ router.post(
   }
 );
 
+// ─── Game Templates ──────────────────────────────────────────────────────────
+
+import { CHALLENGE_TEMPLATES, getTemplateById } from '../services/challengeTemplates';
+
+// List all available challenge templates
+router.get(
+  '/templates/all',
+  async (_req: AuthRequest, res: Response) => {
+    res.json({ templates: CHALLENGE_TEMPLATES });
+  }
+);
+
+// Add a template to an event as a challenge
+router.post(
+  '/:eventId/challenges/from-template',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      const { templateId } = req.body;
+
+      if (!templateId) {
+        return res.status(400).json({ error: 'templateId ist erforderlich' });
+      }
+
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+      });
+
+      if (!event) {
+        return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(404).json({ error: 'Event nicht gefunden' });
+      }
+
+      const template = getTemplateById(templateId);
+      if (!template) {
+        return res.status(404).json({ error: 'Template nicht gefunden' });
+      }
+
+      // Check challenge limit
+      const currentCount = await prisma.challenge.count({ where: { eventId } });
+      try {
+        await assertWithinLimit(eventId, 'maxChallenges', currentCount);
+      } catch (err: any) {
+        if (err.code === 'LIMIT_REACHED') {
+          return res.status(403).json({
+            error: err.message,
+            code: 'LIMIT_REACHED',
+            requiredUpgrade: true,
+          });
+        }
+        throw err;
+      }
+
+      const challenge = await prisma.challenge.create({
+        data: {
+          eventId,
+          title: template.title,
+          description: template.description,
+          type: template.type as any,
+          gameConfig: template.gameConfig,
+          icon: template.icon,
+          templateId: template.id,
+          order: currentCount,
+          isActive: true,
+          isVisible: true,
+        },
+      });
+
+      res.status(201).json({ challenge });
+    } catch (error) {
+      logger.error('Fehler beim Erstellen aus Template', { message: getErrorMessage(error), eventId: req.params.eventId });
+      res.status(500).json({ error: 'Interner Serverfehler' });
+    }
+  }
+);
+
 export default router;
 
