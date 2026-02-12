@@ -72,6 +72,8 @@ export default function MosaicManagementPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [aiRecommendation, setAiRecommendation] = useState<{ intensity: number; reasoning: string } | null>(null);
+  const [analyzingOverlay, setAnalyzingOverlay] = useState(false);
   const [eventSlug, setEventSlug] = useState('');
   const [tileCount, setTileCount] = useState(0);
 
@@ -540,19 +542,75 @@ export default function MosaicManagementPage() {
                   />
                 </div>
 
-                {/* Overlay Intensity */}
+                {/* Overlay Intensity with AI Analysis */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Zielbild-Overlay ({overlayIntensity}%)
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-sm font-medium text-gray-700">
+                      Zielbild-Overlay ({overlayIntensity}%)
+                    </label>
+                    {wall?.targetImageUrl && (
+                      <button
+                        onClick={async () => {
+                          setAnalyzingOverlay(true);
+                          setAiRecommendation(null);
+                          try {
+                            const { data } = await api.post(`/events/${eventId}/mosaic/analyze-overlay`);
+                            setAiRecommendation(data.recommendation);
+                          } catch {
+                            setAiRecommendation({ intensity: 45, reasoning: 'Standard-Empfehlung basierend auf allgemeiner Bildanalyse.' });
+                          } finally {
+                            setAnalyzingOverlay(false);
+                          }
+                        }}
+                        disabled={analyzingOverlay}
+                        className="flex items-center gap-1.5 text-xs font-medium text-purple-600 hover:text-purple-700 disabled:opacity-50 transition-colors"
+                      >
+                        {analyzingOverlay ? (
+                          <>
+                            <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="31.4" strokeLinecap="round"/></svg>
+                            KI analysiert...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3.5 h-3.5" />
+                            KI-Analyse
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="range"
                     value={overlayIntensity}
                     onChange={(e) => setOverlayIntensity(Number(e.target.value))}
                     min={0}
-                    max={50}
-                    className="w-full"
+                    max={100}
+                    className="w-full accent-purple-600"
                   />
+                  <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                    <span>Foto sichtbar</span>
+                    <span>Ausgewogen</span>
+                    <span>Zielbild dominant</span>
+                  </div>
+                  {aiRecommendation && (
+                    <div className="mt-2 p-2.5 bg-purple-50 border border-purple-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <Sparkles className="w-4 h-4 text-purple-500" />
+                          <span className="text-sm font-semibold text-purple-700">
+                            Empfehlung: {aiRecommendation.intensity}%
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => setOverlayIntensity(aiRecommendation.intensity)}
+                          className="text-xs bg-purple-600 text-white px-2.5 py-1 rounded-md hover:bg-purple-700 transition-colors font-medium"
+                        >
+                          Anwenden
+                        </button>
+                      </div>
+                      <p className="text-xs text-purple-600 mt-1">{aiRecommendation.reasoning}</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Auto-Fill */}

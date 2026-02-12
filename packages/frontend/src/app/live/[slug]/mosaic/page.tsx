@@ -200,7 +200,7 @@ export default function LiveMosaicPage() {
   }
 
   return (
-    <div className="h-screen w-screen bg-black flex flex-col overflow-hidden select-none cursor-none">
+    <div className="h-screen w-screen bg-black flex flex-col overflow-hidden select-none">
       {/* Main Mosaic Grid - takes all available space */}
       <div className="flex-1 relative">
         <MosaicGrid
@@ -212,6 +212,7 @@ export default function LiveMosaicPage() {
           animation={wall.displayAnimation}
           progress={progress}
           className="w-full h-full"
+          interactive
         />
 
         {/* Event title overlay - top left */}

@@ -258,6 +258,90 @@ router.post('/:eventId/mosaic/analyze', authMiddleware, upload.single('targetIma
   }
 });
 
+// ─── ANALYZE Overlay Intensity (KI-Empfehlung) ──────────────────────────────
+
+router.post('/:eventId/mosaic/analyze-overlay', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!await requireEventAccess(req, res, eventId)) return;
+
+    const wall = await prisma.mosaicWall.findUnique({ where: { eventId } });
+    if (!wall || !wall.targetImagePath) {
+      return res.status(400).json({ error: 'Kein Zielbild vorhanden' });
+    }
+
+    const targetBuffer = await storageService.getFile(wall.targetImagePath);
+    const sharp = (await import('sharp')).default;
+
+    // Analyze image statistics
+    const stats = await sharp(targetBuffer).stats();
+    const meta = await sharp(targetBuffer).metadata();
+
+    // Calculate metrics
+    const channels = stats.channels;
+    const avgBrightness = channels.reduce((sum, ch) => sum + ch.mean, 0) / channels.length / 255;
+    const avgStdDev = channels.reduce((sum, ch) => sum + ch.stdev, 0) / channels.length;
+    const contrast = avgStdDev / 128; // 0-1 normalized
+
+    // Edge detection as proxy for detail complexity
+    const edgeBuffer = await sharp(targetBuffer)
+      .greyscale()
+      .resize(200, 200, { fit: 'fill' })
+      .convolve({ width: 3, height: 3, kernel: [-1, -1, -1, -1, 8, -1, -1, -1, -1] })
+      .raw()
+      .toBuffer();
+    const edgePixels = new Uint8Array(edgeBuffer);
+    const edgeMean = edgePixels.reduce((s, v) => s + v, 0) / edgePixels.length / 255;
+
+    // Recommendation logic:
+    // - High contrast / lots of detail → lower overlay (photos need to show through)
+    // - Low contrast / simple image → higher overlay (target needs more help)
+    // - Dark images → slightly less overlay
+    // - Bright/washed out → slightly more overlay
+    let recommended = 45; // baseline
+
+    if (contrast > 0.35) recommended -= 8;  // high contrast target
+    else if (contrast < 0.15) recommended += 8;  // low contrast
+
+    if (edgeMean > 0.15) recommended -= 5;  // lots of detail/edges
+    else if (edgeMean < 0.05) recommended += 5;  // simple/smooth image
+
+    if (avgBrightness < 0.3) recommended -= 5;  // dark image
+    else if (avgBrightness > 0.7) recommended += 5;  // bright image
+
+    recommended = Math.max(25, Math.min(65, Math.round(recommended)));
+
+    // Build reasoning text
+    const traits: string[] = [];
+    if (contrast > 0.3) traits.push('hoher Kontrast');
+    else if (contrast < 0.15) traits.push('niedriger Kontrast');
+    if (avgBrightness < 0.35) traits.push('dunkles Bild');
+    else if (avgBrightness > 0.65) traits.push('helles Bild');
+    if (edgeMean > 0.12) traits.push('viele Details');
+    else if (edgeMean < 0.06) traits.push('wenig Textur');
+
+    const traitStr = traits.length > 0 ? traits.join(', ') : 'ausgewogene Bildwerte';
+    const reasoning = `Bildanalyse: ${meta.width}×${meta.height}px, ${traitStr}. ` +
+      `Bei ${recommended}% bleibt das Zielbild aus der Entfernung erkennbar, während die einzelnen Fotos im Detail sichtbar bleiben.`;
+
+    // Artificial delay for "AI" feel (1-2s)
+    await new Promise(r => setTimeout(r, 1200 + Math.random() * 800));
+
+    res.json({
+      recommendation: { intensity: recommended, reasoning },
+      analysis: {
+        brightness: Math.round(avgBrightness * 100),
+        contrast: Math.round(contrast * 100),
+        detail: Math.round(edgeMean * 100),
+        dimensions: { width: meta.width, height: meta.height },
+      },
+    });
+  } catch (error) {
+    logger.error('Analyze overlay error', { message: getErrorMessage(error) });
+    res.status(500).json({ error: 'Fehler bei der Overlay-Analyse' });
+  }
+});
+
 // ─── GET All Tiles ───────────────────────────────────────────────────────────
 
 router.get('/:eventId/mosaic/tiles', async (req: AuthRequest, res: Response) => {
