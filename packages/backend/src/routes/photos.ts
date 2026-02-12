@@ -15,6 +15,7 @@ import { emailService } from '../services/email';
 import { serializeBigInt } from '../utils/serializers';
 import { selectSmartCategoryId } from '../services/smartAlbum';
 import { mosaicEngine } from '../services/mosaicEngine';
+import { getFaceDetectionMetadata } from '../services/faceRecognition';
 import archiver from 'archiver';
 import { logger } from '../utils/logger';
 
@@ -367,6 +368,28 @@ router.post(
           }
         }).catch(() => {});
       }
+
+      // Face Detection: extract faces + descriptors for face search (async, non-blocking)
+      (async () => {
+        try {
+          const faceResult = await getFaceDetectionMetadata(processed.optimized);
+          if (faceResult.faceCount > 0) {
+            await prisma.photo.update({
+              where: { id: photo.id },
+              data: {
+                faceCount: faceResult.faceCount,
+                faceData: {
+                  faces: faceResult.faces,
+                  descriptors: faceResult.descriptors || [],
+                },
+              },
+            });
+            logger.info('Face detection completed', { photoId: photo.id, faceCount: faceResult.faceCount });
+          }
+        } catch (err: any) {
+          logger.warn('Face detection failed (non-critical)', { error: err.message, photoId: photo.id });
+        }
+      })();
 
       // Send upload notification to host (async, non-blocking)
       const uploaderName = (req.body?.uploaderName || 'Ein Gast').trim();

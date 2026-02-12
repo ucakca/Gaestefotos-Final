@@ -8,7 +8,6 @@ import { logger } from '../utils/logger';
 import { getErrorMessage } from '../utils/typeHelpers';
 import prisma from '../config/database';
 import { validateUploadedFile } from '../middleware/uploadSecurity';
-import { assertFeatureEnabled } from '../services/featureGate';
 
 const router = Router();
 
@@ -383,21 +382,8 @@ router.post(
         return res.status(403).json({ error: 'Einwilligung erforderlich' });
       }
 
-      // Check if face search feature is enabled for this event's package
-      try {
-        await assertFeatureEnabled(eventId, 'faceSearch');
-      } catch (err: any) {
-        if (err.code === 'FEATURE_NOT_AVAILABLE') {
-          return res.status(403).json({
-            error: 'Gesichtssuche ist in deinem aktuellen Paket nicht verfügbar. Upgrade auf Premium für dieses Feature.',
-            code: 'FEATURE_NOT_AVAILABLE',
-            requiredUpgrade: true,
-          });
-        }
-        throw err;
-      }
-
-      // Check if face search is enabled
+      // Face Search is FREE for ALL tiers (competitive differentiator)
+      // Only check if host has explicitly disabled it in event config
       const featuresConfig = event.featuresConfig as any;
       const faceSearchEnabled = featuresConfig?.faceSearch !== false; // Default true if face recognition is enabled
 

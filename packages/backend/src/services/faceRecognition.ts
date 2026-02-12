@@ -18,17 +18,23 @@ async function loadFaceApiModules(): Promise<boolean> {
   }
 
   try {
-    const faceApiModule = await import('@vladmandic/face-api');
+    // Use WASM backend (no native tfjs-node compilation needed, works on Node 24+)
+    const faceApiModule = require('@vladmandic/face-api/dist/face-api.node-wasm.js');
     const canvasModule = await import('canvas');
-    const tfModule = await import('@tensorflow/tfjs-node');
     
     faceapi = faceApiModule;
     createCanvas = canvasModule.createCanvas;
     loadImage = canvasModule.loadImage;
-    tf = tfModule;
+    tf = faceApiModule.tf;
     
-    // Initialize TensorFlow backend
+    // Initialize canvas backend for Node.js
     faceapi.env.monkeyPatch({ Canvas: canvasModule.Canvas, Image: canvasModule.Image });
+    
+    // Initialize WASM backend
+    await faceapi.tf.setBackend('wasm');
+    await faceapi.tf.ready();
+    
+    logger.info('Face recognition modules loaded successfully (WASM backend)');
     return true;
   } catch (error: any) {
     logger.warn('Face recognition modules not available:', error.message);
