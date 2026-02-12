@@ -24,8 +24,8 @@ export default function RootLayout({
       <body className={`${inter.className} min-h-screen bg-app-bg text-app-fg m-0 p-0`} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          forcedTheme="light"
           disableTransitionOnChange
         >
           <ServiceWorkerProvider>

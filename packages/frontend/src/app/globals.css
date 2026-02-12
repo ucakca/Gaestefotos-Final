@@ -6,6 +6,8 @@
 
 @layer base {
   :root {
+    color-scheme: light only;
+
     /* Core Colors - Warm & Romantic */
     --background: 30 20% 98%;
     --foreground: 20 25% 10%;
