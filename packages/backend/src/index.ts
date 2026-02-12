@@ -78,6 +78,7 @@ import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middl
 import { logger } from './utils/logger';
 import { storageService } from './services/storage';
 import { startRetentionPurgeWorker } from './services/retentionPurge';
+import { startDemoMosaicRetentionWorker } from './services/demoMosaicRetention';
 import { startVirusScanWorker } from './services/virusScan';
 import { startOrphanCleanupWorker } from './services/orphanCleanup';
 import { startStorageReminderWorker } from './services/storageReminder';
@@ -122,6 +123,7 @@ storageService.ensureBucketExists().catch((err) => {
 });
 
 startRetentionPurgeWorker();
+startDemoMosaicRetentionWorker();
 startVirusScanWorker();
 startOrphanCleanupWorker();
 startStorageReminderWorker();
