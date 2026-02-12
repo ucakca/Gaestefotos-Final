@@ -203,13 +203,32 @@ export async function processWooOrderPaidWebhook(params: {
       return { httpStatus: 200, body: { success: true, ignored: true, reason: 'unknown_package_sku' } };
     }
 
+    // Split into base/upgrade vs addon packages
+    const addonPackages = (activePackages as any[]).filter((p: any) => p.type === 'ADDON');
+    const basePackages = (activePackages as any[]).filter((p: any) => p.type !== 'ADDON');
+
     // Prefer UPGRADE packages if present, else BASE
     const pkg =
-      (activePackages as any).find((p: any) => p.type === 'UPGRADE') ||
-      (activePackages as any).find((p: any) => p.type === 'BASE') ||
-      (activePackages as any)[0];
+      basePackages.find((p: any) => p.type === 'UPGRADE') ||
+      basePackages.find((p: any) => p.type === 'BASE') ||
+      basePackages[0] ||
+      (addonPackages.length > 0 ? null : (activePackages as any[])[0]);
 
-    const lineItemForPkg = lineItems.find((li) => (li.sku || '').trim() === pkg.sku);
+    // If only addon packages and no base, we still need an eventCode to attach them
+    if (!pkg && addonPackages.length > 0 && !eventCode) {
+      logger.info('woocommerce_webhook_ignored', { wcOrderId, reason: 'addon_only_no_event_code' });
+      if (logId) {
+        await (prisma as any).wooWebhookEventLog
+          .update({
+            where: { id: logId },
+            data: { status: 'IGNORED', reason: 'addon_only_no_event_code' },
+          })
+          .catch(() => null);
+      }
+      return { httpStatus: 200, body: { success: true, ignored: true, reason: 'addon_only_no_event_code' } };
+    }
+
+    const lineItemForPkg = pkg ? lineItems.find((li) => (li.sku || '').trim() === pkg.sku) : null;
     const wcProductIdRaw = lineItemForPkg?.product_id;
     const wcProductId = wcProductIdRaw === null || wcProductIdRaw === undefined ? null : String(wcProductIdRaw);
 
@@ -217,7 +236,7 @@ export async function processWooOrderPaidWebhook(params: {
       await (prisma as any).wooWebhookEventLog
         .update({
           where: { id: logId },
-          data: { wcProductId, wcSku: pkg.sku },
+          data: { wcProductId, wcSku: pkg?.sku || addonPackages[0]?.sku || null },
         })
         .catch(() => null);
     }
@@ -331,20 +350,39 @@ export async function processWooOrderPaidWebhook(params: {
           data: { status: 'REPLACED' },
         });
 
-        await tx.eventEntitlement.create({
-          data: {
-            eventId: event.id,
-            wpUserId,
-            source: 'WOOCOMMERCE_ORDER',
-            wcOrderId,
-            wcProductId,
-            wcSku: pkg.sku,
-            storageLimitBytes: pkg.storageLimitBytes,
-            status: 'ACTIVE',
-          },
-        });
+        if (pkg) {
+          await tx.eventEntitlement.create({
+            data: {
+              eventId: event.id,
+              wpUserId,
+              source: 'WOOCOMMERCE_ORDER',
+              wcOrderId,
+              wcProductId,
+              wcSku: pkg.sku,
+              storageLimitBytes: pkg.storageLimitBytes,
+              status: 'ACTIVE',
+            },
+          });
+        }
 
-        return { duplicate: false as const, eventId: event.id, mode: 'upgrade' as const };
+        // Create addon entitlements
+        for (const addon of addonPackages) {
+          const addonLi = lineItems.find((li) => (li.sku || '').trim() === addon.sku);
+          const addonProductId = addonLi?.product_id ? String(addonLi.product_id) : null;
+          await tx.eventEntitlement.create({
+            data: {
+              eventId: event.id,
+              wpUserId,
+              source: 'addon_woocommerce',
+              wcOrderId,
+              wcProductId: addonProductId,
+              wcSku: addon.sku,
+              status: 'ACTIVE',
+            },
+          });
+        }
+
+        return { duplicate: false as const, eventId: event.id, mode: pkg ? 'upgrade' as const : 'addon_only' as const };
       }
 
       // Create flow: create event then entitlement.
@@ -401,11 +439,28 @@ export async function processWooOrderPaidWebhook(params: {
           source: 'WOOCOMMERCE_ORDER',
           wcOrderId,
           wcProductId,
-          wcSku: pkg.sku,
-          storageLimitBytes: pkg.storageLimitBytes,
+          wcSku: pkg!.sku,
+          storageLimitBytes: pkg!.storageLimitBytes,
           status: 'ACTIVE',
         },
       });
+
+      // Create addon entitlements for the new event
+      for (const addon of addonPackages) {
+        const addonLi = lineItems.find((li) => (li.sku || '').trim() === addon.sku);
+        const addonProductId = addonLi?.product_id ? String(addonLi.product_id) : null;
+        await tx.eventEntitlement.create({
+          data: {
+            eventId: created.id,
+            wpUserId,
+            source: 'addon_woocommerce',
+            wcOrderId,
+            wcProductId: addonProductId,
+            wcSku: addon.sku,
+            status: 'ACTIVE',
+          },
+        });
+      }
 
       return { duplicate: false as const, eventId: created.id, mode: 'create' as const };
     });
