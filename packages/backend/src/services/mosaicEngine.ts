@@ -258,43 +258,23 @@ export class MosaicEngine {
 
       const intensity = overlayIntensity / 100; // 0-1
 
-      // ── Pass 1: soft-light tinting ──────────────────────────────────
-      // soft-light preserves photo detail while shifting colours toward
-      // the target section. We blend the tinted result back with the
-      // original photo at `intensity` strength.
-      const softLightFull = await sharp(croppedPng)
-        .composite([{ input: targetSection, blend: 'soft-light' }])
-        .png()
-        .toBuffer();
-
-      // Mix: result = original * (1 - intensity) + softLightFull * intensity
-      const slAlpha = Math.round(intensity * 255);
-      const softLightWithAlpha = await sharp(softLightFull)
-        .composite([{
-          input: Buffer.from([0, 0, 0, slAlpha]),
-          raw: { width: 1, height: 1, channels: 4 },
-          tile: true,
-          blend: 'dest-in',
-        }])
-        .png()
-        .toBuffer();
-
-      const afterSoftLight = await sharp(croppedPng)
-        .composite([{ input: softLightWithAlpha, blend: 'over' }])
-        .png()
-        .toBuffer();
-
-      // ── Pass 2: semi-transparent over blend ─────────────────────────
-      // Adds a direct target colour layer at half the intensity so that
-      // from a distance the target image is clearly recognisable.
-      const overAlpha = Math.round((intensity * 0.5) * 255);
-      if (overAlpha <= 0) {
-        return sharp(afterSoftLight).jpeg({ quality: 90 }).toBuffer();
+      // ── Direct alpha composite ──────────────────────────────────────
+      // Simple and effective: composite the target section directly over
+      // the photo at `intensity` opacity.
+      //
+      // result = target * intensity + photo * (1 - intensity)
+      //
+      // At 65%: target dominates from a distance, photo texture/detail
+      // remains visible up close. This is the approach used by
+      // mosaically.com and similar photo mosaic tools.
+      const alpha = Math.round(intensity * 255);
+      if (alpha <= 0) {
+        return sharp(croppedPng).jpeg({ quality: 90 }).toBuffer();
       }
 
-      const overWithAlpha = await sharp(targetSection)
+      const targetWithAlpha = await sharp(targetSection)
         .composite([{
-          input: Buffer.from([0, 0, 0, overAlpha]),
+          input: Buffer.from([0, 0, 0, alpha]),
           raw: { width: 1, height: 1, channels: 4 },
           tile: true,
           blend: 'dest-in',
@@ -302,8 +282,8 @@ export class MosaicEngine {
         .png()
         .toBuffer();
 
-      return sharp(afterSoftLight)
-        .composite([{ input: overWithAlpha, blend: 'over' }])
+      return sharp(croppedPng)
+        .composite([{ input: targetWithAlpha, blend: 'over' }])
         .jpeg({ quality: 90 })
         .toBuffer();
     } catch (err) {
