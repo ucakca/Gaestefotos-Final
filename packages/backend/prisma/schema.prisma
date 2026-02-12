@@ -972,7 +972,7 @@ model MosaicWall {
   boardWidthMm       Int?
   boardHeightMm      Int?
   gridColors         Json?
-  overlayIntensity   Int                 @default(10)
+  overlayIntensity   Int                 @default(50)
   status             MosaicWallStatus    @default(DRAFT)
   fillMode           MosaicFillMode      @default(COLOR_MATCH)
   autoFillEnabled    Boolean             @default(true)

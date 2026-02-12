@@ -70,7 +70,7 @@ router.post('/:eventId/mosaic', authMiddleware, async (req: AuthRequest, res: Re
       tileSizeMm = 50,
       boardWidthMm,
       boardHeightMm,
-      overlayIntensity = 10,
+      overlayIntensity = 50,
       fillMode = 'COLOR_MATCH',
       displayAnimation = 'ZOOM_FLY',
       autoFillEnabled = true,
