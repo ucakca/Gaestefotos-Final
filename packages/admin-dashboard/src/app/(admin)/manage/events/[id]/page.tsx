@@ -7,6 +7,7 @@ import {
   ExternalLink, Loader2, ToggleLeft, ToggleRight, Trash2,
   Clock, Shield, RefreshCw, Activity, Package, ChevronDown, Check,
   Save, Edit2, Globe, Lock, Wifi, MessageSquare, X, AlertTriangle,
+  Puzzle, Plus, Minus,
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
@@ -61,6 +62,11 @@ export default function EventDetailPage() {
   const [selectedSku, setSelectedSku] = useState<string>('');
   const [switchingPkg, setSwitchingPkg] = useState(false);
   const [pkgLoading, setPkgLoading] = useState(true);
+
+  // Addon state
+  const [addons, setAddons] = useState<any[]>([]);
+  const [addonsLoading, setAddonsLoading] = useState(true);
+  const [togglingAddon, setTogglingAddon] = useState<string | null>(null);
 
   const loadEvent = useCallback(async () => {
     if (!eventId) return;
@@ -150,10 +156,42 @@ export default function EventDetailPage() {
     }
   }, [eventId]);
 
+  const loadAddons = useCallback(async () => {
+    if (!eventId) return;
+    setAddonsLoading(true);
+    try {
+      const res = await api.get(`/admin/events/${eventId}/addons`);
+      setAddons(res.data.addons || []);
+    } catch {
+      // silently fail
+    } finally {
+      setAddonsLoading(false);
+    }
+  }, [eventId]);
+
+  const toggleAddon = async (addon: any) => {
+    setTogglingAddon(addon.sku);
+    try {
+      if (addon.isActive && addon.entitlementId) {
+        await api.delete(`/admin/events/${eventId}/addons/${addon.entitlementId}`);
+        toast.success(`${addon.name} deaktiviert`);
+      } else {
+        await api.post(`/admin/events/${eventId}/addons`, { sku: addon.sku });
+        toast.success(`${addon.name} aktiviert`);
+      }
+      loadAddons();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Fehler beim Ändern');
+    } finally {
+      setTogglingAddon(null);
+    }
+  };
+
   useEffect(() => {
     loadEvent();
     loadPackageData();
-  }, [loadEvent, loadPackageData]);
+    loadAddons();
+  }, [loadEvent, loadPackageData, loadAddons]);
 
   const toggleActive = async () => {
     if (!event) return;
@@ -441,6 +479,77 @@ export default function EventDetailPage() {
               </div>
             )}
           </>
+        )}
+      </div>
+
+      {/* Addons */}
+      <div className="rounded-2xl border border-app-border bg-app-card p-5 space-y-4">
+        <h3 className="font-semibold text-app-fg flex items-center gap-2">
+          <Puzzle className="w-4 h-4 text-purple-500" />
+          Add-ons verwalten
+        </h3>
+        <p className="text-xs text-app-muted">
+          Addons schalten zusätzliche Features für dieses Event frei (Mosaic Wall, Print, etc.)
+        </p>
+
+        {addonsLoading ? (
+          <div className="flex items-center gap-2 text-sm text-app-muted">
+            <Loader2 className="w-4 h-4 animate-spin" /> Lade Addons...
+          </div>
+        ) : addons.length === 0 ? (
+          <div className="text-sm text-app-muted p-3 bg-app-bg rounded-xl">
+            Keine Add-on Pakete vorhanden. Erstelle Pakete mit Typ "Add-on" in der
+            <button onClick={() => router.push('/manage/packages')} className="text-app-accent hover:underline ml-1">
+              Paketverwaltung
+            </button>.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {addons.map((addon: any) => (
+              <div
+                key={addon.sku}
+                className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                  addon.isActive
+                    ? 'border-purple-500/30 bg-purple-500/5'
+                    : 'border-app-border bg-app-bg'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+                  addon.isActive ? 'bg-purple-500/10' : 'bg-app-bg'
+                }`}>
+                  <Puzzle className={`w-5 h-5 ${addon.isActive ? 'text-purple-500' : 'text-app-muted'}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-app-fg text-sm">{addon.name}</div>
+                  {addon.description && (
+                    <div className="text-xs text-app-muted truncate">{addon.description}</div>
+                  )}
+                  {addon.priceEurCents && (
+                    <div className="text-xs text-green-500 font-medium mt-0.5">
+                      {(addon.priceEurCents / 100).toFixed(0)} €
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => toggleAddon(addon)}
+                  disabled={togglingAddon === addon.sku}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${
+                    addon.isActive
+                      ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
+                      : 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20'
+                  }`}
+                >
+                  {togglingAddon === addon.sku ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : addon.isActive ? (
+                    <><Minus className="w-3 h-3" /> Entfernen</>
+                  ) : (
+                    <><Plus className="w-3 h-3" /> Hinzufügen</>
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

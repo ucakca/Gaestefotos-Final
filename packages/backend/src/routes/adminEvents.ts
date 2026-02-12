@@ -339,4 +339,132 @@ router.put('/:id/change-package', authMiddleware, requireRole('ADMIN'), async (r
   }
 });
 
+// ─── Admin: Event-Addons verwalten ──────────────────────────────────────────
+
+router.get('/:id/addons', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Get all addon entitlements for this event
+    const addonEntitlements = await prisma.eventEntitlement.findMany({
+      where: {
+        eventId: id,
+        status: 'ACTIVE',
+        source: { startsWith: 'addon' },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Get all available addon package definitions
+    const addonPackages = await prisma.packageDefinition.findMany({
+      where: { isActive: true, type: 'ADDON' },
+      orderBy: { displayOrder: 'asc' },
+      select: {
+        id: true,
+        sku: true,
+        name: true,
+        description: true,
+        priceEurCents: true,
+        allowMosaicWall: true,
+        allowMosaicPrint: true,
+        allowMosaicExport: true,
+        allowFaceSearch: true,
+        allowLiveWall: true,
+        allowVideoUpload: true,
+        allowStories: true,
+      },
+    });
+
+    // Map: which addons are active for this event
+    const activeSkus = new Set(addonEntitlements.map((e) => e.wcSku).filter(Boolean));
+
+    const addons = addonPackages.map((pkg) => ({
+      ...pkg,
+      isActive: activeSkus.has(pkg.sku),
+      entitlementId: addonEntitlements.find((e) => e.wcSku === pkg.sku)?.id || null,
+    }));
+
+    return res.json({ ok: true, addons });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Fehler beim Laden der Addons' });
+  }
+});
+
+router.post('/:id/addons', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { sku } = req.body;
+
+    if (!sku || typeof sku !== 'string') {
+      return res.status(400).json({ error: 'SKU ist erforderlich' });
+    }
+
+    // Verify addon package exists
+    const addonPkg = await prisma.packageDefinition.findFirst({
+      where: { sku, isActive: true, type: 'ADDON' },
+    });
+    if (!addonPkg) {
+      return res.status(404).json({ error: 'Addon-Paket nicht gefunden' });
+    }
+
+    // Check if already active
+    const existing = await prisma.eventEntitlement.findFirst({
+      where: { eventId: id, wcSku: sku, status: 'ACTIVE', source: { startsWith: 'addon' } },
+    });
+    if (existing) {
+      return res.status(409).json({ error: 'Addon ist bereits aktiv' });
+    }
+
+    // Get event host for wpUserId
+    const event = await prisma.event.findUnique({
+      where: { id },
+      select: { host: { select: { wordpressUserId: true } } },
+    });
+    if (!event) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    const wpUserId = event.host?.wordpressUserId ?? 0;
+
+    const entitlement = await prisma.eventEntitlement.create({
+      data: {
+        eventId: id,
+        wpUserId,
+        status: 'ACTIVE',
+        source: `addon_admin_${req.userId}`,
+        wcSku: sku,
+      },
+    });
+
+    return res.json({
+      ok: true,
+      entitlement: { id: entitlement.id, sku, name: addonPkg.name },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Fehler beim Hinzufügen des Addons' });
+  }
+});
+
+router.delete('/:id/addons/:entitlementId', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id, entitlementId } = req.params;
+
+    const entitlement = await prisma.eventEntitlement.findFirst({
+      where: { id: entitlementId, eventId: id, source: { startsWith: 'addon' } },
+    });
+    if (!entitlement) {
+      return res.status(404).json({ error: 'Addon-Entitlement nicht gefunden' });
+    }
+
+    await prisma.eventEntitlement.update({
+      where: { id: entitlementId },
+      data: { status: 'CANCELLED' },
+    });
+
+    return res.json({ ok: true });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Fehler beim Entfernen des Addons' });
+  }
+});
+
 export default router;

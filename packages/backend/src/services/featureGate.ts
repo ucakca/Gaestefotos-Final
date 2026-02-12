@@ -213,6 +213,7 @@ export async function assertWithinLimit(
 /**
  * Holt alle Feature-Flags und Limits für ein Event
  * Nützlich für Frontend um UI anzupassen
+ * Merges base package + all active addon entitlements using OR logic
  */
 export async function getEventFeatures(eventId: string): Promise<{
   tier: string;
@@ -220,6 +221,7 @@ export async function getEventFeatures(eventId: string): Promise<{
   isFree: boolean;
   features: Record<FeatureKey, boolean>;
   limits: Record<LimitKey, number | null>;
+  activeAddons: { sku: string; name: string }[];
 }> {
   const { pkg, isFree } = await getEventPackageDefinition(eventId);
   
@@ -250,17 +252,59 @@ export async function getEventFeatures(eventId: string): Promise<{
   };
   
   if (pkg) {
-    // Feature Flags
+    // Feature Flags from base package
     for (const [key, field] of Object.entries(featureToFieldMap)) {
       features[key as FeatureKey] = (pkg as any)[field] === true;
     }
     
-    // Limits
+    // Limits from base package
     limits.maxCategories = pkg.maxCategories;
     limits.maxChallenges = pkg.maxChallenges;
     limits.maxZipDownloadPhotos = pkg.maxZipDownloadPhotos;
     limits.maxCoHosts = pkg.maxCoHosts;
     limits.storageLimitPhotos = pkg.storageLimitPhotos;
+  }
+  
+  // Merge addon entitlements (OR logic: if any addon enables a feature, it's enabled)
+  const activeAddons: { sku: string; name: string }[] = [];
+  try {
+    const addonEntitlements = await prisma.eventEntitlement.findMany({
+      where: {
+        eventId,
+        status: 'ACTIVE',
+        source: { startsWith: 'addon' },
+      },
+    });
+    
+    for (const ent of addonEntitlements) {
+      if (!ent.wcSku) continue;
+      const addonPkg = await prisma.packageDefinition.findFirst({
+        where: { sku: ent.wcSku, isActive: true },
+      });
+      if (!addonPkg) continue;
+      
+      activeAddons.push({ sku: addonPkg.sku, name: addonPkg.name });
+      
+      // Merge features with OR logic
+      for (const [key, field] of Object.entries(featureToFieldMap)) {
+        if ((addonPkg as any)[field] === true) {
+          features[key as FeatureKey] = true;
+        }
+      }
+      
+      // Merge limits: take the higher value (null = unlimited wins)
+      const limitFields: LimitKey[] = ['maxCategories', 'maxChallenges', 'maxZipDownloadPhotos', 'maxCoHosts', 'storageLimitPhotos'];
+      for (const lk of limitFields) {
+        const addonVal = (addonPkg as any)[lk];
+        if (addonVal === null) {
+          limits[lk] = null; // unlimited
+        } else if (typeof addonVal === 'number' && (limits[lk] === null || addonVal > (limits[lk] as number))) {
+          limits[lk] = addonVal;
+        }
+      }
+    }
+  } catch (err) {
+    logger.warn('Failed to load addon entitlements for event', { eventId, error: err });
   }
   
   return {
@@ -269,6 +313,7 @@ export async function getEventFeatures(eventId: string): Promise<{
     isFree,
     features,
     limits,
+    activeAddons,
   };
 }
 

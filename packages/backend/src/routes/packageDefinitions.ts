@@ -150,6 +150,9 @@ router.put('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest
   if (patch.allowFullInvitation !== undefined) updateData.allowFullInvitation = patch.allowFullInvitation;
   if (patch.allowCoHosts !== undefined) updateData.allowCoHosts = patch.allowCoHosts;
   if (patch.isAdFree !== undefined) updateData.isAdFree = patch.isAdFree;
+  if (patch.allowMosaicWall !== undefined) updateData.allowMosaicWall = patch.allowMosaicWall;
+  if (patch.allowMosaicPrint !== undefined) updateData.allowMosaicPrint = patch.allowMosaicPrint;
+  if (patch.allowMosaicExport !== undefined) updateData.allowMosaicExport = patch.allowMosaicExport;
   
   // Limits
   if (patch.maxCategories !== undefined) updateData.maxCategories = patch.maxCategories;
