@@ -63,7 +63,6 @@ export default function MosaicGrid({
   className = '',
 }: MosaicGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
   const [newTileIds, setNewTileIds] = useState<Set<string>>(new Set());
   const prevTileIdsRef = useRef<Set<string>>(new Set());
   const [heroTile, setHeroTile] = useState<MosaicTileData | null>(null);
@@ -132,36 +131,6 @@ export default function MosaicGrid({
     prevProgressRef.current = progress;
   }, [progress]);
 
-  const gridAspect = gridWidth / gridHeight;
-
-  // Measure container for proper "contain" fit
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      const { width, height } = entries[0].contentRect;
-      setContainerSize({ w: width, h: height });
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  // Calculate inner grid dimensions to fit within container (object-fit: contain)
-  const { w: cw, h: ch } = containerSize;
-  const containerAspect = cw && ch ? cw / ch : gridAspect;
-  let innerWidth: number | undefined;
-  let innerHeight: number | undefined;
-  if (cw > 0 && ch > 0) {
-    if (gridAspect >= containerAspect) {
-      // Grid is wider than container → constrain by width
-      innerWidth = cw;
-      innerHeight = cw / gridAspect;
-    } else {
-      // Grid is taller than container → constrain by height
-      innerHeight = ch;
-      innerWidth = ch * gridAspect;
-    }
-  }
 
   return (
     <div
@@ -169,24 +138,15 @@ export default function MosaicGrid({
       className={`relative w-full h-full flex items-center justify-center bg-black ${className}`}
       style={{ perspective: animation === 'FLIP' ? '1000px' : undefined }}
     >
-      {/* Aspect-ratio wrapper — JS-calculated contain fit */}
-      <div
-        className="relative"
-        style={innerWidth && innerHeight ? {
-          width: `${innerWidth}px`,
-          height: `${innerHeight}px`,
-        } : {
-          width: '100%',
-          height: '100%',
-        }}
-      >
+      {/* Full-bleed grid wrapper */}
+      <div className="relative w-full h-full">
       {/* Grid */}
       <div
         className="relative w-full h-full grid"
         style={{
           gridTemplateColumns: `repeat(${gridWidth}, 1fr)`,
           gridTemplateRows: `repeat(${gridHeight}, 1fr)`,
-          gap: '1px',
+          gap: 0,
         }}
       >
         <AnimatePresence>
