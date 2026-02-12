@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Crown } from 'lucide-react';
 import api from '@/lib/api';
 import { usePackageFeatures } from '@/hooks/usePackageFeatures';
 import { MosaicWizardState, INITIAL_WIZARD_STATE } from './types';
@@ -55,12 +55,16 @@ export default function MosaicWizard({ eventId }: Props) {
   const [eventSlug, setEventSlug] = useState('');
   const [tileCount, setTileCount] = useState(0);
   const [maxReachedStep, setMaxReachedStep] = useState(1);
+  const [isDemo, setIsDemo] = useState(false);
 
   const [state, setState] = useState<MosaicWizardState>(INITIAL_WIZARD_STATE);
 
   const { isFeatureEnabled, packageName, features } = usePackageFeatures(eventId);
   const canMosaic = isFeatureEnabled('mosaicWall');
   const canPrint = isFeatureEnabled('mosaicPrint');
+
+  // Demo mode: free users get 4×4 max, no print, watermark
+  const DEMO_MAX_GRID = 4;
 
   const updateState = useCallback((updates: Partial<MosaicWizardState>) => {
     setState((prev) => ({ ...prev, ...updates }));
@@ -73,6 +77,7 @@ export default function MosaicWizard({ eventId }: Props) {
       if (data.wall) {
         const w = data.wall as MosaicWall;
         setWall(w);
+        if (data.isDemo !== undefined) setIsDemo(data.isDemo);
         setTileCount(w._count?.tiles || 0);
         // Hydrate wizard state from existing wall
         setState((prev) => ({
@@ -269,6 +274,11 @@ export default function MosaicWizard({ eventId }: Props) {
               <h1 className="text-lg font-bold flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-purple-600 shrink-0" />
                 Mosaic Wall
+                {isDemo && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">
+                    DEMO
+                  </span>
+                )}
               </h1>
             </div>
             {wall && (
@@ -297,8 +307,10 @@ export default function MosaicWizard({ eventId }: Props) {
           <Step1ModeGrid
             state={state}
             onChange={updateState}
-            canMosaic={canMosaic}
+            canMosaic={canMosaic || isDemo}
             canPrint={canPrint}
+            isDemo={isDemo}
+            demoMaxGrid={DEMO_MAX_GRID}
             onUpgrade={() => router.push(`/events/${eventId}/package`)}
           />
         )}
@@ -367,7 +379,6 @@ export default function MosaicWizard({ eventId }: Props) {
             <button
               type="button"
               onClick={handleNext}
-              disabled={!canMosaic && !canPrint}
               className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-purple-600 rounded-xl text-sm font-semibold text-white hover:bg-purple-700 transition-colors disabled:opacity-50"
             >
               Weiter

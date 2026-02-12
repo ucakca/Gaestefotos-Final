@@ -55,8 +55,10 @@ router.post('/:eventId/mosaic', authMiddleware, async (req: AuthRequest, res: Re
     const { eventId } = req.params;
     if (!await requireEventAccess(req, res, eventId)) return;
 
-    // Feature Gate: mosaicWall
-    await assertFeatureEnabled(eventId, 'mosaicWall');
+    // Feature Gate: soft — free users get demo (4×4 max)
+    const hasMosaicFeature = await isFeatureEnabled(eventId, 'mosaicWall');
+    const isDemo = !hasMosaicFeature;
+    const DEMO_MAX_GRID = 4;
 
     // Check if mosaic already exists
     const existing = await prisma.mosaicWall.findUnique({ where: { eventId } });
@@ -64,7 +66,7 @@ router.post('/:eventId/mosaic', authMiddleware, async (req: AuthRequest, res: Re
       return res.status(409).json({ error: 'Dieses Event hat bereits eine Mosaic Wall', wall: existing });
     }
 
-    const {
+    let {
       gridWidth = 24,
       gridHeight = 24,
       tileSizeMm = 50,
@@ -78,6 +80,12 @@ router.post('/:eventId/mosaic', authMiddleware, async (req: AuthRequest, res: Re
       showTicker = true,
       showQrOverlay = true,
     } = req.body;
+
+    // Demo: cap grid size to 4×4
+    if (isDemo) {
+      gridWidth = Math.min(Number(gridWidth), DEMO_MAX_GRID);
+      gridHeight = Math.min(Number(gridHeight), DEMO_MAX_GRID);
+    }
 
     const wall = await prisma.mosaicWall.create({
       data: {
@@ -97,7 +105,7 @@ router.post('/:eventId/mosaic', authMiddleware, async (req: AuthRequest, res: Re
       },
     });
 
-    res.status(201).json({ wall });
+    res.status(201).json({ wall, isDemo });
   } catch (error) {
     handleRouteError(error, res, 'Fehler beim Erstellen der Mosaic Wall');
   }
@@ -120,6 +128,9 @@ router.get('/:eventId/mosaic', async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ error: 'Keine Mosaic Wall für dieses Event' });
     }
 
+    const hasMosaicFeature = await isFeatureEnabled(eventId, 'mosaicWall');
+    const isDemo = !hasMosaicFeature;
+
     const totalCells = wall.gridWidth * wall.gridHeight;
     const realTiles = await prisma.mosaicTile.count({
       where: { mosaicWallId: wall.id, isAutoFilled: false },
@@ -130,6 +141,7 @@ router.get('/:eventId/mosaic', async (req: AuthRequest, res: Response) => {
         ...wall,
         targetImageUrl: wall.targetImagePath ? `/api/events/${eventId}/mosaic/target-image` : null,
       },
+      isDemo,
       stats: {
         totalCells,
         filledCells: wall._count.tiles,
@@ -156,6 +168,10 @@ router.put('/:eventId/mosaic', authMiddleware, async (req: AuthRequest, res: Res
       return res.status(404).json({ error: 'Keine Mosaic Wall für dieses Event' });
     }
 
+    const hasMosaicFeature = await isFeatureEnabled(eventId, 'mosaicWall');
+    const isDemoWall = !hasMosaicFeature;
+    const DEMO_MAX_GRID = 4;
+
     const allowedFields = [
       'gridWidth', 'gridHeight', 'tileSizeMm', 'boardWidthMm', 'boardHeightMm',
       'overlayIntensity', 'status', 'fillMode', 'displayAnimation',
@@ -177,12 +193,20 @@ router.put('/:eventId/mosaic', authMiddleware, async (req: AuthRequest, res: Res
       }
     }
 
+    // Demo: cap grid size to 4×4
+    if (isDemoWall) {
+      if (data.gridWidth) data.gridWidth = Math.min(data.gridWidth, DEMO_MAX_GRID);
+      if (data.gridHeight) data.gridHeight = Math.min(data.gridHeight, DEMO_MAX_GRID);
+      // Demo walls cannot enable print
+      if (data.printEnabled) data.printEnabled = false;
+    }
+
     const updated = await prisma.mosaicWall.update({
       where: { eventId },
       data,
     });
 
-    res.json({ wall: updated });
+    res.json({ wall: updated, isDemo: isDemoWall });
   } catch (error) {
     logger.error('Update mosaic wall error', { message: getErrorMessage(error) });
     res.status(500).json({ error: 'Fehler beim Aktualisieren der Mosaic Wall' });
