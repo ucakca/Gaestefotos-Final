@@ -211,6 +211,7 @@ export default function MosaicWizard({ eventId }: Props) {
         gridHeight: state.gridHeight,
         tileSizeMm: state.tileSizeMm,
         overlayIntensity: state.overlayIntensity,
+        scatterValue: state.scatterValue,
         displayAnimation: state.selectedAnimations[0] || 'ZOOM_FLY',
         showTicker: state.showTicker,
         showQrOverlay: state.showQrOverlay,

@@ -296,21 +296,24 @@ export class MosaicEngine {
 
   /**
    * Find the best empty grid cell for a photo based on color distance.
+   * scatterValue (0-100): 0 = exact color match, 100 = fully random placement.
+   * When scatter > 0, picks randomly from the top N candidates weighted by rank.
    */
   findBestPosition(
     dominantColor: RGB,
     gridColors: RGB[][],
-    occupiedCells: Set<string>
+    occupiedCells: Set<string>,
+    scatterValue: number = 0
   ): { x: number; y: number; distance: number } | null {
     const photoLab = rgbToLab(dominantColor);
-    let bestX = -1;
-    let bestY = -1;
-    let bestDistance = Infinity;
 
     const gridHeight = gridColors.length;
     const gridWidth = gridColors[0]?.length || 0;
     const centerX = gridWidth / 2;
     const centerY = gridHeight / 2;
+
+    // Collect all candidates with their distances
+    const candidates: { x: number; y: number; distance: number }[] = [];
 
     for (let y = 0; y < gridHeight; y++) {
       for (let x = 0; x < gridWidth; x++) {
@@ -327,16 +330,35 @@ export class MosaicEngine {
         );
         distance += distFromCenter * 0.5;
 
-        if (distance < bestDistance) {
-          bestDistance = distance;
-          bestX = x;
-          bestY = y;
-        }
+        candidates.push({ x, y, distance });
       }
     }
 
-    if (bestX < 0) return null;
-    return { x: bestX, y: bestY, distance: bestDistance };
+    if (candidates.length === 0) return null;
+
+    // Sort by distance (best match first)
+    candidates.sort((a, b) => a.distance - b.distance);
+
+    // scatter=0 → pick best, scatter=100 → pick from all candidates
+    if (scatterValue <= 0) {
+      return candidates[0];
+    }
+
+    // Determine pool size: scatter% of total candidates, minimum 2
+    const poolSize = Math.max(2, Math.ceil(candidates.length * (scatterValue / 100)));
+    const pool = candidates.slice(0, poolSize);
+
+    // Weighted random: higher-ranked candidates are more likely
+    // Weight = poolSize - index (rank 0 gets highest weight)
+    const totalWeight = pool.reduce((sum, _, i) => sum + (poolSize - i), 0);
+    let roll = Math.random() * totalWeight;
+
+    for (let i = 0; i < pool.length; i++) {
+      roll -= (poolSize - i);
+      if (roll <= 0) return pool[i];
+    }
+
+    return pool[pool.length - 1];
   }
 
   /**
@@ -385,8 +407,8 @@ export class MosaicEngine {
       this.extractDominantColor(photoBuffer),
     ]);
 
-    // 2. Find best position
-    const position = this.findBestPosition(dominantColor, gridColors, occupied);
+    // 2. Find best position (with scatter value from wall settings)
+    const position = this.findBestPosition(dominantColor, gridColors, occupied, wall.scatterValue ?? 0);
     if (!position) {
       logger.warn('MosaicEngine: No free position found', { mosaicWallId });
       return null;

@@ -985,6 +985,7 @@ model MosaicWall {
   printEnabled       Boolean             @default(false)
   printConfirmation  Boolean             @default(false)
   reservationTimeout Int                 @default(15)
+  scatterValue       Int                 @default(0)
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   event              Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)

@@ -176,14 +176,14 @@ router.put('/:eventId/mosaic', authMiddleware, async (req: AuthRequest, res: Res
       'gridWidth', 'gridHeight', 'tileSizeMm', 'boardWidthMm', 'boardHeightMm',
       'overlayIntensity', 'status', 'fillMode', 'displayAnimation',
       'autoFillEnabled', 'autoFillThreshold', 'showTicker', 'showQrOverlay',
-      'printEnabled', 'printConfirmation', 'reservationTimeout',
+      'printEnabled', 'printConfirmation', 'reservationTimeout', 'scatterValue',
     ];
 
     const data: any = {};
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
         const val = req.body[field];
-        if (['gridWidth', 'gridHeight', 'tileSizeMm', 'boardWidthMm', 'boardHeightMm', 'overlayIntensity', 'autoFillThreshold', 'reservationTimeout'].includes(field)) {
+        if (['gridWidth', 'gridHeight', 'tileSizeMm', 'boardWidthMm', 'boardHeightMm', 'overlayIntensity', 'autoFillThreshold', 'reservationTimeout', 'scatterValue'].includes(field)) {
           data[field] = val !== null ? Number(val) : null;
         } else if (['autoFillEnabled', 'showTicker', 'showQrOverlay', 'printEnabled', 'printConfirmation'].includes(field)) {
           data[field] = Boolean(val);
