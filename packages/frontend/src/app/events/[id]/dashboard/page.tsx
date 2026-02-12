@@ -59,6 +59,8 @@ import {
   RefreshCw,
   Wifi,
   LayoutGrid,
+  Gamepad2,
+  Activity,
 } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
@@ -1067,6 +1069,42 @@ function OverviewTab({
           <div>
             <div className="font-medium text-app-fg">Paket</div>
             <div className="text-xs text-app-muted">Upgrade & Wechsel</div>
+          </div>
+        </Link>
+        <Link
+          href={`/events/${eventId}/ki-booth`}
+          className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-violet-500/10 to-violet-600/5 border border-violet-200 p-4"
+        >
+          <div className="w-10 h-10 rounded-xl bg-app-card flex items-center justify-center shadow-sm text-violet-500">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-medium text-app-fg">KI Booth</div>
+            <div className="text-xs text-app-muted">AI Style Transfer</div>
+          </div>
+        </Link>
+        <Link
+          href={`/events/${eventId}/booth-games`}
+          className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-200 p-4"
+        >
+          <div className="w-10 h-10 rounded-xl bg-app-card flex items-center justify-center shadow-sm text-emerald-500">
+            <Gamepad2 className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-medium text-app-fg">Booth-Spiele</div>
+            <div className="text-xs text-app-muted">Interaktive Games</div>
+          </div>
+        </Link>
+        <Link
+          href={`/events/${eventId}/live-analytics`}
+          className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-200 p-4"
+        >
+          <div className="w-10 h-10 rounded-xl bg-app-card flex items-center justify-center shadow-sm text-cyan-500">
+            <Activity className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-medium text-app-fg">Live-Analytics</div>
+            <div className="text-xs text-app-muted">Echtzeit-Statistiken</div>
           </div>
         </Link>
       </div>
