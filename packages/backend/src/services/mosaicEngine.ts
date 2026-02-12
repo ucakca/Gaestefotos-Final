@@ -490,7 +490,19 @@ export class MosaicEngine {
   }
 
   /**
-   * Auto-fill remaining empty cells with duplicates of existing tiles.
+   * Smart auto-fill: fills empty cells with duplicates of existing photos,
+   * re-blended with the target-image section for each NEW cell position.
+   *
+   * Algorithm:
+   *  1. Load all original (unblended) source photos into memory once.
+   *  2. For each empty cell, score every source photo by:
+   *     a) Color distance (deltaE) between photo's dominant color and the
+   *        target-image color at that cell — lower is better.
+   *     b) Diversity penalty — photos already used many times get penalised
+   *        so the grid doesn't become a wall of the same image.
+   *  3. Pick the best-scoring photo for each cell.
+   *  4. Re-crop and re-blend with blendTargetOverlay for the cell's position.
+   *  5. Upload the freshly blended tile and create a DB record.
    */
   async autoFill(mosaicWallId: string): Promise<number> {
     const wall = await prisma.mosaicWall.findUnique({
@@ -498,12 +510,18 @@ export class MosaicEngine {
       include: {
         tiles: {
           where: { isAutoFilled: false },
-          select: { id: true, gridX: true, gridY: true, dominantColor: true, croppedImagePath: true },
+          select: {
+            id: true,
+            gridX: true,
+            gridY: true,
+            dominantColor: true,
+            photoId: true,
+          },
         },
       },
     });
 
-    if (!wall || !wall.gridColors) return 0;
+    if (!wall || !wall.gridColors || !wall.targetImagePath) return 0;
 
     const gridColors = wall.gridColors as unknown as RGB[][];
     const occupied = new Set(wall.tiles.map(t => `${t.gridX},${t.gridY}`));
@@ -519,46 +537,148 @@ export class MosaicEngine {
 
     if (emptyCells.length === 0) return 0;
 
+    // ── Step 1: Load source photos (original, unblended) ──────────────
+    interface SourcePhoto {
+      photoId: string;
+      dominantColor: RGB;
+      croppedBuffer: Buffer;
+    }
+
+    const sources: SourcePhoto[] = [];
+    const seenPhotoIds = new Set<string>();
+
+    for (const tile of wall.tiles) {
+      if (!tile.photoId || seenPhotoIds.has(tile.photoId)) continue;
+      seenPhotoIds.add(tile.photoId);
+
+      try {
+        const photo = await prisma.photo.findUnique({
+          where: { id: tile.photoId },
+          select: { storagePath: true },
+        });
+        if (!photo?.storagePath) continue;
+
+        const rawBuffer = await storageService.getFile(photo.storagePath);
+        const croppedBuffer = await this.cropTile(rawBuffer);
+        const dominantColor = tile.dominantColor as unknown as RGB;
+
+        if (dominantColor) {
+          sources.push({ photoId: tile.photoId, dominantColor, croppedBuffer });
+        }
+      } catch (err) {
+        logger.warn('AutoFill: Could not load source photo', {
+          photoId: tile.photoId,
+          error: (err as Error).message,
+        });
+      }
+    }
+
+    if (sources.length === 0) {
+      logger.warn('AutoFill: No source photos available');
+      return 0;
+    }
+
+    logger.info(`AutoFill: ${sources.length} unique source photos loaded, ${emptyCells.length} cells to fill`);
+
+    // Pre-compute Lab colors for sources
+    const sourceLabs = sources.map(s => ({
+      ...s,
+      lab: rgbToLab(s.dominantColor),
+    }));
+
+    // Load target image once
+    let targetBuffer: Buffer;
+    try {
+      targetBuffer = await storageService.getFile(wall.targetImagePath);
+    } catch (err) {
+      logger.error('AutoFill: Could not load target image', { error: (err as Error).message });
+      return 0;
+    }
+
+    // ── Step 2 & 3: Score and pick best photo per cell ────────────────
+    // Track usage count for diversity weighting
+    const usageCount = new Map<string, number>();
+    for (const s of sources) usageCount.set(s.photoId, 0);
+
+    // Shuffle empty cells to avoid spatial bias
+    for (let i = emptyCells.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [emptyCells[i], emptyCells[j]] = [emptyCells[j], emptyCells[i]];
+    }
+
     let filled = 0;
 
     for (const cell of emptyCells) {
-      // Find the existing tile with the closest color to this cell's target
       const cellLab = rgbToLab(cell.color);
-      let bestTile = wall.tiles[0];
-      let bestDist = Infinity;
 
-      for (const tile of wall.tiles) {
-        const tileDom = tile.dominantColor as RGB | null;
-        if (!tileDom) continue;
-        const dist = deltaE(rgbToLab(tileDom), cellLab);
-        if (dist < bestDist) {
-          bestDist = dist;
-          bestTile = tile;
+      // Score each source: lower = better
+      let bestIdx = 0;
+      let bestScore = Infinity;
+
+      for (let i = 0; i < sourceLabs.length; i++) {
+        const colorDist = deltaE(sourceLabs[i].lab, cellLab);
+        const usage = usageCount.get(sourceLabs[i].photoId) || 0;
+        // Diversity penalty: each reuse adds 5 deltaE points
+        const diversityPenalty = usage * 5;
+        const score = colorDist + diversityPenalty;
+
+        if (score < bestScore) {
+          bestScore = score;
+          bestIdx = i;
         }
       }
 
-      if (!bestTile) continue;
+      const chosen = sourceLabs[bestIdx];
+      usageCount.set(chosen.photoId, (usageCount.get(chosen.photoId) || 0) + 1);
 
-      const label = gridToLabel(cell.x, cell.y);
+      try {
+        // ── Step 4: Re-blend for this cell's target position ──────────
+        const blended = await this.blendTargetOverlay(
+          chosen.croppedBuffer,
+          targetBuffer,
+          cell.x,
+          cell.y,
+          wall.gridWidth,
+          wall.gridHeight,
+          wall.overlayIntensity,
+        );
 
-      await prisma.mosaicTile.create({
-        data: {
-          mosaicWallId,
-          photoId: null,
-          gridX: cell.x,
-          gridY: cell.y,
-          positionLabel: label,
-          croppedImagePath: bestTile.croppedImagePath,
-          dominantColor: bestTile.dominantColor as any,
-          targetColor: cell.color as any,
-          colorDistance: bestDist,
-          isAutoFilled: true,
-          printStatus: 'PLACED',
-          source: 'AUTO_FILL',
-        },
-      });
+        // ── Step 5: Upload and create DB record ───────────────────────
+        const path = await storageService.uploadFile(
+          wall.eventId,
+          `mosaic-tile-${cell.x}-${cell.y}.jpg`,
+          blended,
+          'image/jpeg',
+        );
 
-      filled++;
+        const label = gridToLabel(cell.x, cell.y);
+        await prisma.mosaicTile.create({
+          data: {
+            mosaicWallId,
+            photoId: null,
+            gridX: cell.x,
+            gridY: cell.y,
+            positionLabel: label,
+            croppedImagePath: path,
+            dominantColor: chosen.dominantColor as any,
+            targetColor: cell.color as any,
+            colorDistance: bestScore,
+            isAutoFilled: true,
+            printStatus: 'PLACED',
+            source: 'AUTO_FILL',
+          },
+        });
+
+        filled++;
+        if (filled % 10 === 0) {
+          logger.info(`AutoFill: ${filled}/${emptyCells.length} cells filled`);
+        }
+      } catch (err) {
+        logger.warn('AutoFill: Failed to fill cell', {
+          cell: `${cell.x},${cell.y}`,
+          error: (err as Error).message,
+        });
+      }
     }
 
     if (filled > 0) {
@@ -568,7 +688,7 @@ export class MosaicEngine {
       });
     }
 
-    logger.info('MosaicEngine: Auto-fill completed', { mosaicWallId, filled });
+    logger.info('AutoFill: Completed', { mosaicWallId, filled, totalCells: emptyCells.length });
     return filled;
   }
 
