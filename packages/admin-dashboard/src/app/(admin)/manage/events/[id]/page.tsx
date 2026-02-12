@@ -12,6 +12,7 @@ import {
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
+import { HelpButton } from '@/components/ui/HelpPanel';
 
 interface EventDetail {
   id: string;
@@ -412,6 +413,24 @@ export default function EventDetailPage() {
         <h3 className="font-semibold text-app-fg flex items-center gap-2">
           <Package className="w-4 h-4 text-amber-500" />
           Paket verwalten
+          <HelpButton
+            title="Paket-Verwaltung"
+            sections={[
+              {
+                title: 'Base-Paket wechseln',
+                content: 'Hier kannst du das Basis-Paket eines Events direkt ändern — ohne WooCommerce.\n\nDas alte Entitlement wird auf REPLACED gesetzt, das neue sofort aktiviert. Feature-Flags und Limits des neuen Pakets gelten ab sofort.',
+              },
+              {
+                title: 'WooCommerce-Sync',
+                content: 'Normalerweise wird das Paket automatisch über WooCommerce zugewiesen, wenn der Kunde kauft.\n\nManuelle Änderungen hier überschreiben die WooCommerce-Zuweisung. Bei einer neuen WooCommerce-Bestellung mit eventCode wird das Paket erneut überschrieben.',
+              },
+              {
+                title: 'eventCode',
+                content: 'Jedes Event hat einen eindeutigen eventCode. Wenn ein Kunde im WooCommerce-Shop bestellt und den eventCode mitliefert, wird das Paket automatisch dem richtigen Event zugewiesen.\n\nDer eventCode kann aus der App heraus als URL-Parameter an den Shop übergeben werden.',
+              },
+            ]}
+            docsLink="https://github.com/ucakca/Gaestefotos-Final/blob/master/docs/woocommerce-setup.md"
+          />
         </h3>
 
         {pkgLoading ? (
@@ -487,6 +506,28 @@ export default function EventDetailPage() {
         <h3 className="font-semibold text-app-fg flex items-center gap-2">
           <Puzzle className="w-4 h-4 text-purple-500" />
           Add-ons verwalten
+          <HelpButton
+            title="Event-Addons"
+            sections={[
+              {
+                title: 'Was sind Addons?',
+                content: 'Addons schalten zusätzliche Features für ein einzelnes Event frei — unabhängig vom Base-Paket.\n\nBeispiel: Ein Event mit \"Starter\"-Paket hat kein Mosaic Wall. Durch Hinzufügen des Addons \"Mosaic Wall\" wird es freigeschaltet.',
+              },
+              {
+                title: 'WooCommerce-Integration',
+                content: 'Wenn ein Kunde im WooCommerce-Shop ein Addon kauft, wird es automatisch dem Event zugewiesen — vorausgesetzt der eventCode ist in der Bestellung enthalten.\n\nOhne eventCode bei reinen Addon-Bestellungen wird der Webhook ignoriert.',
+              },
+              {
+                title: 'Manuelles Addon (Admin)',
+                content: 'Hier kannst du Addons direkt hinzufügen oder entfernen — ohne WooCommerce. Ideal für:\n• Testing & Entwicklung\n• Support-Fälle\n• Demo-Events\n\nÄnderungen gelten sofort.',
+              },
+              {
+                title: 'Mosaic Wall Pakete',
+                content: '• Mosaic Wall (Digital): Digitale Mosaik-Wand + HD-Export\n• Mosaic Wall Print + Digital: Alles aus Digital + Print-Station + Sticker-Druck\n\nPrint beinhaltet immer Digital.',
+              },
+            ]}
+            docsLink="https://github.com/ucakca/Gaestefotos-Final/blob/master/docs/woocommerce-setup.md"
+          />
         </h3>
         <p className="text-xs text-app-muted">
           Addons schalten zusätzliche Features für dieses Event frei (Mosaic Wall, Print, etc.)

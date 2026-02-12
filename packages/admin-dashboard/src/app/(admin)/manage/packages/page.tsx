@@ -17,6 +17,7 @@ import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
+import { HelpButton } from '@/components/ui/HelpPanel';
 
 interface PackageDefinition {
   id: string;
@@ -186,6 +187,32 @@ export default function PackagesPage() {
           <h1 className="text-2xl font-bold tracking-tight text-app-fg flex items-center gap-2">
             <Package className="w-6 h-6 text-app-accent" />
             Pakete & Features
+            <HelpButton
+              title="Pakete & WooCommerce"
+              sections={[
+                {
+                  title: 'SKUs müssen übereinstimmen',
+                  content: 'Die SKU jedes Pakets hier muss exakt mit der SKU des WooCommerce-Produkts übereinstimmen. Beispiel: \"starter\", \"addon-mosaic-digital\".\n\nOhne übereinstimmende SKU wird der WooCommerce-Webhook ignoriert.',
+                },
+                {
+                  title: 'Paket-Typen',
+                  content: '• BASE = Basis-Paket (Starter, Premium, etc.)\n• ADDON = Zusatz-Feature (Mosaic Wall, Print)\n• UPGRADE = Upgrade von einem Tier zum nächsten\n\nKunden können BASE + ADDON(s) im selben Warenkorb kaufen.',
+                },
+                {
+                  title: 'Mosaic Wall Pakete',
+                  content: '• addon-mosaic-digital (199€): Digitale Mosaik-Wand + HD-Export\n• addon-mosaic-print (599€): Print + Digital — beinhaltet alles aus Digital plus Print-Station und Sticker-Druck\n\nPrint inkludiert immer Digital. Kein separates Hybrid-Paket nötig.',
+                },
+                {
+                  title: 'Feature-Merge (OR-Logik)',
+                  content: 'Wenn ein Event ein Base-Paket UND Addons hat, werden Features mit OR zusammengeführt:\n\nBase: mosaicWall=❌, videoUpload=✅\nAddon: mosaicWall=✅\n→ Ergebnis: mosaicWall=✅, videoUpload=✅\n\nDer höhere Limit-Wert gewinnt immer.',
+                },
+                {
+                  title: 'Feature-Flags bearbeiten',
+                  content: 'Klicke auf ein Paket → Feature-Toggles ändern → Speichern.\n\nÄnderungen gelten sofort für alle Events mit diesem Paket.',
+                },
+              ]}
+              docsLink="https://github.com/ucakca/Gaestefotos-Final/blob/master/docs/woocommerce-setup.md"
+            />
           </h1>
           <p className="mt-1 text-sm text-app-muted">
             Basis-Pakete, Add-ons und Feature-Konfiguration
