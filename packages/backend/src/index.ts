@@ -70,6 +70,7 @@ import boothGamesRoutes from './routes/boothGames';
 import qrDesignsRoutes from './routes/qrDesigns';
 import highlightReelsRoutes from './routes/highlightReels';
 import mosaicRoutes from './routes/mosaic';
+import hashtagImportRoutes from './routes/hashtagImport';
 import partnerRoutes from './routes/partners';
 import healthRoutes from './routes/health';
 
@@ -553,6 +554,7 @@ app.use('/api', invitationRoutes);
 app.use('/api', qrDesignsRoutes);
 app.use('/api/events', highlightReelsRoutes); // Highlight reels: /api/events/:eventId/generate, etc.
 app.use('/api/events', mosaicRoutes); // Mosaic Wall: /api/events/:eventId/mosaic/*
+app.use('/api/events', hashtagImportRoutes); // Hashtag Import: /api/events/:eventId/hashtag/*
 app.use('/api/partners', partnerRoutes); // Partner/Franchise: /api/partners/*
 app.use('/api/admin/package-definitions', packageDefinitionsRoutes);
 app.use('/api/admin/webhooks/woocommerce', adminWooWebhooksRoutes);

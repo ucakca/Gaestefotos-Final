@@ -1109,6 +1109,38 @@ function OverviewTab({
         </Link>
       </div>
 
+      {/* Hashtag — Always FREE */}
+      <div className="rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-50 to-emerald-50 p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center text-teal-600">
+              <Globe className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="font-semibold text-sm text-teal-900 flex items-center gap-1.5">
+                Hashtag-Import
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-teal-100 text-teal-700 font-bold">FREE</span>
+              </div>
+              <p className="text-[11px] text-teal-700">Fotos automatisch in die Galerie importieren</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 mt-2">
+          <div className="flex-1 bg-white border border-teal-200 rounded-lg px-3 py-2 font-mono text-sm font-bold text-teal-800">
+            #gästefotos
+          </div>
+          <button
+            onClick={() => onCopy('#gästefotos', 'Hashtag kopiert!')}
+            className="p-2 rounded-lg bg-teal-100 hover:bg-teal-200 transition-colors text-teal-700"
+          >
+            <Copy className="w-4 h-4" />
+          </button>
+        </div>
+        <p className="text-[10px] text-teal-600 mt-2">
+          Gäste posten Fotos mit diesem Hashtag → automatischer Import in eure Galerie. Inkl. gästefotos.com Logo-Overlay.
+        </p>
+      </div>
+
       {/* Share URL Display */}
       {shareUrl && (
         <div className="rounded-xl bg-blue-50 border border-blue-200 p-3">
