@@ -23,6 +23,7 @@ interface MosaicGridProps {
   progress?: number; // 0-100
   className?: string;
   interactive?: boolean;
+  isDemo?: boolean;
 }
 
 const ANIMATION_KEYS = ['PUZZLE', 'FLIP', 'PARTICLES', 'ZOOM_FLY', 'RIPPLE'] as const;
@@ -69,6 +70,7 @@ export default function MosaicGrid({
   progress = 0,
   className = '',
   interactive = false,
+  isDemo = false,
 }: MosaicGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const gridWrapperRef = useRef<HTMLDivElement>(null);
@@ -466,6 +468,31 @@ export default function MosaicGrid({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── DEMO watermark overlay ──────────────────────────────────── */}
+      {isDemo && (
+        <div className="absolute inset-0 z-50 pointer-events-none overflow-hidden">
+          <div
+            className="absolute inset-[-50%] flex flex-wrap items-center justify-center gap-16"
+            style={{ transform: 'rotate(-30deg)' }}
+          >
+            {Array.from({ length: 12 }, (_, i) => (
+              <span
+                key={i}
+                className="text-white/[0.12] text-6xl md:text-8xl font-black select-none whitespace-nowrap"
+                style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}
+              >
+                DEMO
+              </span>
+            ))}
+          </div>
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm px-4 py-1.5 rounded-full">
+            <span className="text-white/80 text-xs font-medium">
+              Demo-Mosaik · Upgrade für Vollversion
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* ── Tile preview lightbox — large, centered ────────────────── */}
       <AnimatePresence>

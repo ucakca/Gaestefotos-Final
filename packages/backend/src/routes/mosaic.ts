@@ -864,16 +864,20 @@ router.get('/:eventId/mosaic/display', async (req: AuthRequest, res: Response) =
     const totalCells = wall.gridWidth * wall.gridHeight;
     const progress = totalCells > 0 ? Math.round((tiles.length / totalCells) * 100) : 0;
 
-    // Get event for slug/title
+    // Get event for slug/title + check demo status
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       select: { title: true, slug: true },
     });
 
+    const hasMosaicFeature = await isFeatureEnabled(eventId, 'mosaicWall');
+    const isDemo = !hasMosaicFeature;
+
     res.json({
       wall: {
         ...wall,
         targetImageUrl,
+        isDemo,
       },
       tiles: tilesWithUrls,
       progress,

@@ -213,6 +213,7 @@ export default function LiveMosaicPage() {
           progress={progress}
           className="w-full h-full"
           interactive
+          isDemo={(wall as any).isDemo}
         />
 
         {/* Event title overlay - top left */}

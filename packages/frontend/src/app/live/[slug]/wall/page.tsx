@@ -563,6 +563,7 @@ export default function LiveWallPage() {
               animation={mosaicWall.displayAnimation}
               progress={mosaicProgress}
               className="w-full h-full"
+              isDemo={(mosaicWall as any).isDemo}
             />
           </div>
           {mosaicWall.showTicker && (
@@ -594,6 +595,7 @@ export default function LiveWallPage() {
                     animation={mosaicWall.displayAnimation}
                     progress={mosaicProgress}
                     className="w-full h-full"
+                    isDemo={(mosaicWall as any).isDemo}
                   />
                 </motion.div>
               ) : (
