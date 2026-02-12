@@ -236,6 +236,8 @@ export class MosaicEngine {
       const top = gridY * cellH;
 
       // Extract and resize the target section to tile resolution
+      // IMPORTANT: Use .png() for all intermediate buffers to preserve
+      // the alpha channel. JPEG strips alpha, breaking dest-in blending.
       const targetSection = await sharp(targetImageBuffer)
         .extract({
           left: Math.min(left, tW - cellW),
@@ -245,6 +247,13 @@ export class MosaicEngine {
         })
         .resize(tileResolution, tileResolution, { fit: 'fill' })
         .ensureAlpha()
+        .png()
+        .toBuffer();
+
+      // Ensure cropped tile is also RGBA PNG for compositing
+      const croppedPng = await sharp(croppedTile)
+        .ensureAlpha()
+        .png()
         .toBuffer();
 
       const intensity = overlayIntensity / 100; // 0-1
@@ -253,9 +262,9 @@ export class MosaicEngine {
       // soft-light preserves photo detail while shifting colours toward
       // the target section. We blend the tinted result back with the
       // original photo at `intensity` strength.
-      const softLightFull = await sharp(croppedTile)
-        .ensureAlpha()
+      const softLightFull = await sharp(croppedPng)
         .composite([{ input: targetSection, blend: 'soft-light' }])
+        .png()
         .toBuffer();
 
       // Mix: result = original * (1 - intensity) + softLightFull * intensity
@@ -267,11 +276,12 @@ export class MosaicEngine {
           tile: true,
           blend: 'dest-in',
         }])
+        .png()
         .toBuffer();
 
-      const afterSoftLight = await sharp(croppedTile)
-        .ensureAlpha()
+      const afterSoftLight = await sharp(croppedPng)
         .composite([{ input: softLightWithAlpha, blend: 'over' }])
+        .png()
         .toBuffer();
 
       // ── Pass 2: semi-transparent over blend ─────────────────────────
@@ -289,6 +299,7 @@ export class MosaicEngine {
           tile: true,
           blend: 'dest-in',
         }])
+        .png()
         .toBuffer();
 
       return sharp(afterSoftLight)
