@@ -15,6 +15,7 @@ import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
 import { getWordPressUserById, verifyWordPressUser, WordPressAuthUnavailableError } from '../config/wordpress';
 import { logger } from '../utils/logger';
 import { getErrorMessage } from '../utils/typeHelpers';
+import { addCredits } from '../services/aiExecution';
 import {
   buildOtpAuthUrl,
   buildRecoveryCodesPayload,
@@ -669,6 +670,22 @@ router.post('/register', passwordLimiter, async (req: Request, res: Response) =>
         createdAt: true,
       },
     });
+
+    // Sign-Up Credit Bonus
+    const signupBonus = parseInt(process.env.SIGNUP_CREDIT_BONUS || '50', 10);
+    if (signupBonus > 0) {
+      try {
+        await addCredits(
+          user.id,
+          signupBonus,
+          'BONUS',
+          `Willkommensbonus: +${signupBonus} Credits`,
+        );
+        logger.info('Sign-up credit bonus granted', { userId: user.id, amount: signupBonus });
+      } catch (bonusErr) {
+        logger.warn('Failed to grant sign-up credit bonus', { userId: user.id, error: bonusErr });
+      }
+    }
 
     // Generate token
     const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as any;

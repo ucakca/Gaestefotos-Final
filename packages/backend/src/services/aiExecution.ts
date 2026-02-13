@@ -238,7 +238,54 @@ export async function consumeCredits(
 
   logger.info('Credits consumed', { userId, feature, cost, remaining: remainingBalance });
 
+  // Fire-and-forget: check auto-recharge after consumption
+  checkAutoRecharge(userId, remainingBalance).catch(err =>
+    logger.warn('Auto-recharge check failed', { userId, error: err })
+  );
+
   return { success: true, remainingBalance };
+}
+
+/**
+ * Check if auto-recharge should fire and execute it
+ * Called asynchronously after credit consumption
+ */
+async function checkAutoRecharge(userId: string, currentBalance: number): Promise<void> {
+  const creditBalance = await prisma.creditBalance.findUnique({ where: { userId } });
+  if (!creditBalance) return;
+
+  if (!creditBalance.autoRecharge) return;
+  if (currentBalance > creditBalance.autoRechargeThreshold) return;
+
+  const rechargeAmount = creditBalance.autoRechargeAmount;
+  if (rechargeAmount <= 0) return;
+
+  // Prevent duplicate auto-recharge within 60 seconds
+  const recentRecharge = await prisma.creditTransaction.findFirst({
+    where: {
+      balanceId: creditBalance.id,
+      type: 'AUTO_RECHARGE',
+      createdAt: { gte: new Date(Date.now() - 60_000) },
+    },
+  });
+  if (recentRecharge) {
+    logger.debug('Auto-recharge skipped (cooldown)', { userId });
+    return;
+  }
+
+  await addCredits(
+    userId,
+    rechargeAmount,
+    'AUTO_RECHARGE',
+    `Auto-Recharge: +${rechargeAmount} Credits (Schwellwert: ${creditBalance.autoRechargeThreshold})`,
+  );
+
+  logger.info('Auto-recharge executed', {
+    userId,
+    amount: rechargeAmount,
+    threshold: creditBalance.autoRechargeThreshold,
+    previousBalance: currentBalance,
+  });
 }
 
 /**

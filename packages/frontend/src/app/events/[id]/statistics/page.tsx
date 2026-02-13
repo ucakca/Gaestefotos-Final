@@ -13,6 +13,7 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import StatCard from '@/components/dashboard/StatCard';
 import ChartCard from '@/components/dashboard/ChartCard';
 import { Image as ImageIcon, Users, CheckCircle, Clock, XCircle, UserCheck, UserX, TrendingUp } from 'lucide-react';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 const BarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false });
 const Bar = dynamic(() => import('recharts').then(mod => mod.Bar), { ssr: false });
@@ -50,14 +51,6 @@ interface Statistics {
     photoCount: number;
   }>;
 }
-
-const COLORS = {
-  success: '#10b981',
-  warning: '#f59e0b',
-  danger: '#ef4444',
-  info: '#3b82f6',
-  primary: '#6366f1',
-};
 
 export default function StatisticsPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -115,15 +108,15 @@ export default function StatisticsPage({ params }: { params: Promise<{ id: strin
   }
 
   const statusData = [
-    { name: 'Freigegeben', value: statistics.photos.approved, color: COLORS.success },
-    { name: 'Ausstehend', value: statistics.photos.pending, color: COLORS.warning },
-    { name: 'Abgelehnt', value: statistics.photos.rejected, color: COLORS.danger },
+    { name: 'Freigegeben', value: statistics.photos.approved, color: CHART_COLORS.success },
+    { name: 'Ausstehend', value: statistics.photos.pending, color: CHART_COLORS.warning },
+    { name: 'Abgelehnt', value: statistics.photos.rejected, color: CHART_COLORS.danger },
   ];
 
   const guestStatusData = [
-    { name: 'Zugesagt', value: statistics.guests.accepted, color: COLORS.success },
-    { name: 'Ausstehend', value: statistics.guests.pending, color: COLORS.warning },
-    { name: 'Abgesagt', value: statistics.guests.declined, color: COLORS.danger },
+    { name: 'Zugesagt', value: statistics.guests.accepted, color: CHART_COLORS.success },
+    { name: 'Ausstehend', value: statistics.guests.pending, color: CHART_COLORS.warning },
+    { name: 'Abgesagt', value: statistics.guests.declined, color: CHART_COLORS.danger },
   ];
 
   const trendData = Object.entries(statistics.uploadTrends)
@@ -226,7 +219,7 @@ export default function StatisticsPage({ params }: { params: Promise<{ id: strin
                   labelLine={false}
                   label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
                   outerRadius={80}
-                  fill={COLORS.info}
+                  fill={CHART_COLORS.info}
                   dataKey="value"
                 >
                   {statusData.map((entry, index) => (
@@ -249,7 +242,7 @@ export default function StatisticsPage({ params }: { params: Promise<{ id: strin
                   labelLine={false}
                   label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
                   outerRadius={80}
-                  fill={COLORS.info}
+                  fill={CHART_COLORS.info}
                   dataKey="value"
                 >
                   {guestStatusData.map((entry, index) => (
@@ -271,9 +264,9 @@ export default function StatisticsPage({ params }: { params: Promise<{ id: strin
             >
               <ResponsiveContainer width="100%" height={350}>
                 <LineChart data={trendData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="date" stroke="#6b7280" />
-                  <YAxis stroke="#6b7280" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} />
+                  <XAxis dataKey="date" stroke={CHART_COLORS.axis} />
+                  <YAxis stroke={CHART_COLORS.axis} />
                   <Tooltip 
                     contentStyle={{
                       backgroundColor: 'var(--app-card)',
@@ -285,16 +278,16 @@ export default function StatisticsPage({ params }: { params: Promise<{ id: strin
                   <Line 
                     type="monotone" 
                     dataKey="Freigegeben" 
-                    stroke={COLORS.success} 
+                    stroke={CHART_COLORS.success} 
                     strokeWidth={2}
-                    dot={{ fill: COLORS.success, r: 4 }}
+                    dot={{ fill: CHART_COLORS.success, r: 4 }}
                   />
                   <Line 
                     type="monotone" 
                     dataKey="Ausstehend" 
-                    stroke={COLORS.warning} 
+                    stroke={CHART_COLORS.warning} 
                     strokeWidth={2}
-                    dot={{ fill: COLORS.warning, r: 4 }}
+                    dot={{ fill: CHART_COLORS.warning, r: 4 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -311,9 +304,9 @@ export default function StatisticsPage({ params }: { params: Promise<{ id: strin
             >
               <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={categoryData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="name" stroke="#6b7280" />
-                  <YAxis stroke="#6b7280" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={CHART_COLORS.grid} />
+                  <XAxis dataKey="name" stroke={CHART_COLORS.axis} />
+                  <YAxis stroke={CHART_COLORS.axis} />
                   <Tooltip 
                     contentStyle={{
                       backgroundColor: 'var(--app-card)',
@@ -321,7 +314,7 @@ export default function StatisticsPage({ params }: { params: Promise<{ id: strin
                       borderRadius: '8px',
                     }}
                   />
-                  <Bar dataKey="Fotos" fill={COLORS.primary} radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="Fotos" fill={CHART_COLORS.primary} radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>

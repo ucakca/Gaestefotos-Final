@@ -14,6 +14,7 @@ import {
   Image as ImageIcon, CheckCircle, XCircle, Eye, Upload,
   BarChart3, Wifi, WifiOff, RefreshCw,
 } from 'lucide-react';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 const ResponsiveContainer = dynamic(() => import('recharts').then(m => m.ResponsiveContainer), { ssr: false });
 const AreaChart = dynamic(() => import('recharts').then(m => m.AreaChart), { ssr: false });
@@ -252,14 +253,14 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
                       <AreaChart data={stats.uploadsPerHour}>
                         <defs>
                           <linearGradient id="colorUploads" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                            <stop offset="5%" stopColor={CHART_COLORS.primary} stopOpacity={0.3} />
+                            <stop offset="95%" stopColor={CHART_COLORS.primary} stopOpacity={0} />
                           </linearGradient>
                         </defs>
-                        <XAxis dataKey="hour" tick={{ fontSize: 11 }} stroke="#94a3b8" />
-                        <YAxis tick={{ fontSize: 11 }} stroke="#94a3b8" />
+                        <XAxis dataKey="hour" tick={{ fontSize: 11 }} stroke={CHART_COLORS.axisLight} />
+                        <YAxis tick={{ fontSize: 11 }} stroke={CHART_COLORS.axisLight} />
                         <Tooltip />
-                        <Area type="monotone" dataKey="count" stroke="#6366f1" fill="url(#colorUploads)" strokeWidth={2} name="Uploads" />
+                        <Area type="monotone" dataKey="count" stroke={CHART_COLORS.primary} fill="url(#colorUploads)" strokeWidth={2} name="Uploads" />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
