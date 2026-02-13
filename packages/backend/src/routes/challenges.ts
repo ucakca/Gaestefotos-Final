@@ -97,7 +97,7 @@ router.get(
     if (!isManager) {
       const hasBoothGames = await isFeatureEnabled(eventId, 'boothGames');
       if (!hasBoothGames) {
-        const GAME_TYPES = ['PHOTOBOMB', 'STATUE', 'TEAM_BATTLE', 'COVER_SHOOT'];
+        const GAME_TYPES = ['PHOTOBOMB', 'COVER_SHOOT', 'EMOJI_CHALLENGE', 'FILTER_ROULETTE'];
         filtered = challenges.filter((c) => !GAME_TYPES.includes(c.type));
       }
     }

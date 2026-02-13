@@ -21,6 +21,7 @@ import {
   Lock,
   Loader2,
   Star,
+  PartyPopper,
 } from 'lucide-react';
 import api from '@/lib/api';
 
@@ -79,6 +80,7 @@ const FEATURE_LIST: { key: keyof PackageOption; label: string; icon: React.Eleme
   { key: 'allowFullInvitation', label: 'Erweiterte Einladungen', icon: Users },
   { key: 'allowGuestlist', label: 'Gästeliste', icon: Users },
   { key: 'isAdFree', label: 'Werbefrei', icon: Shield },
+  { key: 'allowBoothGames' as keyof PackageOption, label: 'Foto-Spaß (Selfie-Spiele)', icon: PartyPopper },
 ];
 
 function formatBytes(bytes: string | null): string {

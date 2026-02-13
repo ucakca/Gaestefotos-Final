@@ -203,14 +203,18 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
         setGuestbookCount(guestbookRes.data?.entries?.length || 0);
       } catch { setGuestbookCount(0); }
       
-      // Load challenges - count total completions (participations)
+      // Load challenges - count unique participants (not total completions)
       try {
         const challengesRes = await api.get(`/events/${eventId}/challenges`);
         const challenges = challengesRes.data?.challenges || [];
-        // Sum all completions across all challenges
-        const totalCompletions = challenges.reduce((sum: number, c: any) => 
-          sum + (c.completions?.length || 0), 0);
-        setChallengesCompleted(totalCompletions);
+        const uniqueParticipants = new Set<string>();
+        challenges.forEach((c: any) => {
+          (c.completions || []).forEach((comp: any) => {
+            const key = comp.guestId || comp.uploaderName || 'anon';
+            uniqueParticipants.add(key);
+          });
+        });
+        setChallengesCompleted(uniqueParticipants.size);
       } catch { setChallengesCompleted(0); }
     } catch (err: any) {
       logger.error('Failed to load stats:', err);
@@ -914,7 +918,7 @@ function OverviewTab({
         <StatCard icon={Video} value={stats.videos} label="VIDEOS" color="purple" onClick={() => onStatClick('videos')} />
         <StatCard icon={BookOpen} value={stats.guestbook} label="GÄSTEBUCH" color="green" />
         <StatCard icon={Eye} value={stats.visitors || 0} label="BESUCHER" color="cyan" />
-        <StatCard icon={Trophy} value={stats.challenges} label="CHALLENGES" color="purple" onClick={() => onStatClick('challenges')} />
+        <StatCard icon={Trophy} value={stats.challenges} label="FOTO-SPIELE" color="purple" onClick={() => onStatClick('challenges')} />
         <StatCard icon={Clock} value={stats.pending} label="AUSSTEHEND" color="yellow" highlight={stats.pending > 0} onClick={() => onStatClick('pending')} />
       </div>
 
@@ -938,9 +942,9 @@ function OverviewTab({
               </div>
             </div>
           </div>
-          {currentStep && (
+          {currentStep && currentStep.link && (
             <Link
-              href={`/create-event?eventId=${eventId}`}
+              href={currentStep.link}
               className="flex items-center gap-3 p-3 rounded-xl bg-app-card border border-amber-200"
             >
               <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center">
@@ -1004,7 +1008,7 @@ function OverviewTab({
                   return (
                     <Link
                       key={step.id}
-                      href={`/create-event?eventId=${eventId}`}
+                      href={step.link || `#`}
                       className={className}
                     >
                       {content}
@@ -1030,7 +1034,7 @@ function OverviewTab({
             <Play className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-medium text-app-fg">Live Wall</div>
+            <div className="font-medium text-app-fg">Event Wall</div>
             <div className="text-xs text-app-muted">Slideshow starten</div>
           </div>
         </Link>
@@ -1043,7 +1047,7 @@ function OverviewTab({
             {shareLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Share2 className="w-5 h-5" />}
           </div>
           <div>
-            <div className="font-medium text-app-fg">Share-Link</div>
+            <div className="font-medium text-app-fg">Share</div>
             <div className="text-xs text-app-muted">{shareUrl ? 'Erneut kopieren' : 'Link erzeugen'}</div>
           </div>
         </button>
@@ -1079,7 +1083,7 @@ function OverviewTab({
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-medium text-app-fg">KI Booth</div>
+            <div className="font-medium text-app-fg">KI-Kunst</div>
             <div className="text-xs text-app-muted">AI Style Transfer</div>
           </div>
         </Link>
@@ -1091,7 +1095,7 @@ function OverviewTab({
             <Gamepad2 className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-medium text-app-fg">Booth-Spiele</div>
+            <div className="font-medium text-app-fg">Foto-Spiele</div>
             <div className="text-xs text-app-muted">Interaktive Games</div>
           </div>
         </Link>
@@ -1107,6 +1111,48 @@ function OverviewTab({
             <div className="text-xs text-app-muted">Echtzeit-Statistiken</div>
           </div>
         </Link>
+      </div>
+
+      {/* Paket & Upsell */}
+      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-app-border flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
+              <Package className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <div className="font-semibold text-app-fg">
+                {(event as any).tier === 'premium' ? 'Premium' : (event as any).tier === 'smart' ? 'Smart' : (event as any).tier === 'basic' ? 'Basic' : 'Free'}
+              </div>
+              <div className="text-xs text-app-muted">Aktuelles Paket</div>
+            </div>
+          </div>
+          <Link
+            href={`/events/${eventId}/package`}
+            className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-semibold flex items-center gap-1 hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm"
+          >
+            <Zap className="w-3.5 h-3.5" />
+            Upgrade
+          </Link>
+        </div>
+        <div className="p-4 grid grid-cols-3 gap-2">
+          {[
+            { label: 'Event Wall', icon: Play, enabled: (event as any).tier === 'smart' || (event as any).tier === 'premium' },
+            { label: 'Video', icon: Video, enabled: (event as any).tier === 'smart' || (event as any).tier === 'premium' },
+            { label: 'Mosaic', icon: LayoutGrid, enabled: Boolean((event as any).allowMosaicWall) },
+            { label: 'KI-Kunst', icon: Sparkles, enabled: Boolean((event as any).allowKiBooth) },
+            { label: 'Werbefrei', icon: Star, enabled: (event as any).tier === 'premium' },
+            { label: 'Co-Hosts', icon: Users, enabled: (event as any).tier === 'smart' || (event as any).tier === 'premium' },
+          ].map(f => (
+            <div key={f.label} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium ${
+              f.enabled ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'
+            }`}>
+              <f.icon className="w-3.5 h-3.5" />
+              {f.label}
+              {!f.enabled && <Lock className="w-3 h-3 ml-auto" />}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Hashtag — Always FREE */}
@@ -1258,6 +1304,7 @@ function GalleryTab({
   const [selectedAlbum, setSelectedAlbum] = useState<string | null>(null);
   const [selectedGuest, setSelectedGuest] = useState<string | null>(null);
   const [lightboxPhoto, setLightboxPhoto] = useState<any | null>(null);
+  const [showAll, setShowAll] = useState(false);
   
   // Count for filters
   const challengePhotos = photos.filter(p => p.challengeId && p.status === 'APPROVED');
@@ -1369,7 +1416,7 @@ function GalleryTab({
             {f.label}
             {f.count !== undefined && f.count > 0 && (
               <span className={`px-1.5 py-0.5 rounded-full text-xs ${
-                filter === f.id ? 'bg-app-card/20' : 'bg-orange-100 text-orange-600'
+                filter === f.id ? 'bg-white/30 text-white' : 'bg-orange-100 text-orange-600'
               }`}>
                 {f.count}
               </span>
@@ -1457,7 +1504,7 @@ function GalleryTab({
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-1 rounded-2xl overflow-hidden">
-          {filteredPhotos.slice(0, 12).map((photo, i) => (
+          {(showAll ? filteredPhotos : filteredPhotos.slice(0, 12)).map((photo, i) => (
             <button 
               key={photo.id || i}
               onClick={() => setLightboxPhoto(photo)}
@@ -1501,15 +1548,24 @@ function GalleryTab({
         </div>
       )}
 
-      {/* View All Link */}
-      {filteredPhotos.length > 0 && (
-        <Link
-          href={`/events/${eventId}/photos`}
-          className="flex items-center justify-center gap-2 mt-4 py-3 text-blue-600 font-medium"
+      {/* Show All Button (inline, no navigation) */}
+      {filteredPhotos.length > 12 && !showAll && (
+        <button
+          onClick={() => setShowAll(true)}
+          className="flex items-center justify-center gap-2 mt-4 py-3 text-blue-600 font-medium w-full"
         >
           Alle {filteredPhotos.length} Medien anzeigen
-          <ChevronRight className="w-4 h-4" />
-        </Link>
+          <ChevronDown className="w-4 h-4" />
+        </button>
+      )}
+      {showAll && filteredPhotos.length > 12 && (
+        <button
+          onClick={() => setShowAll(false)}
+          className="flex items-center justify-center gap-2 mt-4 py-3 text-app-muted font-medium w-full"
+        >
+          Weniger anzeigen
+          <ChevronDown className="w-4 h-4 rotate-180" />
+        </button>
       )}
 
       {/* Photo Lightbox */}
@@ -1558,6 +1614,16 @@ function GalleryTab({
 
 // ============ GUESTBOOK TAB ============
 function GuestbookTab({ eventId }: { eventId: string }) {
+  const [entries, setEntries] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get(`/events/${eventId}/guestbook`)
+      .then(res => setEntries(res.data?.entries || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [eventId]);
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -1565,18 +1631,39 @@ function GuestbookTab({ eventId }: { eventId: string }) {
       exit={{ opacity: 0, x: 20 }}
       className="p-4"
     >
-      <div className="text-center py-16">
-        <BookOpen className="w-12 h-12 text-app-muted mx-auto mb-3" />
-        <h3 className="font-medium text-app-fg mb-1">Gästebuch</h3>
-        <p className="text-app-muted text-sm">Demnächst verfügbar</p>
-        <Link
-          href={`/events/${eventId}/guestbook`}
-          className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
-        >
-          Zum Gästebuch
-          <ExternalLink className="w-4 h-4" />
-        </Link>
-      </div>
+      {loading ? (
+        <div className="text-center py-16">
+          <Loader2 className="w-8 h-8 text-app-muted mx-auto mb-3 animate-spin" />
+          <p className="text-app-muted text-sm">Lade Gästebuch...</p>
+        </div>
+      ) : entries.length === 0 ? (
+        <div className="text-center py-16">
+          <BookOpen className="w-12 h-12 text-app-muted mx-auto mb-3" />
+          <h3 className="font-medium text-app-fg mb-1">Gästebuch</h3>
+          <p className="text-app-muted text-sm">Noch keine Einträge vorhanden</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <h3 className="font-semibold text-app-fg">{entries.length} Einträge</h3>
+          {entries.map((entry: any) => (
+            <div key={entry.id} className="rounded-2xl border border-app-border bg-app-card p-4 shadow-sm">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-sm font-bold">
+                  {(entry.name || 'G').charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div className="font-medium text-sm text-app-fg">{entry.name || 'Gast'}</div>
+                  <div className="text-xs text-app-muted">{entry.createdAt ? new Date(entry.createdAt).toLocaleDateString('de-DE') : ''}</div>
+                </div>
+              </div>
+              {entry.message && <p className="text-sm text-app-fg">{entry.message}</p>}
+              {entry.imageUrl && (
+                <img src={entry.imageUrl} alt="" className="mt-2 rounded-xl max-h-48 object-cover w-full" />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -1625,7 +1712,7 @@ function SetupTab({ event, eventId }: { event: EventType; eventId: string }) {
             Features
           </h3>
         </div>
-        <SetupRow icon={Trophy} label="Challenges" link={`/events/${eventId}/challenges`} />
+        <SetupRow icon={Trophy} label="Foto-Spiele" link={`/events/${eventId}/challenges`} />
         <SetupRow icon={Users} label="Gästeliste" link={`/events/${eventId}/guests`} />
         <SetupRow icon={BookOpen} label="Kategorien" link={`/events/${eventId}/categories`} />
         <SetupRow icon={BarChart3} label="Statistiken" link={`/events/${eventId}/statistics`} />
@@ -1662,14 +1749,6 @@ function SetupTab({ event, eventId }: { event: EventType; eventId: string }) {
         onToast={showToast}
       />
 
-      {/* Legacy Dashboard Link */}
-      <Link
-        href={`/events/${eventId}/dashboard-legacy`}
-        className="flex items-center justify-center gap-2 py-3 text-app-muted text-sm"
-      >
-        Zum alten Dashboard
-        <ExternalLink className="w-3 h-3" />
-      </Link>
     </motion.div>
   );
 }

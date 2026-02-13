@@ -127,7 +127,7 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
   if (loading || !eventId) return <FullPageLoader />;
 
   return (
-    <AppLayout>
+    <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">

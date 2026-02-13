@@ -27,6 +27,12 @@ import {
   QrCode,
   Building2,
   Brain,
+  UserPlus,
+  Workflow,
+  Zap,
+  Code2,
+  Presentation,
+  MessageSquare,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -60,6 +66,7 @@ const navigation: NavGroup[] = [
     items: [
       { name: 'Benutzer', href: '/manage/users', icon: Users },
       { name: 'Events', href: '/manage/events', icon: Calendar },
+      { name: 'Event erstellen', href: '/manage/events/create', icon: UserPlus },
       { name: 'Pakete & Features', href: '/manage/packages', icon: Package },
       { name: 'Impersonation', href: '/manage/impersonation', icon: UserCog },
       { name: 'QR-Templates', href: '/manage/qr-templates', icon: QrCode },
@@ -67,6 +74,11 @@ const navigation: NavGroup[] = [
       { name: 'Einladungs-Templates', href: '/invitation-templates', icon: FileText },
       { name: 'Partner', href: '/manage/partners', icon: Building2 },
       { name: 'AI Provider', href: '/manage/ai-providers', icon: Brain },
+      { name: 'Workflow Builder', href: '/manage/workflows', icon: Workflow },
+      { name: 'AI Credits', href: '/manage/credits', icon: Zap },
+      { name: 'Embed Code', href: '/manage/embed', icon: Code2 },
+      { name: 'Slideshow', href: '/manage/slideshow', icon: Presentation },
+      { name: 'SMS Sharing', href: '/manage/sms', icon: MessageSquare },
     ],
   },
   {

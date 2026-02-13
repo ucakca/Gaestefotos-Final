@@ -26,7 +26,15 @@ export type FeatureKey =
   | 'mosaicWall'
   | 'mosaicPrint'
   | 'mosaicExport'
-  | 'boothGames';
+  | 'boothGames'
+  | 'aiEffects'
+  | 'aiFaceSwitch'
+  | 'aiBgRemoval'
+  | 'smsSharing'
+  | 'emailSharing'
+  | 'galleryEmbed'
+  | 'slideshow'
+  | 'leadCollection';
 
 // Limit Keys die geprüft werden können
 export type LimitKey =
@@ -34,6 +42,8 @@ export type LimitKey =
   | 'maxChallenges'
   | 'maxZipDownloadPhotos'
   | 'maxCoHosts'
+  | 'maxGamePlaysPerDay'
+  | 'maxAiCreditsPerEvent'
   | 'storageLimitPhotos';
 
 // Mapping von FeatureKey zu PackageDefinition Feld
@@ -54,6 +64,14 @@ const featureToFieldMap: Record<FeatureKey, string> = {
   mosaicPrint: 'allowMosaicPrint',
   mosaicExport: 'allowMosaicExport',
   boothGames: 'allowBoothGames',
+  aiEffects: 'allowAiEffects',
+  aiFaceSwitch: 'allowAiFaceSwitch',
+  aiBgRemoval: 'allowAiBgRemoval',
+  smsSharing: 'allowSmsSharing',
+  emailSharing: 'allowEmailSharing',
+  galleryEmbed: 'allowGalleryEmbed',
+  slideshow: 'allowSlideshow',
+  leadCollection: 'allowLeadCollection',
 };
 
 // Features die im Free-Tier immer aktiviert sind
@@ -129,6 +147,8 @@ export async function getFeatureLimit(
       maxChallenges: 0,
       maxZipDownloadPhotos: 0,
       maxCoHosts: 0,
+      maxGamePlaysPerDay: 3,
+      maxAiCreditsPerEvent: 0,
       storageLimitPhotos: 50,
     };
     return freeDefaults[limit] ?? 0;
@@ -243,7 +263,15 @@ export async function getEventFeatures(eventId: string): Promise<{
     mosaicWall: false,
     mosaicPrint: false,
     mosaicExport: false,
-    boothGames: false,
+    boothGames: true,
+    aiEffects: false,
+    aiFaceSwitch: false,
+    aiBgRemoval: false,
+    smsSharing: false,
+    emailSharing: false,
+    galleryEmbed: false,
+    slideshow: false,
+    leadCollection: false,
   };
   
   const limits: Record<LimitKey, number | null> = {
@@ -251,6 +279,8 @@ export async function getEventFeatures(eventId: string): Promise<{
     maxChallenges: 0,
     maxZipDownloadPhotos: 0,
     maxCoHosts: 0,
+    maxGamePlaysPerDay: 3,
+    maxAiCreditsPerEvent: 0,
     storageLimitPhotos: 50,
   };
   
@@ -265,6 +295,7 @@ export async function getEventFeatures(eventId: string): Promise<{
     limits.maxChallenges = pkg.maxChallenges;
     limits.maxZipDownloadPhotos = pkg.maxZipDownloadPhotos;
     limits.maxCoHosts = pkg.maxCoHosts;
+    limits.maxGamePlaysPerDay = (pkg as any).maxGamePlaysPerDay ?? null;
     limits.storageLimitPhotos = pkg.storageLimitPhotos;
   }
   

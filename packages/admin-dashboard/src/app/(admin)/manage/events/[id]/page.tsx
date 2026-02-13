@@ -7,7 +7,7 @@ import {
   ExternalLink, Loader2, ToggleLeft, ToggleRight, Trash2,
   Clock, Shield, RefreshCw, Activity, Package, ChevronDown, Check,
   Save, Edit2, Globe, Lock, Wifi, MessageSquare, X, AlertTriangle,
-  Puzzle, Plus, Minus,
+  Puzzle, Plus, Minus, Workflow,
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
@@ -31,6 +31,12 @@ interface EventDetail {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  workflowId: string | null;
+  workflow: {
+    id: string;
+    name: string;
+    description: string | null;
+  } | null;
   host: {
     id: string;
     email: string;
@@ -68,6 +74,12 @@ export default function EventDetailPage() {
   const [addons, setAddons] = useState<any[]>([]);
   const [addonsLoading, setAddonsLoading] = useState(true);
   const [togglingAddon, setTogglingAddon] = useState<string | null>(null);
+
+  // Workflow state
+  const [availableWorkflows, setAvailableWorkflows] = useState<any[]>([]);
+  const [selectedWorkflowId, setSelectedWorkflowId] = useState<string>('');
+  const [workflowsLoading, setWorkflowsLoading] = useState(true);
+  const [assigningWorkflow, setAssigningWorkflow] = useState(false);
 
   const loadEvent = useCallback(async () => {
     if (!eventId) return;
@@ -188,11 +200,39 @@ export default function EventDetailPage() {
     }
   };
 
+  const loadWorkflows = useCallback(async () => {
+    setWorkflowsLoading(true);
+    try {
+      const res = await api.get('/workflows');
+      setAvailableWorkflows(res.data.workflows || []);
+    } catch {
+      // silently fail
+    } finally {
+      setWorkflowsLoading(false);
+    }
+  }, []);
+
+  const assignWorkflow = async () => {
+    if (!event || assigningWorkflow) return;
+    setAssigningWorkflow(true);
+    try {
+      const workflowId = selectedWorkflowId || null;
+      await api.put(`/admin/events/${event.id}/workflow`, { workflowId });
+      toast.success(workflowId ? 'Workflow zugewiesen' : 'Workflow entfernt');
+      loadEvent();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Fehler beim Zuweisen');
+    } finally {
+      setAssigningWorkflow(false);
+    }
+  };
+
   useEffect(() => {
     loadEvent();
     loadPackageData();
     loadAddons();
-  }, [loadEvent, loadPackageData, loadAddons]);
+    loadWorkflows();
+  }, [loadEvent, loadPackageData, loadAddons, loadWorkflows]);
 
   const toggleActive = async () => {
     if (!event) return;
@@ -616,6 +656,100 @@ export default function EventDetailPage() {
             </div>
           );
         })()}
+      </div>
+
+      {/* Workflow Zuweisen */}
+      <div className="rounded-2xl border border-app-border bg-app-card p-5 space-y-4">
+        <h3 className="font-semibold text-app-fg flex items-center gap-2">
+          <Workflow className="w-4 h-4 text-blue-500" />
+          Booth-Workflow
+        </h3>
+        <p className="text-xs text-app-muted">
+          Weise diesem Event einen Booth-Ablauf zu. Der Workflow definiert den gesamten Flow der Photo Booth (Start → Countdown → Foto → Teilen).
+        </p>
+
+        {workflowsLoading ? (
+          <div className="flex items-center gap-2 text-sm text-app-muted">
+            <Loader2 className="w-4 h-4 animate-spin" /> Lade Workflows...
+          </div>
+        ) : (
+          <>
+            {/* Current Workflow */}
+            {event.workflow ? (
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                  <Workflow className="w-5 h-5 text-blue-500" />
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-app-fg">{event.workflow.name}</div>
+                  {event.workflow.description && (
+                    <div className="text-xs text-app-muted">{event.workflow.description}</div>
+                  )}
+                </div>
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-500">
+                  Aktiv
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-app-bg border border-app-border">
+                <div className="w-10 h-10 rounded-lg bg-app-bg flex items-center justify-center">
+                  <Workflow className="w-5 h-5 text-app-muted" />
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-app-muted">Kein Workflow zugewiesen</div>
+                  <div className="text-xs text-app-muted">Standard-Ablauf wird verwendet</div>
+                </div>
+              </div>
+            )}
+
+            {/* Workflow Selector */}
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <label className="block text-xs font-medium text-app-muted mb-1">Workflow wählen</label>
+                <div className="relative">
+                  <select
+                    value={selectedWorkflowId}
+                    onChange={(e) => setSelectedWorkflowId(e.target.value)}
+                    className="w-full appearance-none rounded-xl border border-app-border bg-app-card text-app-fg px-4 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                  >
+                    <option value="">— Kein Workflow (Standard) —</option>
+                    {availableWorkflows.map((wf: any) => (
+                      <option key={wf.id} value={wf.id}>
+                        {wf.name}{wf.isDefault ? ' ✓ Standard' : ''}{wf.id === event.workflowId ? ' (aktuell)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted pointer-events-none" />
+                </div>
+              </div>
+              <Button
+                size="sm"
+                onClick={assignWorkflow}
+                disabled={assigningWorkflow || (selectedWorkflowId === (event.workflowId || ''))}
+                className="bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50"
+              >
+                {assigningWorkflow ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Check className="w-4 h-4 mr-1" />
+                )}
+                Zuweisen
+              </Button>
+            </div>
+
+            {availableWorkflows.length === 0 && (
+              <div className="text-xs text-blue-600 bg-blue-50 rounded-lg p-2">
+                Noch keine Workflows erstellt.{' '}
+                <button
+                  onClick={() => router.push('/manage/workflows')}
+                  className="underline hover:no-underline"
+                >
+                  Zum Workflow Builder →
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Actions */}

@@ -125,4 +125,83 @@ router.post('/vows-and-views', authMiddleware, async (req: AuthRequest, res: Res
   }
 });
 
+// POST /api/booth-games/face-switch — Swap faces in a group photo
+router.post('/face-switch', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { photoId } = req.body;
+
+    if (!photoId) {
+      return res.status(400).json({ error: 'photoId ist erforderlich' });
+    }
+
+    const { processFaceSwitchForPhoto } = await import('../services/faceSwitch');
+    const result = await processFaceSwitchForPhoto(photoId, req.userId!);
+
+    res.json({
+      success: true,
+      newPhotoPath: result.newPhotoPath,
+      facesSwapped: result.facesSwapped,
+    });
+  } catch (error) {
+    logger.error('Face switch error', { message: (error as Error).message });
+    res.status(500).json({ error: (error as Error).message || 'Face Switch Fehler' });
+  }
+});
+
+// POST /api/booth-games/style-effect — Apply AI style effect (oldify, cartoon, style_pop)
+router.post('/style-effect', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { photoId, effect, intensity, outputFormat } = req.body;
+
+    if (!photoId) {
+      return res.status(400).json({ error: 'photoId ist erforderlich' });
+    }
+
+    const validEffects = ['ai_oldify', 'ai_cartoon', 'ai_style_pop'];
+    if (!effect || !validEffects.includes(effect)) {
+      return res.status(400).json({ error: `Ungültiger Effekt. Erlaubt: ${validEffects.join(', ')}` });
+    }
+
+    const { processStyleEffectForPhoto } = await import('../services/aiStyleEffects');
+    const result = await processStyleEffectForPhoto(photoId, req.userId!, effect, {
+      intensity: intensity ? Number(intensity) : undefined,
+      outputFormat: outputFormat || 'jpeg',
+    });
+
+    res.json({
+      success: true,
+      newPhotoPath: result.newPhotoPath,
+      effect,
+    });
+  } catch (error) {
+    logger.error('Style effect error', { message: (error as Error).message });
+    res.status(500).json({ error: (error as Error).message || 'Style-Effekt Fehler' });
+  }
+});
+
+// POST /api/booth-games/bg-removal — Remove background from a photo
+router.post('/bg-removal', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { photoId, replacementColor, outputFormat } = req.body;
+
+    if (!photoId) {
+      return res.status(400).json({ error: 'photoId ist erforderlich' });
+    }
+
+    const { processBgRemovalForPhoto } = await import('../services/bgRemoval');
+    const result = await processBgRemovalForPhoto(photoId, req.userId!, {
+      replacementColor,
+      outputFormat: outputFormat || 'png',
+    });
+
+    res.json({
+      success: true,
+      newPhotoPath: result.newPhotoPath,
+    });
+  } catch (error) {
+    logger.error('BG removal error', { message: (error as Error).message });
+    res.status(500).json({ error: (error as Error).message || 'Hintergrund-Entfernung Fehler' });
+  }
+});
+
 export default router;

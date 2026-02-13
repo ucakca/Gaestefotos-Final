@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Calendar, Search, RefreshCw, Image, Users, Loader2, ExternalLink } from 'lucide-react';
+import { Calendar, Search, RefreshCw, Image, Users, Loader2, ExternalLink, UserPlus } from 'lucide-react';
+import Link from 'next/link';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -68,10 +69,18 @@ export default function EventsPage() {
             {total} Events insgesamt
           </p>
         </div>
-        <Button size="sm" variant="outline" onClick={loadEvents} disabled={loading}>
-          <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
-          Aktualisieren
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={loadEvents} disabled={loading}>
+            <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
+            Aktualisieren
+          </Button>
+          <Link href="/manage/events/create">
+            <Button size="sm" variant="primary">
+              <UserPlus className="w-4 h-4 mr-1" />
+              Event erstellen
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Search */}

@@ -37,6 +37,10 @@ export const FeaturesConfigSchema = z.object({
   allowStories: z.boolean().optional().default(false),
   allowVideoUpload: z.boolean().optional().default(false),
   allowLiveWall: z.boolean().optional().default(false),
+  enableFotoSpass: z.boolean().optional().default(true),
+  faceSearch: z.boolean().optional().default(true),
+  customHashtag: z.string().optional(),
+  customOverlayLogoUrl: z.string().optional(),
   uploadRateLimits: z.object({
     photoIpMax: z.number().optional(),
     photoEventMax: z.number().optional(),

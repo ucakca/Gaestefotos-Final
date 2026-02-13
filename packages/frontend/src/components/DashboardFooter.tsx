@@ -9,9 +9,9 @@ import {
   Mail,
   QrCode,
   Video,
-  Sparkles,
-  Gamepad2,
   Activity,
+  Users,
+  Layers,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -61,22 +61,22 @@ export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterP
       path: `/events/${eventId}/qr-styler`,
     },
     {
-      id: 'ki-booth',
-      label: 'KI Booth',
-      icon: Sparkles,
-      path: `/events/${eventId}/ki-booth`,
-    },
-    {
-      id: 'booth-games',
-      label: 'Spiele',
-      icon: Gamepad2,
-      path: `/events/${eventId}/booth-games`,
-    },
-    {
       id: 'live-analytics',
-      label: 'Live',
+      label: 'Live-Monitor',
       icon: Activity,
       path: `/events/${eventId}/live-analytics`,
+    },
+    {
+      id: 'leads',
+      label: 'Leads',
+      icon: Users,
+      path: `/events/${eventId}/leads`,
+    },
+    {
+      id: 'assets',
+      label: 'Assets',
+      icon: Layers,
+      path: `/events/${eventId}/assets`,
     },
   ];
 

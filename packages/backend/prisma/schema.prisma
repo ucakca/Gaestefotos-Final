@@ -76,9 +76,16 @@ model Event {
   visitCount              Int                         @default(0)
   wifiName                String?
   wifiPassword            String?
+  leads                   Lead[]
   mosaicWall              MosaicWall?
   partnerId               String?
   partner                 Partner?                    @relation(fields: [partnerId], references: [id])
+  paymentSessions         PaymentSession[]
+  spinnerSessions         SpinnerSession[]
+  drawbotJobs             DrawbotJob[]
+  videoJobs               VideoJob[]
+  workflowId              String?
+  workflow                BoothWorkflow?              @relation(fields: [workflowId], references: [id], onDelete: SetNull)
 
   @@index([slug])
   @@index([hostId])
@@ -238,7 +245,7 @@ model PackageDefinition {
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   storageDurationDays  Int?
-  allowBoothGames      Boolean               @default(false)
+  allowBoothGames      Boolean               @default(true)
   allowBulkOperations  Boolean               @default(false)
   allowCoHosts         Boolean               @default(false)
   allowFaceSearch      Boolean               @default(false)
@@ -253,13 +260,23 @@ model PackageDefinition {
   allowStories         Boolean               @default(false)
   allowVideoUpload     Boolean               @default(false)
   allowZipDownload     Boolean               @default(false)
+  allowAiEffects       Boolean               @default(false)
+  allowAiFaceSwitch    Boolean               @default(false)
+  allowAiBgRemoval     Boolean               @default(false)
+  allowSmsSharing      Boolean               @default(false)
+  allowEmailSharing    Boolean               @default(false)
+  allowGalleryEmbed    Boolean               @default(false)
+  allowSlideshow       Boolean               @default(false)
+  allowLeadCollection  Boolean               @default(false)
   description          String?
   displayOrder         Int                   @default(0)
   isAdFree             Boolean               @default(false)
   maxCategories        Int?
   maxChallenges        Int?
   maxCoHosts           Int?
+  maxGamePlaysPerDay   Int?
   maxZipDownloadPhotos Int?
+  maxAiCreditsPerEvent Int?
   priceEurCents        Int?
   storageLimitPhotos   Int?
 
@@ -333,6 +350,7 @@ model Photo {
   stories              Story[]
   mosaicTiles          MosaicTile[]
   mosaicPrintJobs      MosaicPrintJob[]
+  graffitiLayers       GraffitiLayer[]
 
   @@index([eventId])
   @@index([status])
@@ -570,9 +588,9 @@ model Challenge {
 enum ChallengeType {
   PHOTO
   PHOTOBOMB
-  STATUE
-  TEAM_BATTLE
   COVER_SHOOT
+  EMOJI_CHALLENGE
+  FILTER_ROULETTE
 }
 
 model QrDesign {
@@ -1532,4 +1550,584 @@ enum AiProviderType {
   VIDEO_GEN
   STT
   TTS
+}
+
+// ─── SUPPLY OF LEADS (#3) ───────────────────────────────────────────────────
+
+model Lead {
+  id            String    @id @default(uuid())
+  eventId       String
+  partnerId     String?
+  name          String?
+  email         String?
+  phone         String?
+  source        LeadSource
+  consentGiven  Boolean   @default(false)
+  metadata      Json?
+  exportedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  event         Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([partnerId])
+  @@index([createdAt])
+  @@index([source])
+  @@map("leads")
+}
+
+enum LeadSource {
+  GALLERY
+  BOOTH
+  QR_CODE
+  FACE_SEARCH
+  GUESTBOOK
+  WIFI_PORTAL
+  INVITATION
+}
+
+// ─── ASSET LIBRARY (#4) ─────────────────────────────────────────────────────
+
+model Asset {
+  id            String    @id @default(uuid())
+  name          String
+  type          AssetType
+  category      String?
+  storagePath   String
+  thumbnailPath String?
+  width         Int?
+  height        Int?
+  fileSize      Int?
+  mimeType      String?
+  isPublic      Boolean   @default(true)
+  partnerId     String?
+  createdBy     String?
+  tags          String[]
+  metadata      Json?
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([type])
+  @@index([category])
+  @@index([isPublic])
+  @@index([partnerId])
+  @@map("assets")
+}
+
+enum AssetType {
+  OVERLAY
+  FRAME
+  PROP
+  BACKGROUND
+  STICKER
+  FILTER
+  MAGAZINE_COVER
+}
+
+// ─── BOOTH TEMPLATES / PRESETS (#7) ─────────────────────────────────────────
+
+model BoothTemplate {
+  id            String    @id @default(uuid())
+  name          String
+  description   String?
+  type          String
+  category      String?
+  config        Json
+  thumbnailPath String?
+  isPublic      Boolean   @default(true)
+  partnerId     String?
+  createdBy     String?
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([type])
+  @@index([isPublic])
+  @@map("booth_templates")
+}
+
+// ─── DIGITAL GRAFFITI (#8) ──────────────────────────────────────────────────
+
+model GraffitiLayer {
+  id            String    @id @default(uuid())
+  photoId       String
+  eventId       String
+  drawingData   Json
+  mergedPath    String?
+  createdBy     String?
+  createdAt     DateTime  @default(now())
+  photo         Photo     @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@index([photoId])
+  @@index([eventId])
+  @@map("graffiti_layers")
+}
+
+// ─── WORKFLOW BUILDER (#9) ──────────────────────────────────────────────────
+
+model BoothWorkflow {
+  id            String    @id @default(uuid())
+  name          String
+  description   String?
+  steps         Json
+  isPublic      Boolean   @default(false)
+  isDefault     Boolean   @default(false)
+  createdBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  events        Event[]
+
+  @@map("booth_workflows")
+}
+
+// ─── GAMIFICATION (P4-5) ────────────────────────────────────────────────────
+
+model Achievement {
+  id          String              @id @default(uuid())
+  key         String              @unique // e.g. 'first_upload', 'photo_marathon', 'game_master'
+  title       String              // "Erster Upload"
+  description String              // "Lade dein erstes Foto hoch"
+  icon        String              // emoji or icon key
+  category    AchievementCategory @default(PHOTO)
+  threshold   Int                 @default(1) // e.g. 10 for "10+ photos"
+  points      Int                 @default(10)
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+enum AchievementCategory {
+  PHOTO
+  GAME
+  GUESTBOOK
+  SOCIAL
+  KI_KUNST
+  SPECIAL
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid())
+  eventId       String
+  visitorId     String      // device fingerprint or session ID
+  achievementId String
+  unlockedAt    DateTime    @default(now())
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, visitorId, achievementId])
+  @@index([eventId])
+  @@index([visitorId])
+  @@map("user_achievements")
+}
+
+model Leaderboard {
+  id         String   @id @default(uuid())
+  eventId    String
+  visitorId  String
+  name       String   @default("Anonym")
+  avatarUrl  String?
+  photoCount Int      @default(0)
+  gameCount  Int      @default(0)
+  kiCount    Int      @default(0)
+  totalScore Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@unique([eventId, visitorId])
+  @@index([eventId, totalScore(sort: Desc)])
+  @@map("leaderboards")
+}
+
+// ─── HARDWARE BOOKING (P4-7) ────────────────────────────────────────────────
+
+model HardwareInventory {
+  id           String              @id @default(uuid())
+  name         String              // "Photo Booth Alpha"
+  type         HardwareType
+  serialNumber String?             @unique
+  status       HardwareStatus      @default(AVAILABLE)
+  notes        String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  bookings     HardwareBooking[]
+
+  @@index([type])
+  @@index([status])
+  @@map("hardware_inventory")
+}
+
+enum HardwareType {
+  PHOTO_BOOTH
+  MIRROR_BOOTH
+  KI_STATION
+  PRINT_TERMINAL
+  DISPLAY
+  GROUND_SPINNER
+}
+
+enum HardwareStatus {
+  AVAILABLE
+  BOOKED
+  IN_USE
+  MAINTENANCE
+  RETIRED
+}
+
+model HardwareBooking {
+  id           String              @id @default(uuid())
+  hardwareId   String
+  eventId      String?
+  customerName String?
+  customerEmail String?
+  startDate    DateTime
+  endDate      DateTime
+  setupDate    DateTime?           // buffer day before
+  teardownDate DateTime?           // buffer day after
+  status       BookingStatus       @default(RESERVED)
+  notes        String?
+  totalPrice   Int?                // in cents
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  hardware     HardwareInventory   @relation(fields: [hardwareId], references: [id], onDelete: Cascade)
+
+  @@index([hardwareId])
+  @@index([eventId])
+  @@index([startDate, endDate])
+  @@index([status])
+  @@map("hardware_bookings")
+}
+
+enum BookingStatus {
+  RESERVED
+  CONFIRMED
+  DELIVERED
+  ACTIVE
+  RETURNED
+  INSPECTED
+  CANCELLED
+}
+
+// ─── Payment per Session ────────────────────────────────────────────────────
+
+model PaymentSession {
+  id             String              @id @default(uuid())
+  eventId        String
+  visitorId      String?
+  customerName   String?
+  customerEmail  String?
+  sessionType    SessionType
+  amount         Int                 // in cents
+  currency       String              @default("EUR")
+  status         PaymentStatus       @default(PENDING)
+  stripeSessionId String?            @unique
+  stripePaymentId String?
+  metadata       Json?               @default("{}")
+  expiresAt      DateTime?
+  paidAt         DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  event          Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([visitorId])
+  @@index([status])
+  @@index([stripeSessionId])
+  @@map("payment_sessions")
+}
+
+enum SessionType {
+  PHOTO_BOOTH
+  KI_KUNST
+  GROUND_SPINNER
+  PRINT_SINGLE
+  PRINT_BUNDLE
+  DRAWBOT
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  REFUNDED
+  EXPIRED
+}
+
+// ─── 360° Ground Spinner ────────────────────────────────────────────────────
+
+model SpinnerSession {
+  id              String            @id @default(uuid())
+  eventId         String
+  visitorId       String?
+  visitorName     String?
+  status          SpinnerStatus     @default(QUEUED)
+  videoUrl        String?
+  thumbnailUrl    String?
+  rawVideoUrl     String?
+  duration        Int               @default(3)       // seconds
+  rotations       Float             @default(1.0)     // number of full rotations
+  speed           SpinnerSpeed      @default(NORMAL)
+  effect          SpinnerEffect     @default(NONE)
+  musicTrack      String?
+  processingStartedAt DateTime?
+  processingEndedAt   DateTime?
+  shareUrl        String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  event           Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([status])
+  @@map("spinner_sessions")
+}
+
+enum SpinnerStatus {
+  QUEUED
+  RECORDING
+  PROCESSING
+  READY
+  SHARED
+  FAILED
+}
+
+enum SpinnerSpeed {
+  SLOW
+  NORMAL
+  FAST
+  LUDICROUS
+}
+
+enum SpinnerEffect {
+  NONE
+  SLOW_MOTION
+  BOOMERANG
+  FREEZE_FRAME
+  SPEED_RAMP
+  SPARKLE
+  NEON_TRAIL
+}
+
+// ─── Drawbot ────────────────────────────────────────────────────────────────
+
+model DrawbotJob {
+  id              String            @id @default(uuid())
+  eventId         String
+  visitorId       String?
+  visitorName     String?
+  status          DrawbotStatus     @default(QUEUED)
+  sourceImageUrl  String
+  sourcePhotoId   String?
+  outputImageUrl  String?
+  pathData        Json?             // SVG path / G-code data
+  style           DrawbotStyle      @default(LINE_ART)
+  paperSize       String            @default("A4")
+  penColor        String            @default("#000000")
+  complexity      Int               @default(50)      // 1-100 detail level
+  estimatedTimeMs Int?
+  actualTimeMs    Int?
+  processingStartedAt DateTime?
+  processingEndedAt   DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  event           Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([status])
+  @@map("drawbot_jobs")
+}
+
+enum DrawbotStatus {
+  QUEUED
+  CONVERTING
+  DRAWING
+  DONE
+  FAILED
+  CANCELLED
+}
+
+enum DrawbotStyle {
+  LINE_ART
+  CONTOUR
+  STIPPLE
+  CROSS_HATCH
+  PORTRAIT
+  ABSTRACT
+}
+
+// ─── CREDIT SYSTEM ─────────────────────────────────────────────────────────
+
+model CreditBalance {
+  id            String              @id @default(uuid())
+  userId        String              @unique
+  balance       Int                 @default(0)
+  totalPurchased Int                @default(0)
+  totalConsumed  Int                @default(0)
+  autoRecharge  Boolean             @default(false)
+  autoRechargeThreshold Int         @default(10)
+  autoRechargeAmount    Int         @default(100)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  transactions  CreditTransaction[]
+
+  @@map("credit_balances")
+}
+
+model CreditTransaction {
+  id            String              @id @default(uuid())
+  balanceId     String
+  type          CreditTransactionType
+  amount        Int                 // positive = add, negative = consume
+  feature       String?             // e.g. 'face_switch', 'bg_removal'
+  eventId       String?
+  description   String?
+  metadata      Json?               @default("{}")
+  stripePaymentId String?
+  createdAt     DateTime            @default(now())
+  balance       CreditBalance       @relation(fields: [balanceId], references: [id], onDelete: Cascade)
+
+  @@index([balanceId])
+  @@index([type])
+  @@index([eventId])
+  @@index([createdAt])
+  @@map("credit_transactions")
+}
+
+enum CreditTransactionType {
+  PURCHASE
+  CONSUME
+  BONUS
+  REFUND
+  AUTO_RECHARGE
+}
+
+// ─── SMS SHARING ───────────────────────────────────────────────────────────
+
+model SmsMessage {
+  id            String            @id @default(uuid())
+  eventId       String
+  photoId       String?
+  recipientPhone String
+  message       String
+  status        SmsStatus         @default(PENDING)
+  provider      String            @default("twilio")
+  externalId    String?           // Twilio message SID
+  costCents     Int?
+  errorMessage  String?
+  sentAt        DateTime?
+  createdAt     DateTime          @default(now())
+
+  @@index([eventId])
+  @@index([status])
+  @@map("sms_messages")
+}
+
+enum SmsStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+}
+
+// ─── EMAIL SHARING ─────────────────────────────────────────────────────────
+
+model EmailShareLog {
+  id            String            @id @default(uuid())
+  eventId       String
+  photoId       String?
+  recipientEmail String
+  subject       String
+  templateUsed  String            @default("default")
+  status        EmailShareStatus  @default(PENDING)
+  externalId    String?           // SendGrid/Postmark message ID
+  errorMessage  String?
+  sentAt        DateTime?
+  createdAt     DateTime          @default(now())
+
+  @@index([eventId])
+  @@index([status])
+  @@map("email_share_logs")
+}
+
+enum EmailShareStatus {
+  PENDING
+  SENT
+  DELIVERED
+  OPENED
+  FAILED
+}
+
+// ─── VIDEO / GIF / BOOMERANG ──────────────────────────────────────────────
+
+model VideoJob {
+  id              String          @id @default(uuid())
+  eventId         String
+  userId          String?
+  type            VideoJobType
+  status          VideoJobStatus  @default(QUEUED)
+  photoIds        String[]        @default([])
+  outputPath      String?
+  outputUrl       String?
+  durationMs      Int?
+  width           Int             @default(1080)
+  height          Int             @default(1080)
+  fps             Int             @default(30)
+  quality         Int             @default(80)
+  transitionType  String          @default("fade")    // fade, slide, zoom, none
+  transitionMs    Int             @default(500)
+  photoDisplayMs  Int             @default(2000)
+  musicTrack      String?
+  watermark       Boolean         @default(false)
+  watermarkText   String?
+  loopCount       Int             @default(0)         // 0 = infinite for GIF
+  errorMessage    String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  fileSizeBytes   BigInt?
+  creditsCost     Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  event           Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@map("video_jobs")
+}
+
+enum VideoJobType {
+  VIDEO         // MP4 slideshow from photos
+  GIF           // Animated GIF from photos
+  BOOMERANG     // Forward + reverse loop
+}
+
+enum VideoJobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// ─── LEAD COLLECTION ───────────────────────────────────────────────────────
+
+model EventLead {
+  id              String          @id @default(uuid())
+  eventId         String
+  name            String?
+  email           String?
+  phone           String?
+  company         String?
+  marketingConsent Boolean        @default(false)
+  consentTimestamp DateTime?
+  source          String          @default("photo_download") // photo_download, booth, gallery
+  photoId         String?
+  metadata        Json?           @default("{}")
+  createdAt       DateTime        @default(now())
+
+  @@index([eventId])
+  @@index([email])
+  @@map("event_leads")
 }

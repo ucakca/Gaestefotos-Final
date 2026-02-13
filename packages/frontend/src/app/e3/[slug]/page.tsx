@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import EventHero from '@/components/e3/EventHero';
 import AlbumFilter from '@/components/e3/AlbumFilter';
 import PhotoGrid from '@/components/e3/PhotoGrid';
-import BottomNav from '@/components/e3/BottomNav';
+import BottomNav, { TabId } from '@/components/e3/BottomNav';
 import ChallengesTab from '@/components/e3/tabs/ChallengesTab';
 import GuestbookTab from '@/components/e3/tabs/GuestbookTab';
 import InfoTab from '@/components/e3/tabs/InfoTab';
@@ -15,7 +15,6 @@ import PhotoLightbox from '@/components/e3/PhotoLightbox';
 import StoriesBar from '@/components/guest/StoriesBar';
 import StickyHeader from '@/components/e3/StickyHeader';
 import JumpToTop from '@/components/e3/JumpToTop';
-import UploadFAB from '@/components/e3/UploadFAB';
 import UploadModal from '@/components/e3/UploadModal';
 import QRCodeShare from '@/components/e3/QRCodeShare';
 import SlideshowMode from '@/components/e3/SlideshowMode';
@@ -48,7 +47,8 @@ export default function PublicEventPageV2() {
   const [selectedAlbum, setSelectedAlbum] = useState<string | null>(null);
   const [qrCodeOpen, setQrCodeOpen] = useState(false);
   const [slideshowOpen, setSlideshowOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'feed' | 'challenges' | 'guestbook' | 'info'>('feed');
+  const [activeTab, setActiveTab] = useState<TabId>('feed');
+  const [faceSearchOpen, setFaceSearchOpen] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
   const [guestbookEntries, setGuestbookEntries] = useState<any[]>([]);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -363,14 +363,14 @@ export default function PublicEventPageV2() {
                 <div className="flex items-center gap-2">
                   <Trophy className="w-5 h-5 text-status-warning" />
                   <p className="text-sm text-app-fg">
-                    <strong>Tolle Challenges verfügbar!</strong> Klicke auf "Challenges" im Menü unten, um teilzunehmen.
+                    <strong>Foto-Spaß verfügbar!</strong> Challenges und Spiele warten auf dich — tippe auf &quot;Foto-Spaß&quot; im Menü.
                   </p>
                 </div>
               </Alert>
             </Section>
           )}
 
-          {featuresConfig?.faceSearch !== false && (
+          {faceSearchOpen && featuresConfig?.faceSearch !== false && (
             <Section>
               <FaceSearch eventId={event.id} />
             </Section>
@@ -413,12 +413,11 @@ export default function PublicEventPageV2() {
         </>
       )}
 
-      {activeTab === 'challenges' && (
+      {activeTab === 'fotospass' && (
         <ChallengesTab
           challenges={challenges || []}
           eventId={event.id}
           onChallengeClick={(challenge) => {
-            // Open upload modal for this challenge
             setUploadChallengeId(challenge.id);
             setUploadChallengeTitle(challenge.title);
             setUploadModalOpen(true);
@@ -445,8 +444,31 @@ export default function PublicEventPageV2() {
       <BottomNav
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        onCameraAction={(action) => {
+          switch (action) {
+            case 'photo':
+              setUploadChallengeId(null);
+              setUploadChallengeTitle(null);
+              setUploadModalOpen(true);
+              break;
+            case 'game':
+              setActiveTab('fotospass');
+              break;
+            case 'ki-style':
+              setUploadChallengeId(null);
+              setUploadChallengeTitle('KI Foto-Stil');
+              setUploadModalOpen(true);
+              break;
+            case 'face-search':
+              setActiveTab('feed');
+              setFaceSearchOpen(true);
+              break;
+          }
+        }}
         challengeCount={challenges?.filter((c: any) => c?.isActive).length || 0}
-        guestbookCount={0}
+        guestbookCount={guestbookEntries.length}
+        showFotoSpass={featuresConfig?.enableFotoSpass !== false && featuresConfig?.challengesEnabled !== false}
+        showFaceSearch={featuresConfig?.faceSearch !== false}
       />
 
       {/* Photo Lightbox */}
@@ -484,19 +506,7 @@ export default function PublicEventPageV2() {
         onClick={scrollToTop}
       />
 
-      <UploadFAB
-        isVisible={activeTab === 'feed' && !loading && !uploadDisabled && !isStorageLocked}
-        onUploadPhoto={() => {
-          setUploadChallengeId(null);
-          setUploadChallengeTitle(null);
-          setUploadModalOpen(true);
-        }}
-        onTakePhoto={() => {
-          setUploadChallengeId(null);
-          setUploadChallengeTitle(null);
-          setUploadModalOpen(true);
-        }}
-      />
+      {/* UploadFAB hidden — camera is now in center nav button */}
 
       <UploadModal
         isOpen={uploadModalOpen}

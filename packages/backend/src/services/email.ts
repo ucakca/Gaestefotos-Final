@@ -469,6 +469,76 @@ Fotos ansehen: ${photosUrl}
     }
   }
 
+  async sendPhotoShare(options: {
+    to: string;
+    senderName: string;
+    eventTitle: string;
+    photoUrl: string;
+    message?: string;
+    downloadUrl?: string;
+  }) {
+    if (!this.transporter || !this.config) {
+      throw new Error('Email-Service nicht konfiguriert');
+    }
+
+    const safeSenderName = this.escapeHtml(options.senderName);
+    const safeEventTitle = this.escapeHtml(options.eventTitle);
+    const safePhotoUrl = this.escapeHtml(options.photoUrl);
+    const safeMessage = options.message ? this.escapeHtml(options.message) : '';
+    const safeDownloadUrl = options.downloadUrl ? this.escapeHtml(options.downloadUrl) : safePhotoUrl;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: #f5f5f5; }
+            .container { max-width: 600px; margin: 0 auto; }
+            .header { background: linear-gradient(135deg, #295B4D, #3a7d6a); color: white; padding: 24px; text-align: center; border-radius: 12px 12px 0 0; }
+            .header h1 { margin: 0; font-size: 20px; }
+            .content { background: white; padding: 30px; }
+            .photo-wrapper { text-align: center; margin: 20px 0; }
+            .photo-wrapper img { max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+            .message-box { background: #f0faf6; border-left: 3px solid #295B4D; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0; font-style: italic; }
+            .button { display: inline-block; padding: 14px 28px; background-color: #EAA48F; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 16px 0; }
+            .footer { text-align: center; padding: 16px; color: #999; font-size: 11px; border-radius: 0 0 12px 12px; background: #fafafa; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>📸 ${safeSenderName} hat dir ein Foto geteilt!</h1>
+            </div>
+            <div class="content">
+              <p>Vom Event: <strong>${safeEventTitle}</strong></p>
+              ${safeMessage ? `<div class="message-box">${safeMessage}</div>` : ''}
+              <div class="photo-wrapper">
+                <img src="${safePhotoUrl}" alt="Geteiltes Foto" />
+              </div>
+              <p style="text-align: center;">
+                <a href="${safeDownloadUrl}" class="button">📥 Foto herunterladen</a>
+              </p>
+            </div>
+            <div class="footer">
+              <p>Geteilt über gästefotos.com – Die Foto-Plattform für Events</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const text = `${options.senderName} hat dir ein Foto geteilt!\n\nVom Event: ${options.eventTitle}\n${options.message ? `\nNachricht: ${options.message}\n` : ''}\nFoto ansehen: ${options.photoUrl}\n${options.downloadUrl ? `Herunterladen: ${options.downloadUrl}` : ''}`;
+
+    await this.transporter.sendMail({
+      from: this.config.from,
+      to: options.to,
+      subject: `📸 ${options.senderName} hat dir ein Foto von "${options.eventTitle}" geteilt`,
+      html,
+      text,
+    });
+  }
+
   async testConnection(): Promise<boolean> {
     if (!this.transporter) {
       return false;

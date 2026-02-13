@@ -33,12 +33,23 @@ const createSchema = z.object({
   allowMosaicWall: z.boolean().optional(),
   allowMosaicPrint: z.boolean().optional(),
   allowMosaicExport: z.boolean().optional(),
+  allowBoothGames: z.boolean().optional(),
+  allowAiEffects: z.boolean().optional(),
+  allowAiFaceSwitch: z.boolean().optional(),
+  allowAiBgRemoval: z.boolean().optional(),
+  allowSmsSharing: z.boolean().optional(),
+  allowEmailSharing: z.boolean().optional(),
+  allowGalleryEmbed: z.boolean().optional(),
+  allowSlideshow: z.boolean().optional(),
+  allowLeadCollection: z.boolean().optional(),
   
   // Limits
   maxCategories: z.number().int().nonnegative().optional().nullable(),
   maxChallenges: z.number().int().nonnegative().optional().nullable(),
   maxZipDownloadPhotos: z.number().int().nonnegative().optional().nullable(),
   maxCoHosts: z.number().int().nonnegative().optional().nullable(),
+  maxGamePlaysPerDay: z.number().int().nonnegative().optional().nullable(),
+  maxAiCreditsPerEvent: z.number().int().nonnegative().optional().nullable(),
   
   // Display & Pricing
   displayOrder: z.number().int().optional(),
@@ -103,12 +114,23 @@ router.post('/', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, 
       allowMosaicWall: data.allowMosaicWall ?? false,
       allowMosaicPrint: data.allowMosaicPrint ?? false,
       allowMosaicExport: data.allowMosaicExport ?? false,
+      allowBoothGames: data.allowBoothGames ?? false,
+      allowAiEffects: data.allowAiEffects ?? false,
+      allowAiFaceSwitch: data.allowAiFaceSwitch ?? false,
+      allowAiBgRemoval: data.allowAiBgRemoval ?? false,
+      allowSmsSharing: data.allowSmsSharing ?? false,
+      allowEmailSharing: data.allowEmailSharing ?? false,
+      allowGalleryEmbed: data.allowGalleryEmbed ?? false,
+      allowSlideshow: data.allowSlideshow ?? false,
+      allowLeadCollection: data.allowLeadCollection ?? false,
       
       // Limits
       maxCategories: data.maxCategories ?? null,
       maxChallenges: data.maxChallenges ?? null,
       maxZipDownloadPhotos: data.maxZipDownloadPhotos ?? null,
       maxCoHosts: data.maxCoHosts ?? null,
+      maxGamePlaysPerDay: data.maxGamePlaysPerDay ?? null,
+      maxAiCreditsPerEvent: data.maxAiCreditsPerEvent ?? null,
       
       // Display & Pricing
       displayOrder: data.displayOrder ?? 0,
@@ -153,12 +175,23 @@ router.put('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest
   if (patch.allowMosaicWall !== undefined) updateData.allowMosaicWall = patch.allowMosaicWall;
   if (patch.allowMosaicPrint !== undefined) updateData.allowMosaicPrint = patch.allowMosaicPrint;
   if (patch.allowMosaicExport !== undefined) updateData.allowMosaicExport = patch.allowMosaicExport;
+  if (patch.allowBoothGames !== undefined) updateData.allowBoothGames = patch.allowBoothGames;
+  if (patch.allowAiEffects !== undefined) updateData.allowAiEffects = patch.allowAiEffects;
+  if (patch.allowAiFaceSwitch !== undefined) updateData.allowAiFaceSwitch = patch.allowAiFaceSwitch;
+  if (patch.allowAiBgRemoval !== undefined) updateData.allowAiBgRemoval = patch.allowAiBgRemoval;
+  if (patch.allowSmsSharing !== undefined) updateData.allowSmsSharing = patch.allowSmsSharing;
+  if (patch.allowEmailSharing !== undefined) updateData.allowEmailSharing = patch.allowEmailSharing;
+  if (patch.allowGalleryEmbed !== undefined) updateData.allowGalleryEmbed = patch.allowGalleryEmbed;
+  if (patch.allowSlideshow !== undefined) updateData.allowSlideshow = patch.allowSlideshow;
+  if (patch.allowLeadCollection !== undefined) updateData.allowLeadCollection = patch.allowLeadCollection;
   
   // Limits
   if (patch.maxCategories !== undefined) updateData.maxCategories = patch.maxCategories;
   if (patch.maxChallenges !== undefined) updateData.maxChallenges = patch.maxChallenges;
   if (patch.maxZipDownloadPhotos !== undefined) updateData.maxZipDownloadPhotos = patch.maxZipDownloadPhotos;
   if (patch.maxCoHosts !== undefined) updateData.maxCoHosts = patch.maxCoHosts;
+  if (patch.maxGamePlaysPerDay !== undefined) updateData.maxGamePlaysPerDay = patch.maxGamePlaysPerDay;
+  if (patch.maxAiCreditsPerEvent !== undefined) updateData.maxAiCreditsPerEvent = patch.maxAiCreditsPerEvent;
   
   // Display & Pricing
   if (patch.displayOrder !== undefined) updateData.displayOrder = patch.displayOrder;

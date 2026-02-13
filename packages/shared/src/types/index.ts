@@ -3,7 +3,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'superadmin' | 'admin' | 'guest';
+  role: 'ADMIN' | 'PARTNER' | 'HOST' | 'admin' | 'partner' | 'host';
   createdAt: Date;
 }
 

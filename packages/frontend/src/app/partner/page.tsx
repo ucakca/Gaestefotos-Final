@@ -18,12 +18,38 @@ import {
   Zap,
   Receipt,
   FileText,
+  CreditCard,
+  Plus,
+  Trash2,
+  Package,
 } from 'lucide-react';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/Button';
+
+interface Subscription {
+  id: string;
+  plan: string;
+  interval: string;
+  status: string;
+  pricePerMonthCents: number;
+  discountPct: number;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  cancelledAt: string | null;
+  notes: string | null;
+  devices: DeviceLicense[];
+}
+
+interface DeviceLicense {
+  id: string;
+  deviceType: string;
+  pricePerMonthCents: number;
+  isActive: boolean;
+  hardwareId: string | null;
+}
 
 interface PartnerInfo {
   id: string;
@@ -68,12 +94,12 @@ export default function PartnerDashboardPage() {
   const [stats, setStats] = useState<PartnerStats | null>(null);
   const [events, setEvents] = useState<PartnerEvent[]>([]);
   const [billingPeriods, setBillingPeriods] = useState<any[]>([]);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const loadPartnerData = useCallback(async () => {
     try {
-      // Get partner list (for partner users, returns only their partners)
       const { data: listData } = await api.get('/partners');
       const partners = listData.partners || [];
 
@@ -85,18 +111,19 @@ export default function PartnerDashboardPage() {
 
       const partnerId = partners[0].id;
 
-      // Load detail, stats, and events in parallel
-      const [detailRes, statsRes, eventsRes, billingRes] = await Promise.all([
+      const [detailRes, statsRes, eventsRes, billingRes, subsRes] = await Promise.all([
         api.get(`/partners/${partnerId}`),
         api.get(`/partners/${partnerId}/stats`),
         api.get(`/partners/${partnerId}/events`),
         api.get(`/partners/${partnerId}/billing`),
+        api.get(`/partners/${partnerId}/subscriptions`),
       ]);
 
       setPartner(detailRes.data.partner);
       setStats(statsRes.data.stats);
       setEvents(eventsRes.data.events || []);
       setBillingPeriods(billingRes.data.periods || []);
+      setSubscriptions(subsRes.data.subscriptions || []);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Fehler beim Laden');
     } finally {
@@ -360,6 +387,71 @@ export default function PartnerDashboardPage() {
                   </div>
                 </div>
               )}
+
+              {/* Subscriptions */}
+              <div className="bg-white rounded-xl border p-4">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-gray-400" />
+                  Abonnements ({subscriptions.length})
+                </h3>
+                {subscriptions.length === 0 ? (
+                  <p className="text-sm text-gray-400">Kein aktives Abo</p>
+                ) : (
+                  <div className="space-y-3">
+                    {subscriptions.map((sub) => {
+                      const statusColors: Record<string, string> = {
+                        ACTIVE: 'bg-emerald-100 text-emerald-700',
+                        PAST_DUE: 'bg-red-100 text-red-700',
+                        CANCELLED: 'bg-gray-100 text-gray-500',
+                        PAUSED: 'bg-amber-100 text-amber-700',
+                      };
+                      const monthlyTotal = sub.devices
+                        .filter(d => d.isActive)
+                        .reduce((s, d) => s + d.pricePerMonthCents, sub.pricePerMonthCents);
+                      const effectiveMonthly = sub.discountPct > 0
+                        ? Math.round(monthlyTotal * (1 - sub.discountPct / 100))
+                        : monthlyTotal;
+
+                      return (
+                        <div key={sub.id} className="p-3 bg-gray-50 rounded-lg border">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Package className="w-4 h-4 text-indigo-500" />
+                              <span className="text-sm font-semibold text-gray-900">{sub.plan}</span>
+                              <span className="text-xs text-gray-400">{sub.interval === 'YEARLY' ? 'Jährlich' : 'Monatlich'}</span>
+                            </div>
+                            <span className={`text-xs px-1.5 py-0.5 rounded-full ${statusColors[sub.status] || 'bg-gray-100 text-gray-500'}`}>
+                              {sub.status}
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-500 mb-2">
+                            {new Date(sub.currentPeriodStart).toLocaleDateString('de-DE')} – {new Date(sub.currentPeriodEnd).toLocaleDateString('de-DE')}
+                          </div>
+                          {sub.devices.length > 0 && (
+                            <div className="space-y-1 mb-2">
+                              {sub.devices.filter(d => d.isActive).map((d) => (
+                                <div key={d.id} className="flex items-center justify-between text-xs">
+                                  <span className="text-gray-600">{d.deviceType.replace(/_/g, ' ')}</span>
+                                  <span className="text-gray-500">{(d.pricePerMonthCents / 100).toFixed(2)} €/Mo</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                            <span className="text-xs text-gray-500">Gesamt/Monat</span>
+                            <span className="text-sm font-bold text-indigo-600">
+                              {(effectiveMonthly / 100).toFixed(2)} €
+                              {sub.discountPct > 0 && (
+                                <span className="text-xs font-normal text-emerald-600 ml-1">(-{sub.discountPct}%)</span>
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
               {/* Quick Info */}
               <div className="bg-gray-100 rounded-xl p-4 text-xs text-gray-500">

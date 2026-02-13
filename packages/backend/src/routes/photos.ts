@@ -16,6 +16,8 @@ import { serializeBigInt } from '../utils/serializers';
 import { selectSmartCategoryId } from '../services/smartAlbum';
 import { mosaicEngine } from '../services/mosaicEngine';
 import { getFaceDetectionMetadata } from '../services/faceRecognition';
+import { addBrandingOverlay } from '../services/logoOverlay';
+import { isFeatureEnabled } from '../services/featureGate';
 import archiver from 'archiver';
 import { logger } from '../utils/logger';
 
@@ -612,8 +614,28 @@ router.get(
       ? photo.storagePathOriginal 
       : photo.storagePath;
     
-    const fileBuffer = await storageService.getFile(downloadPath);
+    let fileBuffer = await storageService.getFile(downloadPath);
     const extension = downloadPath.split('.').pop() || 'jpg';
+
+    // Branding overlay for guest downloads
+    // non-adFree: gästefotos.com branding (free advertising)
+    // adFree + customHashtag: host's custom hashtag overlay
+    // adFree without customHashtag: no overlay (clean download)
+    if (!isManager && (extension === 'jpg' || extension === 'jpeg' || extension === 'png' || extension === 'webp')) {
+      try {
+        const adFree = await isFeatureEnabled(photo.eventId, 'adFree');
+        const fc = (photo.event.featuresConfig || {}) as any;
+        if (!adFree) {
+          fileBuffer = await addBrandingOverlay(fileBuffer, { hashtag: '#gästefotos' });
+        } else if (fc.customHashtag) {
+          const { addCustomBrandingOverlay } = await import('../services/logoOverlay');
+          fileBuffer = await addCustomBrandingOverlay(fileBuffer, { hashtag: fc.customHashtag });
+        }
+      } catch (brandErr: any) {
+        logger.warn('Branding overlay failed, serving original', { error: brandErr.message });
+      }
+    }
+
     const contentType = extension === 'png'
       ? 'image/png'
       : extension === 'webp'
@@ -626,6 +648,7 @@ router.get(
     res.setHeader('Cache-Control', 'private, max-age=0');
     res.setHeader('Content-Disposition', `attachment; filename="photo-${photoId}.${extension}"`);
     res.setHeader('X-GF-Quality', isManager && photo.storagePathOriginal ? 'original' : 'optimized');
+    res.setHeader('X-GF-Branding', isManager ? 'none' : 'gaestefotos');
     res.send(fileBuffer);
   } catch (error: any) {
     logger.error('Download photo error', { error: error.message, stack: error.stack, photoId: req.params.photoId });

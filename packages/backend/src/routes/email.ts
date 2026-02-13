@@ -191,6 +191,69 @@ router.post(
   }
 );
 
+// POST /api/email/share-photo — Share a photo via email
+const sharePhotoSchema = z.object({
+  photoId: z.string().min(1),
+  recipientEmail: z.string().email(),
+  senderName: z.string().min(1).max(100),
+  message: z.string().max(500).optional(),
+});
+
+router.post('/share-photo', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const data = sharePhotoSchema.parse(req.body);
+
+    const photo = await prisma.photo.findUnique({
+      where: { id: data.photoId },
+      include: { event: { select: { id: true, title: true, slug: true } } },
+    });
+
+    if (!photo || !photo.event) {
+      return res.status(404).json({ error: 'Foto nicht gefunden' });
+    }
+
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const photoUrl = photo.storagePathThumb
+      ? `${baseUrl}/api/photos/${photo.id}/thumbnail`
+      : `${baseUrl}/api/photos/${photo.id}/image`;
+    const downloadUrl = `${baseUrl}/api/photos/${photo.id}/download`;
+
+    await emailService.sendPhotoShare({
+      to: data.recipientEmail,
+      senderName: data.senderName,
+      eventTitle: photo.event.title,
+      photoUrl,
+      message: data.message,
+      downloadUrl,
+    });
+
+    // Log the share
+    try {
+      await prisma.emailShareLog.create({
+        data: {
+          photoId: photo.id,
+          eventId: photo.event.id,
+          recipientEmail: data.recipientEmail,
+          subject: `Foto von ${photo.event.title}`,
+        },
+      });
+    } catch (logErr) {
+      logger.warn('Failed to log email share', { err: logErr });
+    }
+
+    res.json({ success: true, message: 'Foto wurde per E-Mail geteilt' });
+  } catch (error: any) {
+    if (error.name === 'ZodError') {
+      return res.status(400).json({ error: 'Ungültige Eingabe', details: error.flatten() });
+    }
+    if (error.message?.includes('nicht konfiguriert')) {
+      return res.status(400).json({ error: 'Email-Service ist nicht konfiguriert' });
+    }
+    logger.error('Photo share email error', { message: getErrorMessage(error) });
+    res.status(500).json({ error: 'Fehler beim Teilen per E-Mail' });
+  }
+});
+
 export default router;
 
 

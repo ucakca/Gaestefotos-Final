@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import api from '@/lib/api';
 import { Event as EventType } from '@gaestefotos/shared';
 import AppLayout from '@/components/AppLayout';
@@ -10,8 +11,11 @@ import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Button } from '@/components/ui/Button';
 import { useToastStore } from '@/store/toastStore';
 import {
-  Gamepad2, ArrowLeft, RotateCw, Trophy, Star, Send, Sparkles,
+  Gamepad2, ArrowLeft, RotateCw, Trophy, Star, Send, Sparkles, Loader2, Pen,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const GraffitiCanvas = dynamic(() => import('@/components/booth/GraffitiCanvas'), { ssr: false });
 
 interface GameInfo {
   type: string;
@@ -29,7 +33,9 @@ type ActiveGame =
   | { type: 'compliment_mirror'; compliment: string; verdict: string }
   | { type: 'mimik_duell'; phase: 'challenge' | 'result'; challenge: any; sessionId?: string; score?: number; rank?: string }
   | { type: 'mystery_overlay'; overlay: any }
-  | { type: 'vows_and_views' };
+  | { type: 'vows_and_views' }
+  | { type: 'face_switch'; phase: 'input' | 'processing' | 'result'; photoId?: string; result?: any }
+  | { type: 'digital_graffiti'; photoUrl?: string; photoId?: string };
 
 export default function BoothGamesPage({ params }: { params: Promise<{ id: string }> }) {
   const [eventId, setEventId] = useState<string | null>(null);
@@ -41,6 +47,9 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
   const [vowMessage, setVowMessage] = useState('');
   const [vowName, setVowName] = useState('');
   const [sending, setSending] = useState(false);
+  const [facePhotoId, setFacePhotoId] = useState('');
+  const [graffitiPhotoUrl, setGraffitiPhotoUrl] = useState('');
+  const [graffitiPhotoId, setGraffitiPhotoId] = useState('');
   const { showToast } = useToastStore();
 
   React.useEffect(() => { params.then(p => setEventId(p.id)); }, [params]);
@@ -117,6 +126,8 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
       case 'mimik_duell': handleMimikChallenge(); break;
       case 'mystery_overlay': handleMysteryOverlay(); break;
       case 'vows_and_views': setActiveGame({ type: 'vows_and_views' }); break;
+      case 'face_switch': setActiveGame({ type: 'face_switch', phase: 'input' }); break;
+      case 'digital_graffiti': setActiveGame({ type: 'digital_graffiti' }); break;
       default: showToast('Dieses Spiel ist noch nicht verfügbar', 'info');
     }
   };
@@ -124,7 +135,7 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
   if (loading || !eventId) return <FullPageLoader />;
 
   return (
-    <AppLayout>
+    <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
@@ -151,7 +162,6 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => startGame(game.type)}
-                disabled={game.type === 'face_switch'}
                 className="text-left p-5 rounded-2xl border border-app-border bg-app-card hover:border-primary/50 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="flex items-start gap-4">
@@ -170,14 +180,28 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
                       }`}>
                         {game.category === 'booth' ? '📱 Booth' : game.category === 'app' ? '📱 App' : '📖 Gästebuch'}
                       </span>
-                      {game.type === 'face_switch' && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">Bald</span>
-                      )}
                     </div>
                   </div>
                 </div>
               </motion.button>
             ))}
+
+            {/* Air Graffiti — separate page */}
+            <Link
+              href={`/events/${eventId}/air-graffiti`}
+              className="text-left p-5 rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 hover:border-emerald-400 transition"
+            >
+              <div className="flex items-start gap-4">
+                <span className="text-3xl">🖐️</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-app-fg">Air Graffiti Wall</div>
+                  <p className="text-sm text-app-muted mt-1">Male in der Luft mit Hand-Tracking (Webcam)</p>
+                  <div className="flex gap-2 mt-2">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">🖐️ Webcam</span>
+                  </div>
+                </div>
+              </div>
+            </Link>
           </div>
         )}
 
@@ -288,6 +312,128 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
               <RotateCw className="w-4 h-4" /> Anderes Overlay
             </Button>
           </motion.div>
+        )}
+
+        {/* Face Switch */}
+        {activeGame?.type === 'face_switch' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            className="max-w-md mx-auto py-8">
+            <div className="text-center mb-6">
+              <div className="text-5xl mb-4">🔄</div>
+              <h2 className="text-xl font-bold text-app-fg">Face Switch</h2>
+              <p className="text-sm text-app-muted mt-1">Gesichter in einem Gruppenfoto tauschen (AI)</p>
+            </div>
+            {activeGame.phase === 'input' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-app-fg block mb-1">Foto-ID eingeben</label>
+                  <input
+                    value={facePhotoId}
+                    onChange={e => setFacePhotoId(e.target.value)}
+                    placeholder="Photo-ID (aus der Galerie)"
+                    className="w-full px-4 py-2.5 bg-app-surface border border-app-border rounded-xl text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  />
+                  <p className="text-xs text-app-muted mt-1">Mindestens 2 Gesichter im Foto nötig</p>
+                </div>
+                <Button
+                  onClick={async () => {
+                    if (!facePhotoId.trim()) return;
+                    setActiveGame({ type: 'face_switch', phase: 'processing', photoId: facePhotoId });
+                    try {
+                      const { data } = await api.post('/booth-games/face-switch', { photoId: facePhotoId });
+                      setActiveGame({ type: 'face_switch', phase: 'result', photoId: facePhotoId, result: data });
+                    } catch (err: any) {
+                      showToast(err?.response?.data?.error || 'Face Switch fehlgeschlagen', 'error');
+                      setActiveGame({ type: 'face_switch', phase: 'input' });
+                    }
+                  }}
+                  disabled={!facePhotoId.trim()}
+                  className="w-full gap-2" size="lg"
+                >
+                  <Sparkles className="w-4 h-4" /> Gesichter tauschen
+                </Button>
+              </div>
+            )}
+            {activeGame.phase === 'processing' && (
+              <div className="text-center py-12">
+                <Loader2 className="w-10 h-10 animate-spin mx-auto text-primary mb-4" />
+                <p className="text-app-muted">KI tauscht Gesichter...</p>
+              </div>
+            )}
+            {activeGame.phase === 'result' && activeGame.result && (
+              <div className="text-center">
+                <div className="text-4xl mb-4">✅</div>
+                <p className="text-lg font-semibold text-app-fg mb-2">{activeGame.result.facesSwapped} Gesichter getauscht!</p>
+                <p className="text-sm text-app-muted mb-6">Das neue Foto wurde gespeichert.</p>
+                <Button onClick={() => setActiveGame({ type: 'face_switch', phase: 'input' })} className="gap-2">
+                  <RotateCw className="w-4 h-4" /> Nochmal
+                </Button>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Digital Graffiti */}
+        {activeGame?.type === 'digital_graffiti' && !activeGame.photoUrl && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            className="max-w-md mx-auto py-8">
+            <div className="text-center mb-6">
+              <div className="text-5xl mb-4">🎨</div>
+              <h2 className="text-xl font-bold text-app-fg">Digital Graffiti</h2>
+              <p className="text-sm text-app-muted mt-1">Male auf einem Foto — Emojis, Zeichnungen, Texte</p>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-app-fg block mb-1">Foto-URL eingeben</label>
+                <input
+                  value={graffitiPhotoUrl}
+                  onChange={e => setGraffitiPhotoUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full px-4 py-2.5 bg-app-surface border border-app-border rounded-xl text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-app-fg block mb-1">Photo-ID (optional)</label>
+                <input
+                  value={graffitiPhotoId}
+                  onChange={e => setGraffitiPhotoId(e.target.value)}
+                  placeholder="Photo-ID für Verknüpfung"
+                  className="w-full px-4 py-2.5 bg-app-surface border border-app-border rounded-xl text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </div>
+              <Button
+                onClick={() => {
+                  if (!graffitiPhotoUrl.trim()) { showToast('Bitte Foto-URL eingeben', 'error'); return; }
+                  setActiveGame({ type: 'digital_graffiti', photoUrl: graffitiPhotoUrl, photoId: graffitiPhotoId || undefined });
+                }}
+                disabled={!graffitiPhotoUrl.trim()}
+                className="w-full gap-2" size="lg"
+              >
+                <Pen className="w-4 h-4" /> Graffiti starten
+              </Button>
+            </div>
+          </motion.div>
+        )}
+        {activeGame?.type === 'digital_graffiti' && activeGame.photoUrl && (
+          <GraffitiCanvas
+            photoUrl={activeGame.photoUrl}
+            photoId={activeGame.photoId || ''}
+            eventId={eventId || ''}
+            onSave={async (mergedDataUrl, drawingData) => {
+              try {
+                await api.post('/graffiti/save', {
+                  photoId: activeGame.photoId,
+                  eventId,
+                  drawingData,
+                });
+                showToast('Graffiti gespeichert! 🎨', 'success');
+                setActiveGame(null);
+              } catch {
+                showToast('Speichern fehlgeschlagen', 'error');
+              }
+            }}
+            onClose={() => setActiveGame(null)}
+          />
         )}
 
         {/* Vows & Views */}

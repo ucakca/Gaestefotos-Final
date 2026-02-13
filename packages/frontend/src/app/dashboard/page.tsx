@@ -21,7 +21,8 @@ import {
   Sparkles,
   ChevronRight,
   Info,
-  Building2
+  Building2,
+  Shield
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Event } from '@gaestefotos/shared';
@@ -168,6 +169,14 @@ export default function DashboardPage() {
 
               {/* Right: Actions */}
               <div className="flex items-center gap-2">
+                {(user?.role === 'ADMIN' || user?.role === 'SUPERADMIN') && (
+                  <Button asChild variant="secondary" size="sm" className="hidden sm:flex">
+                    <Link href="/admin">
+                      <Shield className="w-4 h-4 mr-1" />
+                      Admin
+                    </Link>
+                  </Button>
+                )}
                 {user?.role === 'PARTNER' && (
                   <Button asChild variant="secondary" size="sm" className="hidden sm:flex">
                     <Link href="/partner">

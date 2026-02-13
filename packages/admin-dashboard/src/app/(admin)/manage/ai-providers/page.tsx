@@ -78,19 +78,77 @@ const PROVIDER_TYPES = [
 ];
 
 const AI_FEATURES = [
-  { key: 'chat', label: 'KI Chat-Assistent', type: 'LLM' },
-  { key: 'album_suggest', label: 'Album-Vorschläge', type: 'LLM' },
-  { key: 'description_suggest', label: 'Beschreibungs-Generator', type: 'LLM' },
-  { key: 'invitation_suggest', label: 'Einladungstext-Generator', type: 'LLM' },
-  { key: 'challenge_suggest', label: 'Challenge-Vorschläge', type: 'LLM' },
-  { key: 'guestbook_suggest', label: 'Gästebuch-Nachricht', type: 'LLM' },
-  { key: 'color_scheme', label: 'Farbschema-Generator', type: 'LLM' },
-  { key: 'face_search', label: 'Gesichtssuche (Face Search)', type: 'FACE_RECOGNITION' },
-  { key: 'style_transfer', label: 'KI Booth — Style Transfer', type: 'IMAGE_GEN' },
-  { key: 'drawbot', label: 'Drawbot — Porträtzeichnung', type: 'IMAGE_GEN' },
-  { key: 'highlight_reel', label: 'Highlight Reel', type: 'VIDEO_GEN' },
-  { key: 'compliment_mirror', label: 'Compliment Mirror', type: 'LLM' },
-  { key: 'face_switch', label: 'Face Switch', type: 'IMAGE_GEN' },
+  { key: 'chat', label: 'KI Chat-Assistent', type: 'LLM', credits: 1, workflow: false },
+  { key: 'album_suggest', label: 'Album-Vorschläge', type: 'LLM', credits: 1, workflow: false },
+  { key: 'description_suggest', label: 'Beschreibungs-Generator', type: 'LLM', credits: 1, workflow: false },
+  { key: 'invitation_suggest', label: 'Einladungstext-Generator', type: 'LLM', credits: 1, workflow: false },
+  { key: 'challenge_suggest', label: 'Challenge-Vorschläge', type: 'LLM', credits: 1, workflow: false },
+  { key: 'guestbook_suggest', label: 'Gästebuch-Nachricht', type: 'LLM', credits: 1, workflow: false },
+  { key: 'color_scheme', label: 'Farbschema-Generator', type: 'LLM', credits: 1, workflow: false },
+  { key: 'compliment_mirror', label: 'Compliment Mirror', type: 'LLM', credits: 2, workflow: true },
+  { key: 'face_search', label: 'Gesichtssuche (Face Search)', type: 'FACE_RECOGNITION', credits: 0, workflow: true },
+  { key: 'style_transfer', label: 'KI Booth — Style Transfer', type: 'IMAGE_GEN', credits: 5, workflow: true },
+  { key: 'face_switch', label: 'Face Switch', type: 'IMAGE_GEN', credits: 5, workflow: true },
+  { key: 'bg_removal', label: 'Hintergrund entfernen', type: 'IMAGE_GEN', credits: 3, workflow: true },
+  { key: 'ai_oldify', label: 'Oldify (Alterung)', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'ai_cartoon', label: 'Cartoon-Effekt', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'ai_style_pop', label: 'Style Pop', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'drawbot', label: 'Drawbot — Porträtzeichnung', type: 'IMAGE_GEN', credits: 8, workflow: true },
+  { key: 'highlight_reel', label: 'Highlight Reel', type: 'VIDEO_GEN', credits: 10, workflow: true },
+];
+
+// Known provider presets for quick setup
+const PROVIDER_PRESETS = [
+  {
+    slug: 'groq',
+    name: 'Groq (Llama 3.1)',
+    type: 'LLM',
+    baseUrl: 'https://api.groq.com/openai/v1',
+    defaultModel: 'llama-3.1-70b-versatile',
+    description: 'Bereits integriert — schnelle LLM-Inferenz mit Llama 3.1',
+    envKey: 'GROQ_API_KEY',
+    features: ['chat', 'album_suggest', 'description_suggest', 'invitation_suggest', 'challenge_suggest', 'guestbook_suggest', 'color_scheme', 'compliment_mirror'],
+  },
+  {
+    slug: 'openai',
+    name: 'OpenAI (GPT-4)',
+    type: 'LLM',
+    baseUrl: 'https://api.openai.com/v1',
+    defaultModel: 'gpt-4o',
+    description: 'Premium LLM — ideal als Fallback oder für komplexere Aufgaben',
+    envKey: 'OPENAI_API_KEY',
+    features: ['chat', 'album_suggest', 'description_suggest'],
+  },
+  {
+    slug: 'stability-ai',
+    name: 'Stability AI (SDXL)',
+    type: 'IMAGE_GEN',
+    baseUrl: 'https://api.stability.ai',
+    defaultModel: 'stable-diffusion-xl-1024-v1-0',
+    description: 'Bildgenerierung & Style Transfer',
+    envKey: 'STABILITY_API_KEY',
+    features: ['style_transfer', 'ai_oldify', 'ai_cartoon', 'ai_style_pop', 'drawbot'],
+  },
+  {
+    slug: 'replicate',
+    name: 'Replicate',
+    type: 'IMAGE_GEN',
+    baseUrl: 'https://api.replicate.com',
+    defaultModel: null,
+    description: 'Vielseitige Bild-AI: Face Switch, BG Removal, etc.',
+    envKey: 'REPLICATE_API_TOKEN',
+    features: ['face_switch', 'bg_removal', 'ai_oldify', 'ai_cartoon', 'ai_style_pop'],
+  },
+  {
+    slug: 'remove-bg',
+    name: 'remove.bg',
+    type: 'IMAGE_GEN',
+    baseUrl: 'https://api.remove.bg/v1.0',
+    defaultModel: null,
+    description: 'Spezialisiert auf Hintergrund-Entfernung',
+    envKey: 'REMOVE_BG_API_KEY',
+    features: ['bg_removal'],
+  },
 ];
 
 function getTypeInfo(type: string) {
@@ -328,6 +386,46 @@ export default function AiProvidersPage() {
       {/* ═══════════ Tab: Provider List ═══════════ */}
       {activeTab === 'providers' && (
         <div className="space-y-4">
+          {/* Quick Presets */}
+          {providers.length < PROVIDER_PRESETS.length && (
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-5 mb-4">
+              <h3 className="text-sm font-semibold text-indigo-900 dark:text-indigo-200 mb-3">Schnelleinrichtung — Bekannte Provider</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {PROVIDER_PRESETS.filter(preset => !providers.some(p => p.slug === preset.slug)).map(preset => {
+                  const typeInfo = getTypeInfo(preset.type);
+                  return (
+                    <button
+                      key={preset.slug}
+                      onClick={() => setEditProvider({
+                        slug: preset.slug,
+                        name: preset.name,
+                        type: preset.type,
+                        baseUrl: preset.baseUrl,
+                        defaultModel: preset.defaultModel,
+                        isActive: true,
+                        isDefault: preset.slug === 'groq',
+                        apiKey: '',
+                        rateLimitPerMinute: null,
+                        rateLimitPerDay: null,
+                        monthlyBudgetCents: null,
+                      })}
+                      className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-indigo-400 hover:shadow-md transition-all text-left"
+                    >
+                      <div className={`w-8 h-8 rounded-lg ${typeInfo.color} flex items-center justify-center flex-shrink-0`}>
+                        <Brain className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{preset.name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{preset.description}</div>
+                        <div className="text-xs text-gray-400 dark:text-gray-500 mt-1 font-mono">ENV: {preset.envKey}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {providers.length === 0 ? (
             <div className="text-center py-16 text-app-muted">
               <Brain className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -438,6 +536,8 @@ export default function AiProvidersPage() {
               <tr className="border-b border-app-border bg-app-muted/5">
                 <th className="text-left px-4 py-3 font-medium text-app-muted">Feature</th>
                 <th className="text-left px-4 py-3 font-medium text-app-muted">Typ</th>
+                <th className="text-center px-4 py-3 font-medium text-app-muted">Credits</th>
+                <th className="text-center px-4 py-3 font-medium text-app-muted">Workflow</th>
                 <th className="text-left px-4 py-3 font-medium text-app-muted">Provider</th>
                 <th className="text-center px-4 py-3 font-medium text-app-muted">Aktiviert</th>
               </tr>
@@ -458,6 +558,24 @@ export default function AiProvidersPage() {
                       <span className={`inline-flex text-xs px-2 py-0.5 rounded ${typeInfo.color} text-white`}>
                         {typeInfo.label}
                       </span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {feat.credits > 0 ? (
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 font-medium">
+                          <Zap className="w-3 h-3" />{feat.credits}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-green-600 dark:text-green-400 font-medium">Gratis</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {feat.workflow ? (
+                        <span className="inline-flex text-xs px-2 py-0.5 rounded bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 font-medium">
+                          Workflow
+                        </span>
+                      ) : (
+                        <span className="text-xs text-app-muted">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       {compatible.length > 0 ? (

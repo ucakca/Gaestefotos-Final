@@ -19,6 +19,7 @@ import {
   Eye,
   Info,
   Sparkles,
+  PartyPopper,
   Save,
   Loader2,
   Check,
@@ -26,7 +27,19 @@ import {
   Type,
   Image as ImageIcon,
   ExternalLink,
+  Lock,
+  Zap,
+  Video,
+  Download,
+  ScanFace,
+  Monitor,
+  Grid3X3,
+  Gamepad2,
+  Shield,
+  UserPlus,
+  LayoutGrid,
 } from 'lucide-react';
+import { usePackageFeatures, FeatureKey, FEATURE_DESCRIPTIONS } from '@/hooks/usePackageFeatures';
 import { Event as EventType } from '@gaestefotos/shared';
 
 import { Button } from '@/components/ui/Button';
@@ -45,9 +58,23 @@ interface SetupTabV2Props {
   onEventUpdate?: () => void;
 }
 
+const FEATURE_CARDS: { key: FeatureKey; icon: any; color: string; gradient: string }[] = [
+  { key: 'videoUpload', icon: Video, color: 'text-purple-500', gradient: 'from-purple-50 to-purple-100' },
+  { key: 'guestbook', icon: BookOpen, color: 'text-green-500', gradient: 'from-green-50 to-green-100' },
+  { key: 'liveWall', icon: Monitor, color: 'text-blue-500', gradient: 'from-blue-50 to-blue-100' },
+  { key: 'faceSearch', icon: ScanFace, color: 'text-cyan-500', gradient: 'from-cyan-50 to-cyan-100' },
+  { key: 'boothGames', icon: Gamepad2, color: 'text-orange-500', gradient: 'from-orange-50 to-orange-100' },
+  { key: 'zipDownload', icon: Download, color: 'text-indigo-500', gradient: 'from-indigo-50 to-indigo-100' },
+  { key: 'mosaicWall', icon: Grid3X3, color: 'text-pink-500', gradient: 'from-pink-50 to-pink-100' },
+  { key: 'coHosts', icon: UserPlus, color: 'text-teal-500', gradient: 'from-teal-50 to-teal-100' },
+  { key: 'passwordProtect', icon: Shield, color: 'text-amber-500', gradient: 'from-amber-50 to-amber-100' },
+  { key: 'adFree', icon: Zap, color: 'text-yellow-500', gradient: 'from-yellow-50 to-yellow-100' },
+];
+
 export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2Props) {
   const { showToast } = useToastStore();
   const [activeSheet, setActiveSheet] = useState<SetupSheet>(null);
+  const { features, packageName, tier, isFree } = usePackageFeatures(eventId);
   
   // Local state for editing
   const [title, setTitle] = useState(event.title || '');
@@ -145,15 +172,76 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
         <SetupRow icon={Mail} label="Einladungen" link={`/events/${eventId}/invitations`} />
       </div>
 
-      {/* Features Section */}
-      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
+      {/* Features Section — Progressive Disclosure Cards */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
           <h3 className="font-semibold text-app-fg flex items-center gap-2">
             <Sparkles className="w-4 h-4" />
             Features
           </h3>
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700">
+            {packageName}
+          </span>
         </div>
-        <SetupRow icon={Trophy} label="Challenges" link={`/events/${eventId}/challenges`} />
+        <div className="grid grid-cols-2 gap-3">
+          {FEATURE_CARDS.map(({ key, icon: FIcon, color, gradient }) => {
+            const enabled = features[key];
+            const desc = FEATURE_DESCRIPTIONS[key];
+            return (
+              <div
+                key={key}
+                className={`relative rounded-2xl border p-3 transition-all ${
+                  enabled
+                    ? `border-app-border bg-gradient-to-br ${gradient} shadow-sm hover:shadow-md`
+                    : 'border-dashed border-app-border/60 bg-app-bg/50 opacity-70'
+                }`}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className={`p-1.5 rounded-lg ${enabled ? 'bg-white/80' : 'bg-app-card'}`}>
+                    <FIcon className={`w-4 h-4 ${enabled ? color : 'text-app-muted'}`} />
+                  </div>
+                  {enabled ? (
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-green-600 bg-green-100 px-1.5 py-0.5 rounded-full">
+                      <Check className="w-3 h-3" /> Aktiv
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-app-muted bg-app-border/30 px-1.5 py-0.5 rounded-full">
+                      <Lock className="w-3 h-3" /> Upgrade
+                    </span>
+                  )}
+                </div>
+                <h4 className={`text-sm font-semibold ${enabled ? 'text-app-fg' : 'text-app-muted'}`}>{desc.name}</h4>
+                <p className="text-[11px] text-app-muted mt-0.5 line-clamp-2">{desc.description}</p>
+                {!enabled && (
+                  <div className="mt-2">
+                    <span className="text-[10px] text-amber-600 font-medium flex items-center gap-1">
+                      <Zap className="w-3 h-3" /> Im nächsten Paket
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Quick Feature Links */}
+      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
+          <h3 className="font-semibold text-app-fg flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Feature-Verwaltung
+          </h3>
+        </div>
+        <SetupRow icon={Trophy} label="Foto-Spiele" link={`/events/${eventId}/challenges`} />
+        <SetupRow icon={PartyPopper} label="Foto-Spaß" value={featuresConfig.enableFotoSpass !== false ? 'Aktiv' : 'Deaktiviert'} onClick={() => {
+          const newVal = featuresConfig.enableFotoSpass === false;
+          const updated = { ...featuresConfig, enableFotoSpass: newVal };
+          setFeaturesConfig(updated);
+          api.put(`/events/${eventId}`, { featuresConfig: updated })
+            .then(() => { showToast(newVal ? 'Foto-Spaß aktiviert' : 'Foto-Spaß deaktiviert', 'success'); onEventUpdate?.(); })
+            .catch(() => showToast('Fehler beim Speichern', 'error'));
+        }} />
         <SetupRow icon={Users} label="Gästeliste" link={`/events/${eventId}/guests`} />
         <SetupRow icon={BookOpen} label="Kategorien" link={`/events/${eventId}/categories`} />
       </div>
@@ -277,6 +365,8 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                   { key: 'moderationRequired', label: 'Moderation erforderlich' },
                   { key: 'mysteryMode', label: 'Mystery Mode (Fotos erst später sichtbar)' },
                   { key: 'showGuestlist', label: 'Gästeliste anzeigen' },
+                  { key: 'enableFotoSpass', label: 'Foto-Spaß (Spiele & Challenges für Gäste)' },
+                  { key: 'faceSearch', label: 'Gesichtserkennung (Finde mein Foto)' },
                 ].map(({ key, label }) => (
                   <label key={key} className="flex items-center justify-between py-2">
                     <span className="text-sm text-app-fg">{label}</span>
@@ -297,6 +387,33 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                     </button>
                   </label>
                 ))}
+              </div>
+
+              <div className="border-t border-app-border pt-4 space-y-3">
+                <h4 className="text-sm font-semibold text-app-fg">Branding (Premium)</h4>
+                <p className="text-xs text-app-muted">Nur für werbefreie Pakete: Eigenes Hashtag und Logo auf geteilten Fotos.</p>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-app-fg">Custom Hashtag</label>
+                  <Input
+                    type="text"
+                    value={featuresConfig.customHashtag || ''}
+                    onChange={(e) => setFeaturesConfig((prev: any) => ({ ...prev, customHashtag: e.target.value || undefined }))}
+                    placeholder="#meinEvent"
+                    className="px-4 py-3"
+                  />
+                  <p className="mt-1 text-xs text-app-muted">Erscheint auf heruntergeladenen Fotos statt #gästefotos</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-app-fg">Overlay-Logo URL</label>
+                  <Input
+                    type="url"
+                    value={featuresConfig.customOverlayLogoUrl || ''}
+                    onChange={(e) => setFeaturesConfig((prev: any) => ({ ...prev, customOverlayLogoUrl: e.target.value || undefined }))}
+                    placeholder="https://..."
+                    className="px-4 py-3"
+                  />
+                  <p className="mt-1 text-xs text-app-muted">Eigenes Logo statt gästefotos.com auf geteilten Fotos</p>
+                </div>
               </div>
             </div>
           </SetupSheet>

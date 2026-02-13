@@ -2,8 +2,21 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
+import { randomString, generateEventSlug, DEFAULT_EVENT_FEATURES_CONFIG, normalizeEventFeaturesConfig } from '@gaestefotos/shared';
 
 const router = Router();
+
+async function getUniqueEventSlug(preferredSlug: string): Promise<string> {
+  for (let i = 0; i < 100; i++) {
+    const candidate = i === 0 ? preferredSlug : `${preferredSlug}-${randomString(4).toLowerCase()}`;
+    const existing = await prisma.event.findUnique({
+      where: { slug: candidate },
+      select: { id: true },
+    });
+    if (!existing) return candidate;
+  }
+  return `event-${randomString(12).toLowerCase()}`;
+}
 
 const listSchema = z.object({
   q: z.string().optional(),
@@ -120,6 +133,14 @@ router.get('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest
         createdAt: true,
         updatedAt: true,
         deletedAt: true,
+        workflowId: true,
+        workflow: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+          },
+        },
         host: {
           select: {
             id: true,
@@ -162,6 +183,7 @@ const updateEventSchema = z.object({
   wifiName: z.string().max(100).nullable().optional(),
   wifiPassword: z.string().max(100).nullable().optional(),
   profileDescription: z.string().max(2000).nullable().optional(),
+  workflowId: z.string().uuid().nullable().optional(),
 });
 
 router.put('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
@@ -464,6 +486,148 @@ router.delete('/:id/addons/:entitlementId', authMiddleware, requireRole('ADMIN')
     return res.json({ ok: true });
   } catch (error: any) {
     return res.status(500).json({ error: 'Fehler beim Entfernen des Addons' });
+  }
+});
+
+// ─── Admin: Event für einen Host erstellen ──────────────────────────────────
+
+const createEventForHostSchema = z.object({
+  hostId: z.string().uuid('Ungültige Host-ID'),
+  title: z.string().min(1, 'Titel ist erforderlich').max(200),
+  dateTime: z.string().nullable().optional(),
+  locationName: z.string().max(200).nullable().optional(),
+  locationGoogleMapsLink: z.string().max(500).nullable().optional(),
+  password: z.string().max(100).nullable().optional(),
+  packageSku: z.string().optional(), // Optional: Paket direkt zuweisen
+  notes: z.string().max(2000).nullable().optional(), // Admin-Notizen
+});
+
+router.post('/', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const parsed = createEventForHostSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ ok: false, error: 'Ungültige Daten', details: parsed.error.flatten() });
+    }
+
+    const { hostId, title, dateTime, locationName, locationGoogleMapsLink, password, packageSku, notes } = parsed.data;
+
+    // Verify host exists
+    const host = await prisma.user.findUnique({
+      where: { id: hostId },
+      select: { id: true, name: true, email: true, role: true, wordpressUserId: true },
+    });
+    if (!host) {
+      return res.status(404).json({ ok: false, error: 'Benutzer nicht gefunden' });
+    }
+
+    // Generate slug
+    const preferredSlug = generateEventSlug(title);
+    const slug = await getUniqueEventSlug(preferredSlug);
+
+    // Hash password if provided
+    let hashedPassword: string | undefined;
+    if (password) {
+      const bcrypt = require('bcryptjs');
+      hashedPassword = await bcrypt.hash(password, 12);
+    }
+
+    // Create event
+    const event = await prisma.event.create({
+      data: {
+        hostId,
+        title,
+        slug,
+        dateTime: dateTime ? new Date(dateTime) : null,
+        locationName: locationName || null,
+        locationGoogleMapsLink: locationGoogleMapsLink || null,
+        password: hashedPassword || null,
+        featuresConfig: normalizeEventFeaturesConfig(DEFAULT_EVENT_FEATURES_CONFIG),
+        designConfig: {},
+        profileDescription: notes || null,
+      },
+      include: {
+        host: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+
+    // Assign package if specified
+    if (packageSku) {
+      const targetPkg = await prisma.packageDefinition.findFirst({
+        where: { sku: packageSku, isActive: true, type: 'BASE' },
+      });
+      if (targetPkg) {
+        await prisma.eventEntitlement.create({
+          data: {
+            eventId: event.id,
+            wpUserId: host.wordpressUserId ?? 0,
+            status: 'ACTIVE',
+            source: `admin_created_${req.userId}`,
+            wcSku: packageSku,
+            storageLimitBytes: targetPkg.storageLimitBytes,
+          },
+        });
+      }
+    }
+
+    return res.status(201).json({
+      ok: true,
+      event: {
+        id: event.id,
+        title: event.title,
+        slug: event.slug,
+        dateTime: event.dateTime,
+        host: event.host,
+      },
+      message: `Event "${title}" wurde für ${host.name || host.email} erstellt.`,
+    });
+  } catch (error: any) {
+    return res.status(500).json({ ok: false, error: 'Fehler beim Erstellen des Events' });
+  }
+});
+
+// ─── Admin: Workflow einem Event zuweisen ────────────────────────────────────
+
+router.put('/:id/workflow', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { workflowId } = req.body;
+
+    // Validate workflow exists if provided
+    if (workflowId) {
+      const workflow = await prisma.boothWorkflow.findUnique({ where: { id: workflowId } });
+      if (!workflow) {
+        return res.status(404).json({ ok: false, error: 'Workflow nicht gefunden' });
+      }
+    }
+
+    const event = await prisma.event.update({
+      where: { id },
+      data: { workflowId: workflowId || null },
+      select: {
+        id: true,
+        title: true,
+        workflowId: true,
+        workflow: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+          },
+        },
+      },
+    });
+
+    return res.json({
+      ok: true,
+      event,
+      message: workflowId
+        ? `Workflow "${event.workflow?.name}" wurde dem Event zugewiesen.`
+        : 'Workflow wurde vom Event entfernt.',
+    });
+  } catch (error: any) {
+    return res.status(500).json({ ok: false, error: 'Fehler beim Zuweisen des Workflows' });
   }
 });
 

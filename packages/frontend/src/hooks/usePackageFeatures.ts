@@ -18,13 +18,15 @@ export type FeatureKey =
   | 'adFree'
   | 'mosaicWall'
   | 'mosaicPrint'
-  | 'mosaicExport';
+  | 'mosaicExport'
+  | 'boothGames';
 
 export type LimitKey =
   | 'maxCategories'
   | 'maxChallenges'
   | 'maxZipDownloadPhotos'
   | 'maxCoHosts'
+  | 'maxGamePlaysPerDay'
   | 'storageLimitPhotos';
 
 export interface PackageInfo {
@@ -63,12 +65,14 @@ const DEFAULT_PACKAGE_INFO: PackageInfo = {
     mosaicWall: false,
     mosaicPrint: false,
     mosaicExport: false,
+    boothGames: true,
   },
   limits: {
     maxCategories: 1,
     maxChallenges: 0,
     maxZipDownloadPhotos: 0,
     maxCoHosts: 0,
+    maxGamePlaysPerDay: 3,
     storageLimitPhotos: 50,
   },
 };
@@ -90,6 +94,7 @@ export const FEATURE_DESCRIPTIONS: Record<FeatureKey, { name: string; descriptio
   mosaicWall: { name: 'Mosaic Wall', description: 'Foto-Mosaik aus Gäste-Fotos erstellen' },
   mosaicPrint: { name: 'Mosaic Print', description: 'Tiles als Labels drucken (Print-Station)' },
   mosaicExport: { name: 'Mosaic Export', description: 'HD-Poster des fertigen Mosaiks herunterladen' },
+  boothGames: { name: 'Foto-Spaß', description: 'Selfie-Spiele und interaktive Foto-Challenges für Gäste' },
 };
 
 export function usePackageFeatures(eventId: string | null) {

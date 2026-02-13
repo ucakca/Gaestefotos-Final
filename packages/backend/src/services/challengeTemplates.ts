@@ -7,7 +7,7 @@
 
 export interface ChallengeTemplate {
   id: string;
-  type: 'PHOTO' | 'PHOTOBOMB' | 'STATUE' | 'TEAM_BATTLE' | 'COVER_SHOOT';
+  type: 'PHOTO' | 'PHOTOBOMB' | 'COVER_SHOOT' | 'EMOJI_CHALLENGE' | 'FILTER_ROULETTE';
   title: string;
   description: string;
   icon: string;
@@ -35,44 +35,34 @@ export const CHALLENGE_TEMPLATES: ChallengeTemplate[] = [
     tags: ['fun', 'social', 'interactive'],
   },
   {
-    id: 'statues',
-    type: 'STATUE',
-    title: 'Die Statuen',
-    description: 'Überrede 3 Fremde, eine berühmte Statue nachzustellen und fotografiere sie!',
-    icon: 'landmark',
+    id: 'emoji-challenge',
+    type: 'EMOJI_CHALLENGE',
+    title: 'Emoji-Challenge',
+    description: 'Stelle das angezeigte Emoji mit deinem Gesicht nach und mach ein Selfie!',
+    icon: 'smile-plus',
     category: 'game',
-    difficulty: 'hard',
+    difficulty: 'easy',
     gameConfig: {
-      requiredPhotos: 1,
-      minPeople: 3,
-      suggestions: [
-        'Denker von Rodin',
-        'Freiheitsstatue',
-        'David von Michelangelo',
-        'Usain Bolt Pose',
-        'Titanic Bug-Szene',
-      ],
+      emojis: ['😂', '😱', '🤔', '😍', '🤪', '😎', '🥳', '😤', '🤯', '🥺'],
       scoringMode: 'vote',
+      selfieRequired: true,
     },
-    tags: ['fun', 'group', 'creative'],
+    tags: ['selfie', 'fun', 'easy'],
   },
   {
-    id: 'team-battle',
-    type: 'TEAM_BATTLE',
-    title: 'Face-Off: Team-Wettkampf',
-    description: 'Welches Team macht die besten Fotos? Tretet als Teams gegeneinander an!',
-    icon: 'swords',
+    id: 'filter-roulette',
+    type: 'FILTER_ROULETTE',
+    title: 'Filter-Roulette',
+    description: 'Mach ein Selfie — ein zufälliger KI-Effekt wird darauf angewendet! Überraschung!',
+    icon: 'sparkles',
     category: 'game',
-    difficulty: 'medium',
+    difficulty: 'easy',
     gameConfig: {
-      teams: [
-        { name: 'Team A', color: '#ef4444' },
-        { name: 'Team B', color: '#3b82f6' },
-      ],
-      scoringMode: 'vote',
-      roundDurationMinutes: 10,
+      filters: ['oil-painting', 'pop-art', 'cartoon', 'vintage', 'neon-glow', 'anime'],
+      selfieRequired: true,
+      randomFilter: true,
     },
-    tags: ['competitive', 'team', 'fun'],
+    tags: ['creative', 'selfie', 'surprise'],
   },
   {
     id: 'cover-shoot',

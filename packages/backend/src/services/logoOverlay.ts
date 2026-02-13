@@ -57,6 +57,108 @@ export async function addLogoOverlay(imageBuffer: Buffer): Promise<Buffer> {
 }
 
 /**
+ * Add gästefotos.com branding overlay to the bottom of an image.
+ * Used for non-adFree tier downloads/shares: logo + event hashtag.
+ * This turns every shared photo into free advertising.
+ */
+export async function addBrandingOverlay(
+  imageBuffer: Buffer,
+  options?: { hashtag?: string; eventTitle?: string }
+): Promise<Buffer> {
+  try {
+    const metadata = await sharp(imageBuffer).metadata();
+    const imgWidth = metadata.width || 1920;
+    const imgHeight = metadata.height || 1080;
+
+    // Bar height: ~4% of image height, min 28px, max 60px
+    const barHeight = Math.max(28, Math.min(Math.round(imgHeight * 0.04), 60));
+    const fontSize = Math.round(barHeight * 0.5);
+    const smallFontSize = Math.round(fontSize * 0.85);
+
+    const hashtagText = options?.hashtag || '#gästefotos';
+    // Escape XML special characters
+    const safeHashtag = hashtagText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    const barSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${imgWidth}" height="${barHeight}" viewBox="0 0 ${imgWidth} ${barHeight}">
+      <rect x="0" y="0" width="${imgWidth}" height="${barHeight}" fill="rgba(0,0,0,0.55)"/>
+      <text x="12" y="${barHeight * 0.65}" font-family="system-ui, -apple-system, sans-serif" font-size="${fontSize}" font-weight="700" fill="white">
+        📸 gästefotos.com
+      </text>
+      <text x="${imgWidth - 12}" y="${barHeight * 0.65}" font-family="system-ui, -apple-system, sans-serif" font-size="${smallFontSize}" font-weight="600" fill="rgba(255,255,255,0.85)" text-anchor="end">
+        ${safeHashtag}
+      </text>
+    </svg>`;
+
+    const barPng = await sharp(Buffer.from(barSvg))
+      .png()
+      .toBuffer();
+
+    return sharp(imageBuffer)
+      .composite([{
+        input: barPng,
+        gravity: 'south',
+        top: imgHeight - barHeight,
+        left: 0,
+      }])
+      .jpeg({ quality: 90 })
+      .toBuffer();
+  } catch (err) {
+    logger.warn('brandingOverlay: Failed to add branding, returning original', {
+      error: (err as Error).message,
+    });
+    return imageBuffer;
+  }
+}
+
+/**
+ * Add custom branding overlay for premium/ad-free tiers.
+ * Uses host's custom hashtag and optionally their logo.
+ */
+export async function addCustomBrandingOverlay(
+  imageBuffer: Buffer,
+  options: { hashtag: string; logoUrl?: string }
+): Promise<Buffer> {
+  try {
+    const metadata = await sharp(imageBuffer).metadata();
+    const imgWidth = metadata.width || 1920;
+    const imgHeight = metadata.height || 1080;
+
+    const barHeight = Math.max(28, Math.min(Math.round(imgHeight * 0.04), 60));
+    const fontSize = Math.round(barHeight * 0.55);
+
+    const safeHashtag = options.hashtag.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    const barSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${imgWidth}" height="${barHeight}" viewBox="0 0 ${imgWidth} ${barHeight}">
+      <rect x="0" y="0" width="${imgWidth}" height="${barHeight}" fill="rgba(0,0,0,0.45)"/>
+      <text x="${imgWidth / 2}" y="${barHeight * 0.65}" font-family="system-ui, -apple-system, sans-serif" font-size="${fontSize}" font-weight="700" fill="white" text-anchor="middle">
+        ${safeHashtag}
+      </text>
+    </svg>`;
+
+    const barPng = await sharp(Buffer.from(barSvg))
+      .png()
+      .toBuffer();
+
+    return sharp(imageBuffer)
+      .composite([{
+        input: barPng,
+        gravity: 'south',
+        top: imgHeight - barHeight,
+        left: 0,
+      }])
+      .jpeg({ quality: 90 })
+      .toBuffer();
+  } catch (err) {
+    logger.warn('customBrandingOverlay: Failed to add branding, returning original', {
+      error: (err as Error).message,
+    });
+    return imageBuffer;
+  }
+}
+
+/**
  * Add a "DEMO" watermark across the center of an image (for demo mosaic walls).
  */
 export async function addDemoWatermark(imageBuffer: Buffer): Promise<Buffer> {
