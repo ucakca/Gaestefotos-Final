@@ -33,6 +33,8 @@ import {
   Code2,
   Presentation,
   MessageSquare,
+  Shield,
+  ToggleLeft,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -79,6 +81,7 @@ const navigation: NavGroup[] = [
       { name: 'Embed Code', href: '/manage/embed', icon: Code2 },
       { name: 'Slideshow', href: '/manage/slideshow', icon: Presentation },
       { name: 'SMS Sharing', href: '/manage/sms', icon: MessageSquare },
+      { name: 'Feature Flags', href: '/feature-flags', icon: ToggleLeft },
     ],
   },
   {
@@ -88,6 +91,7 @@ const navigation: NavGroup[] = [
       { name: 'Health', href: '/system/health', icon: Server },
       { name: 'Logs', href: '/system/logs', icon: FileText },
       { name: 'AI Analyse', href: '/system/ai-analyse', icon: Bot },
+      { name: 'Rate Limits', href: '/system/rate-limits', icon: Shield },
     ],
   },
   {
@@ -104,6 +108,7 @@ const navigation: NavGroup[] = [
       { name: 'Allgemein', href: '/settings/general', icon: Settings },
       { name: 'API Keys', href: '/settings/api-keys', icon: KeyRound },
       { name: 'Maintenance', href: '/settings/maintenance', icon: Wrench },
+      { name: 'Theme', href: '/settings/theme', icon: Palette },
       { name: 'Woo Inbox', href: '/settings/woo', icon: ShoppingCart },
     ],
   },

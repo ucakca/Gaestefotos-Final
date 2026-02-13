@@ -232,6 +232,58 @@ export const adminAuthLimiter: any = rateLimit({
   legacyHeaders: false,
 });
 
+// SMS sending limiter — prevent abuse of paid Twilio API
+export const smsLimiter: any = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 Minuten
+  max: devMultiplier(30), // 30 SMS pro 15 Min pro IP in prod
+  message: 'Zu viele SMS-Anfragen, bitte versuchen Sie es später erneut.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    logRateLimitHit('sms:send', req);
+    res.status(429).json({ error: 'Zu viele SMS-Anfragen, bitte versuchen Sie es später erneut.' });
+  },
+});
+
+// Payment session limiter — prevent payment spam
+export const paymentLimiter: any = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: devMultiplier(20), // 20 Payment-Sessions pro 15 Min pro IP
+  message: 'Zu viele Zahlungsanfragen, bitte versuchen Sie es später erneut.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    logRateLimitHit('payment:session', req);
+    res.status(429).json({ error: 'Zu viele Zahlungsanfragen, bitte versuchen Sie es später erneut.' });
+  },
+});
+
+// Lead creation limiter — prevent spam lead injection
+export const leadLimiter: any = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: devMultiplier(50), // 50 Leads pro 15 Min pro IP
+  message: 'Zu viele Anfragen, bitte versuchen Sie es später erneut.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    logRateLimitHit('lead:create', req);
+    res.status(429).json({ error: 'Zu viele Anfragen, bitte versuchen Sie es später erneut.' });
+  },
+});
+
+// AI / Booth Games limiter — expensive API calls
+export const aiFeatureLimiter: any = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 Minuten
+  max: devMultiplier(15), // 15 AI calls pro 5 Min pro IP
+  message: 'Zu viele KI-Anfragen, bitte versuchen Sie es später erneut.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    logRateLimitHit('ai:feature', req);
+    res.status(429).json({ error: 'Zu viele KI-Anfragen, bitte versuchen Sie es später erneut.' });
+  },
+});
+
 
 
 

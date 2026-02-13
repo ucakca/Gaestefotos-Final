@@ -61,6 +61,31 @@ export interface EventFeaturesConfig {
   moderationRequired: boolean;
   allowDownloads: boolean;
   mode?: 'STANDARD' | 'MODERATION' | 'COLLECT' | 'VIEW_ONLY';
+  // Extended feature flags (from PackageDefinition / Feature Gate)
+  allowVideoUpload?: boolean;
+  allowStories?: boolean;
+  allowPasswordProtect?: boolean;
+  allowGuestbook?: boolean;
+  allowZipDownload?: boolean;
+  allowBulkOperations?: boolean;
+  allowLiveWall?: boolean;
+  allowFaceSearch?: boolean;
+  allowGuestlist?: boolean;
+  allowFullInvitation?: boolean;
+  allowCoHosts?: boolean;
+  allowMosaicWall?: boolean;
+  allowMosaicPrint?: boolean;
+  allowMosaicExport?: boolean;
+  allowBoothGames?: boolean;
+  allowAiEffects?: boolean;
+  allowAiFaceSwitch?: boolean;
+  allowAiBgRemoval?: boolean;
+  allowSmsSharing?: boolean;
+  allowEmailSharing?: boolean;
+  allowGalleryEmbed?: boolean;
+  allowSlideshow?: boolean;
+  allowLeadCollection?: boolean;
+  isAdFree?: boolean;
 }
 
 export const DEFAULT_EVENT_FEATURES_CONFIG: EventFeaturesConfig = {
@@ -117,7 +142,7 @@ export interface Photo {
   url?: string;
   uploadedBy?: string | null;
   isStoryOnly?: boolean;
-  status: 'approved' | 'pending' | 'deleted';
+  status: 'APPROVED' | 'PENDING' | 'REJECTED' | 'approved' | 'pending' | 'deleted';
   createdAt: Date;
   // Populated relations from API
   event?: {

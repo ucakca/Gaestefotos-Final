@@ -1555,23 +1555,28 @@ enum AiProviderType {
 // ─── SUPPLY OF LEADS (#3) ───────────────────────────────────────────────────
 
 model Lead {
-  id            String    @id @default(uuid())
-  eventId       String
-  partnerId     String?
-  name          String?
-  email         String?
-  phone         String?
-  source        LeadSource
-  consentGiven  Boolean   @default(false)
-  metadata      Json?
-  exportedAt    DateTime?
-  createdAt     DateTime  @default(now())
-  event         Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  id               String    @id @default(uuid())
+  eventId          String
+  partnerId        String?
+  name             String?
+  email            String?
+  phone            String?
+  company          String?
+  source           LeadSource
+  consentGiven     Boolean   @default(false)
+  marketingConsent Boolean   @default(false)
+  consentTimestamp  DateTime?
+  photoId          String?
+  metadata         Json?
+  exportedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  event            Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([eventId])
   @@index([partnerId])
   @@index([createdAt])
   @@index([source])
+  @@index([email])
   @@map("leads")
 }
 
@@ -2111,23 +2116,4 @@ enum VideoJobStatus {
   CANCELLED
 }
 
-// ─── LEAD COLLECTION ───────────────────────────────────────────────────────
-
-model EventLead {
-  id              String          @id @default(uuid())
-  eventId         String
-  name            String?
-  email           String?
-  phone           String?
-  company         String?
-  marketingConsent Boolean        @default(false)
-  consentTimestamp DateTime?
-  source          String          @default("photo_download") // photo_download, booth, gallery
-  photoId         String?
-  metadata        Json?           @default("{}")
-  createdAt       DateTime        @default(now())
-
-  @@index([eventId])
-  @@index([email])
-  @@map("event_leads")
-}
+// EventLead model removed — merged into Lead model above

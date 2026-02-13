@@ -193,7 +193,7 @@ export async function consumeCredits(
   }
 
   const balance = await getOrCreateCreditBalance(userId);
-  
+
   if (balance.balance < cost) {
     return {
       success: false,
@@ -202,13 +202,28 @@ export async function consumeCredits(
     };
   }
 
-  const updated = await prisma.creditBalance.update({
-    where: { userId },
-    data: {
-      balance: { decrement: cost },
-      totalConsumed: { increment: cost },
-    },
-  });
+  // Atomic update: only decrement if balance is still sufficient (prevents race condition)
+  const rowsAffected = await prisma.$executeRaw`
+    UPDATE "credit_balances"
+    SET "balance" = "balance" - ${cost},
+        "totalConsumed" = "totalConsumed" + ${cost},
+        "updatedAt" = NOW()
+    WHERE "userId" = ${userId}
+      AND "balance" >= ${cost}
+  `;
+
+  if (rowsAffected === 0) {
+    // Another concurrent request consumed the credits first
+    const refreshed = await getOrCreateCreditBalance(userId);
+    return {
+      success: false,
+      remainingBalance: refreshed.balance,
+      error: `Nicht genügend Credits. Benötigt: ${cost}, Verfügbar: ${refreshed.balance}`,
+    };
+  }
+
+  const updated = await prisma.creditBalance.findUnique({ where: { userId } });
+  const remainingBalance = updated?.balance ?? 0;
 
   await prisma.creditTransaction.create({
     data: {
@@ -221,9 +236,9 @@ export async function consumeCredits(
     },
   });
 
-  logger.info('Credits consumed', { userId, feature, cost, remaining: updated.balance });
+  logger.info('Credits consumed', { userId, feature, cost, remaining: remainingBalance });
 
-  return { success: true, remainingBalance: updated.balance };
+  return { success: true, remainingBalance };
 }
 
 /**

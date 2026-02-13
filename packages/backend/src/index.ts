@@ -90,7 +90,7 @@ import spinnerRoutes from './routes/spinner';
 import drawbotRoutes from './routes/drawbot';
 import videoJobsRoutes from './routes/videoJobs';
 
-import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter } from './middleware/rateLimit';
+import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter, smsLimiter, paymentLimiter, leadLimiter, aiFeatureLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
 import { storageService } from './services/storage';
 import { startRetentionPurgeWorker } from './services/retentionPurge';
@@ -606,20 +606,20 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/admin/ai', adminAiAnalysisRoutes);
 app.use('/api/admin/ai-providers', adminAiProvidersRoutes);
 app.use('/api/admin/credits', adminCreditsRoutes);
-app.use('/api/sms', smsShareRoutes);
+app.use('/api/sms', smsLimiter, smsShareRoutes);
 app.use('/api', galleryEmbedRoutes);
 app.use('/api/slideshow', slideshowRoutes);
-app.use('/api/style-transfer', styleTransferRoutes);
-app.use('/api/booth-games', boothGamesRoutes);
+app.use('/api/style-transfer', aiFeatureLimiter, styleTransferRoutes);
+app.use('/api/booth-games', aiFeatureLimiter, boothGamesRoutes);
 app.use('/api/events', gamificationRoutes); // Gamification: /api/events/:eventId/achievements, leaderboard
 app.use('/api/hardware', hardwareRoutes); // Hardware: /api/hardware/*
-app.use('/api/leads', leadsRoutes);
+app.use('/api/leads', leadLimiter, leadsRoutes);
 app.use('/api/assets', assetsRoutes);
 app.use('/api/booth-templates', boothTemplatesRoutes);
 app.use('/api/graffiti', graffitiRoutes);
 app.use('/api/workflows', workflowsRoutes);
 app.use('/api', downloadsRoutes); // Bulk download ZIP: /api/events/:eventId/download/zip
-app.use('/api', paymentsRoutes); // Payment per Session: /api/events/:eventId/payment-sessions
+app.use('/api', paymentLimiter, paymentsRoutes); // Payment per Session: /api/events/:eventId/payment-sessions
 app.use('/api', spinnerRoutes); // 360° Spinner: /api/events/:eventId/spinner
 app.use('/api', drawbotRoutes); // Drawbot: /api/events/:eventId/drawbot
 app.use('/api', videoJobsRoutes); // Video/GIF/Boomerang: /api/events/:eventId/video-jobs
