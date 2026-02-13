@@ -25,7 +25,8 @@ export type FeatureKey =
   | 'adFree'
   | 'mosaicWall'
   | 'mosaicPrint'
-  | 'mosaicExport';
+  | 'mosaicExport'
+  | 'boothGames';
 
 // Limit Keys die geprüft werden können
 export type LimitKey =
@@ -52,6 +53,7 @@ const featureToFieldMap: Record<FeatureKey, string> = {
   mosaicWall: 'allowMosaicWall',
   mosaicPrint: 'allowMosaicPrint',
   mosaicExport: 'allowMosaicExport',
+  boothGames: 'allowBoothGames',
 };
 
 // Features die im Free-Tier immer aktiviert sind
@@ -241,6 +243,7 @@ export async function getEventFeatures(eventId: string): Promise<{
     mosaicWall: false,
     mosaicPrint: false,
     mosaicExport: false,
+    boothGames: false,
   };
   
   const limits: Record<LimitKey, number | null> = {

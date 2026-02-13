@@ -238,6 +238,7 @@ model PackageDefinition {
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   storageDurationDays  Int?
+  allowBoothGames      Boolean               @default(false)
   allowBulkOperations  Boolean               @default(false)
   allowCoHosts         Boolean               @default(false)
   allowFaceSearch      Boolean               @default(false)

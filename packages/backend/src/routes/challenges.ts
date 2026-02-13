@@ -4,7 +4,7 @@ import prisma from '../config/database';
 import { authMiddleware, AuthRequest, optionalAuthMiddleware, hasEventAccess, hasEventManageAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
 import { getErrorMessage } from '../utils/typeHelpers';
-import { assertWithinLimit } from '../services/featureGate';
+import { assertWithinLimit, assertFeatureEnabled, isFeatureEnabled } from '../services/featureGate';
 
 const router = Router();
 
@@ -91,7 +91,18 @@ router.get(
       },
     });
 
-    res.json({ challenges });
+    // Filter out game-type challenges for guests if boothGames feature is not enabled
+    // Managers always see all challenges for management purposes
+    let filtered = challenges;
+    if (!isManager) {
+      const hasBoothGames = await isFeatureEnabled(eventId, 'boothGames');
+      if (!hasBoothGames) {
+        const GAME_TYPES = ['PHOTOBOMB', 'STATUE', 'TEAM_BATTLE', 'COVER_SHOOT'];
+        filtered = challenges.filter((c) => !GAME_TYPES.includes(c.type));
+      }
+    }
+
+    res.json({ challenges: filtered });
   } catch (error) {
     logger.error('Fehler beim Abrufen der Challenges', { message: getErrorMessage(error) });
     res.status(500).json({ error: 'Interner Serverfehler' });
@@ -658,6 +669,22 @@ router.post(
       const template = getTemplateById(templateId);
       if (!template) {
         return res.status(404).json({ error: 'Template nicht gefunden' });
+      }
+
+      // Game-type templates require boothGames feature
+      if (template.category === 'game') {
+        try {
+          await assertFeatureEnabled(eventId, 'boothGames');
+        } catch (err: any) {
+          if (err.code === 'FEATURE_NOT_AVAILABLE') {
+            return res.status(403).json({
+              error: err.message,
+              code: 'FEATURE_NOT_AVAILABLE',
+              requiredUpgrade: true,
+            });
+          }
+          throw err;
+        }
       }
 
       // Check challenge limit
