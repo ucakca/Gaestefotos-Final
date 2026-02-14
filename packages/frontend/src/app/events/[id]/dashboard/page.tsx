@@ -605,7 +605,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
                   </Link>
                   <button
                     onClick={() => setShowQRModal(false)}
-                    className="py-2 px-4 bg-background text-foreground rounded-lg font-medium hover:bg-app-border transition-colors"
+                    className="py-2 px-4 bg-background text-foreground rounded-lg font-medium hover:bg-border transition-colors"
                   >
                     Schließen
                   </button>
@@ -623,7 +623,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-app-fg text-white rounded-full text-sm font-medium shadow-lg"
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-foreground text-white rounded-full text-sm font-medium shadow-lg"
           >
             {copyFeedback}
           </motion.div>
@@ -986,7 +986,7 @@ function OverviewTab({
                   const content = (
                     <>
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                        step.completed ? 'bg-green-500 text-white' : step.current ? 'bg-amber-500 text-white' : 'bg-app-border text-muted-foreground'
+                        step.completed ? 'bg-green-500 text-white' : step.current ? 'bg-amber-500 text-white' : 'bg-border text-muted-foreground'
                       }`}>
                         {step.completed ? <Check className="w-4 h-4" /> : index + 1}
                       </div>
@@ -1222,7 +1222,7 @@ function OverviewTab({
           </Link>
         </div>
         {invitations.length > 0 ? (
-          <div className="divide-y divide-app-border">
+          <div className="divide-y divide-border">
             {invitations.slice(0, 3).map((inv: any) => (
               <div key={inv.id} className="px-4 py-3 flex items-center justify-between">
                 <div>
@@ -1231,7 +1231,7 @@ function OverviewTab({
                     {inv.opens || 0} Aufrufe • RSVP: {inv?.rsvp?.yes || 0}/{inv?.rsvp?.no || 0}/{inv?.rsvp?.maybe || 0}
                   </div>
                 </div>
-                <div className={`w-2 h-2 rounded-full ${inv.isActive !== false ? 'bg-green-500' : 'bg-app-border'}`} />
+                <div className={`w-2 h-2 rounded-full ${inv.isActive !== false ? 'bg-green-500' : 'bg-border'}`} />
               </div>
             ))}
           </div>
@@ -1264,10 +1264,10 @@ function OverviewTab({
           </button>
         </div>
         {cohosts.length > 0 ? (
-          <div className="divide-y divide-app-border">
+          <div className="divide-y divide-border">
             {cohosts.map((cohost: any) => (
               <div key={cohost.id} className="px-4 py-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-app-border flex items-center justify-center text-muted-foreground text-xs font-medium">
+                <div className="w-8 h-8 rounded-full bg-border flex items-center justify-center text-muted-foreground text-xs font-medium">
                   {cohost.user?.email?.charAt(0).toUpperCase() || '?'}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -1508,7 +1508,7 @@ function GalleryTab({
             <button 
               key={photo.id || i}
               onClick={() => setLightboxPhoto(photo)}
-              className="aspect-square relative bg-app-border group cursor-pointer overflow-hidden"
+              className="aspect-square relative bg-border group cursor-pointer overflow-hidden"
             >
               <img
                 src={photo.thumbnailUrl || photo.url || '/placeholder.jpg'}
@@ -1869,7 +1869,7 @@ function EventStatusCard({
               onChange={onToggleActive}
               className="sr-only peer" 
             />
-            <div className="w-11 h-6 bg-app-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+            <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
           </label>
         </div>
         <div className="flex items-center gap-2 mt-1 ml-6">

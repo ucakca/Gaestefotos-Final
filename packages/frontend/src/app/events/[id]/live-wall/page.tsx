@@ -283,7 +283,7 @@ export default function LiveWallPage() {
   return (
     <div
       ref={containerRef}
-      className={`min-h-screen ${viewMode === 'slideshow' ? 'bg-black' : 'bg-gradient-to-br from-app-bg via-app-card to-app-bg'}`}
+      className={`min-h-screen ${viewMode === 'slideshow' ? 'bg-black' : 'bg-gradient-to-br from-background via-card to-background'}`}
     >
       {/* Header */}
       <div className={`sticky top-0 z-50 backdrop-blur-sm border-b shadow-sm ${

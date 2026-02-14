@@ -130,7 +130,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-lg border border-border bg-card px-4 py-3 text-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
+              className="w-full rounded-lg border border-border bg-card px-4 py-3 text-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15"
               placeholder="deine@email.com"
               autoComplete="email"
             />
@@ -148,7 +148,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded-lg border border-border bg-card px-4 py-3 pr-12 text-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
+                className="w-full rounded-lg border border-border bg-card px-4 py-3 pr-12 text-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15"
                 placeholder="••••••••"
                 autoComplete="current-password"
               />
@@ -183,7 +183,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full text-app-bg py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-app-accent hover:opacity-90"
+            className="w-full text-background py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-app-accent hover:opacity-90"
           >
             <motion.span whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="block">
               {loading ? 'Anmelden...' : 'Anmelden'}

@@ -161,7 +161,7 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
 
                     {/* Progress Bar */}
                     {file.uploading && (
-                      <div className="mt-2 w-full bg-app-border rounded-full h-2">
+                      <div className="mt-2 w-full bg-border rounded-full h-2">
                         <motion.div
                           className="h-2 rounded-full bg-app-accent"
                           initial={{ width: 0 }}
@@ -183,7 +183,7 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                         animate={{ scale: 1 }}
                         className="w-8 h-8 rounded-full bg-status-success flex items-center justify-center"
                       >
-                        <Check className="w-5 h-5 text-app-bg" />
+                        <Check className="w-5 h-5 text-background" />
                       </motion.div>
                     )}
 

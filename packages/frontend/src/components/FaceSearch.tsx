@@ -388,7 +388,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                               alt="Gefundenes Foto"
                               className="w-full aspect-square object-cover rounded"
                             />
-                            <div className="absolute bottom-0 left-0 right-0 bg-app-fg/60 text-app-bg text-xs p-1 text-center">
+                            <div className="absolute bottom-0 left-0 right-0 bg-foreground/60 text-background text-xs p-1 text-center">
                               {Math.round(result.similarity * 100)}% ähnlich
                             </div>
                           </div>

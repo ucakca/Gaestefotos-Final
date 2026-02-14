@@ -54,7 +54,7 @@ export default function Step1Template({
               onClick={() => onFormatChange(f)}
               className={`flex-1 py-3 px-6 rounded-lg font-semibold text-sm transition-all ${
                 format === f
-                  ? 'bg-app-accent text-app-bg shadow-lg'
+                  ? 'bg-app-accent text-background shadow-lg'
                   : 'bg-background border border-border text-foreground hover:border-app-accent'
               }`}
             >
@@ -100,7 +100,7 @@ export default function Step1Template({
               }`}
             >
               {/* Template Preview */}
-              <div className="w-full h-full bg-gradient-to-br from-app-bg to-app-card flex items-center justify-center">
+              <div className="w-full h-full bg-gradient-to-br from-background to-card flex items-center justify-center">
                 <img
                   src={`/qr-templates/${template.slug}/${format}-preview.jpg`}
                   alt={template.label}
@@ -124,13 +124,13 @@ export default function Step1Template({
                   animate={{ scale: 1 }}
                   className="absolute top-2 right-2 w-7 h-7 bg-app-accent rounded-full flex items-center justify-center shadow-lg"
                 >
-                  <Check className="w-4 h-4 text-app-bg" />
+                  <Check className="w-4 h-4 text-background" />
                 </motion.div>
               )}
 
               {/* Template Label */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-app-fg/90 to-transparent p-2">
-                <p className="text-xs font-medium text-app-bg text-center">{template.label}</p>
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-foreground/90 to-transparent p-2">
+                <p className="text-xs font-medium text-background text-center">{template.label}</p>
               </div>
             </motion.button>
           );

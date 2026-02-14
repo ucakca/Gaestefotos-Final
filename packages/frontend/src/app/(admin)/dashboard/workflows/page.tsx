@@ -336,7 +336,7 @@ export default function WorkflowsAdminPage() {
                       const StepIcon = info?.icon || Workflow;
                       return (
                         <div key={idx} className="flex items-center gap-1 flex-shrink-0">
-                          {idx > 0 && <div className="w-4 h-px bg-app-border" />}
+                          {idx > 0 && <div className="w-4 h-px bg-border" />}
                           <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-app-hover text-xs">
                             <StepIcon className={`w-3 h-3 ${info?.color || ''}`} />
                             <span className="text-foreground">{step.label}</span>

@@ -199,7 +199,7 @@ export default function LeadsPage() {
                       <th className="text-left px-4 py-3 font-medium text-muted-foreground">Datum</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-app-border">
+                  <tbody className="divide-y divide-border">
                     {leads.map((lead) => {
                       const info = SOURCE_LABELS[lead.source] || { label: lead.source, color: 'bg-gray-100 text-gray-600' };
                       return (

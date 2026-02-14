@@ -260,7 +260,7 @@ export default function InstagramUploadButton({
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-foreground truncate">{file.file.name}</p>
                       {file.uploading && (
-                        <div className="mt-1 w-full bg-app-border rounded-full h-1.5">
+                        <div className="mt-1 w-full bg-border rounded-full h-1.5">
                           <motion.div
                             className="h-1.5 rounded-full bg-app-accent"
                             initial={{ width: 0 }}
@@ -279,7 +279,7 @@ export default function InstagramUploadButton({
                           animate={{ scale: 1 }}
                           className="w-6 h-6 rounded-full bg-app-accent flex items-center justify-center"
                         >
-                          <Check className="w-4 h-4 text-app-bg" />
+                          <Check className="w-4 h-4 text-background" />
                         </motion.div>
                       )}
                       {!file.uploading && !file.success && (

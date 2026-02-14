@@ -412,8 +412,8 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
               className="flex items-start gap-3"
             >
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-app-accent to-app-fg flex items-center justify-center">
-                  <User className="w-5 h-5 text-app-bg" />
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-app-accent to-foreground flex items-center justify-center">
+                  <User className="w-5 h-5 text-background" />
                 </div>
               </div>
               <div className="flex-1 max-w-[75%]">
@@ -424,7 +424,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                         value={editedHostMessage}
                         onChange={(e) => setEditedHostMessage(e.target.value)}
                         rows={3}
-                        className="w-full px-2 py-1 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-app-fg/30 text-sm resize-none bg-card text-foreground"
+                        className="w-full px-2 py-1 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-foreground/30 text-sm resize-none bg-card text-foreground"
                         placeholder="Host-Nachricht..."
                         maxLength={2000}
                       />
@@ -482,7 +482,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
         <div className="p-4 space-y-4">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-app-fg"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
           </div>
         ) : (
           <>
@@ -503,7 +503,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                   className="flex items-start gap-3 justify-end"
                 >
                   <div className="flex-1 max-w-[75%] flex flex-col items-end">
-                    <div className="bg-app-accent text-app-bg rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm">
+                    <div className="bg-app-accent text-background rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-semibold text-sm">{entry.authorName}</span>
                       </div>
@@ -549,8 +549,8 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                   </div>
 
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-app-accent to-app-fg flex items-center justify-center">
-                      <User className="w-5 h-5 text-app-bg" />
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-app-accent to-foreground flex items-center justify-center">
+                      <User className="w-5 h-5 text-background" />
                     </div>
                   </div>
                 </motion.div>
@@ -725,7 +725,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
               className="w-full py-3 px-4 font-medium flex items-center justify-center gap-2 disabled:cursor-not-allowed"
             >
               {submitting ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-app-bg"></div>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-background"></div>
               ) : (
                 <>
                   <Send className="w-5 h-5" />
@@ -739,7 +739,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       {/* Image Lightbox Modal */}
       <Dialog open={selectedImage !== null} onOpenChange={(open) => (open ? null : setSelectedImage(null))}>
         {selectedImage !== null && (
-          <DialogContent className="bg-app-fg/75 max-w-4xl w-full max-h-[90vh] p-0">
+          <DialogContent className="bg-foreground/75 max-w-4xl w-full max-h-[90vh] p-0">
             <DialogTitle className="sr-only">Bild Vorschau</DialogTitle>
             <div className="relative w-full h-full flex items-center justify-center p-4">
               <img src={selectedImage} alt="Vollbild" className="max-w-full max-h-full object-contain rounded-lg" />

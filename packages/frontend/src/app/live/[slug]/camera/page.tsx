@@ -115,14 +115,14 @@ export default function CameraPage() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-app-fg flex items-center justify-center">
-        <div className="text-app-bg">Event nicht gefunden</div>
+      <div className="min-h-screen bg-foreground flex items-center justify-center">
+        <div className="text-background">Event nicht gefunden</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-app-fg text-app-bg relative">
+    <div className="min-h-screen bg-foreground text-background relative">
       {/* Back Button */}
       <MotionIconButton
         initial={{ opacity: 0 }}
@@ -133,7 +133,7 @@ export default function CameraPage() {
         size="lg"
         aria-label="Zurück"
         title="Zurück"
-        className="absolute top-4 left-4 z-20 p-2 bg-app-fg/50 rounded-full"
+        className="absolute top-4 left-4 z-20 p-2 bg-foreground/50 rounded-full"
       />
 
       {/* Camera View */}
@@ -147,12 +147,12 @@ export default function CameraPage() {
             className="relative w-full h-screen"
           >
             {/* Video Stream Placeholder */}
-            <div className="w-full h-full bg-app-fg flex items-center justify-center">
+            <div className="w-full h-full bg-foreground flex items-center justify-center">
               <div className="text-center">
-                <Camera className="w-24 h-24 mx-auto mb-4 text-app-bg/60" />
-                <p className="text-app-bg/70 mb-4">Kamera-Stream</p>
+                <Camera className="w-24 h-24 mx-auto mb-4 text-background/60" />
+                <p className="text-background/70 mb-4">Kamera-Stream</p>
                 {uploadError && (
-                  <div className="mb-4 px-4 py-2 rounded-lg bg-app-fg/50 border border-status-danger text-destructive text-sm max-w-xs mx-auto">
+                  <div className="mb-4 px-4 py-2 rounded-lg bg-foreground/50 border border-status-danger text-destructive text-sm max-w-xs mx-auto">
                     Fehler beim Upload: {uploadError}
                     {canRetry && !uploading && capturedPhoto && (
                       <div className="mt-2">
@@ -171,7 +171,7 @@ export default function CameraPage() {
 
                 {uploading && uploadProgress > 0 && (
                   <div className="mb-4 max-w-xs mx-auto">
-                    <div className="text-xs text-app-bg/80 mb-2">Upload: {uploadProgress}%</div>
+                    <div className="text-xs text-background/80 mb-2">Upload: {uploadProgress}%</div>
                     <div className="w-full bg-background/20 rounded-full h-2">
                       <div
                         className="bg-background h-2 rounded-full"
@@ -234,7 +234,7 @@ export default function CameraPage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setCapturedPhoto(null)}
-                className="px-6 py-3 bg-background/20 text-app-bg rounded-lg hover:bg-background/30"
+                className="px-6 py-3 bg-background/20 text-background rounded-lg hover:bg-background/30"
               >
                 Neu aufnehmen
               </MotionButton>
@@ -251,7 +251,7 @@ export default function CameraPage() {
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ repeat: Infinity, duration: 1 }}
-                      className="w-5 h-5 border-2 border-app-bg border-t-transparent rounded-full"
+                      className="w-5 h-5 border-2 border-background border-t-transparent rounded-full"
                     />
                     Hochladen...
                   </>
@@ -280,7 +280,7 @@ export default function CameraPage() {
                   transition={{ duration: 1, repeat: Infinity }}
                   className="w-32 h-32 bg-status-success rounded-full flex items-center justify-center"
                 >
-                  <Upload className="w-16 h-16 text-app-bg" />
+                  <Upload className="w-16 h-16 text-background" />
                 </motion.div>
               </motion.div>
             )}

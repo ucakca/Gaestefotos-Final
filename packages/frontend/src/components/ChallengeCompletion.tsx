@@ -280,8 +280,8 @@ export default function ChallengeCompletion({
                       className="text-center"
                     >
                       <Trophy className="w-20 h-20 text-status-warning mx-auto mb-4" />
-                      <h3 className="text-2xl font-bold text-app-bg mb-2">Challenge erfüllt!</h3>
-                      <p className="text-app-bg">🎉</p>
+                      <h3 className="text-2xl font-bold text-background mb-2">Challenge erfüllt!</h3>
+                      <p className="text-background">🎉</p>
                     </motion.div>
                   </motion.div>
                 )}
@@ -316,7 +316,7 @@ export default function ChallengeCompletion({
                     onChange={(e) => setUploaderName(e.target.value)}
                     placeholder="z.B. Max Mustermann"
                     required
-                    className="w-full rounded-lg border-2 border-app-accent bg-card px-4 py-3 font-medium text-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
+                    className="w-full rounded-lg border-2 border-app-accent bg-card px-4 py-3 font-medium text-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15"
                   />
                 </div>
 

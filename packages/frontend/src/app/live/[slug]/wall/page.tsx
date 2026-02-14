@@ -271,16 +271,16 @@ export default function LiveWallPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-app-fg">
-        <div className="text-app-bg text-lg">Laden...</div>
+      <div className="min-h-screen flex items-center justify-center bg-foreground">
+        <div className="text-background text-lg">Laden...</div>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-app-fg">
-        <div className="text-app-bg">Event nicht gefunden</div>
+      <div className="min-h-screen flex items-center justify-center bg-foreground">
+        <div className="text-background">Event nicht gefunden</div>
       </div>
     );
   }
@@ -290,9 +290,9 @@ export default function LiveWallPage() {
     : '';
 
   return (
-    <div className="min-h-screen bg-app-fg text-app-bg">
+    <div className="min-h-screen bg-foreground text-background">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 bg-app-fg/50 p-4 flex justify-between items-center">
+      <div className="absolute top-0 left-0 right-0 z-10 bg-foreground/50 p-4 flex justify-between items-center">
         <h1 className="text-2xl font-bold">{event.title}</h1>
         
         <div className="flex gap-2 items-center flex-wrap">
@@ -305,7 +305,7 @@ export default function LiveWallPage() {
                 className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                   viewMode === mode 
                     ? 'bg-background text-foreground' 
-                    : 'text-app-bg/70 hover:text-app-bg'
+                    : 'text-background/70 hover:text-background'
                 }`}
               >
                 {mode === 'grid' ? 'Grid' : 
@@ -353,8 +353,8 @@ export default function LiveWallPage() {
                     opacity: 1,
                     scale: 1,
                     boxShadow: newIds.has(photo.id)
-                      ? '0 0 0 3px color-mix(in_srgb,var(--app-bg) 65%, transparent)'
-                      : '0 0 0 0px color-mix(in_srgb,var(--app-bg) 0%, transparent)',
+                      ? '0 0 0 3px color-mix(in_srgb,var(--background) 65%, transparent)'
+                      : '0 0 0 0px color-mix(in_srgb,var(--background) 0%, transparent)',
                   }}
                   exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 0.25 }}
@@ -367,7 +367,7 @@ export default function LiveWallPage() {
                     className="w-full h-full object-cover"
                   />
                   ) : (
-                  <div className="w-full h-full flex items-center justify-center text-app-bg/60">
+                  <div className="w-full h-full flex items-center justify-center text-background/60">
                     Foto
                   </div>
                   )}
@@ -507,8 +507,8 @@ export default function LiveWallPage() {
           </AnimatePresence>
           
           {/* Photo count badge */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-app-fg/80 backdrop-blur px-6 py-3 rounded-full">
-            <span className="text-app-bg font-medium">{photos.length} Fotos</span>
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-foreground/80 backdrop-blur px-6 py-3 rounded-full">
+            <span className="text-background font-medium">{photos.length} Fotos</span>
           </div>
         </div>
       )}
@@ -537,13 +537,13 @@ export default function LiveWallPage() {
 
           {displayPhotos.length === 0 && (
             <div className="text-center">
-              <p className="text-2xl text-app-bg/70">Noch keine Fotos</p>
+              <p className="text-2xl text-background/70">Noch keine Fotos</p>
             </div>
           )}
 
           {/* Photo Counter */}
           {displayPhotos.length > 0 && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-app-fg/50 px-4 py-2 rounded">
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-foreground/50 px-4 py-2 rounded">
               {currentSlide + 1} / {displayPhotos.length}
             </div>
           )}

@@ -46,12 +46,12 @@ export default function StoryViewer({
       {hasSelection && (
         <DialogContent
           data-testid="story-viewer"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-app-fg/95 p-0"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/95 p-0"
         >
           <DialogTitle className="sr-only">Story Viewer</DialogTitle>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0" />
 
-          <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-4 pb-5 bg-gradient-to-b from-app-fg/80 via-app-fg/50 to-transparent">
+          <div className="absolute top-0 left-0 right-0 z-30 px-4 pt-4 pb-5 bg-gradient-to-b from-foreground/80 via-foreground/50 to-transparent">
             <div className="mx-auto w-full max-w-md">
               <div className="flex gap-1" data-testid="story-progress">
                 {stories.map((_: any, idx: number) => {
@@ -72,7 +72,7 @@ export default function StoryViewer({
               </div>
 
               <div className="mt-3 flex items-center justify-between">
-                <div className="min-w-0 text-app-bg/90 text-sm font-medium truncate">
+                <div className="min-w-0 text-background/90 text-sm font-medium truncate">
                   {(selectedStory?.photo?.uploadedBy as string)?.trim() || (selectedStory?.video?.uploadedBy as string)?.trim() || 'Story'}
                 </div>
                 <DialogClose asChild>
@@ -84,7 +84,7 @@ export default function StoryViewer({
                     data-testid="story-close"
                     aria-label="Schließen"
                     title="Schließen"
-                    className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-background/10 hover:bg-background/15 text-app-bg"
+                    className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-background/10 hover:bg-background/15 text-background"
                   />
                 </DialogClose>
               </div>
@@ -101,7 +101,7 @@ export default function StoryViewer({
                 data-testid="story-prev"
                 aria-label="Vorherige Story"
                 title="Vorherige Story"
-                className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-background/10 hover:bg-background/15 text-app-bg flex items-center justify-center"
+                className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-background/10 hover:bg-background/15 text-background flex items-center justify-center"
               />
               <IconButton
                 onClick={onNext}
@@ -111,7 +111,7 @@ export default function StoryViewer({
                 data-testid="story-next"
                 aria-label="Nächste Story"
                 title="Nächste Story"
-                className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-background/10 hover:bg-background/15 text-app-bg flex items-center justify-center"
+                className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-background/10 hover:bg-background/15 text-background flex items-center justify-center"
               />
             </>
           )}

@@ -893,7 +893,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                             className={`p-2 rounded-lg border text-center transition-all ${
                               design.format === f.key
                                 ? 'border-primary bg-primary/10 text-primary'
-                                : 'border-border hover:border-app-muted'
+                                : 'border-border hover:border-muted-foreground'
                             }`}
                           >
                             <div className="text-sm font-medium">{f.label}</div>
@@ -932,7 +932,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                           className={`relative aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all ${
                             design.templateSlug === t.slug
                               ? 'border-primary ring-2 ring-primary/20'
-                              : 'border-border hover:border-app-muted'
+                              : 'border-border hover:border-muted-foreground'
                           }`}
                         >
                           {/* Template Preview - use static SVG thumbnail */}
@@ -1115,7 +1115,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                             className={`w-12 h-12 rounded-lg border text-xl transition-all ${
                               design.qrDotStyle === style.key
                                 ? 'border-primary bg-primary/10 text-primary'
-                                : 'border-border text-muted-foreground hover:border-app-muted'
+                                : 'border-border text-muted-foreground hover:border-muted-foreground'
                             }`}
                             title={style.label}
                           >
@@ -1136,7 +1136,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                             className={`w-12 h-12 rounded-lg border text-xl transition-all ${
                               design.qrCornerStyle === style.key
                                 ? 'border-primary bg-primary/10 text-primary'
-                                : 'border-border text-muted-foreground hover:border-app-muted'
+                                : 'border-border text-muted-foreground hover:border-muted-foreground'
                             }`}
                             title={style.label}
                           >
@@ -1213,7 +1213,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
           {/* ============================================================ */}
           {/* RIGHT PANEL: Preview - Full screen on mobile */}
           {/* ============================================================ */}
-          <div className="flex-1 lg:order-2 bg-gradient-to-br from-app-bg via-app-card to-app-bg flex flex-col min-h-screen lg:min-h-0">
+          <div className="flex-1 lg:order-2 bg-gradient-to-br from-background via-card to-background flex flex-col min-h-screen lg:min-h-0">
             
             {/* Mobile Header */}
             <div className="lg:hidden flex items-center justify-between p-3 border-b border-border bg-card/80 backdrop-blur-sm">
@@ -1449,7 +1449,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                     className={`p-2 rounded-lg border text-center transition-all ${
                       design.format === f.key
                         ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border hover:border-app-muted'
+                        : 'border-border hover:border-muted-foreground'
                     }`}
                   >
                     <div className="text-sm font-medium">{f.label}</div>

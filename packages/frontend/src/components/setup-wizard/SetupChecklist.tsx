@@ -39,7 +39,7 @@ export default function SetupChecklist({
       </div>
 
       {/* Steps List */}
-      <div className="divide-y divide-app-border/50">
+      <div className="divide-y divide-border/50">
         {phases.map((phase) => {
           const phaseSteps = SETUP_STEPS.filter(s => s.phase === phase);
           const phaseInfo = PHASE_INFO[phase];
@@ -84,7 +84,7 @@ export default function SetupChecklist({
                         ? 'bg-green-500'
                         : status === 'active'
                         ? 'bg-orange-500'
-                        : 'bg-app-border'
+                        : 'bg-border'
                     }`}>
                       <AnimatePresence mode="wait">
                         {status === 'completed' ? (

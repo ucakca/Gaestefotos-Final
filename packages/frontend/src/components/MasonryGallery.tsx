@@ -137,7 +137,7 @@ export default function MasonryGallery({
                 Foto
               </div>
             )}
-            <div className="absolute inset-0 bg-app-fg/0 group-hover:bg-app-fg/20 transition-opacity" />
+            <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/20 transition-opacity" />
           </motion.div>
         ))}
       </Masonry>
@@ -145,7 +145,7 @@ export default function MasonryGallery({
       {/* Lightbox with Swipe Support */}
       <Dialog open={selectedPhoto !== null} onOpenChange={(open) => (open ? null : closeLightbox())}>
         {selectedPhoto !== null && (
-          <DialogContent className="left-0 top-0 translate-x-0 translate-y-0 w-screen h-screen max-w-none bg-app-fg/90 border-0 p-4">
+          <DialogContent className="left-0 top-0 translate-x-0 translate-y-0 w-screen h-screen max-w-none bg-foreground/90 border-0 p-4">
             {/* Close Button */}
             <motion.button
               initial={{ opacity: 0 }}
@@ -154,7 +154,7 @@ export default function MasonryGallery({
               onClick={closeLightbox}
               aria-label="Schließen"
               title="Schließen"
-              className="absolute top-4 right-4 text-app-bg hover:text-app-bg/70 z-10"
+              className="absolute top-4 right-4 text-background hover:text-background/70 z-10"
             >
               <X className="w-8 h-8" />
             </motion.button>
@@ -169,7 +169,7 @@ export default function MasonryGallery({
                   onClick={prevPhoto}
                   aria-label="Vorheriges Foto"
                   title="Vorheriges Foto"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-app-bg hover:text-app-bg/70 z-10"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-background hover:text-background/70 z-10"
                 >
                   <ChevronLeft className="w-12 h-12" />
                 </motion.button>
@@ -180,7 +180,7 @@ export default function MasonryGallery({
                   onClick={nextPhoto}
                   aria-label="Nächstes Foto"
                   title="Nächstes Foto"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-app-bg hover:text-app-bg/70 z-10"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-background hover:text-background/70 z-10"
                 >
                   <ChevronRight className="w-12 h-12" />
                 </motion.button>
@@ -219,7 +219,7 @@ export default function MasonryGallery({
                 onClick={() => handleDownload(photos[selectedPhoto])}
                 aria-label="Download"
                 title="Download"
-                className="p-3 bg-app-fg/50 rounded-full text-app-bg hover:bg-app-fg/70"
+                className="p-3 bg-foreground/50 rounded-full text-background hover:bg-foreground/70"
               >
                 <Download className="w-6 h-6" />
               </motion.button>
@@ -229,7 +229,7 @@ export default function MasonryGallery({
                 onClick={() => handleShare(photos[selectedPhoto])}
                 aria-label="Teilen"
                 title="Teilen"
-                className="p-3 bg-app-fg/50 rounded-full text-app-bg hover:bg-app-fg/70"
+                className="p-3 bg-foreground/50 rounded-full text-background hover:bg-foreground/70"
               >
                 <Share2 className="w-6 h-6" />
               </motion.button>
@@ -241,7 +241,7 @@ export default function MasonryGallery({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute bottom-32 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full bg-app-fg/60 text-app-bg text-sm"
+                  className="absolute bottom-32 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full bg-foreground/60 text-background text-sm"
                 >
                   {copyFeedback}
                 </motion.div>
@@ -253,7 +253,7 @@ export default function MasonryGallery({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-app-bg text-sm"
+              className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-background text-sm"
             >
               {selectedPhoto + 1} / {photos.length}
             </motion.div>

@@ -301,7 +301,7 @@ export default function BottomNavigation({
               className="h-auto w-full bg-background hover:bg-card rounded-lg p-4 flex items-center gap-3 transition-colors"
             >
               <div className="w-10 h-10 rounded-full bg-app-accent flex items-center justify-center">
-                <Grid3x3 className="w-5 h-5 text-app-bg" />
+                <Grid3x3 className="w-5 h-5 text-background" />
               </div>
               <div>
                 <p className="font-medium text-foreground">Alle Fotos</p>
@@ -387,7 +387,7 @@ export default function BottomNavigation({
                   </div>
                 ) : loadingChallenges ? (
                   <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-app-fg mx-auto"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto"></div>
                     <p className="text-sm text-muted-foreground mt-2">Lade Challenges...</p>
                   </div>
                 ) : challenges.length === 0 ? (

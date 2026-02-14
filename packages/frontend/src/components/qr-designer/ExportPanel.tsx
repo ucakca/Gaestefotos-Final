@@ -144,7 +144,7 @@ export default function ExportPanel({
         <Button
           type="button"
           onClick={handleExportPdf}
-          className="w-full bg-app-fg text-app-bg hover:opacity-90"
+          className="w-full bg-foreground text-background hover:opacity-90"
           disabled={disabled || isExporting}
         >
           <FileText className="h-4 w-4" />

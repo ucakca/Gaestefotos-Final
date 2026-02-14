@@ -130,8 +130,8 @@ export default function InstagramGallery({
             )}
             
             {/* Hover overlay - Instagram style */}
-            <div className="absolute inset-0 bg-app-fg/0 group-hover:bg-app-fg/30 transition-opacity flex items-center justify-center">
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-4 text-app-bg">
+            <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/30 transition-opacity flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-4 text-background">
                 <div className="flex items-center gap-1">
                   <Heart className="w-5 h-5 fill-current" />
                   <span className="text-sm font-semibold">0</span>
@@ -202,7 +202,7 @@ export default function InstagramGallery({
           )}
 
           {/* Image Section */}
-          <div className="relative bg-app-fg flex-1 flex items-center justify-center min-h-[400px] md:min-h-[600px]">
+          <div className="relative bg-foreground flex-1 flex items-center justify-center min-h-[400px] md:min-h-[600px]">
             <AnimatePresence mode="wait">
               <motion.img
                 key={selectedPhoto}

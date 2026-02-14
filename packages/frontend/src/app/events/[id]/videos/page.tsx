@@ -767,7 +767,7 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                   handleVideoClick(video, e);
                 }}
                 className={`relative bg-card rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow ${
-                  selectedVideos.has(video.id) ? 'ring-2 ring-app-fg/20 shadow-lg' : ''
+                  selectedVideos.has(video.id) ? 'ring-2 ring-foreground/20 shadow-lg' : ''
                 }`}
               >
                 <div className="relative bg-background rounded-lg overflow-hidden">
@@ -782,11 +782,11 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                     >
                       <div className={`p-1.5 rounded-full shadow-lg transition-colors ${
                         selectedVideos.has(video.id)
-                          ? 'bg-app-fg'
+                          ? 'bg-foreground'
                           : 'bg-card/90 hover:bg-card'
                       }`}>
                         {selectedVideos.has(video.id) ? (
-                          <CheckSquare className="w-4 h-4 text-app-bg" />
+                          <CheckSquare className="w-4 h-4 text-background" />
                         ) : (
                           <Square className="w-4 h-4 text-muted-foreground" />
                         )}
@@ -837,12 +837,12 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                     </div>
                   )}
                   {video.status === 'PENDING' && (
-                    <div className="absolute top-2 right-2 bg-status-warning text-app-bg px-1.5 py-0.5 rounded text-xs font-medium">
+                    <div className="absolute top-2 right-2 bg-status-warning text-background px-1.5 py-0.5 rounded text-xs font-medium">
                       Ausstehend
                     </div>
                   )}
                   {video.status === 'REJECTED' && (
-                    <div className="absolute top-2 right-2 bg-status-danger text-app-bg px-1.5 py-0.5 rounded text-xs font-medium">
+                    <div className="absolute top-2 right-2 bg-status-danger text-background px-1.5 py-0.5 rounded text-xs font-medium">
                       Abgelehnt
                     </div>
                   )}
@@ -935,7 +935,7 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                           const url = buildApiUrl(`/videos/${selectedVideo.id}/download`);
                           window.open(url, '_blank', 'noopener,noreferrer');
                         }}
-                        className="px-4 py-2 bg-status-info text-app-bg rounded-md hover:opacity-90 flex items-center gap-2"
+                        className="px-4 py-2 bg-status-info text-background rounded-md hover:opacity-90 flex items-center gap-2"
                       >
                         <Download className="w-4 h-4" />
                         Original herunterladen

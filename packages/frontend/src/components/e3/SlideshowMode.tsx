@@ -320,6 +320,16 @@ export default function SlideshowMode({
     { scale: [1.1, 1], x: [-20, 0], y: [-10, 0] },
   ];
 
+  // Slide transition variants — cycle randomly for variety
+  const slideTransitions = [
+    { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 1.2 } },
+    { initial: { opacity: 0, x: 100 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -100 }, transition: { duration: 0.8 } },
+    { initial: { opacity: 0, y: 80 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -80 }, transition: { duration: 0.8 } },
+    { initial: { opacity: 0, scale: 0.8 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 1.15 }, transition: { duration: 1 } },
+    { initial: { opacity: 0, scale: 1.3 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.7 }, transition: { duration: 1 } },
+  ];
+  const currentTransition = slideTransitions[currentIndex % slideTransitions.length];
+
   const themeClasses = isDarkTheme 
     ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' 
     : 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900';
@@ -434,10 +444,10 @@ export default function SlideshowMode({
         <AnimatePresence mode="wait">
           <motion.div
             key={currentPhoto?.id}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.2 }}
+            initial={currentTransition.initial}
+            animate={currentTransition.animate}
+            exit={currentTransition.exit}
+            transition={currentTransition.transition}
             className="absolute inset-0 flex items-center justify-center"
           >
             {/* Ken Burns animated container */}

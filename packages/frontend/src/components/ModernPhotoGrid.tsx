@@ -453,7 +453,7 @@ export default function ModernPhotoGrid({
               )}
 
               {/* Hover overlay */}
-              <div className="absolute inset-0 bg-app-fg/0 group-hover:bg-app-fg/30 transition-opacity" />
+              <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/30 transition-opacity" />
             </motion.div>
           );
         })}
@@ -475,7 +475,7 @@ export default function ModernPhotoGrid({
               size="sm"
               aria-label="Schließen"
               title="Schließen"
-              className="absolute top-4 right-4 text-app-bg hover:opacity-80 z-10 p-2"
+              className="absolute top-4 right-4 text-background hover:opacity-80 z-10 p-2"
             />
 
             {/* Navigation Buttons */}
@@ -493,7 +493,7 @@ export default function ModernPhotoGrid({
                   size="sm"
                   aria-label="Vorheriges Foto"
                   title="Vorheriges Foto"
-                  className="absolute left-4 text-app-bg hover:opacity-80 z-10 p-2 bg-app-fg/50 rounded-full"
+                  className="absolute left-4 text-background hover:opacity-80 z-10 p-2 bg-foreground/50 rounded-full"
                 />
                 <MotionIconButton
                   initial={{ opacity: 0 }}
@@ -507,13 +507,13 @@ export default function ModernPhotoGrid({
                   size="sm"
                   aria-label="Nächstes Foto"
                   title="Nächstes Foto"
-                  className="absolute right-4 text-app-bg hover:opacity-80 z-10 p-2 bg-app-fg/50 rounded-full"
+                  className="absolute right-4 text-background hover:opacity-80 z-10 p-2 bg-foreground/50 rounded-full"
                 />
               </>
             )}
 
             {/* Image Section */}
-            <div className="relative bg-app-fg flex-1 flex items-center justify-center min-h-[400px] md:min-h-[600px] max-h-[90vh] overflow-hidden">
+            <div className="relative bg-foreground flex-1 flex items-center justify-center min-h-[400px] md:min-h-[600px] max-h-[90vh] overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={selectedPhoto}
@@ -570,7 +570,7 @@ export default function ModernPhotoGrid({
                         <div className="bg-card border border-border rounded-lg px-4 py-3 shadow-xl max-w-md mx-auto">
                           <div className="flex items-center gap-2 mb-2">
                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-status-warning to-app-accent flex items-center justify-center">
-                              <User className="w-4 h-4 text-app-bg" />
+                              <User className="w-4 h-4 text-background" />
                             </div>
                             <span className="text-sm font-semibold text-foreground">
                               {(photos[selectedPhoto] as any)?.guestbookEntry?.authorName}
@@ -586,7 +586,7 @@ export default function ModernPhotoGrid({
                     {/* Challenge Photo Speech Bubble on Full Image */}
                     {(photos[selectedPhoto] as any)?.isChallengePhoto && (photos[selectedPhoto] as any)?.challenge && (
                       <div className="absolute bottom-4 left-4 right-4">
-                        <div className="bg-gradient-to-r from-app-bg to-app-card rounded-lg px-4 py-3 shadow-xl max-w-md mx-auto border border-border">
+                        <div className="bg-gradient-to-r from-background to-card rounded-lg px-4 py-3 shadow-xl max-w-md mx-auto border border-border">
                           <div className="flex items-center gap-2 mb-2">
                             <Trophy className="w-5 h-5 text-status-warning" />
                             <span className="text-sm font-semibold text-foreground">
@@ -742,7 +742,7 @@ export default function ModernPhotoGrid({
                               variant="ghost"
                               size="sm"
                               className={`px-2 py-1 rounded-full border text-sm ${
-                                active ? 'border-app-fg bg-background' : 'border-border bg-card'
+                                active ? 'border-foreground bg-background' : 'border-border bg-card'
                               }`}
                             >
                               <span className="mr-1">{r.label}</span>
@@ -761,7 +761,7 @@ export default function ModernPhotoGrid({
                               variant="ghost"
                               size="sm"
                               className={`px-2 py-1 rounded-full border text-sm ${
-                                active ? 'border-app-fg bg-background' : 'border-border bg-card'
+                                active ? 'border-foreground bg-background' : 'border-border bg-card'
                               }`}
                             >
                               <span className="mr-1">{key}</span>
@@ -806,7 +806,7 @@ export default function ModernPhotoGrid({
                     </div>
                   ) : loadingComments.has(getUnderlyingPhotoId(photos[selectedPhoto]) || '') ? (
                     <div className="flex items-center justify-center py-8">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-app-fg"></div>
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-foreground"></div>
                     </div>
                   ) : (comments[getUnderlyingPhotoId(photos[selectedPhoto]) || ''] || []).length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
@@ -818,7 +818,7 @@ export default function ModernPhotoGrid({
                     (comments[getUnderlyingPhotoId(photos[selectedPhoto]) || ''] || []).map((comment: any) => (
                       <div key={comment.id} className="flex items-start gap-3">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-app-accent to-status-warning flex items-center justify-center flex-shrink-0">
-                          <User className="w-4 h-4 text-app-bg" />
+                          <User className="w-4 h-4 text-background" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
@@ -900,7 +900,7 @@ export default function ModernPhotoGrid({
                         className="px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {submittingComment ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-app-bg"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-background"></div>
                         ) : (
                           <Send className="w-4 h-4" />
                         )}

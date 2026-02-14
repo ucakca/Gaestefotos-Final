@@ -64,7 +64,7 @@ export default function AlbumNavigation({
                   className={`relative w-14 h-14 rounded-full p-0.5 transition-all ${
                     isSelected
                       ? 'bg-app-accent scale-110'
-                      : 'bg-app-border'
+                      : 'bg-border'
                   }`}
                   style={{ zIndex: 10, position: 'relative' }}
                 >

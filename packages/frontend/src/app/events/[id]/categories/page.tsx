@@ -596,7 +596,7 @@ export default function CategoryManagementPage({ params }: { params: Promise<{ i
                 size="lg"
                 aria-label="Album hinzufügen"
                 title="Album hinzufügen"
-                className="bg-app-accent hover:bg-app-accent/90 text-app-bg"
+                className="bg-app-accent hover:bg-app-accent/90 text-background"
               />
             </motion.div>
           </div>
@@ -739,7 +739,7 @@ export default function CategoryManagementPage({ params }: { params: Promise<{ i
                                 size="sm"
                                 className={`h-10 w-10 rounded-md border flex items-center justify-center transition-colors ${
                                   isSelected
-                                    ? 'border-app-fg bg-background'
+                                    ? 'border-foreground bg-background'
                                     : 'border-border bg-card hover:bg-background'
                                 }`}
                               />
@@ -771,7 +771,7 @@ export default function CategoryManagementPage({ params }: { params: Promise<{ i
                                     variant={isSelected ? 'primary' : 'ghost'}
                                     className={`flex items-center gap-2 rounded-md border px-2 py-2 text-left text-xs transition-colors ${
                                       isSelected
-                                        ? 'border-app-fg bg-background'
+                                        ? 'border-foreground bg-background'
                                         : 'border-border bg-card hover:bg-background'
                                     }`}
                                   >

@@ -205,7 +205,7 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                       <Check className="w-3 h-3" /> Aktiv
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-app-border/30 px-1.5 py-0.5 rounded-full">
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-border/30 px-1.5 py-0.5 rounded-full">
                       <Lock className="w-3 h-3" /> Upgrade
                     </span>
                   )}
@@ -376,7 +376,7 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                       aria-checked={!!featuresConfig[key]}
                       onClick={() => setFeaturesConfig((prev: any) => ({ ...prev, [key]: !prev[key] }))}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        featuresConfig[key] ? 'bg-app-accent' : 'bg-app-border'
+                        featuresConfig[key] ? 'bg-app-accent' : 'bg-border'
                       }`}
                     >
                       <span

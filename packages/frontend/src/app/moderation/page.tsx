@@ -255,7 +255,7 @@ export default function ModerationPage() {
                           Foto
                         </div>
                       )}
-                      <div className="absolute top-2 left-2 bg-status-warning text-app-bg text-xs px-2 py-1 rounded">
+                      <div className="absolute top-2 left-2 bg-status-warning text-background text-xs px-2 py-1 rounded">
                         Ausstehend
                       </div>
                     </div>
@@ -333,7 +333,7 @@ export default function ModerationPage() {
                       onClick={() => handleDelete(selectedPhoto.id)}
                       aria-label="Löschen"
                       title="Löschen"
-                      className="bg-status-neutral text-app-bg hover:opacity-90"
+                      className="bg-status-neutral text-background hover:opacity-90"
                     >
                       <Trash2 className="w-5 h-5" />
                     </Button>

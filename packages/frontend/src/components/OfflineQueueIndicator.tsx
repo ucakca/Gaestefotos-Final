@@ -126,7 +126,7 @@ export default function OfflineQueueIndicator({ onUploadSuccess }: OfflineQueueI
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0, opacity: 0 }}
         onClick={() => setShowModal(true)}
-        className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-full bg-status-warning px-4 py-2 text-app-bg shadow-lg"
+        className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-full bg-status-warning px-4 py-2 text-background shadow-lg"
       >
         <CloudOff className="w-4 h-4" />
         <span className="text-sm font-medium">{queueCount} in Queue</span>

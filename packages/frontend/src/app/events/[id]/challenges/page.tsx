@@ -331,7 +331,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                 disabled={!challengesEnabled}
                 aria-label="Challenge hinzufügen"
                 title="Challenge hinzufügen"
-                className={challengesEnabled ? 'bg-app-accent hover:bg-app-accent/90 text-app-bg' : 'bg-app-border text-muted-foreground cursor-not-allowed'}
+                className={challengesEnabled ? 'bg-app-accent hover:bg-app-accent/90 text-background' : 'bg-border text-muted-foreground cursor-not-allowed'}
               />
             </motion.div>
           </div>
@@ -367,7 +367,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                 }
               }}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                challengesEnabled ? 'bg-app-accent' : 'bg-app-border'
+                challengesEnabled ? 'bg-app-accent' : 'bg-border'
               }`}
             >
               <span
@@ -526,7 +526,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                         <Trophy className="w-5 h-5 text-status-warning" />
                         <span className="font-semibold">{challenge.title}</span>
                         {!challenge.isActive && (
-                          <span className="text-xs text-muted-foreground bg-app-border px-2 py-0.5 rounded">Inaktiv</span>
+                          <span className="text-xs text-muted-foreground bg-border px-2 py-0.5 rounded">Inaktiv</span>
                         )}
                       </div>
                       {challenge.description && (
@@ -634,7 +634,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
 
         {challenges.length === 0 && challengesEnabled && (
           <div className="bg-card rounded-lg shadow p-12 text-center">
-            <Trophy className="w-16 h-16 text-app-border mx-auto mb-4" />
+            <Trophy className="w-16 h-16 text-border mx-auto mb-4" />
             <p className="text-muted-foreground">Noch keine Challenges erstellt</p>
             <p className="text-sm text-muted-foreground mt-2">Erstelle deine erste Challenge!</p>
           </div>

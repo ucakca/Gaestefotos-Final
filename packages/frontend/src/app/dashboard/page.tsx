@@ -327,7 +327,7 @@ export default function DashboardPage() {
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                         statusFilter === tab.id
                           ? 'bg-blue-500 text-white'
-                          : 'bg-card text-muted-foreground hover:bg-app-border'
+                          : 'bg-card text-muted-foreground hover:bg-border'
                       }`}
                     >
                       {tab.label} ({tab.count})

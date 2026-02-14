@@ -72,7 +72,7 @@ export default function UploadProgressIndicator() {
             {!isUploading && (
               <button
                 onClick={clearCompleted}
-                className="p-1 hover:bg-app-border rounded-full transition-colors"
+                className="p-1 hover:bg-border rounded-full transition-colors"
               >
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
@@ -82,7 +82,7 @@ export default function UploadProgressIndicator() {
           {/* Progress Bar */}
           {isUploading && (
             <div className="px-3 pb-3">
-              <div className="h-2 bg-app-border rounded-full overflow-hidden">
+              <div className="h-2 bg-border rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-gradient-to-r from-app-accent to-purple-500"
                   initial={{ width: 0 }}

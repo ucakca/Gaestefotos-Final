@@ -10,7 +10,7 @@ export function Skeleton({ className }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'animate-pulse rounded-md bg-app-border/50',
+        'animate-pulse rounded-md bg-border/50',
         className
       )}
     />

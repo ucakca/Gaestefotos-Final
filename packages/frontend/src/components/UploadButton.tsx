@@ -550,7 +550,7 @@ export default function UploadButton({
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute -top-1 -right-1 bg-status-warning text-app-bg rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm"
+              className="absolute -top-1 -right-1 bg-status-warning text-background rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm"
             >
               {pendingQueueCount}
             </motion.div>
@@ -578,7 +578,7 @@ export default function UploadButton({
             <Upload className="w-5 h-5" />
             <span className="truncate">{buttonLabel}</span>
             {pendingQueueCount > 0 && (
-              <span className="ml-1 bg-status-warning text-app-bg rounded-full px-2 py-0.5 text-xs font-bold">
+              <span className="ml-1 bg-status-warning text-background rounded-full px-2 py-0.5 text-xs font-bold">
                 {pendingQueueCount}
               </span>
             )}
@@ -599,20 +599,20 @@ export default function UploadButton({
             variant="primary"
             size="sm"
             className={`aspect-square rounded-sm overflow-hidden group relative ${
-              disabled ? 'bg-app-border cursor-not-allowed' : ''
+              disabled ? 'bg-border cursor-not-allowed' : ''
             } p-0 h-auto`}
             title={disabled ? disabledReason : undefined}
           >
             <div className="w-full h-full flex items-center justify-center">
-              <Plus className={`w-8 h-8 ${disabled ? 'text-muted-foreground' : 'text-app-bg'}`} strokeWidth={3} />
+              <Plus className={`w-8 h-8 ${disabled ? 'text-muted-foreground' : 'text-background'}`} strokeWidth={3} />
             </div>
-            {!disabled && <div className="absolute inset-0 bg-app-fg/0 group-hover:bg-app-fg/10 transition-opacity" />}
+            {!disabled && <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/10 transition-opacity" />}
           </MotionButton>
           {pendingQueueCount > 0 && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute -top-2 -right-2 bg-status-warning text-app-bg rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm"
+              className="absolute -top-2 -right-2 bg-status-warning text-background rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-sm"
             >
               {pendingQueueCount}
             </motion.div>
@@ -685,7 +685,7 @@ export default function UploadButton({
                 exit={{ opacity: 0, y: -10, height: 0 }}
                 className="mb-4 overflow-hidden"
               >
-                <div className="rounded-lg border-2 border-app-accent bg-gradient-to-br from-app-card to-app-bg p-4 shadow-lg">
+                <div className="rounded-lg border-2 border-app-accent bg-gradient-to-br from-card to-background p-4 shadow-lg">
                   <div className="flex items-start gap-3 mb-3">
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-app-accent/20 flex items-center justify-center">
                       <span className="text-lg">📸</span>
@@ -829,7 +829,7 @@ export default function UploadButton({
                                   <span>{formatEta(file.etaSeconds)}</span>
                                 )}
                               </div>
-                              <div className="w-full bg-app-border rounded-full h-1.5">
+                              <div className="w-full bg-border rounded-full h-1.5">
                                 <motion.div
                                   className="h-1.5 rounded-full bg-app-accent"
                                   initial={{ width: 0 }}
@@ -862,7 +862,7 @@ export default function UploadButton({
                               animate={{ scale: 1 }}
                               className="flex h-6 w-6 items-center justify-center rounded-full bg-app-accent"
                             >
-                              <Check className="w-4 h-4 text-app-bg" />
+                              <Check className="w-4 h-4 text-background" />
                             </motion.div>
                           )}
                           {!file.uploading && !file.success && (

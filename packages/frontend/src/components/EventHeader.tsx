@@ -106,10 +106,10 @@ export default function EventHeader({
     if (hasStories) {
       return {
         backgroundImage:
-          accentGradient || 'linear-gradient(135deg, var(--app-accent) 0%, var(--app-fg) 100%)',
+          accentGradient || 'linear-gradient(135deg, var(--app-accent) 0%, var(--foreground) 100%)',
       };
     }
-    return { backgroundImage: 'linear-gradient(135deg, var(--app-border) 0%, var(--app-bg) 100%)' };
+    return { backgroundImage: 'linear-gradient(135deg, var(--border) 0%, var(--background) 100%)' };
   }, [accentGradient, hasStories]);
 
   const openStoryModal = () => {
@@ -259,7 +259,7 @@ export default function EventHeader({
                   <div className="text-white text-xs font-semibold tracking-wide" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.8)' }}>{appName}</div>
                 )}
 
-                <div className="text-right text-app-bg/90">
+                <div className="text-right text-background/90">
                   {/* Event-Titel entfernt - wird nur in Sprechblase angezeigt */}
                 </div>
               </div>
@@ -312,8 +312,8 @@ export default function EventHeader({
                     onClick={openStoryModal}
                     variant="secondary"
                     size="sm"
-                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-lg text-sm font-semibold h-auto border-2 border-app-bg"
-                    style={{ backgroundColor: headerColor || '#ef4444', color: '#ffffff', borderColor: 'var(--app-bg)' }}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 shadow-lg text-sm font-semibold h-auto border-2 border-background"
+                    style={{ backgroundColor: headerColor || '#ef4444', color: '#ffffff', borderColor: 'var(--background)' }}
                   >
                     <Plus className="w-4 h-4" />
                     Story
@@ -512,12 +512,12 @@ export default function EventHeader({
               <img src={logoUrl} alt={appName} className="h-7 max-w-[180px] object-contain" />
             </div>
           ) : (
-            <h1 className="text-center text-app-bg text-lg font-semibold tracking-wide">{appName}</h1>
+            <h1 className="text-center text-background text-lg font-semibold tracking-wide">{appName}</h1>
           )}
         </div>
       </motion.div>
 
-      <div className="bg-gradient-to-b from-app-bg to-app-bg">
+      <div className="bg-gradient-to-b from-background to-background">
         <div className="max-w-md mx-auto px-4 pt-4 pb-3">
           <motion.div
             initial={{ opacity: 0, y: 8 }}

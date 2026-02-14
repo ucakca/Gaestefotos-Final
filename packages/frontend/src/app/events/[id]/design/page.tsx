@@ -65,8 +65,8 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
   const [showQRCode, setShowQRCode] = useState(false);
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
   const [qrCodeConfig, setQrCodeConfig] = useState({
-    fgColor: resolveRootCssVar('--app-fg', '#000000'),
-    bgColor: resolveRootCssVar('--app-card', '#FFFFFF'),
+    fgColor: resolveRootCssVar('--foreground', '#000000'),
+    bgColor: resolveRootCssVar('--card', '#FFFFFF'),
     size: 200,
     level: 'M' as 'L' | 'M' | 'Q' | 'H',
   });
@@ -236,12 +236,12 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
       .page { box-sizing: border-box; width: 148mm; height: 210mm; padding: 12mm; display: flex; flex-direction: column; justify-content: space-between; }
       .header { text-align: center; }
       .title { font-size: 18pt; font-weight: 800; margin: 0; }
-      .subtitle { font-size: 11pt; margin: 6mm 0 0 0; color: var(--app-muted); }
+      .subtitle { font-size: 11pt; margin: 6mm 0 0 0; color: var(--muted-foreground); }
       .qrWrap { display: flex; align-items: center; justify-content: center; margin: 10mm 0; }
-      .qr { width: 92mm; height: 92mm; border: 2mm solid var(--app-fg); border-radius: 6mm; padding: 4mm; background: var(--app-card); box-sizing: border-box; }
+      .qr { width: 92mm; height: 92mm; border: 2mm solid var(--foreground); border-radius: 6mm; padding: 4mm; background: var(--card); box-sizing: border-box; }
       .qr img { width: 100%; height: 100%; object-fit: contain; }
-      .footer { text-align: center; font-size: 9pt; color: var(--app-muted); }
-      .url { margin-top: 3mm; font-size: 9pt; word-break: break-all; color: var(--app-fg); }
+      .footer { text-align: center; font-size: 9pt; color: var(--muted-foreground); }
+      .url { margin-top: 3mm; font-size: 9pt; word-break: break-all; color: var(--foreground); }
     </style>
   </head>
   <body>
@@ -287,9 +287,9 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
   const welcomeMessage = designConfig.welcomeMessage || '';
   const selectedPreset = getDesignPreset(designConfig.designPresetKey);
   const heroGradient =
-    selectedPreset?.heroGradient || 'linear-gradient(90deg, var(--app-accent) 0%, var(--app-fg) 100%)';
+    selectedPreset?.heroGradient || 'linear-gradient(90deg, var(--app-accent) 0%, var(--foreground) 100%)';
   const accentGradient =
-    selectedPreset?.accentGradient || 'linear-gradient(135deg, var(--app-accent) 0%, var(--app-fg) 100%)';
+    selectedPreset?.accentGradient || 'linear-gradient(135deg, var(--app-accent) 0%, var(--foreground) 100%)';
   const eventUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/e2/${event.slug}`;
 
   return (
@@ -306,9 +306,9 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                     <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold">1</div>
                     <span className="text-xs font-medium text-amber-600">Design</span>
                   </div>
-                  <div className="w-6 h-px bg-app-border" />
+                  <div className="w-6 h-px bg-border" />
                   <div className="flex items-center gap-1">
-                    <div className="w-5 h-5 rounded-full bg-app-border text-muted-foreground flex items-center justify-center text-[10px] font-bold">2</div>
+                    <div className="w-5 h-5 rounded-full bg-border text-muted-foreground flex items-center justify-center text-[10px] font-bold">2</div>
                     <span className="text-xs text-muted-foreground">Kategorien</span>
                   </div>
                 </div>
@@ -360,15 +360,15 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-app-bg opacity-50">
+                        <div className="w-full h-full flex items-center justify-center text-background opacity-50">
                           <Camera className="w-12 h-12" />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-app-fg/0 group-hover:bg-app-fg/30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
                         {uploadingImage === 'cover' ? (
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-app-bg"></div>
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-background"></div>
                         ) : (
-                          <div className="text-app-bg text-sm font-medium flex items-center gap-2">
+                          <div className="text-background text-sm font-medium flex items-center gap-2">
                             <Edit2 className="w-4 h-4" />
                             Titelbild ändern
                           </div>
@@ -409,11 +409,11 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                               )}
                             </div>
                           </div>
-                          <div className="absolute inset-0 bg-app-fg/0 group-hover:bg-app-fg/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                          <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
                             {uploadingImage === 'profile' ? (
-                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-app-bg"></div>
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-background"></div>
                             ) : (
-                              <Edit2 className="w-6 h-6 text-app-bg" />
+                              <Edit2 className="w-6 h-6 text-background" />
                             )}
                           </div>
                           <Input
@@ -439,7 +439,7 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                                 updateEventField('title', (e.target as HTMLInputElement).value);
                               }
                             }}
-                            className="mb-3 h-auto border-x-0 border-t-0 border-b-2 border-app-fg bg-transparent px-0 py-0 text-center text-2xl font-bold text-foreground shadow-none focus-visible:ring-0"
+                            className="mb-3 h-auto border-x-0 border-t-0 border-b-2 border-foreground bg-transparent px-0 py-0 text-center text-2xl font-bold text-foreground shadow-none focus-visible:ring-0"
                             autoFocus
                           />
                         ) : (
@@ -457,7 +457,7 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                             defaultValue={welcomeMessage}
                             onBlur={(e) => updateDesignConfig({ welcomeMessage: e.target.value })}
                             placeholder="Schreibe eine Willkommensnachricht..."
-                            className="min-h-0 resize-none border-2 border-app-fg bg-transparent text-center text-sm focus-visible:ring-0"
+                            className="min-h-0 resize-none border-2 border-foreground bg-transparent text-center text-sm focus-visible:ring-0"
                             rows={3}
                             autoFocus
                           />
@@ -501,7 +501,7 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                       className={`rounded-xl border-2 p-2 transition-all ${
                         isSelected
                           ? 'border-app-accent shadow-md scale-[1.02]'
-                          : 'border-border hover:border-app-muted'
+                          : 'border-border hover:border-muted-foreground'
                       }`}
                     >
                       <div className="h-8 w-full rounded-lg" style={{ backgroundImage: p.heroGradient }} />

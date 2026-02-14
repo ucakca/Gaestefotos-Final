@@ -269,8 +269,8 @@ export default function StatisticsPage({ params }: { params: Promise<{ id: strin
                   <YAxis stroke={CHART_COLORS.axis} />
                   <Tooltip 
                     contentStyle={{
-                      backgroundColor: 'var(--app-card)',
-                      border: '1px solid var(--app-border)',
+                      backgroundColor: 'var(--card)',
+                      border: '1px solid var(--border)',
                       borderRadius: '8px',
                     }}
                   />
@@ -309,8 +309,8 @@ export default function StatisticsPage({ params }: { params: Promise<{ id: strin
                   <YAxis stroke={CHART_COLORS.axis} />
                   <Tooltip 
                     contentStyle={{
-                      backgroundColor: 'var(--app-card)',
-                      border: '1px solid var(--app-border)',
+                      backgroundColor: 'var(--card)',
+                      border: '1px solid var(--border)',
                       borderRadius: '8px',
                     }}
                   />

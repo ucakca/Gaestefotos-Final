@@ -313,7 +313,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                         exit={{ opacity: 0, x: 20 }}
                         className="bg-background rounded-lg p-3 flex items-center gap-3 border border-border"
                       >
-                        <div className="w-12 h-12 rounded overflow-hidden bg-app-border flex-shrink-0">
+                        <div className="w-12 h-12 rounded overflow-hidden bg-border flex-shrink-0">
                           <img
                             src={file.preview}
                             alt="Preview"
@@ -326,7 +326,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                             {file.file.name}
                           </p>
                           {file.uploading && (
-                            <div className="mt-1 w-full bg-app-border rounded-full h-1.5">
+                            <div className="mt-1 w-full bg-border rounded-full h-1.5">
                               <motion.div
                                 className="h-1.5 rounded-full bg-app-accent"
                                 initial={{ width: 0 }}

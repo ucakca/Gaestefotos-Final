@@ -284,18 +284,18 @@ export default function DuplicatesPage({ params }: { params: Promise<{ id: strin
                           )}
 
                           {photo.isBestInGroup && (
-                            <div className="absolute top-2 left-2 bg-status-success text-app-bg text-xs px-2 py-1 rounded flex items-center gap-1">
+                            <div className="absolute top-2 left-2 bg-status-success text-background text-xs px-2 py-1 rounded flex items-center gap-1">
                               <Star className="w-3 h-3" />
                               Bestes Foto
                             </div>
                           )}
 
-                          <div className="absolute bottom-0 left-0 right-0 bg-app-fg/60 text-app-bg p-2 text-xs">
+                          <div className="absolute bottom-0 left-0 right-0 bg-foreground/60 text-background p-2 text-xs">
                             <div className="truncate">
                               {photo.uploadedBy || (photo.guest ? `${photo.guest.firstName} ${photo.guest.lastName}` : 'Unbekannt')}
                             </div>
                             {photo.qualityScore && (
-                              <div className="text-app-bg/70">
+                              <div className="text-background/70">
                                 Qualität: {photo.qualityScore.toFixed(1)}
                               </div>
                             )}

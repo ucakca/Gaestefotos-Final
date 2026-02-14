@@ -157,7 +157,7 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
             const isActive = i <= (step === 'processing' ? 1 : stepIdx);
             return (
               <React.Fragment key={label}>
-                {i > 0 && <div className={`flex-1 h-0.5 ${isActive ? 'bg-primary' : 'bg-app-border'}`} />}
+                {i > 0 && <div className={`flex-1 h-0.5 ${isActive ? 'bg-primary' : 'bg-border'}`} />}
                 <div className={`flex items-center gap-1.5 text-xs font-medium ${
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 }`}>

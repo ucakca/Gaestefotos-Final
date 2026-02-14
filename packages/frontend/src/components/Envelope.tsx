@@ -41,13 +41,13 @@ export default function Envelope({ children, onOpen }: EnvelopeProps) {
                 transition={{ duration: 0.6, ease: 'easeInOut' }}
               >
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 border-4 border-app-fg/50 rounded-full opacity-50" />
+                  <div className="w-16 h-16 border-4 border-foreground/50 rounded-full opacity-50" />
                 </div>
               </motion.div>
               
               {/* Front */}
               <div className="absolute inset-0 bg-gradient-to-br from-status-warning to-app-accent rounded-lg flex items-center justify-center">
-                <div className="text-center text-app-bg">
+                <div className="text-center text-background">
                   <p className="text-2xl font-bold mb-2">📧</p>
                   <p className="text-sm">Klicken zum Öffnen</p>
                 </div>

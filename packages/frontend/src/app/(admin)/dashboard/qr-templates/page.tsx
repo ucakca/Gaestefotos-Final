@@ -113,7 +113,7 @@ export default function QrTemplatesPage() {
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 categoryFilter === cat.value
                   ? 'bg-app-accent text-white'
-                  : 'bg-background hover:bg-app-border text-muted-foreground'
+                  : 'bg-background hover:bg-border text-muted-foreground'
               }`}
             >
               {cat.label}
