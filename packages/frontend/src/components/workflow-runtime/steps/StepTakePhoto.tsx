@@ -76,7 +76,7 @@ export function StepTakePhoto({ node, onComplete }: StepRendererProps) {
 
   return (
     <div className="flex flex-col items-center gap-4 py-4">
-      <h3 className="text-lg font-bold text-app-fg">{node.data.label}</h3>
+      <h3 className="text-lg font-bold text-foreground">{node.data.label}</h3>
 
       <input
         ref={fileInputRef}
@@ -94,10 +94,10 @@ export function StepTakePhoto({ node, onComplete }: StepRendererProps) {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={startCamera}
-              className="flex flex-col items-center gap-2 p-6 border-2 border-dashed border-app-border rounded-xl hover:border-app-accent transition-colors"
+              className="flex flex-col items-center gap-2 p-6 border-2 border-dashed border-border rounded-xl hover:border-primary transition-colors"
             >
-              <Camera className="w-8 h-8 text-app-muted" />
-              <span className="text-sm font-medium text-app-fg">
+              <Camera className="w-8 h-8 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">
                 {isQrScan ? 'QR scannen' : 'Kamera'}
               </span>
             </motion.button>
@@ -105,10 +105,10 @@ export function StepTakePhoto({ node, onComplete }: StepRendererProps) {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => fileInputRef.current?.click()}
-            className="flex flex-col items-center gap-2 p-6 border-2 border-dashed border-app-border rounded-xl hover:border-app-accent transition-colors"
+            className="flex flex-col items-center gap-2 p-6 border-2 border-dashed border-border rounded-xl hover:border-primary transition-colors"
           >
-            <ImagePlus className="w-8 h-8 text-app-muted" />
-            <span className="text-sm font-medium text-app-fg">
+            <ImagePlus className="w-8 h-8 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">
               {config.captureMode === 'multi' ? 'Dateien wählen' : 'Galerie'}
             </span>
           </motion.button>
@@ -128,7 +128,7 @@ export function StepTakePhoto({ node, onComplete }: StepRendererProps) {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={capturePhoto}
-              className="flex-1 py-3 bg-app-accent text-white rounded-xl font-semibold"
+              className="flex-1 py-3 bg-primary text-white rounded-xl font-semibold"
             >
               Aufnehmen
             </motion.button>
@@ -159,7 +159,7 @@ export function StepTakePhoto({ node, onComplete }: StepRendererProps) {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={confirm}
-              className="flex-1 py-3 bg-app-accent text-white rounded-xl font-semibold flex items-center justify-center gap-2"
+              className="flex-1 py-3 bg-primary text-white rounded-xl font-semibold flex items-center justify-center gap-2"
             >
               <Check className="w-4 h-4" /> Weiter
             </motion.button>

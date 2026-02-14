@@ -90,20 +90,20 @@ export default function ShareStep({
         <motion.h2
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-app-fg mb-2"
+          className="text-2xl font-bold text-foreground mb-2"
         >
           Event teilen 📤
         </motion.h2>
-        <p className="text-app-muted">Lade deine Gäste ein!</p>
+        <p className="text-muted-foreground">Lade deine Gäste ein!</p>
       </div>
 
       {/* Link Box */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-app-bg rounded-2xl p-4"
+        className="bg-background rounded-2xl p-4"
       >
-        <label className="block text-sm font-medium text-app-fg mb-2">
+        <label className="block text-sm font-medium text-foreground mb-2">
           Event-Link
         </label>
         <div className="flex gap-2">
@@ -111,12 +111,12 @@ export default function ShareStep({
             type="text"
             value={eventUrl}
             readOnly
-            className="flex-1 px-3 py-2 bg-app-card border border-app-border rounded-xl text-sm text-app-muted focus:outline-none"
+            className="flex-1 px-3 py-2 bg-card border border-border rounded-xl text-sm text-muted-foreground focus:outline-none"
           />
           <Button
             onClick={handleCopy}
             variant="ghost"
-            className={`px-4 ${copied ? 'text-green-600' : 'text-app-muted'}`}
+            className={`px-4 ${copied ? 'text-green-600' : 'text-muted-foreground'}`}
           >
             {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
           </Button>
@@ -148,7 +148,7 @@ export default function ShareStep({
         transition={{ delay: 0.2 }}
         className="space-y-3"
       >
-        <p className="text-sm font-medium text-app-fg">Direkt teilen:</p>
+        <p className="text-sm font-medium text-foreground">Direkt teilen:</p>
         
         <div className="grid grid-cols-2 gap-3">
           {/* WhatsApp - Most popular in EU */}
@@ -193,19 +193,19 @@ export default function ShareStep({
           {/* Email */}
           <button
             onClick={handleEmail}
-            className="flex items-center gap-3 p-4 bg-app-bg hover:bg-app-bg rounded-xl transition-colors"
+            className="flex items-center gap-3 p-4 bg-background hover:bg-background rounded-xl transition-colors"
           >
             <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-600 flex items-center justify-center">
               <Mail className="w-5 h-5 text-white" />
             </div>
-            <span className="font-medium text-app-fg">E-Mail</span>
+            <span className="font-medium text-foreground">E-Mail</span>
           </button>
         </div>
 
         {/* More Options Toggle */}
         <button
           onClick={() => setShowMoreOptions(!showMoreOptions)}
-          className="w-full flex items-center justify-center gap-2 py-3 text-app-muted hover:text-app-fg transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-3 text-muted-foreground hover:text-foreground transition-colors"
         >
           <span className="text-sm">Mehr Optionen</span>
           {showMoreOptions ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -265,12 +265,12 @@ export default function ShareStep({
                 {'share' in navigator && (
                   <button
                     onClick={handleNativeShare}
-                    className="flex items-center gap-3 p-3 bg-app-bg hover:bg-app-bg rounded-xl transition-colors"
+                    className="flex items-center gap-3 p-3 bg-background hover:bg-background rounded-xl transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-full bg-app-bg0 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-background0 flex items-center justify-center">
                       <Share2 className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-sm font-medium text-app-fg">Mehr...</span>
+                    <span className="text-sm font-medium text-foreground">Mehr...</span>
                   </button>
                 )}
               </div>

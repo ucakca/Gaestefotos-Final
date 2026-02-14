@@ -56,12 +56,12 @@ export function StepFaceSearch({ node, collectedData, onComplete, eventId }: Ste
 
   return (
     <div className="flex flex-col items-center gap-4 py-6">
-      <h3 className="text-lg font-bold text-app-fg">{node.data.label}</h3>
+      <h3 className="text-lg font-bold text-foreground">{node.data.label}</h3>
 
       {searching && (
         <div className="flex flex-col items-center gap-3 py-8">
-          <Loader2 className="w-10 h-10 text-app-accent animate-spin" />
-          <p className="text-app-muted">Fotos werden durchsucht...</p>
+          <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          <p className="text-muted-foreground">Fotos werden durchsucht...</p>
         </div>
       )}
 
@@ -73,7 +73,7 @@ export function StepFaceSearch({ node, collectedData, onComplete, eventId }: Ste
 
       {results.length > 0 && (
         <div className="w-full max-w-sm">
-          <p className="text-sm font-medium text-app-fg mb-2">
+          <p className="text-sm font-medium text-foreground mb-2">
             {results.length} Foto{results.length !== 1 ? 's' : ''} gefunden!
           </p>
           <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
@@ -92,7 +92,7 @@ export function StepFaceSearch({ node, collectedData, onComplete, eventId }: Ste
       <motion.button
         whileTap={{ scale: 0.95 }}
         onClick={() => onComplete('default', { faceSearchResults: results, faceSearchCount: results.length })}
-        className="px-8 py-3 bg-app-accent text-white rounded-xl font-semibold flex items-center gap-2"
+        className="px-8 py-3 bg-primary text-white rounded-xl font-semibold flex items-center gap-2"
       >
         <Search className="w-4 h-4" /> Weiter
       </motion.button>

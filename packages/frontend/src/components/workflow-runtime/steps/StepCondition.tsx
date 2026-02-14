@@ -21,7 +21,7 @@ export function StepCondition({ node, onComplete }: StepRendererProps) {
         <GitBranch className="w-7 h-7 text-cyan-600" />
       </div>
 
-      <h3 className="text-xl font-bold text-app-fg text-center">{node.data.label}</h3>
+      <h3 className="text-xl font-bold text-foreground text-center">{node.data.label}</h3>
 
       <div className="w-full max-w-sm space-y-3">
         {outputs.map((output, i) => (

@@ -60,8 +60,8 @@ export default function ChallengesTab({
         >
           <PartyPopper className="w-12 h-12 text-pink-500" />
         </motion.div>
-        <h3 className="text-xl font-bold text-app-fg mb-2">Noch kein Foto-Spaß</h3>
-        <p className="text-app-muted max-w-sm">
+        <h3 className="text-xl font-bold text-foreground mb-2">Noch kein Foto-Spaß</h3>
+        <p className="text-muted-foreground max-w-sm">
           Aktuell gibt es keine aktiven Challenges oder Spiele. Nutze die Kamera unten, um Fotos zu machen!
         </p>
       </div>
@@ -90,7 +90,7 @@ export default function ChallengesTab({
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-lg font-bold text-app-fg truncate">
+                <h3 className="text-lg font-bold text-foreground truncate">
                   {challenge.title}
                 </h3>
                 {typeConfig.badge && (
@@ -99,7 +99,7 @@ export default function ChallengesTab({
                   </span>
                 )}
               </div>
-              <p className="text-app-muted text-sm line-clamp-2">
+              <p className="text-muted-foreground text-sm line-clamp-2">
                 {challenge.description}
               </p>
             </div>
@@ -113,7 +113,7 @@ export default function ChallengesTab({
 
           {/* Game-specific hints */}
           {challenge.type === 'PHOTOBOMB' && challenge.gameConfig?.requiredPhotos && (
-            <div className="mb-3 text-xs text-app-muted bg-app-bg rounded-lg px-3 py-2">
+            <div className="mb-3 text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
               Ziel: Tauche in <strong>{challenge.gameConfig.requiredPhotos} Fotos</strong> anderer Gäste auf!
             </div>
           )}
@@ -122,11 +122,11 @@ export default function ChallengesTab({
               {(challenge.gameConfig.emojis as string[]).slice(0, 5).map((emoji: string, i: number) => (
                 <span key={i} className="text-2xl">{emoji}</span>
               ))}
-              <span className="text-xs text-app-muted self-center ml-1">...und mehr!</span>
+              <span className="text-xs text-muted-foreground self-center ml-1">...und mehr!</span>
             </div>
           )}
           {challenge.type === 'FILTER_ROULETTE' && (
-            <div className="mb-3 text-xs text-app-muted bg-app-bg rounded-lg px-3 py-2 flex items-center gap-2">
+            <div className="mb-3 text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-purple-500" />
               Selfie machen — zufälliger KI-Effekt als Überraschung!
             </div>
@@ -141,7 +141,7 @@ export default function ChallengesTab({
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-4 text-sm text-app-muted">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             {challenge.deadline && (
               <div className="flex items-center gap-1.5">
                 <Clock className="w-4 h-4" />
@@ -205,8 +205,8 @@ export default function ChallengesTab({
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-app-fg mb-2">Foto-Spaß</h2>
-        <p className="text-app-muted">
+        <h2 className="text-2xl font-bold text-foreground mb-2">Foto-Spaß</h2>
+        <p className="text-muted-foreground">
           Challenges und Spiele — jedes Spiel beginnt mit deiner Kamera!
         </p>
       </div>
@@ -214,7 +214,7 @@ export default function ChallengesTab({
       {/* Game Challenges Section */}
       {gameChallenges.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-bold text-app-muted uppercase tracking-wider flex items-center gap-2">
+          <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <PartyPopper className="w-4 h-4" /> Selfie-Spiele
           </h3>
           {gameChallenges.map((c, i) => renderChallengeCard(c, i))}
@@ -225,7 +225,7 @@ export default function ChallengesTab({
       {photoChallenges.length > 0 && (
         <div className="space-y-3">
           {gameChallenges.length > 0 && (
-            <h3 className="text-sm font-bold text-app-muted uppercase tracking-wider mt-6 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mt-6 flex items-center gap-2">
               <Trophy className="w-4 h-4" /> Foto-Challenges
             </h3>
           )}

@@ -32,7 +32,7 @@ export function StepPrint({ node, onComplete }: StepRendererProps) {
           >
             <CheckCircle className="w-16 h-16 text-green-500" />
           </motion.div>
-          <h3 className="text-xl font-bold text-app-fg">Gedruckt!</h3>
+          <h3 className="text-xl font-bold text-foreground">Gedruckt!</h3>
         </>
       ) : printing ? (
         <>
@@ -40,15 +40,15 @@ export function StepPrint({ node, onComplete }: StepRendererProps) {
             animate={{ rotate: 360 }}
             transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
           >
-            <Printer className="w-16 h-16 text-app-accent" />
+            <Printer className="w-16 h-16 text-primary" />
           </motion.div>
-          <h3 className="text-xl font-bold text-app-fg">Wird gedruckt...</h3>
-          <Loader2 className="w-6 h-6 animate-spin text-app-muted" />
+          <h3 className="text-xl font-bold text-foreground">Wird gedruckt...</h3>
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </>
       ) : (
         <>
-          <Printer className="w-16 h-16 text-app-accent" />
-          <h3 className="text-xl font-bold text-app-fg">{node.data.label}</h3>
+          <Printer className="w-16 h-16 text-primary" />
+          <h3 className="text-xl font-bold text-foreground">{node.data.label}</h3>
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={handlePrint}

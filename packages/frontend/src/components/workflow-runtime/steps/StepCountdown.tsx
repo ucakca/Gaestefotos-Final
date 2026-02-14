@@ -32,13 +32,13 @@ export function StepCountdown({ node, onComplete }: StepRendererProps) {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.5, opacity: 0 }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
-          className="text-8xl font-black text-app-accent"
+          className="text-8xl font-black text-primary"
         >
           {count > 0 ? count : '📸'}
         </motion.div>
       </AnimatePresence>
 
-      <p className="text-app-muted mt-6">{node.data.label}</p>
+      <p className="text-muted-foreground mt-6">{node.data.label}</p>
     </div>
   );
 }

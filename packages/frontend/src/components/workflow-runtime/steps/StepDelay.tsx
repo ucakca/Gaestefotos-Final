@@ -41,26 +41,26 @@ export function StepDelay({ node, onComplete }: StepRendererProps) {
         animate={{ rotate: 360 }}
         transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
       >
-        <Clock className="w-12 h-12 text-app-accent" />
+        <Clock className="w-12 h-12 text-primary" />
       </motion.div>
 
-      <h3 className="text-lg font-bold text-app-fg">{node.data.label}</h3>
+      <h3 className="text-lg font-bold text-foreground">{node.data.label}</h3>
 
-      <div className="w-48 h-2 bg-app-bg rounded-full overflow-hidden">
+      <div className="w-48 h-2 bg-background rounded-full overflow-hidden">
         <motion.div
-          className="h-full bg-app-accent rounded-full"
+          className="h-full bg-primary rounded-full"
           animate={{ width: `${progress * 100}%` }}
         />
       </div>
 
-      <p className="text-2xl font-mono font-bold text-app-fg">
+      <p className="text-2xl font-mono font-bold text-foreground">
         {seconds}s
       </p>
 
       <motion.button
         whileTap={{ scale: 0.95 }}
         onClick={() => onComplete('default', { delayed: true, skippedDelay: true })}
-        className="text-sm text-app-muted hover:text-app-fg transition-colors"
+        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         Überspringen
       </motion.button>

@@ -19,6 +19,7 @@ import { getFaceDetectionMetadata } from '../services/faceRecognition';
 import { addBrandingOverlay } from '../services/logoOverlay';
 import { processDuplicateDetection } from '../services/duplicateDetection';
 import { isFeatureEnabled } from '../services/featureGate';
+import { checkAchievements } from '../services/achievementTracker';
 import archiver from 'archiver';
 import { logger } from '../utils/logger';
 
@@ -346,6 +347,12 @@ router.post(
       io.to(`event:${eventId}`).emit('photo_uploaded', {
         photo: serializeBigInt(photoWithProxyUrl),
       });
+
+      // Gamification: auto-check achievements (async, non-blocking)
+      if (photo.uploadedBy) {
+        const visitorId = req.userId || photo.uploadedBy;
+        checkAchievements(eventId, visitorId, photo.uploadedBy).catch(() => {});
+      }
 
       // Mosaic Wall auto-hook: place photo as tile if event has active mosaic (async, non-blocking)
       if (photo.status === 'APPROVED') {

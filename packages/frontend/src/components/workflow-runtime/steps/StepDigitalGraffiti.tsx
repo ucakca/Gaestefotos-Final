@@ -18,7 +18,7 @@ export function StepDigitalGraffiti({ node, onComplete }: StepRendererProps) {
 
   return (
     <div className="flex flex-col items-center gap-5 py-6">
-      <h3 className="text-lg font-bold text-app-fg">{node.data.label}</h3>
+      <h3 className="text-lg font-bold text-foreground">{node.data.label}</h3>
 
       {isTextArea ? (
         <textarea
@@ -27,7 +27,7 @@ export function StepDigitalGraffiti({ node, onComplete }: StepRendererProps) {
           placeholder={placeholder}
           maxLength={maxLength}
           rows={config.enableEmojis ? 4 : 2}
-          className="w-full max-w-sm px-4 py-3 bg-app-bg border border-app-border rounded-xl text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent resize-none"
+          className="w-full max-w-sm px-4 py-3 bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
           autoFocus
         />
       ) : (
@@ -37,20 +37,20 @@ export function StepDigitalGraffiti({ node, onComplete }: StepRendererProps) {
           onChange={(e) => setValue(e.target.value)}
           placeholder={placeholder}
           maxLength={maxLength}
-          className="w-full max-w-sm px-4 py-3 bg-app-bg border border-app-border rounded-xl text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-accent text-center text-2xl font-mono tracking-widest"
+          className="w-full max-w-sm px-4 py-3 bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-center text-2xl font-mono tracking-widest"
           autoFocus
         />
       )}
 
       {isRequired && value.trim().length === 0 && (
-        <p className="text-xs text-app-muted">Pflichtfeld</p>
+        <p className="text-xs text-muted-foreground">Pflichtfeld</p>
       )}
 
       <motion.button
         whileTap={{ scale: 0.95 }}
         onClick={() => onComplete('default', { [node.id + '_text']: value.trim(), text: value.trim() })}
         disabled={!canSubmit}
-        className="px-8 py-3 bg-app-accent text-white rounded-xl font-semibold flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+        className="px-8 py-3 bg-primary text-white rounded-xl font-semibold flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <Send className="w-4 h-4" /> Weiter
       </motion.button>

@@ -38,7 +38,7 @@ export function StepAfterShare({ node, onComplete }: StepRendererProps) {
         )}
       </motion.div>
 
-      <h3 className="text-xl font-bold text-app-fg">{node.data.label}</h3>
+      <h3 className="text-xl font-bold text-foreground">{node.data.label}</h3>
 
       {hasOutputs ? (
         <div className="w-full max-w-sm space-y-3 mt-2">
@@ -50,7 +50,7 @@ export function StepAfterShare({ node, onComplete }: StepRendererProps) {
               className={`w-full py-3 px-5 rounded-xl font-medium border-2 transition-colors ${
                 output.type === 'retake'
                   ? 'bg-gray-100 text-gray-700 border-gray-200 hover:border-gray-400'
-                  : 'bg-app-accent text-white border-app-accent'
+                  : 'bg-primary text-white border-primary'
               }`}
             >
               {output.label}
@@ -58,7 +58,7 @@ export function StepAfterShare({ node, onComplete }: StepRendererProps) {
           ))}
         </div>
       ) : (
-        <p className="text-app-muted text-sm">Weiter...</p>
+        <p className="text-muted-foreground text-sm">Weiter...</p>
       )}
     </div>
   );

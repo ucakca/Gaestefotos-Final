@@ -12,6 +12,7 @@ import { validateUploadedFile } from '../middleware/uploadSecurity';
 import { attachEventUploadRateLimits, photoUploadEventLimiter, photoUploadIpLimiter } from '../middleware/rateLimit';
 import { assertUploadWithinLimit } from '../services/packageLimits';
 import { assertFeatureEnabled } from '../services/featureGate';
+import { checkAchievements } from '../services/achievementTracker';
 import { extractCapturedAtFromImage, isWithinDateWindowPlusMinusDays } from '../services/uploadDatePolicy';
 import { serializeBigInt } from '../utils/serializers';
 
@@ -530,6 +531,10 @@ router.post(
     } catch (wsErr) {
       logger.warn('Guestbook WebSocket emit failed', { error: (wsErr as Error).message });
     }
+
+    // Gamification: auto-check achievements (async, non-blocking)
+    const visitorId = req.userId || entry.authorName || 'anonymous';
+    checkAchievements(eventId, visitorId, entry.authorName || 'Anonym').catch(() => {});
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
