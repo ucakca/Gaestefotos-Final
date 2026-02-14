@@ -51,14 +51,16 @@ export default function BottomNav({
     { id: 'info' as const, label: 'Info', icon: Info },
   ];
 
-  const aiFeatures = [
-    { id: 'mosaic-upload' as const, label: 'Mosaic Wall', desc: 'Ich will auch drauf! Foto hochladen', icon: Puzzle, show: hasMosaicWall },
-    { id: 'game' as const, label: 'Foto-Spiele', desc: 'Challenges & Wettbewerbe', icon: Gamepad2, show: showFotoSpass },
-    { id: 'face-search' as const, label: 'Finde meine Fotos', desc: 'Gesichtserkennung', icon: ScanFace, show: showFaceSearch },
-    { id: 'ki-style' as const, label: 'KI Foto-Stil', desc: 'AI Style Transfer', icon: Sparkles, show: true },
-    { id: 'filter-roulette' as const, label: 'Filter Roulette', desc: 'Zufälliger KI-Effekt', icon: Shuffle, show: showFotoSpass },
-    { id: 'emoji-challenge' as const, label: 'Emoji Challenge', desc: 'Emoji nachstellen', icon: Camera, show: showFotoSpass },
-  ].filter(f => f.show);
+  const handleAiAction = (id: string) => {
+    setAiSheetOpen(false);
+    if (id === 'game' || id === 'filter-roulette' || id === 'emoji-challenge') {
+      onCameraAction?.('game');
+    } else if (id === 'mosaic-upload') {
+      onCameraAction?.('mosaic-upload');
+    } else {
+      onCameraAction?.(id as any);
+    }
+  };
 
   const renderTab = (tab: { id: TabId; label: string; icon: any }) => {
     const Icon = tab.icon;
@@ -164,8 +166,11 @@ export default function BottomNav({
                 <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
               </div>
 
-              <div className="px-6 pb-2 flex items-center justify-between">
-                <h3 className="text-lg font-bold">Foto-Spaß & KI</h3>
+              <div className="px-5 pb-2 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold">Foto-Spaß & KI</h3>
+                  <p className="text-xs text-muted-foreground">Entdecke was AI alles kann ✨</p>
+                </div>
                 <button
                   onClick={() => setAiSheetOpen(false)}
                   className="p-2 rounded-full hover:bg-muted/50 transition-colors"
@@ -174,37 +179,123 @@ export default function BottomNav({
                 </button>
               </div>
 
-              <div className="px-4 pb-8 space-y-1">
-                {aiFeatures.map((feature) => {
-                  const Icon = feature.icon;
-                  return (
-                    <button
-                      key={feature.id}
-                      onClick={() => {
-                        setAiSheetOpen(false);
-                        if (feature.id === 'game' || feature.id === 'filter-roulette' || feature.id === 'emoji-challenge') {
-                          onCameraAction?.('game');
-                        } else if (feature.id === 'mosaic-upload') {
-                          onCameraAction?.('mosaic-upload');
-                        } else {
-                          onCameraAction?.(feature.id);
-                        }
-                      }}
-                      className="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-muted/50 active:bg-muted/70 transition-colors"
+              <div className="px-4 pb-8 space-y-3">
+                {/* Hero: Mosaic Wall (if active) */}
+                {hasMosaicWall && (
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 }}
+                    onClick={() => handleAiAction('mosaic-upload')}
+                    className="w-full relative overflow-hidden rounded-2xl p-4 text-left active:scale-[0.98] transition-transform"
+                    style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))' }}
+                  >
+                    <div className="absolute top-0 right-0 w-24 h-24 opacity-20">
+                      <Puzzle className="w-24 h-24 text-white" strokeWidth={0.5} />
+                    </div>
+                    <div className="relative">
+                      <span className="text-2xl mb-1 block">🧩</span>
+                      <div className="text-base font-bold text-white">Mosaic Wall</div>
+                      <div className="text-xs text-white/80 mt-0.5">Ich will auch drauf! Foto hochladen</div>
+                    </div>
+                  </motion.button>
+                )}
+
+                {/* 2-Column Grid */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  {/* Foto-Spiele */}
+                  {showFotoSpass && (
+                    <motion.button
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      onClick={() => handleAiAction('game')}
+                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-200/30 hover:from-amber-500/20 hover:to-orange-500/20 active:scale-[0.97] transition-all text-left"
                     >
-                      <div
-                        className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-                        style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
-                      >
-                        <Icon className="w-6 h-6" style={{ color: 'hsl(var(--primary))' }} />
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md shadow-amber-500/20">
+                        <Gamepad2 className="w-5 h-5 text-white" />
                       </div>
-                      <div className="text-left">
-                        <div className="text-sm font-semibold">{feature.label}</div>
-                        <div className="text-xs text-muted-foreground">{feature.desc}</div>
+                      <div>
+                        <div className="text-sm font-semibold">Foto-Spiele</div>
+                        <div className="text-[10px] text-muted-foreground">Challenges & Fun</div>
                       </div>
-                    </button>
-                  );
-                })}
+                    </motion.button>
+                  )}
+
+                  {/* Finde meine Fotos */}
+                  {showFaceSearch && (
+                    <motion.button
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15 }}
+                      onClick={() => handleAiAction('face-search')}
+                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-200/30 hover:from-cyan-500/20 hover:to-blue-500/20 active:scale-[0.97] transition-all text-left"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-md shadow-cyan-500/20">
+                        <ScanFace className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold">Finde mich</div>
+                        <div className="text-[10px] text-muted-foreground">AI Gesichtserkennung</div>
+                      </div>
+                    </motion.button>
+                  )}
+
+                  {/* KI Foto-Stil */}
+                  <motion.button
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    onClick={() => handleAiAction('ki-style')}
+                    className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-200/30 hover:from-purple-500/20 hover:to-pink-500/20 active:scale-[0.97] transition-all text-left"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-md shadow-purple-500/20">
+                      <Sparkles className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold">KI Foto-Stil</div>
+                      <div className="text-[10px] text-muted-foreground">AI Style Transfer</div>
+                    </div>
+                  </motion.button>
+
+                  {/* Filter Roulette */}
+                  {showFotoSpass && (
+                    <motion.button
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.25 }}
+                      onClick={() => handleAiAction('filter-roulette')}
+                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-200/30 hover:from-emerald-500/20 hover:to-teal-500/20 active:scale-[0.97] transition-all text-left"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-md shadow-emerald-500/20">
+                        <Shuffle className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold">Filter Roulette</div>
+                        <div className="text-[10px] text-muted-foreground">Zufalls-KI-Effekt 🎰</div>
+                      </div>
+                    </motion.button>
+                  )}
+
+                  {/* Emoji Challenge */}
+                  {showFotoSpass && (
+                    <motion.button
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      onClick={() => handleAiAction('emoji-challenge')}
+                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-rose-500/10 to-red-500/10 border border-rose-200/30 hover:from-rose-500/20 hover:to-red-500/20 active:scale-[0.97] transition-all text-left col-span-2 sm:col-span-1"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-400 to-red-500 flex items-center justify-center shadow-md shadow-rose-500/20">
+                        <Camera className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold">Emoji Challenge</div>
+                        <div className="text-[10px] text-muted-foreground">Kannst du das? 😜</div>
+                      </div>
+                    </motion.button>
+                  )}
+                </div>
               </div>
             </motion.div>
           </>
