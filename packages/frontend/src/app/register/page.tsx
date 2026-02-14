@@ -20,7 +20,7 @@ export default function RegisterPage() {
         </div>
         <div className="rounded-2xl border border-border bg-card p-8 shadow-xl backdrop-blur-xl">
           <div className="flex justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-app-accent"></div>
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-primary"></div>
           </div>
         </div>
       </div>

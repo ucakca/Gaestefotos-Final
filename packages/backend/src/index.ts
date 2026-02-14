@@ -72,6 +72,7 @@ import slideshowRoutes from './routes/slideshow';
 import styleTransferRoutes from './routes/styleTransfer';
 import boothGamesRoutes from './routes/boothGames';
 import gamificationRoutes from './routes/gamification';
+import pushRoutes from './routes/push';
 import hardwareRoutes from './routes/hardware';
 import leadsRoutes from './routes/leads';
 import assetsRoutes from './routes/assets';
@@ -612,6 +613,7 @@ app.use('/api/slideshow', slideshowRoutes);
 app.use('/api/style-transfer', aiFeatureLimiter, styleTransferRoutes);
 app.use('/api/booth-games', aiFeatureLimiter, boothGamesRoutes);
 app.use('/api/events', gamificationRoutes); // Gamification: /api/events/:eventId/achievements, leaderboard
+app.use('/api/push', pushRoutes); // Push Notifications: /api/push/vapid-key, subscribe
 app.use('/api/hardware', hardwareRoutes); // Hardware: /api/hardware/*
 app.use('/api/leads', leadLimiter, leadsRoutes);
 app.use('/api/assets', assetsRoutes);

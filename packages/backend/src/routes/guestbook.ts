@@ -13,6 +13,7 @@ import { attachEventUploadRateLimits, photoUploadEventLimiter, photoUploadIpLimi
 import { assertUploadWithinLimit } from '../services/packageLimits';
 import { assertFeatureEnabled } from '../services/featureGate';
 import { checkAchievements } from '../services/achievementTracker';
+import { sendPushToEvent, notifyEventHost, pushTemplates } from '../services/pushNotification';
 import { extractCapturedAtFromImage, isWithinDateWindowPlusMinusDays } from '../services/uploadDatePolicy';
 import { serializeBigInt } from '../utils/serializers';
 
@@ -535,6 +536,13 @@ router.post(
     // Gamification: auto-check achievements (async, non-blocking)
     const visitorId = req.userId || entry.authorName || 'anonymous';
     checkAchievements(eventId, visitorId, entry.authorName || 'Anonym').catch(() => {});
+
+    // Push Notifications: notify event subscribers + host (async, non-blocking)
+    const eventForPush = await prisma.event.findUnique({ where: { id: eventId }, select: { title: true, slug: true } });
+    if (eventForPush) {
+      sendPushToEvent(eventId, pushTemplates.newGuestbookEntry(eventForPush.title, entry.authorName || 'Ein Gast', eventForPush.slug), visitorId).catch(() => {});
+      notifyEventHost(eventId, pushTemplates.newGuestbookEntry(eventForPush.title, entry.authorName || 'Ein Gast', eventForPush.slug)).catch(() => {});
+    }
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });

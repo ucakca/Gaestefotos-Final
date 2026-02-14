@@ -183,7 +183,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full text-background py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-app-accent hover:opacity-90"
+            className="w-full text-background py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-primary hover:opacity-90"
           >
             <motion.span whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="block">
               {loading ? 'Anmelden...' : 'Anmelden'}

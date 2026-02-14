@@ -20,6 +20,7 @@ import QRCodeShare from '@/components/e3/QRCodeShare';
 import SlideshowMode from '@/components/e3/SlideshowMode';
 import LeaderboardOverlay from '@/components/e3/LeaderboardOverlay';
 import AchievementToast from '@/components/e3/AchievementToast';
+import PushNotificationBanner from '@/components/e3/PushNotificationBanner';
 import { Alert } from '@/components/ui/Alert';
 import { Centered } from '@/components/ui/Centered';
 import { Container } from '@/components/ui/Container';
@@ -666,6 +667,7 @@ export default function PublicEventPageV2() {
       />
 
       <AchievementToast eventId={event?.id || ''} />
+      <PushNotificationBanner eventId={event?.id || ''} />
     </main>
   );
 }

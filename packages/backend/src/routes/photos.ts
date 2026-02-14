@@ -20,6 +20,7 @@ import { addBrandingOverlay } from '../services/logoOverlay';
 import { processDuplicateDetection } from '../services/duplicateDetection';
 import { isFeatureEnabled } from '../services/featureGate';
 import { checkAchievements } from '../services/achievementTracker';
+import { sendPushToEvent, notifyEventHost, pushTemplates } from '../services/pushNotification';
 import archiver from 'archiver';
 import { logger } from '../utils/logger';
 
@@ -352,6 +353,14 @@ router.post(
       if (photo.uploadedBy) {
         const visitorId = req.userId || photo.uploadedBy;
         checkAchievements(eventId, visitorId, photo.uploadedBy).catch(() => {});
+      }
+
+      // Push Notifications: notify event subscribers + host (async, non-blocking)
+      const eventForPush = await prisma.event.findUnique({ where: { id: eventId }, select: { title: true, slug: true } });
+      if (eventForPush) {
+        const uploaderName = photo.uploadedBy || 'Ein Gast';
+        sendPushToEvent(eventId, pushTemplates.newPhoto(eventForPush.title, uploaderName, eventForPush.slug), req.userId || undefined).catch(() => {});
+        notifyEventHost(eventId, pushTemplates.hostNewUpload(eventForPush.title, 1)).catch(() => {});
       }
 
       // Mosaic Wall auto-hook: place photo as tile if event has active mosaic (async, non-blocking)
