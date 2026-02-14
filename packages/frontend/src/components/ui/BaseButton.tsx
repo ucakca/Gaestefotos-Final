@@ -1,0 +1,97 @@
+'use client';
+
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { Slot } from '@radix-ui/react-slot';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+import { Spinner } from './Spinner';
+
+const baseButtonVariants = cva(
+  'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]',
+  {
+    variants: {
+      variant: {
+        primary: 'bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:brightness-105',
+        secondary: 'bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80 shadow-sm',
+        outline: 'bg-background text-foreground border border-border hover:bg-accent/10 hover:border-primary/50 shadow-sm',
+        ghost: 'bg-transparent text-foreground hover:bg-accent/10',
+        danger: 'bg-destructive text-destructive-foreground hover:brightness-105 shadow-md',
+        link: 'bg-transparent text-primary underline-offset-4 hover:underline shadow-none',
+      },
+      size: {
+        xs: 'h-7 px-2 text-xs gap-1',
+        sm: 'h-9 px-3 text-sm gap-1.5',
+        md: 'h-10 px-4 text-sm gap-2',
+        lg: 'h-11 px-5 text-base gap-2',
+        xl: 'h-12 px-6 text-base gap-2',
+        icon: 'h-10 w-10 p-0',
+        'icon-sm': 'h-8 w-8 p-0',
+        'icon-lg': 'h-11 w-11 p-0',
+      },
+      loading: {
+        true: 'cursor-wait',
+        false: '',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+      loading: false,
+    },
+  }
+);
+
+export interface BaseButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof baseButtonVariants> {
+  asChild?: boolean;
+  loading?: boolean;
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
+}
+
+export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
+  function BaseButton(
+    {
+      className,
+      variant,
+      size,
+      loading,
+      leftIcon,
+      rightIcon,
+      children,
+      disabled,
+      asChild = false,
+      ...props
+    },
+    ref
+  ) {
+    const Comp = asChild ? Slot : 'button';
+
+    const content = loading ? (
+      <>
+        <Spinner className="w-4 h-4" />
+        <span className="opacity-70">{children}</span>
+      </>
+    ) : (
+      <>
+        {leftIcon && <span className="flex-shrink-0">{leftIcon}</span>}
+        {children}
+        {rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}
+      </>
+    );
+
+    return (
+      <Comp
+        ref={ref}
+        disabled={disabled || loading}
+        className={cn(baseButtonVariants({ variant, size, loading, className }))}
+        {...props}
+      >
+        {content}
+      </Comp>
+    );
+  }
+);
+
+BaseButton.displayName = 'BaseButton';

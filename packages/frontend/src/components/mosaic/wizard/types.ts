@@ -79,7 +79,5 @@ export const ANIMATIONS = [
 export const WIZARD_STEPS = [
   { num: 1, label: 'Modus' },
   { num: 2, label: 'Zielbild' },
-  { num: 3, label: 'Overlay' },
-  { num: 4, label: 'Display' },
-  { num: 5, label: 'Start' },
+  { num: 3, label: 'Start' },
 ] as const;
