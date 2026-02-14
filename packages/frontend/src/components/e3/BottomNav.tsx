@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Home, PartyPopper, BookOpen, Info } from 'lucide-react';
-import { SplitFAB } from '@/components/ui/SplitFAB';
+import { DualFAB } from '@/components/ui/DualFAB';
 
 /**
  * BottomNav - v0-Style Bottom Navigation with SplitFAB
