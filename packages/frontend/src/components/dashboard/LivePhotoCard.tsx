@@ -71,7 +71,7 @@ export default function LivePhotoCard({
       whileHover={{ scale: 1.02, y: -4 }}
       transition={{ duration: 0.3 }}
       onClick={onClick}
-      className="relative group cursor-pointer overflow-hidden rounded-xl bg-app-card border border-app-border shadow-md hover:shadow-xl transition-shadow"
+      className="relative group cursor-pointer overflow-hidden rounded-xl bg-card border border-border shadow-md hover:shadow-xl transition-shadow"
     >
       {/* Image */}
       <div className="relative aspect-square overflow-hidden">

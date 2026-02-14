@@ -236,12 +236,12 @@ export default function PhotoGrid({
           animate={{ opacity: 1, y: 0 }}
           className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-4"
         >
-          <svg className="w-12 h-12 text-app-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-12 h-12 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </motion.div>
-        <p className="text-app-muted text-lg font-medium mb-2">Noch keine Fotos</p>
-        <p className="text-app-muted text-sm">Lade als Erster ein Foto hoch!</p>
+        <p className="text-muted-foreground text-lg font-medium mb-2">Noch keine Fotos</p>
+        <p className="text-muted-foreground text-sm">Lade als Erster ein Foto hoch!</p>
       </div>
     );
   }
@@ -263,7 +263,7 @@ export default function PhotoGrid({
               onClick={() => handlePhotoTap(photo, index)}
             >
               {/* Photo Card */}
-              <div className="relative overflow-hidden rounded-2xl bg-app-card shadow-lg hover:shadow-2xl transition-all duration-300">
+              <div className="relative overflow-hidden rounded-2xl bg-card shadow-lg hover:shadow-2xl transition-all duration-300">
                 {/* Image */}
                 <img
                   src={photo.url}
@@ -369,10 +369,10 @@ export default function PhotoGrid({
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              className="inline-block w-8 h-8 border-4 border-app-muted border-t-app-accent rounded-full"
+              className="inline-block w-8 h-8 border-4 border-muted-foreground border-t-primary rounded-full"
             />
           ) : (
-            <p className="text-app-muted text-sm">Scroll für mehr...</p>
+            <p className="text-muted-foreground text-sm">Scroll für mehr...</p>
           )}
         </div>
       )}

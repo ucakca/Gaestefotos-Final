@@ -253,7 +253,7 @@ export default function UploadModal({
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2 bg-app-bg border border-app-border rounded-lg focus:outline-none focus:ring-2 focus:ring-app-accent"
+                className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 disabled={isUploading}
               >
                 <option value="">Kein Album</option>
@@ -273,8 +273,8 @@ export default function UploadModal({
             onDrop={handleDrop}
             className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-colors ${
               isDragging
-                ? 'border-app-accent bg-app-accent/10'
-                : 'border-app-border hover:border-app-accent/50'
+                ? 'border-primary bg-primary/10'
+                : 'border-border hover:border-primary/50'
             }`}
           >
             <input
@@ -292,19 +292,19 @@ export default function UploadModal({
               animate={{ scale: isDragging ? 1.05 : 1 }}
               className="flex flex-col items-center gap-4"
             >
-              <div className="w-12 h-12 rounded-full bg-app-accent/10 flex items-center justify-center">
-                <Upload className="w-6 h-6 text-app-accent" />
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Upload className="w-6 h-6 text-primary" />
               </div>
 
               <div>
                 <p className="text-lg font-medium mb-1">
                   {isDragging ? 'Loslassen zum Hochladen' : 'Ziehe Fotos hierher'}
                 </p>
-                <p className="text-sm text-app-muted">
+                <p className="text-sm text-muted-foreground">
                   oder{' '}
                   <button
                     onClick={handleBrowseClick}
-                    className="text-app-accent hover:underline"
+                    className="text-primary hover:underline"
                     disabled={isUploading}
                   >
                     durchsuche deine Dateien
@@ -312,7 +312,7 @@ export default function UploadModal({
                 </p>
               </div>
 
-              <p className="text-xs text-app-muted">
+              <p className="text-xs text-muted-foreground">
                 JPG, PNG, WebP, HEIC · Max 50MB pro Datei
               </p>
             </motion.div>
@@ -333,7 +333,7 @@ export default function UploadModal({
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.9 }}
-                      className="relative aspect-square rounded-lg overflow-hidden bg-app-card border border-app-border"
+                      className="relative aspect-square rounded-lg overflow-hidden bg-card border border-border"
                     >
                       {/* Preview Image */}
                       <img
@@ -382,7 +382,7 @@ export default function UploadModal({
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-app-border">
+          <div className="flex items-center justify-between pt-4 border-t border-border">
             <Button
               variant="secondary"
               onClick={handleClose}

@@ -18,6 +18,7 @@ import JumpToTop from '@/components/e3/JumpToTop';
 import UploadModal from '@/components/e3/UploadModal';
 import QRCodeShare from '@/components/e3/QRCodeShare';
 import SlideshowMode from '@/components/e3/SlideshowMode';
+import LeaderboardOverlay from '@/components/e3/LeaderboardOverlay';
 import { Alert } from '@/components/ui/Alert';
 import { Centered } from '@/components/ui/Centered';
 import { Container } from '@/components/ui/Container';
@@ -52,6 +53,7 @@ export default function PublicEventPageV2() {
   const [fotospassOpen, setFotospassOpen] = useState(false);
   const [hasMosaicWall, setHasMosaicWall] = useState(false);
   const [liveSheetOpen, setLiveSheetOpen] = useState(false);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [faceSearchOpen, setFaceSearchOpen] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
   const [guestbookEntries, setGuestbookEntries] = useState<any[]>([]);
@@ -297,7 +299,7 @@ export default function PublicEventPageV2() {
         hostName={hostName || 'Host'}
         isVisible={isHeaderVisible && !loading}
         onScrollToTop={scrollToTop}
-        onLeaderboard={() => {/* TODO: Leaderboard Overlay */}}
+        onLeaderboard={() => setLeaderboardOpen(true)}
         onShare={() => setQrCodeOpen(true)}
       />
       <div className="min-h-screen bg-background pb-20">
@@ -653,6 +655,12 @@ export default function PublicEventPageV2() {
         onClose={() => setSlideshowOpen(false)}
         eventTitle={event?.title || ''}
         eventSlug={slug}
+        eventId={event?.id || ''}
+      />
+
+      <LeaderboardOverlay
+        isOpen={leaderboardOpen}
+        onClose={() => setLeaderboardOpen(false)}
         eventId={event?.id || ''}
       />
     </main>

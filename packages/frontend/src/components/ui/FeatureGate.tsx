@@ -69,22 +69,22 @@ export function FeatureGate({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.2 }}
-        className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-app-bg/80 via-app-bg/70 to-transparent backdrop-blur-sm rounded-lg"
+        className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-background/80 via-background/70 to-transparent backdrop-blur-sm rounded-lg"
       >
         <div className="text-center p-6 max-w-sm">
           <div className="mb-3 flex justify-center">
             <ProBadge size="lg" variant="crown" animated />
           </div>
           
-          <h4 className="font-bold text-app-fg text-lg mb-2">
+          <h4 className="font-bold text-foreground text-lg mb-2">
             {featureInfo.name}
           </h4>
           
-          <p className="text-sm text-app-muted mb-2">
+          <p className="text-sm text-muted-foreground mb-2">
             {featureInfo.description}
           </p>
           
-          <p className="text-xs text-app-muted mb-4">
+          <p className="text-xs text-muted-foreground mb-4">
             Nicht in <strong>{packageName}</strong> enthalten
           </p>
           
@@ -183,14 +183,14 @@ export function LimitIndicator({
 
   return (
     <div className={`flex items-center gap-2 text-sm ${className}`}>
-      <span className="text-app-muted">{label}:</span>
+      <span className="text-muted-foreground">{label}:</span>
       <span
         className={`font-medium ${
           isAtLimit
             ? 'text-status-danger'
             : isNearLimit && showWarning
               ? 'text-status-warning'
-              : 'text-app-fg'
+              : 'text-foreground'
         }`}
       >
         {current}

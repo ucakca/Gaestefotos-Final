@@ -119,25 +119,25 @@ export function BottomSheet({
             onDragStart={() => setIsDragging(true)}
             onDragEnd={handleDragEnd}
             style={{ height: getHeightFromSnap(currentSnap) }}
-            className={`fixed bottom-0 left-0 right-0 z-50 bg-app-card rounded-t-2xl shadow-2xl flex flex-col lg:hidden ${className}`}
+            className={`fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-2xl shadow-2xl flex flex-col lg:hidden ${className}`}
           >
             {/* Handle */}
             {showHandle && (
               <div className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
-                <div className="w-10 h-1 bg-app-border rounded-full" />
+                <div className="w-10 h-1 bg-border rounded-full" />
               </div>
             )}
 
             {/* Header */}
             {(title || showCloseButton) && (
-              <div className="flex items-center justify-between px-4 py-2 border-b border-app-border">
-                <h3 className="font-semibold text-app-fg">{title}</h3>
+              <div className="flex items-center justify-between px-4 py-2 border-b border-border">
+                <h3 className="font-semibold text-foreground">{title}</h3>
                 {showCloseButton && (
                   <button
                     onClick={onClose}
-                    className="p-2 -mr-2 hover:bg-app-bg rounded-lg transition-colors"
+                    className="p-2 -mr-2 hover:bg-muted rounded-lg transition-colors"
                   >
-                    <X className="w-5 h-5 text-app-muted" />
+                    <X className="w-5 h-5 text-muted-foreground" />
                   </button>
                 )}
               </div>

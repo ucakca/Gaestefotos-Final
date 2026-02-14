@@ -41,7 +41,7 @@ export default function PhotoFilterBar({
   counts,
 }: PhotoFilterBarProps) {
   return (
-    <div className="bg-app-card border border-app-border rounded-lg p-4 shadow-sm">
+    <div className="bg-card border border-border rounded-lg p-4 shadow-sm">
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Filter Pills */}
         <div className="flex flex-wrap gap-2">
@@ -56,8 +56,8 @@ export default function PhotoFilterBar({
                 onClick={() => onFilterChange(filter.id)}
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-app-accent text-white'
-                    : 'bg-app-bg text-app-fg hover:bg-app-bg/80'
+                    ? 'bg-primary text-white'
+                    : 'bg-background text-foreground hover:bg-background/80'
                 }`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -66,7 +66,7 @@ export default function PhotoFilterBar({
                 <span>{filter.label}</span>
                 {count > 0 && (
                   <span className={`px-2 py-0.5 rounded-full text-xs ${
-                    isActive ? 'bg-white/20' : 'bg-app-accent/10 text-app-accent'
+                    isActive ? 'bg-white/20' : 'bg-primary/10 text-primary'
                   }`}>
                     {count}
                   </span>
@@ -79,7 +79,7 @@ export default function PhotoFilterBar({
         {/* Search */}
         <div className="lg:ml-auto lg:w-64">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Suchen..."

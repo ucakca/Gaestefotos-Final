@@ -16,7 +16,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
       ref={ref}
       type="checkbox"
       className={cn(
-        'h-4 w-4 rounded border border-app-border bg-app-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15 disabled:opacity-50 disabled:pointer-events-none',
+        'h-4 w-4 rounded border border-border bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15 disabled:opacity-50 disabled:pointer-events-none',
         className
       )}
       onChange={(e) => {

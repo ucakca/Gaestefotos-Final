@@ -202,14 +202,14 @@ export default function GuidedTour({ tourId, steps, autoStart = true }: GuidedTo
       ) : null}
 
       <div
-        className="fixed z-[82] w-[360px] max-w-[calc(100vw-24px)] rounded-2xl border border-app-border bg-app-card p-4 shadow-xl"
+        className="fixed z-[82] w-[360px] max-w-[calc(100vw-24px)] rounded-2xl border border-border bg-card p-4 shadow-xl"
         style={bubbleStyle}
       >
-        <div className="text-sm font-semibold text-app-fg">{current?.title || 'Tour'}</div>
-        <div className="mt-2 whitespace-pre-wrap text-sm text-app-muted">{current?.body || ''}</div>
+        <div className="text-sm font-semibold text-foreground">{current?.title || 'Tour'}</div>
+        <div className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{current?.body || ''}</div>
 
         <div className="mt-4 flex items-center justify-between gap-2">
-          <div className="text-xs text-app-muted">
+          <div className="text-xs text-muted-foreground">
             Schritt {idx + 1}/{steps.length}
           </div>
           <div className="flex items-center gap-2">

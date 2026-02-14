@@ -11,7 +11,7 @@ type LoadingRowProps = {
 
 export function LoadingRow({ text = 'Laden...', size = 'md', className }: LoadingRowProps) {
   return (
-    <div className={`flex items-center gap-2 text-app-muted${className ? ` ${className}` : ''}`}>
+    <div className={`flex items-center gap-2 text-muted-foreground${className ? ` ${className}` : ''}`}>
       <Spinner size={size} />
       <div>{text}</div>
     </div>

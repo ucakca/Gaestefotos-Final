@@ -36,11 +36,11 @@ export default function GuestActionMenu({
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <motion.button
-          className="p-2 rounded-lg hover:bg-app-bg transition-colors"
+          className="p-2 rounded-lg hover:bg-background transition-colors"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
-          <MoreVertical className="w-4 h-4 text-app-muted" />
+          <MoreVertical className="w-4 h-4 text-muted-foreground" />
         </motion.button>
       </DropdownMenuTrigger>
 

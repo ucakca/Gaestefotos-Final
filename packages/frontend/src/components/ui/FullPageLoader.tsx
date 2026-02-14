@@ -10,7 +10,7 @@ export function FullPageLoader({
     <Centered>
       <div className="flex items-center gap-3">
         <Spinner size="md" />
-        <p className="text-sm text-app-muted">{label}</p>
+        <p className="text-sm text-muted-foreground">{label}</p>
       </div>
     </Centered>
   );

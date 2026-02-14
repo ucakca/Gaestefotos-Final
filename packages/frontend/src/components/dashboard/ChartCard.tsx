@@ -29,12 +29,12 @@ export default function ChartCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-app-card border border-app-border rounded-2xl p-6 shadow-sm"
+      className="bg-card border border-border rounded-2xl p-6 shadow-sm"
     >
       <div className="mb-6">
-        <h3 className="text-lg font-bold text-app-fg">{title}</h3>
+        <h3 className="text-lg font-bold text-foreground">{title}</h3>
         {subtitle && (
-          <p className="text-sm text-app-muted mt-1">{subtitle}</p>
+          <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
         )}
       </div>
       

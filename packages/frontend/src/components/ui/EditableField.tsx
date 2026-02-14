@@ -71,7 +71,7 @@ export function EditableField({
     <div className={`px-4 py-4 ${className}`}>
       <div className="flex items-center gap-3 mb-2">
         {icon}
-        <label className="text-sm font-medium text-app-fg">
+        <label className="text-sm font-medium text-foreground">
           {label} {required && <span className="text-destructive">*</span>}
         </label>
       </div>

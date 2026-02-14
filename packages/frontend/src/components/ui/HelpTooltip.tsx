@@ -38,7 +38,7 @@ export default function HelpTooltip({ title, content, className }: HelpTooltipPr
         title={title ? `Hilfe: ${title}` : 'Hilfe'}
         variant="secondary"
         size="sm"
-        className="w-[22px] h-[22px] p-0 rounded-full text-app-fg font-extrabold text-[12px] leading-[20px]"
+        className="w-[22px] h-[22px] p-0 rounded-full text-foreground font-extrabold text-[12px] leading-[20px]"
       >
         ?
       </Button>
@@ -47,12 +47,12 @@ export default function HelpTooltip({ title, content, className }: HelpTooltipPr
         <div
           role="dialog"
           aria-label={title ? `Hilfe: ${title}` : 'Hilfe'}
-          className="absolute z-50 right-0 top-[calc(100%+8px)] w-80 max-w-[min(85vw,360px)] bg-app-card border border-app-border rounded-xl shadow-xl p-3"
+          className="absolute z-50 right-0 top-[calc(100%+8px)] w-80 max-w-[min(85vw,360px)] bg-card border border-border rounded-xl shadow-xl p-3"
         >
           {title ? (
-            <div className="font-extrabold text-app-fg mb-1.5 text-[13px]">{title}</div>
+            <div className="font-extrabold text-foreground mb-1.5 text-[13px]">{title}</div>
           ) : null}
-          <div className="text-[13px] leading-[1.35] text-app-fg whitespace-pre-wrap">{content}</div>
+          <div className="text-[13px] leading-[1.35] text-foreground whitespace-pre-wrap">{content}</div>
           <div className="mt-2.5 flex justify-end">
             <Button
               type="button"

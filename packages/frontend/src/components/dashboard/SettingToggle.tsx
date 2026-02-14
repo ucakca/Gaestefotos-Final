@@ -33,7 +33,7 @@ export default function SettingToggle({
   return (
     <motion.label
       whileHover={{ x: 2 }}
-      className={`flex items-start gap-3 p-3 rounded-lg hover:bg-app-bg/50 transition-colors ${
+      className={`flex items-start gap-3 p-3 rounded-lg hover:bg-background/50 transition-colors ${
         disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
       }`}
     >
@@ -44,9 +44,9 @@ export default function SettingToggle({
         className="mt-0.5"
       />
       <div className="flex-1">
-        <p className="font-medium text-app-fg">{label}</p>
+        <p className="font-medium text-foreground">{label}</p>
         {description && (
-          <p className="text-sm text-app-muted mt-1">{description}</p>
+          <p className="text-sm text-muted-foreground mt-1">{description}</p>
         )}
       </div>
     </motion.label>
