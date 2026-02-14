@@ -22,7 +22,7 @@ export const AnimatedCard = memo(function AnimatedCard({
   return (
     <motion.div
       className={cn(
-        'rounded-xl border border-app-border bg-app-card',
+        'rounded-xl border border-border bg-card',
         clickable && 'cursor-pointer',
         className
       )}

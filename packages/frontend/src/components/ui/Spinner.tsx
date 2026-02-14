@@ -16,7 +16,7 @@ export function Spinner({ size = 'md', className = '', ...props }: SpinnerProps)
       role="status"
       aria-label="Loading"
       title="Loading"
-      className={`inline-block ${sizeClasses[size]} animate-spin rounded-full border-2 border-app-border border-t-app-fg ${className}`}
+      className={`inline-block ${sizeClasses[size]} animate-spin rounded-full border-2 border-border border-t-foreground ${className}`}
       {...props}
     />
   );
