@@ -1,5 +1,6 @@
 import { logger } from '../utils/logger';
 import { getDefaultConfig, chatCompletion, getActiveProviderInfo, type ChatMessage, type LLMResponse } from './llmClient';
+import { withAiCache, type AiCacheFeature } from '../services/cache/aiCache';
 
 interface AIResponse {
   content: string;
@@ -44,113 +45,114 @@ export async function generateCompletion(
 /**
  * Generate album suggestions based on event type
  */
-export async function suggestAlbums(eventType: string, eventTitle?: string): Promise<string[]> {
-  const systemPrompt = `Du bist ein Assistent für eine Foto-Sharing-App für Events. 
+export const suggestAlbums = withAiCache<
+  { eventType: string; eventTitle?: string },
+  string[]
+>(
+  'suggest-albums',
+  async ({ eventType, eventTitle }) => {
+    const systemPrompt = `Du bist ein Assistent für eine Foto-Sharing-App für Events. 
 Generiere passende Album-Namen auf Deutsch. 
 Antworte NUR mit einer JSON-Array von Strings, keine Erklärungen.
 Beispiel: ["Getting Ready", "Trauung", "Feier"]`;
 
-  const prompt = `Generiere 5-7 passende Album-Namen für ein Event vom Typ "${eventType}"${eventTitle ? ` mit dem Titel "${eventTitle}"` : ''}.
+    const prompt = `Generiere 5-7 passende Album-Namen für ein Event vom Typ "${eventType}"${eventTitle ? ` mit dem Titel "${eventTitle}"` : ''}.
 Die Namen sollten kurz und prägnant sein (max 3 Wörter).`;
 
-  try {
     const response = await generateCompletion(prompt, systemPrompt, { temperature: 0.8 });
     const albums = JSON.parse(response.content);
     return Array.isArray(albums) ? albums : [];
-  } catch (error) {
-    logger.error('Error generating album suggestions:', { error: (error as Error).message });
-    // Fallback
-    return getDefaultAlbums(eventType);
-  }
-}
+  },
+  { fallback: ({ eventType }) => getDefaultAlbums(eventType) }
+);
 
 /**
  * Generate event description
  */
-export async function suggestDescription(
-  eventType: string,
-  eventTitle: string,
-  eventDate?: string
-): Promise<string> {
-  const systemPrompt = `Du bist ein Assistent für eine Foto-Sharing-App.
+export const suggestDescription = withAiCache<
+  { eventType: string; eventTitle: string; eventDate?: string },
+  string
+>(
+  'suggest-description',
+  async ({ eventType, eventTitle, eventDate }) => {
+    const systemPrompt = `Du bist ein Assistent für eine Foto-Sharing-App.
 Generiere eine kurze, einladende Event-Beschreibung auf Deutsch.
 Max 2 Sätze, freundlicher Ton, mit Emoji.`;
 
-  const prompt = `Schreibe eine kurze Beschreibung für "${eventTitle}" (${eventType})${eventDate ? ` am ${eventDate}` : ''}.`;
+    const prompt = `Schreibe eine kurze Beschreibung für "${eventTitle}" (${eventType})${eventDate ? ` am ${eventDate}` : ''}.`;
 
-  try {
     const response = await generateCompletion(prompt, systemPrompt, { maxTokens: 100 });
     return response.content.trim();
-  } catch (error) {
-    logger.error('Error generating description:', { error: (error as Error).message });
-    return `Willkommen bei ${eventTitle}! 📸 Teilt eure schönsten Momente.`;
-  }
-}
+  },
+  { fallback: ({ eventTitle }) => `Willkommen bei ${eventTitle}! 📸 Teilt eure schönsten Momente.` }
+);
 
 /**
  * Generate invitation text
  */
-export async function suggestInvitationText(
-  eventType: string,
-  eventTitle: string,
-  hostName?: string
-): Promise<string> {
-  const systemPrompt = `Du bist ein Assistent für eine Foto-Sharing-App.
+export const suggestInvitationText = withAiCache<
+  { eventType: string; eventTitle: string; hostName?: string },
+  string
+>(
+  'suggest-invitation',
+  async ({ eventType, eventTitle, hostName }) => {
+    const systemPrompt = `Du bist ein Assistent für eine Foto-Sharing-App.
 Generiere einen kurzen Einladungstext auf Deutsch für Gäste.
 Max 3 Sätze, einladend und persönlich, mit Emoji.`;
 
-  const prompt = `Schreibe einen Einladungstext für "${eventTitle}" (${eventType})${hostName ? ` von ${hostName}` : ''}.
+    const prompt = `Schreibe einen Einladungstext für "${eventTitle}" (${eventType})${hostName ? ` von ${hostName}` : ''}.
 Die Gäste sollen motiviert werden, Fotos hochzuladen.`;
 
-  try {
     const response = await generateCompletion(prompt, systemPrompt, { maxTokens: 150 });
     return response.content.trim();
-  } catch (error) {
-    logger.error('Error generating invitation:', { error: (error as Error).message });
-    return `Haltet die schönsten Momente von ${eventTitle} fest! 📸 Ladet eure Fotos hoch und teilt sie mit allen Gästen.`;
-  }
-}
+  },
+  { fallback: ({ eventTitle }) => `Haltet die schönsten Momente von ${eventTitle} fest! 📸 Ladet eure Fotos hoch und teilt sie mit allen Gästen.` }
+);
 
 /**
  * Generate challenge ideas
  */
-export async function suggestChallenges(eventType: string): Promise<{ title: string; description: string }[]> {
-  const systemPrompt = `Du bist ein Assistent für eine Foto-Sharing-App.
+export const suggestChallenges = withAiCache<
+  { eventType: string },
+  { title: string; description: string }[]
+>(
+  'suggest-challenges',
+  async ({ eventType }) => {
+    const systemPrompt = `Du bist ein Assistent für eine Foto-Sharing-App.
 Generiere kreative Foto-Challenge-Ideen auf Deutsch.
 Antworte NUR mit einem JSON-Array von Objekten mit "title" und "description".
 Beispiel: [{"title": "Selfie mit Brautpaar", "description": "Macht ein Selfie mit den Frischvermählten!"}]`;
 
-  const prompt = `Generiere 5 kreative Foto-Challenge-Ideen für ein "${eventType}" Event.
+    const prompt = `Generiere 5 kreative Foto-Challenge-Ideen für ein "${eventType}" Event.
 Jede Challenge sollte einen kurzen Titel und eine einladende Beschreibung haben.`;
 
-  try {
     const response = await generateCompletion(prompt, systemPrompt, { temperature: 0.9 });
     const challenges = JSON.parse(response.content);
     return Array.isArray(challenges) ? challenges : [];
-  } catch (error) {
-    logger.error('Error generating challenges:', { error: (error as Error).message });
-    return getDefaultChallenges(eventType);
-  }
-}
+  },
+  { fallback: ({ eventType }) => getDefaultChallenges(eventType) }
+);
 
 /**
  * Generate guestbook welcome message
  */
-export async function suggestGuestbookMessage(eventType: string, eventTitle: string): Promise<string> {
-  const systemPrompt = `Du bist ein Assistent für eine Foto-Sharing-App.
+export const suggestGuestbookMessage = withAiCache<
+  { eventType: string; eventTitle: string },
+  string
+>(
+  'suggest-guestbook',
+  async ({ eventType, eventTitle }) => {
+    const systemPrompt = `Du bist ein Assistent für eine Foto-Sharing-App.
 Generiere eine einladende Gästebuch-Begrüßungsnachricht auf Deutsch.
 Max 2 Sätze, herzlich und persönlich.`;
 
-  const prompt = `Schreibe eine Willkommensnachricht für das Gästebuch von "${eventTitle}" (${eventType}).`;
+    const prompt = `Schreibe eine Willkommensnachricht für das Gästebuch von "${eventTitle}" (${eventType}).`;
 
-  try {
     const response = await generateCompletion(prompt, systemPrompt, { maxTokens: 100 });
     return response.content.trim();
-  } catch (error) {
-    logger.error('Error generating guestbook message:', { error: (error as Error).message });
-    return `Herzlich willkommen im Gästebuch! Hinterlasst eure Glückwünsche und Grüße. 💝`;
-  }
-}
+  },
+  { fallback: () => `Herzlich willkommen im Gästebuch! Hinterlasst eure Glückwünsche und Grüße. 💝` }
+);
 
 // Fallback functions
 function getDefaultAlbums(eventType: string): string[] {
@@ -224,45 +226,45 @@ export async function complete(systemPrompt: string, userMessage: string): Promi
   return response.content;
 }
 
-/**
- * Suggest color scheme based on event type and optional keywords
- */
-export async function suggestColorScheme(
-  eventType: string,
-  keywords?: string[],
-  mood?: string
-): Promise<{
+type ColorScheme = {
   primary: string;
   secondary: string;
   accent: string;
   background: string;
   name: string;
-}[]> {
-  const systemPrompt = `Du bist ein Farbdesign-Experte für Event-Apps.
+};
+
+/**
+ * Suggest color scheme based on event type and optional keywords
+ */
+export const suggestColorScheme = withAiCache<
+  { eventType: string; keywords?: string[]; mood?: string },
+  ColorScheme[]
+>(
+  'suggest-colors',
+  async ({ eventType, keywords, mood }) => {
+    const systemPrompt = `Du bist ein Farbdesign-Experte für Event-Apps.
 Generiere harmonische Farbschemata als HEX-Werte.
 Antworte NUR mit einem JSON-Array von Objekten.
 Jedes Objekt hat: primary, secondary, accent, background (alle als HEX z.B. "#E91E63"), und name (deutscher Name des Schemas).
 Beispiel: [{"primary": "#E91E63", "secondary": "#FCE4EC", "accent": "#FFD700", "background": "#FFF8F0", "name": "Romantisches Rosa"}]`;
 
-  const keywordStr = keywords?.length ? ` Stichworte: ${keywords.join(', ')}.` : '';
-  const moodStr = mood ? ` Stimmung: ${mood}.` : '';
-  
-  const prompt = `Generiere 4 passende Farbschemata für ein "${eventType}" Event.${keywordStr}${moodStr}
+    const keywordStr = keywords?.length ? ` Stichworte: ${keywords.join(', ')}.` : '';
+    const moodStr = mood ? ` Stimmung: ${mood}.` : '';
+
+    const prompt = `Generiere 4 passende Farbschemata für ein "${eventType}" Event.${keywordStr}${moodStr}
 Die Farben sollten harmonisch sein und zur Stimmung des Events passen.
 Berücksichtige: Kontrast für Lesbarkeit, moderne Ästhetik, emotionale Wirkung.`;
 
-  try {
-    const response = await generateCompletion(prompt, systemPrompt, { 
+    const response = await generateCompletion(prompt, systemPrompt, {
       temperature: 0.8,
-      maxTokens: 800 
+      maxTokens: 800,
     });
     const schemes = JSON.parse(response.content);
-    return Array.isArray(schemes) ? schemes : getDefaultColorSchemes(eventType);
-  } catch (error) {
-    logger.error('Error generating color schemes:', { error: (error as Error).message });
-    return getDefaultColorSchemes(eventType);
-  }
-}
+    return Array.isArray(schemes) ? schemes : [];
+  },
+  { fallback: ({ eventType }) => getDefaultColorSchemes(eventType) }
+);
 
 function getDefaultColorSchemes(eventType: string): {
   primary: string;

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import groqService from '../lib/groq';
 import { getActiveProviderInfo } from '../lib/llmClient';
 import { logger } from '../utils/logger';
+import { getAiCacheStats, clearAiCache, warmUpCache, isAiOnline, getAiCacheEntryCount, type AiCacheFeature } from '../services/cache/aiCache';
 
 const router = Router();
 
@@ -50,7 +51,7 @@ router.post('/suggest-albums', rateLimitMiddleware, async (req: Request, res: Re
       return res.status(400).json({ error: 'eventType ist erforderlich' });
     }
     
-    const albums = await groqService.suggestAlbums(eventType, eventTitle);
+    const albums = await groqService.suggestAlbums({ eventType, eventTitle });
     res.json({ albums });
   } catch (error) {
     logger.error('Error in suggest-albums:', { error: (error as Error).message });
@@ -70,7 +71,7 @@ router.post('/suggest-description', rateLimitMiddleware, async (req: Request, re
       return res.status(400).json({ error: 'eventType und eventTitle sind erforderlich' });
     }
     
-    const description = await groqService.suggestDescription(eventType, eventTitle, eventDate);
+    const description = await groqService.suggestDescription({ eventType, eventTitle, eventDate });
     res.json({ description });
   } catch (error) {
     logger.error('Error in suggest-description:', { error: (error as Error).message });
@@ -90,7 +91,7 @@ router.post('/suggest-invitation', rateLimitMiddleware, async (req: Request, res
       return res.status(400).json({ error: 'eventType und eventTitle sind erforderlich' });
     }
     
-    const text = await groqService.suggestInvitationText(eventType, eventTitle, hostName);
+    const text = await groqService.suggestInvitationText({ eventType, eventTitle, hostName });
     res.json({ text });
   } catch (error) {
     logger.error('Error in suggest-invitation:', { error: (error as Error).message });
@@ -110,7 +111,7 @@ router.post('/suggest-challenges', rateLimitMiddleware, async (req: Request, res
       return res.status(400).json({ error: 'eventType ist erforderlich' });
     }
     
-    const challenges = await groqService.suggestChallenges(eventType);
+    const challenges = await groqService.suggestChallenges({ eventType });
     res.json({ challenges });
   } catch (error) {
     logger.error('Error in suggest-challenges:', { error: (error as Error).message });
@@ -130,7 +131,7 @@ router.post('/suggest-guestbook', rateLimitMiddleware, async (req: Request, res:
       return res.status(400).json({ error: 'eventType und eventTitle sind erforderlich' });
     }
     
-    const message = await groqService.suggestGuestbookMessage(eventType, eventTitle);
+    const message = await groqService.suggestGuestbookMessage({ eventType, eventTitle });
     res.json({ message });
   } catch (error) {
     logger.error('Error in suggest-guestbook:', { error: (error as Error).message });
@@ -285,16 +286,112 @@ router.post('/suggest-colors', rateLimitMiddleware, async (req: Request, res: Re
       return res.status(400).json({ error: 'eventType ist erforderlich' });
     }
     
-    const schemes = await groqService.suggestColorScheme(
+    const schemes = await groqService.suggestColorScheme({
       eventType,
-      keywords || [],
-      mood
-    );
+      keywords: keywords || [],
+      mood,
+    });
     
     res.json({ schemes });
   } catch (error) {
     logger.error('Error generating color schemes:', { error: (error as Error).message });
     res.status(500).json({ error: 'Fehler bei der Farbschema-Generierung' });
+  }
+});
+
+// ===== AI CACHE MANAGEMENT (Admin) =====
+
+/**
+ * GET /api/ai/cache/stats
+ * Gibt Cache-Statistiken zurück
+ */
+router.get('/cache/stats', async (_req: Request, res: Response) => {
+  try {
+    const [stats, entries, online] = await Promise.all([
+      getAiCacheStats(),
+      getAiCacheEntryCount(),
+      isAiOnline(),
+    ]);
+
+    res.json({
+      stats,
+      entries,
+      aiOnline: online,
+      offlineReady: Object.values(entries).some(c => c > 0),
+    });
+  } catch (error) {
+    logger.error('Error getting cache stats:', { error: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Abrufen der Cache-Statistiken' });
+  }
+});
+
+/**
+ * POST /api/ai/cache/warm-up
+ * Wärmt den Cache für häufige Anfragen auf
+ */
+router.post('/cache/warm-up', async (req: Request, res: Response) => {
+  try {
+    const { eventTypes } = req.body;
+
+    const online = await isAiOnline();
+    if (!online) {
+      return res.status(503).json({
+        error: 'AI-Provider nicht erreichbar. Warm-Up benötigt Internet.',
+      });
+    }
+
+    // Generate-Funktion die den groqService nutzt
+    const generateFn = async (feature: AiCacheFeature, params: Record<string, any>) => {
+      switch (feature) {
+        case 'suggest-albums':
+          return groqService.suggestAlbums({ eventType: params.eventType, eventTitle: params.eventTitle });
+        case 'suggest-description':
+          return groqService.suggestDescription({ eventType: params.eventType, eventTitle: params.eventTitle || 'Event' });
+        case 'suggest-invitation':
+          return groqService.suggestInvitationText({ eventType: params.eventType, eventTitle: params.eventTitle || 'Event' });
+        case 'suggest-challenges':
+          return groqService.suggestChallenges({ eventType: params.eventType });
+        case 'suggest-guestbook':
+          return groqService.suggestGuestbookMessage({ eventType: params.eventType, eventTitle: params.eventTitle || 'Event' });
+        case 'suggest-colors':
+          return groqService.suggestColorScheme({ eventType: params.eventType });
+        default:
+          return null;
+      }
+    };
+
+    const result = await warmUpCache(generateFn, eventTypes);
+    res.json({ success: true, ...result });
+  } catch (error) {
+    logger.error('Error warming up cache:', { error: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Aufwärmen des Caches' });
+  }
+});
+
+/**
+ * DELETE /api/ai/cache
+ * Löscht den gesamten AI-Cache
+ */
+router.delete('/cache', async (_req: Request, res: Response) => {
+  try {
+    const deleted = await clearAiCache();
+    res.json({ success: true, deletedKeys: deleted });
+  } catch (error) {
+    logger.error('Error clearing cache:', { error: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Löschen des Caches' });
+  }
+});
+
+/**
+ * GET /api/ai/cache/online-status
+ * Prüft ob AI-Provider erreichbar sind
+ */
+router.get('/cache/online-status', async (_req: Request, res: Response) => {
+  try {
+    const online = await isAiOnline();
+    res.json({ online });
+  } catch (error) {
+    res.json({ online: false });
   }
 });
 

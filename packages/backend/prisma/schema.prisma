@@ -1552,6 +1552,39 @@ enum AiProviderType {
   TTS
 }
 
+// ─── LEARNING AI CACHE ─────────────────────────────────────────────────────
+// Persistenter Cache: Jede AI-Antwort wird gespeichert.
+// System lernt mit: Ähnliche Anfragen → gecachte Antworten.
+// Ermöglicht Offline-Betrieb für Text-AI-Features.
+
+model AiResponseCache {
+  id              String    @id @default(uuid())
+  feature         String                            // z.B. "album_suggest", "chat", "description_suggest"
+  inputHash       String                            // SHA-256 Hash der normalisierten Eingabe
+  inputNormalized String                            // Normalisierte Eingabe (lowercase, trimmed)
+  inputRaw        String                            // Original-Eingabe für Debugging
+  eventType       String?                           // Event-Typ für kontextbezogene Suche
+  response        String                            // Gespeicherte AI-Antwort (JSON oder Text)
+  responseFormat  String    @default("text")        // "text" | "json_array" | "json_object"
+  provider        String?                           // Welcher Provider hat die Antwort generiert
+  model           String?                           // Welches Modell
+  quality         Float     @default(1.0)           // Qualitätsscore (0-1), basierend auf Nutzung
+  hitCount        Int       @default(0)             // Wie oft wurde diese Antwort verwendet
+  lastHitAt       DateTime?                         // Letzte Verwendung
+  isVerified      Boolean   @default(false)         // Von Admin als gut markiert
+  isPinned        Boolean   @default(false)         // Immer bevorzugen (nie ablaufen lassen)
+  expiresAt       DateTime?                         // Optional: Ablaufdatum
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([feature, inputHash])
+  @@index([feature, eventType])
+  @@index([feature, inputNormalized])
+  @@index([hitCount(sort: Desc)])
+  @@index([expiresAt])
+  @@map("ai_response_cache")
+}
+
 // ─── SUPPLY OF LEADS (#3) ───────────────────────────────────────────────────
 
 model Lead {
