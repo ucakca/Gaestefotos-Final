@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronUp, Play, Share2 } from 'lucide-react';
+import { ChevronUp, Trophy, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 interface StickyHeaderProps {
@@ -9,7 +9,7 @@ interface StickyHeaderProps {
   hostName: string;
   isVisible: boolean;
   onScrollToTop?: () => void;
-  onSlideshow?: () => void;
+  onLeaderboard?: () => void;
   onShare?: () => void;
 }
 
@@ -18,7 +18,7 @@ export default function StickyHeader({  hostAvatar,
   hostName,
   isVisible,
   onScrollToTop,
-  onSlideshow,
+  onLeaderboard,
   onShare,
 }: StickyHeaderProps) {
   return (
@@ -48,16 +48,16 @@ export default function StickyHeader({  hostAvatar,
         </button>
         
         <div className="flex items-center gap-2">
-          {onSlideshow && (
+          {onLeaderboard && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={onSlideshow}
+              onClick={onLeaderboard}
               className="h-9 px-3 bg-transparent flex items-center gap-1.5"
-              title="Diashow starten"
+              title="Leaderboard"
             >
-              <Play className="h-5 w-5" />
-              <span className="text-xs font-medium">Diashow</span>
+              <Trophy className="h-5 w-5" />
+              <span className="text-xs font-medium">Ranking</span>
             </Button>
           )}
           {onShare && (

@@ -27,7 +27,8 @@ import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { LoadMoreIndicator } from '@/components/ui/LoadMoreIndicator';
 import { PasswordGate } from '@/components/ui/PasswordGate';
 import { Section } from '@/components/ui/Section';
-import { Trophy } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Trophy, Play, X } from 'lucide-react';
 import { useGuestEventData } from '@/hooks/useGuestEventData';
 import { useScrollHeader } from '@/hooks/useScrollHeader';
 import { useStoriesViewer } from '@/hooks/useStoriesViewer';
@@ -48,6 +49,9 @@ export default function PublicEventPageV2() {
   const [qrCodeOpen, setQrCodeOpen] = useState(false);
   const [slideshowOpen, setSlideshowOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('feed');
+  const [fotospassOpen, setFotospassOpen] = useState(false);
+  const [hasMosaicWall, setHasMosaicWall] = useState(false);
+  const [liveSheetOpen, setLiveSheetOpen] = useState(false);
   const [faceSearchOpen, setFaceSearchOpen] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
   const [guestbookEntries, setGuestbookEntries] = useState<any[]>([]);
@@ -105,14 +109,17 @@ export default function PublicEventPageV2() {
     reloadStories,
   } = useStoriesViewer(event?.id ?? null, inviteExchangeBump);
 
-  // Check if mosaic print is enabled for this event
+  // Check if mosaic wall is active for this event
   useEffect(() => {
     if (!event?.id) return;
     api.get(`/events/${event.id}/mosaic/display`)
       .then(res => {
         const wall = res.data?.wall;
-        if (wall?.printEnabled && wall?.status === 'ACTIVE') {
-          setMosaicPrintEnabled(true);
+        if (wall?.status === 'ACTIVE') {
+          setHasMosaicWall(true);
+          if (wall?.printEnabled) {
+            setMosaicPrintEnabled(true);
+          }
         }
       })
       .catch(() => {});
@@ -290,7 +297,7 @@ export default function PublicEventPageV2() {
         hostName={hostName || 'Host'}
         isVisible={isHeaderVisible && !loading}
         onScrollToTop={scrollToTop}
-        onSlideshow={() => setSlideshowOpen(true)}
+        onLeaderboard={() => {/* TODO: Leaderboard Overlay */}}
         onShare={() => setQrCodeOpen(true)}
       />
       <div className="min-h-screen bg-background pb-20">
@@ -413,18 +420,6 @@ export default function PublicEventPageV2() {
         </>
       )}
 
-      {activeTab === 'fotospass' && (
-        <ChallengesTab
-          challenges={challenges || []}
-          eventId={event.id}
-          onChallengeClick={(challenge) => {
-            setUploadChallengeId(challenge.id);
-            setUploadChallengeTitle(challenge.title);
-            setUploadModalOpen(true);
-          }}
-        />
-      )}
-
       {activeTab === 'guestbook' && (
         <GuestbookTab
           entries={guestbookEntries}
@@ -444,6 +439,13 @@ export default function PublicEventPageV2() {
       <BottomNav
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        onLivePress={() => {
+          if (hasMosaicWall) {
+            setLiveSheetOpen(true);
+          } else {
+            setSlideshowOpen(true);
+          }
+        }}
         onCameraAction={(action) => {
           switch (action) {
             case 'photo':
@@ -452,7 +454,7 @@ export default function PublicEventPageV2() {
               setUploadModalOpen(true);
               break;
             case 'game':
-              setActiveTab('fotospass');
+              setFotospassOpen(true);
               break;
             case 'ki-style':
               setUploadChallengeId(null);
@@ -463,13 +465,124 @@ export default function PublicEventPageV2() {
               setActiveTab('feed');
               setFaceSearchOpen(true);
               break;
+            case 'mosaic-upload':
+              setUploadChallengeId(null);
+              setUploadChallengeTitle('Mosaic Wall');
+              setUploadModalOpen(true);
+              break;
           }
         }}
         challengeCount={challenges?.filter((c: any) => c?.isActive).length || 0}
         guestbookCount={guestbookEntries.length}
         showFotoSpass={featuresConfig?.enableFotoSpass !== false && featuresConfig?.challengesEnabled !== false}
         showFaceSearch={featuresConfig?.faceSearch !== false}
+        hasMosaicWall={hasMosaicWall}
       />
+
+      {/* Live Wall Sheet — Diashow vs Mosaic choice */}
+      <AnimatePresence>
+        {liveSheetOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm"
+              onClick={() => setLiveSheetOpen(false)}
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 350 }}
+              className="fixed bottom-0 left-0 right-0 z-[61] bg-card rounded-t-3xl shadow-2xl"
+            >
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
+              </div>
+              <div className="px-6 pb-2">
+                <h3 className="text-lg font-bold">Live ansehen</h3>
+              </div>
+              <div className="px-4 pb-8 space-y-1">
+                <button
+                  onClick={() => { setLiveSheetOpen(false); setSlideshowOpen(true); }}
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-muted/50 active:bg-muted/70 transition-colors"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+                    <Play className="w-6 h-6 text-blue-500" />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-sm font-semibold">Diashow</div>
+                    <div className="text-xs text-muted-foreground">Live-Slideshow der Gästefotos</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => {
+                    setLiveSheetOpen(false);
+                    window.open(`/live/${slug}/mosaic`, '_blank');
+                  }}
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-muted/50 active:bg-muted/70 transition-colors"
+                >
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}>
+                    <span className="text-xl">🧩</span>
+                  </div>
+                  <div className="text-left">
+                    <div className="text-sm font-semibold">Mosaic Wall</div>
+                    <div className="text-xs text-muted-foreground">Live-Mosaik — sieh zu wie es wächst</div>
+                  </div>
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Foto-Spaß Overlay (opened from AI Bottom Sheet → game) */}
+      <AnimatePresence>
+        {fotospassOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[55] bg-black/50 backdrop-blur-sm"
+              onClick={() => setFotospassOpen(false)}
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 350 }}
+              className="fixed bottom-0 left-0 right-0 z-[56] bg-card rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto"
+            >
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
+              </div>
+              <div className="px-6 pb-2 flex items-center justify-between">
+                <h3 className="text-lg font-bold">Foto-Spiele</h3>
+                <button
+                  onClick={() => setFotospassOpen(false)}
+                  className="p-2 rounded-full hover:bg-muted/50 transition-colors"
+                >
+                  <X className="w-5 h-5 text-muted-foreground" />
+                </button>
+              </div>
+              <div className="pb-8">
+                <ChallengesTab
+                  challenges={challenges || []}
+                  eventId={event.id}
+                  onChallengeClick={(challenge) => {
+                    setFotospassOpen(false);
+                    setUploadChallengeId(challenge.id);
+                    setUploadChallengeTitle(challenge.title);
+                    setUploadModalOpen(true);
+                  }}
+                />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Photo Lightbox */}
       <PhotoLightbox
