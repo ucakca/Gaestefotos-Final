@@ -163,7 +163,11 @@ router.get('/by-type/:flowType', async (req: any, res: Response) => {
     }
 
     res.json({ workflow });
-  } catch (error) {
+  } catch (error: any) {
+    // Invalid enum value → treat as 404
+    if (error?.code === 'P2023' || error?.message?.includes('Invalid value')) {
+      return res.status(404).json({ error: 'Ungültiger Workflow-Typ' });
+    }
     logger.error('Get workflow by type error', { message: (error as Error).message });
     res.status(500).json({ error: 'Fehler beim Laden' });
   }
