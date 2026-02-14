@@ -1,6 +1,6 @@
 // ─── Workflow Builder Types ──────────────────────────────────────────────────
 
-export type StepCategory = 'animation' | 'feature' | 'cloud' | 'hardware' | 'ai';
+export type StepCategory = 'trigger' | 'logic' | 'animation' | 'feature' | 'ai' | 'cloud' | 'hardware';
 
 export interface StepTypeDefinition {
   type: string;
@@ -65,6 +65,8 @@ export interface SavedWorkflow {
 // ─── Step Type Registry ─────────────────────────────────────────────────────
 
 export const STEP_CATEGORIES: { key: StepCategory; label: string; color: string }[] = [
+  { key: 'trigger', label: 'Trigger', color: 'rose' },
+  { key: 'logic', label: 'Logik', color: 'cyan' },
   { key: 'animation', label: 'Animation', color: 'orange' },
   { key: 'feature', label: 'Feature', color: 'amber' },
   { key: 'ai', label: 'KI / AI', color: 'violet' },
@@ -73,6 +75,225 @@ export const STEP_CATEGORIES: { key: StepCategory; label: string; color: string 
 ];
 
 export const STEP_TYPES: StepTypeDefinition[] = [
+  // ── TRIGGER ──
+  {
+    type: 'TRIGGER_PHOTO_UPLOAD',
+    label: 'Foto hochgeladen',
+    category: 'trigger',
+    icon: 'Upload',
+    color: 'text-rose-700',
+    bgColor: 'bg-rose-50',
+    borderColor: 'border-rose-300',
+    defaultConfig: { source: 'any' },
+    configFields: [
+      { key: 'source', label: 'Quelle', type: 'select', options: [
+        { value: 'any', label: 'Alle Quellen' },
+        { value: 'guest', label: 'Gast-Upload' },
+        { value: 'booth', label: 'Photo Booth' },
+        { value: 'photographer', label: 'Fotograf' },
+        { value: 'hashtag', label: 'Hashtag-Import' },
+      ]},
+    ],
+    outputs: [{ id: 'default', label: 'Ausgelöst', type: 'default' }],
+  },
+  {
+    type: 'TRIGGER_QR_SCAN',
+    label: 'QR-Code gescannt',
+    category: 'trigger',
+    icon: 'QrCode',
+    color: 'text-rose-700',
+    bgColor: 'bg-rose-50',
+    borderColor: 'border-rose-300',
+    defaultConfig: { action: 'open_gallery' },
+    configFields: [
+      { key: 'action', label: 'Aktion nach Scan', type: 'select', options: [
+        { value: 'open_gallery', label: 'Galerie öffnen' },
+        { value: 'open_upload', label: 'Upload starten' },
+        { value: 'open_booth', label: 'Booth starten' },
+        { value: 'custom', label: 'Benutzerdefiniert' },
+      ]},
+    ],
+    outputs: [{ id: 'default', label: 'Gescannt', type: 'default' }],
+  },
+  {
+    type: 'TRIGGER_TIMER',
+    label: 'Zeitgesteuert',
+    category: 'trigger',
+    icon: 'Clock',
+    color: 'text-rose-700',
+    bgColor: 'bg-rose-50',
+    borderColor: 'border-rose-300',
+    defaultConfig: { mode: 'after_event_start', delayMinutes: 60 },
+    configFields: [
+      { key: 'mode', label: 'Zeitpunkt', type: 'select', options: [
+        { value: 'after_event_start', label: 'Nach Event-Beginn' },
+        { value: 'after_event_end', label: 'Nach Event-Ende' },
+        { value: 'cron', label: 'Wiederkehrend (Cron)' },
+        { value: 'specific_time', label: 'Bestimmte Uhrzeit' },
+      ]},
+      { key: 'delayMinutes', label: 'Verzögerung (Min)', type: 'number', min: 0, max: 10080, defaultValue: 60 },
+    ],
+    outputs: [{ id: 'default', label: 'Ausgelöst', type: 'default' }],
+  },
+  {
+    type: 'TRIGGER_MANUAL',
+    label: 'Manuell (Admin)',
+    category: 'trigger',
+    icon: 'MousePointerClick',
+    color: 'text-rose-700',
+    bgColor: 'bg-rose-50',
+    borderColor: 'border-rose-300',
+    defaultConfig: { buttonLabel: 'Workflow starten', requireConfirmation: true },
+    configFields: [
+      { key: 'buttonLabel', label: 'Button-Text', type: 'text', placeholder: 'Workflow starten' },
+      { key: 'requireConfirmation', label: 'Bestätigung erforderlich', type: 'toggle', defaultValue: true },
+    ],
+    outputs: [{ id: 'default', label: 'Gestartet', type: 'default' }],
+  },
+  {
+    type: 'TRIGGER_EVENT_STATE',
+    label: 'Event-Status',
+    category: 'trigger',
+    icon: 'Flag',
+    color: 'text-rose-700',
+    bgColor: 'bg-rose-50',
+    borderColor: 'border-rose-300',
+    defaultConfig: { state: 'started' },
+    configFields: [
+      { key: 'state', label: 'Bei Status', type: 'select', options: [
+        { value: 'started', label: 'Event gestartet' },
+        { value: 'ended', label: 'Event beendet' },
+        { value: 'paused', label: 'Event pausiert' },
+        { value: 'gallery_locked', label: 'Galerie gesperrt' },
+      ]},
+    ],
+    outputs: [{ id: 'default', label: 'Ausgelöst', type: 'default' }],
+  },
+
+  // ── LOGIC ──
+  {
+    type: 'CONDITION',
+    label: 'Wenn / Dann / Sonst',
+    category: 'logic',
+    icon: 'GitBranch',
+    color: 'text-cyan-700',
+    bgColor: 'bg-cyan-50',
+    borderColor: 'border-cyan-300',
+    defaultConfig: { field: 'upload_source', operator: 'equals', value: 'booth' },
+    configFields: [
+      { key: 'field', label: 'Feld prüfen', type: 'select', options: [
+        { value: 'upload_source', label: 'Upload-Quelle' },
+        { value: 'photo_count', label: 'Foto-Anzahl' },
+        { value: 'has_face', label: 'Gesicht erkannt' },
+        { value: 'quality_score', label: 'Qualitäts-Score' },
+        { value: 'file_size', label: 'Dateigröße' },
+        { value: 'guest_package', label: 'Gast-Paket' },
+        { value: 'event_type', label: 'Event-Typ' },
+        { value: 'time_of_day', label: 'Tageszeit' },
+        { value: 'is_duplicate', label: 'Ist Duplikat' },
+        { value: 'has_consent', label: 'Hat Einwilligung' },
+      ]},
+      { key: 'operator', label: 'Operator', type: 'select', options: [
+        { value: 'equals', label: '= Gleich' },
+        { value: 'not_equals', label: '≠ Ungleich' },
+        { value: 'greater_than', label: '> Größer als' },
+        { value: 'less_than', label: '< Kleiner als' },
+        { value: 'contains', label: 'Enthält' },
+        { value: 'is_true', label: 'Ist wahr' },
+        { value: 'is_false', label: 'Ist falsch' },
+      ]},
+      { key: 'value', label: 'Vergleichswert', type: 'text', placeholder: 'z.B. booth, 10, true' },
+    ],
+    outputs: [
+      { id: 'then', label: 'Dann (✓)', type: 'default' },
+      { id: 'else', label: 'Sonst (✗)', type: 'conditional' },
+    ],
+  },
+  {
+    type: 'SWITCH',
+    label: 'Switch (Mehrfach)',
+    category: 'logic',
+    icon: 'ListTree',
+    color: 'text-cyan-700',
+    bgColor: 'bg-cyan-50',
+    borderColor: 'border-cyan-300',
+    defaultConfig: { field: 'upload_source', cases: 'booth,guest,photographer' },
+    configFields: [
+      { key: 'field', label: 'Feld prüfen', type: 'select', options: [
+        { value: 'upload_source', label: 'Upload-Quelle' },
+        { value: 'event_type', label: 'Event-Typ' },
+        { value: 'guest_package', label: 'Gast-Paket' },
+        { value: 'device_type', label: 'Geräte-Typ' },
+      ]},
+      { key: 'cases', label: 'Werte (kommagetrennt)', type: 'text', placeholder: 'booth,guest,photographer' },
+    ],
+    outputs: [
+      { id: 'case_1', label: 'Fall 1', type: 'default' },
+      { id: 'case_2', label: 'Fall 2', type: 'conditional' },
+      { id: 'case_3', label: 'Fall 3', type: 'conditional' },
+      { id: 'default', label: 'Standard', type: 'skip' },
+    ],
+  },
+  {
+    type: 'DELAY',
+    label: 'Warten / Verzögerung',
+    category: 'logic',
+    icon: 'Timer',
+    color: 'text-cyan-700',
+    bgColor: 'bg-cyan-50',
+    borderColor: 'border-cyan-300',
+    defaultConfig: { duration: 5, unit: 'seconds' },
+    configFields: [
+      { key: 'duration', label: 'Dauer', type: 'number', min: 1, max: 10080, defaultValue: 5 },
+      { key: 'unit', label: 'Einheit', type: 'select', options: [
+        { value: 'seconds', label: 'Sekunden' },
+        { value: 'minutes', label: 'Minuten' },
+        { value: 'hours', label: 'Stunden' },
+      ]},
+    ],
+    outputs: [{ id: 'default', label: 'Weiter', type: 'default' }],
+  },
+  {
+    type: 'LOOP',
+    label: 'Schleife / Wiederholen',
+    category: 'logic',
+    icon: 'Repeat',
+    color: 'text-cyan-700',
+    bgColor: 'bg-cyan-50',
+    borderColor: 'border-cyan-300',
+    defaultConfig: { mode: 'count', maxIterations: 3, condition: 'photo_count < 5' },
+    configFields: [
+      { key: 'mode', label: 'Modus', type: 'select', options: [
+        { value: 'count', label: 'Anzahl Durchläufe' },
+        { value: 'until_condition', label: 'Bis Bedingung erfüllt' },
+        { value: 'infinite', label: 'Endlos (bis manuell gestoppt)' },
+      ]},
+      { key: 'maxIterations', label: 'Max. Durchläufe', type: 'number', min: 1, max: 100, defaultValue: 3 },
+      { key: 'condition', label: 'Bedingung (bei until)', type: 'text', placeholder: 'photo_count >= 5' },
+    ],
+    outputs: [
+      { id: 'loop', label: 'Nächster Durchlauf', type: 'retake' },
+      { id: 'done', label: 'Fertig', type: 'default' },
+    ],
+  },
+  {
+    type: 'PARALLEL',
+    label: 'Parallel ausführen',
+    category: 'logic',
+    icon: 'GitFork',
+    color: 'text-cyan-700',
+    bgColor: 'bg-cyan-50',
+    borderColor: 'border-cyan-300',
+    defaultConfig: { waitForAll: true },
+    configFields: [
+      { key: 'waitForAll', label: 'Auf alle warten', type: 'toggle', defaultValue: true },
+    ],
+    outputs: [
+      { id: 'branch_a', label: 'Pfad A', type: 'default' },
+      { id: 'branch_b', label: 'Pfad B', type: 'conditional' },
+    ],
+  },
+
   // ── ANIMATION ──
   {
     type: 'TOUCH_TO_START',

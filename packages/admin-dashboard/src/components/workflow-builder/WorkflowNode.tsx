@@ -7,6 +7,9 @@ import {
   Lightbulb, Camera, LayoutGrid, Gamepad2, Pen,
   Wand2, MessageSquare, Mail, QrCode, ScanFace,
   Printer, Monitor, Settings,
+  Upload, Clock, MousePointerClick, Flag,
+  GitBranch, ListTree, Repeat, GitFork,
+  Shuffle, Eraser, Palette,
 } from 'lucide-react';
 import type { WorkflowNodeData } from './types';
 
@@ -15,18 +18,27 @@ const ICON_MAP: Record<string, any> = {
   Lightbulb, Camera, LayoutGrid, Gamepad2, Pen,
   Wand2, MessageSquare, Mail, QrCode, ScanFace,
   Printer, Monitor, Settings,
+  Upload, Clock, MousePointerClick, Flag,
+  GitBranch, ListTree, Repeat, GitFork,
+  Shuffle, Eraser, Palette,
 };
 
 const CATEGORY_BADGE: Record<string, { label: string; bg: string; text: string }> = {
+  trigger: { label: 'TRIGGER', bg: 'bg-rose-500', text: 'text-white' },
+  logic: { label: 'LOGIK', bg: 'bg-cyan-500', text: 'text-white' },
   animation: { label: 'ANIMATION', bg: 'bg-orange-500', text: 'text-white' },
   feature: { label: 'FEATURE', bg: 'bg-amber-500', text: 'text-white' },
+  ai: { label: 'KI / AI', bg: 'bg-violet-500', text: 'text-white' },
   cloud: { label: 'CLOUD', bg: 'bg-blue-500', text: 'text-white' },
   hardware: { label: 'HARDWARE', bg: 'bg-emerald-500', text: 'text-white' },
 };
 
 const CATEGORY_COLORS: Record<string, { border: string; headerBg: string; dot: string }> = {
+  trigger: { border: 'border-rose-300', headerBg: 'bg-rose-500', dot: 'bg-rose-500' },
+  logic: { border: 'border-cyan-300', headerBg: 'bg-cyan-500', dot: 'bg-cyan-500' },
   animation: { border: 'border-orange-300', headerBg: 'bg-orange-500', dot: 'bg-orange-500' },
   feature: { border: 'border-amber-300', headerBg: 'bg-amber-500', dot: 'bg-amber-500' },
+  ai: { border: 'border-violet-300', headerBg: 'bg-violet-500', dot: 'bg-violet-500' },
   cloud: { border: 'border-blue-300', headerBg: 'bg-blue-500', dot: 'bg-blue-500' },
   hardware: { border: 'border-emerald-300', headerBg: 'bg-emerald-500', dot: 'bg-emerald-500' },
 };

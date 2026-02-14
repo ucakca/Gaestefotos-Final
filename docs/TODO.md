@@ -1,10 +1,112 @@
 # gästefotos.com — Offene Aufgaben
 
-> Stand: 13.02.2026 — Phase 1 + Phase 2 + Phase 3 + Phase 4 abgeschlossen
+> Stand: 14.02.2026 — Phase 1 + Phase 2 + Phase 3 + Phase 4 abgeschlossen
 
 ---
 
-## 🔴 Phase 4 — Dashboard Redesign & Event Wall
+## 📊 Code-Analyse & Findings (14.02.2026)
+
+### Gemini-Analyse — Bewertung
+
+| Gemini-Kritik | Realität | Bewertung |
+|---------------|----------|-----------|
+| "Flache Ordnerstruktur" | Monorepo: `packages/frontend`, `packages/backend`, `packages/admin-dashboard`, `packages/print-terminal` | ❌ **Falsch** |
+| "`use client` zu weit oben" | Next.js 16 Tree-Shaking, Impact gering | ⚠️ **Teilweise** |
+| "Domain-Driven Design fehlt" | Backend hat klare Route-Struktur (`/api/auth`, `/api/events`, `/api/photos`, etc.) | ❌ **Falsch** |
+| "Race Conditions Upload" | Bereits gefixt: `setPhotos(prev => [...prev, newPhoto])` + Socket.IO Real-time | ✅ **Bereits gefixt** |
+| "Error-Handling Supabase/Firebase" | Wir nutzen **SeaweedFS** (selbst-gehostet), nicht Supabase | ❌ **Falsch** — kennt Stack nicht |
+| "Hydration Mismatch" | Sortierung serverseitig via API, keine Client-Randomisierung | ✅ **Bereits berücksichtigt** |
+| "Layout Shift (CLS)" | `next/image` mit `fill` + `aspect-ratio` Container | ✅ **Bereits gefixt** |
+| "Upload Feedback fehlt" | Progress-Bar + Toast-Notifications implementiert | ✅ **Bereits implementiert** |
+| "Farbkontrast WCAG" | Phase 4 Bug-Fix: Filter-Badge (`bg-white/30`) | ✅ **Bereits gefixt** |
+
+**Fazit**: Gemini analysiert generisch ohne projektspezifisches Wissen. Stack (SeaweedFS, Monorepo) nicht erkannt.
+
+### Architektur-Stärken
+
+| Aspekt | Implementierung |
+|--------|-----------------|
+| **Monorepo** | pnpm workspaces, 4 Packages, shared types |
+| **API** | Express + Prisma + Socket.IO, klare Route-Struktur |
+| **Storage** | SeaweedFS (selbst-gehostet), kein Vendor Lock-in |
+| **Auth** | JWT + Session-basiert, Role-based (ADMIN/PARTNER/HOST) |
+| **Real-time** | Socket.IO für Live-Updates (Galerie, Mosaic, Analytics) |
+| **AI** | Multi-Provider (Groq/Grok/OpenAI) mit Fallback-Kette + Redis-Cache |
+
+### Offene Punkte — Konsolidierte Liste
+
+| Kategorie | Erledigt | Offen | Priorität |
+|-----------|----------|-------|-----------|
+| **AI-Integration** | 4 | 11 | � MEDIUM |
+| **Bugs** | 2 | 0 | ✅ |
+| **Neue Features** | 0 | 5 | � HIGH |
+| **Tech-Debt** | 0 | 7 | 🟢 LOW |
+| **Zu testen** | 1 | 1 | 🟡 MEDIUM |
+| **Features Phase 1-4** | ~50 | 0 | ✅ |
+
+### Empfohlene Reihenfolge
+
+1. ~~**NF-1**: Admin Log-System~~ ✅ erledigt (14.02.2026)
+2. ~~**NF-2**: Workflow Builder erweitern~~ ✅ erledigt (Schema + API, Migration pending)
+3. ~~**AI-10**: Cache-Verwaltung UI~~ ✅ erledigt (Admin Dashboard)
+4. **AI-3**: Grok API-Key besorgen (XAI_API_KEY in .env)
+5. **AI-12**: Bild-KI Provider evaluieren (Replicate vs Stability vs fal.ai)
+6. **NF-5**: Storage Subdomain (USB-Export)
+
+---
+
+## 🤖 Phase 5 — AI-Integration & Offline-Strategie
+
+> Detaillierte Docs: [AI-STRATEGIE.md](./AI-STRATEGIE.md) | [AI-OFFLINE-STRATEGIE.md](./AI-OFFLINE-STRATEGIE.md)
+
+### AI Provider Setup
+
+| # | Aufgabe | Status | Priorität | Beschreibung |
+|---|---------|--------|-----------|--------------|
+| AI-1 | **Groq Integration** | ✅ erledigt | — | Llama 3.1 70B aktiv, ~$0.00059/1k Tokens |
+| AI-2 | **AI-Cache-System** | ✅ erledigt | — | Redis-basiertes Cache mit 30d TTL, Hit-Tracking, Fallbacks |
+| AI-3 | **Grok (xAI) API-Key** | ⏳ offen | MEDIUM | `XAI_API_KEY` in .env setzen, Seed ausführen |
+| AI-4 | **OpenAI API-Key** | ⏳ offen | LOW | `OPENAI_API_KEY` in .env setzen, als Fallback |
+| AI-5 | **AiFeatureMapping DB** | ⏳ offen | LOW | Feature→Provider Zuordnungen in Admin-Dashboard anlegen |
+
+### AI Backend Erweiterungen
+
+| # | Aufgabe | Status | Priorität | Beschreibung |
+|---|---------|--------|-----------|--------------|
+| AI-6 | **Warm-Up Endpoint** | ✅ erledigt | — | `POST /api/ai/cache/warm-up` implementiert |
+| AI-7 | **Cache-Stats Endpoint** | ✅ erledigt | — | `GET /api/ai/cache/stats` + `/online-status` + `DELETE /cache` |
+| AI-8 | **Ollama Integration** | ⏳ offen | LOW | Lokaler LLM-Fallback auf Server (Llama 3.1/3.3) |
+| AI-9 | **Redis AOF Persistenz** | ⏳ offen | LOW | Redis-Config für persistenten AI-Cache |
+
+### AI Admin Dashboard
+
+| # | Aufgabe | Status | Priorität | Beschreibung |
+|---|---------|--------|-----------|--------------|
+| AI-10 | **Cache-Verwaltung UI** | ✅ erledigt | — | `/system/ai-cache` mit Stats, Warm-Up, Clear, Event-Type-Auswahl |
+| AI-11 | **Provider-Monitoring** | ⏳ offen | LOW | API-Status, Latenz, Fehlerrate pro Provider |
+
+### Bild-KI Features (Cloud-only)
+
+| # | Aufgabe | Status | Priorität | Beschreibung |
+|---|---------|--------|-----------|--------------|
+| AI-12 | **Bild-KI Provider** | ⏳ offen | MEDIUM | Replicate, Stability AI, oder fal.ai evaluieren |
+| AI-13 | **BG Removal** | ⏳ offen | MEDIUM | Hintergrund entfernen für Booth-Fotos |
+| AI-14 | **AI Oldify/Cartoon** | ⏳ offen | LOW | Alterungs- und Cartoon-Effekte |
+| AI-15 | **Style Transfer** | ⏳ offen | LOW | Erweiterte Kunststile (über aktuelle 10 hinaus) |
+
+### Zusammenfassung AI
+
+| Kategorie | Erledigt | Offen |
+|-----------|----------|-------|
+| Provider Setup | 2 | 3 |
+| Backend | 2 | 2 |
+| Admin UI | 1 | 1 |
+| Bild-KI | 0 | 4 |
+| **Gesamt** | **5** | **10** |
+
+---
+
+## ✅ Phase 4 — Dashboard Redesign & Event Wall
 
 > Detailliertes Planungsdokument: [PHASE4-PLANUNG.md](./PHASE4-PLANUNG.md)
 
@@ -57,9 +159,76 @@
 
 ## 🐛 Bugs / Fixes
 
-| # | Bug | Status | Beschreibung |
-|---|-----|--------|--------------|
-| B1 | **Mosaic Tile Overlay** | ✅ gefixt | Hochgeladene Fotos hatten kein Zielbild-Overlay. Fix: `blendTargetOverlay()` in `mosaicEngine.ts` — blendet den entsprechenden Target-Image-Abschnitt auf jedes Tile. |
+| # | Bug | Status | Priorität | Beschreibung |
+|---|-----|--------|-----------|--------------|
+| B1 | **Mosaic Tile Overlay** | ✅ gefixt | — | Hochgeladene Fotos hatten kein Zielbild-Overlay. Fix: `blendTargetOverlay()` in `mosaicEngine.ts` |
+| B2 | **Duplikat-Erkennung** | ✅ gefixt | — | `processDuplicateDetection` war nicht eingebunden → jetzt in `photos.ts` Upload-Route integriert + WebSocket-Event |
+
+---
+
+## 🧪 Zu Testen
+
+| # | Feature | Status | Beschreibung |
+|---|---------|--------|--------------|
+| TEST-1 | **Gästeliste** | ✅ geprüft | Code vollständig: CRUD API + TanStack Table + Import. Offene TODOs: E-Mail (TD-4) + Details (TD-5) |
+| TEST-2 | **Lead-Erfassung** | ⏳ nicht getestet | Nur für Admin/Partner relevant — Funktionstest steht aus |
+
+---
+
+## 🆕 Neue Features (Phase 6)
+
+| # | Feature | Status | Priorität | Beschreibung |
+|---|---------|--------|-----------|--------------|
+| NF-1 | **Admin Log-System** | ⏳ offen | HIGH | Umfangreiches Logging mit Filter-Funktion. Wichtig für Event-Debugging! Zeigt was passiert wenn Buttons gedrückt werden. Für AI-Analyse und Troubleshooting. |
+| NF-2 | **Workflow Builder Erweiterung** | ⏳ offen | HIGH | Alle existierenden Workflows über Builder bearbeitbar. Fixe Workflows sperren mit Entsperr-Option. Multi-Session Support für Events mit mehreren Geräten. Auch für `app.gästefotos.com` aktiv. |
+| NF-3 | **SMS Sharing** | ⏳ offen | MEDIUM | Noch zu besprechen: Wie funktioniert SMS-Versand? Gateway? Kosten? |
+| NF-4 | **Face Recognition Erweiterung** | ⏳ offen | MEDIUM | Face-Api/DeepFace erweitern — bessere Genauigkeit, mehr Features |
+| NF-5 | **Storage Subdomain** | ⏳ offen | LOW | Neue Subdomain für Zugriff auf Gäste-Speicher. USB-Export Möglichkeit. |
+
+---
+
+## 💬 Entscheidungen & Notizen
+
+### AI Provider Strategie
+
+| Anwendungsfall | Provider | Begründung |
+|----------------|----------|------------|
+| **Komplexe Texte** | Grok (xAI) | Beste Qualität für anspruchsvolle Texte |
+| **Standard-Texte** | Groq (Llama) | ✅ Aktiv — Schnell + günstig |
+| **Fallback** | OpenAI | OK trotz Kosten — wird selten gebraucht |
+| **Bild-KI** | TBD | Replicate vs Stability vs fal.ai evaluieren |
+
+### Bild-KI Vergleich (TODO: Recherche)
+
+| Provider | Stärken | Schwächen | Fotomaster-Vergleich |
+|----------|---------|-----------|---------------------|
+| **Replicate** | Viele Modelle, flexibel | Latenz variiert | ? |
+| **Stability AI** | Stable Diffusion, konsistent | Teurer | ? |
+| **fal.ai** | Schnell, günstig | Weniger Modelle | ? |
+
+> ⚠️ **Ziel**: Fotomaster AI-Angebot erreichen oder übertreffen!
+
+### Feature-Zielgruppen
+
+| Feature | Zielgruppe | Notiz |
+|---------|------------|-------|
+| Lead-Erfassung | Admin, Partner | Nicht für normale Hosts |
+| Workflow Builder | Admin | Multi-Session für Events mit mehreren Geräten |
+| Log-System | Admin, AI | Für Debugging + AI-Analyse |
+
+---
+
+## 🔧 Tech-Debt & Minor Items
+
+| # | Aufgabe | Status | Datei | Beschreibung |
+|---|---------|--------|-------|--------------|
+| TD-1 | **Sentry Integration** | ⏳ offen | `ErrorBoundary.tsx` | Production Error-Tracking einrichten |
+| TD-2 | **Invitation Canvas Elements** | ⏳ offen | `InvitationCanvas.tsx` | Element-Rendering für Einladungs-Designer |
+| TD-3 | **QR Design DB-Table** | ⏳ offen | `events.ts` | `qrDesign` Table fehlt im Schema, läuft auf Mock |
+| TD-4 | **Guest Email senden** | ⏳ offen | `guests/page.tsx` | E-Mail-Funktion für Gäste implementieren |
+| TD-5 | **Guest Details anzeigen** | ⏳ offen | `guests/page.tsx` | Detail-Modal für Gäste |
+| TD-6 | **Upload Confetti** | ⏳ offen | `UploadButton.tsx` | Confetti-Animation bei Upload wieder aktivieren |
+| TD-7 | **Select All Shortcuts** | ⏳ offen | `useKeyboardShortcuts.ts` | Cmd+A für alle Elemente im Editor |
 
 ---
 

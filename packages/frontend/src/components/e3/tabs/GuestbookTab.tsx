@@ -1,12 +1,19 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, User, Send, Heart, Camera, X, ImagePlus, Loader2 } from 'lucide-react';
+import { MessageSquare, User, Send, Heart, Camera, X, ImagePlus, Loader2, Workflow } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import api from '@/lib/api';
+import dynamic from 'next/dynamic';
+import { useWorkflow } from '@/hooks/useWorkflow';
+
+const WorkflowRunner = dynamic(
+  () => import('@/components/workflow-runtime/WorkflowRunner'),
+  { ssr: false }
+);
 
 /**
  * GuestbookTab - v0-Style Guestbook Tab
@@ -49,6 +56,43 @@ export default function GuestbookTab({
   const [submitting, setSubmitting] = useState(false);
   const [photo, setPhoto] = useState<PhotoUpload | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [useWorkflowMode, setUseWorkflowMode] = useState(true);
+  const { definition: workflowDef, loading: wfLoading } = useWorkflow('GUESTBOOK');
+
+  const handleWorkflowComplete = useCallback(async (collectedData: Record<string, any>) => {
+    try {
+      const authorName = collectedData.text || collectedData.gb2_text || '';
+      const msg = collectedData.gb3_text || '';
+      if (!authorName.trim() || !msg.trim()) return;
+
+      const payload: any = { authorName: authorName.trim(), message: msg.trim() };
+
+      // If a photo was captured, upload it first
+      if (collectedData.photo && collectedData.hasPhoto) {
+        try {
+          const response = await fetch(collectedData.photo);
+          const blob = await response.blob();
+          const formData = new FormData();
+          formData.append('photo', blob, 'guestbook-photo.jpg');
+          const uploadRes = await api.post(`/events/${eventId}/guestbook/upload-photo`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          if (uploadRes.data?.uploadId) {
+            payload.photoUploadId = uploadRes.data.uploadId;
+            payload.photoStoragePath = uploadRes.data.storagePath;
+            payload.photoSizeBytes = uploadRes.data.photoSizeBytes;
+          }
+        } catch {
+          // Photo upload failed — submit without photo
+        }
+      }
+
+      await api.post(`/events/${eventId}/guestbook`, payload);
+      onEntrySubmit?.();
+    } catch {
+      // Submit failed
+    }
+  }, [eventId, onEntrySubmit]);
 
   const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -140,13 +184,42 @@ export default function GuestbookTab({
     <div className="max-w-3xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-app-fg mb-2">Gästebuch</h2>
-        <p className="text-app-muted">
-          Hinterlasse eine Nachricht für das Brautpaar!
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-app-fg mb-2">Gästebuch</h2>
+            <p className="text-app-muted">
+              Hinterlasse eine Nachricht für das Brautpaar!
+            </p>
+          </div>
+          {workflowDef && (
+            <button
+              onClick={() => setUseWorkflowMode(!useWorkflowMode)}
+              className="p-2 rounded-lg hover:bg-app-bg transition-colors text-app-muted hover:text-app-fg"
+              title={useWorkflowMode ? 'Klassisches Formular' : 'Geführter Modus'}
+            >
+              <Workflow className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Submit Form */}
+      {/* Workflow-driven Submit Form */}
+      {useWorkflowMode && workflowDef && !wfLoading ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-app-card border border-app-border rounded-2xl mb-8 shadow-sm overflow-hidden"
+        >
+          <WorkflowRunner
+            definition={workflowDef}
+            eventId={eventId}
+            autoStart
+            onComplete={handleWorkflowComplete}
+          />
+        </motion.div>
+      ) : (
+
+      /* Classic Submit Form */
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -268,6 +341,7 @@ export default function GuestbookTab({
           </Button>
         </form>
       </motion.div>
+      )}
 
       {/* Entries Timeline */}
       {entries.length === 0 ? (

@@ -17,6 +17,7 @@ import { selectSmartCategoryId } from '../services/smartAlbum';
 import { mosaicEngine } from '../services/mosaicEngine';
 import { getFaceDetectionMetadata } from '../services/faceRecognition';
 import { addBrandingOverlay } from '../services/logoOverlay';
+import { processDuplicateDetection } from '../services/duplicateDetection';
 import { isFeatureEnabled } from '../services/featureGate';
 import archiver from 'archiver';
 import { logger } from '../utils/logger';
@@ -390,6 +391,34 @@ router.post(
           }
         } catch (err: any) {
           logger.warn('Face detection failed (non-critical)', { error: err.message, photoId: photo.id });
+        }
+      })();
+
+      // Duplicate Detection: calculate hashes and find similar photos (async, non-blocking)
+      (async () => {
+        try {
+          const duplicateResult = await processDuplicateDetection(
+            eventId,
+            photo.id,
+            processed.optimized
+          );
+          if (duplicateResult.isDuplicate) {
+            logger.info('Duplicate detected', {
+              photoId: photo.id,
+              groupId: duplicateResult.duplicateGroupId,
+              isBest: duplicateResult.isBestInGroup,
+              similarCount: duplicateResult.similarPhotos?.length || 0,
+            });
+            // Emit WebSocket event for duplicate notification
+            io.to(`event:${eventId}`).emit('duplicate_detected', {
+              photoId: photo.id,
+              duplicateGroupId: duplicateResult.duplicateGroupId,
+              isBestInGroup: duplicateResult.isBestInGroup,
+              similarPhotos: duplicateResult.similarPhotos,
+            });
+          }
+        } catch (err: any) {
+          logger.warn('Duplicate detection failed (non-critical)', { error: err.message, photoId: photo.id });
         }
       })();
 

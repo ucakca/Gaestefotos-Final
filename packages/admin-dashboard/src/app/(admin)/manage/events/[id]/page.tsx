@@ -335,7 +335,9 @@ export default function EventDetailPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-3 gap-4">
-        <StatCard icon={Image} label="Fotos" value={event._count.photos} color="blue" />
+        <button onClick={() => router.push(`/manage/events/${event.id}/photos`)} className="text-left">
+          <StatCard icon={Image} label="Fotos" value={event._count.photos} color="blue" clickable />
+        </button>
         <StatCard icon={Users} label="Gäste" value={event._count.guests} color="green" />
         <StatCard icon={Video} label="Videos" value={event._count.videos} color="purple" />
       </div>
@@ -791,19 +793,20 @@ export default function EventDetailPage() {
   );
 }
 
-function StatCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: number; color: string }) {
+function StatCard({ icon: Icon, label, value, color, clickable }: { icon: any; label: string; value: number; color: string; clickable?: boolean }) {
   const colorMap: Record<string, string> = {
     blue: 'bg-blue-500/10 text-blue-500',
     green: 'bg-green-500/10 text-green-500',
     purple: 'bg-purple-500/10 text-purple-500',
   };
   return (
-    <div className="rounded-2xl border border-app-border bg-app-card p-4 text-center">
+    <div className={`rounded-2xl border border-app-border bg-app-card p-4 text-center transition-all ${clickable ? 'hover:border-app-accent hover:shadow-lg cursor-pointer' : ''}`}>
       <div className={`w-10 h-10 rounded-xl ${colorMap[color]} flex items-center justify-center mx-auto mb-2`}>
         <Icon className="w-5 h-5" />
       </div>
       <div className="text-2xl font-bold text-app-fg">{value}</div>
       <div className="text-xs text-app-muted">{label}</div>
+      {clickable && <div className="text-xs text-app-accent mt-1">Klicken zum Öffnen →</div>}
     </div>
   );
 }

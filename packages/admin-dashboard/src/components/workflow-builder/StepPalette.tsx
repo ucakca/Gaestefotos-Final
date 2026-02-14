@@ -5,6 +5,9 @@ import {
   Lightbulb, Camera, LayoutGrid, Gamepad2, Pen,
   Wand2, MessageSquare, Mail, QrCode, ScanFace,
   Printer, Monitor, GripVertical,
+  Upload, Clock, MousePointerClick, Flag,
+  GitBranch, ListTree, Repeat, GitFork,
+  Shuffle, Eraser, Palette,
 } from 'lucide-react';
 import { STEP_CATEGORIES, STEP_TYPES, type StepTypeDefinition } from './types';
 
@@ -13,11 +16,17 @@ const ICON_MAP: Record<string, any> = {
   Lightbulb, Camera, LayoutGrid, Gamepad2, Pen,
   Wand2, MessageSquare, Mail, QrCode, ScanFace,
   Printer, Monitor,
+  Upload, Clock, MousePointerClick, Flag,
+  GitBranch, ListTree, Repeat, GitFork,
+  Shuffle, Eraser, Palette,
 };
 
 const CATEGORY_STYLE: Record<string, { bg: string; border: string; text: string; dot: string }> = {
+  trigger: { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-700', dot: 'bg-rose-500' },
+  logic: { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-700', dot: 'bg-cyan-500' },
   animation: { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', dot: 'bg-orange-500' },
   feature: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', dot: 'bg-amber-500' },
+  ai: { bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-700', dot: 'bg-violet-500' },
   cloud: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', dot: 'bg-blue-500' },
   hardware: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', dot: 'bg-emerald-500' },
 };

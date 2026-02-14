@@ -1704,18 +1704,59 @@ model GraffitiLayer {
 // ─── WORKFLOW BUILDER (#9) ──────────────────────────────────────────────────
 
 model BoothWorkflow {
-  id            String    @id @default(uuid())
+  id            String              @id @default(uuid())
   name          String
   description   String?
   steps         Json
-  isPublic      Boolean   @default(false)
-  isDefault     Boolean   @default(false)
+  isPublic      Boolean             @default(false)
+  isDefault     Boolean             @default(false)
+  isSystem      Boolean             @default(false)     // System workflows created by AI
+  isLocked      Boolean             @default(false)     // Locked workflows can't be edited
+  flowType      WorkflowFlowType    @default(BOOTH)     // Type of flow this workflow is for
+  version       Int                 @default(1)
+  parentId      String?                                 // For versioning: points to original workflow
   createdBy     String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  lockedAt      DateTime?
+  lockedBy      String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
   events        Event[]
+  backups       WorkflowBackup[]
 
+  @@index([flowType])
+  @@index([isSystem])
+  @@index([parentId])
   @@map("booth_workflows")
+}
+
+model WorkflowBackup {
+  id          String        @id @default(uuid())
+  workflowId  String
+  workflow    BoothWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  name        String
+  steps       Json
+  version     Int
+  createdBy   String?
+  reason      String?                                   // "Manual backup", "Before unlock", etc.
+  createdAt   DateTime      @default(now())
+
+  @@index([workflowId])
+  @@map("workflow_backups")
+}
+
+enum WorkflowFlowType {
+  BOOTH           // Photo Booth Hardware
+  MIRROR_BOOTH    // Mirror Booth
+  KI_BOOTH        // KI Booth
+  KI_KUNST        // KI-Kunst App Flow
+  FOTO_SPIEL      // Foto-Spiele
+  UPLOAD          // Upload Flow
+  FACE_SEARCH     // Face Search Flow
+  MOSAIC          // Mosaic Wall Flow
+  GUESTBOOK       // Gästebuch Flow
+  SPINNER         // 360° Spinner
+  DRAWBOT         // Drawbot
+  CUSTOM          // Custom workflow
 }
 
 // ─── GAMIFICATION (P4-5) ────────────────────────────────────────────────────

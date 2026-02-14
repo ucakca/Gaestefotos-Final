@@ -1,0 +1,58 @@
+{
+  "name": "@gaestefotos/booth-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Gästefotos Booth App — Electron + Next.js workflow-driven photo booth",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "next dev -p 3002",
+    "build": "next build",
+    "start": "next start -p 3002",
+    "electron:dev": "concurrently \"next dev -p 3002\" \"wait-on http://localhost:3002 && electron .\"",
+    "electron:build": "next build && electron-builder",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "14.2.29",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "framer-motion": "^11.0.0",
+    "axios": "^1.7.0",
+    "lucide-react": "^0.400.0",
+    "tailwindcss": "^3.4.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0"
+  },
+  "devDependencies": {
+    "electron": "^29.0.0",
+    "electron-builder": "^24.0.0",
+    "concurrently": "^8.0.0",
+    "wait-on": "^7.0.0",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0"
+  },
+  "build": {
+    "appId": "com.gaestefotos.booth",
+    "productName": "Gästefotos Booth",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "electron/**/*",
+      ".next/**/*",
+      "public/**/*",
+      "package.json"
+    ],
+    "linux": {
+      "target": ["AppImage", "deb"]
+    },
+    "win": {
+      "target": ["nsis"]
+    },
+    "mac": {
+      "target": ["dmg"]
+    }
+  }
+}
