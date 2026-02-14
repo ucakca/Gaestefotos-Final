@@ -24,8 +24,11 @@ export function DualFAB({
       initial={{ y: 0 }}
       animate={{ y: 0 }}
     >
-      {/* Glow effect behind the pill */}
-      <div className="absolute inset-0 rounded-2xl bg-purple-500/20 blur-xl scale-110 pointer-events-none" />
+      {/* Glow — uses event accent color */}
+      <div
+        className="absolute inset-0 rounded-2xl blur-xl scale-110 pointer-events-none opacity-30"
+        style={{ backgroundColor: 'hsl(var(--primary))' }}
+      />
 
       {/* Main split-pill container */}
       <div
@@ -34,8 +37,10 @@ export function DualFAB({
           'rounded-2xl overflow-hidden',
           'bg-gray-900/90 backdrop-blur-xl',
           'border border-white/10',
-          'shadow-[0_8px_32px_rgba(147,51,234,0.3),0_2px_8px_rgba(0,0,0,0.4)]',
         )}
+        style={{
+          boxShadow: 'var(--dual-fab-shadow, 0 8px 32px hsl(var(--primary) / 0.3), 0 2px 8px rgba(0,0,0,0.4))',
+        }}
       >
         {/* Left: Upload (+) */}
         <motion.button
@@ -49,7 +54,11 @@ export function DualFAB({
           )}
           title="Foto hochladen"
         >
-          <Plus className="w-7 h-7 text-purple-400" strokeWidth={2.5} />
+          <Plus
+            className="w-7 h-7"
+            strokeWidth={2.5}
+            style={{ color: 'hsl(var(--primary))' }}
+          />
         </motion.button>
 
         {/* Divider */}
@@ -67,7 +76,12 @@ export function DualFAB({
           )}
           title="KI Studio"
         >
-          <span className="text-lg font-bold bg-gradient-to-br from-purple-400 via-purple-300 to-white bg-clip-text text-transparent select-none">
+          <span
+            className="text-lg font-bold bg-clip-text text-transparent select-none"
+            style={{
+              backgroundImage: 'linear-gradient(to bottom right, hsl(var(--primary)), hsl(var(--primary) / 0.7), white)',
+            }}
+          >
             AI
           </span>
         </motion.button>
