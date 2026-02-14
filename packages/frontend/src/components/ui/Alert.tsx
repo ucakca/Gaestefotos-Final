@@ -8,8 +8,8 @@ export type AlertProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 const variantClasses: Record<Variant, string> = {
-  info: 'border-app-border bg-app-bg text-app-fg',
-  danger: 'border-status-danger bg-app-bg text-status-danger',
+  info: 'border-border bg-background text-foreground',
+  danger: 'border-destructive/50 bg-destructive/10 text-destructive',
 };
 
 export function Alert({ variant = 'info', title, className = '', children, ...props }: AlertProps) {

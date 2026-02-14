@@ -66,22 +66,22 @@ export default function BottomNav({
         {isActive && (
           <motion.div
             layoutId="activeTab"
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 bg-app-accent rounded-full"
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-1 bg-primary rounded-full"
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
           />
         )}
         <div className="relative">
           <Icon
-            className={`w-6 h-6 transition-colors ${isActive ? 'text-app-accent' : 'text-gray-400'}`}
+            className={`w-6 h-6 transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
             strokeWidth={isActive ? 2 : 1.5}
           />
           {count > 0 && (
-            <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 rounded-full bg-app-accent text-white text-[10px] font-bold flex items-center justify-center px-1">
+            <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center px-1">
               {count}
             </span>
           )}
         </div>
-        <span className={`text-xs transition-colors ${isActive ? 'text-app-accent font-medium' : 'text-gray-400'}`}>
+        <span className={`text-xs transition-colors ${isActive ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
           {tab.label}
         </span>
       </motion.button>
@@ -106,10 +106,10 @@ export default function BottomNav({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 40 }}
               transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              className="fixed bottom-24 left-4 right-4 z-[61] bg-app-card rounded-2xl shadow-2xl border border-app-border overflow-hidden"
+              className="fixed bottom-24 left-4 right-4 z-[61] bg-card rounded-2xl shadow-2xl border border-border overflow-hidden"
             >
               <div className="p-4">
-                <h3 className="text-lg font-bold text-app-fg mb-3">Was möchtest du tun?</h3>
+                <h3 className="text-lg font-bold text-foreground mb-3">Was möchtest du tun?</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {cameraActions.map((action) => {
                     const ActionIcon = action.icon;
@@ -121,12 +121,12 @@ export default function BottomNav({
                           setCameraOpen(false);
                           onCameraAction?.(action.id);
                         }}
-                        className="flex flex-col items-center gap-2 p-4 rounded-xl bg-app-bg border border-app-border hover:border-app-accent/50 transition-colors"
+                        className="flex flex-col items-center gap-2 p-4 rounded-xl bg-secondary/50 border border-border hover:border-primary/50 transition-colors"
                       >
                         <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${action.color} flex items-center justify-center shadow-md`}>
                           <ActionIcon className="w-6 h-6 text-white" />
                         </div>
-                        <span className="text-sm font-medium text-app-fg text-center">{action.label}</span>
+                        <span className="text-sm font-medium text-foreground text-center">{action.label}</span>
                       </motion.button>
                     );
                   })}
@@ -138,7 +138,7 @@ export default function BottomNav({
       </AnimatePresence>
 
       {/* Bottom Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-app-card border-t border-app-border shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-around">
             {/* Left tabs */}
@@ -152,7 +152,7 @@ export default function BottomNav({
                 className={`w-14 h-14 -mt-5 rounded-full shadow-lg flex items-center justify-center transition-all ${
                   cameraOpen
                     ? 'bg-gray-600 rotate-45'
-                    : 'bg-gradient-to-br from-app-accent to-app-accent/80'
+                    : 'bg-gradient-to-br from-primary to-primary/80'
                 }`}
               >
                 {cameraOpen ? (
@@ -161,7 +161,7 @@ export default function BottomNav({
                   <Camera className="w-7 h-7 text-white" />
                 )}
               </motion.button>
-              <span className="text-[10px] text-gray-400 mt-0.5">Kamera</span>
+              <span className="text-[10px] text-muted-foreground mt-0.5">Kamera</span>
             </div>
 
             {/* Right tabs */}

@@ -38,7 +38,7 @@ export default function AlbumNavigation({
   ];
 
   return (
-    <div className="sticky top-0 z-30 bg-app-card/95 backdrop-blur border-b border-app-border pt-safe-top" style={{ marginTop: '0' }}>
+    <div className="sticky top-0 z-30 bg-card/95 backdrop-blur border-b border-border pt-safe-top" style={{ marginTop: '0' }}>
       <div className="max-w-md mx-auto px-4 py-3" style={{ paddingTop: '1rem', paddingBottom: '0.75rem' }}>
         {/* Horizontal Scrollable Album Navigation */}
         <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">

@@ -76,14 +76,15 @@ export default {
         champagne: "hsl(var(--champagne))",
         blush: "hsl(var(--blush))",
         cream: "hsl(var(--cream))",
-        // Legacy app-* for backward compatibility
+        // Legacy app-* colors - mapped to modern tokens for backward compatibility
+        // TODO: Remove after full migration to modern tokens
         app: {
-          bg: 'hsl(var(--app-bg))',
-          fg: 'hsl(var(--app-fg))',
-          card: 'hsl(var(--app-card))',
-          border: 'hsl(var(--app-border))',
-          muted: 'hsl(var(--app-muted))',
-          accent: 'hsl(var(--app-accent))',
+          bg: 'hsl(var(--background))',      // was: --app-bg
+          fg: 'hsl(var(--foreground))',        // was: --app-fg
+          card: 'hsl(var(--card))',            // was: --app-card
+          border: 'hsl(var(--border))',        // was: --app-border
+          muted: 'hsl(var(--muted-foreground))', // was: --app-muted
+          accent: 'hsl(var(--primary))',       // was: --app-accent -> maps to primary
         },
         status: {
           danger: 'hsl(var(--destructive))',

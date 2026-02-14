@@ -8,6 +8,6 @@ type SectionProps = {
   borderColorClassName?: string;
 };
 
-export function Section({ children, className, borderColorClassName = 'border-app-border' }: SectionProps) {
+export function Section({ children, className, borderColorClassName = 'border-border' }: SectionProps) {
   return <div className={`px-4 py-3 border-b ${borderColorClassName}${className ? ` ${className}` : ''}`}>{children}</div>;
 }

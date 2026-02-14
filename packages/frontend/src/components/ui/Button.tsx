@@ -16,7 +16,7 @@ const buttonVariants = cva(
       variant: {
         primary: 'btn-festive text-white shadow-lg hover:shadow-xl',
         secondary: 'bg-secondary text-secondary-foreground border border-border hover:bg-secondary/80 shadow-sm hover:shadow-md',
-        outline: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 shadow-sm',
+        outline: 'bg-background text-foreground border border-border hover:bg-accent/10 hover:border-primary/50 shadow-sm',
         ghost: 'bg-transparent text-foreground hover:bg-accent/10',
         danger: 'bg-destructive text-destructive-foreground hover:opacity-90 shadow-md hover:shadow-lg',
       },

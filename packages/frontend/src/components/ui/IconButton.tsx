@@ -9,14 +9,17 @@ type Variant = 'ghost' | 'glass' | 'danger';
 
 type Size = 'sm' | 'md' | 'lg';
 
+const base =
+  'inline-flex items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 disabled:pointer-events-none disabled:opacity-50';
+
 const iconButtonVariants = cva(
-  'inline-flex items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/30 disabled:pointer-events-none disabled:opacity-50',
+  base,
   {
     variants: {
       variant: {
-        ghost: 'bg-transparent text-app-fg hover:bg-app-bg',
-        glass: 'bg-app-card/10 text-app-bg hover:bg-app-card/15',
-        danger: 'bg-status-danger text-app-bg hover:opacity-90',
+        ghost: 'bg-transparent text-foreground hover:bg-accent/10',
+        glass: 'bg-card/10 text-background hover:bg-card/20 backdrop-blur-sm',
+        danger: 'bg-destructive text-destructive-foreground hover:opacity-90',
       },
       size: {
         sm: 'w-8 h-8',
