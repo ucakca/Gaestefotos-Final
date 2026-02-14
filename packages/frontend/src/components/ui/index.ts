@@ -9,6 +9,7 @@ export { FormTextarea } from './FormTextarea';
 export { FormSelect } from './FormSelect';
 export { FormCheckbox } from './FormCheckbox';
 export { SplitFAB } from './SplitFAB';
+export { DualFAB } from './DualFAB';
 export { AnimatedCard } from './AnimatedCard';
 export { AnimatedCounter } from './AnimatedCounter';
 export { PageTransition } from './PageTransition';

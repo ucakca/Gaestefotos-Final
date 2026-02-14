@@ -5,10 +5,10 @@ import { Home, PartyPopper, BookOpen, Info } from 'lucide-react';
 import { DualFAB } from '@/components/ui/DualFAB';
 
 /**
- * BottomNav - v0-Style Bottom Navigation with SplitFAB
+ * BottomNav - v0-Style Bottom Navigation with DualFAB
  * 
- * 5-slot layout: Feed, Foto-Spaß, [SplitFAB], Gästebuch, Info
- * Center SplitFAB opens menu with Upload, KI Studio, Camera options.
+ * 5-slot layout: Feed, Foto-Spaß, [+ | AI], Gästebuch, Info
+ * Center: DualFAB with Upload (+) and KI Studio (AI) buttons.
  */
 
 export type TabId = 'feed' | 'fotospass' | 'guestbook' | 'info';
@@ -87,11 +87,10 @@ export default function BottomNav({
           {/* Left tabs */}
           {leftTabs.map(renderTab)}
 
-          {/* Center SplitFAB */}
-          <SplitFAB
+          {/* Center DualFAB - Upload + KI Studio */}
+          <DualFAB
             onUploadClick={() => onCameraAction?.('photo')}
             onKIStudioClick={() => onCameraAction?.('ki-style')}
-            onCameraClick={() => onCameraAction?.('photo')}
           />
 
           {/* Right tabs */}
