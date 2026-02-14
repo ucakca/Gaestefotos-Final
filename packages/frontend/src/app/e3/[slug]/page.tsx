@@ -519,7 +519,7 @@ export default function PublicEventPageV2() {
                 <button
                   onClick={() => {
                     setLiveSheetOpen(false);
-                    window.open(`/live/${slug}/mosaic`, '_blank');
+                    router.push(`/live/${slug}/mosaic`);
                   }}
                   className="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-muted/50 active:bg-muted/70 transition-colors"
                 >
