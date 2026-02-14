@@ -1,13 +1,5 @@
-import Groq from 'groq-sdk';
 import { logger } from '../utils/logger';
-
-// Initialize Groq client
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY || '',
-});
-
-// Default model - Llama 3 70B for best quality
-const DEFAULT_MODEL = 'llama-3.1-70b-versatile';
+import { getDefaultConfig, chatCompletion, getActiveProviderInfo, type ChatMessage, type LLMResponse } from './llmClient';
 
 interface AIResponse {
   content: string;
@@ -19,7 +11,8 @@ interface AIResponse {
 }
 
 /**
- * Generate text completion using Groq
+ * Generate text completion using the active LLM provider (Groq, Grok/xAI, or OpenAI).
+ * Backwards-compatible wrapper around the unified llmClient.
  */
 export async function generateCompletion(
   prompt: string,
@@ -29,27 +22,22 @@ export async function generateCompletion(
     temperature?: number;
   }
 ): Promise<AIResponse> {
-  const messages: { role: 'system' | 'user'; content: string }[] = [];
+  const config = getDefaultConfig();
+  const messages: ChatMessage[] = [];
   
   if (systemPrompt) {
     messages.push({ role: 'system', content: systemPrompt });
   }
   messages.push({ role: 'user', content: prompt });
 
-  const completion = await groq.chat.completions.create({
-    model: DEFAULT_MODEL,
-    messages,
-    max_tokens: options?.maxTokens || 500,
-    temperature: options?.temperature || 0.7,
+  const result: LLMResponse = await chatCompletion(config, messages, {
+    maxTokens: options?.maxTokens,
+    temperature: options?.temperature,
   });
 
   return {
-    content: completion.choices[0]?.message?.content || '',
-    usage: completion.usage ? {
-      prompt_tokens: completion.usage.prompt_tokens,
-      completion_tokens: completion.usage.completion_tokens,
-      total_tokens: completion.usage.total_tokens,
-    } : undefined,
+    content: result.content,
+    usage: result.usage,
   };
 }
 

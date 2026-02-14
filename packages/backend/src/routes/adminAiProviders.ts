@@ -444,6 +444,30 @@ router.post('/:id/test', authMiddleware, async (req: AuthRequest, res: Response)
         });
         success = !!completion.choices[0]?.message?.content;
         message = success ? `Antwort: "${completion.choices[0].message.content}"` : 'Keine Antwort';
+      } else if (provider.slug.includes('grok') || provider.slug.includes('xai') || provider.slug.includes('x-ai')) {
+        // Grok / xAI — OpenAI-compatible API
+        const baseUrl = provider.baseUrl || 'https://api.x.ai/v1';
+        const resp = await fetch(`${baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            model: model || 'grok-2-latest',
+            messages: [{ role: 'user', content: 'Say "OK" in one word.' }],
+            max_tokens: 5,
+          }),
+        });
+        if (resp.ok) {
+          const data = await resp.json() as any;
+          const answer = data.choices?.[0]?.message?.content || '';
+          success = !!answer;
+          message = success ? `Grok Antwort: "${answer}" (Model: ${data.model || model})` : 'Keine Antwort';
+        } else {
+          const body = await resp.text().catch(() => '');
+          message = `${resp.status} ${resp.statusText} — ${body.slice(0, 200)}`;
+        }
       } else if (provider.slug === 'openai' || provider.slug.includes('openai')) {
         const baseUrl = provider.baseUrl || 'https://api.openai.com/v1';
         const resp = await fetch(`${baseUrl}/models`, {

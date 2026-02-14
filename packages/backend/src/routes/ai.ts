@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import groqService from '../lib/groq';
+import { getActiveProviderInfo } from '../lib/llmClient';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -142,12 +143,8 @@ router.post('/suggest-guestbook', rateLimitMiddleware, async (req: Request, res:
  * Check if AI is available
  */
 router.get('/status', (req: Request, res: Response) => {
-  const hasApiKey = !!process.env.GROQ_API_KEY;
-  res.json({ 
-    available: hasApiKey,
-    provider: 'groq',
-    model: 'llama-3.1-70b-versatile'
-  });
+  const info = getActiveProviderInfo();
+  res.json(info);
 });
 
 // ===== CHAT BOT WITH CACHING =====
