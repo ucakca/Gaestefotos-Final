@@ -211,6 +211,7 @@ export default function MosaicWizard({ eventId }: Props) {
         overlayIntensity: state.overlayIntensity,
         scatterValue: state.scatterValue,
         displayAnimation: state.selectedAnimations[0] || 'ZOOM_FLY',
+        selectedAnimations: state.selectedAnimations,
         showTicker: state.showTicker,
         showQrOverlay: state.showQrOverlay,
         autoFillEnabled: state.autoFillEnabled,

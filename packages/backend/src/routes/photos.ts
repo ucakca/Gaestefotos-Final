@@ -363,6 +363,8 @@ router.post(
                   position: result.position,
                   printNumber: result.printNumber,
                   photoId: photo.id,
+                  croppedImageUrl: `/api/events/${eventId}/mosaic/tile-image/${result.tileId}`,
+                  uploadedBy: photo.uploadedBy || null,
                 });
               }
             } catch (err: any) {

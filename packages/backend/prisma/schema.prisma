@@ -1010,6 +1010,7 @@ model MosaicWall {
   autoFillEnabled    Boolean             @default(true)
   autoFillThreshold  Int                 @default(85)
   displayAnimation   MosaicAnimation     @default(ZOOM_FLY)
+  selectedAnimations String[]            @default(["ZOOM_FLY", "PUZZLE", "FLIP", "PARTICLES", "RIPPLE"])
   showTicker         Boolean             @default(true)
   showQrOverlay      Boolean             @default(true)
   nextPrintNumber    Int                 @default(1)

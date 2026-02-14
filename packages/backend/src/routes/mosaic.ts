@@ -177,6 +177,7 @@ router.put('/:eventId/mosaic', authMiddleware, async (req: AuthRequest, res: Res
       'overlayIntensity', 'status', 'fillMode', 'displayAnimation',
       'autoFillEnabled', 'autoFillThreshold', 'showTicker', 'showQrOverlay',
       'printEnabled', 'printConfirmation', 'reservationTimeout', 'scatterValue',
+      'selectedAnimations',
     ];
 
     const data: any = {};
@@ -187,6 +188,8 @@ router.put('/:eventId/mosaic', authMiddleware, async (req: AuthRequest, res: Res
           data[field] = val !== null ? Number(val) : null;
         } else if (['autoFillEnabled', 'showTicker', 'showQrOverlay', 'printEnabled', 'printConfirmation'].includes(field)) {
           data[field] = Boolean(val);
+        } else if (field === 'selectedAnimations') {
+          data[field] = Array.isArray(val) ? val : [val];
         } else {
           data[field] = val;
         }
@@ -809,12 +812,14 @@ router.get('/:eventId/mosaic/display', async (req: AuthRequest, res: Response) =
         overlayIntensity: true,
         status: true,
         displayAnimation: true,
+        selectedAnimations: true,
         showTicker: true,
         showQrOverlay: true,
         fillMode: true,
         printEnabled: true,
         printConfirmation: true,
         sourceModes: true,
+        scatterValue: true,
       },
     });
 
