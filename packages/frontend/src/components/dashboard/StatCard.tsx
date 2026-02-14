@@ -55,7 +55,7 @@ export default function StatCard({
       whileHover={onClick ? { scale: 1.02, y: -2 } : {}}
       whileTap={onClick ? { scale: 0.98 } : {}}
       className={`
-        bg-app-card border border-app-border rounded-2xl p-6 shadow-sm
+        bg-card border border-border rounded-2xl p-6 shadow-sm
         transition-shadow duration-200 hover:shadow-md
         ${onClick ? 'cursor-pointer text-left w-full' : ''}
       `}
@@ -67,8 +67,8 @@ export default function StatCard({
           </div>
           
           <div className="space-y-1">
-            <p className="text-3xl font-bold text-app-fg">{value}</p>
-            <p className="text-sm text-app-muted">{label}</p>
+            <p className="text-3xl font-bold text-foreground">{value}</p>
+            <p className="text-sm text-muted-foreground">{label}</p>
           </div>
         </div>
 

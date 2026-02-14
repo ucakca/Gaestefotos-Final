@@ -508,22 +508,22 @@ function SetupSheet({
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-app-card rounded-t-2xl max-h-[85vh] flex flex-col"
+        className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-2xl max-h-[85vh] flex flex-col"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-app-border">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-border">
           <button
             onClick={onClose}
-            className="p-2 -ml-2 rounded-lg hover:bg-app-bg transition-colors"
+            className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors"
           >
-            <ChevronLeft className="w-5 h-5 text-app-muted" />
+            <ChevronLeft className="w-5 h-5 text-muted-foreground" />
           </button>
-          <h3 className="font-semibold text-app-fg">{title}</h3>
+          <h3 className="font-semibold text-foreground">{title}</h3>
           <button
             onClick={onClose}
-            className="p-2 -mr-2 rounded-lg hover:bg-app-bg transition-colors"
+            className="p-2 -mr-2 rounded-lg hover:bg-muted transition-colors"
           >
-            <X className="w-5 h-5 text-app-muted" />
+            <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
@@ -533,7 +533,7 @@ function SetupSheet({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-app-border bg-app-card">
+        <div className="p-4 border-t border-border bg-card">
           <Button
             onClick={onSave}
             disabled={!isValid || saving}

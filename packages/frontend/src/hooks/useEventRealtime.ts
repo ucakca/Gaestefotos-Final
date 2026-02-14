@@ -34,10 +34,26 @@ export function useEventRealtime(
       ));
     });
 
+    // Listen for guestbook entries with photos (for wall feed)
+    const unsubscribeGuestbook = wsManager.on('guestbook_entry_added', (data: any) => {
+      if (data.photoUrl) {
+        const guestbookPhoto = {
+          id: `guestbook-${data.id}`,
+          storagePath: data.photoUrl,
+          description: data.message,
+          uploadedBy: data.authorName,
+          createdAt: data.createdAt,
+          status: 'APPROVED',
+        } as any;
+        setPhotos(prev => [guestbookPhoto, ...prev]);
+      }
+    });
+
     // Cleanup
     return () => {
       unsubscribePhotoUploaded();
       unsubscribePhotoApproved();
+      unsubscribeGuestbook();
       wsManager.leaveEvent(eventId);
     };
   }, [eventId, opts?.enabled]);

@@ -148,4 +148,131 @@ router.get('/:slug/latest', async (req: any, res: Response) => {
   }
 });
 
+/**
+ * GET /api/slideshow/:slug/wall-feed — Unified wall feed aggregating all sources
+ * Returns photos + guestbook entries with photos in a single chronological feed
+ * Public endpoint for live wall / TV display
+ */
+router.get('/:slug/wall-feed', async (req: any, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const { limit = '50', sources = 'photos,guestbook' } = req.query;
+
+    const event = await prisma.event.findFirst({
+      where: { slug, isActive: true, deletedAt: null },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        designConfig: true,
+        featuresConfig: true,
+      },
+    });
+
+    if (!event) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    const take = Math.min(parseInt(limit as string) || 50, 200);
+    const enabledSources = (sources as string).split(',');
+    const baseUrl = process.env.FRONTEND_URL || 'https://gästefotos.com';
+
+    const feedItems: any[] = [];
+
+    // Source: Photos
+    if (enabledSources.includes('photos')) {
+      const photos = await prisma.photo.findMany({
+        where: {
+          eventId: event.id,
+          status: 'APPROVED',
+        },
+        orderBy: { createdAt: 'desc' },
+        take,
+        select: {
+          id: true,
+          storagePath: true,
+          storagePathThumb: true,
+          description: true,
+          uploadedBy: true,
+          createdAt: true,
+        },
+      });
+
+      photos.forEach(p => {
+        feedItems.push({
+          id: p.id,
+          type: 'photo',
+          imageUrl: `${baseUrl}/api/photos/${p.id}/image`,
+          thumbnailUrl: p.storagePathThumb ? `${baseUrl}/api/photos/${p.id}/thumbnail` : undefined,
+          caption: p.description || undefined,
+          guestName: p.uploadedBy || undefined,
+          createdAt: p.createdAt,
+        });
+      });
+    }
+
+    // Source: Guestbook entries with photos
+    if (enabledSources.includes('guestbook')) {
+      const guestbookEntries = await (prisma as any).guestbookEntry.findMany({
+        where: {
+          eventId: event.id,
+          status: 'APPROVED',
+          photoUrl: { not: null },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: Math.min(take, 30),
+        select: {
+          id: true,
+          authorName: true,
+          message: true,
+          photoUrl: true,
+          createdAt: true,
+        },
+      });
+
+      guestbookEntries.forEach((g: any) => {
+        feedItems.push({
+          id: `guestbook-${g.id}`,
+          type: 'guestbook',
+          imageUrl: g.photoUrl ? `${baseUrl}${g.photoUrl}` : undefined,
+          caption: g.message || undefined,
+          guestName: g.authorName || undefined,
+          likeCount: 0,
+          createdAt: g.createdAt,
+        });
+      });
+    }
+
+    // Sort all items chronologically (newest first)
+    feedItems.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    const designConfig = event.designConfig as any;
+    const featuresConfig = event.featuresConfig as any;
+
+    res.json({
+      event: {
+        id: event.id,
+        title: event.title,
+        slug: event.slug,
+        primaryColor: designConfig?.primaryColor || '#295B4D',
+        logoUrl: designConfig?.logoUrl || undefined,
+      },
+      wallConfig: {
+        intervalSeconds: featuresConfig?.wallInterval || 7,
+        animation: featuresConfig?.wallAnimation || 'fade',
+        showCaptions: featuresConfig?.wallShowCaptions !== false,
+        showGuestNames: featuresConfig?.wallShowGuestNames !== false,
+        showQrCode: featuresConfig?.wallShowQrCode !== false,
+        showLikeCount: featuresConfig?.wallShowLikeCount !== false,
+        showGuestbook: enabledSources.includes('guestbook'),
+      },
+      feed: feedItems.slice(0, take),
+      totalItems: feedItems.length,
+    });
+  } catch (error) {
+    logger.error('Wall feed error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Laden des Wall-Feeds' });
+  }
+});
+
 export default router;

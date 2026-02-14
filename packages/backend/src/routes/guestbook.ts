@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import multer from 'multer';
+import { io } from '../index';
 import prisma from '../config/database';
 import { AuthRequest, authMiddleware, optionalAuthMiddleware, requireEventAccess, hasEventAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
@@ -515,6 +516,20 @@ router.post(
     });
 
     res.status(201).json(serializeBigInt({ entry }));
+
+    // Emit WebSocket event for live wall / real-time feed
+    try {
+      io.to(`event:${eventId}`).emit('guestbook_entry_added', {
+        id: entry.id,
+        authorName: entry.authorName,
+        message: entry.message,
+        photoUrl: entry.photoUrl || null,
+        createdAt: entry.createdAt,
+        source: 'guestbook',
+      });
+    } catch (wsErr) {
+      logger.warn('Guestbook WebSocket emit failed', { error: (wsErr as Error).message });
+    }
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });

@@ -66,8 +66,8 @@ export default function PhotoCard({
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`relative bg-app-card border-2 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all ${
-        isSelected ? 'border-app-accent' : 'border-app-border'
+      className={`relative bg-card border-2 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all ${
+        isSelected ? 'border-primary' : 'border-border'
       }`}
     >
       {/* Selection Checkbox */}
@@ -77,8 +77,8 @@ export default function PhotoCard({
             onClick={onSelect}
             className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
               isSelected
-                ? 'bg-app-accent border-app-accent text-white'
-                : 'bg-white/90 border-app-border hover:border-app-accent'
+                ? 'bg-primary border-primary text-white'
+                : 'bg-white/90 border-border hover:border-primary'
             }`}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -97,10 +97,10 @@ export default function PhotoCard({
       </div>
 
       {/* Image */}
-      <div className="relative aspect-square bg-app-bg">
+      <div className="relative aspect-square bg-background">
         {!imageLoaded && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-app-accent border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         )}
         <img
@@ -131,10 +131,10 @@ export default function PhotoCard({
       {/* Footer with Info & Actions */}
       <div className="p-3 flex items-center justify-between">
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-app-muted truncate">
+          <p className="text-xs text-muted-foreground truncate">
             {photo.uploaderName || 'Unbekannt'}
           </p>
-          <p className="text-xs text-app-muted">
+          <p className="text-xs text-muted-foreground">
             {new Date(photo.createdAt).toLocaleDateString('de-DE')}
           </p>
         </div>
@@ -173,11 +173,11 @@ export default function PhotoCard({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <motion.button
-                className="p-1.5 rounded-lg hover:bg-app-bg transition-colors"
+                className="p-1.5 rounded-lg hover:bg-muted transition-colors"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <MoreVertical className="w-4 h-4 text-app-muted" />
+                <MoreVertical className="w-4 h-4 text-muted-foreground" />
               </motion.button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
