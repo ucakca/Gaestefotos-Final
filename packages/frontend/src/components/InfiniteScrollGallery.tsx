@@ -79,7 +79,7 @@ export default function InfiniteScrollGallery({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-8 text-app-muted text-sm"
+          className="text-center py-8 text-muted-foreground text-sm"
         >
           Alle {photos.length} Fotos geladen
         </motion.div>

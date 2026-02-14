@@ -44,9 +44,9 @@ export default function Leaderboard({ eventId, visitorId }: LeaderboardProps) {
   if (entries.length === 0) {
     return (
       <div className="text-center py-12">
-        <Trophy className="w-12 h-12 text-app-muted mx-auto mb-3 opacity-30" />
-        <p className="text-app-muted text-sm">Noch keine Teilnehmer</p>
-        <p className="text-app-muted text-xs mt-1">Lade Fotos hoch und spiele Spiele, um Punkte zu sammeln!</p>
+        <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-30" />
+        <p className="text-muted-foreground text-sm">Noch keine Teilnehmer</p>
+        <p className="text-muted-foreground text-xs mt-1">Lade Fotos hoch und spiele Spiele, um Punkte zu sammeln!</p>
       </div>
     );
   }
@@ -55,14 +55,14 @@ export default function Leaderboard({ eventId, visitorId }: LeaderboardProps) {
     if (rank === 1) return <Crown className="w-5 h-5 text-yellow-500" />;
     if (rank === 2) return <Medal className="w-5 h-5 text-gray-400" />;
     if (rank === 3) return <Medal className="w-5 h-5 text-amber-600" />;
-    return <span className="w-5 h-5 flex items-center justify-center text-xs font-bold text-app-muted">{rank}</span>;
+    return <span className="w-5 h-5 flex items-center justify-center text-xs font-bold text-muted-foreground">{rank}</span>;
   };
 
   const getRankBg = (rank: number) => {
     if (rank === 1) return 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200';
     if (rank === 2) return 'bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200';
     if (rank === 3) return 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200';
-    return 'bg-app-card border-app-border';
+    return 'bg-card border-border';
   };
 
   return (
@@ -94,7 +94,7 @@ export default function Leaderboard({ eventId, visitorId }: LeaderboardProps) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-sm text-app-fg truncate">
+                <span className="font-semibold text-sm text-foreground truncate">
                   {entry.name || 'Anonym'}
                 </span>
                 {isMe && (
@@ -103,15 +103,15 @@ export default function Leaderboard({ eventId, visitorId }: LeaderboardProps) {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-app-muted">
+              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                 <span>📸 {entry.photoCount}</span>
                 <span>🎮 {entry.gameCount}</span>
                 {entry.kiCount > 0 && <span>🎨 {entry.kiCount}</span>}
               </div>
             </div>
             <div className="flex-shrink-0 text-right">
-              <div className="font-bold text-app-fg">{entry.totalScore}</div>
-              <div className="text-[10px] text-app-muted">Punkte</div>
+              <div className="font-bold text-foreground">{entry.totalScore}</div>
+              <div className="text-[10px] text-muted-foreground">Punkte</div>
             </div>
           </motion.div>
         );

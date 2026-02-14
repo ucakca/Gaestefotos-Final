@@ -94,7 +94,7 @@ export default function PrintServiceSettingsPage() {
       <div className="p-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-2xl font-bold mb-6">Druckservice Einstellungen</h1>
-          <p className="text-status-danger">Fehler beim Laden der Einstellungen</p>
+          <p className="text-destructive">Fehler beim Laden der Einstellungen</p>
         </div>
       </div>
     );
@@ -105,13 +105,13 @@ export default function PrintServiceSettingsPage() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Druckservice Einstellungen</h1>
-          <p className="text-app-muted mt-1">
+          <p className="text-muted-foreground mt-1">
             Konfiguriere die Integration mit WooCommerce für QR-Code Druckservice
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-4 bg-status-danger/10 border border-status-danger rounded-lg text-status-danger">
+          <div className="mb-4 p-4 bg-status-danger/10 border border-status-danger rounded-lg text-destructive">
             {error}
           </div>
         )}
@@ -124,14 +124,14 @@ export default function PrintServiceSettingsPage() {
 
         <form onSubmit={handleSave} className="space-y-6">
           <Card>
-            <div className="p-6 border-b border-app-border">
+            <div className="p-6 border-b border-border">
               <h3 className="text-lg font-semibold">Aktivierung</h3>
             </div>
             <div className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Druckservice aktivieren</p>
-                  <p className="text-sm text-app-muted">
+                  <p className="text-sm text-muted-foreground">
                     Zeigt "Jetzt drucken lassen" Button im QR-Styler
                   </p>
                 </div>
@@ -146,7 +146,7 @@ export default function PrintServiceSettingsPage() {
           </Card>
 
           <Card>
-            <div className="p-6 border-b border-app-border">
+            <div className="p-6 border-b border-border">
               <h3 className="text-lg font-semibold">WooCommerce Integration</h3>
             </div>
             <div className="p-6 space-y-4">
@@ -160,7 +160,7 @@ export default function PrintServiceSettingsPage() {
                   value={settings.wordpressUrl || ''}
                   onChange={(e) => setSettings({ ...settings, wordpressUrl: e.target.value })}
                 />
-                <p className="text-xs text-app-muted mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Haupt-URL deiner WordPress Installation
                 </p>
               </div>
@@ -191,18 +191,18 @@ export default function PrintServiceSettingsPage() {
                 </div>
               </div>
 
-              <p className="text-xs text-app-muted">
+              <p className="text-xs text-muted-foreground">
                 Finde die Product IDs in WooCommerce → Produkte → Bearbeiten (URL: ?post=123)
               </p>
             </div>
           </Card>
 
           <Card>
-            <div className="p-6 border-b border-app-border">
+            <div className="p-6 border-b border-border">
               <h3 className="text-lg font-semibold">Preise (nur zur Anzeige)</h3>
             </div>
             <div className="p-6 space-y-4">
-              <p className="text-sm text-app-muted">
+              <p className="text-sm text-muted-foreground">
                 Diese Preise werden nur im QR-Styler angezeigt. Die echten Preise werden aus WooCommerce geladen.
               </p>
 
@@ -237,11 +237,11 @@ export default function PrintServiceSettingsPage() {
           </Card>
 
           <Card>
-            <div className="p-6 border-b border-app-border">
+            <div className="p-6 border-b border-border">
               <h3 className="text-lg font-semibold">Test Integration</h3>
             </div>
             <div className="p-6 space-y-4">
-              <p className="text-sm text-app-muted">
+              <p className="text-sm text-muted-foreground">
                 Teste die Checkout URL Generierung (öffnet in neuem Tab)
               </p>
               <Button

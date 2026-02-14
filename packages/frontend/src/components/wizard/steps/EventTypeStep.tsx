@@ -52,12 +52,12 @@ export default function EventTypeStep({
                 ${
                   isSelected
                     ? 'border-app-accent bg-app-accent/10 ring-2 ring-app-accent ring-offset-2 shadow-lg'
-                    : 'border-app-border bg-app-card hover:border-app-muted hover:bg-app-bg'
+                    : 'border-border bg-card hover:border-app-muted hover:bg-background'
                 }
               `}
             >
-              <IconComponent className={`w-12 h-12 mb-3 ${isSelected ? 'text-app-accent' : 'text-app-muted'}`} />
-              <span className={`font-medium ${isSelected ? 'text-app-accent' : 'text-app-fg'}`}>
+              <IconComponent className={`w-12 h-12 mb-3 ${isSelected ? 'text-app-accent' : 'text-muted-foreground'}`} />
+              <span className={`font-medium ${isSelected ? 'text-app-accent' : 'text-foreground'}`}>
                 {config.label}
               </span>
               {isSelected && (
@@ -72,7 +72,7 @@ export default function EventTypeStep({
 
       {hasSubtypes && (
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-app-fg">Welche Art?</h3>
+          <h3 className="text-lg font-medium text-foreground">Welche Art?</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {eventConfig.subtypes!.map((subtype) => {
               const isSelected = selectedSubtype === subtype.id;
@@ -85,11 +85,11 @@ export default function EventTypeStep({
                     ${
                       isSelected
                         ? 'border-app-accent bg-app-accent/10 ring-1 ring-app-accent'
-                        : 'border-app-border bg-app-card hover:border-app-muted hover:bg-app-bg'
+                        : 'border-border bg-card hover:border-app-muted hover:bg-background'
                     }
                   `}
                 >
-                  <span className={isSelected ? 'text-app-accent font-medium' : 'text-app-fg'}>
+                  <span className={isSelected ? 'text-app-accent font-medium' : 'text-foreground'}>
                     {subtype.label}
                   </span>
                   {isSelected && (

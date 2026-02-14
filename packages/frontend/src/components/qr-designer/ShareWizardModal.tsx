@@ -123,23 +123,23 @@ export default function ShareWizardModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-app-bg border border-app-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-background border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-app-border">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
             <Share2 className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-app-fg">Teilen & Drucken</h2>
+            <h2 className="text-lg font-semibold text-foreground">Teilen & Drucken</h2>
           </div>
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-app-surface transition-colors"
           >
-            <X className="w-5 h-5 text-app-muted" />
+            <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-app-border">
+        <div className="flex border-b border-border">
           {[
             { key: 'digital', label: '📱 Digital', desc: 'Social Media & Web' },
             { key: 'diy', label: '🖨️ Selbst drucken', desc: 'PDF Vorlagen' },
@@ -153,8 +153,8 @@ export default function ShareWizardModal({
                 activeTab === tab.key
                   ? 'bg-primary/10 border-b-2 border-primary text-primary'
                   : tab.key === 'order'
-                  ? 'text-app-muted/50 cursor-not-allowed'
-                  : 'text-app-muted hover:bg-app-surface'
+                  ? 'text-muted-foreground/50 cursor-not-allowed'
+                  : 'text-muted-foreground hover:bg-app-surface'
               }`}
             >
               <div className="font-medium text-sm">{tab.label}</div>
@@ -204,7 +204,7 @@ export default function ShareWizardModal({
                       className={`p-4 rounded-xl border transition-all text-left ${
                         isSuccess
                           ? 'border-green-500 bg-green-500/10'
-                          : 'border-app-border hover:border-primary hover:bg-primary/5'
+                          : 'border-border hover:border-primary hover:bg-primary/5'
                       } ${exporting && !isLoading ? 'opacity-50' : ''}`}
                     >
                       <div className="flex items-start gap-3">
@@ -214,12 +214,12 @@ export default function ShareWizardModal({
                           ) : isLoading ? (
                             <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                           ) : (
-                            <Icon className="w-5 h-5 text-app-muted" />
+                            <Icon className="w-5 h-5 text-muted-foreground" />
                           )}
                         </div>
                         <div>
-                          <div className="font-medium text-app-fg text-sm">{format.label}</div>
-                          <div className="text-xs text-app-muted">{format.desc}</div>
+                          <div className="font-medium text-foreground text-sm">{format.label}</div>
+                          <div className="text-xs text-muted-foreground">{format.desc}</div>
                         </div>
                       </div>
                     </button>
@@ -235,7 +235,7 @@ export default function ShareWizardModal({
               {/* Info Banner */}
               <div className="flex gap-3 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
                 <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-app-fg">
+                <div className="text-sm text-foreground">
                   <strong>Tipp:</strong> Drucke auf 300g/m² Karton für beste Ergebnisse. 
                   Faltlinien sind im PDF enthalten.
                 </div>
@@ -256,7 +256,7 @@ export default function ShareWizardModal({
                       className={`p-4 rounded-xl border transition-all text-left ${
                         isSuccess
                           ? 'border-green-500 bg-green-500/10'
-                          : 'border-app-border hover:border-primary hover:bg-primary/5'
+                          : 'border-border hover:border-primary hover:bg-primary/5'
                       } ${exporting && !isLoading ? 'opacity-50' : ''}`}
                     >
                       <div className="flex items-center gap-4">
@@ -266,14 +266,14 @@ export default function ShareWizardModal({
                           ) : isLoading ? (
                             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                           ) : (
-                            <Icon className="w-6 h-6 text-app-muted" />
+                            <Icon className="w-6 h-6 text-muted-foreground" />
                           )}
                         </div>
                         <div className="flex-1">
-                          <div className="font-medium text-app-fg">{format.label}</div>
-                          <div className="text-sm text-app-muted">{format.desc}</div>
+                          <div className="font-medium text-foreground">{format.label}</div>
+                          <div className="text-sm text-muted-foreground">{format.desc}</div>
                         </div>
-                        <Download className="w-5 h-5 text-app-muted" />
+                        <Download className="w-5 h-5 text-muted-foreground" />
                       </div>
                     </button>
                   );
@@ -288,8 +288,8 @@ export default function ShareWizardModal({
               <div className="w-16 h-16 rounded-full bg-app-surface flex items-center justify-center mb-4">
                 <span className="text-3xl">📦</span>
               </div>
-              <h3 className="text-lg font-semibold text-app-fg mb-2">Bald verfügbar!</h3>
-              <p className="text-app-muted text-sm max-w-xs">
+              <h3 className="text-lg font-semibold text-foreground mb-2">Bald verfügbar!</h3>
+              <p className="text-muted-foreground text-sm max-w-xs">
                 Bestelle fertige Tischaufsteller, Acryl-Displays und mehr direkt zu dir nach Hause.
               </p>
               <Button
@@ -305,12 +305,12 @@ export default function ShareWizardModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-app-border bg-app-surface/50">
-          <div className="flex items-center justify-between text-xs text-app-muted">
+        <div className="p-4 border-t border-border bg-app-surface/50">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>QR-Code URL: {publicUrl}</span>
             <button
               onClick={handleCopyLink}
-              className="flex items-center gap-1 hover:text-app-fg transition-colors"
+              className="flex items-center gap-1 hover:text-foreground transition-colors"
             >
               {copied ? <Check className="w-3 h-3" /> : <Link2 className="w-3 h-3" />}
               {copied ? 'Kopiert' : 'Kopieren'}

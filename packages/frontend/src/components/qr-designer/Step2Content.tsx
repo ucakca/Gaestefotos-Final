@@ -65,8 +65,8 @@ export default function Step2Content({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-app-fg mb-2">Texte anpassen</h2>
-        <p className="text-sm text-app-muted">
+        <h2 className="text-2xl font-bold text-foreground mb-2">Texte anpassen</h2>
+        <p className="text-sm text-muted-foreground">
           Passe die Texte auf deinem QR-Aufsteller an. Nutze Presets für schnelle Vorlagen.
         </p>
       </div>
@@ -75,7 +75,7 @@ export default function Step2Content({
       <div className="bg-gradient-to-br from-app-accent/10 to-app-card rounded-lg border border-app-accent/20 p-4">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="w-4 h-4 text-app-accent" />
-          <span className="text-sm font-semibold text-app-fg">Schnelle Vorlagen</span>
+          <span className="text-sm font-semibold text-foreground">Schnelle Vorlagen</span>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {CONTENT_PRESETS.map((preset) => (
@@ -104,9 +104,9 @@ export default function Step2Content({
           transition={{ delay: 0.1 }}
           className="space-y-2"
         >
-          <label className="text-sm font-semibold text-app-fg">
+          <label className="text-sm font-semibold text-foreground">
             Headline
-            <span className="text-app-muted font-normal ml-2">(Haupt-Überschrift)</span>
+            <span className="text-muted-foreground font-normal ml-2">(Haupt-Überschrift)</span>
           </label>
           <Input
             value={headline}
@@ -122,9 +122,9 @@ export default function Step2Content({
           transition={{ delay: 0.2 }}
           className="space-y-2"
         >
-          <label className="text-sm font-semibold text-app-fg">
+          <label className="text-sm font-semibold text-foreground">
             Subline
-            <span className="text-app-muted font-normal ml-2">(Unter-Überschrift)</span>
+            <span className="text-muted-foreground font-normal ml-2">(Unter-Überschrift)</span>
           </label>
           <Input
             value={subline}
@@ -140,9 +140,9 @@ export default function Step2Content({
           transition={{ delay: 0.3 }}
           className="space-y-2"
         >
-          <label className="text-sm font-semibold text-app-fg">
+          <label className="text-sm font-semibold text-foreground">
             Eventname
-            <span className="text-app-muted font-normal ml-2">(optional)</span>
+            <span className="text-muted-foreground font-normal ml-2">(optional)</span>
           </label>
           <Input
             value={eventName}
@@ -150,7 +150,7 @@ export default function Step2Content({
             placeholder={eventTitle || 'z.B. Sarah & Max'}
             className="text-base"
           />
-          <p className="text-xs text-app-muted">Leer lassen um Event-Titel zu nutzen</p>
+          <p className="text-xs text-muted-foreground">Leer lassen um Event-Titel zu nutzen</p>
         </motion.div>
 
         <motion.div
@@ -159,9 +159,9 @@ export default function Step2Content({
           transition={{ delay: 0.4 }}
           className="space-y-2"
         >
-          <label className="text-sm font-semibold text-app-fg">
+          <label className="text-sm font-semibold text-foreground">
             Call to Action
-            <span className="text-app-muted font-normal ml-2">(Handlungsaufforderung)</span>
+            <span className="text-muted-foreground font-normal ml-2">(Handlungsaufforderung)</span>
           </label>
           <Input
             value={callToAction}
@@ -173,8 +173,8 @@ export default function Step2Content({
       </div>
 
       {/* Preview Note */}
-      <div className="bg-app-bg rounded-lg border border-app-border p-3">
-        <p className="text-xs text-app-muted text-center">
+      <div className="bg-background rounded-lg border border-border p-3">
+        <p className="text-xs text-muted-foreground text-center">
           💡 Tipp: Kurze, prägnante Texte funktionieren am besten auf QR-Aufstellern
         </p>
       </div>

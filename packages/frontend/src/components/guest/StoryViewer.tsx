@@ -64,8 +64,8 @@ export default function StoryViewer({
                           ? storyProgress
                           : 0;
                   return (
-                    <div key={idx} className="h-1 flex-1 rounded bg-app-bg/25 overflow-hidden">
-                      <div className="h-full bg-app-bg" style={{ width: `${Math.max(0, Math.min(1, fill)) * 100}%` }} />
+                    <div key={idx} className="h-1 flex-1 rounded bg-background/25 overflow-hidden">
+                      <div className="h-full bg-background" style={{ width: `${Math.max(0, Math.min(1, fill)) * 100}%` }} />
                     </div>
                   );
                 })}
@@ -84,7 +84,7 @@ export default function StoryViewer({
                     data-testid="story-close"
                     aria-label="Schließen"
                     title="Schließen"
-                    className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-app-bg/10 hover:bg-app-bg/15 text-app-bg"
+                    className="ml-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-background/10 hover:bg-background/15 text-app-bg"
                   />
                 </DialogClose>
               </div>
@@ -101,7 +101,7 @@ export default function StoryViewer({
                 data-testid="story-prev"
                 aria-label="Vorherige Story"
                 title="Vorherige Story"
-                className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-app-bg/10 hover:bg-app-bg/15 text-app-bg flex items-center justify-center"
+                className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-background/10 hover:bg-background/15 text-app-bg flex items-center justify-center"
               />
               <IconButton
                 onClick={onNext}
@@ -111,7 +111,7 @@ export default function StoryViewer({
                 data-testid="story-next"
                 aria-label="Nächste Story"
                 title="Nächste Story"
-                className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-app-bg/10 hover:bg-app-bg/15 text-app-bg flex items-center justify-center"
+                className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-background/10 hover:bg-background/15 text-app-bg flex items-center justify-center"
               />
             </>
           )}

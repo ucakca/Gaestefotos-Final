@@ -186,15 +186,15 @@ export default function GuestbookTab({
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-app-fg mb-2">Gästebuch</h2>
-            <p className="text-app-muted">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Gästebuch</h2>
+            <p className="text-muted-foreground">
               Hinterlasse eine Nachricht für das Brautpaar!
             </p>
           </div>
           {workflowDef && (
             <button
               onClick={() => setUseWorkflowMode(!useWorkflowMode)}
-              className="p-2 rounded-lg hover:bg-app-bg transition-colors text-app-muted hover:text-app-fg"
+              className="p-2 rounded-lg hover:bg-background transition-colors text-muted-foreground hover:text-foreground"
               title={useWorkflowMode ? 'Klassisches Formular' : 'Geführter Modus'}
             >
               <Workflow className="w-5 h-5" />
@@ -208,7 +208,7 @@ export default function GuestbookTab({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-app-card border border-app-border rounded-2xl mb-8 shadow-sm overflow-hidden"
+          className="bg-card border border-border rounded-2xl mb-8 shadow-sm overflow-hidden"
         >
           <WorkflowRunner
             definition={workflowDef}
@@ -223,11 +223,11 @@ export default function GuestbookTab({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-app-card border border-app-border rounded-2xl p-6 mb-8 shadow-sm"
+        className="bg-card border border-border rounded-2xl p-6 mb-8 shadow-sm"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-app-fg mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Dein Name *
             </label>
             <Input
@@ -240,7 +240,7 @@ export default function GuestbookTab({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-app-fg mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Deine Nachricht *
             </label>
             <Textarea
@@ -255,7 +255,7 @@ export default function GuestbookTab({
 
           {/* Photo Upload Section */}
           <div>
-            <label className="block text-sm font-medium text-app-fg mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Foto hinzufügen (optional)
             </label>
             
@@ -271,14 +271,14 @@ export default function GuestbookTab({
                 />
                 <label
                   htmlFor="guestbook-photo"
-                  className="flex-1 flex items-center justify-center gap-2 p-4 border-2 border-dashed border-app-border rounded-xl cursor-pointer hover:border-app-accent hover:bg-app-accent/5 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 p-4 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-app-accent hover:bg-app-accent/5 transition-colors"
                 >
-                  <ImagePlus className="w-5 h-5 text-app-muted" />
-                  <span className="text-app-muted">Foto auswählen</span>
+                  <ImagePlus className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-muted-foreground">Foto auswählen</span>
                 </label>
                 <label
                   htmlFor="guestbook-photo"
-                  className="flex items-center justify-center p-4 border-2 border-dashed border-app-border rounded-xl cursor-pointer hover:border-app-accent hover:bg-app-accent/5 transition-colors"
+                  className="flex items-center justify-center p-4 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-app-accent hover:bg-app-accent/5 transition-colors"
                   onClick={(e) => {
                     e.preventDefault();
                     if (fileInputRef.current) {
@@ -287,12 +287,12 @@ export default function GuestbookTab({
                     }
                   }}
                 >
-                  <Camera className="w-5 h-5 text-app-muted" />
+                  <Camera className="w-5 h-5 text-muted-foreground" />
                 </label>
               </div>
             ) : (
               <div className="relative">
-                <div className="relative rounded-xl overflow-hidden bg-app-bg">
+                <div className="relative rounded-xl overflow-hidden bg-background">
                   <img
                     src={photo.preview}
                     alt="Preview"
@@ -346,10 +346,10 @@ export default function GuestbookTab({
       {/* Entries Timeline */}
       {entries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-20 h-20 rounded-full bg-app-bg flex items-center justify-center mb-4">
-            <MessageSquare className="w-10 h-10 text-app-muted" />
+          <div className="w-20 h-20 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+            <MessageSquare className="w-10 h-10 text-muted-foreground" />
           </div>
-          <p className="text-app-muted">
+          <p className="text-muted-foreground">
             Noch keine Einträge. Sei der Erste!
           </p>
         </div>
@@ -362,7 +362,7 @@ export default function GuestbookTab({
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="bg-app-card border border-app-border rounded-2xl p-6 shadow-sm"
+                className="bg-card border border-border rounded-2xl p-6 shadow-sm"
               >
                 {/* Author */}
                 <div className="flex items-center gap-3 mb-3">
@@ -370,8 +370,8 @@ export default function GuestbookTab({
                     <User className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-app-fg">{entry.authorName}</p>
-                    <p className="text-xs text-app-muted">
+                    <p className="font-medium text-foreground">{entry.authorName}</p>
+                    <p className="text-xs text-muted-foreground">
                       {new Date(entry.createdAt).toLocaleDateString('de-DE', {
                         day: 'numeric',
                         month: 'long',
@@ -393,13 +393,13 @@ export default function GuestbookTab({
                 )}
 
                 {/* Message */}
-                <p className="text-app-fg leading-relaxed whitespace-pre-wrap">
+                <p className="text-foreground leading-relaxed whitespace-pre-wrap">
                   {entry.message}
                 </p>
 
                 {/* Like Button (optional - could be added later) */}
-                <div className="mt-4 pt-4 border-t border-app-border">
-                  <button className="flex items-center gap-2 text-app-muted hover:text-red-500 transition-colors">
+                <div className="mt-4 pt-4 border-t border-border">
+                  <button className="flex items-center gap-2 text-muted-foreground hover:text-red-500 transition-colors">
                     <Heart className="w-4 h-4" />
                     <span className="text-sm">Gefällt mir</span>
                   </button>

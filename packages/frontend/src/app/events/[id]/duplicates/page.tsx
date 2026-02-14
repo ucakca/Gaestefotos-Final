@@ -190,10 +190,10 @@ export default function DuplicatesPage({ params }: { params: Promise<{ id: strin
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <h1 className="text-2xl font-bold text-app-fg mb-2">
+          <h1 className="text-2xl font-bold text-foreground mb-2">
             Duplikat-Verwaltung
           </h1>
-          <p className="text-app-muted">
+          <p className="text-muted-foreground">
             {event?.title} • {duplicateGroups.length} Duplikat-Gruppe{duplicateGroups.length !== 1 ? 'n' : ''} gefunden
           </p>
         </motion.div>
@@ -204,11 +204,11 @@ export default function DuplicatesPage({ params }: { params: Promise<{ id: strin
             animate={{ opacity: 1 }}
             className="text-center py-20"
           >
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-app-bg border border-app-border mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-background border border-border mb-6">
               <Check className="w-10 h-10 text-status-success" />
             </div>
-            <h2 className="text-2xl font-bold text-app-fg mb-2">Keine Duplikate gefunden</h2>
-            <p className="text-app-muted">Alle Fotos sind einzigartig!</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Keine Duplikate gefunden</h2>
+            <p className="text-muted-foreground">Alle Fotos sind einzigartig!</p>
           </motion.div>
         ) : (
           <div className="space-y-6">
@@ -218,14 +218,14 @@ export default function DuplicatesPage({ params }: { params: Promise<{ id: strin
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: groupIndex * 0.05 }}
-                className="bg-app-card rounded-lg shadow-sm border border-app-border overflow-hidden"
+                className="bg-card rounded-lg shadow-sm border border-border overflow-hidden"
               >
-                <div className="p-4 bg-app-bg border-b border-app-border flex items-center justify-between">
+                <div className="p-4 bg-background border-b border-border flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-app-fg">
+                    <h3 className="font-semibold text-foreground">
                       Duplikat-Gruppe {groupIndex + 1}
                     </h3>
-                    <p className="text-sm text-app-muted">
+                    <p className="text-sm text-muted-foreground">
                       {group.count} ähnliche Foto{group.count !== 1 ? 's' : ''}
                     </p>
                   </div>
@@ -268,7 +268,7 @@ export default function DuplicatesPage({ params }: { params: Promise<{ id: strin
                           className={`relative rounded-lg overflow-hidden border-2 ${
                             photo.isBestInGroup
                               ? 'border-status-success ring-2 ring-status-success/30'
-                              : 'border-app-border'
+                              : 'border-border'
                           }`}
                         >
                           {photo.url ? (
@@ -278,8 +278,8 @@ export default function DuplicatesPage({ params }: { params: Promise<{ id: strin
                               className="w-full aspect-square object-cover"
                             />
                           ) : (
-                            <div className="w-full aspect-square bg-app-bg flex items-center justify-center">
-                              <span className="text-app-muted">Foto</span>
+                            <div className="w-full aspect-square bg-background flex items-center justify-center">
+                              <span className="text-muted-foreground">Foto</span>
                             </div>
                           )}
 
@@ -305,12 +305,12 @@ export default function DuplicatesPage({ params }: { params: Promise<{ id: strin
                             {!photo.isBestInGroup && (
                               <IconButton
                                 onClick={() => setBestPhoto(group.groupId, photo.id)}
-                                icon={<StarOff className="w-4 h-4 text-app-muted" />}
+                                icon={<StarOff className="w-4 h-4 text-muted-foreground" />}
                                 variant="ghost"
                                 size="sm"
                                 aria-label="Als bestes Foto setzen"
                                 title="Als bestes Foto setzen"
-                                className="p-1.5 bg-app-card rounded-full shadow-md hover:bg-app-bg"
+                                className="p-1.5 bg-card rounded-full shadow-md hover:bg-background"
                               />
                             )}
                           </div>
@@ -321,7 +321,7 @@ export default function DuplicatesPage({ params }: { params: Promise<{ id: strin
                 </AnimatePresence>
 
                 {/* Best Photo Preview (always visible) */}
-                <div className="p-4 border-t border-app-border">
+                <div className="p-4 border-t border-border">
                   <div className="flex items-center gap-4">
                     <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
                       {group.bestPhoto.url ? (
@@ -331,24 +331,24 @@ export default function DuplicatesPage({ params }: { params: Promise<{ id: strin
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-app-bg flex items-center justify-center">
-                          <span className="text-app-muted text-xs">Foto</span>
+                        <div className="w-full h-full bg-background flex items-center justify-center">
+                          <span className="text-muted-foreground text-xs">Foto</span>
                         </div>
                       )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <Star className="w-4 h-4 text-status-success" />
-                        <span className="font-medium text-app-fg">Beste Foto (wird Gästen angezeigt)</span>
+                        <span className="font-medium text-foreground">Beste Foto (wird Gästen angezeigt)</span>
                       </div>
-                      <p className="text-sm text-app-muted">
+                      <p className="text-sm text-muted-foreground">
                         {group.bestPhoto.uploadedBy || 
                          (group.bestPhoto.guest 
                            ? `${group.bestPhoto.guest.firstName} ${group.bestPhoto.guest.lastName}` 
                            : 'Unbekannt')}
                       </p>
                       {group.bestPhoto.qualityScore && (
-                        <p className="text-xs text-app-muted">
+                        <p className="text-xs text-muted-foreground">
                           Qualitäts-Score: {group.bestPhoto.qualityScore.toFixed(1)}
                         </p>
                       )}

@@ -402,10 +402,10 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Scrollable Container with Sticky Host Message */}
-      <div className="flex-1 min-h-0 overflow-y-auto bg-app-bg overscroll-contain">
+      <div className="flex-1 min-h-0 overflow-y-auto bg-background overscroll-contain">
         {/* Sticky Host Message */}
         {displayHostMessage && (
-          <div className="sticky top-0 z-10 bg-app-card border-b border-app-border px-4 py-3 shadow-sm">
+          <div className="sticky top-0 z-10 bg-card border-b border-border px-4 py-3 shadow-sm">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -417,14 +417,14 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                 </div>
               </div>
               <div className="flex-1 max-w-[75%]">
-                <div className="bg-app-card rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm border border-app-border">
+                <div className="bg-card rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm border border-border">
                   {isEditingHostMessage && isHost ? (
                     <div className="space-y-2">
                       <Textarea
                         value={editedHostMessage}
                         onChange={(e) => setEditedHostMessage(e.target.value)}
                         rows={3}
-                        className="w-full px-2 py-1 border border-app-border rounded-lg focus:outline-none focus:ring-2 focus:ring-app-fg/30 text-sm resize-none bg-app-card text-app-fg"
+                        className="w-full px-2 py-1 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-app-fg/30 text-sm resize-none bg-card text-foreground"
                         placeholder="Host-Nachricht..."
                         maxLength={2000}
                       />
@@ -453,7 +453,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                     </div>
                   ) : (
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm text-app-fg whitespace-pre-wrap break-words flex-1">
+                      <p className="text-sm text-foreground whitespace-pre-wrap break-words flex-1">
                         {displayHostMessage}
                       </p>
                       {isHost && (
@@ -461,10 +461,10 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                           onClick={() => {
                             setIsEditingHostMessage(true);
                           }}
-                          icon={<Edit2 className="w-4 h-4 text-app-fg" />}
+                          icon={<Edit2 className="w-4 h-4 text-foreground" />}
                           variant="ghost"
                           size="sm"
-                          className="flex-shrink-0 border border-app-border"
+                          className="flex-shrink-0 border border-border"
                           aria-label="Nachricht bearbeiten"
                           title="Nachricht bearbeiten"
                         />
@@ -472,7 +472,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                     </div>
                   )}
                 </div>
-                <span className="text-xs text-app-muted mt-1 block">{eventTitle || 'Event'}</span>
+                <span className="text-xs text-muted-foreground mt-1 block">{eventTitle || 'Event'}</span>
               </div>
             </motion.div>
           </div>
@@ -489,7 +489,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
 
             {/* Guest Entries - Right Side */}
             {entries.length === 0 ? (
-              <div className="text-center py-12 text-app-muted">
+              <div className="text-center py-12 text-muted-foreground">
                 <Heart className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p className="text-sm mb-1">Noch keine Einträge</p>
                 <p className="text-xs opacity-70">Sei der Erste, der eine Nachricht hinterlässt!</p>
@@ -545,7 +545,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                       )}
                     </div>
 
-                    <span className="text-xs text-app-muted mt-1">{formatDate(entry.createdAt)}</span>
+                    <span className="text-xs text-muted-foreground mt-1">{formatDate(entry.createdAt)}</span>
                   </div>
 
                   <div className="flex-shrink-0">
@@ -563,10 +563,10 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       </div>
 
       {/* Input Form - Everyone can add messages - Fixed at bottom */}
-      <div className="border-t border-app-border p-4 bg-app-card flex-shrink-0">
+      <div className="border-t border-border p-4 bg-card flex-shrink-0">
           <form onSubmit={handleSubmit} className="space-y-3">
             {error && (
-              <div className="bg-app-bg border border-status-danger text-status-danger text-sm rounded-lg p-3">
+              <div className="bg-background border border-status-danger text-destructive text-sm rounded-lg p-3">
                 {error}
               </div>
             )}
@@ -592,7 +592,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
             />
 
             <div>
-              <label className="block text-sm font-medium text-app-fg mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Sprachnachricht (optional)
               </label>
 
@@ -608,8 +608,8 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                       className="flex items-center gap-2 px-4 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Aufnahme starten"
                     >
-                      <Mic className="w-5 h-5 text-app-fg" />
-                      <span className="text-sm text-app-fg">Aufnehmen</span>
+                      <Mic className="w-5 h-5 text-foreground" />
+                      <span className="text-sm text-foreground">Aufnehmen</span>
                     </Button>
                   ) : (
                     <Button
@@ -627,16 +627,16 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                   )}
 
                   {uploadingAudio && (
-                    <div className="text-sm text-app-muted">Audio wird hochgeladen…</div>
+                    <div className="text-sm text-muted-foreground">Audio wird hochgeladen…</div>
                   )}
                 </div>
               ) : null}
             </div>
 
             {audioPreviewUrl && (
-              <div className="bg-app-bg border border-app-border rounded-lg p-3">
+              <div className="bg-background border border-border rounded-lg p-3">
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="text-xs text-app-muted">Audio</div>
+                  <div className="text-xs text-muted-foreground">Audio</div>
                   <IconButton
                     type="button"
                     onClick={removeAudio}
@@ -657,7 +657,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
 
             {/* Photo Upload */}
             <div>
-              <label className="block text-sm font-medium text-app-fg mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Foto hinzufügen (optional)
               </label>
               {photoPreview ? (
@@ -682,8 +682,8 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                   </div>
                 </div>
               ) : (
-                <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-app-border rounded-lg cursor-pointer hover:border-app-accent transition-colors">
-                  <span className="text-sm text-app-muted">
+                <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-app-accent transition-colors">
+                  <span className="text-sm text-muted-foreground">
                     {uploadingPhoto ? 'Wird hochgeladen...' : 'Foto auswählen'}
                   </span>
                   <Input
@@ -704,13 +704,13 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                 <div className="flex items-center gap-1">
                   {isPublic ? (
                     <>
-                      <Globe className="w-4 h-4 text-app-muted" />
-                      <span className="text-app-fg">Im Feed anzeigen</span>
+                      <Globe className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-foreground">Im Feed anzeigen</span>
                     </>
                   ) : (
                     <>
-                      <Lock className="w-4 h-4 text-app-muted" />
-                      <span className="text-app-fg">Nur im Gästebuch</span>
+                      <Lock className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-foreground">Nur im Gästebuch</span>
                     </>
                   )}
                 </div>
@@ -750,7 +750,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                     icon={<X className="w-6 h-6" />}
                     variant="ghost"
                     size="md"
-                    className="bg-app-card/90 hover:bg-app-card shadow-lg border border-app-border"
+                    className="bg-card/90 hover:bg-card shadow-lg border border-border"
                     aria-label="Schließen"
                     title="Schließen"
                   />

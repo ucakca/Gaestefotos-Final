@@ -91,12 +91,12 @@ export default function InstagramGallery({
   if (photos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-24 h-24 rounded-full bg-app-bg flex items-center justify-center mb-4">
-          <svg className="w-12 h-12 text-app-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-24 h-24 rounded-full bg-background flex items-center justify-center mb-4">
+          <svg className="w-12 h-12 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </div>
-        <p className="text-app-muted text-sm">Noch keine Fotos vorhanden</p>
+        <p className="text-muted-foreground text-sm">Noch keine Fotos vorhanden</p>
       </div>
     );
   }
@@ -112,7 +112,7 @@ export default function InstagramGallery({
             animate={{ opacity: 1 }}
             transition={{ delay: index * 0.03 }}
             onClick={() => openPost(index)}
-            className="aspect-square bg-app-bg relative group cursor-pointer overflow-hidden"
+            className="aspect-square bg-background relative group cursor-pointer overflow-hidden"
           >
             {photo.url ? (
               <img
@@ -122,7 +122,7 @@ export default function InstagramGallery({
                 loading="lazy"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-app-muted">
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
@@ -148,7 +148,7 @@ export default function InstagramGallery({
 
       {/* Instagram-like Post Modal */}
       <Dialog open={selectedPhoto !== null} onOpenChange={(open) => (open ? null : closePost())}>
-        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row bg-app-card border border-app-border rounded-lg p-0">
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row bg-card border border-border rounded-lg p-0">
           {/* Close Button */}
           <DialogClose asChild>
             <MotionIconButton
@@ -218,12 +218,12 @@ export default function InstagramGallery({
           </div>
 
           {/* Sidebar - Instagram Style */}
-          <div className="w-full md:w-80 flex flex-col bg-app-card border-t md:border-t-0 md:border-l border-app-border">
+          <div className="w-full md:w-80 flex flex-col bg-card border-t md:border-t-0 md:border-l border-border">
                 {/* Header */}
-                <div className="p-4 border-b border-app-border flex items-center justify-between">
+                <div className="p-4 border-b border-border flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-app-bg flex items-center justify-center">
-                      <span className="text-xs font-semibold text-app-muted">
+                    <div className="w-8 h-8 rounded-full bg-background flex items-center justify-center">
+                      <span className="text-xs font-semibold text-muted-foreground">
                         {eventTitle.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -240,7 +240,7 @@ export default function InstagramGallery({
                 </div>
 
                 {/* Actions */}
-                <div className="p-4 border-b border-app-border">
+                <div className="p-4 border-b border-border">
                   <div className="flex items-center gap-4">
                     <MotionIconButton
                       whileTap={{ scale: 0.9 }}
@@ -249,8 +249,8 @@ export default function InstagramGallery({
                         <Heart
                           className={`w-6 h-6 ${
                             likedPhotos.has(selectedPhoto !== null ? (photos[selectedPhoto]?.id || '') : '')
-                              ? 'fill-status-danger text-status-danger'
-                              : 'text-app-fg'
+                              ? 'fill-status-danger text-destructive'
+                              : 'text-foreground'
                           }`}
                         />
                       }
@@ -286,7 +286,7 @@ export default function InstagramGallery({
                 </div>
 
                 {/* Photo Counter */}
-                <div className="p-4 text-center text-sm text-app-muted border-t border-app-border mt-auto">
+                <div className="p-4 text-center text-sm text-muted-foreground border-t border-border mt-auto">
                   {selectedPhoto !== null ? selectedPhoto + 1 : 0} / {photos.length}
                 </div>
           </div>

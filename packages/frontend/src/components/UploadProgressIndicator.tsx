@@ -53,9 +53,9 @@ export default function UploadProgressIndicator() {
         exit={{ y: 100, opacity: 0 }}
         className="fixed bottom-20 left-4 right-4 z-50 max-w-md mx-auto"
       >
-        <div className="bg-app-card border border-app-border rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between p-3 bg-app-bg/50">
+          <div className="flex items-center justify-between p-3 bg-background/50">
             <div className="flex items-center gap-2">
               {isUploading ? (
                 <Loader2 className="w-5 h-5 text-app-accent animate-spin" />
@@ -74,7 +74,7 @@ export default function UploadProgressIndicator() {
                 onClick={clearCompleted}
                 className="p-1 hover:bg-app-border rounded-full transition-colors"
               >
-                <X className="w-4 h-4 text-app-muted" />
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             )}
           </div>
@@ -90,7 +90,7 @@ export default function UploadProgressIndicator() {
                   transition={{ duration: 0.3 }}
                 />
               </div>
-              <p className="text-xs text-app-muted mt-1 text-center">
+              <p className="text-xs text-muted-foreground mt-1 text-center">
                 {totalProgress}% abgeschlossen
               </p>
             </div>

@@ -109,11 +109,11 @@ export default function CoHostsStep({
         <motion.h2
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-app-fg mb-2"
+          className="text-2xl font-bold text-foreground mb-2"
         >
           Co-Hosts einladen 👥
         </motion.h2>
-        <p className="text-app-muted">Co-Hosts können das Event mitverwalten und Fotos moderieren</p>
+        <p className="text-muted-foreground">Co-Hosts können das Event mitverwalten und Fotos moderieren</p>
       </div>
 
       {eventId ? (
@@ -122,11 +122,11 @@ export default function CoHostsStep({
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-app-card rounded-2xl border-2 border-app-border p-5 space-y-4"
+            className="bg-card rounded-2xl border-2 border-border p-5 space-y-4"
           >
             <div className="flex items-center gap-2 mb-1">
-              <Mail className="w-4 h-4 text-app-muted" />
-              <span className="text-sm font-medium text-app-fg">Per E-Mail einladen</span>
+              <Mail className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">Per E-Mail einladen</span>
             </div>
             <div className="flex gap-2">
               <input
@@ -135,7 +135,7 @@ export default function CoHostsStep({
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); setError(null); }}
                 onKeyDown={(e) => e.key === 'Enter' && sendEmailInvite()}
-                className="flex-1 px-3 py-2.5 text-sm border border-app-border rounded-lg bg-app-bg focus:outline-none focus:border-amber-400 transition-colors"
+                className="flex-1 px-3 py-2.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-amber-400 transition-colors"
               />
               <Button
                 onClick={sendEmailInvite}
@@ -175,16 +175,16 @@ export default function CoHostsStep({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-app-card rounded-2xl border-2 border-app-border p-5 space-y-3"
+            className="bg-card rounded-2xl border-2 border-border p-5 space-y-3"
           >
             <div className="flex items-center gap-2 mb-1">
-              <Share2 className="w-4 h-4 text-app-muted" />
-              <span className="text-sm font-medium text-app-fg">Oder per Link teilen</span>
+              <Share2 className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">Oder per Link teilen</span>
             </div>
             
             {inviteUrl ? (
               <div className="space-y-2">
-                <div className="p-2.5 bg-app-bg rounded-lg text-xs text-app-muted break-all font-mono">
+                <div className="p-2.5 bg-background rounded-lg text-xs text-muted-foreground break-all font-mono">
                   {inviteUrl}
                 </div>
                 <div className="flex gap-2">
@@ -217,10 +217,10 @@ export default function CoHostsStep({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-app-card rounded-2xl border-2 border-app-border p-6 text-center"
+          className="bg-card rounded-2xl border-2 border-border p-6 text-center"
         >
-          <UserPlus className="w-12 h-12 mx-auto text-app-muted mb-3" />
-          <p className="text-app-muted">Co-Host Einladung wird nach Event-Erstellung verfügbar</p>
+          <UserPlus className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+          <p className="text-muted-foreground">Co-Host Einladung wird nach Event-Erstellung verfügbar</p>
         </motion.div>
       )}
 
@@ -259,7 +259,7 @@ export default function CoHostsStep({
         
         <button
           onClick={onSkip}
-          className="w-full py-2 text-sm text-app-muted hover:text-app-fg flex items-center justify-center gap-1"
+          className="w-full py-2 text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-1"
         >
           <SkipForward className="w-4 h-4" />
           Überspringen

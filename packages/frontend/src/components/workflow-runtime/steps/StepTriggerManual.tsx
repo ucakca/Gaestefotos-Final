@@ -22,15 +22,15 @@ export function StepTriggerManual({ node, onComplete }: StepRendererProps) {
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-20 h-20 rounded-2xl bg-gradient-to-br from-app-accent/20 to-app-accent/5 flex items-center justify-center"
+        className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center"
       >
-        <Icon className="w-10 h-10 text-app-accent" />
+        <Icon className="w-10 h-10 text-primary" />
       </motion.div>
 
       <div className="text-center">
-        <h3 className="text-xl font-bold text-app-fg mb-1">{node.data.label}</h3>
+        <h3 className="text-xl font-bold text-foreground mb-1">{node.data.label}</h3>
         {node.data.config.requireConfirmation !== false && (
-          <p className="text-app-muted text-sm">Tippe um fortzufahren</p>
+          <p className="text-muted-foreground text-sm">Tippe um fortzufahren</p>
         )}
       </div>
 
@@ -38,7 +38,7 @@ export function StepTriggerManual({ node, onComplete }: StepRendererProps) {
         whileTap={{ scale: 0.95 }}
         whileHover={{ scale: 1.02 }}
         onClick={() => onComplete('default', { triggered: true, triggerType: node.data.type })}
-        className="px-8 py-4 bg-app-accent text-white rounded-2xl font-semibold text-lg shadow-lg shadow-app-accent/20"
+        className="px-8 py-4 bg-primary text-white rounded-2xl font-semibold text-lg shadow-lg shadow-primary/20"
       >
         {buttonLabel}
       </motion.button>

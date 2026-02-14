@@ -93,7 +93,7 @@ export default function InstallPrompt({ variant = 'guest' }: InstallPromptProps)
         exit={{ opacity: 0, y: 50 }}
         className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-sm z-50"
       >
-        <div className="bg-app-card border-2 border-app-accent rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-card border-2 border-app-accent rounded-2xl shadow-2xl overflow-hidden">
           <div className="p-4">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
@@ -101,10 +101,10 @@ export default function InstallPrompt({ variant = 'guest' }: InstallPromptProps)
                   <Smartphone className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-app-fg">
+                  <h3 className="font-bold text-foreground">
                     {variant === 'guest' ? 'Zur Startseite hinzufügen' : 'Als App installieren'}
                   </h3>
-                  <p className="text-xs text-app-muted">
+                  <p className="text-xs text-muted-foreground">
                     {variant === 'guest' 
                       ? 'Schneller Zugriff zur Foto-Galerie' 
                       : 'Event-Verwaltung immer griffbereit'
@@ -125,13 +125,13 @@ export default function InstallPrompt({ variant = 'guest' }: InstallPromptProps)
             {isIOS ? (
               // iOS manual instructions
               <div className="space-y-2 mb-3">
-                <p className="text-sm text-app-muted">
+                <p className="text-sm text-muted-foreground">
                   Tippe auf <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-app-accent/10 text-app-accent font-mono text-xs">
                     <Download className="w-3 h-3 mr-1" />
                     Teilen
                   </span> und dann auf
                 </p>
-                <p className="text-sm font-semibold text-app-fg">
+                <p className="text-sm font-semibold text-foreground">
                   "Zum Home-Bildschirm"
                 </p>
               </div>
@@ -150,7 +150,7 @@ export default function InstallPrompt({ variant = 'guest' }: InstallPromptProps)
 
             <button
               onClick={handleDismiss}
-              className="text-xs text-app-muted hover:text-app-fg transition-colors w-full text-center"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors w-full text-center"
             >
               Vielleicht später
             </button>

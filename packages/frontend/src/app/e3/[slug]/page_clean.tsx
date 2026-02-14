@@ -231,7 +231,7 @@ export default function PublicEventPageV2() {
   const totalPhotos = filteredPhotos.length;
 
   return (
-    <div className="min-h-screen bg-app-bg">
+    <div className="min-h-screen bg-background">
       <EventHeader
         event={event}
         hostName={hostName}
@@ -264,10 +264,10 @@ export default function PublicEventPageV2() {
 
       {featuresConfig?.challengesEnabled === true && Array.isArray(challenges) && challenges.filter((c: any) => c?.isActive).length > 0 && (
         <Section borderColorClassName="border-status-warning">
-          <Alert className="bg-app-bg border-status-warning text-app-fg">
+          <Alert className="bg-background border-status-warning text-foreground">
             <div className="flex items-center gap-2">
               <Trophy className="w-5 h-5 text-status-warning" />
-              <p className="text-sm text-app-fg">
+              <p className="text-sm text-foreground">
                 <strong>Tolle Challenges verfügbar!</strong> Klicke auf "Challenges" im Menü unten, um teilzunehmen.
               </p>
             </div>

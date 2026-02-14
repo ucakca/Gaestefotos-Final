@@ -76,9 +76,9 @@ export default function DateTimePicker({
   return (
     <div className={className} ref={wrapperRef}>
       {label && (
-        <label className="mb-2 block text-sm font-medium text-app-fg">
+        <label className="mb-2 block text-sm font-medium text-foreground">
           {label}
-          {required && <span className="text-status-danger ml-1">*</span>}
+          {required && <span className="text-destructive ml-1">*</span>}
         </label>
       )}
       <div className="relative">
@@ -108,7 +108,7 @@ export default function DateTimePicker({
             disabled={disabled}
             aria-label="Kalender öffnen"
             title="Kalender öffnen"
-            className="absolute right-3 text-app-muted hover:text-app-fg"
+            className="absolute right-3 text-muted-foreground hover:text-foreground"
           />
         </div>
         {isOpen && !disabled && (
@@ -123,7 +123,7 @@ export default function DateTimePicker({
               locale="de"
               inline
               minDate={minDate || new Date()}
-              className="rounded-lg border border-app-border bg-app-card"
+              className="rounded-lg border border-border bg-card"
             />
           </div>
         )}

@@ -169,7 +169,7 @@ export default function InstagramUploadButton({
 
       {/* Upload Modal */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-app-card border border-app-border rounded-lg max-w-md w-full p-6">
+        <DialogContent className="bg-card border border-border rounded-lg max-w-md w-full p-6">
           <Input
             ref={capturePhotoInputRef}
             type="file"
@@ -180,7 +180,7 @@ export default function InstagramUploadButton({
           />
           <DialogHeader>
             <div className="flex items-center justify-between mb-6">
-              <DialogTitle className="text-xl font-semibold text-app-fg">Foto hochladen</DialogTitle>
+              <DialogTitle className="text-xl font-semibold text-foreground">Foto hochladen</DialogTitle>
               <DialogClose asChild>
                 <MotionIconButton
                   onClick={() => setIsOpen(false)}
@@ -204,16 +204,16 @@ export default function InstagramUploadButton({
               className={`
                 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
                 ${isDragActive 
-                  ? 'border-app-accent bg-app-bg' 
-                  : 'border-app-border hover:border-app-accent hover:bg-app-bg'
+                  ? 'border-app-accent bg-background' 
+                  : 'border-border hover:border-app-accent hover:bg-background'
                 }
               `}
             >
-              <Upload className="w-12 h-12 mx-auto mb-4 text-app-muted" />
-              <p className="text-sm font-medium text-app-fg mb-2">
+              <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-sm font-medium text-foreground mb-2">
                 {isDragActive ? 'Fotos hier ablegen' : 'Fotos hochladen'}
               </p>
-              <p className="text-xs text-app-muted">
+              <p className="text-xs text-muted-foreground">
                 Drag & Drop oder klicken
               </p>
             </motion.div>
@@ -247,9 +247,9 @@ export default function InstagramUploadButton({
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    className="bg-app-bg border border-app-border rounded-lg p-3 flex items-center gap-3"
+                    className="bg-background border border-border rounded-lg p-3 flex items-center gap-3"
                   >
-                    <div className="w-12 h-12 rounded overflow-hidden bg-app-card flex-shrink-0">
+                    <div className="w-12 h-12 rounded overflow-hidden bg-card flex-shrink-0">
                       <img
                         src={file.preview}
                         alt="Preview"
@@ -258,7 +258,7 @@ export default function InstagramUploadButton({
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-app-fg truncate">{file.file.name}</p>
+                      <p className="text-xs font-medium text-foreground truncate">{file.file.name}</p>
                       {file.uploading && (
                         <div className="mt-1 w-full bg-app-border rounded-full h-1.5">
                           <motion.div
@@ -269,7 +269,7 @@ export default function InstagramUploadButton({
                           />
                         </div>
                       )}
-                      {file.error && <p className="text-xs text-status-danger mt-1">{file.error}</p>}
+                      {file.error && <p className="text-xs text-destructive mt-1">{file.error}</p>}
                     </div>
 
                     <div className="flex items-center">

@@ -56,9 +56,9 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
   const eventId = pathname?.match(/\/events\/([^\/]+)/)?.[1];
 
   return (
-    <div className="min-h-screen bg-app-bg">
+    <div className="min-h-screen bg-background">
       {/* Consistent Header */}
-      <header className="sticky top-0 z-40 border-b border-app-border bg-app-card">
+      <header className="sticky top-0 z-40 border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative flex items-center h-16">
             {/* Left: Back Button */}
@@ -88,11 +88,11 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
               )}
               
               {isEventPage && eventId && (
-                <div className="hidden md:flex items-center gap-2 text-sm text-app-muted">
+                <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
                   <span>/</span>
                   <Link 
                     href={`/events/${eventId}/dashboard`}
-                    className="transition-colors hover:text-app-fg"
+                    className="transition-colors hover:text-foreground"
                   >
                     Event verwalten
                   </Link>
@@ -114,10 +114,10 @@ export default function AppLayout({ children, showBackButton, backUrl }: AppLayo
             {/* Right: User Actions - Only on Desktop */}
             <div className="ml-auto hidden lg:flex items-center gap-2">
               {user && (
-                <div className="flex items-center gap-2 border-l border-app-border pl-3">
+                <div className="flex items-center gap-2 border-l border-border pl-3">
                   <div className="text-right">
-                    <p className="text-xs text-app-muted">Angemeldet als</p>
-                    <p className="text-sm font-medium text-app-fg">{user.name || user.email}</p>
+                    <p className="text-xs text-muted-foreground">Angemeldet als</p>
+                    <p className="text-sm font-medium text-foreground">{user.name || user.email}</p>
                   </div>
                   <IconButton
                     onClick={logout}

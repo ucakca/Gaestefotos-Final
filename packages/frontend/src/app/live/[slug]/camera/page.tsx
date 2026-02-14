@@ -152,7 +152,7 @@ export default function CameraPage() {
                 <Camera className="w-24 h-24 mx-auto mb-4 text-app-bg/60" />
                 <p className="text-app-bg/70 mb-4">Kamera-Stream</p>
                 {uploadError && (
-                  <div className="mb-4 px-4 py-2 rounded-lg bg-app-fg/50 border border-status-danger text-status-danger text-sm max-w-xs mx-auto">
+                  <div className="mb-4 px-4 py-2 rounded-lg bg-app-fg/50 border border-status-danger text-destructive text-sm max-w-xs mx-auto">
                     Fehler beim Upload: {uploadError}
                     {canRetry && !uploading && capturedPhoto && (
                       <div className="mt-2">
@@ -172,9 +172,9 @@ export default function CameraPage() {
                 {uploading && uploadProgress > 0 && (
                   <div className="mb-4 max-w-xs mx-auto">
                     <div className="text-xs text-app-bg/80 mb-2">Upload: {uploadProgress}%</div>
-                    <div className="w-full bg-app-bg/20 rounded-full h-2">
+                    <div className="w-full bg-background/20 rounded-full h-2">
                       <div
-                        className="bg-app-bg h-2 rounded-full"
+                        className="bg-background h-2 rounded-full"
                         style={{ width: `${uploadProgress}%` }}
                       />
                     </div>
@@ -208,9 +208,9 @@ export default function CameraPage() {
               onClick={capturePhoto}
               aria-label="Foto aufnehmen"
               title="Foto aufnehmen"
-              className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-app-bg rounded-full border-4 border-app-border shadow-lg z-10"
+              className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-background rounded-full border-4 border-border shadow-lg z-10"
             >
-              <div className="w-full h-full bg-app-bg rounded-full" />
+              <div className="w-full h-full bg-background rounded-full" />
             </motion.button>
           </motion.div>
         ) : (
@@ -234,7 +234,7 @@ export default function CameraPage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setCapturedPhoto(null)}
-                className="px-6 py-3 bg-app-bg/20 text-app-bg rounded-lg hover:bg-app-bg/30"
+                className="px-6 py-3 bg-background/20 text-app-bg rounded-lg hover:bg-background/30"
               >
                 Neu aufnehmen
               </MotionButton>

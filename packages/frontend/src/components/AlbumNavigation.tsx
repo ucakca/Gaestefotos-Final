@@ -56,7 +56,7 @@ export default function AlbumNavigation({
                 variant="ghost"
                 size="sm"
                 className={`h-auto p-0 flex flex-col items-center gap-1.5 flex-shrink-0 min-w-[64px] ${
-                  isSelected ? '' : 'text-app-muted'
+                  isSelected ? '' : 'text-muted-foreground'
                 }`}
               >
                 {/* Album Icon - Instagram Stories Style */}
@@ -68,19 +68,19 @@ export default function AlbumNavigation({
                   }`}
                   style={{ zIndex: 10, position: 'relative' }}
                 >
-                  <div className="w-full h-full rounded-full bg-app-card flex items-center justify-center overflow-hidden" style={{ zIndex: 1 }}>
+                  <div className="w-full h-full rounded-full bg-card flex items-center justify-center overflow-hidden" style={{ zIndex: 1 }}>
                     {album.id ? (
                       // Category with image or icon
-                      <div className="w-full h-full bg-app-bg flex items-center justify-center">
+                      <div className="w-full h-full bg-background flex items-center justify-center">
                         {(() => {
                           const IconComp = getIcon((album as any).iconKey);
-                          return <IconComp className="w-6 h-6 text-app-fg" />;
+                          return <IconComp className="w-6 h-6 text-foreground" />;
                         })()}
                       </div>
                     ) : (
                       // All Photos - Grid Icon
-                      <div className="w-full h-full bg-app-bg flex items-center justify-center">
-                        <Grid3x3 className="w-6 h-6 text-app-muted" />
+                      <div className="w-full h-full bg-background flex items-center justify-center">
+                        <Grid3x3 className="w-6 h-6 text-muted-foreground" />
                       </div>
                     )}
                   </div>
@@ -90,8 +90,8 @@ export default function AlbumNavigation({
                 <span
                   className={`text-xs font-medium transition-colors ${
                     isSelected
-                      ? 'text-app-fg'
-                      : 'text-app-muted'
+                      ? 'text-foreground'
+                      : 'text-muted-foreground'
                   }`}
                 >
                   {album.name}

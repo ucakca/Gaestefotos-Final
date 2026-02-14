@@ -58,7 +58,7 @@ export function GuestGroupForm({ initialData, onSubmit, onCancel }: GuestGroupFo
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-app-fg mb-1">
+        <label className="block text-sm font-medium text-foreground mb-1">
           Name *
         </label>
         <Input
@@ -71,7 +71,7 @@ export function GuestGroupForm({ initialData, onSubmit, onCancel }: GuestGroupFo
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-app-fg mb-1">
+        <label className="block text-sm font-medium text-foreground mb-1">
           Beschreibung (optional)
         </label>
         <Input
@@ -83,7 +83,7 @@ export function GuestGroupForm({ initialData, onSubmit, onCancel }: GuestGroupFo
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-app-fg mb-2">
+        <label className="block text-sm font-medium text-foreground mb-2">
           Farbe
         </label>
         <div className="grid grid-cols-8 gap-2">
@@ -103,7 +103,7 @@ export function GuestGroupForm({ initialData, onSubmit, onCancel }: GuestGroupFo
       </div>
 
       {error && (
-        <div className="text-sm text-status-danger">{error}</div>
+        <div className="text-sm text-destructive">{error}</div>
       )}
 
       <div className="flex gap-2 justify-end pt-2">

@@ -82,7 +82,7 @@ export default function AchievementList({ eventId, visitorId }: AchievementListP
       {/* Categories */}
       {grouped.map(({ category, label, items }) => (
         <div key={category}>
-          <h3 className="text-sm font-semibold text-app-muted uppercase tracking-wide mb-3 px-1">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 px-1">
             {label}
           </h3>
           <div className="grid grid-cols-3 gap-3">
@@ -94,27 +94,27 @@ export default function AchievementList({ eventId, visitorId }: AchievementListP
                 className={`relative flex flex-col items-center text-center p-3 rounded-2xl border transition-all ${
                   achievement.unlocked
                     ? 'bg-gradient-to-b from-amber-50 to-yellow-50 border-amber-200 shadow-sm'
-                    : 'bg-app-bg/50 border-dashed border-app-border/60 opacity-60'
+                    : 'bg-background/50 border-dashed border-border/60 opacity-60'
                 }`}
               >
                 <div className={`text-2xl mb-1 ${achievement.unlocked ? '' : 'grayscale'}`}>
                   {achievement.icon}
                 </div>
                 <h4 className={`text-xs font-semibold leading-tight ${
-                  achievement.unlocked ? 'text-app-fg' : 'text-app-muted'
+                  achievement.unlocked ? 'text-foreground' : 'text-muted-foreground'
                 }`}>
                   {achievement.title}
                 </h4>
-                <p className="text-[10px] text-app-muted mt-0.5 line-clamp-2">
+                <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">
                   {achievement.description}
                 </p>
                 <div className="mt-1 flex items-center gap-1">
-                  <Star className={`w-3 h-3 ${achievement.unlocked ? 'text-amber-500' : 'text-app-muted'}`} />
-                  <span className="text-[10px] font-medium text-app-muted">{achievement.points}P</span>
+                  <Star className={`w-3 h-3 ${achievement.unlocked ? 'text-amber-500' : 'text-muted-foreground'}`} />
+                  <span className="text-[10px] font-medium text-muted-foreground">{achievement.points}P</span>
                 </div>
                 {!achievement.unlocked && (
                   <div className="absolute top-1.5 right-1.5">
-                    <Lock className="w-3 h-3 text-app-muted" />
+                    <Lock className="w-3 h-3 text-muted-foreground" />
                   </div>
                 )}
               </motion.div>

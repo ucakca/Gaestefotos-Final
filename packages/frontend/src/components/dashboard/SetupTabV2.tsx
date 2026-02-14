@@ -135,9 +135,9 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
       className="p-4 space-y-4"
     >
       {/* Event-Info Section - Now with inline editing */}
-      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
-          <h3 className="font-semibold text-app-fg flex items-center gap-2">
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-background">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
             <Info className="w-4 h-4" />
             Event-Info
           </h3>
@@ -160,9 +160,9 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
       </div>
 
       {/* Design Section */}
-      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
-          <h3 className="font-semibold text-app-fg flex items-center gap-2">
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-background">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
             <Palette className="w-4 h-4" />
             Design
           </h3>
@@ -175,7 +175,7 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
       {/* Features Section — Progressive Disclosure Cards */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
-          <h3 className="font-semibold text-app-fg flex items-center gap-2">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
             <Sparkles className="w-4 h-4" />
             Features
           </h3>
@@ -192,26 +192,26 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                 key={key}
                 className={`relative rounded-2xl border p-3 transition-all ${
                   enabled
-                    ? `border-app-border bg-gradient-to-br ${gradient} shadow-sm hover:shadow-md`
-                    : 'border-dashed border-app-border/60 bg-app-bg/50 opacity-70'
+                    ? `border-border bg-gradient-to-br ${gradient} shadow-sm hover:shadow-md`
+                    : 'border-dashed border-border/60 bg-background/50 opacity-70'
                 }`}
               >
                 <div className="flex items-start justify-between mb-2">
-                  <div className={`p-1.5 rounded-lg ${enabled ? 'bg-white/80' : 'bg-app-card'}`}>
-                    <FIcon className={`w-4 h-4 ${enabled ? color : 'text-app-muted'}`} />
+                  <div className={`p-1.5 rounded-lg ${enabled ? 'bg-white/80' : 'bg-card'}`}>
+                    <FIcon className={`w-4 h-4 ${enabled ? color : 'text-muted-foreground'}`} />
                   </div>
                   {enabled ? (
                     <span className="flex items-center gap-1 text-[10px] font-medium text-green-600 bg-green-100 px-1.5 py-0.5 rounded-full">
                       <Check className="w-3 h-3" /> Aktiv
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 text-[10px] font-medium text-app-muted bg-app-border/30 px-1.5 py-0.5 rounded-full">
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-app-border/30 px-1.5 py-0.5 rounded-full">
                       <Lock className="w-3 h-3" /> Upgrade
                     </span>
                   )}
                 </div>
-                <h4 className={`text-sm font-semibold ${enabled ? 'text-app-fg' : 'text-app-muted'}`}>{desc.name}</h4>
-                <p className="text-[11px] text-app-muted mt-0.5 line-clamp-2">{desc.description}</p>
+                <h4 className={`text-sm font-semibold ${enabled ? 'text-foreground' : 'text-muted-foreground'}`}>{desc.name}</h4>
+                <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{desc.description}</p>
                 {!enabled && (
                   <div className="mt-2">
                     <span className="text-[10px] text-amber-600 font-medium flex items-center gap-1">
@@ -226,9 +226,9 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
       </div>
 
       {/* Quick Feature Links */}
-      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
-          <h3 className="font-semibold text-app-fg flex items-center gap-2">
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-background">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
             <Settings className="w-4 h-4" />
             Feature-Verwaltung
           </h3>
@@ -247,9 +247,9 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
       </div>
 
       {/* Settings Section */}
-      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
-          <h3 className="font-semibold text-app-fg flex items-center gap-2">
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-background">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
             <Settings className="w-4 h-4" />
             Einstellungen
           </h3>
@@ -347,18 +347,18 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
           >
             <div className="space-y-5">
               <div>
-                <label className="block text-sm font-medium mb-1 text-app-fg">URL-Slug</label>
+                <label className="block text-sm font-medium mb-1 text-foreground">URL-Slug</label>
                 <Input
                   type="text"
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                   className="px-4 py-3"
                 />
-                <p className="mt-1 text-xs text-app-muted">Bestimmt die URL deiner Galerie</p>
+                <p className="mt-1 text-xs text-muted-foreground">Bestimmt die URL deiner Galerie</p>
               </div>
 
-              <div className="border-t border-app-border pt-4 space-y-3">
-                <h4 className="text-sm font-semibold text-app-fg">Features</h4>
+              <div className="border-t border-border pt-4 space-y-3">
+                <h4 className="text-sm font-semibold text-foreground">Features</h4>
                 {[
                   { key: 'allowUploads', label: 'Foto-Uploads erlauben' },
                   { key: 'allowDownloads', label: 'Downloads erlauben' },
@@ -369,7 +369,7 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                   { key: 'faceSearch', label: 'Gesichtserkennung (Finde mein Foto)' },
                 ].map(({ key, label }) => (
                   <label key={key} className="flex items-center justify-between py-2">
-                    <span className="text-sm text-app-fg">{label}</span>
+                    <span className="text-sm text-foreground">{label}</span>
                     <button
                       type="button"
                       role="switch"
@@ -389,11 +389,11 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                 ))}
               </div>
 
-              <div className="border-t border-app-border pt-4 space-y-3">
-                <h4 className="text-sm font-semibold text-app-fg">Branding (Premium)</h4>
-                <p className="text-xs text-app-muted">Nur für werbefreie Pakete: Eigenes Hashtag und Logo auf geteilten Fotos.</p>
+              <div className="border-t border-border pt-4 space-y-3">
+                <h4 className="text-sm font-semibold text-foreground">Branding (Premium)</h4>
+                <p className="text-xs text-muted-foreground">Nur für werbefreie Pakete: Eigenes Hashtag und Logo auf geteilten Fotos.</p>
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-app-fg">Custom Hashtag</label>
+                  <label className="block text-sm font-medium mb-1 text-foreground">Custom Hashtag</label>
                   <Input
                     type="text"
                     value={featuresConfig.customHashtag || ''}
@@ -401,10 +401,10 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                     placeholder="#meinEvent"
                     className="px-4 py-3"
                   />
-                  <p className="mt-1 text-xs text-app-muted">Erscheint auf heruntergeladenen Fotos statt #gästefotos</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Erscheint auf heruntergeladenen Fotos statt #gästefotos</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-app-fg">Overlay-Logo URL</label>
+                  <label className="block text-sm font-medium mb-1 text-foreground">Overlay-Logo URL</label>
                   <Input
                     type="url"
                     value={featuresConfig.customOverlayLogoUrl || ''}
@@ -412,7 +412,7 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                     placeholder="https://..."
                     className="px-4 py-3"
                   />
-                  <p className="mt-1 text-xs text-app-muted">Eigenes Logo statt gästefotos.com auf geteilten Fotos</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Eigenes Logo statt gästefotos.com auf geteilten Fotos</p>
                 </div>
               </div>
             </div>
@@ -443,19 +443,19 @@ function SetupRow({
   const content = (
     <>
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        <Icon className={`w-5 h-5 flex-shrink-0 ${danger ? 'text-red-500' : 'text-app-muted'}`} />
+        <Icon className={`w-5 h-5 flex-shrink-0 ${danger ? 'text-red-500' : 'text-muted-foreground'}`} />
         <div className="flex-1 min-w-0">
-          <span className={`block ${danger ? 'text-red-600' : 'text-app-fg'}`}>{label}</span>
+          <span className={`block ${danger ? 'text-red-600' : 'text-foreground'}`}>{label}</span>
           {value && (
-            <span className="block text-xs text-app-muted truncate">{value}</span>
+            <span className="block text-xs text-muted-foreground truncate">{value}</span>
           )}
         </div>
       </div>
-      <ChevronRight className="w-5 h-5 text-app-muted flex-shrink-0" />
+      <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
     </>
   );
 
-  const className = "flex items-center justify-between w-full px-4 py-4 border-b border-app-border/50 last:border-0 text-left hover:bg-app-bg transition-colors";
+  const className = "flex items-center justify-between w-full px-4 py-4 border-b border-border/50 last:border-0 text-left hover:bg-background transition-colors";
 
   if (link) {
     return (

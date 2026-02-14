@@ -84,7 +84,7 @@ export default function WifiSettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-app-bg">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -94,7 +94,7 @@ export default function WifiSettingsPage() {
   const hasChanges = wifiName.trim() !== '' || wifiPassword.trim() !== '';
 
   return (
-    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 bg-app-bg">
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 bg-background">
       <div className="max-w-xl mx-auto">
         {/* Header */}
         <motion.div
@@ -104,7 +104,7 @@ export default function WifiSettingsPage() {
         >
           <button
             onClick={() => router.push(`/events/${eventId}`)}
-            className="flex items-center gap-2 text-app-muted hover:text-app-fg mb-4 transition-colors"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Zurück zum Event
@@ -115,8 +115,8 @@ export default function WifiSettingsPage() {
               <Wifi className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-app-fg">WLAN für Gäste</h1>
-              <p className="text-app-muted text-sm">{eventTitle}</p>
+              <h1 className="text-2xl font-bold text-foreground">WLAN für Gäste</h1>
+              <p className="text-muted-foreground text-sm">{eventTitle}</p>
             </div>
           </div>
         </motion.div>
@@ -128,7 +128,7 @@ export default function WifiSettingsPage() {
           transition={{ delay: 0.1 }}
           className="bg-primary/5 border border-primary/20 rounded-xl p-4 mb-6"
         >
-          <p className="text-sm text-app-fg">
+          <p className="text-sm text-foreground">
             <strong>💡 Tipp:</strong> Wenn du WLAN-Daten hinterlegst, sehen deine Gäste 
             einen praktischen Banner mit den Zugangsdaten. So können sie sich schnell 
             verbinden und Fotos hochladen - ohne ihr Datenvolumen zu verbrauchen!
@@ -140,11 +140,11 @@ export default function WifiSettingsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-app-card border border-app-border rounded-xl p-6 space-y-6"
+          className="bg-card border border-border rounded-xl p-6 space-y-6"
         >
           {/* WLAN Name */}
           <div>
-            <label className="block text-sm font-medium mb-2 text-app-fg">
+            <label className="block text-sm font-medium mb-2 text-foreground">
               WLAN-Name (SSID)
             </label>
             <Input
@@ -154,14 +154,14 @@ export default function WifiSettingsPage() {
               placeholder="z.B. Hochzeit-Lisa-Max"
               className="px-4 py-3"
             />
-            <p className="mt-1.5 text-xs text-app-muted">
+            <p className="mt-1.5 text-xs text-muted-foreground">
               Der Name deines WLANs, wie er auf den Geräten angezeigt wird
             </p>
           </div>
 
           {/* WLAN Password */}
           <div>
-            <label className="block text-sm font-medium mb-2 text-app-fg">
+            <label className="block text-sm font-medium mb-2 text-foreground">
               WLAN-Passwort
             </label>
             <div className="relative">
@@ -175,7 +175,7 @@ export default function WifiSettingsPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-app-muted hover:text-app-fg transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -188,7 +188,7 @@ export default function WifiSettingsPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
             >
-              <label className="block text-sm font-medium mb-2 text-app-fg">
+              <label className="block text-sm font-medium mb-2 text-foreground">
                 Passwort bestätigen
               </label>
               <Input
@@ -207,7 +207,7 @@ export default function WifiSettingsPage() {
           )}
 
           {/* No password hint */}
-          <p className="text-sm text-app-muted flex items-center gap-2">
+          <p className="text-sm text-muted-foreground flex items-center gap-2">
             <span className="text-lg">🔓</span>
             Kein Passwort? Lass das Feld einfach leer.
           </p>
@@ -254,15 +254,15 @@ export default function WifiSettingsPage() {
             transition={{ delay: 0.4 }}
             className="mt-8"
           >
-            <h3 className="text-sm font-medium text-app-muted mb-3">Vorschau für Gäste</h3>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">Vorschau für Gäste</h3>
             <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                   <Wifi className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-app-fg">Kostenloses WLAN verfügbar</p>
-                  <p className="text-sm text-app-muted">
+                  <p className="font-medium text-foreground">Kostenloses WLAN verfügbar</p>
+                  <p className="text-sm text-muted-foreground">
                     Netzwerk: <span className="font-medium">{wifiName}</span>
                     {wifiPassword && ' • Passwortgeschützt'}
                   </p>

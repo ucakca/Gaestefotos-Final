@@ -109,17 +109,17 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
           className={`
             border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors
             ${isDragActive 
-              ? 'border-app-accent bg-app-bg' 
-              : 'border-app-border hover:border-app-accent hover:bg-app-bg'
+              ? 'border-app-accent bg-background' 
+              : 'border-border hover:border-app-accent hover:bg-background'
             }
           `}
         >
           <input {...getInputProps()} />
-          <Upload className="w-12 h-12 mx-auto mb-4 text-app-muted" />
-          <p className="text-lg font-medium text-app-fg mb-2">
+          <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-lg font-medium text-foreground mb-2">
             {isDragActive ? 'Fotos hier ablegen' : 'Fotos hochladen'}
           </p>
-          <p className="text-sm text-app-muted">
+          <p className="text-sm text-muted-foreground">
             Drag & Drop oder klicken zum Auswählen
           </p>
         </motion.div>
@@ -140,10 +140,10 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                className="bg-app-card rounded-lg p-4 shadow-sm border border-app-border"
+                className="bg-card rounded-lg p-4 shadow-sm border border-border"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded overflow-hidden bg-app-bg flex-shrink-0">
+                  <div className="w-16 h-16 rounded overflow-hidden bg-background flex-shrink-0">
                     <img
                       src={file.preview}
                       alt="Preview"
@@ -152,10 +152,10 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-app-fg truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {file.file.name}
                     </p>
-                    <p className="text-xs text-app-muted">
+                    <p className="text-xs text-muted-foreground">
                       {(file.file.size / 1024 / 1024).toFixed(2)} MB
                     </p>
 
@@ -172,7 +172,7 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                     )}
 
                     {file.error && (
-                      <p className="text-xs text-status-danger mt-1">{file.error}</p>
+                      <p className="text-xs text-destructive mt-1">{file.error}</p>
                     )}
                   </div>
 
@@ -195,7 +195,7 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                         size="sm"
                         aria-label="Entfernen"
                         title="Entfernen"
-                        className="w-8 h-8 rounded-full bg-app-bg text-status-danger border border-status-danger hover:opacity-90"
+                        className="w-8 h-8 rounded-full bg-background text-destructive border border-status-danger hover:opacity-90"
                       />
                     )}
                   </div>

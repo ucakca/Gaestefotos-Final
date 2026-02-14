@@ -297,14 +297,14 @@ export default function LiveWallPage() {
         
         <div className="flex gap-2 items-center flex-wrap">
           {/* View Mode Selector */}
-          <div className="flex bg-app-bg/10 rounded-lg p-1">
+          <div className="flex bg-background/10 rounded-lg p-1">
             {(['grid', 'collage', 'masonry', 'floating', 'slideshow', ...(hasMosaic ? ['mosaic', 'mixed'] as const : [])] as const).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setViewMode(mode as any)}
                 className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                   viewMode === mode 
-                    ? 'bg-app-bg text-app-fg' 
+                    ? 'bg-background text-foreground' 
                     : 'text-app-bg/70 hover:text-app-bg'
                 }`}
               >
@@ -320,14 +320,14 @@ export default function LiveWallPage() {
 
           <Button
             onClick={() => setSortMode(sortMode === 'newest' ? 'random' : 'newest')}
-            className="px-3 py-1.5 bg-app-bg/20 rounded text-sm hover:bg-app-bg/30"
+            className="px-3 py-1.5 bg-background/20 rounded text-sm hover:bg-background/30"
           >
             {sortMode === 'newest' ? '🕐 Neu' : '🎲 Zufall'}
           </Button>
 
           <Button
             onClick={() => setRealtimeEnabled((v) => !v)}
-            className={`px-3 py-1.5 rounded text-sm ${realtimeEnabled ? 'bg-green-500/30 text-green-200' : 'bg-app-bg/20'}`}
+            className={`px-3 py-1.5 rounded text-sm ${realtimeEnabled ? 'bg-green-500/30 text-green-200' : 'bg-background/20'}`}
           >
             {realtimeEnabled ? '⚡ Live' : '🔄 Polling'}
           </Button>
@@ -358,7 +358,7 @@ export default function LiveWallPage() {
                   }}
                   exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 0.25 }}
-                  className="aspect-square bg-app-bg/10 rounded overflow-hidden"
+                  className="aspect-square bg-background/10 rounded overflow-hidden"
                 >
                   {photo.url ? (
                   <img
@@ -400,7 +400,7 @@ export default function LiveWallPage() {
                     }}
                     exit={{ opacity: 0, scale: 0.8 }}
                     transition={{ duration: 0.4, delay: index * 0.05 }}
-                    className={`bg-app-bg/10 rounded-lg overflow-hidden shadow-lg ${
+                    className={`bg-background/10 rounded-lg overflow-hidden shadow-lg ${
                       isLarge ? 'col-span-2 row-span-2' : 
                       isMedium ? 'col-span-2' : ''
                     } ${newIds.has(photo.id) ? 'ring-4 ring-yellow-400' : ''}`}
@@ -436,7 +436,7 @@ export default function LiveWallPage() {
                   }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.4, delay: index * 0.03 }}
-                  className={`break-inside-avoid rounded-xl overflow-hidden shadow-lg bg-app-bg/10 ${
+                  className={`break-inside-avoid rounded-xl overflow-hidden shadow-lg bg-background/10 ${
                     newIds.has(photo.id) ? 'ring-4 ring-yellow-400' : ''
                   }`}
                 >

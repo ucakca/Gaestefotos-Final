@@ -104,8 +104,8 @@ export default function LeadsPage() {
         <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-app-fg">Lead-Management</h1>
-              <p className="text-sm text-app-muted mt-1">Kontaktdaten von Event-Besuchern verwalten und exportieren</p>
+              <h1 className="text-xl font-bold text-foreground">Lead-Management</h1>
+              <p className="text-sm text-muted-foreground mt-1">Kontaktdaten von Event-Besuchern verwalten und exportieren</p>
             </div>
             <Button onClick={handleExport} disabled={total === 0}>
               <Download className="w-4 h-4 mr-2" />
@@ -116,42 +116,42 @@ export default function LeadsPage() {
           {/* Stats */}
           {stats && (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-app-card rounded-xl border border-app-border p-4">
-                <div className="flex items-center gap-2 text-app-muted text-sm mb-1">
+              <div className="bg-card rounded-xl border border-border p-4">
+                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
                   <Users className="w-4 h-4" /> Gesamt
                 </div>
-                <div className="text-2xl font-bold text-app-fg">{stats.total}</div>
+                <div className="text-2xl font-bold text-foreground">{stats.total}</div>
               </div>
-              <div className="bg-app-card rounded-xl border border-app-border p-4">
-                <div className="flex items-center gap-2 text-app-muted text-sm mb-1">
+              <div className="bg-card rounded-xl border border-border p-4">
+                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
                   <Mail className="w-4 h-4" /> Mit E-Mail
                 </div>
-                <div className="text-2xl font-bold text-app-fg">{stats.withEmail}</div>
+                <div className="text-2xl font-bold text-foreground">{stats.withEmail}</div>
               </div>
-              <div className="bg-app-card rounded-xl border border-app-border p-4">
-                <div className="flex items-center gap-2 text-app-muted text-sm mb-1">
+              <div className="bg-card rounded-xl border border-border p-4">
+                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
                   <CheckCircle2 className="w-4 h-4" /> Mit Einwilligung
                 </div>
                 <div className="text-2xl font-bold text-emerald-600">{stats.withConsent}</div>
               </div>
-              <div className="bg-app-card rounded-xl border border-app-border p-4">
-                <div className="flex items-center gap-2 text-app-muted text-sm mb-1">
+              <div className="bg-card rounded-xl border border-border p-4">
+                <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
                   <BarChart3 className="w-4 h-4" /> Quellen
                 </div>
-                <div className="text-2xl font-bold text-app-fg">{Object.keys(stats.bySource).length}</div>
+                <div className="text-2xl font-bold text-foreground">{Object.keys(stats.bySource).length}</div>
               </div>
             </div>
           )}
 
           {/* Source breakdown */}
           {stats && Object.keys(stats.bySource).length > 0 && (
-            <div className="bg-app-card rounded-xl border border-app-border p-4">
-              <h3 className="text-sm font-semibold text-app-fg mb-3">Nach Quelle</h3>
+            <div className="bg-card rounded-xl border border-border p-4">
+              <h3 className="text-sm font-semibold text-foreground mb-3">Nach Quelle</h3>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSourceFilter('')}
                   className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                    !sourceFilter ? 'bg-app-accent text-white border-app-accent' : 'bg-app-card text-app-muted border-app-border hover:bg-app-hover'
+                    !sourceFilter ? 'bg-app-accent text-white border-app-accent' : 'bg-card text-muted-foreground border-border hover:bg-app-hover'
                   }`}
                 >
                   Alle ({stats.total})
@@ -175,13 +175,13 @@ export default function LeadsPage() {
           )}
 
           {/* Leads Table */}
-          <div className="bg-app-card rounded-xl border border-app-border overflow-hidden">
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
             {loading ? (
               <div className="p-12 text-center">
-                <Loader2 className="w-6 h-6 animate-spin mx-auto text-app-muted" />
+                <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
               </div>
             ) : leads.length === 0 ? (
-              <div className="p-12 text-center text-app-muted">
+              <div className="p-12 text-center text-muted-foreground">
                 <Users className="w-10 h-10 mx-auto mb-2 opacity-30" />
                 <p>Noch keine Leads erfasst</p>
                 <p className="text-xs mt-1">Leads werden automatisch erfasst wenn Gäste ihre Daten eingeben</p>
@@ -189,14 +189,14 @@ export default function LeadsPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-app-hover border-b border-app-border">
+                  <thead className="bg-app-hover border-b border-border">
                     <tr>
-                      <th className="text-left px-4 py-3 font-medium text-app-muted">Name</th>
-                      <th className="text-left px-4 py-3 font-medium text-app-muted">E-Mail</th>
-                      <th className="text-left px-4 py-3 font-medium text-app-muted">Telefon</th>
-                      <th className="text-left px-4 py-3 font-medium text-app-muted">Quelle</th>
-                      <th className="text-left px-4 py-3 font-medium text-app-muted">Einwilligung</th>
-                      <th className="text-left px-4 py-3 font-medium text-app-muted">Datum</th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Name</th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">E-Mail</th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Telefon</th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Quelle</th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Einwilligung</th>
+                      <th className="text-left px-4 py-3 font-medium text-muted-foreground">Datum</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-app-border">
@@ -204,9 +204,9 @@ export default function LeadsPage() {
                       const info = SOURCE_LABELS[lead.source] || { label: lead.source, color: 'bg-gray-100 text-gray-600' };
                       return (
                         <tr key={lead.id} className="hover:bg-app-hover transition-colors">
-                          <td className="px-4 py-3 font-medium text-app-fg">{lead.name || '–'}</td>
-                          <td className="px-4 py-3 text-app-muted">{lead.email || '–'}</td>
-                          <td className="px-4 py-3 text-app-muted">{lead.phone || '–'}</td>
+                          <td className="px-4 py-3 font-medium text-foreground">{lead.name || '–'}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{lead.email || '–'}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{lead.phone || '–'}</td>
                           <td className="px-4 py-3">
                             <span className={`text-xs px-2 py-0.5 rounded-full ${info.color}`}>{info.label}</span>
                           </td>
@@ -217,7 +217,7 @@ export default function LeadsPage() {
                               <XCircle className="w-4 h-4 text-gray-300" />
                             )}
                           </td>
-                          <td className="px-4 py-3 text-app-muted text-xs">
+                          <td className="px-4 py-3 text-muted-foreground text-xs">
                             {new Date(lead.createdAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
                           </td>
                         </tr>
@@ -230,13 +230,13 @@ export default function LeadsPage() {
 
             {/* Pagination */}
             {total > 50 && (
-              <div className="p-4 border-t border-app-border flex items-center justify-between text-sm text-app-muted">
+              <div className="p-4 border-t border-border flex items-center justify-between text-sm text-muted-foreground">
                 <span>{total} Leads gesamt</span>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="px-3 py-1 rounded border border-app-border disabled:opacity-50"
+                    className="px-3 py-1 rounded border border-border disabled:opacity-50"
                   >
                     Zurück
                   </button>
@@ -244,7 +244,7 @@ export default function LeadsPage() {
                   <button
                     onClick={() => setPage(p => p + 1)}
                     disabled={leads.length < 50}
-                    className="px-3 py-1 rounded border border-app-border disabled:opacity-50"
+                    className="px-3 py-1 rounded border border-border disabled:opacity-50"
                   >
                     Weiter
                   </button>

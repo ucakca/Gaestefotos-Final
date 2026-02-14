@@ -102,7 +102,7 @@ export default function MasonryGallery({
   if (photos.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-app-muted">Noch keine Fotos vorhanden</p>
+        <p className="text-muted-foreground">Noch keine Fotos vorhanden</p>
       </div>
     );
   }
@@ -133,7 +133,7 @@ export default function MasonryGallery({
                 loading="lazy"
               />
             ) : (
-              <div className="w-full aspect-square bg-app-bg flex items-center justify-center text-app-muted">
+              <div className="w-full aspect-square bg-background flex items-center justify-center text-muted-foreground">
                 Foto
               </div>
             )}

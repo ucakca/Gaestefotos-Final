@@ -49,10 +49,10 @@ export default function GuestbookPage({ params }: { params: Promise<{ id: string
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <h1 className="text-2xl font-bold text-app-fg mb-2">
+          <h1 className="text-2xl font-bold text-foreground mb-2">
             Gästebuch
           </h1>
-          <p className="text-app-muted">
+          <p className="text-muted-foreground">
             {isHost ? 'Verwalte dein Gästebuch' : 'Hinterlasse eine Nachricht für die Gastgeber'}
           </p>
         </motion.div>
@@ -61,7 +61,7 @@ export default function GuestbookPage({ params }: { params: Promise<{ id: string
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-app-card rounded-lg shadow-sm border border-app-border overflow-hidden min-h-[600px] flex flex-col"
+          className="bg-card rounded-lg shadow-sm border border-border overflow-hidden min-h-[600px] flex flex-col"
         >
           <Guestbook eventId={eventId!} isHost={isHost} eventTitle={event?.title} />
         </motion.div>

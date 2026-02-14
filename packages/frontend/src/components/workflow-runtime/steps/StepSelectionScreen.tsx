@@ -11,11 +11,11 @@ export function StepSelectionScreen({ node, onComplete }: StepRendererProps) {
   if (outputs.length === 0) {
     return (
       <div className="flex flex-col items-center gap-6 py-8">
-        <h3 className="text-xl font-bold text-app-fg">{label}</h3>
+        <h3 className="text-xl font-bold text-foreground">{label}</h3>
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={() => onComplete('default')}
-          className="px-8 py-3 bg-app-accent text-white rounded-xl font-semibold"
+          className="px-8 py-3 bg-primary text-white rounded-xl font-semibold"
         >
           Weiter
         </motion.button>
@@ -25,7 +25,7 @@ export function StepSelectionScreen({ node, onComplete }: StepRendererProps) {
 
   return (
     <div className="flex flex-col items-center gap-6 py-8">
-      <h3 className="text-xl font-bold text-app-fg">{label}</h3>
+      <h3 className="text-xl font-bold text-foreground">{label}</h3>
 
       <div className="w-full max-w-sm space-y-3">
         {outputs.map((output, i) => (
@@ -38,10 +38,10 @@ export function StepSelectionScreen({ node, onComplete }: StepRendererProps) {
             onClick={() => onComplete(output.id, { selection: output.id, selectionLabel: output.label })}
             className={`w-full py-4 px-5 rounded-xl font-medium text-left transition-colors border-2 ${
               output.type === 'default'
-                ? 'bg-app-accent text-white border-app-accent'
+                ? 'bg-primary text-white border-primary'
                 : output.type === 'skip'
                 ? 'bg-amber-50 text-amber-700 border-amber-200 hover:border-amber-400'
-                : 'bg-app-card text-app-fg border-app-border hover:border-app-accent/50'
+                : 'bg-card text-foreground border-border hover:border-primary/50'
             }`}
           >
             {output.label}

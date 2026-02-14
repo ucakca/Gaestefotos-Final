@@ -79,12 +79,12 @@ export function OptimizedImage({
 
       {/* Loading Skeleton */}
       {isLoading && (
-        <div className="absolute inset-0 bg-app-bg animate-pulse" />
+        <div className="absolute inset-0 bg-background animate-pulse" />
       )}
 
       {/* Error State */}
       {error && (
-        <div className="absolute inset-0 bg-app-bg flex items-center justify-center text-app-muted text-xs">
+        <div className="absolute inset-0 bg-background flex items-center justify-center text-muted-foreground text-xs">
           Bild nicht verfügbar
         </div>
       )}

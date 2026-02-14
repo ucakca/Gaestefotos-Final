@@ -20,7 +20,7 @@ export default function FilterButtons({ options, selected, onSelect, label }: Fi
   return (
     <div className="mb-6">
       {label && (
-        <p className="text-sm text-app-muted mb-2 w-full">{label}</p>
+        <p className="text-sm text-muted-foreground mb-2 w-full">{label}</p>
       )}
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (

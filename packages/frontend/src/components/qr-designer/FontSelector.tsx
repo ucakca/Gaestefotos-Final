@@ -11,7 +11,7 @@ interface FontSelectorProps {
 export function FontSelector({ value, onChange }: FontSelectorProps) {
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-app-fg">Schriftart</label>
+      <label className="text-sm font-medium text-foreground">Schriftart</label>
       <Select value={value} onValueChange={(v) => onChange(v as QRFont)}>
         <SelectTrigger className="w-full">
           <SelectValue />
@@ -25,7 +25,7 @@ export function FontSelector({ value, onChange }: FontSelectorProps) {
               <div className="flex flex-col gap-1">
                 <span className="text-sm font-medium">{font.name}</span>
                 <span 
-                  className="text-xs text-app-muted"
+                  className="text-xs text-muted-foreground"
                   style={{ fontFamily: font.fontFamily }}
                 >
                   Unsere Fotogalerie

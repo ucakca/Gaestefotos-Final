@@ -70,9 +70,9 @@ export default function ImpressumPage() {
 
   return (
     <div className="max-w-[980px] mx-auto p-5">
-      <h1 className="m-0 text-app-fg">Impressum</h1>
-      {loading ? <p className="mt-3 text-app-muted">Lade…</p> : null}
-      {error ? <p className="mt-3 text-status-danger">{error}</p> : null}
+      <h1 className="m-0 text-foreground">Impressum</h1>
+      {loading ? <p className="mt-3 text-muted-foreground">Lade…</p> : null}
+      {error ? <p className="mt-3 text-destructive">{error}</p> : null}
       {!loading && !error && snapshot?.html ? (
         <div className="prose prose-invert mt-4 max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(localizeCmsHtml(String(snapshot.html))) }} />
       ) : null}

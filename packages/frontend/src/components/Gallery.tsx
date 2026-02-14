@@ -74,7 +74,7 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
   if (photos.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-app-muted">Noch keine Fotos vorhanden</p>
+        <p className="text-muted-foreground">Noch keine Fotos vorhanden</p>
       </div>
     );
   }
@@ -91,7 +91,7 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
             transition={{ delay: index * 0.05 }}
             whileHover={{ scale: 1.05 }}
             onClick={() => openLightbox(index)}
-            className="aspect-square bg-app-bg rounded-lg overflow-hidden cursor-pointer group relative"
+            className="aspect-square bg-background rounded-lg overflow-hidden cursor-pointer group relative"
           >
             {photo.url ? (
               <img
@@ -100,7 +100,7 @@ export default function Gallery({ photos, allowDownloads = true, eventSlug }: Ga
                 className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-app-muted">
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                 Foto
               </div>
             )}

@@ -60,8 +60,8 @@ export default function Step3DesignExport({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-app-fg mb-2">Design & Export</h2>
-        <p className="text-sm text-app-muted">
+        <h2 className="text-2xl font-bold text-foreground mb-2">Design & Export</h2>
+        <p className="text-sm text-muted-foreground">
           Passe die Farben an und lade deinen QR-Aufsteller als PNG oder PDF herunter.
         </p>
       </div>
@@ -70,7 +70,7 @@ export default function Step3DesignExport({
       <div className="bg-gradient-to-br from-app-accent/10 to-app-card rounded-lg border border-app-accent/20 p-4">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="w-4 h-4 text-app-accent" />
-          <span className="text-sm font-semibold text-app-fg">Farbschema-Vorlagen</span>
+          <span className="text-sm font-semibold text-foreground">Farbschema-Vorlagen</span>
         </div>
         <Select onValueChange={onApplyPreset}>
           <SelectTrigger>
@@ -87,8 +87,8 @@ export default function Step3DesignExport({
       </div>
 
       {/* Color Pickers */}
-      <div className="bg-app-card rounded-lg border border-app-border p-4">
-        <label className="text-sm font-semibold text-app-fg mb-4 block">Farben anpassen</label>
+      <div className="bg-card rounded-lg border border-border p-4">
+        <label className="text-sm font-semibold text-foreground mb-4 block">Farben anpassen</label>
         <div className="grid grid-cols-3 gap-4">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -96,9 +96,9 @@ export default function Step3DesignExport({
             transition={{ delay: 0.1 }}
             className="space-y-2"
           >
-            <label className="text-xs text-app-muted">Background</label>
+            <label className="text-xs text-muted-foreground">Background</label>
             <ColorInput value={bgColor} onChange={onBgColorChange} className="w-full h-12" />
-            <div className="text-xs text-app-muted font-mono">{bgColor}</div>
+            <div className="text-xs text-muted-foreground font-mono">{bgColor}</div>
           </motion.div>
 
           <motion.div
@@ -107,9 +107,9 @@ export default function Step3DesignExport({
             transition={{ delay: 0.2 }}
             className="space-y-2"
           >
-            <label className="text-xs text-app-muted">Text</label>
+            <label className="text-xs text-muted-foreground">Text</label>
             <ColorInput value={textColor} onChange={onTextColorChange} className="w-full h-12" />
-            <div className="text-xs text-app-muted font-mono">{textColor}</div>
+            <div className="text-xs text-muted-foreground font-mono">{textColor}</div>
           </motion.div>
 
           <motion.div
@@ -118,16 +118,16 @@ export default function Step3DesignExport({
             transition={{ delay: 0.3 }}
             className="space-y-2"
           >
-            <label className="text-xs text-app-muted">Accent</label>
+            <label className="text-xs text-muted-foreground">Accent</label>
             <ColorInput value={accentColor} onChange={onAccentColorChange} className="w-full h-12" />
-            <div className="text-xs text-app-muted font-mono">{accentColor}</div>
+            <div className="text-xs text-muted-foreground font-mono">{accentColor}</div>
           </motion.div>
         </div>
       </div>
 
       {/* Logo Upload */}
-      <div className="bg-app-card rounded-lg border border-app-border p-4">
-        <label className="text-sm font-semibold text-app-fg mb-3 block">Logo im QR-Code (optional)</label>
+      <div className="bg-card rounded-lg border border-border p-4">
+        <label className="text-sm font-semibold text-foreground mb-3 block">Logo im QR-Code (optional)</label>
         <LogoUpload
           eventId={eventId}
           logoUrl={logoUrl}
@@ -138,8 +138,8 @@ export default function Step3DesignExport({
 
       {/* Export Section */}
       <div className="bg-gradient-to-br from-app-accent/10 to-app-card rounded-lg border border-app-accent/20 p-6">
-        <h3 className="text-lg font-bold text-app-fg mb-2">Download</h3>
-        <p className="text-sm text-app-muted mb-4">
+        <h3 className="text-lg font-bold text-foreground mb-2">Download</h3>
+        <p className="text-sm text-muted-foreground mb-4">
           Wähle das Format für deinen QR-Aufsteller. PNG ist ideal für digitale Nutzung, PDF für Druck.
         </p>
 
@@ -183,7 +183,7 @@ export default function Step3DesignExport({
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-4 p-3 bg-status-danger/10 border border-status-danger rounded-lg text-sm text-status-danger"
+            className="mt-4 p-3 bg-status-danger/10 border border-status-danger rounded-lg text-sm text-destructive"
           >
             {exportError}
           </motion.div>
@@ -191,9 +191,9 @@ export default function Step3DesignExport({
       </div>
 
       {/* QR Target Info */}
-      <div className="bg-app-bg rounded-lg border border-app-border p-4">
-        <label className="text-sm font-semibold text-app-fg mb-2 block">QR-Code Ziel-URL</label>
-        <div className="text-xs text-app-muted break-all font-mono bg-app-card p-2 rounded">
+      <div className="bg-background rounded-lg border border-border p-4">
+        <label className="text-sm font-semibold text-foreground mb-2 block">QR-Code Ziel-URL</label>
+        <div className="text-xs text-muted-foreground break-all font-mono bg-card p-2 rounded">
           {publicUrl || 'Lade…'}
         </div>
       </div>

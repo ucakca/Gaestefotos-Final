@@ -44,28 +44,28 @@ export default function AdminHubPage() {
       <AppLayout>
         <div className="max-w-5xl mx-auto px-4 py-6 space-y-8">
           <div>
-            <h1 className="text-xl font-bold text-app-fg flex items-center gap-2">
+            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
               <Shield className="w-5 h-5 text-red-500" /> Admin-Bereich
             </h1>
-            <p className="text-sm text-app-muted mt-1">System-Verwaltung — nur für Administratoren</p>
+            <p className="text-sm text-muted-foreground mt-1">System-Verwaltung — nur für Administratoren</p>
           </div>
 
           {sections.map((section) => (
             <div key={section.title}>
-              <h2 className="text-sm font-semibold text-app-muted uppercase tracking-wider mb-3">{section.title}</h2>
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">{section.title}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {section.items.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="flex items-center gap-4 p-4 rounded-xl bg-app-card border border-app-border hover:border-app-accent/30 hover:shadow-md transition-all group"
+                    className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-app-accent/30 hover:shadow-md transition-all group"
                   >
                     <div className="w-10 h-10 rounded-lg bg-app-hover flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                       <item.icon className={`w-5 h-5 ${item.color}`} />
                     </div>
                     <div className="min-w-0">
-                      <div className="font-medium text-sm text-app-fg">{item.label}</div>
-                      <div className="text-xs text-app-muted truncate">{item.description}</div>
+                      <div className="font-medium text-sm text-foreground">{item.label}</div>
+                      <div className="text-xs text-muted-foreground truncate">{item.description}</div>
                     </div>
                   </Link>
                 ))}

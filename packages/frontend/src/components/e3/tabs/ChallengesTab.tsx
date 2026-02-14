@@ -79,7 +79,7 @@ export default function ChallengesTab({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.08 }}
-        className="bg-app-card border border-app-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+        className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
         onClick={() => onChallengeClick?.(challenge)}
       >
         <div className="p-5">
@@ -160,7 +160,7 @@ export default function ChallengesTab({
           </div>
 
           {!challenge.isCompleted && (
-            <div className="mt-4 pt-3 border-t border-app-border flex items-center gap-3">
+            <div className="mt-4 pt-3 border-t border-border flex items-center gap-3">
               <Button
                 size="sm"
                 onClick={(e) => {

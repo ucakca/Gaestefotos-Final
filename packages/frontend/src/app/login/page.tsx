@@ -90,20 +90,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-screen flex items-center justify-center bg-app-bg p-4">
+    <div className="min-h-screen w-screen flex items-center justify-center bg-background p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md rounded-2xl bg-app-card p-8 shadow-xl"
+        className="w-full max-w-md rounded-2xl bg-card p-8 shadow-xl"
       >
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <Logo width={180} height={72} />
           </div>
-          <h1 className="mb-2 text-3xl font-bold text-app-fg">
+          <h1 className="mb-2 text-3xl font-bold text-foreground">
             Willkommen zurück
           </h1>
-          <p className="text-sm text-app-muted">
+          <p className="text-sm text-muted-foreground">
             Melde dich an, um fortzufahren
           </p>
         </div>
@@ -113,14 +113,14 @@ export default function LoginPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-app-bg border-2 border-status-danger text-status-danger px-4 py-3 rounded-lg"
+              className="bg-background border-2 border-status-danger text-destructive px-4 py-3 rounded-lg"
             >
               {error}
             </motion.div>
           )}
 
           <div>
-            <label htmlFor="email" className="mb-2 block text-sm font-medium text-app-fg">
+            <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
               E-Mail
             </label>
             <Input
@@ -130,14 +130,14 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-lg border border-app-border bg-app-card px-4 py-3 text-app-fg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
+              className="w-full rounded-lg border border-border bg-card px-4 py-3 text-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
               placeholder="deine@email.com"
               autoComplete="email"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="mb-2 block text-sm font-medium text-app-fg">
+            <label htmlFor="password" className="mb-2 block text-sm font-medium text-foreground">
               Passwort
             </label>
             <div className="relative">
@@ -148,7 +148,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded-lg border border-app-border bg-app-card px-4 py-3 pr-12 text-app-fg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
+                className="w-full rounded-lg border border-border bg-card px-4 py-3 pr-12 text-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
                 placeholder="••••••••"
                 autoComplete="current-password"
               />
@@ -160,18 +160,18 @@ export default function LoginPage() {
                 size="sm"
                 aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
                 title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-app-muted"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
             </div>
           </div>
 
           <div className="flex items-center justify-between">
-            <label className="flex items-center text-app-fg">
+            <label className="flex items-center text-foreground">
               <Checkbox id="rememberMe" name="rememberMe" checked={rememberMe} onCheckedChange={(checked) => setRememberMe(checked)} />
               <span className="ml-2 text-sm">Angemeldet bleiben</span>
             </label>
             <a
-              className="text-sm text-app-fg hover:underline"
+              className="text-sm text-foreground hover:underline"
               href="https://gästefotos.com/wp-login.php?action=lostpassword"
               target="_blank"
               rel="noreferrer"
@@ -190,20 +190,20 @@ export default function LoginPage() {
             </motion.span>
           </Button>
 
-          <div className="text-center text-sm text-app-muted">
+          <div className="text-center text-sm text-muted-foreground">
             Kein Konto? Bitte auf <strong>gästefotos.com</strong> anlegen.
           </div>
 
-          <div className="mt-3 flex flex-wrap justify-center gap-3 border-t border-app-border pt-3 text-center">
-            <a className="text-sm text-app-fg hover:underline" href="/faq" target="_blank" rel="noreferrer">
+          <div className="mt-3 flex flex-wrap justify-center gap-3 border-t border-border pt-3 text-center">
+            <a className="text-sm text-foreground hover:underline" href="/faq" target="_blank" rel="noreferrer">
               Hilfe / FAQ
             </a>
-            <span className="text-app-muted">|</span>
-            <a className="text-sm text-app-fg hover:underline" href="/datenschutz" target="_blank" rel="noreferrer">
+            <span className="text-muted-foreground">|</span>
+            <a className="text-sm text-foreground hover:underline" href="/datenschutz" target="_blank" rel="noreferrer">
               Datenschutz
             </a>
-            <span className="text-app-muted">|</span>
-            <a className="text-sm text-app-fg hover:underline" href="/impressum" target="_blank" rel="noreferrer">
+            <span className="text-muted-foreground">|</span>
+            <a className="text-sm text-foreground hover:underline" href="/impressum" target="_blank" rel="noreferrer">
               Impressum
             </a>
           </div>

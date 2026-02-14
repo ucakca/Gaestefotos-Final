@@ -145,10 +145,10 @@ export default function TemplatesAdminPage() {
         <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-app-fg flex items-center gap-2">
+              <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
                 <Layout className="w-5 h-5" /> Booth Templates
               </h1>
-              <p className="text-sm text-app-muted mt-1">Design-Vorlagen für Photo Booth, KI Booth und Mosaic Wall</p>
+              <p className="text-sm text-muted-foreground mt-1">Design-Vorlagen für Photo Booth, KI Booth und Mosaic Wall</p>
             </div>
             <Button onClick={() => { resetForm(); setShowCreate(true); }}>
               <Plus className="w-4 h-4 mr-2" /> Template erstellen
@@ -157,45 +157,45 @@ export default function TemplatesAdminPage() {
 
           {/* Create/Edit Form */}
           {showCreate && (
-            <div className="bg-app-card rounded-xl border border-app-border p-6 space-y-4">
+            <div className="bg-card rounded-xl border border-border p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-app-fg">{editingId ? 'Template bearbeiten' : 'Neues Template'}</h3>
-                <button onClick={resetForm} className="text-app-muted hover:text-app-fg"><X className="w-5 h-5" /></button>
+                <h3 className="font-semibold text-foreground">{editingId ? 'Template bearbeiten' : 'Neues Template'}</h3>
+                <button onClick={resetForm} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-app-fg mb-1">Name *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Name *</label>
                   <input type="text" value={formName} onChange={(e) => setFormName(e.target.value)}
-                    placeholder="z.B. Elegante Hochzeit" className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm" />
+                    placeholder="z.B. Elegante Hochzeit" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-app-fg mb-1">Typ *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Typ *</label>
                   <select value={formType} onChange={(e) => setFormType(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm">
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm">
                     {TEMPLATE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-app-fg mb-1">Kategorie</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Kategorie</label>
                   <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm">
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm">
                     <option value="">Keine</option>
                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-app-fg mb-1">Beschreibung</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Beschreibung</label>
                 <input type="text" value={formDesc} onChange={(e) => setFormDesc(e.target.value)}
-                  placeholder="Kurze Beschreibung des Templates" className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm" />
+                  placeholder="Kurze Beschreibung des Templates" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-app-fg mb-1">Config (JSON) *</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Config (JSON) *</label>
                 <textarea value={formConfig} onChange={(e) => setFormConfig(e.target.value)} rows={6}
-                  className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm font-mono" />
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-mono" />
               </div>
               <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 text-sm text-app-fg">
+                <label className="flex items-center gap-2 text-sm text-foreground">
                   <input type="checkbox" checked={formPublic} onChange={(e) => setFormPublic(e.target.checked)} className="rounded" />
                   Öffentlich sichtbar
                 </label>
@@ -211,12 +211,12 @@ export default function TemplatesAdminPage() {
           {/* Type filter */}
           <div className="flex gap-2">
             <button onClick={() => setTypeFilter('')}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${!typeFilter ? 'bg-app-accent text-white border-app-accent' : 'bg-app-card text-app-muted border-app-border'}`}>
+              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${!typeFilter ? 'bg-app-accent text-white border-app-accent' : 'bg-card text-muted-foreground border-border'}`}>
               Alle
             </button>
             {TEMPLATE_TYPES.map(t => (
               <button key={t.value} onClick={() => setTypeFilter(t.value === typeFilter ? '' : t.value)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-colors flex items-center gap-1 ${typeFilter === t.value ? 'bg-app-accent text-white border-app-accent' : 'bg-app-card text-app-muted border-app-border'}`}>
+                className={`text-xs px-3 py-1.5 rounded-full border transition-colors flex items-center gap-1 ${typeFilter === t.value ? 'bg-app-accent text-white border-app-accent' : 'bg-card text-muted-foreground border-border'}`}>
                 <t.icon className="w-3 h-3" /> {t.label}
               </button>
             ))}
@@ -224,9 +224,9 @@ export default function TemplatesAdminPage() {
 
           {/* Templates list */}
           {loading ? (
-            <div className="p-12 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-app-muted" /></div>
+            <div className="p-12 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" /></div>
           ) : templates.length === 0 ? (
-            <div className="bg-app-card rounded-xl border border-app-border p-12 text-center text-app-muted">
+            <div className="bg-card rounded-xl border border-border p-12 text-center text-muted-foreground">
               <Layout className="w-10 h-10 mx-auto mb-2 opacity-30" />
               <p>Keine Templates gefunden</p>
             </div>
@@ -236,7 +236,7 @@ export default function TemplatesAdminPage() {
                 const typeInfo = TEMPLATE_TYPES.find(tt => tt.value === t.type);
                 const TypeIcon = typeInfo?.icon || Layout;
                 return (
-                  <div key={t.id} className="bg-app-card rounded-xl border border-app-border overflow-hidden">
+                  <div key={t.id} className="bg-card rounded-xl border border-border overflow-hidden">
                     <div className="p-4 space-y-2">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2">
@@ -244,12 +244,12 @@ export default function TemplatesAdminPage() {
                             <TypeIcon className="w-4 h-4 text-app-accent" />
                           </div>
                           <div>
-                            <div className="font-medium text-sm text-app-fg">{t.name}</div>
-                            <div className="text-xs text-app-muted">{typeInfo?.label || t.type}</div>
+                            <div className="font-medium text-sm text-foreground">{t.name}</div>
+                            <div className="text-xs text-muted-foreground">{typeInfo?.label || t.type}</div>
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <button onClick={() => startEdit(t)} className="p-1.5 rounded-lg hover:bg-app-hover text-app-muted">
+                          <button onClick={() => startEdit(t)} className="p-1.5 rounded-lg hover:bg-app-hover text-muted-foreground">
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button onClick={() => handleDelete(t.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400">
@@ -257,9 +257,9 @@ export default function TemplatesAdminPage() {
                           </button>
                         </div>
                       </div>
-                      {t.description && <p className="text-xs text-app-muted">{t.description}</p>}
+                      {t.description && <p className="text-xs text-muted-foreground">{t.description}</p>}
                       <div className="flex items-center gap-2 text-xs">
-                        {t.category && <span className="px-2 py-0.5 rounded-full bg-app-hover text-app-muted">{t.category}</span>}
+                        {t.category && <span className="px-2 py-0.5 rounded-full bg-app-hover text-muted-foreground">{t.category}</span>}
                         <span className={`px-2 py-0.5 rounded-full ${t.isPublic ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                           {t.isPublic ? 'Öffentlich' : 'Privat'}
                         </span>

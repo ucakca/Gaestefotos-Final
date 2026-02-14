@@ -86,11 +86,11 @@ export default function LogoUpload({
 
   return (
     <div className="space-y-3">
-      <div className="text-sm font-semibold text-app-fg">Logo (Optional)</div>
+      <div className="text-sm font-semibold text-foreground">Logo (Optional)</div>
 
       {previewUrl ? (
         <div className="space-y-2">
-          <div className="relative w-full h-32 bg-app-bg rounded-lg border border-app-border overflow-hidden">
+          <div className="relative w-full h-32 bg-background rounded-lg border border-border overflow-hidden">
             <img
               src={previewUrl}
               alt="Logo Preview"
@@ -134,14 +134,14 @@ export default function LogoUpload({
               </>
             )}
           </Button>
-          <p className="text-xs text-app-muted">
+          <p className="text-xs text-muted-foreground">
             PNG, JPG oder SVG (max. 5MB)
           </p>
         </div>
       )}
 
       {error && (
-        <div className="text-sm text-status-danger">{error}</div>
+        <div className="text-sm text-destructive">{error}</div>
       )}
     </div>
   );

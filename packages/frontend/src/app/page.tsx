@@ -74,17 +74,17 @@ export default function Home() {
   // Default Landing Page Content (wenn kein CMS Content vorhanden)
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-app-bg">
-        <p className="text-app-muted">Lade…</p>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">Lade…</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-app-bg">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-md">
-          <p className="text-status-danger mb-4">{error}</p>
+          <p className="text-destructive mb-4">{error}</p>
           <Link href="/login">
             <Button>Zum Login</Button>
           </Link>
@@ -96,7 +96,7 @@ export default function Home() {
   // CMS Content vorhanden - rendern
   if (snapshot?.html) {
     return (
-      <div className="min-h-screen bg-app-bg">
+      <div className="min-h-screen bg-background">
         <div className="max-w-[980px] mx-auto p-5">
           <div
             className="prose prose-invert mt-4 max-w-none"
@@ -109,14 +109,14 @@ export default function Home() {
 
   // Default Fallback Landing Page
   return (
-    <div className="min-h-screen bg-app-bg">
+    <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto px-4 py-16">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-app-fg mb-4">
+          <h1 className="text-5xl font-bold text-foreground mb-4">
             Event-Fotos einfach teilen
           </h1>
-          <p className="text-xl text-app-muted mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Die professionelle Plattform für Hochzeiten, Geburtstage und Events. 
             Gäste laden Fotos hoch, du moderierst und teilst sie – alles an einem Ort.
           </p>
@@ -136,23 +136,23 @@ export default function Home() {
 
         {/* Features Section */}
         <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <div className="bg-app-surface p-6 rounded-lg border border-app-border">
-            <h3 className="text-xl font-semibold text-app-fg mb-3">📸 Upload & Moderation</h3>
-            <p className="text-app-muted">
+          <div className="bg-app-surface p-6 rounded-lg border border-border">
+            <h3 className="text-xl font-semibold text-foreground mb-3">📸 Upload & Moderation</h3>
+            <p className="text-muted-foreground">
               Gäste laden Fotos hoch, du entscheidest was veröffentlicht wird. 
               QR-Codes machen den Zugang kinderleicht.
             </p>
           </div>
-          <div className="bg-app-surface p-6 rounded-lg border border-app-border">
-            <h3 className="text-xl font-semibold text-app-fg mb-3">🎨 Kategorien & Alben</h3>
-            <p className="text-app-muted">
+          <div className="bg-app-surface p-6 rounded-lg border border-border">
+            <h3 className="text-xl font-semibold text-foreground mb-3">🎨 Kategorien & Alben</h3>
+            <p className="text-muted-foreground">
               Organisiere Fotos in Alben, erstelle Challenges und halte 
               besondere Momente fest.
             </p>
           </div>
-          <div className="bg-app-surface p-6 rounded-lg border border-app-border">
-            <h3 className="text-xl font-semibold text-app-fg mb-3">💾 Download & Teilen</h3>
-            <p className="text-app-muted">
+          <div className="bg-app-surface p-6 rounded-lg border border-border">
+            <h3 className="text-xl font-semibold text-foreground mb-3">💾 Download & Teilen</h3>
+            <p className="text-muted-foreground">
               Alle Fotos als ZIP herunterladen oder einzeln teilen. 
               Vollständige Kontrolle über deine Event-Medien.
             </p>
@@ -160,11 +160,11 @@ export default function Home() {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center bg-app-surface p-8 rounded-lg border border-app-border">
-          <h2 className="text-3xl font-bold text-app-fg mb-4">
+        <div className="text-center bg-app-surface p-8 rounded-lg border border-border">
+          <h2 className="text-3xl font-bold text-foreground mb-4">
             Bereit loszulegen?
           </h2>
-          <p className="text-app-muted mb-6">
+          <p className="text-muted-foreground mb-6">
             Erstelle dein erstes Event in wenigen Minuten.
           </p>
           <Link href="/register">

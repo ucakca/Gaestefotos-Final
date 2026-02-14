@@ -90,9 +90,9 @@ export default function QuickActions({ eventId, eventSlug, onShare, onQrCode }: 
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-app-card border border-app-border rounded-2xl p-4"
+      className="bg-card border border-border rounded-2xl p-4"
     >
-      <h3 className="text-sm font-semibold text-app-fg mb-4">Schnellzugriff</h3>
+      <h3 className="text-sm font-semibold text-foreground mb-4">Schnellzugriff</h3>
       <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
         {actions.map((action, index) => {
           const isButton = !!action.onClick;
@@ -110,10 +110,10 @@ export default function QuickActions({ eventId, eventSlug, onShare, onQrCode }: 
             >
               <Component
                 {...props as any}
-                className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all hover:bg-app-bg ${
+                className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all hover:bg-background ${
                   action.variant === 'primary' 
                     ? 'bg-app-accent/10 text-app-accent hover:bg-app-accent/20' 
-                    : 'text-app-muted hover:text-app-fg'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {action.icon}

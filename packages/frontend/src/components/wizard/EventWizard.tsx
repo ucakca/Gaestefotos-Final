@@ -177,7 +177,7 @@ export default function EventWizard() {
               </button>
               <h1 className="text-3xl font-bold">Event erstellen</h1>
             </div>
-            <span className="text-sm font-medium text-app-fg">
+            <span className="text-sm font-medium text-foreground">
               Schritt {state.currentStep} von {getTotalSteps()}
             </span>
           </div>
@@ -187,7 +187,7 @@ export default function EventWizard() {
               style={{ width: `${(state.currentStep / getTotalSteps()) * 100}%` }}
             />
           </div>
-          <div className="mt-2 text-xs text-app-muted">
+          <div className="mt-2 text-xs text-muted-foreground">
             {Math.round((state.currentStep / getTotalSteps()) * 100)}% abgeschlossen
           </div>
         </div>

@@ -147,12 +147,12 @@ export default function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-app-bg">
+      <div className="min-h-screen bg-background">
         {/* Header */}
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="sticky top-0 z-40 bg-app-card/90 backdrop-blur-xl border-b border-app-border shadow-sm"
+          className="sticky top-0 z-40 bg-card/90 backdrop-blur-xl border-b border-border shadow-sm"
         >
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="flex items-center justify-between gap-4">
@@ -161,8 +161,8 @@ export default function DashboardPage() {
                 <Logo width={100} height={40} />
                 {user && (
                   <div className="hidden sm:block min-w-0">
-                    <p className="text-sm font-medium text-app-fg truncate">{user.name || 'Host'}</p>
-                    <p className="text-xs text-app-muted truncate">{user.email}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{user.name || 'Host'}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
                 )}
               </div>
@@ -221,10 +221,10 @@ export default function DashboardPage() {
             >
               {/* Greeting */}
               <div className="mb-4">
-                <h1 className="text-2xl font-bold text-app-fg">
+                <h1 className="text-2xl font-bold text-foreground">
                   Hallo{user?.name ? `, ${user.name.split(' ')[0]}` : ''}! 👋
                 </h1>
-                <p className="text-app-muted">
+                <p className="text-muted-foreground">
                   Du hast {activeEvents.length} aktive{activeEvents.length === 1 ? 's' : ''} Event{activeEvents.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -266,14 +266,14 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-app-fg">Meine Events</h2>
+                  <h2 className="text-lg font-semibold text-foreground">Meine Events</h2>
                   {/* Status Info Button */}
                   <div className="relative">
                     <button
                       onClick={() => setShowStatusInfo(!showStatusInfo)}
                       className="p-1 rounded-full hover:bg-stone-100 transition-colors"
                     >
-                      <Info className="w-4 h-4 text-app-muted" />
+                      <Info className="w-4 h-4 text-muted-foreground" />
                     </button>
                     
                     {/* Info Tooltip */}
@@ -283,29 +283,29 @@ export default function DashboardPage() {
                           initial={{ opacity: 0, y: -5 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -5 }}
-                          className="absolute left-0 top-full mt-2 z-50 w-64 p-3 bg-app-card rounded-xl shadow-lg border border-app-border"
+                          className="absolute left-0 top-full mt-2 z-50 w-64 p-3 bg-card rounded-xl shadow-lg border border-border"
                         >
-                          <h4 className="font-medium text-app-fg text-sm mb-2">Event-Status Erklärung</h4>
+                          <h4 className="font-medium text-foreground text-sm mb-2">Event-Status Erklärung</h4>
                           <div className="space-y-2 text-xs">
                             <div className="flex items-start gap-2">
                               <div className="w-2.5 h-2.5 rounded-full bg-green-500 mt-0.5 flex-shrink-0" />
                               <div>
                                 <span className="font-medium text-green-700">Live</span>
-                                <p className="text-app-muted">Event läuft/kommt, Galerie aktiv</p>
+                                <p className="text-muted-foreground">Event läuft/kommt, Galerie aktiv</p>
                               </div>
                             </div>
                             <div className="flex items-start gap-2">
                               <div className="w-2.5 h-2.5 rounded-full bg-orange-500 mt-0.5 flex-shrink-0" />
                               <div>
                                 <span className="font-medium text-orange-700">Archiviert</span>
-                                <p className="text-app-muted">Event vorbei, Galerie noch zugänglich</p>
+                                <p className="text-muted-foreground">Event vorbei, Galerie noch zugänglich</p>
                               </div>
                             </div>
                             <div className="flex items-start gap-2">
                               <div className="w-2.5 h-2.5 rounded-full bg-red-500 mt-0.5 flex-shrink-0" />
                               <div>
                                 <span className="font-medium text-red-700">Gesperrt</span>
-                                <p className="text-app-muted">Galerie deaktiviert, kein Zugang</p>
+                                <p className="text-muted-foreground">Galerie deaktiviert, kein Zugang</p>
                               </div>
                             </div>
                           </div>
@@ -327,7 +327,7 @@ export default function DashboardPage() {
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                         statusFilter === tab.id
                           ? 'bg-blue-500 text-white'
-                          : 'bg-app-card text-app-muted hover:bg-app-border'
+                          : 'bg-card text-muted-foreground hover:bg-app-border'
                       }`}
                     >
                       {tab.label} ({tab.count})
@@ -339,24 +339,24 @@ export default function DashboardPage() {
               {/* Search + View Toggle */}
               <div className="flex items-center gap-2">
                 <div className="relative flex-1 sm:w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     placeholder="Event suchen..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 bg-app-card border-app-border"
+                    className="pl-9 bg-card border-border"
                   />
                 </div>
-                <div className="hidden sm:flex bg-app-card border border-app-border rounded-lg p-1">
+                <div className="hidden sm:flex bg-card border border-border rounded-lg p-1">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'text-app-muted hover:text-app-fg'}`}
+                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'text-muted-foreground hover:text-foreground'}`}
                   >
                     <Grid3X3 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'text-app-muted hover:text-app-fg'}`}
+                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'text-muted-foreground hover:text-foreground'}`}
                   >
                     <List className="w-4 h-4" />
                   </button>
@@ -387,16 +387,16 @@ export default function DashboardPage() {
               </div>
               {searchQuery ? (
                 <>
-                  <h3 className="text-xl font-semibold text-app-fg mb-2">Keine Events gefunden</h3>
-                  <p className="text-app-muted mb-4">Versuche einen anderen Suchbegriff</p>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">Keine Events gefunden</h3>
+                  <p className="text-muted-foreground mb-4">Versuche einen anderen Suchbegriff</p>
                   <Button variant="secondary" onClick={() => setSearchQuery('')}>
                     Suche zurücksetzen
                   </Button>
                 </>
               ) : (
                 <>
-                  <h3 className="text-xl font-semibold text-app-fg mb-2">Willkommen bei Gästefotos! 🎉</h3>
-                  <p className="text-app-muted mb-6 max-w-md mx-auto">Erstelle dein erstes Event und sammle unvergessliche Momente mit deinen Gästen.</p>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">Willkommen bei Gästefotos! 🎉</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">Erstelle dein erstes Event und sammle unvergessliche Momente mit deinen Gästen.</p>
                   <Button variant="primary" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0" onClick={handleCreateEvent}>
                     <Plus className="w-4 h-4 mr-2" />
                     Erstes Event erstellen
@@ -458,21 +458,21 @@ export default function DashboardPage() {
         </button>
 
         {/* Bottom Nav */}
-        <nav className="fixed bottom-0 left-0 right-0 bg-app-card/95 backdrop-blur-xl border-t border-app-border z-50 shadow-lg">
+        <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border z-50 shadow-lg">
           <div className="flex items-center justify-around py-3">
             <Link href="/dashboard" className="flex flex-col items-center gap-1 text-blue-600">
               <Grid3X3 className="w-5 h-5" />
               <span className="text-xs font-medium">Events</span>
             </Link>
-            <Link href="/moderation" className="flex flex-col items-center gap-1 text-app-muted">
+            <Link href="/moderation" className="flex flex-col items-center gap-1 text-muted-foreground">
               <ClipboardCheck className="w-5 h-5" />
               <span className="text-xs">Prüfen</span>
             </Link>
-            <a href="/faq" className="flex flex-col items-center gap-1 text-app-muted">
+            <a href="/faq" className="flex flex-col items-center gap-1 text-muted-foreground">
               <HelpCircle className="w-5 h-5" />
               <span className="text-xs">Hilfe</span>
             </a>
-            <button onClick={logout} className="flex flex-col items-center gap-1 text-app-muted">
+            <button onClick={logout} className="flex flex-col items-center gap-1 text-muted-foreground">
               <LogOut className="w-5 h-5" />
               <span className="text-xs">Logout</span>
             </button>

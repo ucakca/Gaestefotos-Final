@@ -294,12 +294,12 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
 
   return (
     <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
-      <div className="bg-app-bg">
+      <div className="bg-background">
         {/* Modern Header */}
-        <div className="bg-app-card border-b border-app-border sticky top-16 z-30">
+        <div className="bg-card border-b border-border sticky top-16 z-30">
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
             <div>
-              <h1 className="text-lg font-bold text-app-fg">Galerie-Design</h1>
+              <h1 className="text-lg font-bold text-foreground">Galerie-Design</h1>
               {wizardMode && (
                 <div className="flex items-center gap-2 mt-0.5">
                   <div className="flex items-center gap-1">
@@ -308,8 +308,8 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                   </div>
                   <div className="w-6 h-px bg-app-border" />
                   <div className="flex items-center gap-1">
-                    <div className="w-5 h-5 rounded-full bg-app-border text-app-muted flex items-center justify-center text-[10px] font-bold">2</div>
-                    <span className="text-xs text-app-muted">Kategorien</span>
+                    <div className="w-5 h-5 rounded-full bg-app-border text-muted-foreground flex items-center justify-center text-[10px] font-bold">2</div>
+                    <span className="text-xs text-muted-foreground">Kategorien</span>
                   </div>
                 </div>
               )}
@@ -317,12 +317,12 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPreviewMode(previewMode === 'mobile' ? 'desktop' : 'mobile')}
-                className={`p-2 rounded-lg transition-colors ${previewMode === 'mobile' ? 'bg-app-accent/10 text-app-accent' : 'text-app-muted hover:bg-app-bg'}`}
+                className={`p-2 rounded-lg transition-colors ${previewMode === 'mobile' ? 'bg-app-accent/10 text-app-accent' : 'text-muted-foreground hover:bg-background'}`}
                 title={previewMode === 'mobile' ? 'Desktop-Vorschau' : 'Mobile Vorschau'}
               >
                 <Smartphone className="w-5 h-5" />
               </button>
-              <a href={`/e2/${event.slug}`} target="_blank" rel="noopener noreferrer" className="p-2 text-app-muted hover:bg-app-bg rounded-lg transition-colors">
+              <a href={`/e2/${event.slug}`} target="_blank" rel="noopener noreferrer" className="p-2 text-muted-foreground hover:bg-background rounded-lg transition-colors">
                 <Eye className="w-5 h-5" />
               </a>
               {wizardMode && (
@@ -338,11 +338,11 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Preview */}
           <div className="lg:col-span-2">
-            <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
-              <div className={`bg-app-bg p-6 flex items-center justify-center ${
+            <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+              <div className={`bg-background p-6 flex items-center justify-center ${
                 previewMode === 'mobile' ? 'max-w-sm mx-auto' : 'w-full'
               }`}>
-                <div className={`bg-app-card rounded-2xl shadow-xl overflow-hidden ${
+                <div className={`bg-card rounded-2xl shadow-xl overflow-hidden ${
                   previewMode === 'mobile' ? 'w-full max-w-sm' : 'w-full'
                 }`}>
                   {/* Public Event Preview - Like /e/[slug] */}
@@ -387,7 +387,7 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                     </div>
 
                     {/* Profile Section */}
-                    <div className="bg-app-bg pb-6">
+                    <div className="bg-background pb-6">
                       <div className="max-w-md mx-auto px-4 -mt-12">
                         {/* Profile Image */}
                         <div 
@@ -395,7 +395,7 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                           onClick={() => profileImageInputRef.current?.click()}
                         >
                           <div className="absolute inset-0 rounded-full p-1" style={{ backgroundImage: accentGradient }}>
-                            <div className="w-full h-full rounded-full bg-app-card flex items-center justify-center overflow-hidden">
+                            <div className="w-full h-full rounded-full bg-card flex items-center justify-center overflow-hidden">
                               {profileImage ? (
                                 <img
                                   src={profileImage}
@@ -403,8 +403,8 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <div className="w-full h-full bg-app-bg flex items-center justify-center">
-                                  <Camera className="w-16 h-16 text-app-muted" />
+                                <div className="w-full h-full bg-background flex items-center justify-center">
+                                  <Camera className="w-16 h-16 text-muted-foreground" />
                                 </div>
                               )}
                             </div>
@@ -439,13 +439,13 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                                 updateEventField('title', (e.target as HTMLInputElement).value);
                               }
                             }}
-                            className="mb-3 h-auto border-x-0 border-t-0 border-b-2 border-app-fg bg-transparent px-0 py-0 text-center text-2xl font-bold text-app-fg shadow-none focus-visible:ring-0"
+                            className="mb-3 h-auto border-x-0 border-t-0 border-b-2 border-app-fg bg-transparent px-0 py-0 text-center text-2xl font-bold text-foreground shadow-none focus-visible:ring-0"
                             autoFocus
                           />
                         ) : (
                           <h2
                             onClick={() => setEditingField('title')}
-                            className="text-center text-2xl font-bold text-app-fg mb-3 cursor-pointer hover:opacity-70 transition-opacity"
+                            className="text-center text-2xl font-bold text-foreground mb-3 cursor-pointer hover:opacity-70 transition-opacity"
                           >
                             {event.title}
                           </h2>
@@ -467,11 +467,11 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                             className="text-center px-4 cursor-pointer hover:opacity-70 transition-opacity min-h-[60px] flex items-center justify-center"
                           >
                             {welcomeMessage ? (
-                              <p className="text-app-fg text-sm leading-relaxed whitespace-pre-wrap">
+                              <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">
                                 {welcomeMessage}
                               </p>
                             ) : (
-                              <p className="text-app-muted italic text-sm">
+                              <p className="text-muted-foreground italic text-sm">
                                 Klicke hier, um eine Willkommensnachricht hinzuzufügen...
                               </p>
                             )}
@@ -488,8 +488,8 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
           {/* Settings Sidebar */}
           <div className="lg:col-span-1 space-y-4">
             {/* Design Presets */}
-            <div className="rounded-2xl border border-app-border bg-app-card p-5 sticky top-24">
-              <h3 className="text-sm font-semibold text-app-fg mb-3">Design Preset</h3>
+            <div className="rounded-2xl border border-border bg-card p-5 sticky top-24">
+              <h3 className="text-sm font-semibold text-foreground mb-3">Design Preset</h3>
               <div className="grid grid-cols-2 gap-2">
                 {DESIGN_PRESETS.map((p) => {
                   const isSelected = (designConfig.designPresetKey || 'classic') === p.key;
@@ -501,33 +501,33 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                       className={`rounded-xl border-2 p-2 transition-all ${
                         isSelected
                           ? 'border-app-accent shadow-md scale-[1.02]'
-                          : 'border-app-border hover:border-app-muted'
+                          : 'border-border hover:border-app-muted'
                       }`}
                     >
                       <div className="h-8 w-full rounded-lg" style={{ backgroundImage: p.heroGradient }} />
-                      <div className="mt-1.5 text-[11px] font-medium text-app-fg">{p.label}</div>
+                      <div className="mt-1.5 text-[11px] font-medium text-foreground">{p.label}</div>
                     </button>
                   );
                 })}
               </div>
-              <p className="mt-2 text-[11px] text-app-muted">
+              <p className="mt-2 text-[11px] text-muted-foreground">
                 Presets setzen Farben für Hero-Hintergrund und Akzente.
               </p>
             </div>
 
             {/* Branding */}
-            <div className="rounded-2xl border border-app-border bg-app-card p-5">
-              <h3 className="text-sm font-semibold text-app-fg mb-3">Branding</h3>
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-3">Branding</h3>
               <div className="space-y-4">
                 {/* Logo */}
                 <div>
-                  <label className="block text-xs font-medium text-app-muted mb-1.5">Logo</label>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">Logo</label>
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-24 rounded-lg border border-app-border bg-app-bg flex items-center justify-center overflow-hidden">
+                    <div className="h-10 w-24 rounded-lg border border-border bg-background flex items-center justify-center overflow-hidden">
                       {logoUrl ? (
                         <img src={logoUrl} alt="Logo" className="max-h-8 max-w-[80px] object-contain" />
                       ) : (
-                        <span className="text-[10px] text-app-muted">Kein Logo</span>
+                        <span className="text-[10px] text-muted-foreground">Kein Logo</span>
                       )}
                     </div>
                     <Button type="button" size="sm" variant="outline" onClick={() => logoImageInputRef.current?.click()} disabled={uploadingImage === 'logo'}>
@@ -539,7 +539,7 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
 
                 {/* Colors */}
                 <div>
-                  <label className="block text-xs font-medium text-app-muted mb-1.5">Farben</label>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">Farben</label>
                   <div className="space-y-2">
                     {[
                       { key: 'primary', label: 'Primary', fallback: '#8B1538' },
@@ -547,7 +547,7 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                       { key: 'accent', label: 'Akzent', fallback: '#EC4899' },
                     ].map(({ key, label, fallback }) => (
                       <div key={key} className="flex items-center gap-2">
-                        <span className="w-16 text-[11px] text-app-muted">{label}</span>
+                        <span className="w-16 text-[11px] text-muted-foreground">{label}</span>
                         <ColorInput
                           value={colors[key] || fallback}
                           onChange={(value) => updateDesignConfig({ colors: { ...colors, [key]: value } })}
@@ -566,13 +566,13 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
             </div>
 
             {/* QR Code — Compact with link to dashboard */}
-            <div className="rounded-2xl border border-app-border bg-app-card p-5">
-              <h3 className="text-sm font-semibold text-app-fg mb-3 flex items-center gap-2">
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                 <QrCode className="w-4 h-4 text-app-accent" />
                 QR-Code
               </h3>
               <div className="flex items-center gap-3 mb-3">
-                <div className="bg-app-bg p-2 rounded-xl border border-app-border">
+                <div className="bg-background p-2 rounded-xl border border-border">
                   <QRCodeSVG id="qr-code-svg" value={eventUrl} size={80} fgColor={qrCodeConfig.fgColor} bgColor={qrCodeConfig.bgColor} level={qrCodeConfig.level} />
                 </div>
                 <div className="flex-1 space-y-1.5">
@@ -587,10 +587,10 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
             </div>
 
             {/* Event URL */}
-            <div className="rounded-2xl border border-app-border bg-app-card p-5">
-              <h3 className="text-sm font-semibold text-app-fg mb-2">Event-URL</h3>
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-2">Event-URL</h3>
               <div className="flex gap-2">
-                <Input type="text" value={eventUrl} readOnly className="flex-1 bg-app-bg h-8 text-xs" />
+                <Input type="text" value={eventUrl} readOnly className="flex-1 bg-background h-8 text-xs" />
                 <Button type="button" size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(eventUrl); showToast('URL kopiert', 'success'); }}>
                   Kopieren
                 </Button>

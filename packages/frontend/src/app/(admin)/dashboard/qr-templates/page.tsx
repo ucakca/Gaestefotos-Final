@@ -79,7 +79,7 @@ export default function QrTemplatesPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold">QR-Code Templates</h1>
-            <p className="text-app-muted mt-1">
+            <p className="text-muted-foreground mt-1">
               {filteredTemplates.length} Vorlagen verfügbar
             </p>
           </div>
@@ -87,16 +87,16 @@ export default function QrTemplatesPage() {
             <Button variant="ghost" size="sm" onClick={loadTemplates}>
               <RefreshCw className="w-4 h-4" />
             </Button>
-            <div className="flex border border-app-border rounded-lg overflow-hidden">
+            <div className="flex border border-border rounded-lg overflow-hidden">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 ${viewMode === 'grid' ? 'bg-app-accent text-white' : 'hover:bg-app-bg'}`}
+                className={`p-2 ${viewMode === 'grid' ? 'bg-app-accent text-white' : 'hover:bg-background'}`}
               >
                 <Grid className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 ${viewMode === 'list' ? 'bg-app-accent text-white' : 'hover:bg-app-bg'}`}
+                className={`p-2 ${viewMode === 'list' ? 'bg-app-accent text-white' : 'hover:bg-background'}`}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -113,7 +113,7 @@ export default function QrTemplatesPage() {
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 categoryFilter === cat.value
                   ? 'bg-app-accent text-white'
-                  : 'bg-app-bg hover:bg-app-border text-app-muted'
+                  : 'bg-background hover:bg-app-border text-muted-foreground'
               }`}
             >
               {cat.label}
@@ -122,7 +122,7 @@ export default function QrTemplatesPage() {
         </div>
 
         {error && (
-          <div className="mb-4 p-4 bg-status-danger/10 border border-status-danger rounded-lg text-status-danger">
+          <div className="mb-4 p-4 bg-status-danger/10 border border-status-danger rounded-lg text-destructive">
             {error}
           </div>
         )}
@@ -131,7 +131,7 @@ export default function QrTemplatesPage() {
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredTemplates.length === 0 ? (
-              <div className="col-span-full text-center py-12 text-app-muted">
+              <div className="col-span-full text-center py-12 text-muted-foreground">
                 Keine Templates in dieser Kategorie.
               </div>
             ) : (
@@ -162,7 +162,7 @@ export default function QrTemplatesPage() {
                   </div>
                   <div className="p-3">
                     <div className="font-medium truncate">{template.name}</div>
-                    <div className="text-xs text-app-muted mt-0.5">
+                    <div className="text-xs text-muted-foreground mt-0.5">
                       {CATEGORIES.find((c) => c.value === template.category)?.label}
                     </div>
                     <div className="flex gap-1.5 mt-2">
@@ -191,7 +191,7 @@ export default function QrTemplatesPage() {
           /* List View */
           <div className="space-y-3">
             {filteredTemplates.length === 0 ? (
-              <Card className="p-8 text-center text-app-muted">
+              <Card className="p-8 text-center text-muted-foreground">
                 Keine Templates in dieser Kategorie.
               </Card>
             ) : (
@@ -200,7 +200,7 @@ export default function QrTemplatesPage() {
                   <div className="p-4 flex items-center gap-4">
                     {/* SVG Preview */}
                     <div 
-                      className="w-16 h-20 rounded border border-app-border overflow-hidden flex-shrink-0"
+                      className="w-16 h-20 rounded border border-border overflow-hidden flex-shrink-0"
                       style={{ backgroundColor: template.defaultBgColor }}
                     >
                       <img
@@ -221,7 +221,7 @@ export default function QrTemplatesPage() {
                           <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                         )}
                       </div>
-                      <div className="text-sm text-app-muted">
+                      <div className="text-sm text-muted-foreground">
                         {CATEGORIES.find((c) => c.value === template.category)?.label} · {template.slug}
                       </div>
                       <div className="flex gap-2 mt-1">
@@ -263,7 +263,7 @@ export default function QrTemplatesPage() {
 
                   {/* Expanded Details */}
                   {expandedId === template.id && (
-                    <div className="px-4 pb-4 pt-0 border-t border-app-border mt-2">
+                    <div className="px-4 pb-4 pt-0 border-t border-border mt-2">
                       <div className="mt-4 grid grid-cols-4 gap-2">
                         {['A6', 'A5', 'story', 'square'].map(format => (
                           <div key={format} className="text-center">
@@ -277,12 +277,12 @@ export default function QrTemplatesPage() {
                                 className="w-full h-full object-contain"
                               />
                             </div>
-                            <span className="text-xs text-app-muted uppercase">{format}</span>
+                            <span className="text-xs text-muted-foreground uppercase">{format}</span>
                           </div>
                         ))}
                       </div>
                       {template.description && (
-                        <p className="mt-4 text-sm text-app-muted">
+                        <p className="mt-4 text-sm text-muted-foreground">
                           {template.description}
                         </p>
                       )}

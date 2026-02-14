@@ -133,15 +133,15 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
         <div className="flex items-center gap-3 mb-6">
           {step !== 'select-photo' && (
             <button onClick={handleReset} className="p-2 rounded-lg hover:bg-app-surface transition">
-              <ArrowLeft className="w-5 h-5 text-app-muted" />
+              <ArrowLeft className="w-5 h-5 text-muted-foreground" />
             </button>
           )}
           <div>
-            <h1 className="text-2xl font-bold text-app-fg flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-primary" />
               KI Booth
             </h1>
-            <p className="text-sm text-app-muted mt-0.5">
+            <p className="text-sm text-muted-foreground mt-0.5">
               {step === 'select-photo' && 'Wähle ein Foto für den AI Style Transfer'}
               {step === 'select-style' && 'Wähle einen künstlerischen Stil'}
               {step === 'processing' && 'KI verarbeitet dein Foto...'}
@@ -159,10 +159,10 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
               <React.Fragment key={label}>
                 {i > 0 && <div className={`flex-1 h-0.5 ${isActive ? 'bg-primary' : 'bg-app-border'}`} />}
                 <div className={`flex items-center gap-1.5 text-xs font-medium ${
-                  isActive ? 'text-primary' : 'text-app-muted'
+                  isActive ? 'text-primary' : 'text-muted-foreground'
                 }`}>
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                    isActive ? 'bg-primary text-white' : 'bg-app-surface text-app-muted'
+                    isActive ? 'bg-primary text-white' : 'bg-app-surface text-muted-foreground'
                   }`}>{i + 1}</div>
                   {label}
                 </div>
@@ -176,9 +176,9 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
           <div>
             {photos.length === 0 ? (
               <div className="text-center py-16">
-                <ImageIcon className="w-12 h-12 text-app-muted mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-app-fg mb-2">Keine Fotos vorhanden</h3>
-                <p className="text-app-muted">Lade zuerst Fotos hoch, um den KI Booth zu nutzen.</p>
+                <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-foreground mb-2">Keine Fotos vorhanden</h3>
+                <p className="text-muted-foreground">Lade zuerst Fotos hoch, um den KI Booth zu nutzen.</p>
               </div>
             ) : (
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
@@ -193,7 +193,7 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
                     {photo.url ? (
                       <img src={photo.url} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
-                      <div className="w-full h-full bg-app-surface flex items-center justify-center text-app-muted">
+                      <div className="w-full h-full bg-app-surface flex items-center justify-center text-muted-foreground">
                         <ImageIcon className="w-6 h-6" />
                       </div>
                     )}
@@ -211,8 +211,8 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
         {step === 'select-style' && selectedPhoto && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Preview */}
-            <div className="bg-app-card border border-app-border rounded-2xl p-4">
-              <h3 className="text-sm font-semibold text-app-muted mb-3">Ausgewähltes Foto</h3>
+            <div className="bg-card border border-border rounded-2xl p-4">
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">Ausgewähltes Foto</h3>
               <div className="aspect-square rounded-xl overflow-hidden bg-app-surface">
                 {selectedPhoto.url && (
                   <img src={selectedPhoto.url} alt="" className="w-full h-full object-cover" />
@@ -222,7 +222,7 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
 
             {/* Style Grid */}
             <div>
-              <h3 className="text-sm font-semibold text-app-muted mb-3">Stil auswählen</h3>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">Stil auswählen</h3>
               <div className="grid grid-cols-2 gap-3">
                 {styles.map(style => {
                   const preview = STYLE_PREVIEWS[style.key] || { emoji: '🎨', gradient: 'from-gray-400 to-gray-600' };
@@ -234,13 +234,13 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
                       whileTap={{ scale: 0.97 }}
                       onClick={() => setSelectedStyle(style.key)}
                       className={`relative p-4 rounded-xl border-2 transition text-left ${
-                        isSelected ? 'border-primary bg-primary/10' : 'border-app-border hover:border-primary/50'
+                        isSelected ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
                       }`}
                     >
                       <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${preview.gradient} flex items-center justify-center text-xl mb-2`}>
                         {preview.emoji}
                       </div>
-                      <div className="font-medium text-sm text-app-fg">{style.name}</div>
+                      <div className="font-medium text-sm text-foreground">{style.name}</div>
                       {isSelected && (
                         <div className="absolute top-2 right-2">
                           <Check className="w-5 h-5 text-primary" />
@@ -273,11 +273,11 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
             >
               <Sparkles className="w-8 h-8 text-white" />
             </motion.div>
-            <h3 className="text-xl font-bold text-app-fg mb-2">KI verarbeitet dein Foto</h3>
-            <p className="text-app-muted text-sm mb-4">
+            <h3 className="text-xl font-bold text-foreground mb-2">KI verarbeitet dein Foto</h3>
+            <p className="text-muted-foreground text-sm mb-4">
               Stil: {styles.find(s => s.key === selectedStyle)?.name || selectedStyle}
             </p>
-            <div className="flex items-center gap-2 text-app-muted text-xs">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs">
               <Loader2 className="w-4 h-4 animate-spin" />
               Dies kann bis zu 60 Sekunden dauern...
             </div>
@@ -288,8 +288,8 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
         {step === 'result' && resultUrl && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Original */}
-            <div className="bg-app-card border border-app-border rounded-2xl p-4">
-              <h3 className="text-sm font-semibold text-app-muted mb-3">Original</h3>
+            <div className="bg-card border border-border rounded-2xl p-4">
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">Original</h3>
               <div className="aspect-square rounded-xl overflow-hidden bg-app-surface">
                 {selectedPhoto?.url && (
                   <img src={selectedPhoto.url} alt="Original" className="w-full h-full object-cover" />
@@ -298,13 +298,13 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
             </div>
 
             {/* Result */}
-            <div className="bg-app-card border border-app-border rounded-2xl p-4">
+            <div className="bg-card border border-border rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-app-muted">
+                <h3 className="text-sm font-semibold text-muted-foreground">
                   {styles.find(s => s.key === selectedStyle)?.name || 'Ergebnis'}
                 </h3>
                 {processTime > 0 && (
-                  <span className="text-xs text-app-muted">{(processTime / 1000).toFixed(1)}s</span>
+                  <span className="text-xs text-muted-foreground">{(processTime / 1000).toFixed(1)}s</span>
                 )}
               </div>
               <div className="aspect-square rounded-xl overflow-hidden bg-app-surface">

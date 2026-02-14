@@ -71,7 +71,7 @@ export default function ChallengesStep({
 
       {showAddCustom ? (
         <div className="p-4 rounded-lg border-2 border-app-accent bg-app-accent/5 space-y-3">
-          <div className="text-sm font-medium text-app-fg">Neue Challenge erstellen</div>
+          <div className="text-sm font-medium text-foreground">Neue Challenge erstellen</div>
           <Input
             placeholder="z.B. Lustigstes Selfie, Bestes Gruppenfoto..."
             value={customLabel}
@@ -93,12 +93,12 @@ export default function ChallengesStep({
         <Button 
           variant="secondary" 
           onClick={() => setShowAddCustom(true)} 
-          className="w-full flex items-center justify-center gap-2 py-4 border-2 border-dashed border-app-border hover:border-app-accent hover:bg-app-accent/5"
+          className="w-full flex items-center justify-center gap-2 py-4 border-2 border-dashed border-border hover:border-app-accent hover:bg-app-accent/5"
           title="Eigene Challenge hinzufügen"
           aria-label="Eigene Challenge hinzufügen"
         >
           <Plus className="w-6 h-6" />
-          <span className="text-app-muted">Eigene Challenge</span>
+          <span className="text-muted-foreground">Eigene Challenge</span>
         </Button>
       )}
 

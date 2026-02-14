@@ -55,7 +55,7 @@ export default function LanguageSelector({
   return (
     <div className={`relative ${className}`}>
       {showLabel && (
-        <label className="block text-sm font-medium mb-2 text-app-fg">
+        <label className="block text-sm font-medium mb-2 text-foreground">
           {t('select')}
         </label>
       )}

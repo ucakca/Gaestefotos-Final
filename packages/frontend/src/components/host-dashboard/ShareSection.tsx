@@ -62,14 +62,14 @@ export default function ShareSection({ eventId, eventSlug, onQrCode }: ShareSect
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-app-card border border-app-border rounded-2xl overflow-hidden"
+      className="bg-card border border-border rounded-2xl overflow-hidden"
     >
-      <div className="p-4 border-b border-app-border">
-        <h3 className="font-semibold text-app-fg flex items-center gap-2">
+      <div className="p-4 border-b border-border">
+        <h3 className="font-semibold text-foreground flex items-center gap-2">
           <Share2 className="w-4 h-4" />
           Teilen & Einladen
         </h3>
-        <p className="text-xs text-app-muted mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           Teile dein Event mit Gästen per Link, QR-Code oder WhatsApp
         </p>
       </div>
@@ -77,9 +77,9 @@ export default function ShareSection({ eventId, eventSlug, onQrCode }: ShareSect
       <div className="p-4 space-y-4">
         {/* Direct Event Link */}
         <div>
-          <label className="text-xs font-medium text-app-muted mb-2 block">Event-Link</label>
+          <label className="text-xs font-medium text-muted-foreground mb-2 block">Event-Link</label>
           <div className="flex gap-2">
-            <div className="flex-1 bg-app-bg border border-app-border rounded-xl px-3 py-2 text-sm text-app-fg truncate">
+            <div className="flex-1 bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground truncate">
               {eventUrl}
             </div>
             <Button
@@ -99,7 +99,7 @@ export default function ShareSection({ eventId, eventSlug, onQrCode }: ShareSect
 
         {/* Share Link with Token */}
         <div>
-          <label className="text-xs font-medium text-app-muted mb-2 block">Einladungs-Link (mit Zugang)</label>
+          <label className="text-xs font-medium text-muted-foreground mb-2 block">Einladungs-Link (mit Zugang)</label>
           {!shareUrl ? (
             <Button
               variant="primary"
@@ -113,7 +113,7 @@ export default function ShareSection({ eventId, eventSlug, onQrCode }: ShareSect
           ) : (
             <div className="space-y-2">
               <div className="flex gap-2">
-                <div className="flex-1 bg-app-bg border border-app-border rounded-xl px-3 py-2 text-sm text-app-fg truncate">
+                <div className="flex-1 bg-background border border-border rounded-xl px-3 py-2 text-sm text-foreground truncate">
                   {shareUrl}
                 </div>
                 <Button

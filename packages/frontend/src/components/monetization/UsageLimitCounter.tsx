@@ -29,9 +29,9 @@ export function UsageLimitCounter({
   const isAtLimit = percentage >= 100;
 
   const statusColor = useMemo(() => {
-    if (isAtLimit) return 'text-status-danger';
+    if (isAtLimit) return 'text-destructive';
     if (isNearLimit) return 'text-status-warning';
-    return 'text-app-muted';
+    return 'text-muted-foreground';
   }, [isAtLimit, isNearLimit]);
 
   const barColor = useMemo(() => {
@@ -50,7 +50,7 @@ export function UsageLimitCounter({
         <span className={statusColor}>
           {currentUsage} / {limit}
         </span>
-        <span className="text-app-muted text-xs">{label}</span>
+        <span className="text-muted-foreground text-xs">{label}</span>
         {isAtLimit && onUpgrade && (
           <button
             onClick={onUpgrade}
@@ -68,20 +68,20 @@ export function UsageLimitCounter({
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-app-card border border-app-border rounded-lg p-4"
+      className="bg-card border border-border rounded-lg p-4"
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          {isAtLimit && <AlertCircle className="w-4 h-4 text-status-danger" />}
+          {isAtLimit && <AlertCircle className="w-4 h-4 text-destructive" />}
           {isNearLimit && !isAtLimit && <TrendingUp className="w-4 h-4 text-status-warning" />}
-          <span className="text-sm font-medium text-app-fg">{label}</span>
+          <span className="text-sm font-medium text-foreground">{label}</span>
         </div>
         <span className={`text-sm font-semibold ${statusColor}`}>
           {currentUsage} / {limit}
         </span>
       </div>
 
-      <div className="relative w-full h-2 bg-app-bg rounded-full overflow-hidden mb-2">
+      <div className="relative w-full h-2 bg-background rounded-full overflow-hidden mb-2">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${Math.min(percentage, 100)}%` }}
@@ -92,7 +92,7 @@ export function UsageLimitCounter({
 
       {isAtLimit && (
         <div className="flex items-center justify-between text-xs">
-          <span className="text-status-danger font-medium">Limit erreicht</span>
+          <span className="text-destructive font-medium">Limit erreicht</span>
           {onUpgrade && (
             <button
               onClick={onUpgrade}

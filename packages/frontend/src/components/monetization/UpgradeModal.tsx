@@ -129,19 +129,19 @@ export function UpgradeModal({
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             onClick={(e) => e.target === e.currentTarget && onClose()}
           >
-            <div className="bg-app-card rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto border border-app-border">
-              <div className="sticky top-0 bg-app-card border-b border-app-border px-6 py-4 flex items-center justify-between z-10">
+            <div className="bg-card rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto border border-border">
+              <div className="sticky top-0 bg-card border-b border-border px-6 py-4 flex items-center justify-between z-10">
                 <div>
-                  <h2 className="text-2xl font-bold text-app-fg">Upgrade auf Pro</h2>
+                  <h2 className="text-2xl font-bold text-foreground">Upgrade auf Pro</h2>
                   {triggerFeature && (
-                    <p className="text-sm text-app-muted mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       Schalte <strong>{FEATURE_DESCRIPTIONS[triggerFeature]?.name}</strong> frei
                     </p>
                   )}
                 </div>
                 <button
                   onClick={onClose}
-                  className="text-app-muted hover:text-app-fg transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -162,7 +162,7 @@ export function UpgradeModal({
                           relative rounded-xl border-2 p-6 transition-all
                           ${tier.highlighted
                             ? 'border-app-accent bg-gradient-to-br from-app-accent/5 to-transparent shadow-lg'
-                            : 'border-app-border bg-app-bg'
+                            : 'border-border bg-background'
                           }
                           ${isSelected ? 'ring-2 ring-app-accent' : ''}
                         `}
@@ -176,23 +176,23 @@ export function UpgradeModal({
                         )}
 
                         <div className="flex items-center gap-2 mb-4">
-                          <Icon className={`w-6 h-6 ${tier.highlighted ? 'text-app-accent' : 'text-app-muted'}`} />
-                          <h3 className="text-xl font-bold text-app-fg">{tier.name}</h3>
+                          <Icon className={`w-6 h-6 ${tier.highlighted ? 'text-app-accent' : 'text-muted-foreground'}`} />
+                          <h3 className="text-xl font-bold text-foreground">{tier.name}</h3>
                         </div>
 
                         <div className="mb-4">
                           <div className="flex items-baseline gap-1">
-                            <span className="text-4xl font-bold text-app-fg">{tier.price}</span>
-                            <span className="text-app-muted text-sm">{tier.priceDetail}</span>
+                            <span className="text-4xl font-bold text-foreground">{tier.price}</span>
+                            <span className="text-muted-foreground text-sm">{tier.priceDetail}</span>
                           </div>
-                          <p className="text-sm text-app-muted mt-1">{tier.description}</p>
+                          <p className="text-sm text-muted-foreground mt-1">{tier.description}</p>
                         </div>
 
                         <ul className="space-y-3 mb-6">
                           {tier.features.map((feature, index) => (
                             <li key={index} className="flex items-start gap-2 text-sm">
                               <Check className="w-4 h-4 text-status-success flex-shrink-0 mt-0.5" />
-                              <span className="text-app-fg">{feature}</span>
+                              <span className="text-foreground">{feature}</span>
                             </li>
                           ))}
                         </ul>
@@ -211,7 +211,7 @@ export function UpgradeModal({
                 </div>
 
                 <div className="mt-8 text-center">
-                  <p className="text-sm text-app-muted">
+                  <p className="text-sm text-muted-foreground">
                     Alle Preise verstehen sich zzgl. MwSt. · Keine Mindestlaufzeit · Jederzeit kündbar
                   </p>
                   <a href="/pricing" className="text-sm text-app-accent hover:underline mt-2 inline-block">

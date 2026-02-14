@@ -45,16 +45,16 @@ export default function AirGraffitiPage({ params }: { params: Promise<{ id: stri
 
         <div className="mb-8">
           <Hand className="w-20 h-20 text-emerald-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-app-fg mb-2">Air Graffiti Wall</h1>
-          <p className="text-app-muted max-w-md mx-auto">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Air Graffiti Wall</h1>
+          <p className="text-muted-foreground max-w-md mx-auto">
             Male in der Luft mit deinen Händen! Deine Webcam erkennt deine Finger — 
             Daumen und Zeigefinger zusammen = Zeichnen. Neon-Effekte inklusive.
           </p>
         </div>
 
-        <div className="bg-app-card rounded-2xl border border-app-border p-6 max-w-sm mx-auto mb-8">
-          <h3 className="font-semibold text-app-fg mb-3">So funktioniert&apos;s:</h3>
-          <ul className="text-sm text-app-muted text-left space-y-2">
+        <div className="bg-card rounded-2xl border border-border p-6 max-w-sm mx-auto mb-8">
+          <h3 className="font-semibold text-foreground mb-3">So funktioniert&apos;s:</h3>
+          <ul className="text-sm text-muted-foreground text-left space-y-2">
             <li className="flex items-start gap-2">
               <span className="text-emerald-400 font-bold">1.</span>
               Kamera-Zugriff erlauben

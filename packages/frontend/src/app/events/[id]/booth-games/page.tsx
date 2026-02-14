@@ -141,15 +141,15 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
         <div className="flex items-center gap-3 mb-6">
           {activeGame && (
             <button onClick={() => setActiveGame(null)} className="p-2 rounded-lg hover:bg-app-surface transition">
-              <ArrowLeft className="w-5 h-5 text-app-muted" />
+              <ArrowLeft className="w-5 h-5 text-muted-foreground" />
             </button>
           )}
           <div>
-            <h1 className="text-2xl font-bold text-app-fg flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <Gamepad2 className="w-6 h-6 text-primary" />
               Booth-Spielchen
             </h1>
-            <p className="text-sm text-app-muted mt-0.5">{event?.title || 'Event'}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">{event?.title || 'Event'}</p>
           </div>
         </div>
 
@@ -162,16 +162,16 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => startGame(game.type)}
-                className="text-left p-5 rounded-2xl border border-app-border bg-app-card hover:border-primary/50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-left p-5 rounded-2xl border border-border bg-card hover:border-primary/50 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="flex items-start gap-4">
                   <span className="text-3xl">{game.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-app-fg flex items-center gap-2">
+                    <div className="font-semibold text-foreground flex items-center gap-2">
                       {game.name}
                       {game.requiresAI && <Sparkles className="w-3.5 h-3.5 text-purple-500" />}
                     </div>
-                    <p className="text-sm text-app-muted mt-1">{game.description}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{game.description}</p>
                     <div className="flex gap-2 mt-2">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${
                         game.category === 'booth' ? 'bg-blue-100 text-blue-700' :
@@ -194,8 +194,8 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
               <div className="flex items-start gap-4">
                 <span className="text-3xl">🖐️</span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-app-fg">Air Graffiti Wall</div>
-                  <p className="text-sm text-app-muted mt-1">Male in der Luft mit Hand-Tracking (Webcam)</p>
+                  <div className="font-semibold text-foreground">Air Graffiti Wall</div>
+                  <p className="text-sm text-muted-foreground mt-1">Male in der Luft mit Hand-Tracking (Webcam)</p>
                   <div className="flex gap-2 mt-2">
                     <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">🖐️ Webcam</span>
                   </div>
@@ -210,7 +210,7 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
             className="text-center py-8">
             <div className="text-5xl mb-6">🎰</div>
-            <h2 className="text-xl font-bold text-app-fg mb-6">Deine Aufgabe:</h2>
+            <h2 className="text-xl font-bold text-foreground mb-6">Deine Aufgabe:</h2>
             <div className="grid grid-cols-3 gap-4 max-w-md mx-auto mb-8">
               {[
                 { label: 'Pose', value: activeGame.prop, color: 'from-blue-500 to-cyan-500' },
@@ -228,7 +228,7 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
                 </motion.div>
               ))}
             </div>
-            <p className="text-app-muted mb-6">Du hast 5 Sekunden! 📸</p>
+            <p className="text-muted-foreground mb-6">Du hast 5 Sekunden! 📸</p>
             <Button onClick={handleSlotSpin} disabled={spinning} className="gap-2">
               <RotateCw className={`w-4 h-4 ${spinning ? 'animate-spin' : ''}`} />
               Nochmal drehen
@@ -243,7 +243,7 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
             <div className="text-5xl mb-6">🪞</div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
               className="max-w-md mx-auto bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-2xl p-8 mb-6">
-              <p className="text-lg font-medium text-app-fg mb-4">{activeGame.compliment}</p>
+              <p className="text-lg font-medium text-foreground mb-4">{activeGame.compliment}</p>
               <div className="inline-block px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-sm font-bold">
                 {activeGame.verdict}
               </div>
@@ -261,8 +261,8 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
             {activeGame.phase === 'challenge' ? (
               <>
                 <div className="text-6xl mb-4">{activeGame.challenge.emoji}</div>
-                <h2 className="text-2xl font-bold text-app-fg mb-2">{activeGame.challenge.name}</h2>
-                <p className="text-app-muted mb-8">{activeGame.challenge.description}</p>
+                <h2 className="text-2xl font-bold text-foreground mb-2">{activeGame.challenge.name}</h2>
+                <p className="text-muted-foreground mb-8">{activeGame.challenge.description}</p>
                 <div className="flex gap-3 justify-center">
                   <Button onClick={handleMimikScore} className="gap-2" size="lg">
                     <Star className="w-5 h-5" /> Bewerten!
@@ -282,8 +282,8 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
                   className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600 mb-2">
                   {activeGame.score}/100
                 </motion.div>
-                <p className="text-lg font-semibold text-app-fg mb-1">{activeGame.rank}</p>
-                <p className="text-app-muted text-sm mb-8">{activeGame.challenge.name}: {activeGame.challenge.emoji}</p>
+                <p className="text-lg font-semibold text-foreground mb-1">{activeGame.rank}</p>
+                <p className="text-muted-foreground text-sm mb-8">{activeGame.challenge.name}: {activeGame.challenge.emoji}</p>
                 <div className="flex gap-3 justify-center">
                   <Button onClick={handleMimikChallenge} className="gap-2">
                     <RotateCw className="w-4 h-4" /> Nochmal spielen
@@ -299,15 +299,15 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
             className="text-center py-8">
             <div className="text-5xl mb-6">🎭</div>
-            <h2 className="text-xl font-bold text-app-fg mb-4">Dein Mystery Overlay:</h2>
+            <h2 className="text-xl font-bold text-foreground mb-4">Dein Mystery Overlay:</h2>
             <motion.div initial={{ rotateY: 180 }} animate={{ rotateY: 0 }} transition={{ duration: 0.6 }}
               className="inline-block bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-2xl p-8 mb-6">
               <div className="text-4xl mb-2">{activeGame.overlay.name}</div>
-              <span className="text-sm text-app-muted px-3 py-1 bg-app-surface rounded-full">
+              <span className="text-sm text-muted-foreground px-3 py-1 bg-app-surface rounded-full">
                 {activeGame.overlay.category}
               </span>
             </motion.div>
-            <p className="text-app-muted mb-6">Posiere blind — das Overlay wird erst NACH dem Foto sichtbar!</p>
+            <p className="text-muted-foreground mb-6">Posiere blind — das Overlay wird erst NACH dem Foto sichtbar!</p>
             <Button onClick={handleMysteryOverlay} className="gap-2">
               <RotateCw className="w-4 h-4" /> Anderes Overlay
             </Button>
@@ -320,20 +320,20 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
             className="max-w-md mx-auto py-8">
             <div className="text-center mb-6">
               <div className="text-5xl mb-4">🔄</div>
-              <h2 className="text-xl font-bold text-app-fg">Face Switch</h2>
-              <p className="text-sm text-app-muted mt-1">Gesichter in einem Gruppenfoto tauschen (AI)</p>
+              <h2 className="text-xl font-bold text-foreground">Face Switch</h2>
+              <p className="text-sm text-muted-foreground mt-1">Gesichter in einem Gruppenfoto tauschen (AI)</p>
             </div>
             {activeGame.phase === 'input' && (
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-app-fg block mb-1">Foto-ID eingeben</label>
+                  <label className="text-sm font-medium text-foreground block mb-1">Foto-ID eingeben</label>
                   <input
                     value={facePhotoId}
                     onChange={e => setFacePhotoId(e.target.value)}
                     placeholder="Photo-ID (aus der Galerie)"
-                    className="w-full px-4 py-2.5 bg-app-surface border border-app-border rounded-xl text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full px-4 py-2.5 bg-app-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                   />
-                  <p className="text-xs text-app-muted mt-1">Mindestens 2 Gesichter im Foto nötig</p>
+                  <p className="text-xs text-muted-foreground mt-1">Mindestens 2 Gesichter im Foto nötig</p>
                 </div>
                 <Button
                   onClick={async () => {
@@ -357,14 +357,14 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
             {activeGame.phase === 'processing' && (
               <div className="text-center py-12">
                 <Loader2 className="w-10 h-10 animate-spin mx-auto text-primary mb-4" />
-                <p className="text-app-muted">KI tauscht Gesichter...</p>
+                <p className="text-muted-foreground">KI tauscht Gesichter...</p>
               </div>
             )}
             {activeGame.phase === 'result' && activeGame.result && (
               <div className="text-center">
                 <div className="text-4xl mb-4">✅</div>
-                <p className="text-lg font-semibold text-app-fg mb-2">{activeGame.result.facesSwapped} Gesichter getauscht!</p>
-                <p className="text-sm text-app-muted mb-6">Das neue Foto wurde gespeichert.</p>
+                <p className="text-lg font-semibold text-foreground mb-2">{activeGame.result.facesSwapped} Gesichter getauscht!</p>
+                <p className="text-sm text-muted-foreground mb-6">Das neue Foto wurde gespeichert.</p>
                 <Button onClick={() => setActiveGame({ type: 'face_switch', phase: 'input' })} className="gap-2">
                   <RotateCw className="w-4 h-4" /> Nochmal
                 </Button>
@@ -379,26 +379,26 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
             className="max-w-md mx-auto py-8">
             <div className="text-center mb-6">
               <div className="text-5xl mb-4">🎨</div>
-              <h2 className="text-xl font-bold text-app-fg">Digital Graffiti</h2>
-              <p className="text-sm text-app-muted mt-1">Male auf einem Foto — Emojis, Zeichnungen, Texte</p>
+              <h2 className="text-xl font-bold text-foreground">Digital Graffiti</h2>
+              <p className="text-sm text-muted-foreground mt-1">Male auf einem Foto — Emojis, Zeichnungen, Texte</p>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-app-fg block mb-1">Foto-URL eingeben</label>
+                <label className="text-sm font-medium text-foreground block mb-1">Foto-URL eingeben</label>
                 <input
                   value={graffitiPhotoUrl}
                   onChange={e => setGraffitiPhotoUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full px-4 py-2.5 bg-app-surface border border-app-border rounded-xl text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full px-4 py-2.5 bg-app-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-app-fg block mb-1">Photo-ID (optional)</label>
+                <label className="text-sm font-medium text-foreground block mb-1">Photo-ID (optional)</label>
                 <input
                   value={graffitiPhotoId}
                   onChange={e => setGraffitiPhotoId(e.target.value)}
                   placeholder="Photo-ID für Verknüpfung"
-                  className="w-full px-4 py-2.5 bg-app-surface border border-app-border rounded-xl text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full px-4 py-2.5 bg-app-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </div>
               <Button
@@ -442,27 +442,27 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
             className="max-w-md mx-auto py-8">
             <div className="text-center mb-6">
               <div className="text-5xl mb-4">💌</div>
-              <h2 className="text-xl font-bold text-app-fg">Vows & Views</h2>
-              <p className="text-sm text-app-muted mt-1">Deine persönliche Botschaft im Polaroid-Style</p>
+              <h2 className="text-xl font-bold text-foreground">Vows & Views</h2>
+              <p className="text-sm text-muted-foreground mt-1">Deine persönliche Botschaft im Polaroid-Style</p>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-app-fg block mb-1">Dein Name</label>
+                <label className="text-sm font-medium text-foreground block mb-1">Dein Name</label>
                 <input
                   value={vowName}
                   onChange={e => setVowName(e.target.value)}
                   placeholder="Anonym"
-                  className="w-full px-4 py-2.5 bg-app-surface border border-app-border rounded-xl text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full px-4 py-2.5 bg-app-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-app-fg block mb-1">Deine Botschaft *</label>
+                <label className="text-sm font-medium text-foreground block mb-1">Deine Botschaft *</label>
                 <textarea
                   value={vowMessage}
                   onChange={e => setVowMessage(e.target.value)}
                   placeholder="Schreib etwas Liebes, Lustiges oder Weises..."
                   rows={4}
-                  className="w-full px-4 py-2.5 bg-app-surface border border-app-border rounded-xl text-app-fg placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
+                  className="w-full px-4 py-2.5 bg-app-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
                 />
               </div>
               <Button onClick={handleVowSubmit} disabled={!vowMessage.trim() || sending} className="w-full gap-2" size="lg">

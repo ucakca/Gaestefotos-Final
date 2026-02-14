@@ -56,7 +56,7 @@ export default function MilestoneModal({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="bg-app-card rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden"
+            className="bg-card rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden"
           >
             {/* Animated Icon */}
             <div className="pt-8 pb-4 flex justify-center">
@@ -76,7 +76,7 @@ export default function MilestoneModal({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-2xl font-bold text-app-fg mb-2"
+                className="text-2xl font-bold text-foreground mb-2"
               >
                 {phaseInfo.milestone}
               </motion.h2>
@@ -92,7 +92,7 @@ export default function MilestoneModal({
                     "{eventTitle}"
                   </p>
                   {eventSlug && (
-                    <p className="text-sm text-app-muted">
+                    <p className="text-sm text-muted-foreground">
                       ist jetzt unter<br />
                       <a 
                         href={`/e3/${eventSlug}`}
@@ -113,7 +113,7 @@ export default function MilestoneModal({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="text-app-muted mb-4"
+                  className="text-muted-foreground mb-4"
                 >
                   Dein Event hat jetzt einen einzigartigen Look!
                 </motion.p>
@@ -124,7 +124,7 @@ export default function MilestoneModal({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="text-app-muted mb-4"
+                  className="text-muted-foreground mb-4"
                 >
                   Alben, Gästebuch und alle Optionen sind konfiguriert!
                 </motion.p>
@@ -135,7 +135,7 @@ export default function MilestoneModal({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="text-app-muted mb-4"
+                  className="text-muted-foreground mb-4"
                 >
                   Co-Hosts können jetzt beim Event mithelfen!
                 </motion.p>
@@ -146,7 +146,7 @@ export default function MilestoneModal({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="text-app-muted mb-4"
+                  className="text-muted-foreground mb-4"
                 >
                   Dein Event ist komplett eingerichtet. Zeit zu feiern! 🎊
                 </motion.p>
@@ -177,7 +177,7 @@ export default function MilestoneModal({
                 </Button>
 
                 {phase === 1 && (
-                  <p className="text-xs text-app-muted mt-2">
+                  <p className="text-xs text-muted-foreground mt-2">
                     Du kannst jederzeit später weitermachen
                   </p>
                 )}

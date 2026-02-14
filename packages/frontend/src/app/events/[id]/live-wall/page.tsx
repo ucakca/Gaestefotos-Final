@@ -287,7 +287,7 @@ export default function LiveWallPage() {
     >
       {/* Header */}
       <div className={`sticky top-0 z-50 backdrop-blur-sm border-b shadow-sm ${
-        viewMode === 'slideshow' ? 'bg-black/80 border-white/10' : 'bg-app-card/95 border-app-border'
+        viewMode === 'slideshow' ? 'bg-black/80 border-white/10' : 'bg-card/95 border-border'
       }`}>
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -302,24 +302,24 @@ export default function LiveWallPage() {
               />
             )}
             <div>
-              <h1 className={`text-lg font-bold ${viewMode === 'slideshow' ? 'text-white' : 'text-app-fg'}`}>{eventTitle}</h1>
-              <p className={`text-xs ${viewMode === 'slideshow' ? 'text-white/60' : 'text-app-muted'}`}>Event Wall</p>
+              <h1 className={`text-lg font-bold ${viewMode === 'slideshow' ? 'text-white' : 'text-foreground'}`}>{eventTitle}</h1>
+              <p className={`text-xs ${viewMode === 'slideshow' ? 'text-white/60' : 'text-muted-foreground'}`}>Event Wall</p>
             </div>
           </div>
           
           <div className="flex items-center gap-1">
             {/* View Mode Toggle */}
-            <div className={`flex rounded-lg p-0.5 ${viewMode === 'slideshow' ? 'bg-white/10' : 'bg-app-bg'}`}>
+            <div className={`flex rounded-lg p-0.5 ${viewMode === 'slideshow' ? 'bg-white/10' : 'bg-background'}`}>
               <button
                 onClick={() => setViewMode('slideshow')}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'slideshow' ? 'bg-white/20 text-white' : 'text-app-muted hover:text-app-fg'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'slideshow' ? 'bg-white/20 text-white' : 'text-muted-foreground hover:text-foreground'}`}
                 title="Slideshow"
               >
                 <Monitor className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-blue-500 text-white' : viewMode === 'slideshow' ? 'text-white/40 hover:text-white/80' : 'text-app-muted hover:text-app-fg'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-blue-500 text-white' : viewMode === 'slideshow' ? 'text-white/40 hover:text-white/80' : 'text-muted-foreground hover:text-foreground'}`}
                 title="Grid"
               >
                 <LayoutGrid className="w-4 h-4" />
@@ -438,11 +438,11 @@ export default function LiveWallPage() {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              className="bg-app-card rounded-2xl p-8 max-w-sm w-full shadow-2xl"
+              className="bg-card rounded-2xl p-8 max-w-sm w-full shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-app-fg">QR-Code scannen</h2>
+                <h2 className="text-lg font-bold text-foreground">QR-Code scannen</h2>
                 <IconButton
                   icon={<X className="w-5 h-5" />}
                   onClick={() => setShowQR(false)}
@@ -455,7 +455,7 @@ export default function LiveWallPage() {
               {qrDataUrl && (
                 <img src={qrDataUrl} alt="QR Code" className="w-full rounded-lg" />
               )}
-              <p className="text-sm text-app-muted mt-4 text-center">
+              <p className="text-sm text-muted-foreground mt-4 text-center">
                 Scanne diesen Code, um die Live-Wall zu öffnen
               </p>
             </motion.div>
@@ -468,15 +468,15 @@ export default function LiveWallPage() {
         <div className="flex items-center justify-center min-h-[80vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4" />
-            <p className={viewMode === 'slideshow' ? 'text-white/60' : 'text-app-muted'}>Lade Fotos...</p>
+            <p className={viewMode === 'slideshow' ? 'text-white/60' : 'text-muted-foreground'}>Lade Fotos...</p>
           </div>
         </div>
       ) : photos.length === 0 ? (
         <div className="flex items-center justify-center min-h-[80vh]">
           <div className="text-center">
-            <Heart className={`w-16 h-16 mx-auto mb-4 opacity-30 ${viewMode === 'slideshow' ? 'text-white/30' : 'text-app-muted'}`} />
-            <p className={`text-xl font-semibold mb-2 ${viewMode === 'slideshow' ? 'text-white' : 'text-app-fg'}`}>Noch keine Fotos</p>
-            <p className={viewMode === 'slideshow' ? 'text-white/50' : 'text-app-muted'}>Die ersten Fotos werden hier angezeigt</p>
+            <Heart className={`w-16 h-16 mx-auto mb-4 opacity-30 ${viewMode === 'slideshow' ? 'text-white/30' : 'text-muted-foreground'}`} />
+            <p className={`text-xl font-semibold mb-2 ${viewMode === 'slideshow' ? 'text-white' : 'text-foreground'}`}>Noch keine Fotos</p>
+            <p className={viewMode === 'slideshow' ? 'text-white/50' : 'text-muted-foreground'}>Die ersten Fotos werden hier angezeigt</p>
           </div>
         </div>
       ) : viewMode === 'slideshow' ? (
@@ -562,8 +562,8 @@ export default function LiveWallPage() {
                           <div className="flex items-start gap-2">
                             <MessageCircle className="w-4 h-4 text-app-accent mt-0.5 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-semibold text-app-fg truncate">{photo.guestbookEntry.authorName}</p>
-                              <p className="text-xs text-app-muted line-clamp-2">{photo.guestbookEntry.message}</p>
+                              <p className="text-xs font-semibold text-foreground truncate">{photo.guestbookEntry.authorName}</p>
+                              <p className="text-xs text-muted-foreground line-clamp-2">{photo.guestbookEntry.message}</p>
                             </div>
                           </div>
                         </div>

@@ -52,7 +52,7 @@ export default function AlbumFilter({
   }
 
   return (
-    <div className="w-full bg-app-bg border-b border-app-border">
+    <div className="w-full bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Horizontal Scroll Container */}
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
@@ -62,7 +62,7 @@ export default function AlbumFilter({
             className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all ${
               selectedAlbum === null
                 ? 'bg-app-accent text-white shadow-lg'
-                : 'bg-app-card text-app-fg border border-app-border hover:bg-app-bg'
+                : 'bg-card text-foreground border border-border hover:bg-background'
             }`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -73,7 +73,7 @@ export default function AlbumFilter({
               <span className={`text-xs px-2 py-0.5 rounded-full ${
                 selectedAlbum === null
                   ? 'bg-white/20 text-white'
-                  : 'bg-app-bg text-app-muted'
+                  : 'bg-background text-muted-foreground'
               }`}>
                 {totalPhotos}
               </span>
@@ -92,7 +92,7 @@ export default function AlbumFilter({
                 className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all ${
                   isActive
                     ? 'bg-app-accent text-white shadow-lg'
-                    : 'bg-app-card text-app-fg border border-app-border hover:bg-app-bg'
+                    : 'bg-card text-foreground border border-border hover:bg-background'
                 }`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -103,7 +103,7 @@ export default function AlbumFilter({
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
                     isActive
                       ? 'bg-white/20 text-white'
-                      : 'bg-app-bg text-app-muted'
+                      : 'bg-background text-muted-foreground'
                   }`}>
                     {category.photoCount}
                   </span>

@@ -20,8 +20,8 @@ export function FontSizeSlider({
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <label className="text-sm font-medium text-app-fg">{label}</label>
-        <span className="text-sm text-app-fg-muted">{value}px</span>
+        <label className="text-sm font-medium text-foreground">{label}</label>
+        <span className="text-sm text-foreground-muted">{value}px</span>
       </div>
       <input
         type="range"

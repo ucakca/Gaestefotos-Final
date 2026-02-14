@@ -230,7 +230,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
 
           {/* Description with Emoji Picker */}
           <div className="mb-4 relative">
-            <label className="block text-sm font-medium text-app-fg mb-2">Beschreibung (optional)</label>
+            <label className="block text-sm font-medium text-foreground mb-2">Beschreibung (optional)</label>
             <div className="relative">
               <Textarea
                 value={description}
@@ -242,7 +242,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
               <IconButton
                 type="button"
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                icon={<Smile className="w-5 h-5 text-app-muted" />}
+                icon={<Smile className="w-5 h-5 text-muted-foreground" />}
                 variant="ghost"
                 size="sm"
                 aria-label="Emoji auswählen"
@@ -271,16 +271,16 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
               className={`
                 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
                 ${isDragActive
-                  ? 'border-app-accent bg-app-bg'
-                  : 'border-app-border hover:border-app-accent hover:bg-app-bg'
+                  ? 'border-app-accent bg-background'
+                  : 'border-border hover:border-app-accent hover:bg-background'
                 }
               `}
             >
-              <Upload className="w-12 h-12 mx-auto mb-4 text-app-muted" />
-              <p className="text-sm font-medium text-app-fg mb-2">
+              <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-sm font-medium text-foreground mb-2">
                 {isDragActive ? 'Fotos hier ablegen' : 'Fotos hochladen'}
               </p>
-              <p className="text-xs text-app-muted">Drag & Drop oder klicken</p>
+              <p className="text-xs text-muted-foreground">Drag & Drop oder klicken</p>
             </motion.div>
           </div>
 
@@ -311,7 +311,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
-                        className="bg-app-bg rounded-lg p-3 flex items-center gap-3 border border-app-border"
+                        className="bg-background rounded-lg p-3 flex items-center gap-3 border border-border"
                       >
                         <div className="w-12 h-12 rounded overflow-hidden bg-app-border flex-shrink-0">
                           <img
@@ -322,7 +322,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-app-fg truncate">
+                          <p className="text-xs font-medium text-foreground truncate">
                             {file.file.name}
                           </p>
                           {file.uploading && (
@@ -337,7 +337,7 @@ export default function HostPhotoUpload({ eventId, onUploadSuccess }: HostPhotoU
                           )}
                           {file.error && (
                             <div className="mt-1">
-                              <p className="text-xs text-status-danger">{file.error}</p>
+                              <p className="text-xs text-destructive">{file.error}</p>
                               <Button
                                 type="button"
                                 onClick={() => retryUpload(index)}

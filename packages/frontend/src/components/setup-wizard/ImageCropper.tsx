@@ -102,20 +102,20 @@ export default function ImageCropper({
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
     >
-      <div className="bg-app-card rounded-2xl max-w-2xl w-full overflow-hidden">
+      <div className="bg-card rounded-2xl max-w-2xl w-full overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b border-app-border flex items-center justify-between">
-          <h3 className="font-semibold text-app-fg">Bild zuschneiden</h3>
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          <h3 className="font-semibold text-foreground">Bild zuschneiden</h3>
           <button
             onClick={onCancel}
-            className="p-2 rounded-lg hover:bg-app-bg text-app-muted"
+            className="p-2 rounded-lg hover:bg-background text-muted-foreground"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Crop Area */}
-        <div className="p-4 bg-app-bg flex items-center justify-center max-h-[60vh] overflow-auto">
+        <div className="p-4 bg-background flex items-center justify-center max-h-[60vh] overflow-auto">
           <ReactCrop
             crop={crop}
             onChange={(_, percentCrop) => setCrop(percentCrop)}
@@ -142,7 +142,7 @@ export default function ImageCropper({
         </div>
 
         {/* Actions */}
-        <div className="p-4 border-t border-app-border flex gap-3">
+        <div className="p-4 border-t border-border flex gap-3">
           <Button
             onClick={handleReset}
             variant="ghost"

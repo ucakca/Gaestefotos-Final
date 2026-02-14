@@ -247,7 +247,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
       <Dialog open={showModal} onOpenChange={(open) => (open ? null : closeModal())}>
         <DialogContent className="max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-app-fg">
+                <h2 className="text-2xl font-bold text-foreground">
                   Finde Bilder von mir
                 </h2>
                 <DialogClose asChild>
@@ -258,15 +258,15 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                     size="sm"
                     aria-label="Schließen"
                     title="Schließen"
-                    className="p-2 hover:bg-app-bg"
+                    className="p-2 hover:bg-background"
                   />
                 </DialogClose>
               </div>
 
-              <div className="mb-4 rounded-lg border border-app-border bg-app-bg p-4">
-                <div className="text-sm font-medium text-app-fg">Einwilligung (biometrische Daten)</div>
-                <div className="mt-2 text-sm text-app-muted whitespace-pre-wrap">{effectiveNoticeText}</div>
-                <label className="mt-3 flex items-start gap-3 text-sm text-app-fg">
+              <div className="mb-4 rounded-lg border border-border bg-background p-4">
+                <div className="text-sm font-medium text-foreground">Einwilligung (biometrische Daten)</div>
+                <div className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">{effectiveNoticeText}</div>
+                <label className="mt-3 flex items-start gap-3 text-sm text-foreground">
                   <Checkbox checked={consentAccepted} onCheckedChange={(checked) => void setConsent(checked)} className="mt-1" />
                   <span>{effectiveCheckboxLabel}</span>
                 </label>
@@ -274,7 +274,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
 
               {!preview ? (
                 <div className="space-y-4">
-                  <p className="text-app-muted mb-4">
+                  <p className="text-muted-foreground mb-4">
                     Mache ein Selfie oder lade ein Foto hoch, um alle Fotos zu finden, auf denen du zu sehen bist!
                   </p>
 
@@ -286,9 +286,9 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                       disabled={!consentAccepted}
                       variant="ghost"
                       size="sm"
-                      className="p-6 border-2 border-dashed border-app-border rounded-lg hover:border-app-accent hover:bg-app-bg transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-6 border-2 border-dashed border-border rounded-lg hover:border-app-accent hover:bg-background transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Camera className="w-8 h-8 text-app-muted" />
+                      <Camera className="w-8 h-8 text-muted-foreground" />
                       <span className="font-medium">Selfie aufnehmen</span>
                     </MotionButton>
 
@@ -302,9 +302,9 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                       disabled={!consentAccepted}
                       variant="ghost"
                       size="sm"
-                      className="p-6 border-2 border-dashed border-app-border rounded-lg hover:border-app-accent hover:bg-app-bg transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-6 border-2 border-dashed border-border rounded-lg hover:border-app-accent hover:bg-background transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <ImageIcon className="w-8 h-8 text-app-muted" />
+                      <ImageIcon className="w-8 h-8 text-muted-foreground" />
                       <span className="font-medium">Foto hochladen</span>
                     </MotionButton>
                   </div>
@@ -342,7 +342,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                           onClick={stopCamera}
                           variant="ghost"
                           size="sm"
-                          className="px-4 py-3 bg-app-bg text-app-fg rounded-lg font-medium hover:opacity-90 transition-colors"
+                          className="px-4 py-3 bg-background text-foreground rounded-lg font-medium hover:opacity-90 transition-colors"
                         >
                           Abbrechen
                         </MotionButton>
@@ -365,12 +365,12 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                       size="sm"
                       aria-label="Zurücksetzen"
                       title="Zurücksetzen"
-                      className="absolute top-2 right-2 bg-app-card border border-app-border shadow-md hover:bg-app-bg"
+                      className="absolute top-2 right-2 bg-card border border-border shadow-md hover:bg-background"
                     />
                   </div>
 
                   {error && (
-                    <div className="p-3 bg-app-bg border border-status-danger text-status-danger rounded-lg text-sm">
+                    <div className="p-3 bg-background border border-status-danger text-destructive rounded-lg text-sm">
                       {error}
                     </div>
                   )}
@@ -425,7 +425,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                       onClick={reset}
                       variant="ghost"
                       size="sm"
-                      className="px-4 py-3 bg-app-bg text-app-fg rounded-lg font-medium hover:opacity-90 transition-colors"
+                      className="px-4 py-3 bg-background text-foreground rounded-lg font-medium hover:opacity-90 transition-colors"
                     >
                       Neues Foto
                     </MotionButton>

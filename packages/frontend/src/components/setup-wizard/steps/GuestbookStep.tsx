@@ -52,11 +52,11 @@ export default function GuestbookStep({
         <motion.h2
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-app-fg mb-2"
+          className="text-2xl font-bold text-foreground mb-2"
         >
           Gästebuch 📖
         </motion.h2>
-        <p className="text-app-muted">Lass Gäste Grüße hinterlassen</p>
+        <p className="text-muted-foreground">Lass Gäste Grüße hinterlassen</p>
       </div>
 
       {/* Toggle */}
@@ -64,25 +64,25 @@ export default function GuestbookStep({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className={`p-4 rounded-xl border-2 transition-colors ${
-          enabled ? 'border-amber-200 bg-amber-50' : 'border-app-border bg-app-card'
+          enabled ? 'border-amber-200 bg-amber-50' : 'border-border bg-card'
         }`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <BookOpen className={`w-6 h-6 ${enabled ? 'text-amber-600' : 'text-app-muted'}`} />
+            <BookOpen className={`w-6 h-6 ${enabled ? 'text-amber-600' : 'text-muted-foreground'}`} />
             <div>
-              <p className="font-medium text-app-fg">Gästebuch aktivieren</p>
-              <p className="text-sm text-app-muted">Gäste können Nachrichten schreiben</p>
+              <p className="font-medium text-foreground">Gästebuch aktivieren</p>
+              <p className="text-sm text-muted-foreground">Gäste können Nachrichten schreiben</p>
             </div>
           </div>
           <button
             onClick={() => onEnabledChange(!enabled)}
             className={`w-12 h-7 rounded-full transition-colors relative ${
-              enabled ? 'bg-amber-500' : 'bg-app-bg'
+              enabled ? 'bg-amber-500' : 'bg-background'
             }`}
           >
             <motion.div
-              className="w-5 h-5 bg-app-card rounded-full absolute top-1"
+              className="w-5 h-5 bg-card rounded-full absolute top-1"
               animate={{ left: enabled ? '26px' : '4px' }}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             />
@@ -97,7 +97,7 @@ export default function GuestbookStep({
           animate={{ opacity: 1, height: 'auto' }}
           className="space-y-3"
         >
-          <label className="block text-sm font-medium text-app-fg">
+          <label className="block text-sm font-medium text-foreground">
             Willkommensnachricht
           </label>
           
@@ -124,7 +124,7 @@ export default function GuestbookStep({
                 value={message}
                 onChange={(e) => onMessageChange(e.target.value)}
                 placeholder="z.B. Herzlich willkommen! Schreibt uns eure Glückwünsche..."
-                className="w-full px-4 py-3 border-2 border-app-border rounded-xl focus:border-amber-500 focus:outline-none resize-none"
+                className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-amber-500 focus:outline-none resize-none"
                 rows={3}
               />
               <button
@@ -176,7 +176,7 @@ export default function GuestbookStep({
         
         <button
           onClick={onSkip}
-          className="w-full py-2 text-sm text-app-muted hover:text-app-fg flex items-center justify-center gap-1"
+          className="w-full py-2 text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-1"
         >
           <SkipForward className="w-4 h-4" />
           Überspringen

@@ -15,7 +15,7 @@ export default function QRCode({ value, size = 200, className = '' }: QRCodeProp
       initial={{ scale: 0 }}
       animate={{ scale: 1 }}
       transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-      className={`bg-app-card p-4 rounded-lg shadow-lg ${className}`}
+      className={`bg-card p-4 rounded-lg shadow-lg ${className}`}
     >
       <QRCodeSVG
         value={value}

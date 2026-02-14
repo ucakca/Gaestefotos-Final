@@ -57,9 +57,9 @@ export default function InviteModal({
 
   return (
     <Dialog open onOpenChange={(open) => (open ? null : onClose())}>
-      <DialogContent className="max-w-md w-full mx-4 bg-app-card border border-app-border rounded-lg shadow-xl p-6">
+      <DialogContent className="max-w-md w-full mx-4 bg-card border border-border rounded-lg shadow-xl p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-app-fg">Einladung versenden</h2>
+          <h2 className="text-xl font-semibold text-foreground">Einladung versenden</h2>
           <DialogClose asChild>
             <IconButton
               onClick={onClose}
@@ -68,14 +68,14 @@ export default function InviteModal({
               size="sm"
               aria-label="Schließen"
               title="Schließen"
-              className="text-app-muted hover:text-app-fg"
+              className="text-muted-foreground hover:text-foreground"
             />
           </DialogClose>
         </div>
 
         <div className="mb-4">
-          <p className="text-app-muted mb-2">Gast: {guestName}</p>
-          <label className="block text-sm font-medium text-app-fg mb-2">E-Mail-Adresse *</label>
+          <p className="text-muted-foreground mb-2">Gast: {guestName}</p>
+          <label className="block text-sm font-medium text-foreground mb-2">E-Mail-Adresse *</label>
           <Input
             type="email"
             value={email}

@@ -35,7 +35,7 @@ export default function BadgePopup({ achievement, onClose }: BadgePopupProps) {
         >
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 p-1.5 rounded-full bg-white/80 text-app-muted hover:bg-white transition-colors"
+            className="absolute top-3 right-3 p-1.5 rounded-full bg-white/80 text-muted-foreground hover:bg-white transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -59,8 +59,8 @@ export default function BadgePopup({ achievement, onClose }: BadgePopupProps) {
               <Trophy className="w-3.5 h-3.5" />
               Badge freigeschaltet!
             </div>
-            <h2 className="text-xl font-bold text-app-fg mb-1">{achievement.title}</h2>
-            <p className="text-sm text-app-muted mb-4">{achievement.description}</p>
+            <h2 className="text-xl font-bold text-foreground mb-1">{achievement.title}</h2>
+            <p className="text-sm text-muted-foreground mb-4">{achievement.description}</p>
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-700">
               <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
               <span className="font-bold">+{achievement.points} Punkte</span>

@@ -50,7 +50,7 @@ export default function SetupStepWrapper({
       className="flex flex-col h-full"
     >
       {/* Header with Breadcrumb */}
-      <div className="sticky top-0 z-10 bg-app-card/95 backdrop-blur-sm border-b border-stone-200 px-4 py-3">
+      <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b border-stone-200 px-4 py-3">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
@@ -73,7 +73,7 @@ export default function SetupStepWrapper({
       </div>
 
       {/* Footer with Save Button */}
-      <div className="sticky bottom-0 bg-app-card/95 backdrop-blur-sm border-t border-stone-200 p-4">
+      <div className="sticky bottom-0 bg-card/95 backdrop-blur-sm border-t border-stone-200 p-4">
         <Button
           onClick={handleSave}
           disabled={!isValid || saving}

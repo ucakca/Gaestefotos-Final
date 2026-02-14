@@ -245,8 +245,8 @@ export default function EventHeader({
               </>
             )}
             <div className="absolute inset-0 opacity-25">
-              <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-app-bg/40 blur-3xl" />
-              <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-app-bg/40 blur-3xl" />
+              <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-background/40 blur-3xl" />
+              <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-background/40 blur-3xl" />
             </div>
 
             <div className="pt-safe-top" />
@@ -265,11 +265,11 @@ export default function EventHeader({
               </div>
             </div>
 
-            <div className="absolute left-0 right-0 -bottom-10 h-20 bg-app-bg rounded-t-[48px]" />
+            <div className="absolute left-0 right-0 -bottom-10 h-20 bg-background rounded-t-[48px]" />
           </motion.div>
         </div>
 
-        <div className="bg-app-bg">
+        <div className="bg-background">
           <div className="max-w-md mx-auto px-4 -mt-20 relative">
             <div className="flex items-start gap-4">
               {/* Profilbild links */}
@@ -293,12 +293,12 @@ export default function EventHeader({
                     ) : (
                       <div className="absolute inset-0 rounded-full p-[3px]" style={storyRingStyle} />
                     )}
-                    <div className="absolute inset-[3px] rounded-full bg-app-bg overflow-hidden flex items-center justify-center">
+                    <div className="absolute inset-[3px] rounded-full bg-background overflow-hidden flex items-center justify-center">
                       {profileImage ? (
                         <img src={profileImage} alt={event.title} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full bg-app-bg flex items-center justify-center">
-                          <User className="w-10 h-10 text-app-muted" />
+                        <div className="w-full h-full bg-background flex items-center justify-center">
+                          <User className="w-10 h-10 text-muted-foreground" />
                         </div>
                       )}
                     </div>
@@ -321,14 +321,14 @@ export default function EventHeader({
                 </div>
 
                 {!hasStories && (
-                  <div className="mt-10 text-xs text-app-muted text-center">Sei der Erste</div>
+                  <div className="mt-10 text-xs text-muted-foreground text-center">Sei der Erste</div>
                 )}
               </div>
 
               {/* Willkommensnachricht rechts vom Profilbild */}
               <div className="flex-1 pt-2">
                 {((event as any)?.profileDescription || welcomeMessage) && (
-                  <div className="text-sm text-app-fg leading-relaxed">
+                  <div className="text-sm text-foreground leading-relaxed">
                     {(event as any)?.profileDescription || welcomeMessage}
                   </div>
                 )}
@@ -336,23 +336,23 @@ export default function EventHeader({
             </div>
 
             {/* Sprechblase (Event-Info-Karte) unter Profilbild - nur Event-Info, kein Titel */}
-            <div className="mt-20 w-full rounded-2xl border border-app-border bg-app-card shadow-lg px-4 py-4">
-              <div className="text-base font-semibold text-app-fg leading-snug">{event.title}</div>
+            <div className="mt-20 w-full rounded-2xl border border-border bg-card shadow-lg px-4 py-4">
+              <div className="text-base font-semibold text-foreground leading-snug">{event.title}</div>
               {hostName && (
-                <div className="text-xs text-app-muted mt-1">von {hostName}</div>
+                <div className="text-xs text-muted-foreground mt-1">von {hostName}</div>
               )}
 
               {(event.locationName || (event as any).locationGoogleMapsLink || event.dateTime) && (
-                <div className="mt-3 text-xs text-app-muted">
+                <div className="mt-3 text-xs text-muted-foreground">
                   {event.dateTime ? new Date(event.dateTime as any).toLocaleDateString('de-DE') : null}
                   {event.locationName ? ` · ${event.locationName}` : null}
                 </div>
               )}
 
               {isStorageLocked && (
-                <div className="mt-4 rounded-2xl bg-app-bg border border-app-border px-4 py-3">
-                  <p className="text-app-fg text-sm font-semibold">Speicherzeit abgelaufen</p>
-                  <p className="text-app-muted text-xs mt-0.5">
+                <div className="mt-4 rounded-2xl bg-background border border-border px-4 py-3">
+                  <p className="text-foreground text-sm font-semibold">Speicherzeit abgelaufen</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">
                     Fotos sind als Vorschau weiterhin sichtbar, aber unscharf.
                   </p>
                 </div>
@@ -363,11 +363,11 @@ export default function EventHeader({
 
         <Dialog open={showStoryModal} onOpenChange={(open) => (open ? null : closeStoryModal())}>
           {showStoryModal && (
-            <DialogContent className="bottom-4 top-auto translate-y-0 w-full max-w-md rounded-2xl bg-app-card border border-app-border p-4 shadow-xl">
+            <DialogContent className="bottom-4 top-auto translate-y-0 w-full max-w-md rounded-2xl bg-card border border-border p-4 shadow-xl">
               <DialogTitle className="sr-only">Story erstellen</DialogTitle>
               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }}>
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm font-semibold text-app-fg">Story erstellen</div>
+                  <div className="text-sm font-semibold text-foreground">Story erstellen</div>
                   <DialogClose asChild>
                     <IconButton
                       onClick={closeStoryModal}
@@ -382,7 +382,7 @@ export default function EventHeader({
                 </div>
 
                 <div className="mt-3">
-                  <label className="block text-xs font-semibold text-app-fg">Dein Name (optional)</label>
+                  <label className="block text-xs font-semibold text-foreground">Dein Name (optional)</label>
                   <Input
                     type="text"
                     value={storyUploaderName}
@@ -419,7 +419,7 @@ export default function EventHeader({
                     size="sm"
                     className="rounded-2xl px-3 py-3 text-left h-auto"
                   >
-                    <div className="flex items-center gap-2 text-sm font-semibold text-app-fg">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                       <Camera className="w-5 h-5" />
                       Foto aufnehmen
                     </div>
@@ -432,11 +432,11 @@ export default function EventHeader({
                     size="sm"
                     className="rounded-2xl px-3 py-3 text-left h-auto"
                   >
-                    <div className="flex items-center gap-2 text-sm font-semibold text-app-fg">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                       <Video className="w-5 h-5" />
                       Video aufnehmen
                     </div>
-                    <div className="mt-1 text-xs text-app-muted">max 15s</div>
+                    <div className="mt-1 text-xs text-muted-foreground">max 15s</div>
                   </Button>
                   <Button
                     type="button"
@@ -446,8 +446,8 @@ export default function EventHeader({
                     size="sm"
                     className="rounded-2xl px-3 py-3 text-left h-auto"
                   >
-                    <div className="text-sm font-semibold text-app-fg">Foto auswählen</div>
-                    <div className="mt-1 text-xs text-app-muted">Galerie</div>
+                    <div className="text-sm font-semibold text-foreground">Foto auswählen</div>
+                    <div className="mt-1 text-xs text-muted-foreground">Galerie</div>
                   </Button>
                   <Button
                     type="button"
@@ -457,18 +457,18 @@ export default function EventHeader({
                     size="sm"
                     className="rounded-2xl px-3 py-3 text-left h-auto"
                   >
-                    <div className="text-sm font-semibold text-app-fg">Video auswählen</div>
-                    <div className="mt-1 text-xs text-app-muted">Galerie · max 15s</div>
+                    <div className="text-sm font-semibold text-foreground">Video auswählen</div>
+                    <div className="mt-1 text-xs text-muted-foreground">Galerie · max 15s</div>
                   </Button>
                 </div>
 
                 {storyUploadError && (
-                  <div className="mt-4 rounded-xl bg-app-bg border border-status-danger px-3 py-2 text-sm text-status-danger">
+                  <div className="mt-4 rounded-xl bg-background border border-status-danger px-3 py-2 text-sm text-destructive">
                     {storyUploadError}
                   </div>
                 )}
 
-                <div className="mt-4 text-xs text-app-muted">Hinweis: Videos in Stories sind auf maximal 15 Sekunden begrenzt.</div>
+                <div className="mt-4 text-xs text-muted-foreground">Hinweis: Videos in Stories sind auf maximal 15 Sekunden begrenzt.</div>
               </motion.div>
             </DialogContent>
           )}
@@ -476,11 +476,11 @@ export default function EventHeader({
 
         <Dialog open={showStoryDisabled} onOpenChange={(open) => (open ? null : closeStoryDisabled())}>
           {showStoryDisabled && (
-            <DialogContent className="bottom-4 top-auto translate-y-0 w-full max-w-md rounded-2xl bg-app-card border border-app-border p-4 shadow-xl">
+            <DialogContent className="bottom-4 top-auto translate-y-0 w-full max-w-md rounded-2xl bg-card border border-border p-4 shadow-xl">
               <DialogTitle className="sr-only">Story nicht möglich</DialogTitle>
               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }}>
-                <div className="text-sm font-semibold text-app-fg">Story nicht möglich</div>
-                <div className="mt-1 text-sm text-app-muted">
+                <div className="text-sm font-semibold text-foreground">Story nicht möglich</div>
+                <div className="mt-1 text-sm text-muted-foreground">
                   {isStorageLocked ? 'Die Speicherzeit ist abgelaufen.' : uploadDisabledReason || 'Uploads sind aktuell deaktiviert.'}
                 </div>
                 <DialogClose asChild>
@@ -523,17 +523,17 @@ export default function EventHeader({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="rounded-2xl border border-app-border bg-app-card/90 backdrop-blur shadow-sm px-4 py-4"
+            className="rounded-2xl border border-border bg-card/90 backdrop-blur shadow-sm px-4 py-4"
           >
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 flex-shrink-0">
                 <div className="absolute inset-0 rounded-full bg-gradient-to-br from-app-accent to-status-warning p-0.5">
-                  <div className="w-full h-full rounded-full bg-app-bg flex items-center justify-center overflow-hidden">
+                  <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
                     {profileImage ? (
                       <img src={profileImage} alt={event.title} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-app-bg flex items-center justify-center">
-                        <User className="w-6 h-6 text-app-muted" />
+                      <div className="w-full h-full bg-background flex items-center justify-center">
+                        <User className="w-6 h-6 text-muted-foreground" />
                       </div>
                     )}
                   </div>
@@ -541,13 +541,13 @@ export default function EventHeader({
               </div>
 
               <div className="min-w-0 flex-1">
-                <h2 className="text-base font-semibold text-app-fg leading-snug truncate">{event.title}</h2>
-                <p className="text-xs text-app-muted mt-0.5 truncate">{hostName ? `von ${hostName}` : 'von Gastgeber'}</p>
+                <h2 className="text-base font-semibold text-foreground leading-snug truncate">{event.title}</h2>
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{hostName ? `von ${hostName}` : 'von Gastgeber'}</p>
               </div>
             </div>
 
             <div className="mt-3">
-              <p className="text-sm text-app-fg leading-relaxed">{welcomeMessage}</p>
+              <p className="text-sm text-foreground leading-relaxed">{welcomeMessage}</p>
             </div>
           </motion.div>
         </div>

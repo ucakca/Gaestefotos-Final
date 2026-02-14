@@ -79,14 +79,14 @@ export default function InvitationsSection({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-app-card border border-app-border rounded-2xl overflow-hidden"
+      className="bg-card border border-border rounded-2xl overflow-hidden"
     >
-      <div className="p-4 border-b border-app-border">
-        <h3 className="font-semibold text-app-fg flex items-center gap-2">
+      <div className="p-4 border-b border-border">
+        <h3 className="font-semibold text-foreground flex items-center gap-2">
           <Mail className="w-4 h-4" />
           Einladungen
         </h3>
-        <p className="text-xs text-app-muted mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           Erstelle verschiedene Einladungen für unterschiedliche Gästegruppen
         </p>
       </div>
@@ -120,11 +120,11 @@ export default function InvitationsSection({
         {loading ? (
           <div className="space-y-2">
             {[1, 2].map((i) => (
-              <div key={i} className="h-16 bg-app-bg rounded-xl animate-pulse" />
+              <div key={i} className="h-16 bg-background rounded-xl animate-pulse" />
             ))}
           </div>
         ) : invitations.length === 0 ? (
-          <div className="text-center py-8 text-app-muted">
+          <div className="text-center py-8 text-muted-foreground">
             <Mail className="w-8 h-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">Noch keine Einladungen</p>
           </div>
@@ -138,7 +138,7 @@ export default function InvitationsSection({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ delay: index * 0.05 }}
-                  className="flex items-center gap-3 p-3 bg-app-bg rounded-xl"
+                  className="flex items-center gap-3 p-3 bg-background rounded-xl"
                 >
                   {/* Status Icon */}
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
@@ -155,8 +155,8 @@ export default function InvitationsSection({
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-app-fg truncate">{invitation.name}</p>
-                    <div className="flex items-center gap-2 text-xs text-app-muted">
+                    <p className="font-medium text-foreground truncate">{invitation.name}</p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span>{invitation.isActive ? 'Aktiv' : 'Inaktiv'}</span>
                       {invitation.usageCount !== undefined && (
                         <span>• {invitation.usageCount} Nutzungen</span>

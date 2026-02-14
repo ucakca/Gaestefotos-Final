@@ -85,7 +85,7 @@ export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterP
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-app-card/90 backdrop-blur border-t border-app-border z-50 safe-area-bottom pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_24px_color-mix(in_srgb,var(--app-fg)_6%,transparent)]"
+    <div className="fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur border-t border-border z-50 safe-area-bottom pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_24px_color-mix(in_srgb,var(--app-fg)_6%,transparent)]"
     >
       {/* Horizontal Scrollable Menu */}
       <div className="overflow-x-auto scrollbar-hide">
@@ -101,7 +101,7 @@ export default function DashboardFooter({ eventId, eventSlug }: DashboardFooterP
                 variant={active ? 'primary' : 'ghost'}
                 size="sm"
                 className={`h-auto flex-shrink-0 flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[70px] ${
-                  active ? 'shadow-md' : 'text-app-muted'
+                  active ? 'shadow-md' : 'text-muted-foreground'
                 }`}
               >
                 <Link href={item.path}>

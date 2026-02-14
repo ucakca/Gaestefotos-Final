@@ -54,20 +54,20 @@ export default function SocialShare({ url, title = 'Event Foto', imageUrl: _imag
       <div className={`flex gap-2 ${className}`}>
         {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
           <IconButton onClick={handleNativeShare} variant="ghost" size="sm"
-            className="border border-app-border bg-app-card hover:bg-app-bg"
+            className="border border-border bg-card hover:bg-background"
             aria-label="Teilen" title="Teilen" icon={<Share2 className="h-5 w-5" />} />
         )}
         <IconButton onClick={() => channels[0].action()} variant="ghost" size="sm"
-          className="border border-app-border bg-app-card hover:bg-app-bg"
+          className="border border-border bg-card hover:bg-background"
           aria-label="WhatsApp" title="WhatsApp" icon={<MessageCircle className="h-5 w-5" />} />
         <IconButton onClick={() => channels[1].action()} variant="ghost" size="sm"
-          className="border border-app-border bg-app-card hover:bg-app-bg"
+          className="border border-border bg-card hover:bg-background"
           aria-label="Facebook" title="Facebook" icon={<Facebook className="h-5 w-5" />} />
         <IconButton onClick={() => channels[3].action()} variant="ghost" size="sm"
-          className="border border-app-border bg-app-card hover:bg-app-bg"
+          className="border border-border bg-card hover:bg-background"
           aria-label="E-Mail" title="E-Mail" icon={<Mail className="h-5 w-5" />} />
         <IconButton onClick={handleCopy} variant="ghost" size="sm"
-          className="border border-app-border bg-app-card hover:bg-app-bg"
+          className="border border-border bg-card hover:bg-background"
           aria-label="Link kopieren" title="Link kopieren"
           icon={copied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />} />
       </div>
@@ -88,8 +88,8 @@ export default function SocialShare({ url, title = 'Event Foto', imageUrl: _imag
       </div>
 
       {/* Copy Link */}
-      <div className="mt-3 flex items-center gap-2 p-3 bg-app-surface rounded-xl border border-app-border">
-        <input value={url} readOnly className="flex-1 text-sm bg-transparent text-app-fg truncate outline-none" />
+      <div className="mt-3 flex items-center gap-2 p-3 bg-app-surface rounded-xl border border-border">
+        <input value={url} readOnly className="flex-1 text-sm bg-transparent text-foreground truncate outline-none" />
         <button onClick={handleCopy}
           className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-app-primary text-white rounded-lg hover:bg-app-primary/90 transition">
           {copied ? <><Check className="w-3 h-3" /> Kopiert</> : <><Copy className="w-3 h-3" /> Kopieren</>}
@@ -97,7 +97,7 @@ export default function SocialShare({ url, title = 'Event Foto', imageUrl: _imag
       </div>
 
       {/* QR Code hint */}
-      <div className="mt-3 flex items-center gap-2 p-3 bg-app-surface/50 rounded-xl border border-app-border text-xs text-app-muted">
+      <div className="mt-3 flex items-center gap-2 p-3 bg-app-surface/50 rounded-xl border border-border text-xs text-muted-foreground">
         <QrCode className="w-4 h-4" />
         <span>QR-Code findest du im Dashboard unter „QR-Code & Teilen"</span>
       </div>

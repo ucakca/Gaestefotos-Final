@@ -17,7 +17,7 @@ export default function Envelope({ children, onOpen }: EnvelopeProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-app-bg p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <AnimatePresence mode="wait">
         {!isOpen ? (
           <motion.div

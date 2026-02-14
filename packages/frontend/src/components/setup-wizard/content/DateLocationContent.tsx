@@ -7,8 +7,8 @@ import { Calendar, MapPin } from 'lucide-react';
 const LocationMap = dynamic(() => import('../LocationMap'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-48 rounded-xl border-2 border-app-border bg-app-bg flex items-center justify-center">
-      <div className="text-app-muted text-sm">Karte wird geladen...</div>
+    <div className="w-full h-48 rounded-xl border-2 border-border bg-background flex items-center justify-center">
+      <div className="text-muted-foreground text-sm">Karte wird geladen...</div>
     </div>
   ),
 });
@@ -61,11 +61,11 @@ export default function DateLocationContent({
           <motion.h2
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-2xl font-bold text-app-fg mb-2"
+            className="text-2xl font-bold text-foreground mb-2"
           >
             Wann & Wo? 📍
           </motion.h2>
-          <p className="text-app-muted">Diese Angaben sind optional</p>
+          <p className="text-muted-foreground">Diese Angaben sind optional</p>
         </div>
       )}
 
@@ -75,7 +75,7 @@ export default function DateLocationContent({
         className="space-y-4"
       >
         <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-app-fg mb-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
             <Calendar className="w-4 h-4" />
             Datum & Uhrzeit
           </label>
@@ -86,7 +86,7 @@ export default function DateLocationContent({
             min="2020-01-01T00:00"
             max="2099-12-31T23:59"
             disabled={dateLocked}
-            className={`w-full px-4 py-3 border-2 border-app-border bg-app-card text-app-fg rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors ${dateLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`w-full px-4 py-3 border-2 border-border bg-card text-foreground rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors ${dateLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
           {dateLocked && (
             <p className="mt-1 text-xs text-amber-600">Das Datum kann nicht mehr geändert werden, da das Event bereits gestartet ist.</p>
@@ -94,7 +94,7 @@ export default function DateLocationContent({
         </div>
 
         <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-app-fg mb-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
             <MapPin className="w-4 h-4" />
             Ort / Location
           </label>
@@ -103,7 +103,7 @@ export default function DateLocationContent({
             value={location}
             onChange={(e) => onLocationChange(e.target.value)}
             placeholder="z.B. Schloss Neuschwanstein"
-            className="w-full px-4 py-3 border-2 border-app-border bg-app-card text-app-fg rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors placeholder:text-app-muted"
+            className="w-full px-4 py-3 border-2 border-border bg-card text-foreground rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors placeholder:text-muted-foreground"
           />
         </div>
 

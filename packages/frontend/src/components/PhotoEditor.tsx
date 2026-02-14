@@ -136,10 +136,10 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
 
   return (
     <Dialog open={true} onOpenChange={(open) => (open ? null : onClose())}>
-      <DialogContent className="bg-app-card border border-app-border rounded-lg max-w-4xl w-full p-6">
+      <DialogContent className="bg-card border border-border rounded-lg max-w-4xl w-full p-6">
         <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-app-fg">Foto bearbeiten</h2>
+            <h2 className="text-2xl font-bold text-foreground">Foto bearbeiten</h2>
             <DialogClose asChild>
               <IconButton
                 onClick={onClose}
@@ -189,7 +189,7 @@ export default function PhotoEditor({ photoId, photoUrl, onClose, onSave }: Phot
 
         <div
           ref={containerRef}
-          className="relative mb-4 min-h-[400px] max-h-[70vh] overflow-hidden rounded-lg bg-app-bg"
+          className="relative mb-4 min-h-[400px] max-h-[70vh] overflow-hidden rounded-lg bg-background"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}

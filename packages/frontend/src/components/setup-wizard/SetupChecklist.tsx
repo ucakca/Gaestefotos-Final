@@ -29,12 +29,12 @@ export default function SetupChecklist({
   const phases: SetupPhase[] = [1, 2, 3, 4, 5];
 
   return (
-    <div className="bg-app-card rounded-2xl shadow-sm border border-app-border overflow-hidden">
+    <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-app-border">
+      <div className="px-4 py-3 border-b border-border">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-app-fg">Alle Schritte</h3>
-          <span className="text-sm text-app-muted">{totalCompleted}/{totalSteps} abgeschlossen</span>
+          <h3 className="font-semibold text-foreground">Alle Schritte</h3>
+          <span className="text-sm text-muted-foreground">{totalCompleted}/{totalSteps} abgeschlossen</span>
         </div>
       </div>
 
@@ -50,9 +50,9 @@ export default function SetupChecklist({
           return (
             <div key={phase} className={isPhaseLocked ? 'opacity-50' : ''}>
               {/* Phase Header (collapsible on mobile) */}
-              <div className="px-4 py-2 bg-app-bg flex items-center gap-2">
+              <div className="px-4 py-2 bg-background flex items-center gap-2">
                 <span className="text-sm">{phaseInfo.icon}</span>
-                <span className="text-xs font-medium text-app-muted">{phaseInfo.title}</span>
+                <span className="text-xs font-medium text-muted-foreground">{phaseInfo.title}</span>
                 {isPhaseCompleted && (
                   <Icons.CheckCircle className="w-4 h-4 text-green-500 ml-auto" />
                 )}
@@ -74,7 +74,7 @@ export default function SetupChecklist({
                         ? 'bg-amber-50'
                         : status === 'completed'
                         ? 'bg-green-50/50 hover:bg-green-50'
-                        : 'hover:bg-app-bg'
+                        : 'hover:bg-background'
                     } ${!canClick ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                     whileTap={canClick ? { scale: 0.98 } : {}}
                   >
@@ -105,7 +105,7 @@ export default function SetupChecklist({
                             <IconComponent className="w-4 h-4 text-white" />
                           </motion.div>
                         ) : (
-                          <span className="text-xs font-medium text-app-muted">
+                          <span className="text-xs font-medium text-muted-foreground">
                             {SETUP_STEPS.findIndex(s => s.id === step.id) + 1}
                           </span>
                         )}
@@ -118,7 +118,7 @@ export default function SetupChecklist({
                         ? 'text-green-700'
                         : status === 'active'
                         ? 'text-orange-700'
-                        : 'text-app-muted'
+                        : 'text-muted-foreground'
                     }`}>
                       {step.title}
                     </span>
@@ -126,7 +126,7 @@ export default function SetupChecklist({
                     {/* Arrow for active/clickable */}
                     {(status === 'active' || status === 'completed') && (
                       <Icons.ChevronRight className={`w-5 h-5 ${
-                        status === 'active' ? 'text-orange-400' : 'text-app-muted'
+                        status === 'active' ? 'text-orange-400' : 'text-muted-foreground'
                       }`} />
                     )}
                   </motion.button>

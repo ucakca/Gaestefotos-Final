@@ -304,10 +304,10 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
         >
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-app-fg mb-2">
+              <h1 className="text-2xl font-bold text-foreground mb-2">
                 Challenges
               </h1>
-              <p className="text-app-muted">
+              <p className="text-muted-foreground">
                 {event?.title} • {challenges.length} Challenge{challenges.length !== 1 ? 's' : ''}
               </p>
             </div>
@@ -331,19 +331,19 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                 disabled={!challengesEnabled}
                 aria-label="Challenge hinzufügen"
                 title="Challenge hinzufügen"
-                className={challengesEnabled ? 'bg-app-accent hover:bg-app-accent/90 text-app-bg' : 'bg-app-border text-app-muted cursor-not-allowed'}
+                className={challengesEnabled ? 'bg-app-accent hover:bg-app-accent/90 text-app-bg' : 'bg-app-border text-muted-foreground cursor-not-allowed'}
               />
             </motion.div>
           </div>
         </motion.div>
 
-        <div className="bg-app-card border border-app-border rounded-lg p-4 mb-6">
+        <div className="bg-card border border-border rounded-lg p-4 mb-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-app-fg">
+            <div className="flex items-center gap-2 text-foreground">
               <Trophy className="w-5 h-5" />
               <div>
                 <p className="font-medium">Challenges {challengesEnabled ? 'aktiviert' : 'deaktiviert'}</p>
-                <p className="text-sm text-app-muted">
+                <p className="text-sm text-muted-foreground">
                   {challengesEnabled ? 'Gäste können an Challenges teilnehmen.' : 'Aktiviere Challenges, damit Gäste teilnehmen können.'}
                 </p>
               </div>
@@ -386,15 +386,15 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-app-card rounded-lg shadow p-6 mb-6"
+              className="bg-card rounded-lg shadow p-6 mb-6"
             >
               <h2 className="text-xl font-semibold mb-4">
                 {editingChallenge ? 'Challenge bearbeiten' : 'Neue Challenge'}
               </h2>
               
               {!editingChallenge && (
-                <div className="mb-4 p-4 rounded-lg bg-app-bg border border-app-border">
-                  <p className="text-xs font-semibold text-app-fg mb-2">💡 Vorlagen - Klicken zum Übernehmen</p>
+                <div className="mb-4 p-4 rounded-lg bg-background border border-border">
+                  <p className="text-xs font-semibold text-foreground mb-2">💡 Vorlagen - Klicken zum Übernehmen</p>
                   <div className="flex flex-wrap gap-2">
                     {[
                       { title: 'Bestes Gruppenfoto', desc: 'Zeigt euer schönstes Gruppenbild!' },
@@ -421,7 +421,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
               
               <form onSubmit={editingChallenge ? handleUpdateChallenge : handleAddChallenge} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-app-fg mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Titel *
                   </label>
                   <Input
@@ -433,7 +433,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-app-fg mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Beschreibung
                   </label>
                   <Textarea
@@ -444,7 +444,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-app-fg mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Album zuweisen (leer = globale Challenge)
                   </label>
                   <Select
@@ -471,7 +471,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                         checked={formData.isActive}
                         onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                       />
-                      <span className="text-sm text-app-fg">Aktiv</span>
+                      <span className="text-sm text-foreground">Aktiv</span>
                     </label>
                   </div>
                   <div>
@@ -480,11 +480,11 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                         checked={formData.isVisible}
                         onCheckedChange={(checked) => setFormData({ ...formData, isVisible: checked })}
                       />
-                      <span className="text-sm text-app-fg">Foto sichtbar</span>
+                      <span className="text-sm text-foreground">Foto sichtbar</span>
                     </label>
                   </div>
                 </div>
-                <div className="flex gap-4 pt-4 border-t border-app-border">
+                <div className="flex gap-4 pt-4 border-t border-border">
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <Button
                       type="button"
@@ -510,29 +510,29 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
 
         {/* Global Challenges */}
         {globalChallenges.length > 0 && (
-          <div className="bg-app-card rounded-lg shadow p-6 mb-6">
+          <div className="bg-card rounded-lg shadow p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Globe className="w-5 h-5 text-app-fg" />
+                <Globe className="w-5 h-5 text-foreground" />
                 Globale Challenges
               </h2>
             </div>
             <div className="space-y-3">
               {globalChallenges.map((challenge) => (
-                <div key={challenge.id} className="bg-app-bg rounded-lg p-4 border border-app-border">
+                <div key={challenge.id} className="bg-background rounded-lg p-4 border border-border">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <Trophy className="w-5 h-5 text-status-warning" />
                         <span className="font-semibold">{challenge.title}</span>
                         {!challenge.isActive && (
-                          <span className="text-xs text-app-muted bg-app-border px-2 py-0.5 rounded">Inaktiv</span>
+                          <span className="text-xs text-muted-foreground bg-app-border px-2 py-0.5 rounded">Inaktiv</span>
                         )}
                       </div>
                       {challenge.description && (
-                        <p className="text-sm text-app-muted mb-2">{challenge.description}</p>
+                        <p className="text-sm text-muted-foreground mb-2">{challenge.description}</p>
                       )}
-                      <div className="text-xs text-app-muted">
+                      <div className="text-xs text-muted-foreground">
                         {challenge.completions?.length || 0} Erfüllung(en)
                       </div>
                     </div>
@@ -544,7 +544,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                         aria-label="Challenge bearbeiten"
                         title="Challenge bearbeiten"
                         onClick={() => startEdit(challenge)}
-                        className="text-app-fg"
+                        className="text-foreground"
                       />
                       <IconButton
                         icon={<Trash2 className="h-4 w-4" />}
@@ -553,7 +553,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                         aria-label="Challenge löschen"
                         title="Challenge löschen"
                         onClick={() => handleDeleteChallenge(challenge.id)}
-                        className="text-status-danger"
+                        className="text-destructive"
                       />
                     </div>
                   </div>
@@ -565,7 +565,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
 
         {/* Album Challenges */}
         {albumChallenges.length > 0 && (
-          <div className="bg-app-card rounded-lg shadow p-6 mb-6">
+          <div className="bg-card rounded-lg shadow p-6 mb-6">
             <h2 className="text-xl font-semibold mb-4">Album-Challenges</h2>
             <div className="space-y-4">
               {categories.map((category) => {
@@ -573,23 +573,23 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                 if (categoryChallenges.length === 0) return null;
                 
                 return (
-                  <div key={category.id} className="border border-app-border rounded-lg p-4">
-                    <h3 className="font-semibold text-app-fg mb-3">{category.name}</h3>
+                  <div key={category.id} className="border border-border rounded-lg p-4">
+                    <h3 className="font-semibold text-foreground mb-3">{category.name}</h3>
                     <div className="space-y-2">
                       {categoryChallenges.map((challenge) => (
-                        <div key={challenge.id} className="bg-app-bg rounded p-3 flex items-center justify-between">
+                        <div key={challenge.id} className="bg-background rounded p-3 flex items-center justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
                               <Trophy className="w-4 h-4 text-status-warning" />
                               <span className="text-sm font-medium">{challenge.title}</span>
                               {!challenge.isActive && (
-                                <span className="text-xs text-app-muted">(Inaktiv)</span>
+                                <span className="text-xs text-muted-foreground">(Inaktiv)</span>
                               )}
                             </div>
                             {challenge.description && (
-                              <p className="text-xs text-app-muted mt-1">{challenge.description}</p>
+                              <p className="text-xs text-muted-foreground mt-1">{challenge.description}</p>
                             )}
-                            <div className="text-xs text-app-muted mt-1">
+                            <div className="text-xs text-muted-foreground mt-1">
                               {challenge.completions?.length || 0} Erfüllung(en)
                             </div>
                           </div>
@@ -601,7 +601,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                               aria-label="Auf andere Alben kopieren"
                               title="Auf andere Alben kopieren"
                               onClick={() => handleCopyChallenge(challenge.id)}
-                              className="text-app-fg"
+                              className="text-foreground"
                             />
                             <IconButton
                               icon={<Edit2 className="h-4 w-4" />}
@@ -610,7 +610,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                               aria-label="Challenge bearbeiten"
                               title="Challenge bearbeiten"
                               onClick={() => startEdit(challenge)}
-                              className="text-app-fg"
+                              className="text-foreground"
                             />
                             <IconButton
                               icon={<Trash2 className="h-4 w-4" />}
@@ -619,7 +619,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                               aria-label="Challenge löschen"
                               title="Challenge löschen"
                               onClick={() => handleDeleteChallenge(challenge.id)}
-                              className="text-status-danger"
+                              className="text-destructive"
                             />
                           </div>
                         </div>
@@ -633,10 +633,10 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
         )}
 
         {challenges.length === 0 && challengesEnabled && (
-          <div className="bg-app-card rounded-lg shadow p-12 text-center">
+          <div className="bg-card rounded-lg shadow p-12 text-center">
             <Trophy className="w-16 h-16 text-app-border mx-auto mb-4" />
-            <p className="text-app-muted">Noch keine Challenges erstellt</p>
-            <p className="text-sm text-app-muted mt-2">Erstelle deine erste Challenge!</p>
+            <p className="text-muted-foreground">Noch keine Challenges erstellt</p>
+            <p className="text-sm text-muted-foreground mt-2">Erstelle deine erste Challenge!</p>
           </div>
         )}
       </div>

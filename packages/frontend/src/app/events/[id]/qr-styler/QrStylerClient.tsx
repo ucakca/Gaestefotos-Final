@@ -791,7 +791,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
   if (!mounted || loading) {
     return (
       <AppLayout>
-        <div className="min-h-screen flex items-center justify-center bg-app-bg">
+        <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
             <span className="text-sm text-gray-500">QR-Designer wird geladen...</span>
@@ -803,7 +803,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-app-bg">
+      <div className="min-h-screen bg-background">
         {/* Mobile: Full-screen canvas + bottom tabs + sheets */}
         {/* Desktop: Side-by-side layout */}
         <div className="flex flex-col lg:flex-row min-h-screen">
@@ -811,48 +811,48 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
           {/* ============================================================ */}
           {/* LEFT PANEL: Controls - Hidden on mobile, visible on desktop */}
           {/* ============================================================ */}
-          <div className="hidden lg:flex lg:order-1 lg:w-80 xl:w-96 bg-app-card border-r border-app-border flex-col">
+          <div className="hidden lg:flex lg:order-1 lg:w-80 xl:w-96 bg-card border-r border-border flex-col">
             
             {/* Header */}
-            <div className="p-4 border-b border-app-border flex items-center justify-between">
+            <div className="p-4 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {fromWizard ? (
-                  <button onClick={() => router.back()} className="p-2 -ml-2 hover:bg-app-bg rounded-lg flex items-center gap-1 text-primary">
+                  <button onClick={() => router.back()} className="p-2 -ml-2 hover:bg-background rounded-lg flex items-center gap-1 text-primary">
                     <ArrowLeft className="w-5 h-5" />
                     <span className="text-xs font-medium">Wizard</span>
                   </button>
                 ) : (
-                  <Link href={`/events/${eventId}/dashboard`} className="p-2 -ml-2 hover:bg-app-bg rounded-lg">
+                  <Link href={`/events/${eventId}/dashboard`} className="p-2 -ml-2 hover:bg-background rounded-lg">
                     <ChevronLeft className="w-5 h-5" />
                   </Link>
                 )}
                 <div>
-                  <h1 className="font-semibold text-app-fg">QR-Designer</h1>
-                  <p className="text-xs text-app-muted truncate max-w-[150px]">{eventTitle}</p>
+                  <h1 className="font-semibold text-foreground">QR-Designer</h1>
+                  <p className="text-xs text-muted-foreground truncate max-w-[150px]">{eventTitle}</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-1">
                 {/* Save Status */}
-                {saveStatus === 'saving' && <Loader2 className="w-4 h-4 animate-spin text-app-muted" />}
+                {saveStatus === 'saving' && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
                 {saveStatus === 'saved' && <Check className="w-4 h-4 text-status-success" />}
                 {saveStatus === 'error' && <AlertCircle className="w-4 h-4 text-status-error" />}
                 
                 {/* Undo/Redo */}
-                <button onClick={undo} disabled={!canUndo} className="p-2 hover:bg-app-bg rounded-lg disabled:opacity-30">
+                <button onClick={undo} disabled={!canUndo} className="p-2 hover:bg-background rounded-lg disabled:opacity-30">
                   <Undo2 className="w-4 h-4" />
                 </button>
-                <button onClick={redo} disabled={!canRedo} className="p-2 hover:bg-app-bg rounded-lg disabled:opacity-30">
+                <button onClick={redo} disabled={!canRedo} className="p-2 hover:bg-background rounded-lg disabled:opacity-30">
                   <Redo2 className="w-4 h-4" />
                 </button>
-                <button onClick={resetDefaults} className="p-2 hover:bg-app-bg rounded-lg">
+                <button onClick={resetDefaults} className="p-2 hover:bg-background rounded-lg">
                   <RotateCcw className="w-4 h-4" />
                 </button>
               </div>
             </div>
             
             {/* Panel Tabs - Mobile: horizontal scroll, Desktop: vertical */}
-            <div className="flex lg:flex-col border-b lg:border-b-0 border-app-border overflow-x-auto lg:overflow-visible">
+            <div className="flex lg:flex-col border-b lg:border-b-0 border-border overflow-x-auto lg:overflow-visible">
               {[
                 { key: 'template', icon: Image, label: 'Template' },
                 { key: 'text', icon: Type, label: 'Texte' },
@@ -866,7 +866,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                   className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 lg:border-b-0 lg:border-l-2 transition-colors ${
                     activePanel === tab.key 
                       ? 'border-primary text-primary bg-primary/5' 
-                      : 'border-transparent text-app-muted hover:text-app-fg hover:bg-app-bg'
+                      : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-background'
                   }`}
                 >
                   <tab.icon className="w-4 h-4" />
@@ -884,7 +884,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                   <div className="space-y-4">
                     {/* Format Selection */}
                     <div>
-                      <label className="text-sm font-medium text-app-fg mb-2 block">Format</label>
+                      <label className="text-sm font-medium text-foreground mb-2 block">Format</label>
                       <div className="grid grid-cols-4 gap-2">
                         {FORMAT_OPTIONS.map(f => (
                           <button
@@ -893,11 +893,11 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                             className={`p-2 rounded-lg border text-center transition-all ${
                               design.format === f.key
                                 ? 'border-primary bg-primary/10 text-primary'
-                                : 'border-app-border hover:border-app-muted'
+                                : 'border-border hover:border-app-muted'
                             }`}
                           >
                             <div className="text-sm font-medium">{f.label}</div>
-                            <div className="text-[10px] text-app-muted">{f.desc}</div>
+                            <div className="text-[10px] text-muted-foreground">{f.desc}</div>
                           </button>
                         ))}
                       </div>
@@ -905,7 +905,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                     
                     {/* Category Filter */}
                     <div>
-                      <label className="text-sm font-medium text-app-fg mb-2 block">Kategorie</label>
+                      <label className="text-sm font-medium text-foreground mb-2 block">Kategorie</label>
                       <div className="flex flex-wrap gap-1">
                         {TEMPLATE_CATEGORIES.map(cat => (
                           <button
@@ -914,7 +914,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                             className={`px-3 py-1 text-xs rounded-full transition-all ${
                               templateFilter === cat.key
                                 ? 'bg-primary text-white'
-                                : 'bg-app-bg text-app-muted hover:text-app-fg'
+                                : 'bg-background text-muted-foreground hover:text-foreground'
                             }`}
                           >
                             {cat.label}
@@ -932,7 +932,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                           className={`relative aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all ${
                             design.templateSlug === t.slug
                               ? 'border-primary ring-2 ring-primary/20'
-                              : 'border-app-border hover:border-app-muted'
+                              : 'border-border hover:border-app-muted'
                           }`}
                         >
                           {/* Template Preview - use static SVG thumbnail */}
@@ -971,7 +971,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                 {/* Text Panel */}
                 {activePanel === 'text' && (
                   <div className="space-y-4">
-                    <p className="text-xs text-app-muted">Klicke auf den Text im Preview oder bearbeite hier:</p>
+                    <p className="text-xs text-muted-foreground">Klicke auf den Text im Preview oder bearbeite hier:</p>
                     
                     {[
                       { key: 'headline', label: 'Überschrift', placeholder: 'z.B. Unsere Hochzeit' },
@@ -980,7 +980,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                       { key: 'callToAction', label: 'Handlungsaufforderung', placeholder: 'z.B. Jetzt scannen!' },
                     ].map(field => (
                       <div key={field.key}>
-                        <label className="text-sm font-medium text-app-fg mb-1 block">{field.label}</label>
+                        <label className="text-sm font-medium text-foreground mb-1 block">{field.label}</label>
                         <input
                           type="text"
                           value={design[field.key as keyof DesignState] as string}
@@ -988,10 +988,10 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                           onFocus={() => setActiveTextField(field.key as ActiveTextField)}
                           onBlur={() => setActiveTextField(null)}
                           placeholder={field.placeholder}
-                          className={`w-full px-3 py-2 rounded-lg border bg-app-bg text-app-fg placeholder:text-app-muted transition-all ${
+                          className={`w-full px-3 py-2 rounded-lg border bg-background text-foreground placeholder:text-muted-foreground transition-all ${
                             activeTextField === field.key
                               ? 'border-primary ring-2 ring-primary/20'
-                              : 'border-app-border focus:border-primary'
+                              : 'border-border focus:border-primary'
                           }`}
                         />
                       </div>
@@ -999,7 +999,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                     
                     {/* Quick Presets */}
                     <div>
-                      <label className="text-sm font-medium text-app-fg mb-2 block">Schnellvorlagen</label>
+                      <label className="text-sm font-medium text-foreground mb-2 block">Schnellvorlagen</label>
                       <div className="flex flex-wrap gap-2">
                         {[
                           { label: 'Hochzeit', headline: 'Unsere Hochzeit', subline: 'Teilt eure schönsten Momente' },
@@ -1009,7 +1009,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                           <button
                             key={preset.label}
                             onClick={() => updateDesign({ headline: preset.headline, subline: preset.subline })}
-                            className="px-3 py-1.5 text-xs bg-app-bg hover:bg-primary/10 text-app-fg rounded-lg border border-app-border hover:border-primary transition-all"
+                            className="px-3 py-1.5 text-xs bg-background hover:bg-primary/10 text-foreground rounded-lg border border-border hover:border-primary transition-all"
                           >
                             {preset.label}
                           </button>
@@ -1024,20 +1024,20 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                   <div className="space-y-4">
                     {/* Color Presets */}
                     <div>
-                      <label className="text-sm font-medium text-app-fg mb-2 block">Farbpaletten</label>
+                      <label className="text-sm font-medium text-foreground mb-2 block">Farbpaletten</label>
                       <div className="grid grid-cols-3 gap-2">
                         {COLOR_PRESETS.map(preset => (
                           <button
                             key={preset.key}
                             onClick={() => applyColorPreset(preset)}
-                            className="p-2 rounded-lg border border-app-border hover:border-primary transition-all"
+                            className="p-2 rounded-lg border border-border hover:border-primary transition-all"
                           >
                             <div className="flex gap-1 mb-1">
                               <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.bg, border: '1px solid #e5e5e5' }} />
                               <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.text }} />
                               <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.accent }} />
                             </div>
-                            <div className="text-[10px] text-app-muted">{preset.label}</div>
+                            <div className="text-[10px] text-muted-foreground">{preset.label}</div>
                           </button>
                         ))}
                       </div>
@@ -1050,19 +1050,19 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                       { key: 'accentColor', label: 'Akzent/QR' },
                     ].map(color => (
                       <div key={color.key}>
-                        <label className="text-sm font-medium text-app-fg mb-1 block">{color.label}</label>
+                        <label className="text-sm font-medium text-foreground mb-1 block">{color.label}</label>
                         <div className="flex gap-2">
                           <input
                             type="color"
                             value={design[color.key as keyof DesignState] as string}
                             onChange={e => updateDesign({ [color.key]: e.target.value })}
-                            className="w-10 h-10 rounded-lg border border-app-border cursor-pointer"
+                            className="w-10 h-10 rounded-lg border border-border cursor-pointer"
                           />
                           <input
                             type="text"
                             value={design[color.key as keyof DesignState] as string}
                             onChange={e => updateDesign({ [color.key]: e.target.value })}
-                            className="flex-1 px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg font-mono text-sm"
+                            className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground font-mono text-sm"
                           />
                         </div>
                       </div>
@@ -1075,19 +1075,19 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                   <div className="space-y-4">
                     {/* QR Color */}
                     <div>
-                      <label className="text-sm font-medium text-app-fg mb-2 block">QR-Code Farbe</label>
+                      <label className="text-sm font-medium text-foreground mb-2 block">QR-Code Farbe</label>
                       <div className="flex gap-2">
                         <input
                           type="color"
                           value={design.qrColor}
                           onChange={e => updateDesign({ qrColor: e.target.value })}
-                          className="w-10 h-10 rounded-lg border border-app-border cursor-pointer"
+                          className="w-10 h-10 rounded-lg border border-border cursor-pointer"
                         />
                         <input
                           type="text"
                           value={design.qrColor}
                           onChange={e => updateDesign({ qrColor: e.target.value })}
-                          className="flex-1 px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg font-mono text-sm"
+                          className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground font-mono text-sm"
                         />
                       </div>
                       <div className="flex gap-2 mt-2">
@@ -1106,7 +1106,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                     
                     {/* Dot Style */}
                     <div>
-                      <label className="text-sm font-medium text-app-fg mb-2 block">Punkte-Stil</label>
+                      <label className="text-sm font-medium text-foreground mb-2 block">Punkte-Stil</label>
                       <div className="flex flex-wrap gap-2">
                         {QR_DOT_STYLES.map(style => (
                           <button
@@ -1115,7 +1115,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                             className={`w-12 h-12 rounded-lg border text-xl transition-all ${
                               design.qrDotStyle === style.key
                                 ? 'border-primary bg-primary/10 text-primary'
-                                : 'border-app-border text-app-muted hover:border-app-muted'
+                                : 'border-border text-muted-foreground hover:border-app-muted'
                             }`}
                             title={style.label}
                           >
@@ -1127,7 +1127,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                     
                     {/* Corner Style */}
                     <div>
-                      <label className="text-sm font-medium text-app-fg mb-2 block">Ecken-Stil</label>
+                      <label className="text-sm font-medium text-foreground mb-2 block">Ecken-Stil</label>
                       <div className="flex flex-wrap gap-2">
                         {QR_CORNER_STYLES.map(style => (
                           <button
@@ -1136,7 +1136,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                             className={`w-12 h-12 rounded-lg border text-xl transition-all ${
                               design.qrCornerStyle === style.key
                                 ? 'border-primary bg-primary/10 text-primary'
-                                : 'border-app-border text-app-muted hover:border-app-muted'
+                                : 'border-border text-muted-foreground hover:border-app-muted'
                             }`}
                             title={style.label}
                           >
@@ -1162,8 +1162,8 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                   <div className="space-y-4">
                     {/* Design Check */}
                     {(feedback.warnings.length > 0 || feedback.tips.length > 0) && (
-                      <div className="p-3 rounded-lg bg-app-bg border border-app-border space-y-2">
-                        <div className="flex items-center gap-2 text-sm font-medium text-app-fg">
+                      <div className="p-3 rounded-lg bg-background border border-border space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                           <Sparkles className="w-4 h-4 text-primary" />
                           Design-Check
                         </div>
@@ -1174,7 +1174,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                           </div>
                         ))}
                         {feedback.tips.map((tip, i) => (
-                          <div key={i} className="flex items-start gap-2 text-xs text-app-muted">
+                          <div key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
                             <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0" />
                             {tip}
                           </div>
@@ -1183,8 +1183,8 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                     )}
                     
                     {/* QR Target URL */}
-                    <div className="p-3 rounded-lg bg-app-bg border border-app-border">
-                      <div className="text-xs text-app-muted mb-1">QR-Code verlinkt auf:</div>
+                    <div className="p-3 rounded-lg bg-background border border-border">
+                      <div className="text-xs text-muted-foreground mb-1">QR-Code verlinkt auf:</div>
                       <div className="text-sm font-mono text-primary break-all">{publicUrl}</div>
                     </div>
                     
@@ -1216,30 +1216,30 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
           <div className="flex-1 lg:order-2 bg-gradient-to-br from-app-bg via-app-card to-app-bg flex flex-col min-h-screen lg:min-h-0">
             
             {/* Mobile Header */}
-            <div className="lg:hidden flex items-center justify-between p-3 border-b border-app-border bg-app-card/80 backdrop-blur-sm">
+            <div className="lg:hidden flex items-center justify-between p-3 border-b border-border bg-card/80 backdrop-blur-sm">
               <div className="flex items-center gap-2">
                 {fromWizard ? (
-                  <button onClick={() => router.back()} className="p-2 -ml-2 hover:bg-app-bg rounded-lg flex items-center gap-1 text-primary">
+                  <button onClick={() => router.back()} className="p-2 -ml-2 hover:bg-background rounded-lg flex items-center gap-1 text-primary">
                     <ArrowLeft className="w-4 h-4" />
                     <span className="text-xs font-medium">Wizard</span>
                   </button>
                 ) : (
-                  <Link href={`/events/${eventId}/dashboard`} className="p-2 -ml-2 hover:bg-app-bg rounded-lg">
+                  <Link href={`/events/${eventId}/dashboard`} className="p-2 -ml-2 hover:bg-background rounded-lg">
                     <ChevronLeft className="w-5 h-5" />
                   </Link>
                 )}
                 <div>
-                  <h1 className="font-semibold text-app-fg text-sm">QR-Designer</h1>
-                  <p className="text-[10px] text-app-muted truncate max-w-[120px]">{eventTitle}</p>
+                  <h1 className="font-semibold text-foreground text-sm">QR-Designer</h1>
+                  <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">{eventTitle}</p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                {saveStatus === 'saving' && <Loader2 className="w-4 h-4 animate-spin text-app-muted" />}
+                {saveStatus === 'saving' && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
                 {saveStatus === 'saved' && <Check className="w-4 h-4 text-status-success" />}
-                <button onClick={undo} disabled={!canUndo} className="p-2 hover:bg-app-bg rounded-lg disabled:opacity-30">
+                <button onClick={undo} disabled={!canUndo} className="p-2 hover:bg-background rounded-lg disabled:opacity-30">
                   <Undo2 className="w-4 h-4" />
                 </button>
-                <button onClick={redo} disabled={!canRedo} className="p-2 hover:bg-app-bg rounded-lg disabled:opacity-30">
+                <button onClick={redo} disabled={!canRedo} className="p-2 hover:bg-background rounded-lg disabled:opacity-30">
                   <Redo2 className="w-4 h-4" />
                 </button>
               </div>
@@ -1248,21 +1248,21 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
             {/* Desktop Preview Header */}
             <div className="hidden lg:flex items-center justify-between p-4 lg:p-8 pb-0 lg:pb-0">
               <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4 text-app-muted" />
-                <span className="text-sm font-medium text-app-fg">Live-Vorschau</span>
+                <Eye className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">Live-Vorschau</span>
               </div>
               
               {/* Preview Mode Toggle */}
-              <div className="flex items-center gap-1 bg-app-bg rounded-lg p-1">
+              <div className="flex items-center gap-1 bg-background rounded-lg p-1">
                 <button
                   onClick={() => setPreviewMode('desktop')}
-                  className={`p-2 rounded-md transition-all ${previewMode === 'desktop' ? 'bg-app-card shadow' : ''}`}
+                  className={`p-2 rounded-md transition-all ${previewMode === 'desktop' ? 'bg-card shadow' : ''}`}
                 >
                   <Monitor className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setPreviewMode('mobile')}
-                  className={`p-2 rounded-md transition-all ${previewMode === 'mobile' ? 'bg-app-card shadow' : ''}`}
+                  className={`p-2 rounded-md transition-all ${previewMode === 'mobile' ? 'bg-card shadow' : ''}`}
                 >
                   <Smartphone className="w-4 h-4" />
                 </button>
@@ -1385,7 +1385,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
             </div>
             
             {/* Format Info - Desktop only */}
-            <div className="hidden lg:block mt-4 text-center text-xs text-app-muted">
+            <div className="hidden lg:block mt-4 text-center text-xs text-muted-foreground">
               {FORMAT_OPTIONS.find(f => f.key === design.format)?.label} • {FORMAT_OPTIONS.find(f => f.key === design.format)?.desc}
             </div>
             
@@ -1402,7 +1402,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
             </div>
             
             {/* Mobile Bottom Tabs */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-app-card border-t border-app-border safe-area-pb">
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border safe-area-pb">
               <div className="flex justify-around py-2">
                 {[
                   { key: 'template', icon: Image, label: 'Vorlage' },
@@ -1417,7 +1417,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                     className={`flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-colors ${
                       activePanel === tab.key 
                         ? 'text-primary bg-primary/10' 
-                        : 'text-app-muted'
+                        : 'text-muted-foreground'
                     }`}
                   >
                     <tab.icon className="w-5 h-5" />
@@ -1440,7 +1440,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
           <div className="p-4 space-y-4 pb-20">
             {/* Format Selection */}
             <div>
-              <label className="text-sm font-medium text-app-fg mb-2 block">Format</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">Format</label>
               <div className="grid grid-cols-4 gap-2">
                 {FORMAT_OPTIONS.map(f => (
                   <button
@@ -1449,11 +1449,11 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                     className={`p-2 rounded-lg border text-center transition-all ${
                       design.format === f.key
                         ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-app-border hover:border-app-muted'
+                        : 'border-border hover:border-app-muted'
                     }`}
                   >
                     <div className="text-sm font-medium">{f.label}</div>
-                    <div className="text-[10px] text-app-muted">{f.desc}</div>
+                    <div className="text-[10px] text-muted-foreground">{f.desc}</div>
                   </button>
                 ))}
               </div>
@@ -1461,7 +1461,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
             
             {/* Category Filter */}
             <div>
-              <label className="text-sm font-medium text-app-fg mb-2 block">Kategorie</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">Kategorie</label>
               <div className="flex flex-wrap gap-1">
                 {TEMPLATE_CATEGORIES.map(cat => (
                   <button
@@ -1470,7 +1470,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                     className={`px-3 py-1 text-xs rounded-full transition-all ${
                       templateFilter === cat.key
                         ? 'bg-primary text-white'
-                        : 'bg-app-bg text-app-muted hover:text-app-fg'
+                        : 'bg-background text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     {cat.label}
@@ -1488,7 +1488,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                   className={`relative aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all ${
                     design.templateSlug === t.slug
                       ? 'border-primary ring-2 ring-primary/20'
-                      : 'border-app-border'
+                      : 'border-border'
                   }`}
                 >
                   <img
@@ -1522,13 +1522,13 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
               { key: 'callToAction', label: 'Handlungsaufforderung', placeholder: 'z.B. Jetzt scannen!' },
             ].map(field => (
               <div key={field.key}>
-                <label className="text-sm font-medium text-app-fg mb-1 block">{field.label}</label>
+                <label className="text-sm font-medium text-foreground mb-1 block">{field.label}</label>
                 <input
                   type="text"
                   value={design[field.key as keyof DesignState] as string}
                   onChange={e => updateDesign({ [field.key]: e.target.value })}
                   placeholder={field.placeholder}
-                  className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg placeholder:text-app-muted focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             ))}
@@ -1544,20 +1544,20 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
           <div className="p-4 space-y-4 pb-20">
             {/* Color Presets */}
             <div>
-              <label className="text-sm font-medium text-app-fg mb-2 block">Farbpaletten</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">Farbpaletten</label>
               <div className="grid grid-cols-3 gap-2">
                 {COLOR_PRESETS.map(preset => (
                   <button
                     key={preset.key}
                     onClick={() => applyColorPreset(preset)}
-                    className="p-2 rounded-lg border border-app-border hover:border-primary transition-all"
+                    className="p-2 rounded-lg border border-border hover:border-primary transition-all"
                   >
                     <div className="flex gap-1 mb-1">
                       <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.bg, border: '1px solid #e5e5e5' }} />
                       <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.text }} />
                       <div className="w-4 h-4 rounded" style={{ backgroundColor: preset.accent }} />
                     </div>
-                    <div className="text-[10px] text-app-muted">{preset.label}</div>
+                    <div className="text-[10px] text-muted-foreground">{preset.label}</div>
                   </button>
                 ))}
               </div>
@@ -1570,19 +1570,19 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
               { key: 'accentColor', label: 'Akzent/QR' },
             ].map(color => (
               <div key={color.key}>
-                <label className="text-sm font-medium text-app-fg mb-1 block">{color.label}</label>
+                <label className="text-sm font-medium text-foreground mb-1 block">{color.label}</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
                     value={design[color.key as keyof DesignState] as string}
                     onChange={e => updateDesign({ [color.key]: e.target.value })}
-                    className="w-10 h-10 rounded-lg border border-app-border cursor-pointer"
+                    className="w-10 h-10 rounded-lg border border-border cursor-pointer"
                   />
                   <input
                     type="text"
                     value={design[color.key as keyof DesignState] as string}
                     onChange={e => updateDesign({ [color.key]: e.target.value })}
-                    className="flex-1 px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg font-mono text-sm"
+                    className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground font-mono text-sm"
                   />
                 </div>
               </div>
@@ -1599,7 +1599,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
           <div className="p-4 space-y-4 pb-20">
             {/* Dot Style */}
             <div>
-              <label className="text-sm font-medium text-app-fg mb-2 block">Punkte-Stil</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">Punkte-Stil</label>
               <div className="flex flex-wrap gap-2">
                 {QR_DOT_STYLES.map(style => (
                   <button
@@ -1608,7 +1608,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                     className={`w-12 h-12 rounded-lg border text-xl transition-all ${
                       design.qrDotStyle === style.key
                         ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-app-border text-app-muted'
+                        : 'border-border text-muted-foreground'
                     }`}
                     title={style.label}
                   >
@@ -1620,7 +1620,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
             
             {/* Corner Style */}
             <div>
-              <label className="text-sm font-medium text-app-fg mb-2 block">Ecken-Stil</label>
+              <label className="text-sm font-medium text-foreground mb-2 block">Ecken-Stil</label>
               <div className="flex flex-wrap gap-2">
                 {QR_CORNER_STYLES.map(style => (
                   <button
@@ -1629,7 +1629,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                     className={`w-12 h-12 rounded-lg border text-xl transition-all ${
                       design.qrCornerStyle === style.key
                         ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-app-border text-app-muted'
+                        : 'border-border text-muted-foreground'
                     }`}
                     title={style.label}
                   >
@@ -1659,8 +1659,8 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
           <div className="p-4 space-y-4 pb-20">
             {/* Design Check */}
             {(feedback.warnings.length > 0 || feedback.tips.length > 0) && (
-              <div className="p-3 rounded-lg bg-app-bg border border-app-border space-y-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-app-fg">
+              <div className="p-3 rounded-lg bg-background border border-border space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                   <Sparkles className="w-4 h-4 text-primary" />
                   Design-Tipps
                 </div>
@@ -1671,7 +1671,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                   </div>
                 ))}
                 {feedback.tips.map((tip, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs text-app-muted">
+                  <div key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
                     <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0" />
                     {tip}
                   </div>
@@ -1680,8 +1680,8 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
             )}
             
             {/* QR Target URL */}
-            <div className="p-3 rounded-lg bg-app-bg border border-app-border">
-              <div className="text-xs text-app-muted mb-1">QR-Code verlinkt auf:</div>
+            <div className="p-3 rounded-lg bg-background border border-border">
+              <div className="text-xs text-muted-foreground mb-1">QR-Code verlinkt auf:</div>
               <div className="text-sm font-mono text-primary break-all">{publicUrl}</div>
             </div>
             

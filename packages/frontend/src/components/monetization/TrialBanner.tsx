@@ -80,10 +80,10 @@ export function TrialBanner({
             </div>
 
             <div className="flex-1 min-w-0">
-              <h3 className="text-base font-semibold text-app-fg mb-1">
+              <h3 className="text-base font-semibold text-foreground mb-1">
                 {bannerConfig.title}
               </h3>
-              <p className="text-sm text-app-muted">
+              <p className="text-sm text-muted-foreground">
                 {bannerConfig.description}
               </p>
             </div>
@@ -104,7 +104,7 @@ export function TrialBanner({
               {dismissible && (
                 <button
                   onClick={handleDismiss}
-                  className="text-app-muted hover:text-app-fg transition-colors p-1"
+                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
                 >
                   <X className="w-5 h-5" />
                 </button>

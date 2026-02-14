@@ -46,7 +46,7 @@ export default function QrWizardSteps({ currentStep, steps }: QrWizardStepsProps
                 className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors ${
                   isCompleted || isActive
                     ? 'border-app-accent text-app-bg'
-                    : 'border-app-border text-app-muted bg-app-card'
+                    : 'border-border text-muted-foreground bg-card'
                 }`}
               >
                 {isCompleted ? (
@@ -58,7 +58,7 @@ export default function QrWizardSteps({ currentStep, steps }: QrWizardStepsProps
               <div className="mt-2 text-center max-w-[120px]">
                 <div
                   className={`text-xs font-semibold ${
-                    isActive ? 'text-app-fg' : 'text-app-muted'
+                    isActive ? 'text-foreground' : 'text-muted-foreground'
                   }`}
                 >
                   {step.label}
@@ -67,7 +67,7 @@ export default function QrWizardSteps({ currentStep, steps }: QrWizardStepsProps
                   <motion.div
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-xs text-app-muted mt-0.5"
+                    className="text-xs text-muted-foreground mt-0.5"
                   >
                     {step.description}
                   </motion.div>

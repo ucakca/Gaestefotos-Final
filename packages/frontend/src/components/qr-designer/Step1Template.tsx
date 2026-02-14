@@ -36,15 +36,15 @@ export default function Step1Template({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-app-fg mb-2">Wähle dein Template</h2>
-        <p className="text-sm text-app-muted">
+        <h2 className="text-2xl font-bold text-foreground mb-2">Wähle dein Template</h2>
+        <p className="text-sm text-muted-foreground">
           Wähle ein Design für deinen QR-Aufsteller. Du kannst später Texte und Farben anpassen.
         </p>
       </div>
 
       {/* Format Selection */}
-      <div className="bg-app-card rounded-lg border border-app-border p-4">
-        <label className="text-sm font-semibold text-app-fg mb-3 block">Format</label>
+      <div className="bg-card rounded-lg border border-border p-4">
+        <label className="text-sm font-semibold text-foreground mb-3 block">Format</label>
         <div className="flex gap-3">
           {(['A6', 'A5'] as const).map((f) => (
             <motion.button
@@ -55,7 +55,7 @@ export default function Step1Template({
               className={`flex-1 py-3 px-6 rounded-lg font-semibold text-sm transition-all ${
                 format === f
                   ? 'bg-app-accent text-app-bg shadow-lg'
-                  : 'bg-app-bg border border-app-border text-app-fg hover:border-app-accent'
+                  : 'bg-background border border-border text-foreground hover:border-app-accent'
               }`}
             >
               {f}
@@ -66,8 +66,8 @@ export default function Step1Template({
       </div>
 
       {/* Category Filter */}
-      <div className="bg-app-card rounded-lg border border-app-border p-4">
-        <label className="text-sm font-semibold text-app-fg mb-3 block">Kategorie</label>
+      <div className="bg-card rounded-lg border border-border p-4">
+        <label className="text-sm font-semibold text-foreground mb-3 block">Kategorie</label>
         <Select value={categoryFilter} onValueChange={onCategoryFilterChange}>
           <SelectTrigger className="w-full">
             <SelectValue />
@@ -96,7 +96,7 @@ export default function Step1Template({
               className={`relative aspect-[1/1.4] rounded-lg overflow-hidden border-2 transition-all ${
                 isSelected
                   ? 'border-app-accent shadow-lg ring-2 ring-app-accent/20'
-                  : 'border-app-border hover:border-app-accent'
+                  : 'border-border hover:border-app-accent'
               }`}
             >
               {/* Template Preview */}
@@ -110,8 +110,8 @@ export default function Step1Template({
                     e.currentTarget.style.display = 'none';
                   }}
                 />
-                <div className="absolute inset-0 flex items-center justify-center bg-app-bg/80 backdrop-blur-sm">
-                  <span className="text-xs font-semibold text-app-fg text-center px-2">
+                <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+                  <span className="text-xs font-semibold text-foreground text-center px-2">
                     {template.label}
                   </span>
                 </div>
@@ -138,7 +138,7 @@ export default function Step1Template({
       </div>
 
       {filteredTemplates.length === 0 && (
-        <div className="text-center py-12 text-app-muted">
+        <div className="text-center py-12 text-muted-foreground">
           Keine Templates in dieser Kategorie verfügbar.
         </div>
       )}

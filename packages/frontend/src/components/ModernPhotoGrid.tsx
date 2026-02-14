@@ -287,12 +287,12 @@ export default function ModernPhotoGrid({
   if (photos.length === 0 && !allowUploads) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-24 h-24 rounded-full bg-app-bg border border-app-border flex items-center justify-center mb-4">
-          <svg className="w-12 h-12 text-app-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-24 h-24 rounded-full bg-background border border-border flex items-center justify-center mb-4">
+          <svg className="w-12 h-12 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </div>
-        <p className="text-app-muted text-sm">Noch keine Fotos vorhanden</p>
+        <p className="text-muted-foreground text-sm">Noch keine Fotos vorhanden</p>
       </div>
     );
   }
@@ -316,9 +316,9 @@ export default function ModernPhotoGrid({
       )}
 
       <Dialog open={showUploadDisabled} onOpenChange={(open) => (open ? null : setShowUploadDisabled(false))}>
-        <DialogContent className="bottom-4 top-auto left-1/2 -translate-x-1/2 translate-y-0 w-[calc(100vw-2rem)] max-w-md rounded-2xl bg-app-card border border-app-border p-4 shadow-xl">
-          <div className="text-sm font-semibold text-app-fg">Upload nicht möglich</div>
-          <div className="mt-1 text-sm text-app-muted">
+        <DialogContent className="bottom-4 top-auto left-1/2 -translate-x-1/2 translate-y-0 w-[calc(100vw-2rem)] max-w-md rounded-2xl bg-card border border-border p-4 shadow-xl">
+          <div className="text-sm font-semibold text-foreground">Upload nicht möglich</div>
+          <div className="mt-1 text-sm text-muted-foreground">
             {isStorageLocked ? 'Die Speicherzeit ist abgelaufen.' : uploadDisabledReason || 'Uploads sind aktuell deaktiviert.'}
           </div>
           <Button
@@ -339,11 +339,11 @@ export default function ModernPhotoGrid({
         {Array.from({ length: uploadingCount }).map((_, i) => (
           <div
             key={`uploading-${i}`}
-            className="aspect-square bg-app-bg border border-app-border relative flex items-center justify-center"
+            className="aspect-square bg-background border border-border relative flex items-center justify-center"
           >
             <div className="flex flex-col items-center gap-2">
               <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs text-app-muted">Lädt...</span>
+              <span className="text-xs text-muted-foreground">Lädt...</span>
             </div>
           </div>
         ))}
@@ -362,7 +362,7 @@ export default function ModernPhotoGrid({
               animate={{ opacity: 1 }}
               transition={{ delay: index * 0.03 }}
               onClick={() => openPost(index)}
-              className="aspect-square bg-app-bg border border-app-border relative group cursor-pointer overflow-hidden flex items-center justify-center"
+              className="aspect-square bg-background border border-border relative group cursor-pointer overflow-hidden flex items-center justify-center"
             >
               {photo.url ? (
                 <img
@@ -388,7 +388,7 @@ export default function ModernPhotoGrid({
                   }}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-app-muted">
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
@@ -404,7 +404,7 @@ export default function ModernPhotoGrid({
                     transition={{ type: 'spring', stiffness: 200 }}
                     className="rounded-full p-1.5 shadow-lg bg-status-warning"
                   >
-                    <Trophy className="w-4 h-4 text-app-fg" />
+                    <Trophy className="w-4 h-4 text-foreground" />
                   </motion.div>
                 </div>
               )}
@@ -412,13 +412,13 @@ export default function ModernPhotoGrid({
               {/* Guestbook Entry Speech Bubble Overlay - Bottom positioned */}
               {isGuestbookEntry && guestbookEntry && (
                 <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <div className="bg-app-card rounded-lg px-3 py-2 shadow-lg border border-app-border">
+                  <div className="bg-card rounded-lg px-3 py-2 shadow-lg border border-border">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-semibold text-app-fg">
+                      <span className="text-xs font-semibold text-foreground">
                         {guestbookEntry.authorName || 'Anonym'}
                       </span>
                     </div>
-                    <p className="text-xs text-app-fg line-clamp-2">
+                    <p className="text-xs text-foreground line-clamp-2">
                       {guestbookEntry.message}
                     </p>
                   </div>
@@ -428,15 +428,15 @@ export default function ModernPhotoGrid({
               {/* Challenge Photo Speech Bubble Overlay - Bottom positioned */}
               {isChallengePhoto && challenge && completion && (
                 <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <div className="bg-app-card rounded-lg px-3 py-2 shadow-lg border border-app-border">
+                  <div className="bg-card rounded-lg px-3 py-2 shadow-lg border border-border">
                     <div className="flex items-center gap-2 mb-1">
                       <Trophy className="w-3 h-3 flex-shrink-0 text-status-warning" />
-                      <span className="text-xs font-semibold text-app-fg truncate">
+                      <span className="text-xs font-semibold text-foreground truncate">
                         {challenge.title}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-app-fg font-medium">
+                      <span className="text-xs text-foreground font-medium">
                         {completion.guest 
                           ? `${completion.guest.firstName} ${completion.guest.lastName}` 
                           : (completion.uploaderName && completion.uploaderName.trim() ? completion.uploaderName : 'Anonym')}
@@ -444,7 +444,7 @@ export default function ModernPhotoGrid({
                       {completion.averageRating && (
                         <div className="flex items-center gap-1 ml-auto">
                           <Star className="w-3 h-3 fill-status-warning text-status-warning" />
-                          <span className="text-xs text-app-muted">{completion.averageRating.toFixed(1)}</span>
+                          <span className="text-xs text-muted-foreground">{completion.averageRating.toFixed(1)}</span>
                         </div>
                       )}
                     </div>
@@ -463,7 +463,7 @@ export default function ModernPhotoGrid({
       {/* Instagram-like Post Modal */}
       <Dialog open={selectedPhoto !== null} onOpenChange={(open) => (open ? null : closePost())}>
         {selectedPhoto !== null && (
-          <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row bg-app-card border border-app-border p-0">
+          <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col md:flex-row bg-card border border-border p-0">
             {/* Close Button */}
             <MotionIconButton
               initial={{ opacity: 0 }}
@@ -559,7 +559,7 @@ export default function ModernPhotoGrid({
                           transition={{ type: 'spring', stiffness: 200 }}
                           className="rounded-full p-3 shadow-xl bg-status-warning"
                         >
-                          <Trophy className="w-6 h-6 text-app-fg" />
+                          <Trophy className="w-6 h-6 text-foreground" />
                         </motion.div>
                       </div>
                     )}
@@ -567,16 +567,16 @@ export default function ModernPhotoGrid({
                     {/* Guestbook Entry Speech Bubble on Full Image */}
                     {(photos[selectedPhoto] as any)?.isGuestbookEntry && (photos[selectedPhoto] as any)?.guestbookEntry && (
                       <div className="absolute bottom-4 left-4 right-4">
-                        <div className="bg-app-card border border-app-border rounded-lg px-4 py-3 shadow-xl max-w-md mx-auto">
+                        <div className="bg-card border border-border rounded-lg px-4 py-3 shadow-xl max-w-md mx-auto">
                           <div className="flex items-center gap-2 mb-2">
                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-status-warning to-app-accent flex items-center justify-center">
                               <User className="w-4 h-4 text-app-bg" />
                             </div>
-                            <span className="text-sm font-semibold text-app-fg">
+                            <span className="text-sm font-semibold text-foreground">
                               {(photos[selectedPhoto] as any)?.guestbookEntry?.authorName}
                             </span>
                           </div>
-                          <p className="text-sm text-app-fg whitespace-pre-wrap">
+                          <p className="text-sm text-foreground whitespace-pre-wrap">
                             {(photos[selectedPhoto] as any)?.guestbookEntry?.message}
                           </p>
                         </div>
@@ -586,20 +586,20 @@ export default function ModernPhotoGrid({
                     {/* Challenge Photo Speech Bubble on Full Image */}
                     {(photos[selectedPhoto] as any)?.isChallengePhoto && (photos[selectedPhoto] as any)?.challenge && (
                       <div className="absolute bottom-4 left-4 right-4">
-                        <div className="bg-gradient-to-r from-app-bg to-app-card rounded-lg px-4 py-3 shadow-xl max-w-md mx-auto border border-app-border">
+                        <div className="bg-gradient-to-r from-app-bg to-app-card rounded-lg px-4 py-3 shadow-xl max-w-md mx-auto border border-border">
                           <div className="flex items-center gap-2 mb-2">
                             <Trophy className="w-5 h-5 text-status-warning" />
-                            <span className="text-sm font-semibold text-app-fg">
+                            <span className="text-sm font-semibold text-foreground">
                               {(photos[selectedPhoto] as any)?.challenge?.title}
                             </span>
                           </div>
                           {(photos[selectedPhoto] as any)?.challenge?.description && (
-                            <p className="text-sm text-app-fg mb-2 whitespace-pre-wrap">
+                            <p className="text-sm text-foreground mb-2 whitespace-pre-wrap">
                               {(photos[selectedPhoto] as any)?.challenge?.description}
                             </p>
                           )}
                           {(photos[selectedPhoto] as any)?.completion && (
-                            <div className="text-xs text-app-muted">
+                            <div className="text-xs text-muted-foreground">
                               Erfüllt von: {(photos[selectedPhoto] as any)?.completion?.guest 
                                 ? `${(photos[selectedPhoto] as any)?.completion?.guest?.firstName} ${(photos[selectedPhoto] as any)?.completion?.guest?.lastName}`
                                 : (photos[selectedPhoto] as any)?.completion?.uploaderName || 'Anonym'}
@@ -613,12 +613,12 @@ export default function ModernPhotoGrid({
               </div>
 
               {/* Sidebar */}
-              <div className="w-full md:w-80 flex flex-col bg-app-card border-t md:border-t-0 md:border-l border-app-border max-h-[90vh]">
+              <div className="w-full md:w-80 flex flex-col bg-card border-t md:border-t-0 md:border-l border-border max-h-[90vh]">
                 {/* Header */}
-                <div className="p-4 border-b border-app-border flex items-center justify-between">
+                <div className="p-4 border-b border-border flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-app-bg border border-app-border flex items-center justify-center">
-                      <span className="text-xs font-semibold text-app-muted">
+                    <div className="w-8 h-8 rounded-full bg-background border border-border flex items-center justify-center">
+                      <span className="text-xs font-semibold text-muted-foreground">
                         {(photos[selectedPhoto] as any)?.isChallengePhoto 
                           ? ((photos[selectedPhoto] as any)?.completion?.uploaderName && (photos[selectedPhoto] as any).completion.uploaderName.trim()
                             ? (photos[selectedPhoto] as any).completion.uploaderName.charAt(0).toUpperCase()
@@ -632,7 +632,7 @@ export default function ModernPhotoGrid({
                           : eventTitle.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <span className="font-semibold text-sm text-app-fg">
+                    <span className="font-semibold text-sm text-foreground">
                       {(photos[selectedPhoto] as any)?.isChallengePhoto 
                         ? ((photos[selectedPhoto] as any)?.completion?.uploaderName && (photos[selectedPhoto] as any).completion.uploaderName.trim()
                           ? (photos[selectedPhoto] as any).completion.uploaderName
@@ -652,12 +652,12 @@ export default function ModernPhotoGrid({
                     size="sm"
                     aria-label="Mehr"
                     title="Mehr"
-                    className="p-1 text-app-muted"
+                    className="p-1 text-muted-foreground"
                   />
                 </div>
 
                 {/* Actions */}
-                <div className="p-4 border-b border-app-border">
+                <div className="p-4 border-b border-border">
                   <div className="flex items-center gap-4 mb-3">
                     <MotionButton
                       whileTap={{ scale: 0.9 }}
@@ -675,11 +675,11 @@ export default function ModernPhotoGrid({
                         className={`w-6 h-6 ${
                           likedPhotos.has(getUnderlyingPhotoId(photos[selectedPhoto]) || '')
                             ? 'fill-status-warning text-status-warning'
-                            : 'text-app-fg'
+                            : 'text-foreground'
                         }`}
                       />
                       {likeCounts[getUnderlyingPhotoId(photos[selectedPhoto]) || ''] > 0 && (
-                        <span className="text-sm font-medium text-app-fg">
+                        <span className="text-sm font-medium text-foreground">
                           {likeCounts[getUnderlyingPhotoId(photos[selectedPhoto]) || '']}
                         </span>
                       )}
@@ -693,7 +693,7 @@ export default function ModernPhotoGrid({
                       title="Teilen"
                       className="p-1"
                     >
-                      <Share2 className="w-6 h-6 text-app-fg" />
+                      <Share2 className="w-6 h-6 text-foreground" />
                     </MotionButton>
                     {downloadsEnabled && (
                       <MotionButton
@@ -705,14 +705,14 @@ export default function ModernPhotoGrid({
                         title="Download"
                         className="p-1"
                       >
-                        <Download className="w-6 h-6 text-app-fg" />
+                        <Download className="w-6 h-6 text-foreground" />
                       </MotionButton>
                     )}
                   </div>
                   
                   {/* Like Count */}
                   {likeCounts[getUnderlyingPhotoId(photos[selectedPhoto]) || ''] > 0 && (
-                    <div className="text-sm font-semibold text-app-fg mb-3">
+                    <div className="text-sm font-semibold text-foreground mb-3">
                       {likeCounts[getUnderlyingPhotoId(photos[selectedPhoto]) || '']} {likeCounts[getUnderlyingPhotoId(photos[selectedPhoto]) || ''] === 1 ? 'Like' : 'Likes'}
                     </div>
                   )}
@@ -742,11 +742,11 @@ export default function ModernPhotoGrid({
                               variant="ghost"
                               size="sm"
                               className={`px-2 py-1 rounded-full border text-sm ${
-                                active ? 'border-app-fg bg-app-bg' : 'border-app-border bg-app-card'
+                                active ? 'border-app-fg bg-background' : 'border-border bg-card'
                               }`}
                             >
                               <span className="mr-1">{r.label}</span>
-                              {c > 0 ? <span className="text-app-fg">{c}</span> : <span className="text-app-muted">0</span>}
+                              {c > 0 ? <span className="text-foreground">{c}</span> : <span className="text-muted-foreground">0</span>}
                             </Button>
                           );
                         })}
@@ -761,11 +761,11 @@ export default function ModernPhotoGrid({
                               variant="ghost"
                               size="sm"
                               className={`px-2 py-1 rounded-full border text-sm ${
-                                active ? 'border-app-fg bg-app-bg' : 'border-app-border bg-app-card'
+                                active ? 'border-app-fg bg-background' : 'border-border bg-card'
                               }`}
                             >
                               <span className="mr-1">{key}</span>
-                              {c > 0 ? <span className="text-app-fg">{c}</span> : <span className="text-app-muted">0</span>}
+                              {c > 0 ? <span className="text-foreground">{c}</span> : <span className="text-muted-foreground">0</span>}
                             </Button>
                           );
                         })}
@@ -775,7 +775,7 @@ export default function ModernPhotoGrid({
                             value={customReactionInput}
                             onChange={(e) => setCustomReactionInput(e.target.value)}
                             placeholder="Emoji…"
-                            className="px-2 py-1 border border-app-border bg-app-card text-app-fg rounded-full text-sm w-24"
+                            className="px-2 py-1 border border-border bg-card text-foreground rounded-full text-sm w-24"
                             inputMode="text"
                           />
                           <Button
@@ -787,7 +787,7 @@ export default function ModernPhotoGrid({
                             }}
                             variant="ghost"
                             size="sm"
-                            className="px-2 py-1 rounded-full border border-app-border bg-app-card text-sm"
+                            className="px-2 py-1 rounded-full border border-border bg-card text-sm"
                           >
                             +
                           </Button>
@@ -800,7 +800,7 @@ export default function ModernPhotoGrid({
                 {/* Comments Section */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
                   {!allowComments ? (
-                    <div className="text-center py-8 text-app-muted">
+                    <div className="text-center py-8 text-muted-foreground">
                       <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
                       <p className="text-sm">Kommentare sind deaktiviert</p>
                     </div>
@@ -809,7 +809,7 @@ export default function ModernPhotoGrid({
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-app-fg"></div>
                     </div>
                   ) : (comments[getUnderlyingPhotoId(photos[selectedPhoto]) || ''] || []).length === 0 ? (
-                    <div className="text-center py-8 text-app-muted">
+                    <div className="text-center py-8 text-muted-foreground">
                       <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
                       <p className="text-sm">Noch keine Kommentare</p>
                       <p className="text-xs mt-1 opacity-70">Sei der Erste, der kommentiert!</p>
@@ -822,17 +822,17 @@ export default function ModernPhotoGrid({
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-sm text-app-fg">
+                            <span className="font-semibold text-sm text-foreground">
                               {comment.authorName}
                             </span>
-                            <span className="text-xs text-app-muted">
+                            <span className="text-xs text-muted-foreground">
                               {new Date(comment.createdAt).toLocaleDateString('de-DE', {
                                 day: 'numeric',
                                 month: 'short',
                               })}
                             </span>
                           </div>
-                          <p className="text-sm text-app-fg whitespace-pre-wrap break-words">
+                          <p className="text-sm text-foreground whitespace-pre-wrap break-words">
                             {comment.comment}
                           </p>
                         </div>
@@ -842,15 +842,15 @@ export default function ModernPhotoGrid({
                 </div>
 
                 {/* Comment Input */}
-                <div className="border-t border-app-border p-4 bg-app-card">
+                <div className="border-t border-border p-4 bg-card">
                   <div className="space-y-2">
                     {commentNotice && (
-                      <div className="text-xs text-app-fg bg-app-bg border border-app-border rounded-lg px-3 py-2">
+                      <div className="text-xs text-foreground bg-background border border-border rounded-lg px-3 py-2">
                         {commentNotice}
                       </div>
                     )}
                     {commentError && (
-                      <div className="text-xs text-status-danger bg-app-bg border border-status-danger rounded-lg px-3 py-2">
+                      <div className="text-xs text-destructive bg-background border border-status-danger rounded-lg px-3 py-2">
                         {commentError}
                       </div>
                     )}

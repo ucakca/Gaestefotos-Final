@@ -521,7 +521,7 @@ export default function SetupWizard() {
       default:
         return (
           <div className="text-center py-12">
-            <p className="text-app-muted">Schritt wird implementiert...</p>
+            <p className="text-muted-foreground">Schritt wird implementiert...</p>
           </div>
         );
     }
@@ -530,23 +530,23 @@ export default function SetupWizard() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50/50 to-white">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-app-card/80 backdrop-blur-lg border-b border-app-border">
+      <div className="sticky top-0 z-40 bg-card/80 backdrop-blur-lg border-b border-border">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => router.push('/dashboard')}
-            className="p-2 -ml-2 rounded-lg hover:bg-app-bg transition-colors"
+            className="p-2 -ml-2 rounded-lg hover:bg-background transition-colors"
             title="Abbrechen"
           >
-            <X className="w-5 h-5 text-app-muted" />
+            <X className="w-5 h-5 text-muted-foreground" />
           </button>
-          <h1 className="font-semibold text-app-fg">Neues Event</h1>
+          <h1 className="font-semibold text-foreground">Neues Event</h1>
           <div className="flex items-center gap-2">
             <button
               onClick={handleResetWizard}
-              className="p-2 rounded-lg hover:bg-app-bg transition-colors"
+              className="p-2 rounded-lg hover:bg-background transition-colors"
               title="Wizard neu starten"
             >
-              <RotateCcw className="w-4 h-4 text-app-muted" />
+              <RotateCcw className="w-4 h-4 text-muted-foreground" />
             </button>
             <button
               onClick={() => setShowChecklist(!showChecklist)}
@@ -611,11 +611,11 @@ export default function SetupWizard() {
         </AnimatePresence>
 
         {/* Step Content */}
-        <div className="bg-app-card rounded-2xl shadow-sm border border-app-border p-6">
+        <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
           {state.isCreating ? (
             <div className="py-12 flex flex-col items-center justify-center gap-4">
               <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
-              <p className="text-app-muted font-medium">Event wird erstellt...</p>
+              <p className="text-muted-foreground font-medium">Event wird erstellt...</p>
             </div>
           ) : (
             <AnimatePresence mode="wait">
@@ -667,14 +667,14 @@ export default function SetupWizard() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-app-card rounded-2xl shadow-2xl max-w-sm w-full p-6"
+              className="bg-card rounded-2xl shadow-2xl max-w-sm w-full p-6"
             >
               <div className="text-center mb-5">
                 <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-amber-100 flex items-center justify-center">
                   <RotateCcw className="w-6 h-6 text-amber-600" />
                 </div>
-                <h3 className="text-lg font-bold text-app-fg mb-1">Wizard neu starten?</h3>
-                <p className="text-sm text-app-muted">
+                <h3 className="text-lg font-bold text-foreground mb-1">Wizard neu starten?</h3>
+                <p className="text-sm text-muted-foreground">
                   Dein Event <strong>"{state.title}"</strong> bleibt erhalten.
                   Nur der Wizard-Fortschritt wird zurückgesetzt.
                 </p>

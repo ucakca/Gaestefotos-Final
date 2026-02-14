@@ -408,8 +408,8 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
           <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
             <X className="w-8 h-8 text-red-500" />
           </div>
-          <h2 className="text-lg font-semibold text-app-fg mb-2">Event nicht gefunden</h2>
-          <p className="text-app-muted mb-4">{error || 'Das Event konnte nicht geladen werden.'}</p>
+          <h2 className="text-lg font-semibold text-foreground mb-2">Event nicht gefunden</h2>
+          <p className="text-muted-foreground mb-4">{error || 'Das Event konnte nicht geladen werden.'}</p>
           <button
             onClick={() => router.push('/dashboard')}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors"
@@ -439,20 +439,20 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
   ];
 
   return (
-    <div className="min-h-screen bg-[hsl(30_20%_98%)] text-app-fg">
+    <div className="min-h-screen bg-[hsl(30_20%_98%)] text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-app-card/90 backdrop-blur-xl border-b border-app-border shadow-sm">
+      <header className="sticky top-0 z-50 bg-card/90 backdrop-blur-xl border-b border-border shadow-sm">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3 min-w-0">
             <button 
               onClick={() => router.push('/dashboard')}
-              className="p-2 -ml-2 rounded-lg hover:bg-app-bg transition-colors"
+              className="p-2 -ml-2 rounded-lg hover:bg-background transition-colors"
             >
-              <ChevronRight className="w-5 h-5 text-app-muted rotate-180" />
+              <ChevronRight className="w-5 h-5 text-muted-foreground rotate-180" />
             </button>
             <div className="min-w-0">
-              <h1 className="font-semibold text-app-fg truncate">{event.title}</h1>
-              <div className="flex items-center gap-2 text-xs text-app-muted">
+              <h1 className="font-semibold text-foreground truncate">{event.title}</h1>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span className={`w-2 h-2 rounded-full ${(event as any).isActive !== false ? 'bg-green-500' : 'bg-red-500'}`} />
                 <span>{(event as any).isActive !== false ? 'Live' : 'Gesperrt'}</span>
               </div>
@@ -461,10 +461,10 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
           
           <div className="flex items-center gap-2">
             <button 
-              className="p-2 rounded-lg hover:bg-app-bg transition-colors"
+              className="p-2 rounded-lg hover:bg-background transition-colors"
               title="Gesichtserkennung"
             >
-              <ScanFace className="w-5 h-5 text-app-muted" />
+              <ScanFace className="w-5 h-5 text-muted-foreground" />
             </button>
             <button 
               onClick={() => setShowQRModal(true)}
@@ -547,7 +547,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-app-card/95 backdrop-blur-xl border-t border-app-border z-40">
+      <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border z-40">
         <div className="flex items-center justify-around py-2">
           {tabs.map(tab => (
             <button
@@ -559,7 +559,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
               className={`flex flex-col items-center gap-1 py-2 px-4 rounded-lg transition-colors ${
                 activeTab === tab.id 
                   ? 'text-blue-600' 
-                  : 'text-app-muted hover:text-app-muted'
+                  : 'text-muted-foreground hover:text-muted-foreground'
               }`}
             >
               <tab.icon className="w-5 h-5" />
@@ -583,17 +583,17 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-app-card rounded-2xl p-6 max-w-sm w-full"
+              className="bg-card rounded-2xl p-6 max-w-sm w-full"
               onClick={e => e.stopPropagation()}
             >
               <div className="text-center">
-                <h3 className="text-lg font-semibold text-app-fg mb-4">QR-Code</h3>
-                <div className="bg-app-bg rounded-xl p-8 mb-4">
-                  <div className="w-48 h-48 mx-auto bg-app-card rounded-lg flex items-center justify-center">
-                    <QrCode className="w-32 h-32 text-app-fg" />
+                <h3 className="text-lg font-semibold text-foreground mb-4">QR-Code</h3>
+                <div className="bg-background rounded-xl p-8 mb-4">
+                  <div className="w-48 h-48 mx-auto bg-card rounded-lg flex items-center justify-center">
+                    <QrCode className="w-32 h-32 text-foreground" />
                   </div>
                 </div>
-                <p className="text-sm text-app-muted mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   Scanne diesen Code um Fotos hochzuladen
                 </p>
                 <div className="flex gap-2">
@@ -605,7 +605,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
                   </Link>
                   <button
                     onClick={() => setShowQRModal(false)}
-                    className="py-2 px-4 bg-app-bg text-app-fg rounded-lg font-medium hover:bg-app-border transition-colors"
+                    className="py-2 px-4 bg-background text-foreground rounded-lg font-medium hover:bg-app-border transition-colors"
                   >
                     Schließen
                   </button>
@@ -649,13 +649,13 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-app-card rounded-t-2xl max-h-[85vh] flex flex-col"
+              className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-2xl max-h-[85vh] flex flex-col"
             >
-              <div className="flex items-center justify-between px-4 py-4 border-b border-app-border">
-                <button onClick={() => setActiveSheet(null)} className="p-2 -ml-2 rounded-lg hover:bg-app-bg transition-colors">
-                  <X className="w-5 h-5 text-app-muted" />
+              <div className="flex items-center justify-between px-4 py-4 border-b border-border">
+                <button onClick={() => setActiveSheet(null)} className="p-2 -ml-2 rounded-lg hover:bg-background transition-colors">
+                  <X className="w-5 h-5 text-muted-foreground" />
                 </button>
-                <h3 className="font-semibold text-app-fg">Event-Titel</h3>
+                <h3 className="font-semibold text-foreground">Event-Titel</h3>
                 <div className="w-9" />
               </div>
               <div className="flex-1 overflow-y-auto p-4">
@@ -665,16 +665,16 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
                     placeholder="z.B. Mein Event"
-                    className="w-full px-4 py-4 text-lg border-2 border-app-border bg-app-card text-app-fg rounded-2xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors placeholder:text-app-muted"
+                    className="w-full px-4 py-4 text-lg border-2 border-border bg-card text-foreground rounded-2xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors placeholder:text-muted-foreground"
                     autoFocus
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-app-muted">
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                     {editTitle.length}/50
                   </span>
                 </div>
-                <p className="text-center text-sm text-app-muted mt-4">Der Titel wird auf der Event-Seite angezeigt</p>
+                <p className="text-center text-sm text-muted-foreground mt-4">Der Titel wird auf der Event-Seite angezeigt</p>
               </div>
-              <div className="p-4 border-t border-app-border bg-app-card">
+              <div className="p-4 border-t border-border bg-card">
                 <button
                   onClick={async () => {
                     if (editTitle.trim().length < 3) return;
@@ -714,18 +714,18 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-app-card rounded-t-2xl max-h-[85vh] flex flex-col"
+              className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-2xl max-h-[85vh] flex flex-col"
             >
-              <div className="flex items-center justify-between px-4 py-4 border-b border-app-border">
-                <button onClick={() => setActiveSheet(null)} className="p-2 -ml-2 rounded-lg hover:bg-app-bg transition-colors">
-                  <X className="w-5 h-5 text-app-muted" />
+              <div className="flex items-center justify-between px-4 py-4 border-b border-border">
+                <button onClick={() => setActiveSheet(null)} className="p-2 -ml-2 rounded-lg hover:bg-background transition-colors">
+                  <X className="w-5 h-5 text-muted-foreground" />
                 </button>
-                <h3 className="font-semibold text-app-fg">Datum & Ort</h3>
+                <h3 className="font-semibold text-foreground">Datum & Ort</h3>
                 <div className="w-9" />
               </div>
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-app-fg mb-2">
+                  <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
                     <Calendar className="w-4 h-4" />
                     Datum & Uhrzeit
                   </label>
@@ -733,11 +733,11 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
                     type="datetime-local"
                     value={editDateTime ? `${editDateTime.getFullYear()}-${String(editDateTime.getMonth() + 1).padStart(2, '0')}-${String(editDateTime.getDate()).padStart(2, '0')}T${String(editDateTime.getHours()).padStart(2, '0')}:${String(editDateTime.getMinutes()).padStart(2, '0')}` : ''}
                     onChange={(e) => e.target.value ? setEditDateTime(new Date(e.target.value)) : setEditDateTime(null)}
-                    className="w-full px-4 py-3 border-2 border-app-border bg-app-card text-app-fg rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 border-2 border-border bg-card text-foreground rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-app-fg mb-2">
+                  <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
                     <MapPin className="w-4 h-4" />
                     Ort / Location
                   </label>
@@ -746,11 +746,11 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
                     value={editLocation}
                     onChange={(e) => setEditLocation(e.target.value)}
                     placeholder="z.B. Schloss Neuschwanstein"
-                    className="w-full px-4 py-3 border-2 border-app-border bg-app-card text-app-fg rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors placeholder:text-app-muted"
+                    className="w-full px-4 py-3 border-2 border-border bg-card text-foreground rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors placeholder:text-muted-foreground"
                   />
                 </div>
               </div>
-              <div className="p-4 border-t border-app-border bg-app-card">
+              <div className="p-4 border-t border-border bg-card">
                 <button
                   onClick={async () => {
                     setSavingSheet(true);
@@ -860,7 +860,7 @@ function OverviewTab({
           <div className="flex items-start gap-3">
             {/* Profile Image */}
             <div className="relative group">
-              <div className="w-16 h-16 rounded-xl bg-app-card/20 backdrop-blur-sm overflow-hidden flex items-center justify-center border-2 border-white/30">
+              <div className="w-16 h-16 rounded-xl bg-card/20 backdrop-blur-sm overflow-hidden flex items-center justify-center border-2 border-white/30">
                 {(designConfig.profileImage || (event as any).profileImageUrl) ? (
                   <img src={designConfig.profileImage || (event as any).profileImageUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
@@ -895,14 +895,14 @@ function OverviewTab({
               <Link
                 href={`/e3/${event.slug}`}
                 target="_blank"
-                className="px-3 py-1.5 rounded-full bg-app-card/20 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1 hover:bg-app-card/30 transition-colors"
+                className="px-3 py-1.5 rounded-full bg-card/20 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1 hover:bg-card/30 transition-colors"
               >
                 <Eye className="w-3.5 h-3.5" />
                 Vorschau
               </Link>
               <Link
                 href={`/events/${eventId}/design?wizard=1`}
-                className="px-3 py-1.5 rounded-full bg-app-card/20 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1 hover:bg-app-card/30 transition-colors"
+                className="px-3 py-1.5 rounded-full bg-card/20 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1 hover:bg-card/30 transition-colors"
               >
                 <Palette className="w-3.5 h-3.5" />
                 Design
@@ -931,7 +931,7 @@ function OverviewTab({
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <span className="font-medium text-app-fg">Event einrichten</span>
+                <span className="font-medium text-foreground">Event einrichten</span>
                 <span className="text-xs text-amber-600 font-medium">{progressPercent}%</span>
               </div>
               <div className="h-1.5 bg-amber-200 rounded-full mt-1">
@@ -945,32 +945,32 @@ function OverviewTab({
           {currentStep && currentStep.link && (
             <Link
               href={currentStep.link}
-              className="flex items-center gap-3 p-3 rounded-xl bg-app-card border border-amber-200"
+              className="flex items-center gap-3 p-3 rounded-xl bg-card border border-amber-200"
             >
               <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center">
                 <ChevronRight className="w-4 h-4" />
               </div>
               <div className="flex-1 text-left">
-                <div className="font-medium text-app-fg">Nächster Schritt</div>
-                <div className="text-sm text-app-muted">{currentStep.label}</div>
+                <div className="font-medium text-foreground">Nächster Schritt</div>
+                <div className="text-sm text-muted-foreground">{currentStep.label}</div>
               </div>
-              <ChevronRight className="w-5 h-5 text-app-muted" />
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </Link>
           )}
         </div>
       )}
 
       {/* All Steps - Collapsible */}
-      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <button
           onClick={() => setShowAllSteps(!showAllSteps)}
-          className="w-full p-4 border-b border-app-border flex items-center justify-between hover:bg-app-bg transition-colors"
+          className="w-full p-4 border-b border-border flex items-center justify-between hover:bg-background transition-colors"
         >
           <div className="text-left">
-            <h3 className="font-semibold text-app-fg">Setup-Checkliste</h3>
-            <p className="text-sm text-app-muted">{completedSteps}/{totalSteps} abgeschlossen</p>
+            <h3 className="font-semibold text-foreground">Setup-Checkliste</h3>
+            <p className="text-sm text-muted-foreground">{completedSteps}/{totalSteps} abgeschlossen</p>
           </div>
-          <ChevronDown className={`w-5 h-5 text-app-muted transition-transform ${showAllSteps ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${showAllSteps ? 'rotate-180' : ''}`} />
         </button>
         <AnimatePresence>
           {showAllSteps && (
@@ -986,12 +986,12 @@ function OverviewTab({
                   const content = (
                     <>
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                        step.completed ? 'bg-green-500 text-white' : step.current ? 'bg-amber-500 text-white' : 'bg-app-border text-app-muted'
+                        step.completed ? 'bg-green-500 text-white' : step.current ? 'bg-amber-500 text-white' : 'bg-app-border text-muted-foreground'
                       }`}>
                         {step.completed ? <Check className="w-4 h-4" /> : index + 1}
                       </div>
                       <span className={`text-sm flex-1 ${
-                        step.completed ? 'text-green-700' : step.current ? 'text-amber-700 font-medium' : 'text-app-muted'
+                        step.completed ? 'text-green-700' : step.current ? 'text-amber-700 font-medium' : 'text-muted-foreground'
                       }`}>
                         {step.label}
                       </span>
@@ -1002,7 +1002,7 @@ function OverviewTab({
                   );
                   
                   const className = `flex items-center gap-3 p-3 rounded-xl transition-colors ${
-                    step.completed ? 'bg-green-50' : step.current ? 'bg-amber-50' : 'hover:bg-app-bg'
+                    step.completed ? 'bg-green-50' : step.current ? 'bg-amber-50' : 'hover:bg-background'
                   }`;
                   
                   return (
@@ -1030,12 +1030,12 @@ function OverviewTab({
           href={`/events/${eventId}/live-wall`}
           className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-200 p-4"
         >
-          <div className="w-10 h-10 rounded-xl bg-app-card flex items-center justify-center shadow-sm text-purple-500">
+          <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-purple-500">
             <Play className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-medium text-app-fg">Event Wall</div>
-            <div className="text-xs text-app-muted">Slideshow starten</div>
+            <div className="font-medium text-foreground">Event Wall</div>
+            <div className="text-xs text-muted-foreground">Slideshow starten</div>
           </div>
         </Link>
         <button
@@ -1043,88 +1043,88 @@ function OverviewTab({
           disabled={shareLoading}
           className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-200 p-4 text-left disabled:opacity-50"
         >
-          <div className="w-10 h-10 rounded-xl bg-app-card flex items-center justify-center shadow-sm text-blue-500">
+          <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-blue-500">
             {shareLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Share2 className="w-5 h-5" />}
           </div>
           <div>
-            <div className="font-medium text-app-fg">Share</div>
-            <div className="text-xs text-app-muted">{shareUrl ? 'Erneut kopieren' : 'Link erzeugen'}</div>
+            <div className="font-medium text-foreground">Share</div>
+            <div className="text-xs text-muted-foreground">{shareUrl ? 'Erneut kopieren' : 'Link erzeugen'}</div>
           </div>
         </button>
         <Link
           href={`/events/${eventId}/mosaic`}
           className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-pink-500/10 to-pink-600/5 border border-pink-200 p-4"
         >
-          <div className="w-10 h-10 rounded-xl bg-app-card flex items-center justify-center shadow-sm text-pink-500">
+          <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-pink-500">
             <LayoutGrid className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-medium text-app-fg">Mosaic Wall</div>
-            <div className="text-xs text-app-muted">Foto-Mosaik</div>
+            <div className="font-medium text-foreground">Mosaic Wall</div>
+            <div className="text-xs text-muted-foreground">Foto-Mosaik</div>
           </div>
         </Link>
         <Link
           href={`/events/${eventId}/package`}
           className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-amber-500/10 to-amber-600/5 border border-amber-200 p-4"
         >
-          <div className="w-10 h-10 rounded-xl bg-app-card flex items-center justify-center shadow-sm text-amber-500">
+          <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-amber-500">
             <Package className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-medium text-app-fg">Paket</div>
-            <div className="text-xs text-app-muted">Upgrade & Wechsel</div>
+            <div className="font-medium text-foreground">Paket</div>
+            <div className="text-xs text-muted-foreground">Upgrade & Wechsel</div>
           </div>
         </Link>
         <Link
           href={`/events/${eventId}/ki-booth`}
           className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-violet-500/10 to-violet-600/5 border border-violet-200 p-4"
         >
-          <div className="w-10 h-10 rounded-xl bg-app-card flex items-center justify-center shadow-sm text-violet-500">
+          <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-violet-500">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-medium text-app-fg">KI-Kunst</div>
-            <div className="text-xs text-app-muted">AI Style Transfer</div>
+            <div className="font-medium text-foreground">KI-Kunst</div>
+            <div className="text-xs text-muted-foreground">AI Style Transfer</div>
           </div>
         </Link>
         <Link
           href={`/events/${eventId}/booth-games`}
           className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-200 p-4"
         >
-          <div className="w-10 h-10 rounded-xl bg-app-card flex items-center justify-center shadow-sm text-emerald-500">
+          <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-emerald-500">
             <Gamepad2 className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-medium text-app-fg">Foto-Spiele</div>
-            <div className="text-xs text-app-muted">Interaktive Games</div>
+            <div className="font-medium text-foreground">Foto-Spiele</div>
+            <div className="text-xs text-muted-foreground">Interaktive Games</div>
           </div>
         </Link>
         <Link
           href={`/events/${eventId}/live-analytics`}
           className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-200 p-4"
         >
-          <div className="w-10 h-10 rounded-xl bg-app-card flex items-center justify-center shadow-sm text-cyan-500">
+          <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-cyan-500">
             <Activity className="w-5 h-5" />
           </div>
           <div>
-            <div className="font-medium text-app-fg">Live-Analytics</div>
-            <div className="text-xs text-app-muted">Echtzeit-Statistiken</div>
+            <div className="font-medium text-foreground">Live-Analytics</div>
+            <div className="text-xs text-muted-foreground">Echtzeit-Statistiken</div>
           </div>
         </Link>
       </div>
 
       {/* Paket & Upsell */}
-      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-app-border flex items-center justify-between">
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
               <Package className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="font-semibold text-app-fg">
+              <div className="font-semibold text-foreground">
                 {(event as any).tier === 'premium' ? 'Premium' : (event as any).tier === 'smart' ? 'Smart' : (event as any).tier === 'basic' ? 'Basic' : 'Free'}
               </div>
-              <div className="text-xs text-app-muted">Aktuelles Paket</div>
+              <div className="text-xs text-muted-foreground">Aktuelles Paket</div>
             </div>
           </div>
           <Link
@@ -1203,15 +1203,15 @@ function OverviewTab({
       )}
 
       {/* Invitations Overview */}
-      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-app-border flex items-center justify-between">
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
               <Mail className="w-4 h-4 text-green-600" />
             </div>
             <div>
-              <h3 className="font-medium text-app-fg">Einladungen</h3>
-              <p className="text-xs text-app-muted">{invitations.length} erstellt</p>
+              <h3 className="font-medium text-foreground">Einladungen</h3>
+              <p className="text-xs text-muted-foreground">{invitations.length} erstellt</p>
             </div>
           </div>
           <Link
@@ -1226,8 +1226,8 @@ function OverviewTab({
             {invitations.slice(0, 3).map((inv: any) => (
               <div key={inv.id} className="px-4 py-3 flex items-center justify-between">
                 <div>
-                  <div className="font-medium text-sm text-app-fg">{inv.name}</div>
-                  <div className="text-xs text-app-muted">
+                  <div className="font-medium text-sm text-foreground">{inv.name}</div>
+                  <div className="text-xs text-muted-foreground">
                     {inv.opens || 0} Aufrufe • RSVP: {inv?.rsvp?.yes || 0}/{inv?.rsvp?.no || 0}/{inv?.rsvp?.maybe || 0}
                   </div>
                 </div>
@@ -1236,22 +1236,22 @@ function OverviewTab({
             ))}
           </div>
         ) : (
-          <div className="p-4 text-center text-sm text-app-muted">
+          <div className="p-4 text-center text-sm text-muted-foreground">
             Noch keine Einladungen erstellt
           </div>
         )}
       </div>
 
       {/* Co-Hosts Overview */}
-      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-app-border flex items-center justify-between">
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
               <UserPlus className="w-4 h-4 text-purple-600" />
             </div>
             <div>
-              <h3 className="font-medium text-app-fg">Co-Hosts</h3>
-              <p className="text-xs text-app-muted">{cohosts.length} Mitverwalter</p>
+              <h3 className="font-medium text-foreground">Co-Hosts</h3>
+              <p className="text-xs text-muted-foreground">{cohosts.length} Mitverwalter</p>
             </div>
           </div>
           <button
@@ -1267,18 +1267,18 @@ function OverviewTab({
           <div className="divide-y divide-app-border">
             {cohosts.map((cohost: any) => (
               <div key={cohost.id} className="px-4 py-3 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-app-border flex items-center justify-center text-app-muted text-xs font-medium">
+                <div className="w-8 h-8 rounded-full bg-app-border flex items-center justify-center text-muted-foreground text-xs font-medium">
                   {cohost.user?.email?.charAt(0).toUpperCase() || '?'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm text-app-fg truncate">{cohost.user?.email || 'Unbekannt'}</div>
-                  <div className="text-xs text-app-muted">Co-Host</div>
+                  <div className="font-medium text-sm text-foreground truncate">{cohost.user?.email || 'Unbekannt'}</div>
+                  <div className="text-xs text-muted-foreground">Co-Host</div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="p-4 text-center text-sm text-app-muted">
+          <div className="p-4 text-center text-sm text-muted-foreground">
             Noch keine Co-Hosts eingeladen
           </div>
         )}
@@ -1409,7 +1409,7 @@ function GalleryTab({
             className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
               filter === f.id
                 ? 'bg-blue-500 text-white'
-                : 'bg-app-card border border-app-border text-app-muted hover:border-blue-300'
+                : 'bg-card border border-border text-muted-foreground hover:border-blue-300'
             }`}
           >
             <f.icon className="w-4 h-4" />
@@ -1450,7 +1450,7 @@ function GalleryTab({
             >
               {album.name}
               <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
-                selectedAlbum === album.id ? 'bg-app-card/20' : 'bg-purple-100'
+                selectedAlbum === album.id ? 'bg-card/20' : 'bg-purple-100'
               }`}>
                 {album.count}
               </span>
@@ -1484,7 +1484,7 @@ function GalleryTab({
             >
               {guest.name}
               <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
-                selectedGuest === guest.id ? 'bg-app-card/20' : 'bg-green-100'
+                selectedGuest === guest.id ? 'bg-card/20' : 'bg-green-100'
               }`}>
                 {guest.count}
               </span>
@@ -1496,10 +1496,10 @@ function GalleryTab({
       {/* Gallery Grid */}
       {filteredPhotos.length === 0 ? (
         <div className="text-center py-16">
-          <Camera className="w-12 h-12 text-app-muted mx-auto mb-3" />
-          <p className="text-app-muted">Keine Medien gefunden</p>
+          <Camera className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground">Keine Medien gefunden</p>
           {filter === 'pending' && (
-            <p className="text-sm text-app-muted mt-1">Alle Fotos wurden bereits freigegeben</p>
+            <p className="text-sm text-muted-foreground mt-1">Alle Fotos wurden bereits freigegeben</p>
           )}
         </div>
       ) : (
@@ -1561,7 +1561,7 @@ function GalleryTab({
       {showAll && filteredPhotos.length > 12 && (
         <button
           onClick={() => setShowAll(false)}
-          className="flex items-center justify-center gap-2 mt-4 py-3 text-app-muted font-medium w-full"
+          className="flex items-center justify-center gap-2 mt-4 py-3 text-muted-foreground font-medium w-full"
         >
           Weniger anzeigen
           <ChevronDown className="w-4 h-4 rotate-180" />
@@ -1580,7 +1580,7 @@ function GalleryTab({
           >
             <button
               onClick={() => setLightboxPhoto(null)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-app-card/20 text-white hover:bg-app-card/30 z-10"
+              className="absolute top-4 right-4 p-2 rounded-full bg-card/20 text-white hover:bg-card/30 z-10"
             >
               <X className="w-6 h-6" />
             </button>
@@ -1633,30 +1633,30 @@ function GuestbookTab({ eventId }: { eventId: string }) {
     >
       {loading ? (
         <div className="text-center py-16">
-          <Loader2 className="w-8 h-8 text-app-muted mx-auto mb-3 animate-spin" />
-          <p className="text-app-muted text-sm">Lade Gästebuch...</p>
+          <Loader2 className="w-8 h-8 text-muted-foreground mx-auto mb-3 animate-spin" />
+          <p className="text-muted-foreground text-sm">Lade Gästebuch...</p>
         </div>
       ) : entries.length === 0 ? (
         <div className="text-center py-16">
-          <BookOpen className="w-12 h-12 text-app-muted mx-auto mb-3" />
-          <h3 className="font-medium text-app-fg mb-1">Gästebuch</h3>
-          <p className="text-app-muted text-sm">Noch keine Einträge vorhanden</p>
+          <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+          <h3 className="font-medium text-foreground mb-1">Gästebuch</h3>
+          <p className="text-muted-foreground text-sm">Noch keine Einträge vorhanden</p>
         </div>
       ) : (
         <div className="space-y-3">
-          <h3 className="font-semibold text-app-fg">{entries.length} Einträge</h3>
+          <h3 className="font-semibold text-foreground">{entries.length} Einträge</h3>
           {entries.map((entry: any) => (
-            <div key={entry.id} className="rounded-2xl border border-app-border bg-app-card p-4 shadow-sm">
+            <div key={entry.id} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-sm font-bold">
                   {(entry.name || 'G').charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <div className="font-medium text-sm text-app-fg">{entry.name || 'Gast'}</div>
-                  <div className="text-xs text-app-muted">{entry.createdAt ? new Date(entry.createdAt).toLocaleDateString('de-DE') : ''}</div>
+                  <div className="font-medium text-sm text-foreground">{entry.name || 'Gast'}</div>
+                  <div className="text-xs text-muted-foreground">{entry.createdAt ? new Date(entry.createdAt).toLocaleDateString('de-DE') : ''}</div>
                 </div>
               </div>
-              {entry.message && <p className="text-sm text-app-fg">{entry.message}</p>}
+              {entry.message && <p className="text-sm text-foreground">{entry.message}</p>}
               {entry.imageUrl && (
                 <img src={entry.imageUrl} alt="" className="mt-2 rounded-xl max-h-48 object-cover w-full" />
               )}
@@ -1680,9 +1680,9 @@ function SetupTab({ event, eventId }: { event: EventType; eventId: string }) {
       className="p-4 space-y-4"
     >
       {/* Design Section */}
-      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
-          <h3 className="font-semibold text-app-fg flex items-center gap-2">
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-background">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
             <Palette className="w-4 h-4" />
             Design
           </h3>
@@ -1693,9 +1693,9 @@ function SetupTab({ event, eventId }: { event: EventType; eventId: string }) {
       </div>
 
       {/* Event Info Section */}
-      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
-          <h3 className="font-semibold text-app-fg flex items-center gap-2">
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-background">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
             <Info className="w-4 h-4" />
             Event-Info
           </h3>
@@ -1705,9 +1705,9 @@ function SetupTab({ event, eventId }: { event: EventType; eventId: string }) {
       </div>
 
       {/* Features Section */}
-      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
-          <h3 className="font-semibold text-app-fg flex items-center gap-2">
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-background">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
             <Sparkles className="w-4 h-4" />
             Features
           </h3>
@@ -1719,9 +1719,9 @@ function SetupTab({ event, eventId }: { event: EventType; eventId: string }) {
       </div>
 
       {/* Settings Section */}
-      <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-app-border bg-app-bg">
-          <h3 className="font-semibold text-app-fg flex items-center gap-2">
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-background">
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
             <Settings className="w-4 h-4" />
             Einstellungen
           </h3>
@@ -1807,7 +1807,7 @@ function StatCard({ icon: Icon, value, label, color, highlight, onClick }: {
         <Icon className={`w-5 h-5 ${styles.icon}`} />
       </div>
       <div className={`text-2xl font-bold ${styles.text}`}>{value}</div>
-      <div className="text-[10px] text-app-muted font-medium tracking-wide">{label}</div>
+      <div className="text-[10px] text-muted-foreground font-medium tracking-wide">{label}</div>
     </button>
   );
 }
@@ -1821,23 +1821,23 @@ function SetupRow({ icon: Icon, label, danger, link }: {
   const content = (
     <>
       <div className="flex items-center gap-3">
-        <Icon className={`w-5 h-5 ${danger ? 'text-red-500' : 'text-app-muted'}`} />
-        <span className={danger ? 'text-red-600' : 'text-app-fg'}>{label}</span>
+        <Icon className={`w-5 h-5 ${danger ? 'text-red-500' : 'text-muted-foreground'}`} />
+        <span className={danger ? 'text-red-600' : 'text-foreground'}>{label}</span>
       </div>
-      <ChevronRight className="w-5 h-5 text-app-muted" />
+      <ChevronRight className="w-5 h-5 text-muted-foreground" />
     </>
   );
 
   if (link) {
     return (
-      <Link href={link} className="flex items-center justify-between w-full px-4 py-4 border-b border-app-border last:border-0 text-left hover:bg-app-bg transition-colors">
+      <Link href={link} className="flex items-center justify-between w-full px-4 py-4 border-b border-border last:border-0 text-left hover:bg-background transition-colors">
         {content}
       </Link>
     );
   }
 
   return (
-    <button className="flex items-center justify-between w-full px-4 py-4 border-b border-app-border last:border-0 text-left hover:bg-app-bg transition-colors">
+    <button className="flex items-center justify-between w-full px-4 py-4 border-b border-border last:border-0 text-left hover:bg-background transition-colors">
       {content}
     </button>
   );
@@ -1855,12 +1855,12 @@ function EventStatusCard({
   setShowInfo: (show: boolean) => void;
 }) {
   return (
-    <div className="rounded-2xl border border-app-border bg-app-card shadow-sm overflow-hidden">
-      <div className="p-4 border-b border-app-border">
+    <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={`w-3 h-3 rounded-full ${(event as any).isActive !== false ? 'bg-green-500' : 'bg-red-500'}`} />
-            <span className="font-semibold text-app-fg">Event Status</span>
+            <span className="font-semibold text-foreground">Event Status</span>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
             <input 
@@ -1869,18 +1869,18 @@ function EventStatusCard({
               onChange={onToggleActive}
               className="sr-only peer" 
             />
-            <div className="w-11 h-6 bg-app-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-app-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+            <div className="w-11 h-6 bg-app-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
           </label>
         </div>
         <div className="flex items-center gap-2 mt-1 ml-6">
-          <p className="text-sm text-app-muted">
+          <p className="text-sm text-muted-foreground">
             {(event as any).isActive !== false ? 'Gäste können Fotos hochladen' : 'Event ist deaktiviert'}
           </p>
           <button 
             onClick={() => setShowInfo(!showInfo)}
-            className="p-1 rounded-full hover:bg-app-bg transition-colors"
+            className="p-1 rounded-full hover:bg-background transition-colors"
           >
-            <Info className="w-4 h-4 text-app-muted" />
+            <Info className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
         
@@ -1919,14 +1919,14 @@ function EventStatusCard({
       
       <div className="p-4 space-y-3">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-app-muted">Erstellt am</span>
-          <span className="text-app-fg">
+          <span className="text-muted-foreground">Erstellt am</span>
+          <span className="text-foreground">
             {event.createdAt ? new Date(event.createdAt).toLocaleDateString('de-DE') : '-'}
           </span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-app-muted">Event-Datum</span>
-          <span className="text-app-fg">
+          <span className="text-muted-foreground">Event-Datum</span>
+          <span className="text-foreground">
             {event.dateTime ? new Date(event.dateTime).toLocaleDateString('de-DE') : '-'}
           </span>
         </div>

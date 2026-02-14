@@ -211,15 +211,15 @@ export default function ChallengeCompletion({
   };
 
   return (
-    <div className="bg-app-card rounded-lg shadow-sm p-4 border border-app-border">
+    <div className="bg-card rounded-lg shadow-sm p-4 border border-border">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <Trophy className="w-5 h-5 text-status-warning" />
-            <h3 className="font-semibold text-app-fg">{challenge.title}</h3>
+            <h3 className="font-semibold text-foreground">{challenge.title}</h3>
           </div>
           {challenge.description && (
-            <p className="text-sm text-app-muted mb-3">{challenge.description}</p>
+            <p className="text-sm text-muted-foreground mb-3">{challenge.description}</p>
           )}
           
           {userCompletion ? (
@@ -230,7 +230,7 @@ export default function ChallengeCompletion({
                 <div className="flex items-center gap-1 ml-2">
                   <Star className="w-4 h-4 fill-status-warning text-status-warning" />
                   <span className="text-xs">{userCompletion.averageRating.toFixed(1)}</span>
-                  <span className="text-xs text-app-muted">({userCompletion.ratingCount})</span>
+                  <span className="text-xs text-muted-foreground">({userCompletion.ratingCount})</span>
                 </div>
               )}
             </div>
@@ -262,7 +262,7 @@ export default function ChallengeCompletion({
         }}
       >
         {showUploadModal ? (
-          <DialogContent className="bg-app-card border border-app-border rounded-lg max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden relative">
+          <DialogContent className="bg-card border border-border rounded-lg max-w-md w-full max-h-[90vh] flex flex-col overflow-hidden relative">
             <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}>
               {/* Success Animation */}
               <AnimatePresence>
@@ -287,8 +287,8 @@ export default function ChallengeCompletion({
                 )}
               </AnimatePresence>
 
-              <div className="flex justify-between items-center p-4 border-b border-app-border flex-shrink-0">
-                <h3 className="text-lg font-semibold text-app-fg">Challenge erfüllen</h3>
+              <div className="flex justify-between items-center p-4 border-b border-border flex-shrink-0">
+                <h3 className="text-lg font-semibold text-foreground">Challenge erfüllen</h3>
                 <DialogClose asChild>
                   <IconButton
                     onClick={() => {
@@ -307,8 +307,8 @@ export default function ChallengeCompletion({
               <div className="flex-1 overflow-y-auto min-h-0 p-4 pb-20">
                 {/* Uploader Name Input - Auffällig als Pflichtfeld */}
                 <div className="mb-4">
-                  <label className="block text-sm font-semibold text-app-fg mb-2">
-                    Dein Name <span className="text-status-danger">*</span>
+                  <label className="block text-sm font-semibold text-foreground mb-2">
+                    Dein Name <span className="text-destructive">*</span>
                   </label>
                   <Input
                     type="text"
@@ -316,7 +316,7 @@ export default function ChallengeCompletion({
                     onChange={(e) => setUploaderName(e.target.value)}
                     placeholder="z.B. Max Mustermann"
                     required
-                    className="w-full rounded-lg border-2 border-app-accent bg-app-card px-4 py-3 font-medium text-app-fg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
+                    className="w-full rounded-lg border-2 border-app-accent bg-card px-4 py-3 font-medium text-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-fg/15"
                   />
                 </div>
 
@@ -363,7 +363,7 @@ export default function ChallengeCompletion({
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="rounded-lg overflow-hidden border border-app-border bg-app-bg">
+                    <div className="rounded-lg overflow-hidden border border-border bg-background">
                       <img
                         src={capturedImage}
                         alt="Preview"
@@ -376,7 +376,7 @@ export default function ChallengeCompletion({
               
               {/* Buttons FIXIERT am unteren Rand - immer sichtbar wenn Bild vorhanden */}
               {capturedImage && (
-                <div className="sticky bottom-0 bg-app-card border-t border-app-border p-4 flex gap-3 flex-shrink-0 z-10">
+                <div className="sticky bottom-0 bg-card border-t border-border p-4 flex gap-3 flex-shrink-0 z-10">
                   <Button
                     onClick={() => {
                       setCapturedImage(null);

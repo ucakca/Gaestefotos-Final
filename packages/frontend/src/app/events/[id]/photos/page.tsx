@@ -455,11 +455,11 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
           </PageHeader>
 
           {isStorageLocked && (
-            <div className="mb-4 rounded-xl border border-app-border bg-app-card p-4">
+            <div className="mb-4 rounded-xl border border-border bg-card p-4">
               <div className="flex items-start gap-3">
                 <div>
-                  <p className="font-semibold text-sm text-app-fg">Speicherperiode beendet</p>
-                  <p className="text-sm text-app-muted mt-1">
+                  <p className="font-semibold text-sm text-foreground">Speicherperiode beendet</p>
+                  <p className="text-sm text-muted-foreground mt-1">
                     Uploads sind nicht mehr möglich. Fotos können weiterhin angesehen werden.
                   </p>
                 </div>
@@ -468,8 +468,8 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
           )}
 
           {uploading && (
-            <div className="mb-4 p-4 bg-app-card border border-app-border rounded-lg">
-              <p className="text-app-fg">Foto wird hochgeladen...</p>
+            <div className="mb-4 p-4 bg-card border border-border rounded-lg">
+              <p className="text-foreground">Foto wird hochgeladen...</p>
             </div>
           )}
 
@@ -508,8 +508,8 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
 
           {filteredPhotos.length === 0 ? (
             <div className="text-center py-12">
-              <ImageIcon className="w-16 h-16 mx-auto text-app-muted mb-4" />
-              <p className="text-app-muted">Noch keine Fotos hochgeladen</p>
+              <ImageIcon className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">Noch keine Fotos hochgeladen</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -534,7 +534,7 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
       {/* Photo Detail Modal */}
       <Dialog open={selectedPhoto !== null} onOpenChange={(open) => !open && setSelectedPhoto(null)}>
         {selectedPhoto && (
-          <DialogContent className="bg-app-card rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
+          <DialogContent className="bg-card rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
             <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }}>
               <div className="mb-4">
                 <h2 className="text-lg font-semibold">Foto-Details</h2>

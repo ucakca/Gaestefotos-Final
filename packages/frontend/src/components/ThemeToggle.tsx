@@ -20,7 +20,7 @@ export function ThemeToggle({ className = '', size = 'md' }: ThemeToggleProps) {
   if (!mounted) {
     return (
       <button
-        className={`p-2 rounded-lg bg-app-card border border-app-border ${className}`}
+        className={`p-2 rounded-lg bg-card border border-border ${className}`}
         disabled
       >
         <div className={`${size === 'sm' ? 'w-4 h-4' : size === 'lg' ? 'w-6 h-6' : 'w-5 h-5'}`} />
@@ -34,14 +34,14 @@ export function ThemeToggle({ className = '', size = 'md' }: ThemeToggleProps) {
   return (
     <button
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className={`p-2 rounded-lg bg-app-card border border-app-border hover:border-app-accent/50 transition-all ${className}`}
+      className={`p-2 rounded-lg bg-card border border-border hover:border-app-accent/50 transition-all ${className}`}
       aria-label={isDark ? 'Hellen Modus aktivieren' : 'Dunklen Modus aktivieren'}
       title={isDark ? 'Heller Modus' : 'Dunkler Modus'}
     >
       {isDark ? (
         <Sun className={`${iconSize} text-yellow-400`} />
       ) : (
-        <Moon className={`${iconSize} text-app-muted`} />
+        <Moon className={`${iconSize} text-muted-foreground`} />
       )}
     </button>
   );
@@ -64,7 +64,7 @@ export function ThemeToggleText({ className = '' }: { className?: string }) {
   return (
     <button
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className={`flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-app-card transition-colors text-sm ${className}`}
+      className={`flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-card transition-colors text-sm ${className}`}
     >
       {isDark ? (
         <>

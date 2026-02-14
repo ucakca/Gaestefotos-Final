@@ -104,7 +104,7 @@ export default function WorkflowRunner({
   if (!definition) {
     return (
       <div className={`flex items-center justify-center p-8 ${className}`}>
-        <p className="text-app-muted">Kein Workflow geladen</p>
+        <p className="text-muted-foreground">Kein Workflow geladen</p>
       </div>
     );
   }
@@ -113,9 +113,9 @@ export default function WorkflowRunner({
   if (state.status === 'idle') {
     return (
       <div className={`flex flex-col items-center justify-center p-8 gap-4 ${className}`}>
-        <h3 className="text-xl font-bold text-app-fg">{definition.name}</h3>
+        <h3 className="text-xl font-bold text-foreground">{definition.name}</h3>
         {definition.description && (
-          <p className="text-app-muted text-center max-w-md">{definition.description}</p>
+          <p className="text-muted-foreground text-center max-w-md">{definition.description}</p>
         )}
         <motion.button
           whileTap={{ scale: 0.95 }}
@@ -133,7 +133,7 @@ export default function WorkflowRunner({
     return (
       <div className={`flex flex-col items-center justify-center p-8 gap-4 ${className}`}>
         <div className="text-red-500 text-lg font-bold">Fehler</div>
-        <p className="text-app-muted text-center">{state.error}</p>
+        <p className="text-muted-foreground text-center">{state.error}</p>
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={reset}
@@ -157,7 +157,7 @@ export default function WorkflowRunner({
         >
           ✅
         </motion.div>
-        <h3 className="text-xl font-bold text-app-fg">Fertig!</h3>
+        <h3 className="text-xl font-bold text-foreground">Fertig!</h3>
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={reset}
@@ -173,7 +173,7 @@ export default function WorkflowRunner({
   if (!currentNode) {
     return (
       <div className={`flex items-center justify-center p-8 ${className}`}>
-        <Loader2 className="w-8 h-8 animate-spin text-app-muted" />
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -186,22 +186,22 @@ export default function WorkflowRunner({
   return (
     <div className={`flex flex-col min-h-0 ${className}`}>
       {/* Progress Bar + Back Button */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-app-border bg-app-card/50">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card/50">
         {canGoBack && (
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={goBack}
-            className="p-2 rounded-lg hover:bg-app-bg transition-colors"
+            className="p-2 rounded-lg hover:bg-background transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-app-muted" />
+            <ArrowLeft className="w-5 h-5 text-muted-foreground" />
           </motion.button>
         )}
         <div className="flex-1">
-          <div className="flex items-center justify-between text-xs text-app-muted mb-1">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
             <span>{currentNode.data.label}</span>
             <span>Schritt {stepIndex}</span>
           </div>
-          <div className="h-1.5 bg-app-bg rounded-full overflow-hidden">
+          <div className="h-1.5 bg-background rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-app-accent rounded-full"
               initial={{ width: 0 }}

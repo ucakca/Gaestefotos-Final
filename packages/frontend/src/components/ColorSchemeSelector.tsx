@@ -59,12 +59,12 @@ export function ColorSchemeSelector({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 text-app-fg">
+      <div className="flex items-center gap-2 text-foreground">
         <Palette className="w-5 h-5 text-app-accent" />
         <h3 className="font-semibold">KI-Farbschema Generator</h3>
       </div>
       
-      <p className="text-sm text-app-muted">
+      <p className="text-sm text-muted-foreground">
         Lass dir passende Farbschemata für dein Event vorschlagen.
       </p>
 
@@ -74,7 +74,7 @@ export function ColorSchemeSelector({
           value={mood}
           onChange={(e) => setMood(e.target.value)}
           placeholder="Stimmung (z.B. romantisch, elegant, modern)"
-          className="flex-1 px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-app-accent/50"
+          className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-app-accent/50"
         />
         <Button
           type="button"
@@ -103,7 +103,7 @@ export function ColorSchemeSelector({
                   ? 'border-app-accent shadow-lg scale-[1.02]'
                   : currentPrimary === scheme.primary
                   ? 'border-app-accent/50'
-                  : 'border-app-border hover:border-app-accent/30'
+                  : 'border-border hover:border-app-accent/30'
               }`}
             >
               {selectedIndex === index && (
@@ -130,7 +130,7 @@ export function ColorSchemeSelector({
                   title="Akzentfarbe"
                 />
                 <div
-                  className="w-8 h-8 rounded-lg shadow-sm border border-app-border"
+                  className="w-8 h-8 rounded-lg shadow-sm border border-border"
                   style={{ backgroundColor: scheme.background }}
                   title="Hintergrund"
                 />
@@ -158,7 +158,7 @@ export function ColorSchemeSelector({
                 </div>
               </div>
               
-              <p className="text-xs font-medium text-app-fg truncate">
+              <p className="text-xs font-medium text-foreground truncate">
                 {scheme.name}
               </p>
             </button>
@@ -167,7 +167,7 @@ export function ColorSchemeSelector({
       )}
 
       {schemes.length === 0 && !loading && (
-        <div className="text-center py-6 text-app-muted">
+        <div className="text-center py-6 text-muted-foreground">
           <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">Klicke auf "Generieren" für KI-Vorschläge</p>
         </div>

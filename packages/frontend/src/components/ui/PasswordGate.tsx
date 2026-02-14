@@ -18,8 +18,8 @@ export function PasswordGate({ password, onPasswordChange, passwordError, onSubm
   return (
     <Container>
       <Card className="p-8 w-full">
-        <h2 className="text-2xl font-semibold mb-4 text-app-fg">Event-Passwort</h2>
-        <p className="text-app-muted mb-6 text-sm">Dieses Event ist passwortgeschützt.</p>
+        <h2 className="text-2xl font-semibold mb-4 text-foreground">Event-Passwort</h2>
+        <p className="text-muted-foreground mb-6 text-sm">Dieses Event ist passwortgeschützt.</p>
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <Input

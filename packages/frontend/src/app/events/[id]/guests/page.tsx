@@ -255,7 +255,7 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="font-medium text-app-fg">
+        <div className="font-medium text-foreground">
           {row.original.firstName} {row.original.lastName}
         </div>
       ),
@@ -274,14 +274,14 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-sm text-app-muted">{row.original.email || '-'}</div>
+        <div className="text-sm text-muted-foreground">{row.original.email || '-'}</div>
       ),
     },
     {
       accessorKey: 'plusOneCount',
       header: 'Begleitung',
       cell: ({ row }) => (
-        <div className="text-sm text-app-muted">
+        <div className="text-sm text-muted-foreground">
           {(row.original.plusOneCount || 0) > 0 ? `+${row.original.plusOneCount}` : '-'}
         </div>
       ),
@@ -348,7 +348,7 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
         </AlertDialogFooter>
       </AlertDialogContent>
 
-      <div className="min-h-screen bg-app-bg">
+      <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -360,10 +360,10 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
           </Button>
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-app-fg mb-2">
+              <h1 className="text-3xl font-bold text-foreground mb-2">
                 Gäste-Verwaltung: {event?.title}
               </h1>
-              <p className="text-app-muted">
+              <p className="text-muted-foreground">
                 {guests.length} Gast{guests.length !== 1 ? 'e' : ''}
               </p>
             </div>
@@ -399,19 +399,19 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-app-card border border-app-border rounded-lg shadow p-6 mb-6"
+              className="bg-card border border-border rounded-lg shadow p-6 mb-6"
             >
-              <h2 className="text-xl font-semibold mb-2 text-app-fg flex items-center gap-2">
+              <h2 className="text-xl font-semibold mb-2 text-foreground flex items-center gap-2">
                 <FileText className="h-5 w-5" />
                 Gäste importieren
               </h2>
-              <p className="text-sm text-app-muted mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 Füge mehrere Gäste auf einmal hinzu. Ein Gast pro Zeile.
               </p>
               
-              <div className="mb-4 p-3 rounded-lg bg-app-bg border border-app-border">
-                <div className="text-xs font-medium text-app-fg mb-1">Unterstützte Formate:</div>
-                <div className="text-xs text-app-muted space-y-1">
+              <div className="mb-4 p-3 rounded-lg bg-background border border-border">
+                <div className="text-xs font-medium text-foreground mb-1">Unterstützte Formate:</div>
+                <div className="text-xs text-muted-foreground space-y-1">
                   <div>• <code>Vorname Nachname, email@example.com</code></div>
                   <div>• <code>Vorname Nachname</code></div>
                   <div>• <code>email@example.com</code></div>
@@ -450,13 +450,13 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="bg-app-card border border-app-border rounded-lg shadow p-6 mb-6"
+              className="bg-card border border-border rounded-lg shadow p-6 mb-6"
             >
-              <h2 className="text-xl font-semibold mb-4 text-app-fg">Neuer Gast</h2>
+              <h2 className="text-xl font-semibold mb-4 text-foreground">Neuer Gast</h2>
               <form onSubmit={handleAddGuest} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-app-fg mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Vorname *
                     </label>
                     <Input
@@ -467,7 +467,7 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-app-fg mb-1">
+                    <label className="block text-sm font-medium text-foreground mb-1">
                       Nachname *
                     </label>
                     <Input
@@ -479,7 +479,7 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-app-fg mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     E-Mail
                   </label>
                   <Input
@@ -489,7 +489,7 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-app-fg mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Essenswünsche
                   </label>
                   <Textarea
@@ -530,13 +530,13 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
         </motion.div>
 
         {/* Guests Table with TanStack */}
-        <div className="bg-app-card border border-app-border rounded-lg shadow overflow-hidden">
+        <div className="bg-card border border-border rounded-lg shadow overflow-hidden">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="bg-app-bg">
+                    <TableHead key={header.id} className="bg-background">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -557,7 +557,7 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
                     transition={{ delay: index * 0.05 }}
-                    className="border-b border-app-border"
+                    className="border-b border-border"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
@@ -568,7 +568,7 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="h-24 text-center text-app-muted">
+                  <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
                     Noch keine Gäste vorhanden.
                   </TableCell>
                 </TableRow>
@@ -578,8 +578,8 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
 
           {/* Pagination */}
           {table.getPageCount() > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 bg-app-bg border-t border-app-border">
-              <div className="text-sm text-app-muted">
+            <div className="flex items-center justify-between px-6 py-4 bg-background border-t border-border">
+              <div className="text-sm text-muted-foreground">
                 Seite {table.getState().pagination.pageIndex + 1} von {table.getPageCount()}
               </div>
               <div className="flex gap-2">

@@ -19,6 +19,7 @@ import UploadModal from '@/components/e3/UploadModal';
 import QRCodeShare from '@/components/e3/QRCodeShare';
 import SlideshowMode from '@/components/e3/SlideshowMode';
 import LeaderboardOverlay from '@/components/e3/LeaderboardOverlay';
+import AchievementToast from '@/components/e3/AchievementToast';
 import { Alert } from '@/components/ui/Alert';
 import { Centered } from '@/components/ui/Centered';
 import { Container } from '@/components/ui/Container';
@@ -292,7 +293,7 @@ export default function PublicEventPageV2() {
   const totalPhotos = filteredPhotos.length;
 
   return (
-    <main className="relative min-h-screen bg-app-bg">
+    <main className="relative min-h-screen bg-background">
       <StickyHeader
         hostAvatar={event?.designConfig?.profileImage || '/placeholder.svg'}
         eventTitle={event?.title || ''}
@@ -368,10 +369,10 @@ export default function PublicEventPageV2() {
 
           {featuresConfig?.challengesEnabled === true && Array.isArray(challenges) && challenges.filter((c: any) => c?.isActive).length > 0 && (
             <Section borderColorClassName="border-status-warning">
-              <Alert className="bg-app-bg border-status-warning text-app-fg">
+              <Alert className="bg-background border-status-warning text-foreground">
                 <div className="flex items-center gap-2">
                   <Trophy className="w-5 h-5 text-status-warning" />
-                  <p className="text-sm text-app-fg">
+                  <p className="text-sm text-foreground">
                     <strong>Foto-Spaß verfügbar!</strong> Challenges und Spiele warten auf dich — tippe auf &quot;Foto-Spaß&quot; im Menü.
                   </p>
                 </div>
@@ -663,6 +664,8 @@ export default function PublicEventPageV2() {
         onClose={() => setLeaderboardOpen(false)}
         eventId={event?.id || ''}
       />
+
+      <AchievementToast eventId={event?.id || ''} />
     </main>
   );
 }

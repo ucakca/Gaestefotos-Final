@@ -157,11 +157,11 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-app-fg flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <Activity className="w-6 h-6 text-primary" />
               Live Analytics
             </h1>
-            <p className="text-sm text-app-muted mt-1">{event?.title || 'Event'}</p>
+            <p className="text-sm text-muted-foreground mt-1">{event?.title || 'Event'}</p>
           </div>
           <div className="flex items-center gap-3">
             <div className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full ${
@@ -170,7 +170,7 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
               {connected ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
               {connected ? 'Live' : 'Offline'}
             </div>
-            <button onClick={fetchStats} className="p-2 text-app-muted hover:text-app-fg transition" title="Aktualisieren">
+            <button onClick={fetchStats} className="p-2 text-muted-foreground hover:text-foreground transition" title="Aktualisieren">
               <RefreshCw className="w-4 h-4" />
             </button>
           </div>
@@ -189,12 +189,12 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
             {/* Live Indicators */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
               {/* Upload Rate */}
-              <div className="bg-app-card border border-app-border rounded-xl p-5">
+              <div className="bg-card border border-border rounded-xl p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-app-muted">Uploads / Minute</span>
+                  <span className="text-sm font-medium text-muted-foreground">Uploads / Minute</span>
                   <Zap className="w-4 h-4 text-yellow-500" />
                 </div>
-                <div className="text-3xl font-bold text-app-fg">{uploadsNow}</div>
+                <div className="text-3xl font-bold text-foreground">{uploadsNow}</div>
                 <div className="mt-2 h-2 bg-app-surface rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
@@ -205,12 +205,12 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
               </div>
 
               {/* Approval Rate */}
-              <div className="bg-app-card border border-app-border rounded-xl p-5">
+              <div className="bg-card border border-border rounded-xl p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-app-muted">Freigabequote</span>
+                  <span className="text-sm font-medium text-muted-foreground">Freigabequote</span>
                   <CheckCircle className="w-4 h-4 text-green-500" />
                 </div>
-                <div className="text-3xl font-bold text-app-fg">
+                <div className="text-3xl font-bold text-foreground">
                   {stats.totalPhotos > 0 ? Math.round(stats.approvedPhotos / stats.totalPhotos * 100) : 0}%
                 </div>
                 <div className="mt-2 h-2 bg-app-surface rounded-full overflow-hidden">
@@ -222,12 +222,12 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
               </div>
 
               {/* Guest Participation */}
-              <div className="bg-app-card border border-app-border rounded-xl p-5">
+              <div className="bg-card border border-border rounded-xl p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-app-muted">Gäste-Teilnahme</span>
+                  <span className="text-sm font-medium text-muted-foreground">Gäste-Teilnahme</span>
                   <Users className="w-4 h-4 text-purple-500" />
                 </div>
-                <div className="text-3xl font-bold text-app-fg">
+                <div className="text-3xl font-bold text-foreground">
                   {stats.totalGuests > 0 ? Math.round(stats.acceptedGuests / stats.totalGuests * 100) : 0}%
                 </div>
                 <div className="mt-2 h-2 bg-app-surface rounded-full overflow-hidden">
@@ -242,8 +242,8 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
             {/* Chart + Activity Feed */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* Upload Trend Chart */}
-              <div className="lg:col-span-2 bg-app-card border border-app-border rounded-xl p-5">
-                <h3 className="text-sm font-semibold text-app-fg mb-4 flex items-center gap-2">
+              <div className="lg:col-span-2 bg-card border border-border rounded-xl p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
                   <BarChart3 className="w-4 h-4 text-primary" />
                   Upload-Verlauf
                 </h3>
@@ -265,21 +265,21 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <div className="h-64 flex items-center justify-center text-app-muted text-sm">
+                  <div className="h-64 flex items-center justify-center text-muted-foreground text-sm">
                     Noch keine Upload-Daten
                   </div>
                 )}
               </div>
 
               {/* Live Activity Feed */}
-              <div className="bg-app-card border border-app-border rounded-xl p-5">
-                <h3 className="text-sm font-semibold text-app-fg mb-4 flex items-center gap-2">
+              <div className="bg-card border border-border rounded-xl p-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
                   <Activity className="w-4 h-4 text-primary" />
                   Live-Aktivität
                 </h3>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {activity.length === 0 ? (
-                    <p className="text-sm text-app-muted text-center py-8">Warte auf Aktivität...</p>
+                    <p className="text-sm text-muted-foreground text-center py-8">Warte auf Aktivität...</p>
                   ) : (
                     <AnimatePresence>
                       {activity.map(item => (
@@ -302,8 +302,8 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
                              <Users className="w-3 h-3" />}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <span className="text-app-fg">{item.message}</span>
-                            <span className="text-app-muted ml-2">
+                            <span className="text-foreground">{item.message}</span>
+                            <span className="text-muted-foreground ml-2">
                               {new Date(item.timestamp).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                             </span>
                           </div>
@@ -327,16 +327,16 @@ function StatCard({ icon: Icon, label, value, color, sub, pulse }: {
   icon: any; label: string; value: number; color: string; sub?: string; pulse?: boolean;
 }) {
   return (
-    <div className="bg-app-card border border-app-border rounded-xl p-4">
+    <div className="bg-card border border-border rounded-xl p-4">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-app-muted">{label}</span>
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
         <Icon className={`w-4 h-4 ${color}`} />
       </div>
       <div className="mt-2 flex items-baseline gap-2">
-        <span className={`text-2xl font-bold text-app-fg ${pulse ? 'animate-pulse' : ''}`}>
+        <span className={`text-2xl font-bold text-foreground ${pulse ? 'animate-pulse' : ''}`}>
           {value.toLocaleString()}
         </span>
-        {sub && <span className="text-xs text-app-muted">{sub}</span>}
+        {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
       </div>
     </div>
   );

@@ -127,7 +127,7 @@ export default function ExportPanel({
 
   return (
     <div className="space-y-3">
-      <div className="text-sm font-semibold text-app-fg">Export</div>
+      <div className="text-sm font-semibold text-foreground">Export</div>
       
       <div className="grid grid-cols-1 gap-2">
         <Button
@@ -163,7 +163,7 @@ export default function ExportPanel({
         </Button>
       </div>
 
-      <p className="text-xs text-app-muted">
+      <p className="text-xs text-muted-foreground">
         Exportiere dein QR-Design in verschiedenen Formaten
       </p>
     </div>

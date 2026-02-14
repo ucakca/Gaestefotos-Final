@@ -83,10 +83,10 @@ export default function UploadModal({
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => (nextOpen ? null : handleClose())}>
-      <DialogContent className="bg-app-card border border-app-border rounded-lg max-w-md w-full p-6">
+      <DialogContent className="bg-card border border-border rounded-lg max-w-md w-full p-6">
         <DialogHeader>
           <div className="flex items-center justify-between mb-4">
-            <DialogTitle className="text-xl font-bold text-app-fg">{title}</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-foreground">{title}</DialogTitle>
             <DialogClose asChild>
               <IconButton
                 onClick={handleClose}
@@ -103,10 +103,10 @@ export default function UploadModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-app-fg mb-2">Datei auswählen</label>
-            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-app-border rounded-lg cursor-pointer hover:border-app-accent transition-colors">
-              <Upload className="w-5 h-5 text-app-muted" />
-              <span className="text-sm text-app-muted">{selectedFile ? selectedFile.name : 'Klicken zum Auswählen'}</span>
+            <label className="block text-sm font-medium text-foreground mb-2">Datei auswählen</label>
+            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-app-accent transition-colors">
+              <Upload className="w-5 h-5 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">{selectedFile ? selectedFile.name : 'Klicken zum Auswählen'}</span>
               <Input
                 type="file"
                 accept={accept}
@@ -119,7 +119,7 @@ export default function UploadModal({
 
           {categories.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-app-fg mb-2">Album (optional)</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Album (optional)</label>
               <Select value={selectedCategory} onValueChange={(value) => setSelectedCategory(value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Kein Album" />
@@ -137,7 +137,7 @@ export default function UploadModal({
           )}
 
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-app-fg mb-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
               <Checkbox checked={showNameField} onCheckedChange={(checked) => setShowNameField(checked)} />
               <span>Meinen Namen angeben (optional)</span>
             </label>
@@ -154,12 +154,12 @@ export default function UploadModal({
 
           {showGuestbookOption && (
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-app-fg">
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
                 <Checkbox checked={alsoInGuestbook} onCheckedChange={(checked) => setAlsoInGuestbook(checked)} />
                 <span>Auch im Gästebuch eintragen</span>
               </label>
               {alsoInGuestbook && (
-                <p className="text-xs text-app-muted mt-1 ml-6">
+                <p className="text-xs text-muted-foreground mt-1 ml-6">
                   Das Foto wird auch als Gästebuch-Eintrag mit Sprechblase im Feed angezeigt
                 </p>
               )}

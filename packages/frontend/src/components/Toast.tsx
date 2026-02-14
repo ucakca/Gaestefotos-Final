@@ -29,14 +29,14 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
 
   const icons = {
     success: <CheckCircle className="w-5 h-5 text-status-success" />,
-    error: <AlertCircle className="w-5 h-5 text-status-danger" />,
+    error: <AlertCircle className="w-5 h-5 text-destructive" />,
     info: <Info className="w-5 h-5 text-status-info" />,
   };
 
   const bgColors = {
-    success: 'bg-app-bg border-status-success',
-    error: 'bg-app-bg border-status-danger',
-    info: 'bg-app-bg border-status-info',
+    success: 'bg-background border-status-success',
+    error: 'bg-background border-status-danger',
+    info: 'bg-background border-status-info',
   };
 
   return (
@@ -49,7 +49,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
     >
       {icons[toast.type]}
       <div className="flex-1">
-        <p className="text-sm font-medium text-app-fg">{toast.message}</p>
+        <p className="text-sm font-medium text-foreground">{toast.message}</p>
       </div>
       <IconButton
         onClick={() => onRemove(toast.id)}
@@ -58,7 +58,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
         size="sm"
         aria-label="Schließen"
         title="Schließen"
-        className="text-app-muted hover:text-app-fg"
+        className="text-muted-foreground hover:text-foreground"
       />
     </motion.div>
   );

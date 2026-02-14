@@ -90,11 +90,11 @@ export default function CoverImageStep({
         <motion.h2
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-app-fg mb-2"
+          className="text-2xl font-bold text-foreground mb-2"
         >
           Cover-Bild hinzufügen 🖼️
         </motion.h2>
-        <p className="text-app-muted">Das Titelbild für deine Event-Seite</p>
+        <p className="text-muted-foreground">Das Titelbild für deine Event-Seite</p>
       </div>
 
       {/* Upload Area */}
@@ -140,19 +140,19 @@ export default function CoverImageStep({
             className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-colors ${
               isDragging
                 ? 'border-amber-500 bg-amber-50'
-                : 'border-app-border hover:border-amber-300 hover:bg-amber-50/50'
+                : 'border-border hover:border-amber-300 hover:bg-amber-50/50'
             }`}
           >
             <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
               <Upload className="w-8 h-8 text-amber-600" />
             </div>
-            <p className="font-medium text-app-fg mb-1">
+            <p className="font-medium text-foreground mb-1">
               Bild hochladen
             </p>
-            <p className="text-sm text-app-muted">
+            <p className="text-sm text-muted-foreground">
               Ziehe ein Bild hierher oder klicke zum Auswählen
             </p>
-            <p className="text-xs text-app-muted mt-2">
+            <p className="text-xs text-muted-foreground mt-2">
               JPG, PNG bis 10MB
             </p>
           </div>
@@ -178,7 +178,7 @@ export default function CoverImageStep({
           transition={{ delay: 0.2 }}
           className="space-y-3"
         >
-          <p className="text-sm font-medium text-app-fg">Oder wähle ein Beispielbild:</p>
+          <p className="text-sm font-medium text-foreground">Oder wähle ein Beispielbild:</p>
           <div className="grid grid-cols-3 gap-2">
             {[
               'https://images.unsplash.com/photo-1519741497674-611481863552?w=300&h=200&fit=crop',
@@ -221,7 +221,7 @@ export default function CoverImageStep({
         
         <button
           onClick={onSkip}
-          className="w-full py-2 text-sm text-app-muted hover:text-app-fg flex items-center justify-center gap-1"
+          className="w-full py-2 text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-1"
         >
           <SkipForward className="w-4 h-4" />
           Überspringen

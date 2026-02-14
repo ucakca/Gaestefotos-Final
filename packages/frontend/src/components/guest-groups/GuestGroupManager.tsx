@@ -93,7 +93,7 @@ export function GuestGroupManager({ eventId }: GuestGroupManagerProps) {
     return (
       <div className="space-y-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 bg-app-card rounded-lg animate-pulse" />
+          <div key={i} className="h-16 bg-card rounded-lg animate-pulse" />
         ))}
       </div>
     );
@@ -103,7 +103,7 @@ export function GuestGroupManager({ eventId }: GuestGroupManagerProps) {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-app-fg">Gästegruppen</h3>
+        <h3 className="text-lg font-semibold text-foreground">Gästegruppen</h3>
         <Button
           onClick={() => setShowCreateDialog(true)}
           size="sm"
@@ -123,7 +123,7 @@ export function GuestGroupManager({ eventId }: GuestGroupManagerProps) {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="bg-app-card border border-app-border rounded-lg p-4 hover:border-app-accent transition-colors"
+              className="bg-card border border-border rounded-lg p-4 hover:border-app-accent transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -132,15 +132,15 @@ export function GuestGroupManager({ eventId }: GuestGroupManagerProps) {
                     style={{ backgroundColor: group.color }}
                   />
                   <div>
-                    <div className="font-medium text-app-fg">{group.name}</div>
+                    <div className="font-medium text-foreground">{group.name}</div>
                     {group.description && (
-                      <div className="text-sm text-app-muted">{group.description}</div>
+                      <div className="text-sm text-muted-foreground">{group.description}</div>
                     )}
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 text-sm text-app-muted px-2 py-1 bg-app-bg rounded">
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground px-2 py-1 bg-background rounded">
                     <Users className="w-4 h-4" />
                     <span>{group._count.guests}</span>
                   </div>
@@ -158,7 +158,7 @@ export function GuestGroupManager({ eventId }: GuestGroupManagerProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => setDeletingGroup(group)}
-                    className="p-2 text-status-danger hover:text-status-danger"
+                    className="p-2 text-destructive hover:text-destructive"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -169,7 +169,7 @@ export function GuestGroupManager({ eventId }: GuestGroupManagerProps) {
         </AnimatePresence>
 
         {groups.length === 0 && (
-          <div className="text-center py-8 text-app-muted">
+          <div className="text-center py-8 text-muted-foreground">
             <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
             <p>Noch keine Gruppen erstellt</p>
             <p className="text-sm">Erstelle Gruppen um Gäste zu organisieren</p>
@@ -207,10 +207,10 @@ export function GuestGroupManager({ eventId }: GuestGroupManagerProps) {
         <DialogContent>
           <DialogTitle>Gruppe löschen?</DialogTitle>
           <div className="space-y-4">
-            <p className="text-app-muted">
+            <p className="text-muted-foreground">
               Möchtest du die Gruppe "{deletingGroup?.name}" wirklich löschen?
             </p>
-            <p className="text-sm text-app-muted">
+            <p className="text-sm text-muted-foreground">
               Die Gäste werden nicht gelöscht, nur aus der Gruppe entfernt.
             </p>
             <div className="flex gap-2 justify-end">

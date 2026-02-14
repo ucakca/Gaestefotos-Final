@@ -178,10 +178,10 @@ export default function WorkflowsAdminPage() {
         <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-app-fg flex items-center gap-2">
+              <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
                 <Workflow className="w-5 h-5" /> Workflow Builder
               </h1>
-              <p className="text-sm text-app-muted mt-1">Booth-Abläufe definieren — nur für Admins</p>
+              <p className="text-sm text-muted-foreground mt-1">Booth-Abläufe definieren — nur für Admins</p>
             </div>
             <Button onClick={() => { resetForm(); setShowEditor(true); }}>
               <Plus className="w-4 h-4 mr-2" /> Neuer Workflow
@@ -190,32 +190,32 @@ export default function WorkflowsAdminPage() {
 
           {/* Editor */}
           {showEditor && (
-            <div className="bg-app-card rounded-xl border border-app-border p-6 space-y-5">
+            <div className="bg-card rounded-xl border border-border p-6 space-y-5">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-app-fg">{editingId ? 'Workflow bearbeiten' : 'Neuer Workflow'}</h3>
-                <button onClick={resetForm} className="text-app-muted hover:text-app-fg"><X className="w-5 h-5" /></button>
+                <h3 className="font-semibold text-foreground">{editingId ? 'Workflow bearbeiten' : 'Neuer Workflow'}</h3>
+                <button onClick={resetForm} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-app-fg mb-1">Name *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Name *</label>
                   <input type="text" value={formName} onChange={(e) => setFormName(e.target.value)}
-                    placeholder="z.B. Standard Photo Booth" className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm" />
+                    placeholder="z.B. Standard Photo Booth" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-app-fg mb-1">Beschreibung</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Beschreibung</label>
                   <input type="text" value={formDesc} onChange={(e) => setFormDesc(e.target.value)}
-                    placeholder="Kurze Beschreibung" className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm" />
+                    placeholder="Kurze Beschreibung" className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm" />
                 </div>
               </div>
 
               {/* Step palette */}
               <div>
-                <label className="block text-sm font-medium text-app-fg mb-2">Step hinzufügen</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Step hinzufügen</label>
                 <div className="flex flex-wrap gap-2">
                   {STEP_TYPES.map(st => (
                     <button key={st.value} onClick={() => addStep(st.value)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-app-border bg-app-bg text-sm text-app-fg hover:bg-app-hover transition-colors">
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background text-sm text-foreground hover:bg-app-hover transition-colors">
                       <st.icon className={`w-3.5 h-3.5 ${st.color}`} />
                       {st.label}
                     </button>
@@ -225,9 +225,9 @@ export default function WorkflowsAdminPage() {
 
               {/* Steps list */}
               <div>
-                <label className="block text-sm font-medium text-app-fg mb-2">Ablauf ({formSteps.length} Steps)</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Ablauf ({formSteps.length} Steps)</label>
                 {formSteps.length === 0 ? (
-                  <div className="text-center py-8 text-app-muted text-sm border border-dashed border-app-border rounded-lg">
+                  <div className="text-center py-8 text-muted-foreground text-sm border border-dashed border-border rounded-lg">
                     Klicke oben auf einen Step-Typ um ihn hinzuzufügen
                   </div>
                 ) : (
@@ -236,36 +236,36 @@ export default function WorkflowsAdminPage() {
                       const info = STEP_TYPES.find(s => s.value === step.type);
                       const StepIcon = info?.icon || Workflow;
                       return (
-                        <div key={step.id} className="flex items-center gap-3 p-3 bg-app-bg rounded-lg border border-app-border">
-                          <span className="text-xs text-app-muted font-mono w-6">{idx + 1}</span>
-                          <StepIcon className={`w-4 h-4 ${info?.color || 'text-app-muted'} flex-shrink-0`} />
+                        <div key={step.id} className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border">
+                          <span className="text-xs text-muted-foreground font-mono w-6">{idx + 1}</span>
+                          <StepIcon className={`w-4 h-4 ${info?.color || 'text-muted-foreground'} flex-shrink-0`} />
                           <input
                             type="text"
                             value={step.label}
                             onChange={(e) => updateStepLabel(idx, e.target.value)}
-                            className="flex-1 px-2 py-1 rounded border border-app-border bg-transparent text-sm text-app-fg"
+                            className="flex-1 px-2 py-1 rounded border border-border bg-transparent text-sm text-foreground"
                           />
                           {(step.type === 'COUNTDOWN' || step.type === 'PREVIEW' || step.type === 'WELCOME' || step.type === 'THANK_YOU') && (
                             <div className="flex items-center gap-1">
-                              <Timer className="w-3 h-3 text-app-muted" />
+                              <Timer className="w-3 h-3 text-muted-foreground" />
                               <input
                                 type="number"
                                 min={1}
                                 max={30}
                                 value={step.duration || 3}
                                 onChange={(e) => updateStepDuration(idx, parseInt(e.target.value) || 3)}
-                                className="w-12 px-1 py-1 rounded border border-app-border bg-transparent text-xs text-app-fg text-center"
+                                className="w-12 px-1 py-1 rounded border border-border bg-transparent text-xs text-foreground text-center"
                               />
-                              <span className="text-xs text-app-muted">s</span>
+                              <span className="text-xs text-muted-foreground">s</span>
                             </div>
                           )}
                           <div className="flex gap-0.5">
                             <button onClick={() => moveStep(idx, -1)} disabled={idx === 0}
-                              className="p-1 rounded text-app-muted hover:text-app-fg disabled:opacity-30">
+                              className="p-1 rounded text-muted-foreground hover:text-foreground disabled:opacity-30">
                               <ArrowUp className="w-3.5 h-3.5" />
                             </button>
                             <button onClick={() => moveStep(idx, 1)} disabled={idx === formSteps.length - 1}
-                              className="p-1 rounded text-app-muted hover:text-app-fg disabled:opacity-30">
+                              className="p-1 rounded text-muted-foreground hover:text-foreground disabled:opacity-30">
                               <ArrowDown className="w-3.5 h-3.5" />
                             </button>
                             <button onClick={() => removeStep(idx)}
@@ -281,11 +281,11 @@ export default function WorkflowsAdminPage() {
               </div>
 
               <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 text-sm text-app-fg">
+                <label className="flex items-center gap-2 text-sm text-foreground">
                   <input type="checkbox" checked={formPublic} onChange={(e) => setFormPublic(e.target.checked)} className="rounded" />
                   Öffentlich
                 </label>
-                <label className="flex items-center gap-2 text-sm text-app-fg">
+                <label className="flex items-center gap-2 text-sm text-foreground">
                   <input type="checkbox" checked={formDefault} onChange={(e) => setFormDefault(e.target.checked)} className="rounded" />
                   Standard-Workflow
                 </label>
@@ -300,27 +300,27 @@ export default function WorkflowsAdminPage() {
 
           {/* Workflow list */}
           {loading ? (
-            <div className="p-12 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-app-muted" /></div>
+            <div className="p-12 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" /></div>
           ) : workflows.length === 0 ? (
-            <div className="bg-app-card rounded-xl border border-app-border p-12 text-center text-app-muted">
+            <div className="bg-card rounded-xl border border-border p-12 text-center text-muted-foreground">
               <Workflow className="w-10 h-10 mx-auto mb-2 opacity-30" />
               <p>Keine Workflows erstellt</p>
             </div>
           ) : (
             <div className="space-y-4">
               {workflows.map((w) => (
-                <div key={w.id} className="bg-app-card rounded-xl border border-app-border p-4">
+                <div key={w.id} className="bg-card rounded-xl border border-border p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-app-fg">{w.name}</span>
+                        <span className="font-semibold text-foreground">{w.name}</span>
                         {w.isDefault && <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Standard</span>}
                         {w.isPublic && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Öffentlich</span>}
                       </div>
-                      {w.description && <p className="text-xs text-app-muted mt-0.5">{w.description}</p>}
+                      {w.description && <p className="text-xs text-muted-foreground mt-0.5">{w.description}</p>}
                     </div>
                     <div className="flex gap-1">
-                      <button onClick={() => startEdit(w)} className="p-1.5 rounded-lg hover:bg-app-hover text-app-muted">
+                      <button onClick={() => startEdit(w)} className="p-1.5 rounded-lg hover:bg-app-hover text-muted-foreground">
                         <Edit3 className="w-4 h-4" />
                       </button>
                       <button onClick={() => handleDelete(w.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400">
@@ -339,8 +339,8 @@ export default function WorkflowsAdminPage() {
                           {idx > 0 && <div className="w-4 h-px bg-app-border" />}
                           <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-app-hover text-xs">
                             <StepIcon className={`w-3 h-3 ${info?.color || ''}`} />
-                            <span className="text-app-fg">{step.label}</span>
-                            {step.duration && <span className="text-app-muted">{step.duration}s</span>}
+                            <span className="text-foreground">{step.label}</span>
+                            {step.duration && <span className="text-muted-foreground">{step.duration}s</span>}
                           </div>
                         </div>
                       );

@@ -183,20 +183,20 @@ export default function ModerationPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="min-h-screen bg-app-bg">
+      <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-8"
           >
-            <h1 className="text-3xl font-bold text-app-fg mb-2">Uploads prüfen</h1>
-            <p className="text-app-muted">
+            <h1 className="text-3xl font-bold text-foreground mb-2">Uploads prüfen</h1>
+            <p className="text-muted-foreground">
               {filteredPhotos.length} Foto{filteredPhotos.length !== 1 ? 's' : ''} wartet
               {filteredPhotos.length !== 1 ? 'en' : ''} auf Freigabe
             </p>
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-              <div className="text-sm text-app-muted">Event</div>
+              <div className="text-sm text-muted-foreground">Event</div>
               <div className="w-full sm:max-w-xs">
                 <Select value={selectedEventId} onValueChange={(v) => setSelectedEventId(v)}>
                   <SelectTrigger>
@@ -212,7 +212,7 @@ export default function ModerationPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="text-xs text-app-muted">
+              <div className="text-xs text-muted-foreground">
                 Es werden nur Events angezeigt, auf die dein Account Zugriff hat.
               </div>
             </div>
@@ -222,9 +222,9 @@ export default function ModerationPage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="bg-app-card border border-app-border rounded-lg shadow p-12 text-center"
+              className="bg-card border border-border rounded-lg shadow p-12 text-center"
             >
-              <p className="text-app-muted text-lg">🎉 Alle Fotos wurden moderiert!</p>
+              <p className="text-muted-foreground text-lg">🎉 Alle Fotos wurden moderiert!</p>
             </motion.div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -237,13 +237,13 @@ export default function ModerationPage() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
                     onClick={() => setSelectedPhoto(photo)}
-                    className={`bg-app-card rounded-lg shadow cursor-pointer overflow-hidden border-2 transition-colors ${
+                    className={`bg-card rounded-lg shadow cursor-pointer overflow-hidden border-2 transition-colors ${
                       selectedPhoto?.id === photo.id
-                        ? 'border-app-border bg-app-bg'
-                        : 'border-transparent hover:border-app-border'
+                        ? 'border-border bg-background'
+                        : 'border-transparent hover:border-border'
                     }`}
                   >
-                    <div className="aspect-square bg-app-bg relative">
+                    <div className="aspect-square bg-background relative">
                       {photo.url ? (
                         <img
                           src={photo.url}
@@ -251,7 +251,7 @@ export default function ModerationPage() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-app-muted">
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                           Foto
                         </div>
                       )}
@@ -260,8 +260,8 @@ export default function ModerationPage() {
                       </div>
                     </div>
                     <div className="p-3">
-                      <p className="text-sm font-medium text-app-fg truncate">{photo.event.title}</p>
-                      <p className="text-xs text-app-muted">{new Date(photo.createdAt).toLocaleDateString('de-DE')}</p>
+                      <p className="text-sm font-medium text-foreground truncate">{photo.event.title}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(photo.createdAt).toLocaleDateString('de-DE')}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -274,19 +274,19 @@ export default function ModerationPage() {
                   key={selectedPhoto.id}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="bg-app-card border border-app-border rounded-lg shadow p-6"
+                  className="bg-card border border-border rounded-lg shadow p-6"
                 >
                   <div className="mb-6">
                     <h2 className="text-xl font-semibold mb-2">
                       {(selectedPhoto as any).event?.title || 'Foto'}
                     </h2>
-                    <p className="text-sm text-app-muted">
+                    <p className="text-sm text-muted-foreground">
                       Hochgeladen: {new Date(selectedPhoto.createdAt).toLocaleString('de-DE')}
                     </p>
                   </div>
 
                   <div className="mb-6">
-                    <div className="aspect-video bg-app-bg rounded-lg overflow-hidden mb-4">
+                    <div className="aspect-video bg-background rounded-lg overflow-hidden mb-4">
                       {selectedPhoto.url ? (
                         <img
                           src={selectedPhoto.url}
@@ -294,7 +294,7 @@ export default function ModerationPage() {
                           className="w-full h-full object-contain"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-app-muted">
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                           Foto
                         </div>
                       )}
@@ -340,8 +340,8 @@ export default function ModerationPage() {
                   </div>
                 </motion.div>
               ) : (
-                <div className="bg-app-card border border-app-border rounded-lg shadow p-12 text-center">
-                  <p className="text-app-muted">Wähle ein Foto aus, um es zu moderieren</p>
+                <div className="bg-card border border-border rounded-lg shadow p-12 text-center">
+                  <p className="text-muted-foreground">Wähle ein Foto aus, um es zu moderieren</p>
                 </div>
               )}
             </div>

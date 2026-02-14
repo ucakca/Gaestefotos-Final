@@ -136,7 +136,7 @@ export default function OfflineQueueIndicator({ onUploadSuccess }: OfflineQueueI
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="max-w-md mx-auto">
           <div className="flex items-center justify-between mb-4">
-            <DialogTitle className="text-lg font-semibold text-app-fg flex items-center gap-2">
+            <DialogTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
               <CloudOff className="w-5 h-5" />
               Offline-Queue
             </DialogTitle>
@@ -152,7 +152,7 @@ export default function OfflineQueueIndicator({ onUploadSuccess }: OfflineQueueI
           </div>
 
           <div className="mb-4">
-            <div className="flex items-center gap-2 text-sm text-app-muted mb-2">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
               <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-status-success' : 'bg-status-danger'}`} />
               <span>{isOnline ? 'Online' : 'Offline'}</span>
             </div>
@@ -182,20 +182,20 @@ export default function OfflineQueueIndicator({ onUploadSuccess }: OfflineQueueI
 
           <div className="max-h-64 overflow-y-auto space-y-2">
             {items.length === 0 ? (
-              <p className="text-center text-app-muted text-sm py-4">
+              <p className="text-center text-muted-foreground text-sm py-4">
                 Queue ist leer
               </p>
             ) : (
               items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 p-2 rounded-lg bg-app-bg border border-app-border"
+                  className="flex items-center gap-3 p-2 rounded-lg bg-background border border-border"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-app-fg truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {item.file.name}
                     </p>
-                    <p className="text-xs text-app-muted">
+                    <p className="text-xs text-muted-foreground">
                       {formatDate(item.createdAt)}
                       {item.status === 'UPLOADING' && ' • Wird hochgeladen...'}
                       {item.lastError && ` • Fehler: ${item.lastError}`}
@@ -208,14 +208,14 @@ export default function OfflineQueueIndicator({ onUploadSuccess }: OfflineQueueI
                     size="sm"
                     aria-label="Löschen"
                     title="Aus Queue entfernen"
-                    className="text-status-danger"
+                    className="text-destructive"
                   />
                 </div>
               ))
             )}
           </div>
 
-          <p className="text-xs text-app-muted mt-4">
+          <p className="text-xs text-muted-foreground mt-4">
             Uploads werden automatisch gesendet, sobald die Verbindung wiederhergestellt ist.
           </p>
         </DialogContent>

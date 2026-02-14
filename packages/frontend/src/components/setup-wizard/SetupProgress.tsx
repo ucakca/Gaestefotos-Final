@@ -23,8 +23,8 @@ export default function SetupProgress({
         <div className="flex items-center gap-3">
           <span className="text-2xl">{phaseInfo.icon}</span>
           <div>
-            <h2 className="font-semibold text-app-fg">Event einrichten</h2>
-            <p className="text-sm text-app-muted">{phaseInfo.title}</p>
+            <h2 className="font-semibold text-foreground">Event einrichten</h2>
+            <p className="text-sm text-muted-foreground">{phaseInfo.title}</p>
           </div>
         </div>
         <span className="text-lg font-bold text-amber-600">{overallProgress}%</span>
@@ -44,7 +44,7 @@ export default function SetupProgress({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-app-card rounded-xl p-3 flex items-center justify-between shadow-sm border border-amber-100"
+        className="bg-card rounded-xl p-3 flex items-center justify-between shadow-sm border border-amber-100"
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
@@ -58,11 +58,11 @@ export default function SetupProgress({
             </motion.div>
           </div>
           <div>
-            <p className="text-xs text-app-muted font-medium">Nächster Schritt</p>
-            <p className="font-semibold text-app-fg">{currentStepTitle}</p>
+            <p className="text-xs text-muted-foreground font-medium">Nächster Schritt</p>
+            <p className="font-semibold text-foreground">{currentStepTitle}</p>
           </div>
         </div>
-        <svg className="w-5 h-5 text-app-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </motion.div>

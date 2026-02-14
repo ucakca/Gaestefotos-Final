@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de" data-app="gaestefotos" className="h-full w-full" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen bg-app-bg text-app-fg m-0 p-0`} suppressHydrationWarning>
+      <body className={`${inter.className} min-h-screen bg-background text-foreground m-0 p-0`} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

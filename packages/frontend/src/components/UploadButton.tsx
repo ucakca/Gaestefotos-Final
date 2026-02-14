@@ -604,7 +604,7 @@ export default function UploadButton({
             title={disabled ? disabledReason : undefined}
           >
             <div className="w-full h-full flex items-center justify-center">
-              <Plus className={`w-8 h-8 ${disabled ? 'text-app-muted' : 'text-app-bg'}`} strokeWidth={3} />
+              <Plus className={`w-8 h-8 ${disabled ? 'text-muted-foreground' : 'text-app-bg'}`} strokeWidth={3} />
             </div>
             {!disabled && <div className="absolute inset-0 bg-app-fg/0 group-hover:bg-app-fg/10 transition-opacity" />}
           </MotionButton>
@@ -629,7 +629,7 @@ export default function UploadButton({
           setPendingFiles([]);
         }}
       >
-        <DialogContent className="bottom-4 top-auto left-1/2 -translate-x-1/2 translate-y-0 w-[calc(100vw-2rem)] max-w-md rounded-2xl bg-app-card border border-app-border p-6 shadow-xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bottom-4 top-auto left-1/2 -translate-x-1/2 translate-y-0 w-[calc(100vw-2rem)] max-w-md rounded-2xl bg-card border border-border p-6 shadow-xl max-h-[85vh] overflow-y-auto">
           <Input
             ref={capturePhotoInputRef}
             type="file"
@@ -653,7 +653,7 @@ export default function UploadButton({
                 setShowNamePrompt(false);
                 setPendingFiles([]);
               }}
-              icon={<X className="w-5 h-5 text-app-fg" />}
+              icon={<X className="w-5 h-5 text-foreground" />}
               variant="ghost"
               size="sm"
               aria-label="Schließen"
@@ -662,16 +662,16 @@ export default function UploadButton({
             />
           </DialogClose>
 
-          <DialogTitle className="text-xl font-semibold text-app-fg mb-6">Foto/Video hochladen</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-foreground mb-6">Foto/Video hochladen</DialogTitle>
 
           {queueNotice && (
-            <div className="mb-4 rounded-lg border border-status-success bg-app-bg px-3 py-2 text-sm text-status-success">
+            <div className="mb-4 rounded-lg border border-status-success bg-background px-3 py-2 text-sm text-status-success">
               {queueNotice}
             </div>
           )}
 
           {disabled && disabledReason && (
-            <div className="mb-4 rounded-lg border border-status-warning bg-app-bg px-3 py-2 text-sm text-status-warning">
+            <div className="mb-4 rounded-lg border border-status-warning bg-background px-3 py-2 text-sm text-status-warning">
               {disabledReason}
             </div>
           )}
@@ -691,8 +691,8 @@ export default function UploadButton({
                       <span className="text-lg">📸</span>
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-sm font-bold text-app-fg mb-1">Fast geschafft!</h3>
-                      <p className="text-xs text-app-muted">
+                      <h3 className="text-sm font-bold text-foreground mb-1">Fast geschafft!</h3>
+                      <p className="text-xs text-muted-foreground">
                         {pendingFiles.length === 1 
                           ? '1 Foto ausgewählt. Wie ist dein Name?'
                           : `${pendingFiles.length} Fotos ausgewählt. Wie ist dein Name?`
@@ -711,7 +711,7 @@ export default function UploadButton({
                     }}
                     placeholder="Dein Name (z.B. Max)"
                     autoFocus
-                    className="w-full rounded-lg border-2 border-app-border bg-app-bg px-3 py-2 text-sm font-medium text-app-fg mb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-accent/30"
+                    className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm font-medium text-foreground mb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-accent/30"
                   />
                   <Button
                     onClick={handleNameSubmit}
@@ -722,7 +722,7 @@ export default function UploadButton({
                   >
                     Jetzt hochladen →
                   </Button>
-                  <p className="text-xs text-app-muted mt-2 text-center">
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
                     Dein Name wird gespeichert für's nächste Mal
                   </p>
                 </div>
@@ -741,21 +741,21 @@ export default function UploadButton({
                   className={`
                     border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
                     ${isDragActive 
-                      ? 'border-app-accent bg-app-bg' 
-                      : 'border-app-border hover:border-app-accent hover:bg-app-bg'
+                      ? 'border-app-accent bg-background' 
+                      : 'border-border hover:border-app-accent hover:bg-background'
                     }
                     ${disabled ? 'pointer-events-none' : ''}
                   `}
                 >
-                  <Upload className="w-12 h-12 mx-auto mb-4 text-app-muted" />
-                  <p className="text-sm font-medium text-app-fg mb-2">
+                  <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-sm font-medium text-foreground mb-2">
                     {disabled
                       ? 'Upload nicht verfügbar'
                       : isDragActive
                         ? 'Fotos hier ablegen'
                         : 'Fotos hochladen'}
                   </p>
-                  <p className="text-xs text-app-muted">
+                  <p className="text-xs text-muted-foreground">
                     {disabled ? 'Siehe Hinweis oben' : 'Drag & Drop oder klicken'}
                   </p>
                 </motion.div>
@@ -807,9 +807,9 @@ export default function UploadButton({
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
-                        className="bg-app-bg border border-app-border rounded-lg p-3 flex items-center gap-3"
+                        className="bg-background border border-border rounded-lg p-3 flex items-center gap-3"
                       >
-                        <div className="w-12 h-12 rounded overflow-hidden bg-app-card flex-shrink-0">
+                        <div className="w-12 h-12 rounded overflow-hidden bg-card flex-shrink-0">
                           <img
                             src={file.preview}
                             alt="Preview"
@@ -818,12 +818,12 @@ export default function UploadButton({
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-app-fg truncate">
+                          <p className="text-xs font-medium text-foreground truncate">
                             {file.file.name}
                           </p>
                           {file.uploading && (
                             <div className="mt-1">
-                              <div className="flex items-center justify-between text-xs text-app-muted mb-0.5">
+                              <div className="flex items-center justify-between text-xs text-muted-foreground mb-0.5">
                                 <span>{file.progress}%</span>
                                 {file.etaSeconds && file.etaSeconds > 0 && file.progress < 95 && (
                                   <span>{formatEta(file.etaSeconds)}</span>
@@ -841,13 +841,13 @@ export default function UploadButton({
                           )}
                           {file.error && (
                             <div className="mt-1">
-                              <p className="text-xs text-status-danger">{file.error}</p>
+                              <p className="text-xs text-destructive">{file.error}</p>
                               <Button
                                 type="button"
                                 onClick={() => retryUpload(file.id)}
                                 variant="ghost"
                                 size="sm"
-                                className="mt-1 text-xs font-semibold text-app-fg underline"
+                                className="mt-1 text-xs font-semibold text-foreground underline"
                               >
                                 Erneut versuchen
                               </Button>
@@ -873,7 +873,7 @@ export default function UploadButton({
                               size="sm"
                               aria-label="Entfernen"
                               title="Entfernen"
-                              className="w-6 h-6 rounded-full bg-app-card border border-app-border text-app-muted hover:opacity-80"
+                              className="w-6 h-6 rounded-full bg-card border border-border text-muted-foreground hover:opacity-80"
                             />
                           )}
                         </div>

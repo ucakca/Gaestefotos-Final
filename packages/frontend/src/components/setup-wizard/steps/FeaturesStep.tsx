@@ -41,11 +41,11 @@ export default function FeaturesStep({
         <motion.h2
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-app-fg mb-2"
+          className="text-2xl font-bold text-foreground mb-2"
         >
           Galerie-Optionen
         </motion.h2>
-        <p className="text-app-muted">Bestimme wie deine Gäste die Galerie nutzen können</p>
+        <p className="text-muted-foreground">Bestimme wie deine Gäste die Galerie nutzen können</p>
       </div>
 
       {/* Feature Toggles */}
@@ -68,20 +68,20 @@ export default function FeaturesStep({
               disabled={feature.comingSoon}
               className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
                 feature.comingSoon
-                  ? 'border-app-border bg-app-bg/50 opacity-60 cursor-not-allowed'
+                  ? 'border-border bg-background/50 opacity-60 cursor-not-allowed'
                   : isEnabled
                     ? 'border-amber-300 bg-amber-50'
-                    : 'border-app-border bg-app-card hover:border-app-border/80'
+                    : 'border-border bg-card hover:border-border/80'
               }`}
             >
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                feature.comingSoon ? 'bg-app-bg text-app-muted' : isEnabled ? 'bg-amber-500 text-white' : 'bg-app-bg text-app-muted'
+                feature.comingSoon ? 'bg-background text-muted-foreground' : isEnabled ? 'bg-amber-500 text-white' : 'bg-background text-muted-foreground'
               }`}>
                 <Icon className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className={`font-medium ${feature.comingSoon ? 'text-app-muted' : isEnabled ? 'text-amber-800' : 'text-app-fg'}`}>
+                  <span className={`font-medium ${feature.comingSoon ? 'text-muted-foreground' : isEnabled ? 'text-amber-800' : 'text-foreground'}`}>
                     {feature.label}
                   </span>
                   {feature.comingSoon && (
@@ -95,11 +95,11 @@ export default function FeaturesStep({
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-app-muted">{feature.desc}</p>
+                <p className="text-sm text-muted-foreground">{feature.desc}</p>
               </div>
               {!feature.comingSoon && (
                 <div className={`relative w-11 h-6 rounded-full flex-shrink-0 transition-colors ${
-                  isEnabled ? 'bg-amber-500' : 'bg-app-border'
+                  isEnabled ? 'bg-amber-500' : 'bg-border'
                 }`}>
                   <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
                     isEnabled ? 'translate-x-6' : 'translate-x-1'
@@ -146,7 +146,7 @@ export default function FeaturesStep({
         
         <button
           onClick={onSkip}
-          className="w-full py-2 text-sm text-app-muted hover:text-app-fg flex items-center justify-center gap-1"
+          className="w-full py-2 text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-1"
         >
           <SkipForward className="w-4 h-4" />
           Überspringen

@@ -503,11 +503,11 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
         </PageHeader>
 
         {isStorageLocked && (
-          <div className="mb-4 rounded-xl border border-app-border bg-app-card p-4">
+          <div className="mb-4 rounded-xl border border-border bg-card p-4">
             <div className="flex items-start gap-3">
               <div>
-                <p className="font-semibold text-sm text-app-fg">Speicherperiode beendet</p>
-                <p className="text-xs text-app-muted mt-1">
+                <p className="font-semibold text-sm text-foreground">Speicherperiode beendet</p>
+                <p className="text-xs text-muted-foreground mt-1">
                   Uploads sind deaktiviert. Als Host kannst du weiterhin alle Videos herunterladen.
                 </p>
               </div>
@@ -516,8 +516,8 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
         )}
 
         {uploading && (
-          <div className="mb-4 p-4 bg-app-card border border-app-border rounded-lg">
-            <p className="text-app-fg">Video wird hochgeladen...</p>
+          <div className="mb-4 p-4 bg-card border border-border rounded-lg">
+            <p className="text-foreground">Video wird hochgeladen...</p>
           </div>
         )}
 
@@ -586,7 +586,7 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                     e.preventDefault();
                     setFilter('all');
                   }}
-                  className={!filter.startsWith('uploader-') ? 'bg-app-bg font-medium' : ''}
+                  className={!filter.startsWith('uploader-') ? 'bg-background font-medium' : ''}
                 >
                   Alle Uploader
                 </DropdownMenuItem>
@@ -597,7 +597,7 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                       e.preventDefault();
                       setFilter(`uploader-${uploader}`);
                     }}
-                    className={filter === `uploader-${uploader}` ? 'bg-app-bg font-medium' : ''}
+                    className={filter === `uploader-${uploader}` ? 'bg-background font-medium' : ''}
                   >
                     {uploader}
                   </DropdownMenuItem>
@@ -620,7 +620,7 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
               <DropdownMenuContent align="end" className="min-w-[220px]">
                 {selectedVideos.size > 0 ? (
                   <>
-                    <DropdownMenuItem disabled className="text-xs text-app-muted">
+                    <DropdownMenuItem disabled className="text-xs text-muted-foreground">
                       {selectedVideos.size} Video(s) ausgewählt
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -712,7 +712,7 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                         e.preventDefault();
                         handleBulkDelete();
                       }}
-                      className="text-status-danger focus:text-status-danger"
+                      className="text-destructive focus:text-destructive"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Löschen
@@ -752,8 +752,8 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
 
         {videos.length === 0 ? (
           <div className="text-center py-12">
-            <Video className="w-16 h-16 mx-auto text-app-muted mb-4" />
-            <p className="text-app-muted">{viewMode === 'trash' ? 'Papierkorb ist leer' : 'Noch keine Videos hochgeladen'}</p>
+            <Video className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">{viewMode === 'trash' ? 'Papierkorb ist leer' : 'Noch keine Videos hochgeladen'}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -766,11 +766,11 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                   if (viewMode === 'trash') return;
                   handleVideoClick(video, e);
                 }}
-                className={`relative bg-app-card rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow ${
+                className={`relative bg-card rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow ${
                   selectedVideos.has(video.id) ? 'ring-2 ring-app-fg/20 shadow-lg' : ''
                 }`}
               >
-                <div className="relative bg-app-bg rounded-lg overflow-hidden">
+                <div className="relative bg-background rounded-lg overflow-hidden">
                   {/* Checkbox */}
                   {viewMode === 'active' && (
                     <div
@@ -783,12 +783,12 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                       <div className={`p-1.5 rounded-full shadow-lg transition-colors ${
                         selectedVideos.has(video.id)
                           ? 'bg-app-fg'
-                          : 'bg-app-card/90 hover:bg-app-card'
+                          : 'bg-card/90 hover:bg-card'
                       }`}>
                         {selectedVideos.has(video.id) ? (
                           <CheckSquare className="w-4 h-4 text-app-bg" />
                         ) : (
-                          <Square className="w-4 h-4 text-app-muted" />
+                          <Square className="w-4 h-4 text-muted-foreground" />
                         )}
                       </div>
                     </div>
@@ -832,7 +832,7 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                       controlsList="nodownload"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-app-muted">
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                       <Video className="w-8 h-8" />
                     </div>
                   )}
@@ -847,8 +847,8 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                     </div>
                   )}
                 </div>
-                <div className="p-2 bg-app-bg border-t border-app-border">
-                  <p className="text-xs text-app-muted truncate">von {(video as any).uploadedBy || 'Unbekannt'}</p>
+                <div className="p-2 bg-background border-t border-border">
+                  <p className="text-xs text-muted-foreground truncate">von {(video as any).uploadedBy || 'Unbekannt'}</p>
                 </div>
               </motion.div>
             ))}
@@ -860,7 +860,7 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
         {/* Video Detail Modal */}
         <Dialog open={selectedVideo !== null} onOpenChange={(open) => (open ? null : setSelectedVideo(null))}>
           {selectedVideo !== null && (
-            <DialogContent className="bg-app-card rounded-lg max-w-4xl w-full p-6">
+            <DialogContent className="bg-card rounded-lg max-w-4xl w-full p-6">
               <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}>
                 <div className="mb-4">
                   <DialogClose asChild>
@@ -871,7 +871,7 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                       size="sm"
                       aria-label="Schließen"
                       title="Schließen"
-                      className="text-app-muted hover:text-app-fg"
+                      className="text-muted-foreground hover:text-foreground"
                     />
                   </DialogClose>
                 </div>
@@ -881,15 +881,15 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                     {selectedVideo.url ? (
                       <video src={selectedVideo.url} className="w-full rounded-lg" controls autoPlay />
                     ) : (
-                      <div className="w-full aspect-video bg-app-bg rounded-lg flex items-center justify-center">
-                        <Video className="w-12 h-12 text-app-muted" />
+                      <div className="w-full aspect-video bg-background rounded-lg flex items-center justify-center">
+                        <Video className="w-12 h-12 text-muted-foreground" />
                       </div>
                     )}
                   </div>
 
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm text-app-muted">Status</p>
+                      <p className="text-sm text-muted-foreground">Status</p>
                       <p className="font-medium">
                         {selectedVideo.status === 'PENDING'
                           ? 'Ausstehend'
@@ -900,7 +900,7 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                     </div>
                     {selectedVideo.guest && (
                       <div>
-                        <p className="text-sm text-app-muted">Gast</p>
+                        <p className="text-sm text-muted-foreground">Gast</p>
                         <p className="font-medium">
                           {selectedVideo.guest.firstName} {selectedVideo.guest.lastName}
                         </p>
@@ -908,24 +908,24 @@ export default function VideosPage({ params }: { params: Promise<{ id: string }>
                     )}
                     {selectedVideo.category && (
                       <div>
-                        <p className="text-sm text-app-muted">Album</p>
+                        <p className="text-sm text-muted-foreground">Album</p>
                         <p className="font-medium">{selectedVideo.category.name}</p>
                       </div>
                     )}
                     <div>
-                      <p className="text-sm text-app-muted">Hochgeladen</p>
+                      <p className="text-sm text-muted-foreground">Hochgeladen</p>
                       <p className="font-medium">{new Date(selectedVideo.createdAt).toLocaleString('de-DE')}</p>
                     </div>
 
                     {(selectedVideo as any).uploadedBy && (
                       <div>
-                        <p className="text-sm text-app-muted">Hochgeladen von</p>
+                        <p className="text-sm text-muted-foreground">Hochgeladen von</p>
                         <p className="font-medium">{(selectedVideo as any).uploadedBy || 'Unbekannt'}</p>
                       </div>
                     )}
 
                     <div className="pt-4">
-                      <p className="text-sm text-app-muted mb-2">Download</p>
+                      <p className="text-sm text-muted-foreground mb-2">Download</p>
                       <Button
                         onClick={() => {
                           if (isStorageLocked) {

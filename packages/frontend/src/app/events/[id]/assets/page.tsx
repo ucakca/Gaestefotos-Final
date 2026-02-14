@@ -137,10 +137,10 @@ export default function AssetLibraryPage() {
         <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-app-fg flex items-center gap-2">
+              <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
                 <Layers className="w-5 h-5" /> Asset Library
               </h1>
-              <p className="text-sm text-app-muted mt-1">Overlays, Rahmen, Props und Sticker verwalten</p>
+              <p className="text-sm text-muted-foreground mt-1">Overlays, Rahmen, Props und Sticker verwalten</p>
             </div>
             <Button onClick={() => setShowUploadForm(!showUploadForm)}>
               <Upload className="w-4 h-4 mr-2" />
@@ -150,25 +150,25 @@ export default function AssetLibraryPage() {
 
           {/* Upload Form */}
           {showUploadForm && (
-            <div className="bg-app-card rounded-xl border border-app-border p-6 space-y-4">
-              <h3 className="font-semibold text-app-fg">Neues Asset hochladen</h3>
+            <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+              <h3 className="font-semibold text-foreground">Neues Asset hochladen</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-app-fg mb-1">Name *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Name *</label>
                   <input
                     type="text"
                     value={uploadName}
                     onChange={(e) => setUploadName(e.target.value)}
                     placeholder="z.B. Goldener Rahmen"
-                    className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-app-fg mb-1">Typ *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Typ *</label>
                   <select
                     value={uploadType}
                     onChange={(e) => setUploadType(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm"
                   >
                     {ASSET_TYPES.map(t => (
                       <option key={t} value={t}>{TYPE_LABELS[t]?.label || t}</option>
@@ -176,24 +176,24 @@ export default function AssetLibraryPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-app-fg mb-1">Kategorie</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Kategorie</label>
                   <input
                     type="text"
                     value={uploadCategory}
                     onChange={(e) => setUploadCategory(e.target.value)}
                     placeholder="z.B. Hochzeit"
-                    className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-app-fg mb-1">Tags (kommagetrennt)</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Tags (kommagetrennt)</label>
                 <input
                   type="text"
                   value={uploadTags}
                   onChange={(e) => setUploadTags(e.target.value)}
                   placeholder="gold, elegant, vintage"
-                  className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm"
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm"
                 />
               </div>
               <div className="flex items-center gap-3">
@@ -214,7 +214,7 @@ export default function AssetLibraryPage() {
                   {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
                   Datei auswählen & hochladen
                 </Button>
-                <button onClick={() => setShowUploadForm(false)} className="text-sm text-app-muted hover:text-app-fg">
+                <button onClick={() => setShowUploadForm(false)} className="text-sm text-muted-foreground hover:text-foreground">
                   Abbrechen
                 </button>
               </div>
@@ -224,20 +224,20 @@ export default function AssetLibraryPage() {
           {/* Filters */}
           <div className="flex flex-wrap gap-3 items-center">
             <div className="relative flex-1 min-w-[200px] max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                 placeholder="Assets suchen..."
-                className="w-full pl-9 pr-3 py-2 rounded-lg border border-app-border bg-app-bg text-app-fg text-sm"
+                className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm"
               />
             </div>
             <div className="flex flex-wrap gap-1.5">
               <button
                 onClick={() => { setTypeFilter(''); setPage(1); }}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                  !typeFilter ? 'bg-app-accent text-white border-app-accent' : 'bg-app-card text-app-muted border-app-border'
+                  !typeFilter ? 'bg-app-accent text-white border-app-accent' : 'bg-card text-muted-foreground border-border'
                 }`}
               >
                 Alle
@@ -259,10 +259,10 @@ export default function AssetLibraryPage() {
           {/* Assets Grid */}
           {loading ? (
             <div className="p-12 text-center">
-              <Loader2 className="w-6 h-6 animate-spin mx-auto text-app-muted" />
+              <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
             </div>
           ) : assets.length === 0 ? (
-            <div className="bg-app-card rounded-xl border border-app-border p-12 text-center text-app-muted">
+            <div className="bg-card rounded-xl border border-border p-12 text-center text-muted-foreground">
               <ImageIcon className="w-10 h-10 mx-auto mb-2 opacity-30" />
               <p>Keine Assets gefunden</p>
             </div>
@@ -271,7 +271,7 @@ export default function AssetLibraryPage() {
               {assets.map((asset) => {
                 const info = TYPE_LABELS[asset.type] || { label: asset.type, color: 'bg-gray-100 text-gray-600' };
                 return (
-                  <div key={asset.id} className="bg-app-card rounded-xl border border-app-border overflow-hidden group">
+                  <div key={asset.id} className="bg-card rounded-xl border border-border overflow-hidden group">
                     <div className="aspect-square bg-app-hover flex items-center justify-center relative">
                       <img
                         src={`${process.env.NEXT_PUBLIC_API_URL || ''}/api/assets/${asset.id}/file`}
@@ -287,20 +287,20 @@ export default function AssetLibraryPage() {
                       </button>
                     </div>
                     <div className="p-3">
-                      <div className="font-medium text-sm text-app-fg truncate">{asset.name}</div>
+                      <div className="font-medium text-sm text-foreground truncate">{asset.name}</div>
                       <div className="flex items-center gap-2 mt-1">
                         <span className={`text-xs px-1.5 py-0.5 rounded-full ${info.color}`}>{info.label}</span>
                         {asset.category && (
-                          <span className="text-xs text-app-muted">{asset.category}</span>
+                          <span className="text-xs text-muted-foreground">{asset.category}</span>
                         )}
                       </div>
-                      <div className="text-xs text-app-muted mt-1">
+                      <div className="text-xs text-muted-foreground mt-1">
                         {asset.width && asset.height ? `${asset.width}×${asset.height}` : ''} · {formatSize(asset.fileSize)}
                       </div>
                       {asset.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {asset.tags.slice(0, 3).map(tag => (
-                            <span key={tag} className="text-xs bg-app-hover text-app-muted px-1.5 py-0.5 rounded">{tag}</span>
+                            <span key={tag} className="text-xs bg-app-hover text-muted-foreground px-1.5 py-0.5 rounded">{tag}</span>
                           ))}
                         </div>
                       )}
@@ -313,12 +313,12 @@ export default function AssetLibraryPage() {
 
           {/* Pagination */}
           {total > 50 && (
-            <div className="flex items-center justify-between text-sm text-app-muted">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>{total} Assets gesamt</span>
               <div className="flex gap-2">
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 rounded border border-app-border disabled:opacity-50">Zurück</button>
+                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 rounded border border-border disabled:opacity-50">Zurück</button>
                 <span className="px-3 py-1">Seite {page}</span>
-                <button onClick={() => setPage(p => p + 1)} disabled={assets.length < 50} className="px-3 py-1 rounded border border-app-border disabled:opacity-50">Weiter</button>
+                <button onClick={() => setPage(p => p + 1)} disabled={assets.length < 50} className="px-3 py-1 rounded border border-border disabled:opacity-50">Weiter</button>
               </div>
             </div>
           )}

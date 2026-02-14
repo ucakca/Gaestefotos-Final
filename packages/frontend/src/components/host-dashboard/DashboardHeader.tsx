@@ -40,7 +40,7 @@ export default function DashboardHeader({
     <motion.header
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="sticky top-0 z-40 bg-app-bg/80 backdrop-blur-xl border-b border-app-border"
+      className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border"
     >
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
@@ -48,19 +48,19 @@ export default function DashboardHeader({
           <div className="flex items-center gap-3 min-w-0">
             <Link
               href={backUrl}
-              className="p-2 -ml-2 rounded-full hover:bg-app-card transition-colors"
+              className="p-2 -ml-2 rounded-full hover:bg-card transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-app-fg" />
+              <ArrowLeft className="w-5 h-5 text-foreground" />
             </Link>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-app-fg truncate">{title}</h1>
+                <h1 className="text-xl font-bold text-foreground truncate">{title}</h1>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${currentStatus.className}`}>
                   {currentStatus.label}
                 </span>
               </div>
               {subtitle && (
-                <p className="text-sm text-app-muted truncate">{subtitle}</p>
+                <p className="text-sm text-muted-foreground truncate">{subtitle}</p>
               )}
             </div>
           </div>

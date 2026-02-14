@@ -182,13 +182,13 @@ export default function TimeInput24h({
           value={rawValue}
           onChange={(e) => handleTypedChange(e.target.value)}
           placeholder={placeholder}
-          className={`${className} bg-app-card text-app-fg pr-10`}
+          className={`${className} bg-card text-foreground pr-10`}
           style={style}
         />
         <IconButton
           type="button"
           onClick={() => setShowPicker(!showPicker)}
-          icon={<Clock className="w-5 h-5 text-app-fg" />}
+          icon={<Clock className="w-5 h-5 text-foreground" />}
           variant="ghost"
           size="sm"
           aria-label="Uhrzeit auswählen"
@@ -198,12 +198,12 @@ export default function TimeInput24h({
       </div>
 
       {showPicker && (
-        <div className="absolute z-50 mt-2 bg-app-card border-2 border-app-border rounded-lg shadow-xl p-4 w-64">
+        <div className="absolute z-50 mt-2 bg-card border-2 border-border rounded-lg shadow-xl p-4 w-64">
           <div className="flex gap-4">
             {/* Hours */}
             <div className="flex-1">
-              <div className="text-xs font-semibold text-app-muted mb-2 text-center">Stunden</div>
-              <div className="border border-app-border rounded-lg overflow-hidden max-h-48 overflow-y-auto">
+              <div className="text-xs font-semibold text-muted-foreground mb-2 text-center">Stunden</div>
+              <div className="border border-border rounded-lg overflow-hidden max-h-48 overflow-y-auto">
                 {Array.from({ length: 24 }, (_, i) => (
                   <Button
                     key={i}
@@ -224,8 +224,8 @@ export default function TimeInput24h({
 
             {/* Minutes */}
             <div className="flex-1">
-              <div className="text-xs font-semibold text-app-muted mb-2 text-center">Minuten</div>
-              <div className="border border-app-border rounded-lg overflow-hidden max-h-48 overflow-y-auto">
+              <div className="text-xs font-semibold text-muted-foreground mb-2 text-center">Minuten</div>
+              <div className="border border-border rounded-lg overflow-hidden max-h-48 overflow-y-auto">
                 {Array.from({ length: 60 }, (_, i) => (
                   <Button
                     key={i}
@@ -246,7 +246,7 @@ export default function TimeInput24h({
           </div>
 
           {/* Manual Input */}
-          <div className="mt-4 pt-4 border-t border-app-border">
+          <div className="mt-4 pt-4 border-t border-border">
             <div className="flex gap-2 items-center">
               <Input
                 type="number"
@@ -255,9 +255,9 @@ export default function TimeInput24h({
                 value={hours}
                 onChange={(e) => handleHourChange(e.target.value)}
                 placeholder="HH"
-                className="flex-1 max-w-[80px] px-3 py-2 border border-app-border bg-app-card text-app-fg rounded-lg text-center text-sm focus:ring-2 focus:outline-none focus:ring-app-fg/30"
+                className="flex-1 max-w-[80px] px-3 py-2 border border-border bg-card text-foreground rounded-lg text-center text-sm focus:ring-2 focus:outline-none focus:ring-app-fg/30"
               />
-              <span className="text-app-muted font-semibold">:</span>
+              <span className="text-muted-foreground font-semibold">:</span>
               <Input
                 type="number"
                 min="0"
@@ -265,7 +265,7 @@ export default function TimeInput24h({
                 value={minutes}
                 onChange={(e) => handleMinuteChange(e.target.value)}
                 placeholder="MM"
-                className="flex-1 max-w-[80px] px-3 py-2 border border-app-border bg-app-card text-app-fg rounded-lg text-center text-sm focus:ring-2 focus:outline-none focus:ring-app-fg/30"
+                className="flex-1 max-w-[80px] px-3 py-2 border border-border bg-card text-foreground rounded-lg text-center text-sm focus:ring-2 focus:outline-none focus:ring-app-fg/30"
               />
               <Button
                 type="button"

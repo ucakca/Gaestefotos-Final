@@ -48,7 +48,7 @@ export function DashboardStatsSkeleton() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="p-4 rounded-xl border border-app-border bg-app-card">
+        <div key={i} className="p-4 rounded-xl border border-border bg-card">
           <Skeleton className="h-4 w-20 mb-2" />
           <Skeleton className="h-8 w-16" />
         </div>
@@ -59,7 +59,7 @@ export function DashboardStatsSkeleton() {
 
 export function EventCardSkeleton() {
   return (
-    <div className="p-4 rounded-xl border border-app-border bg-app-card">
+    <div className="p-4 rounded-xl border border-border bg-card">
       <Skeleton className="w-full h-32 rounded-lg mb-4" />
       <Skeleton className="h-5 w-3/4 mb-2" />
       <Skeleton className="h-4 w-1/2 mb-4" />
@@ -86,7 +86,7 @@ export function ListItemSkeleton() {
 
 export function TableRowSkeleton({ columns = 4 }: { columns?: number }) {
   return (
-    <div className="flex items-center gap-4 p-3 border-b border-app-border">
+    <div className="flex items-center gap-4 p-3 border-b border-border">
       {Array.from({ length: columns }).map((_, i) => (
         <Skeleton key={i} className="h-4 flex-1" />
       ))}
