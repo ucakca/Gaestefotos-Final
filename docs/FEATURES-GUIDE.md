@@ -271,10 +271,11 @@ Gäste können ihre Fotos mit KI-gestützten Effekten bearbeiten. Jeder Effekt v
 ### AI-Provider-System
 
 Admins konfigurieren Provider unter `/manage/ai-providers`:
+- **Groq** — Schnelle LLM-Inferenz (Llama 3.1) für Chat, Vorschläge, Compliment Mirror
+- **Grok (xAI)** — Leistungsstarkes LLM mit OpenAI-kompatibler API (`grok-2-latest`)
+- **OpenAI** — GPT-4o / GPT-Vision für komplexe Textaufgaben & DALL-E
 - **Replicate** — Stable Diffusion, SDXL, Faceswap-Modelle
 - **Stability AI** — Background Removal, Style-Effekte
-- **OpenAI** — DALL-E, GPT-Vision
-- **Grok** — xAI Bildgenerierung
 - Pro Effekt wird automatisch der passende Provider gewählt (`aiExecution.ts`)
 
 ### Backend-Architektur

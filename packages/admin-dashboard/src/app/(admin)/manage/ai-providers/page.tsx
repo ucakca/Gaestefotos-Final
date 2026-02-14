@@ -120,6 +120,16 @@ const PROVIDER_PRESETS = [
     features: ['chat', 'album_suggest', 'description_suggest'],
   },
   {
+    slug: 'grok',
+    name: 'Grok (xAI)',
+    type: 'LLM',
+    baseUrl: 'https://api.x.ai/v1',
+    defaultModel: 'grok-2-latest',
+    description: 'xAI Grok — leistungsstarkes LLM mit OpenAI-kompatibler API',
+    envKey: 'XAI_API_KEY',
+    features: ['chat', 'album_suggest', 'description_suggest', 'invitation_suggest', 'challenge_suggest', 'guestbook_suggest', 'color_scheme', 'compliment_mirror'],
+  },
+  {
     slug: 'stability-ai',
     name: 'Stability AI (SDXL)',
     type: 'IMAGE_GEN',
