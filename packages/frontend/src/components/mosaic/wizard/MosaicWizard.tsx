@@ -8,10 +8,8 @@ import { usePackageFeatures } from '@/hooks/usePackageFeatures';
 import { MosaicWizardState, INITIAL_WIZARD_STATE } from './types';
 import WizardStepIndicator from './WizardStepIndicator';
 import Step1ModeGrid from './Step1ModeGrid';
-import Step2TargetImage from './Step2TargetImage';
-import Step3Overlay from './Step3Overlay';
-import Step4Display from './Step4Display';
-import Step5Preview from './Step5Preview';
+import Step2TargetOverlay from './Step2TargetOverlay';
+import Step3SettingsActivate from './Step3SettingsActivate';
 
 interface MosaicWall {
   id: string;
@@ -125,7 +123,7 @@ export default function MosaicWizard({ eventId }: Props) {
   };
 
   const handleNext = () => {
-    const next = Math.min(state.currentStep + 1, 5);
+    const next = Math.min(state.currentStep + 1, 3);
     goToStep(next);
   };
 
@@ -317,41 +315,26 @@ export default function MosaicWizard({ eventId }: Props) {
         )}
 
         {state.currentStep === 2 && (
-          <Step2TargetImage
+          <Step2TargetOverlay
             state={state}
             onChange={updateState}
             targetImageUrl={targetImageUrl}
             analyzing={analyzing}
-            onUploadCropped={handleUploadCropped}
-          />
-        )}
-
-        {state.currentStep === 3 && (
-          <Step3Overlay
-            state={state}
-            onChange={updateState}
-            targetImageUrl={targetImageUrl}
             analyzingOverlay={analyzingOverlay}
             aiRecommendation={aiRecommendation}
-            onAnalyze={handleAnalyzeOverlay}
+            onUploadCropped={handleUploadCropped}
+            onAnalyzeOverlay={handleAnalyzeOverlay}
             onApplyRecommendation={handleApplyRecommendation}
           />
         )}
 
-        {state.currentStep === 4 && (
-          <Step4Display
+        {state.currentStep === 3 && (
+          <Step3SettingsActivate
             state={state}
             onChange={updateState}
             canPrint={canPrint}
             hasBoothAddon={false}
             hasKiBoothAddon={false}
-            onUpgrade={() => router.push(`/events/${eventId}/package`)}
-          />
-        )}
-
-        {state.currentStep === 5 && (
-          <Step5Preview
-            state={state}
             targetImageUrl={targetImageUrl}
             eventSlug={eventSlug}
             tileCount={tileCount}
@@ -359,12 +342,13 @@ export default function MosaicWizard({ eventId }: Props) {
             wallExists={!!wall}
             onActivate={handleActivate}
             onSave={handleSave}
+            onUpgrade={() => router.push(`/events/${eventId}/package`)}
           />
         )}
       </div>
 
       {/* Bottom Navigation */}
-      {state.currentStep < 5 && (
+      {state.currentStep < 3 && (
         <div className="sticky bottom-0 bg-white border-t px-4 py-3 safe-bottom">
           <div className="max-w-lg mx-auto flex gap-3">
             {state.currentStep > 1 && (
