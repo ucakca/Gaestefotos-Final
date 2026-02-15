@@ -155,10 +155,10 @@ export default function SvgImportTool({ onImport, onClose }: SvgImportToolProps)
   // Upload state
   if (!svgContent) {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+      <div className="bg-card border border-border rounded-xl p-6 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-lg">SVG importieren & QR-Code platzieren</h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+          <button onClick={onClose} className="p-2 hover:bg-muted rounded-lg">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -173,7 +173,7 @@ export default function SvgImportTool({ onImport, onClose }: SvgImportToolProps)
                 className={`px-3 py-2 rounded-lg text-sm transition-colors ${
                   format === key
                     ? 'bg-pink-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-muted text-foreground/80 hover:bg-muted/80'
                 }`}
               >
                 {label}
@@ -182,10 +182,10 @@ export default function SvgImportTool({ onImport, onClose }: SvgImportToolProps)
           </div>
         </div>
 
-        <label className="flex flex-col items-center justify-center gap-3 p-12 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-pink-400 hover:bg-pink-50 transition-colors">
-          <Upload className="w-8 h-8 text-gray-400" />
-          <span className="text-gray-500">SVG-Datei hierher ziehen oder klicken</span>
-          <span className="text-xs text-gray-400">Aus Canva, Figma, Illustrator oder anderem Tool</span>
+        <label className="flex flex-col items-center justify-center gap-3 p-12 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-pink-400 hover:bg-pink-50 transition-colors">
+          <Upload className="w-8 h-8 text-muted-foreground/70" />
+          <span className="text-muted-foreground">SVG-Datei hierher ziehen oder klicken</span>
+          <span className="text-xs text-muted-foreground/70">Aus Canva, Figma, Illustrator oder anderem Tool</span>
           <input
             type="file"
             accept=".svg"
@@ -202,28 +202,28 @@ export default function SvgImportTool({ onImport, onClose }: SvgImportToolProps)
 
   // Editor state
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+    <div className="bg-card border border-border rounded-xl p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="font-semibold text-lg">QR-Code Position festlegen</h3>
-          <p className="text-sm text-gray-500">Ziehe das rosa Quadrat an die gewünschte Position</p>
+          <p className="text-sm text-muted-foreground">Ziehe das rosa Quadrat an die gewünschte Position</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => { setSvgContent(null); setHasQrId(false); }}
-            className="px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm"
+            className="px-3 py-2 text-muted-foreground hover:bg-muted rounded-lg text-sm"
           >
             Andere Datei
           </button>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+          <button onClick={onClose} className="p-2 hover:bg-muted rounded-lg">
             <X className="w-5 h-5" />
           </button>
         </div>
       </div>
 
       {hasQrId && (
-        <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-800">
-          Diese SVG enthält bereits ein <code className="bg-yellow-100 px-1 rounded">gf:qr</code> Element.
+        <div className="rounded-lg border border-yellow-300 bg-warning/10 p-3 text-sm text-warning">
+          Diese SVG enthält bereits ein <code className="bg-warning/15 px-1 rounded">gf:qr</code> Element.
           Es wird durch die neue Position ersetzt.
         </div>
       )}
@@ -231,7 +231,7 @@ export default function SvgImportTool({ onImport, onClose }: SvgImportToolProps)
       {/* Canvas */}
       <div
         ref={canvasRef}
-        className="relative bg-gray-100 rounded-xl overflow-hidden mx-auto border border-gray-200"
+        className="relative bg-muted rounded-xl overflow-hidden mx-auto border border-border"
         style={{
           width: '100%',
           maxWidth: 500,
@@ -292,13 +292,13 @@ export default function SvgImportTool({ onImport, onClose }: SvgImportToolProps)
       </div>
 
       {/* Position Info */}
-      <div className="flex items-center justify-between text-xs text-gray-500">
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex gap-4">
           <span>X: {Math.round(qrRect.x)}</span>
           <span>Y: {Math.round(qrRect.y)}</span>
           <span>Größe: {Math.round(qrRect.size)}×{Math.round(qrRect.size)}</span>
         </div>
-        <div className="flex items-center gap-1 text-gray-400">
+        <div className="flex items-center gap-1 text-muted-foreground/70">
           <Move className="w-3.5 h-3.5" />
           Drag zum Verschieben, Ecke zum Skalieren
         </div>
@@ -307,30 +307,30 @@ export default function SvgImportTool({ onImport, onClose }: SvgImportToolProps)
       {/* Manual Position Input */}
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">X-Position</label>
+          <label className="text-xs text-muted-foreground mb-1 block">X-Position</label>
           <input
             type="number"
             value={Math.round(qrRect.x)}
             onChange={(e) => setQrRect((r) => ({ ...r, x: parseInt(e.target.value) || 0 }))}
-            className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm"
+            className="w-full px-2 py-1.5 border border-border rounded-lg text-sm"
           />
         </div>
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">Y-Position</label>
+          <label className="text-xs text-muted-foreground mb-1 block">Y-Position</label>
           <input
             type="number"
             value={Math.round(qrRect.y)}
             onChange={(e) => setQrRect((r) => ({ ...r, y: parseInt(e.target.value) || 0 }))}
-            className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm"
+            className="w-full px-2 py-1.5 border border-border rounded-lg text-sm"
           />
         </div>
         <div>
-          <label className="text-xs text-gray-500 mb-1 block">Größe (px)</label>
+          <label className="text-xs text-muted-foreground mb-1 block">Größe (px)</label>
           <input
             type="number"
             value={Math.round(qrRect.size)}
             onChange={(e) => setQrRect((r) => ({ ...r, size: Math.max(20, parseInt(e.target.value) || 20) }))}
-            className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-sm"
+            className="w-full px-2 py-1.5 border border-border rounded-lg text-sm"
           />
         </div>
       </div>
@@ -339,7 +339,7 @@ export default function SvgImportTool({ onImport, onClose }: SvgImportToolProps)
       <div className="flex justify-end gap-3 pt-2 border-t">
         <button
           onClick={onClose}
-          className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm"
+          className="px-4 py-2 text-muted-foreground hover:bg-muted rounded-lg text-sm"
         >
           Abbrechen
         </button>

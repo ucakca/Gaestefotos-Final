@@ -178,7 +178,7 @@ export default function ApiKeysPage() {
                         className="p-1 hover:bg-app-bg rounded"
                       >
                         {copiedKey === key.id ? (
-                          <Check className="w-4 h-4 text-green-500" />
+                          <Check className="w-4 h-4 text-success" />
                         ) : (
                           <Copy className="w-4 h-4 text-app-muted" />
                         )}
@@ -199,7 +199,7 @@ export default function ApiKeysPage() {
                     size="sm"
                     variant="ghost"
                     onClick={() => handleDelete(key.id)}
-                    className="text-red-500 hover:bg-red-500/10"
+                    className="text-destructive hover:bg-destructive/100/10"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -211,8 +211,8 @@ export default function ApiKeysPage() {
       </div>
 
       {/* Warning */}
-      <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4">
-        <p className="text-sm text-yellow-400">
+      <div className="rounded-xl border border-yellow-500/30 bg-warning/5 p-4">
+        <p className="text-sm text-warning">
           ⚠️ <strong>Sicherheit:</strong> API Keys niemals öffentlich teilen. 
           Bei Verdacht auf Kompromittierung sofort löschen und neu erstellen.
         </p>

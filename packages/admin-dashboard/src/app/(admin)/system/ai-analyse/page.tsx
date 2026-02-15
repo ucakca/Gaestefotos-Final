@@ -73,9 +73,9 @@ export default function AIAnalysePage() {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return 'border-red-500/30 bg-red-500/5';
+        return 'border-destructive/30 bg-destructive/100/5';
       case 'warning':
-        return 'border-yellow-500/30 bg-yellow-500/5';
+        return 'border-yellow-500/30 bg-warning/5';
       default:
         return 'border-blue-500/30 bg-blue-500/5';
     }
@@ -84,9 +84,9 @@ export default function AIAnalysePage() {
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return <AlertTriangle className="w-5 h-5 text-red-500" />;
+        return <AlertTriangle className="w-5 h-5 text-destructive" />;
       case 'warning':
-        return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+        return <AlertTriangle className="w-5 h-5 text-warning" />;
       default:
         return <Lightbulb className="w-5 h-5 text-blue-500" />;
     }
@@ -154,10 +154,10 @@ export default function AIAnalysePage() {
               <div
                 className={`px-4 py-2 rounded-full text-lg font-bold ${
                   result.healthScore >= 80
-                    ? 'bg-green-500/10 text-green-500'
+                    ? 'bg-success/100/10 text-success'
                     : result.healthScore >= 60
-                    ? 'bg-yellow-500/10 text-yellow-500'
-                    : 'bg-red-500/10 text-red-500'
+                    ? 'bg-warning/10 text-warning'
+                    : 'bg-destructive/100/10 text-destructive'
                 }`}
               >
                 {result.healthScore}%
@@ -214,9 +214,9 @@ export default function AIAnalysePage() {
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-green-500/30 bg-green-500/5 p-6 text-center">
-              <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
-              <h3 className="text-lg font-semibold text-green-500">Keine Probleme erkannt</h3>
+            <div className="rounded-2xl border border-success/30 bg-success/100/5 p-6 text-center">
+              <CheckCircle2 className="w-12 h-12 text-success mx-auto mb-3" />
+              <h3 className="text-lg font-semibold text-success">Keine Probleme erkannt</h3>
               <p className="text-sm text-app-muted mt-1">
                 Das System läuft einwandfrei.
               </p>

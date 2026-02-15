@@ -91,22 +91,22 @@ export default function SlideshowPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Presentation className="h-6 w-6 text-purple-600" />
           Slideshow Modus
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Vollbild-Diashow für Events — ideal für Beamer und große Bildschirme
         </p>
       </div>
 
       {/* Event Selector */}
-      <div className="bg-white rounded-xl border p-6 shadow-sm">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Event auswählen</label>
+      <div className="bg-card rounded-xl border p-6 shadow-sm">
+        <label className="block text-sm font-medium text-foreground/80 mb-2">Event auswählen</label>
         <select
           value={selectedEventId}
           onChange={(e) => setSelectedEventId(e.target.value)}
-          className="w-full max-w-md rounded-lg border-gray-300 border px-4 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          className="w-full max-w-md rounded-lg border-border border px-4 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
         >
           <option value="">— Event wählen —</option>
           {events.map((ev) => (
@@ -120,15 +120,15 @@ export default function SlideshowPage() {
       {selectedEvent && (
         <>
           {/* Config */}
-          <div className="bg-white rounded-xl border p-6 shadow-sm">
+          <div className="bg-card rounded-xl border p-6 shadow-sm">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Settings className="h-5 w-5 text-gray-400" />
+              <Settings className="h-5 w-5 text-muted-foreground/70" />
               Einstellungen
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Interval */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Intervall (Sekunden)</label>
+                <label className="block text-sm font-medium text-foreground/80 mb-1">Intervall (Sekunden)</label>
                 <input
                   type="number"
                   min={1}
@@ -141,7 +141,7 @@ export default function SlideshowPage() {
 
               {/* Transition */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Übergang</label>
+                <label className="block text-sm font-medium text-foreground/80 mb-1">Übergang</label>
                 <select
                   value={config.transition}
                   onChange={(e) => setConfig({ ...config, transition: e.target.value as any })}
@@ -156,7 +156,7 @@ export default function SlideshowPage() {
 
               {/* Theme */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Theme</label>
+                <label className="block text-sm font-medium text-foreground/80 mb-1">Theme</label>
                 <select
                   value={config.theme}
                   onChange={(e) => setConfig({ ...config, theme: e.target.value as any })}
@@ -170,7 +170,7 @@ export default function SlideshowPage() {
 
               {/* Max Photos */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Max. Fotos</label>
+                <label className="block text-sm font-medium text-foreground/80 mb-1">Max. Fotos</label>
                 <input
                   type="number"
                   min={10}
@@ -188,18 +188,18 @@ export default function SlideshowPage() {
                     type="checkbox"
                     checked={config.autoPlay}
                     onChange={(e) => setConfig({ ...config, autoPlay: e.target.checked })}
-                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    className="rounded border-border text-purple-600 focus:ring-purple-500"
                   />
-                  <span className="text-sm text-gray-700">Auto-Play</span>
+                  <span className="text-sm text-foreground/80">Auto-Play</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={config.shuffle}
                     onChange={(e) => setConfig({ ...config, shuffle: e.target.checked })}
-                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    className="rounded border-border text-purple-600 focus:ring-purple-500"
                   />
-                  <span className="text-sm text-gray-700">Zufällige Reihenfolge</span>
+                  <span className="text-sm text-foreground/80">Zufällige Reihenfolge</span>
                 </label>
               </div>
 
@@ -209,28 +209,28 @@ export default function SlideshowPage() {
                     type="checkbox"
                     checked={config.showEventTitle}
                     onChange={(e) => setConfig({ ...config, showEventTitle: e.target.checked })}
-                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    className="rounded border-border text-purple-600 focus:ring-purple-500"
                   />
-                  <span className="text-sm text-gray-700">Event-Titel anzeigen</span>
+                  <span className="text-sm text-foreground/80">Event-Titel anzeigen</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={config.showCaptions}
                     onChange={(e) => setConfig({ ...config, showCaptions: e.target.checked })}
-                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    className="rounded border-border text-purple-600 focus:ring-purple-500"
                   />
-                  <span className="text-sm text-gray-700">Bildunterschriften</span>
+                  <span className="text-sm text-foreground/80">Bildunterschriften</span>
                 </label>
               </div>
             </div>
           </div>
 
           {/* Generated URL */}
-          <div className="bg-white rounded-xl border p-6 shadow-sm">
+          <div className="bg-card rounded-xl border p-6 shadow-sm">
             <h2 className="text-lg font-semibold mb-3">Slideshow URL</h2>
             <div className="flex items-center gap-3">
-              <code className="flex-1 bg-gray-50 px-4 py-2.5 rounded-lg text-sm font-mono text-gray-800 truncate">
+              <code className="flex-1 bg-muted/50 px-4 py-2.5 rounded-lg text-sm font-mono text-foreground truncate">
                 {getSlideshowUrl()}
               </code>
               <button
@@ -243,25 +243,25 @@ export default function SlideshowPage() {
                 href={getSlideshowUrl()}
                 target="_blank"
                 rel="noopener"
-                className="flex items-center gap-1.5 px-4 py-2.5 border rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2.5 border rounded-lg text-sm font-medium hover:bg-muted/50 transition-colors"
               >
                 <ExternalLink className="h-4 w-4" /> Öffnen
               </a>
             </div>
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-2 text-xs text-muted-foreground">
               Tipp: Drücke F11 im Browser für echten Vollbildmodus
             </p>
           </div>
 
           {/* Preview */}
-          <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+          <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
             <div className="border-b px-6 py-3 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Vorschau</h2>
-              <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
+              <div className="flex gap-1 bg-muted rounded-lg p-0.5">
                 <button
                   onClick={() => setPreviewMode('desktop')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                    previewMode === 'desktop' ? 'bg-white shadow text-gray-900' : 'text-gray-500'
+                    previewMode === 'desktop' ? 'bg-card shadow text-foreground' : 'text-muted-foreground'
                   }`}
                 >
                   <Monitor className="h-3.5 w-3.5" /> Desktop
@@ -269,14 +269,14 @@ export default function SlideshowPage() {
                 <button
                   onClick={() => setPreviewMode('mobile')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                    previewMode === 'mobile' ? 'bg-white shadow text-gray-900' : 'text-gray-500'
+                    previewMode === 'mobile' ? 'bg-card shadow text-foreground' : 'text-muted-foreground'
                   }`}
                 >
                   <Smartphone className="h-3.5 w-3.5" /> Mobile
                 </button>
               </div>
             </div>
-            <div className="p-6 bg-gray-900 flex justify-center">
+            <div className="p-6 bg-foreground flex justify-center">
               <div
                 className={`bg-black rounded-lg overflow-hidden shadow-2xl transition-all ${
                   previewMode === 'desktop' ? 'w-full max-w-4xl aspect-video' : 'w-[375px] aspect-[9/16]'
@@ -297,9 +297,9 @@ export default function SlideshowPage() {
       )}
 
       {!selectedEventId && (
-        <div className="bg-white rounded-xl border p-12 text-center shadow-sm">
-          <Presentation className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">Wähle ein Event aus, um die Slideshow zu konfigurieren</p>
+        <div className="bg-card rounded-xl border p-12 text-center shadow-sm">
+          <Presentation className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">Wähle ein Event aus, um die Slideshow zu konfigurieren</p>
         </div>
       )}
     </div>

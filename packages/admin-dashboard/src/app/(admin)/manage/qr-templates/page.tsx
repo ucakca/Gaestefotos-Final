@@ -181,10 +181,10 @@ export default function QrTemplatesAdminPage() {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-8 bg-muted/80 rounded w-1/4"></div>
           <div className="space-y-3">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-20 bg-gray-200 rounded-xl"></div>
+              <div key={i} className="h-20 bg-muted/80 rounded-xl"></div>
             ))}
           </div>
         </div>
@@ -202,7 +202,7 @@ export default function QrTemplatesAdminPage() {
           </h1>
           <button
             onClick={() => { setEditingTemplate(null); setIsCreating(false); }}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-muted rounded-lg"
           >
             <X className="w-5 h-5" />
           </button>
@@ -211,49 +211,49 @@ export default function QrTemplatesAdminPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column: Basic Info */}
           <div className="space-y-4">
-            <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-4">
+            <div className="bg-card border border-border rounded-xl p-4 space-y-4">
               <h2 className="font-semibold">Basis-Informationen</h2>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Slug *</label>
+                <label className="block text-sm font-medium text-foreground/80 mb-1">Slug *</label>
                 <input
                   type="text"
                   value={editingTemplate.slug || ''}
                   onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') } : null)}
                   disabled={!isCreating}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg font-mono text-sm disabled:bg-gray-100"
+                  className="w-full px-3 py-2 border border-border rounded-lg font-mono text-sm disabled:bg-muted"
                   placeholder="mein-template"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <label className="block text-sm font-medium text-foreground/80 mb-1">Name *</label>
                 <input
                   type="text"
                   value={editingTemplate.name || ''}
                   onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, name: e.target.value } : null)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg"
+                  className="w-full px-3 py-2 border border-border rounded-lg"
                   placeholder="Mein Template"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Beschreibung</label>
+                <label className="block text-sm font-medium text-foreground/80 mb-1">Beschreibung</label>
                 <textarea
                   value={editingTemplate.description || ''}
                   onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, description: e.target.value } : null)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg"
+                  className="w-full px-3 py-2 border border-border rounded-lg"
                   rows={2}
                   placeholder="Kurze Beschreibung..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kategorie</label>
+                <label className="block text-sm font-medium text-foreground/80 mb-1">Kategorie</label>
                 <select
                   value={editingTemplate.category || 'MINIMAL'}
                   onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, category: e.target.value } : null)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg"
+                  className="w-full px-3 py-2 border border-border rounded-lg"
                 >
                   {CATEGORIES.map(cat => (
                     <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -262,22 +262,22 @@ export default function QrTemplatesAdminPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sortierung</label>
+                <label className="block text-sm font-medium text-foreground/80 mb-1">Sortierung</label>
                 <input
                   type="number"
                   value={editingTemplate.sortOrder || 0}
                   onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, sortOrder: parseInt(e.target.value) || 0 } : null)}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg"
+                  className="w-full px-3 py-2 border border-border rounded-lg"
                 />
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-4">
+            <div className="bg-card border border-border rounded-xl p-4 space-y-4">
               <h2 className="font-semibold">Farben</h2>
               
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Hintergrund</label>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">Hintergrund</label>
                   <div className="flex gap-2">
                     <input
                       type="color"
@@ -289,13 +289,13 @@ export default function QrTemplatesAdminPage() {
                       type="text"
                       value={editingTemplate.defaultBgColor || '#ffffff'}
                       onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, defaultBgColor: e.target.value } : null)}
-                      className="flex-1 px-2 py-1 border border-gray-200 rounded text-xs font-mono"
+                      className="flex-1 px-2 py-1 border border-border rounded text-xs font-mono"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Text</label>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">Text</label>
                   <div className="flex gap-2">
                     <input
                       type="color"
@@ -307,13 +307,13 @@ export default function QrTemplatesAdminPage() {
                       type="text"
                       value={editingTemplate.defaultTextColor || '#1a1a1a'}
                       onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, defaultTextColor: e.target.value } : null)}
-                      className="flex-1 px-2 py-1 border border-gray-200 rounded text-xs font-mono"
+                      className="flex-1 px-2 py-1 border border-border rounded text-xs font-mono"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Akzent</label>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">Akzent</label>
                   <div className="flex gap-2">
                     <input
                       type="color"
@@ -325,14 +325,14 @@ export default function QrTemplatesAdminPage() {
                       type="text"
                       value={editingTemplate.defaultAccentColor || '#E91E63'}
                       onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, defaultAccentColor: e.target.value } : null)}
-                      className="flex-1 px-2 py-1 border border-gray-200 rounded text-xs font-mono"
+                      className="flex-1 px-2 py-1 border border-border rounded text-xs font-mono"
                     />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-4">
+            <div className="bg-card border border-border rounded-xl p-4 space-y-4">
               <h2 className="font-semibold">Optionen</h2>
               
               <div className="space-y-3">
@@ -364,7 +364,7 @@ export default function QrTemplatesAdminPage() {
                     className="w-4 h-4 rounded"
                   />
                   <span className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-500" /> Premium
+                    <Star className="w-4 h-4 text-warning" /> Premium
                   </span>
                 </label>
               </div>
@@ -373,15 +373,15 @@ export default function QrTemplatesAdminPage() {
 
           {/* Right Column: SVG Uploads */}
           <div className="space-y-4">
-            <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-4">
+            <div className="bg-card border border-border rounded-xl p-4 space-y-4">
               <h2 className="font-semibold">SVG-Vorlagen</h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Lade SVG-Dateien für die verschiedenen Formate hoch. 
-                Das QR-Code-Rechteck muss <code className="bg-gray-100 px-1 rounded">id="gf:qr"</code> haben.
+                Das QR-Code-Rechteck muss <code className="bg-muted px-1 rounded">id="gf:qr"</code> haben.
               </p>
 
               {(['svgA6', 'svgA5', 'svgStory', 'svgSquare'] as const).map(format => (
-                <div key={format} className="border border-gray-100 rounded-lg p-3">
+                <div key={format} className="border border-border/50 rounded-lg p-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-sm">
                       {format === 'svgA6' && 'A6 (Hochformat)'}
@@ -390,16 +390,16 @@ export default function QrTemplatesAdminPage() {
                       {format === 'svgSquare' && 'Quadrat (1:1)'}
                     </span>
                     {editingTemplate[format] && (
-                      <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                      <span className="text-xs text-success bg-success/10 px-2 py-0.5 rounded">
                         ✓ SVG geladen
                       </span>
                     )}
                   </div>
                   
                   <div className="flex gap-2">
-                    <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-pink-300 hover:bg-pink-50 transition-colors">
-                      <Upload className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-500">SVG hochladen</span>
+                    <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-pink-300 hover:bg-pink-50 transition-colors">
+                      <Upload className="w-4 h-4 text-muted-foreground/70" />
+                      <span className="text-sm text-muted-foreground">SVG hochladen</span>
                       <input
                         type="file"
                         accept=".svg"
@@ -413,7 +413,7 @@ export default function QrTemplatesAdminPage() {
                     {editingTemplate[format] && (
                       <button
                         onClick={() => setEditingTemplate(prev => prev ? { ...prev, [format]: null } : null)}
-                        className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+                        className="px-3 py-2 text-destructive hover:bg-destructive/10 rounded-lg"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -422,7 +422,7 @@ export default function QrTemplatesAdminPage() {
 
                   {editingTemplate[format] && (
                     <div 
-                      className="mt-2 aspect-[3/4] max-h-32 bg-gray-50 rounded border overflow-hidden"
+                      className="mt-2 aspect-[3/4] max-h-32 bg-muted/50 rounded border overflow-hidden"
                       style={{ backgroundColor: editingTemplate.defaultBgColor }}
                     >
                       <div 
@@ -441,7 +441,7 @@ export default function QrTemplatesAdminPage() {
         <div className="flex justify-end gap-3 pt-4 border-t">
           <button
             onClick={() => { setEditingTemplate(null); setIsCreating(false); }}
-            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+            className="px-4 py-2 text-muted-foreground hover:bg-muted rounded-lg"
           >
             Abbrechen
           </button>
@@ -463,20 +463,20 @@ export default function QrTemplatesAdminPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <QrCode className="w-6 h-6 text-pink-600" />
             QR-Code Templates
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-muted-foreground mt-1">
             {templates.length} Templates verwalten
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={loadTemplates}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-muted rounded-lg"
           >
-            <RefreshCw className="w-5 h-5 text-gray-600" />
+            <RefreshCw className="w-5 h-5 text-muted-foreground" />
           </button>
           <button
             onClick={() => setShowImportTool(true)}
@@ -579,21 +579,21 @@ export default function QrTemplatesAdminPage() {
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-destructive">
           {error}
         </div>
       )}
 
       <div className="space-y-3">
         {templates.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-muted-foreground">
             Keine Templates vorhanden. Erstelle ein neues Template.
           </div>
         ) : (
           templates.map(template => (
             <div 
               key={template.id} 
-              className={`bg-white border rounded-xl overflow-hidden ${!template.isActive ? 'opacity-60' : ''}`}
+              className={`bg-card border rounded-xl overflow-hidden ${!template.isActive ? 'opacity-60' : ''}`}
             >
               <div className="p-4 flex items-center gap-4">
                 {/* Preview */}
@@ -613,13 +613,13 @@ export default function QrTemplatesAdminPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold">{template.name}</span>
-                    {template.isPremium && <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />}
-                    {!template.isPublic && <EyeOff className="w-4 h-4 text-gray-400" />}
+                    {template.isPremium && <Star className="w-4 h-4 text-warning fill-yellow-500" />}
+                    {!template.isPublic && <EyeOff className="w-4 h-4 text-muted-foreground/70" />}
                     {!template.isActive && (
-                      <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">Inaktiv</span>
+                      <span className="text-xs bg-muted/80 text-muted-foreground px-2 py-0.5 rounded">Inaktiv</span>
                     )}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-muted-foreground">
                     {CATEGORIES.find(c => c.value === template.category)?.label} · {template.slug}
                   </div>
                   <div className="flex gap-1.5 mt-1">
@@ -633,35 +633,35 @@ export default function QrTemplatesAdminPage() {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => toggleActive(template)}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
+                    className="p-2 hover:bg-muted rounded-lg"
                     title={template.isActive ? 'Deaktivieren' : 'Aktivieren'}
                   >
-                    {template.isActive ? <Eye className="w-4 h-4 text-green-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
+                    {template.isActive ? <Eye className="w-4 h-4 text-success" /> : <EyeOff className="w-4 h-4 text-muted-foreground/70" />}
                   </button>
                   <button
                     onClick={() => duplicateTemplate(template.slug)}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
+                    className="p-2 hover:bg-muted rounded-lg"
                     title="Duplizieren"
                   >
-                    <Copy className="w-4 h-4 text-gray-600" />
+                    <Copy className="w-4 h-4 text-muted-foreground" />
                   </button>
                   <button
                     onClick={() => loadTemplateDetails(template.slug)}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
+                    className="p-2 hover:bg-muted rounded-lg"
                     title="Bearbeiten"
                   >
                     <Pencil className="w-4 h-4 text-blue-600" />
                   </button>
                   <button
                     onClick={() => deleteTemplate(template.slug)}
-                    className="p-2 hover:bg-red-50 rounded-lg"
+                    className="p-2 hover:bg-destructive/10 rounded-lg"
                     title="Löschen"
                   >
-                    <Trash2 className="w-4 h-4 text-red-600" />
+                    <Trash2 className="w-4 h-4 text-destructive" />
                   </button>
                   <button
                     onClick={() => setExpandedId(expandedId === template.id ? null : template.id)}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
+                    className="p-2 hover:bg-muted rounded-lg"
                   >
                     {expandedId === template.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
@@ -670,12 +670,12 @@ export default function QrTemplatesAdminPage() {
 
               {/* Expanded Details */}
               {expandedId === template.id && (
-                <div className="px-4 pb-4 pt-0 border-t border-gray-100">
+                <div className="px-4 pb-4 pt-0 border-t border-border/50">
                   <div className="mt-4 grid grid-cols-4 gap-3">
                     {['A6', 'A5', 'story', 'square'].map(format => (
                       <div key={format} className="text-center">
                         <div 
-                          className="aspect-[3/4] bg-gray-50 rounded border overflow-hidden mb-1"
+                          className="aspect-[3/4] bg-muted/50 rounded border overflow-hidden mb-1"
                           style={{ backgroundColor: template.defaultBgColor }}
                         >
                           <img
@@ -684,12 +684,12 @@ export default function QrTemplatesAdminPage() {
                             className="w-full h-full object-contain"
                           />
                         </div>
-                        <span className="text-xs text-gray-500 uppercase">{format}</span>
+                        <span className="text-xs text-muted-foreground uppercase">{format}</span>
                       </div>
                     ))}
                   </div>
                   {template.description && (
-                    <p className="mt-3 text-sm text-gray-500">{template.description}</p>
+                    <p className="mt-3 text-sm text-muted-foreground">{template.description}</p>
                   )}
                 </div>
               )}

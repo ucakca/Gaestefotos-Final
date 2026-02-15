@@ -157,7 +157,7 @@ export default function EmailTemplatesPage() {
   if (loading) {
     return (
       <div className="p-8">
-        <div className="flex items-center gap-2 text-gray-500">
+        <div className="flex items-center gap-2 text-muted-foreground">
           <Loader2 className="w-5 h-5 animate-spin" />
           Lädt Templates...
         </div>
@@ -168,24 +168,24 @@ export default function EmailTemplatesPage() {
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Mail className="w-6 h-6" />
           E-Mail Templates
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="text-muted-foreground mt-1">
           Verwalte E-Mail-Vorlagen für automatische Benachrichtigungen
         </p>
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center gap-2">
+        <div className="mb-4 p-4 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive flex items-center gap-2">
           <AlertCircle className="w-5 h-5" />
           {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 flex items-center gap-2">
+        <div className="mb-4 p-4 bg-success/10 border border-success/30 rounded-lg text-success flex items-center gap-2">
           <Check className="w-5 h-5" />
           {success}
         </div>
@@ -194,9 +194,9 @@ export default function EmailTemplatesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Template Selection */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50">
-              <h2 className="font-semibold text-gray-700">Templates</h2>
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="p-4 border-b border-border/50 bg-muted/50">
+              <h2 className="font-semibold text-foreground/80">Templates</h2>
             </div>
             <div className="p-2">
               {TEMPLATE_KINDS.map(({ kind, label, description }) => {
@@ -209,18 +209,18 @@ export default function EmailTemplatesPage() {
                     className={`w-full text-left p-3 rounded-lg mb-1 transition-colors ${
                       isSelected 
                         ? 'bg-blue-50 border border-blue-200' 
-                        : 'hover:bg-gray-50'
+                        : 'hover:bg-muted/50'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`font-medium ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
+                      <span className={`font-medium ${isSelected ? 'text-blue-700' : 'text-foreground/80'}`}>
                         {label}
                       </span>
                       {template?.isActive && (
-                        <span className="w-2 h-2 rounded-full bg-green-500" />
+                        <span className="w-2 h-2 rounded-full bg-success/100" />
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
                   </button>
                 );
               })}
@@ -230,9 +230,9 @@ export default function EmailTemplatesPage() {
 
         {/* Editor */}
         <div className="lg:col-span-3 space-y-6">
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-              <h2 className="font-semibold text-gray-700">
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="p-4 border-b border-border/50 bg-muted/50 flex items-center justify-between">
+              <h2 className="font-semibold text-foreground/80">
                 {TEMPLATE_KINDS.find(k => k.kind === selectedKind)?.label} bearbeiten
               </h2>
               <label className="flex items-center gap-2 text-sm">
@@ -248,42 +248,42 @@ export default function EmailTemplatesPage() {
             
             <div className="p-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label className="block text-sm font-medium text-foreground/80 mb-1">Name</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Betreff</label>
+                <label className="block text-sm font-medium text-foreground/80 mb-1">Betreff</label>
                 <input
                   type="text"
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   placeholder="z.B. Du bist eingeladen zu {{eventTitle}}"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground/80 mb-1">
                   HTML Template
-                  <span className="text-gray-400 font-normal ml-2">Variablen: {'{{variable}}'}</span>
+                  <span className="text-muted-foreground/70 font-normal ml-2">Variablen: {'{{variable}}'}</span>
                 </label>
                 <textarea
                   value={formData.html}
                   onChange={(e) => setFormData({ ...formData, html: e.target.value })}
                   rows={12}
                   placeholder="<html>...</html>"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground/80 mb-1">
                   Text-Fallback (Plain Text)
                 </label>
                 <textarea
@@ -291,17 +291,17 @@ export default function EmailTemplatesPage() {
                   onChange={(e) => setFormData({ ...formData, text: e.target.value })}
                   rows={4}
                   placeholder="Nur-Text-Version der E-Mail..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-border rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
-              <div className="pt-2 border-t border-gray-100">
-                <p className="text-xs text-gray-500 mb-2">
+              <div className="pt-2 border-t border-border/50">
+                <p className="text-xs text-muted-foreground mb-2">
                   Verfügbare Variablen für {TEMPLATE_KINDS.find(k => k.kind === selectedKind)?.label}:
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {Object.keys(DEFAULT_VARIABLES[selectedKind]).map(v => (
-                    <code key={v} className="px-2 py-1 bg-gray-100 rounded text-xs text-gray-600">
+                    <code key={v} className="px-2 py-1 bg-muted rounded text-xs text-muted-foreground">
                       {`{{${v}}}`}
                     </code>
                   ))}
@@ -309,7 +309,7 @@ export default function EmailTemplatesPage() {
               </div>
             </div>
 
-            <div className="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between gap-4">
+            <div className="p-4 border-t border-border/50 bg-muted/50 flex items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleSave}
@@ -322,7 +322,7 @@ export default function EmailTemplatesPage() {
                 <button
                   onClick={handlePreview}
                   disabled={previewing}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-2 bg-muted text-foreground/80 rounded-lg font-medium hover:bg-muted/80 disabled:opacity-50 flex items-center gap-2"
                 >
                   {previewing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4" />}
                   Vorschau
@@ -335,12 +335,12 @@ export default function EmailTemplatesPage() {
                   value={testEmail}
                   onChange={(e) => setTestEmail(e.target.value)}
                   placeholder="test@email.de"
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm w-48"
+                  className="px-3 py-2 border border-border rounded-lg text-sm w-48"
                 />
                 <button
                   onClick={handleTestSend}
                   disabled={testSending || !testEmail}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-2 bg-success text-white rounded-lg font-medium hover:bg-success disabled:opacity-50 flex items-center gap-2"
                 >
                   {testSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   Test senden
@@ -351,19 +351,19 @@ export default function EmailTemplatesPage() {
 
           {/* Preview */}
           {previewHtml && (
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-                <h2 className="font-semibold text-gray-700">Vorschau</h2>
+            <div className="bg-card rounded-xl border border-border overflow-hidden">
+              <div className="p-4 border-b border-border/50 bg-muted/50 flex items-center justify-between">
+                <h2 className="font-semibold text-foreground/80">Vorschau</h2>
                 <button
                   onClick={() => setPreviewHtml(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-muted-foreground/70 hover:text-muted-foreground"
                 >
                   Schließen
                 </button>
               </div>
               <div className="p-4">
                 <div 
-                  className="border border-gray-200 rounded-lg p-4 bg-white"
+                  className="border border-border rounded-lg p-4 bg-card"
                   dangerouslySetInnerHTML={{ __html: previewHtml }}
                 />
               </div>

@@ -56,25 +56,25 @@ interface LogType {
 const LevelIcon = ({ level }: { level: string }) => {
   switch (level) {
     case 'IMPORTANT':
-      return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+      return <AlertTriangle className="w-4 h-4 text-warning" />;
     case 'DEBUG':
       return <Info className="w-4 h-4 text-blue-500" />;
     default:
-      return <Info className="w-4 h-4 text-gray-500" />;
+      return <Info className="w-4 h-4 text-muted-foreground" />;
   }
 };
 
 const MethodBadge = ({ method }: { method: string | null }) => {
   if (!method) return null;
   const colors: Record<string, string> = {
-    GET: 'bg-green-500/20 text-green-400',
+    GET: 'bg-success/100/20 text-success/80',
     POST: 'bg-blue-500/20 text-blue-400',
-    PUT: 'bg-yellow-500/20 text-yellow-400',
-    DELETE: 'bg-red-500/20 text-red-400',
+    PUT: 'bg-warning/20 text-warning',
+    DELETE: 'bg-destructive/100/20 text-destructive/80',
     PATCH: 'bg-purple-500/20 text-purple-400',
   };
   return (
-    <span className={`px-2 py-0.5 rounded text-xs font-mono ${colors[method] || 'bg-gray-500/20 text-gray-400'}`}>
+    <span className={`px-2 py-0.5 rounded text-xs font-mono ${colors[method] || 'bg-muted/500/20 text-muted-foreground/70'}`}>
       {method}
     </span>
   );
@@ -232,7 +232,7 @@ export default function LogsPage() {
             <div className="text-sm text-app-muted">Heute</div>
           </div>
           <div className="rounded-xl border border-app-border bg-app-card p-4">
-            <div className="text-2xl font-bold text-yellow-500">{stats.byLevel.important.toLocaleString('de-DE')}</div>
+            <div className="text-2xl font-bold text-warning">{stats.byLevel.important.toLocaleString('de-DE')}</div>
             <div className="text-sm text-app-muted">Important</div>
           </div>
           <div className="rounded-xl border border-app-border bg-app-card p-4">
@@ -277,7 +277,7 @@ export default function LogsPage() {
           >
             <Filter className="w-4 h-4" />
             Filter
-            {hasActiveFilters && <span className="ml-1 w-2 h-2 bg-red-500 rounded-full" />}
+            {hasActiveFilters && <span className="ml-1 w-2 h-2 bg-destructive/100 rounded-full" />}
           </button>
         </div>
       </div>

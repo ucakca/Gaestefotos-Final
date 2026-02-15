@@ -185,10 +185,10 @@ export default function UsersPage() {
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
                             user.role === 'ADMIN'
-                              ? 'bg-red-500/10 text-red-500'
+                              ? 'bg-destructive/100/10 text-destructive'
                               : user.role === 'HOST'
                               ? 'bg-blue-500/10 text-blue-500'
-                              : 'bg-gray-500/10 text-gray-500'
+                              : 'bg-muted/500/10 text-muted-foreground'
                           }`}
                         >
                           <Shield className="w-3 h-3 inline mr-1" />
@@ -277,7 +277,7 @@ export default function UsersPage() {
                         <div className="flex-1" />
                         <button
                           onClick={(e) => { e.stopPropagation(); deleteUser(user.id, user.email); }}
-                          className="px-2.5 py-1 rounded-lg text-xs font-medium text-red-500 border border-red-500/20 hover:bg-red-500/10 transition-colors flex items-center gap-1"
+                          className="px-2.5 py-1 rounded-lg text-xs font-medium text-destructive border border-destructive/20 hover:bg-destructive/100/10 transition-colors flex items-center gap-1"
                         >
                           <Trash2 className="w-3 h-3" />
                           Löschen

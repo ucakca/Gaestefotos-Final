@@ -90,20 +90,20 @@ export default function MaintenancePage() {
       <div
         className={`rounded-2xl border p-6 ${
           settings.enabled
-            ? 'border-red-500/30 bg-red-500/5'
-            : 'border-green-500/30 bg-green-500/5'
+            ? 'border-destructive/30 bg-destructive/100/5'
+            : 'border-success/30 bg-success/100/5'
         }`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div
               className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                settings.enabled ? 'bg-red-500/10' : 'bg-green-500/10'
+                settings.enabled ? 'bg-destructive/100/10' : 'bg-success/100/10'
               }`}
             >
               <Power
                 className={`w-6 h-6 ${
-                  settings.enabled ? 'text-red-500' : 'text-green-500'
+                  settings.enabled ? 'text-destructive' : 'text-success'
                 }`}
               />
             </div>
@@ -122,7 +122,7 @@ export default function MaintenancePage() {
             onClick={handleToggle}
             disabled={saving}
             variant={settings.enabled ? 'outline' : 'default'}
-            className={settings.enabled ? '' : 'bg-red-500 hover:bg-red-600'}
+            className={settings.enabled ? '' : 'bg-destructive/100 hover:bg-destructive'}
           >
             {saving ? (
               <Loader2 className="w-4 h-4 mr-1 animate-spin" />
@@ -136,10 +136,10 @@ export default function MaintenancePage() {
 
       {/* Warning */}
       {settings.enabled && (
-        <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4">
+        <div className="rounded-xl border border-yellow-500/30 bg-warning/5 p-4">
           <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
-            <p className="text-sm text-yellow-400">
+            <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0" />
+            <p className="text-sm text-warning">
               <strong>Achtung:</strong> Während des Maintenance Modes können Benutzer 
               keine Fotos hochladen oder auf ihre Events zugreifen.
             </p>

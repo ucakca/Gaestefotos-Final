@@ -131,10 +131,10 @@ export default function ThemeSettingsPage() {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-8 bg-muted/80 rounded w-1/4"></div>
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="h-12 bg-gray-200 rounded"></div>
+              <div key={i} className="h-12 bg-muted/80 rounded"></div>
             ))}
           </div>
         </div>
@@ -147,39 +147,39 @@ export default function ThemeSettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Palette className="w-6 h-6 text-pink-600" />
             Theme Settings
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-muted-foreground mt-1">
             CSS-Variablen für App-Farben anpassen
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={loadTheme}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-muted rounded-lg transition-colors"
             title="Neu laden"
           >
-            <RefreshCw className="w-5 h-5 text-gray-600" />
+            <RefreshCw className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
       </div>
 
       {/* Alerts */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 text-destructive">
           {error}
         </div>
       )}
       {success && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-700">
+        <div className="bg-success/10 border border-success/30 rounded-xl p-4 text-success">
           Theme erfolgreich gespeichert!
         </div>
       )}
 
       {/* Color Preview */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4">
+      <div className="bg-card border border-border rounded-xl p-4">
         <h2 className="font-semibold mb-3">Vorschau</h2>
         <div className="flex flex-wrap gap-3">
           {tokens.map((t, i) => (
@@ -188,7 +188,7 @@ export default function ThemeSettingsPage() {
                 className="w-8 h-8 rounded-lg border-2 border-white shadow-md"
                 style={{ backgroundColor: t.value }}
               />
-              <span className="text-xs text-gray-500 font-mono">{t.key}</span>
+              <span className="text-xs text-muted-foreground font-mono">{t.key}</span>
             </div>
           ))}
         </div>
@@ -196,7 +196,7 @@ export default function ThemeSettingsPage() {
           {previewMode ? (
             <button
               onClick={removePreview}
-              className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm flex items-center gap-1"
+              className="px-3 py-1.5 bg-muted hover:bg-muted/80 rounded-lg text-sm flex items-center gap-1"
             >
               <Eye className="w-4 h-4" /> Vorschau beenden
             </button>
@@ -212,19 +212,19 @@ export default function ThemeSettingsPage() {
       </div>
 
       {/* Token Editor */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="p-4 border-b border-border/50 flex items-center justify-between">
           <h2 className="font-semibold">CSS-Variablen</h2>
           <div className="flex gap-2">
             <button
               onClick={resetToDefaults}
-              className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg flex items-center gap-1"
+              className="px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted rounded-lg flex items-center gap-1"
             >
               <RotateCcw className="w-4 h-4" /> Zurücksetzen
             </button>
             <button
               onClick={addToken}
-              className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1"
+              className="px-3 py-1.5 text-sm bg-muted hover:bg-muted/80 rounded-lg flex items-center gap-1"
             >
               <Plus className="w-4 h-4" /> Hinzufügen
             </button>
@@ -248,7 +248,7 @@ export default function ThemeSettingsPage() {
                 value={token.key}
                 onChange={(e) => updateToken(index, 'key', e.target.value)}
                 placeholder="--variable-name"
-                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="flex-1 px-3 py-2 border border-border rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
               />
 
               {/* Value Input */}
@@ -257,7 +257,7 @@ export default function ThemeSettingsPage() {
                 value={token.value}
                 onChange={(e) => updateToken(index, 'value', e.target.value)}
                 placeholder="#000000"
-                className="w-32 px-3 py-2 border border-gray-200 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="w-32 px-3 py-2 border border-border rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
               />
 
               {/* Quick Colors */}
@@ -275,7 +275,7 @@ export default function ThemeSettingsPage() {
               {/* Delete */}
               <button
                 onClick={() => removeToken(index)}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
               </button>

@@ -38,7 +38,7 @@ interface StepPaletteProps {
 export default function StepPalette({ onAddStep }: StepPaletteProps) {
   return (
     <div className="space-y-4">
-      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-1">Step-Palette</h3>
+      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-1">Step-Palette</h3>
       {STEP_CATEGORIES.map((cat) => {
         const steps = STEP_TYPES.filter(s => s.category === cat.key);
         const style = CATEGORY_STYLE[cat.key];

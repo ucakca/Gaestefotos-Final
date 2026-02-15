@@ -52,7 +52,7 @@ function WorkflowNodeComponent({ data, selected }: NodeProps) {
 
   return (
     <div
-      className={`rounded-lg border-2 bg-white shadow-md min-w-[180px] max-w-[220px] transition-shadow ${
+      className={`rounded-lg border-2 bg-card shadow-md min-w-[180px] max-w-[220px] transition-shadow ${
         selected ? 'shadow-lg ring-2 ring-blue-400' : ''
       } ${colors.border}`}
     >
@@ -60,7 +60,7 @@ function WorkflowNodeComponent({ data, selected }: NodeProps) {
       <Handle
         type="target"
         position={Position.Left}
-        className="!w-3 !h-3 !bg-gray-400 !border-2 !border-white"
+        className="!w-3 !h-3 !bg-muted/70 !border-2 !border-white"
       />
 
       {/* Header with category badge and close */}
@@ -79,29 +79,29 @@ function WorkflowNodeComponent({ data, selected }: NodeProps) {
           <div className={`w-5 h-5 rounded flex items-center justify-center ${colors.dot}`}>
             <IconComp className="w-3 h-3 text-white" />
           </div>
-          <span className="text-sm font-semibold text-gray-800 truncate">
+          <span className="text-sm font-semibold text-foreground truncate">
             {nodeData.label}
           </span>
-          <button className="ml-auto text-gray-400 hover:text-gray-600">
+          <button className="ml-auto text-muted-foreground/70 hover:text-muted-foreground">
             <Settings className="w-3.5 h-3.5" />
           </button>
         </div>
 
         {/* Step number & config hint */}
         <div className="flex items-center justify-between mt-1.5">
-          <span className="text-[10px] text-gray-400">
+          <span className="text-[10px] text-muted-foreground/70">
             {nodeData.stepNumber}. {nodeData.config?.animation || nodeData.config?.mode || nodeData.config?.captureMode || ''}
           </span>
-          <span className="text-[10px] text-gray-400">⚙</span>
+          <span className="text-[10px] text-muted-foreground/70">⚙</span>
         </div>
       </div>
 
       {/* Output handles */}
       {outputs.map((output, idx) => {
-        const handleColor = output.type === 'skip' ? '!bg-yellow-400'
-          : output.type === 'retake' ? '!bg-red-400'
+        const handleColor = output.type === 'skip' ? '!bg-warning/80'
+          : output.type === 'retake' ? '!bg-destructive/80'
           : output.type === 'conditional' ? '!bg-purple-400'
-          : '!bg-gray-400';
+          : '!bg-muted/70';
 
         return (
           <Handle
@@ -121,12 +121,12 @@ function WorkflowNodeComponent({ data, selected }: NodeProps) {
       {outputs.length > 1 && (
         <div className="px-3 pb-2 space-y-0.5">
           {outputs.map((output) => {
-            const dotColor = output.type === 'skip' ? 'bg-yellow-400'
-              : output.type === 'retake' ? 'bg-red-400'
-              : 'bg-gray-400';
+            const dotColor = output.type === 'skip' ? 'bg-warning/80'
+              : output.type === 'retake' ? 'bg-destructive/80'
+              : 'bg-muted/70';
             return (
               <div key={output.id} className="flex items-center gap-1.5 justify-end">
-                <span className="text-[9px] text-gray-500">{output.label}</span>
+                <span className="text-[9px] text-muted-foreground">{output.label}</span>
                 <div className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
               </div>
             );

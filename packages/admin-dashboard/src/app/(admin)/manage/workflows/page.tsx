@@ -294,15 +294,15 @@ function WorkflowEditorInner() {
   // ──────────────────────────────────────────────────────────────────────────
   if (showList) {
     return (
-      <div className="h-full flex flex-col bg-gray-50">
+      <div className="h-full flex flex-col bg-muted/50">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200">
+        <div className="flex items-center justify-between px-6 py-4 bg-card border-b border-border">
           <div>
-            <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
               <Workflow className="w-5 h-5 text-blue-500" />
               Workflow Builder
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5">Visuelle Booth-Abläufe erstellen und verwalten</p>
+            <p className="text-sm text-muted-foreground mt-0.5">Visuelle Booth-Abläufe erstellen und verwalten</p>
           </div>
           <button
             onClick={handleNew}
@@ -317,12 +317,12 @@ function WorkflowEditorInner() {
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground/70" />
             </div>
           ) : workflows.length === 0 ? (
             <div className="text-center py-20">
-              <Workflow className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-              <p className="text-gray-500 mb-4">Noch keine Workflows erstellt</p>
+              <Workflow className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+              <p className="text-muted-foreground mb-4">Noch keine Workflows erstellt</p>
               <button
                 onClick={handleNew}
                 className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
@@ -337,13 +337,13 @@ function WorkflowEditorInner() {
                 return (
                   <div
                     key={wf.id}
-                    className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow cursor-pointer group"
+                    className="bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow cursor-pointer group"
                     onClick={() => loadWorkflow(wf)}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-base font-semibold text-gray-800 truncate">{wf.name}</h3>
+                          <h3 className="text-base font-semibold text-foreground truncate">{wf.name}</h3>
                           {wf.isDefault && (
                             <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium">Standard</span>
                           )}
@@ -352,9 +352,9 @@ function WorkflowEditorInner() {
                           )}
                         </div>
                         {wf.description && (
-                          <p className="text-sm text-gray-500 truncate">{wf.description}</p>
+                          <p className="text-sm text-muted-foreground truncate">{wf.description}</p>
                         )}
-                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground/70">
                           <span>{nodeCount} Steps</span>
                           <span>·</span>
                           <span>{new Date(wf.createdAt).toLocaleDateString('de-DE')}</span>
@@ -363,7 +363,7 @@ function WorkflowEditorInner() {
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDelete(wf.id); }}
-                          className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"
+                          className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground/70 hover:text-destructive"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -384,14 +384,14 @@ function WorkflowEditorInner() {
   // ──────────────────────────────────────────────────────────────────────────
   if (showPresets) {
     return (
-      <div className="h-full flex flex-col bg-gray-50">
-        <div className="flex items-center gap-3 px-6 py-4 bg-white border-b border-gray-200">
-          <button onClick={handleBackToList} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500">
+      <div className="h-full flex flex-col bg-muted/50">
+        <div className="flex items-center gap-3 px-6 py-4 bg-card border-b border-border">
+          <button onClick={handleBackToList} className="p-2 rounded-lg hover:bg-muted text-muted-foreground">
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div>
-            <h2 className="text-lg font-bold text-gray-800">Vorlage wählen</h2>
-            <p className="text-sm text-gray-500">Starte mit einem Preset oder erstelle von Grund auf</p>
+            <h2 className="text-lg font-bold text-foreground">Vorlage wählen</h2>
+            <p className="text-sm text-muted-foreground">Starte mit einem Preset oder erstelle von Grund auf</p>
           </div>
         </div>
 
@@ -400,11 +400,11 @@ function WorkflowEditorInner() {
             {/* Empty workflow */}
             <button
               onClick={() => { setShowPresets(false); }}
-              className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-6 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all group"
+              className="bg-card rounded-xl border-2 border-dashed border-border p-6 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all group"
             >
-              <Plus className="w-8 h-8 mx-auto text-gray-400 group-hover:text-blue-500 mb-2" />
-              <h3 className="font-semibold text-gray-700 group-hover:text-blue-600">Leerer Workflow</h3>
-              <p className="text-xs text-gray-400 mt-1">Von Grund auf erstellen</p>
+              <Plus className="w-8 h-8 mx-auto text-muted-foreground/70 group-hover:text-blue-500 mb-2" />
+              <h3 className="font-semibold text-foreground/80 group-hover:text-blue-600">Leerer Workflow</h3>
+              <p className="text-xs text-muted-foreground/70 mt-1">Von Grund auf erstellen</p>
             </button>
 
             {/* Presets */}
@@ -414,12 +414,12 @@ function WorkflowEditorInner() {
                 <button
                   key={preset.id}
                   onClick={() => loadPreset(preset)}
-                  className="bg-white rounded-xl border border-gray-200 p-6 text-left hover:shadow-md hover:border-blue-300 transition-all group"
+                  className="bg-card rounded-xl border border-border p-6 text-left hover:shadow-md hover:border-blue-300 transition-all group"
                 >
                   <PresetIcon className="w-8 h-8 text-blue-500 mb-2" />
-                  <h3 className="font-semibold text-gray-800">{preset.name}</h3>
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{preset.description}</p>
-                  <div className="flex items-center gap-2 mt-3 text-[10px] text-gray-400">
+                  <h3 className="font-semibold text-foreground">{preset.name}</h3>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{preset.description}</p>
+                  <div className="flex items-center gap-2 mt-3 text-[10px] text-muted-foreground/70">
                     <span>{preset.nodes.length} Nodes</span>
                     <span>·</span>
                     <span>{preset.edges.length} Verbindungen</span>
@@ -437,10 +437,10 @@ function WorkflowEditorInner() {
   // RENDER: Visual Editor
   // ──────────────────────────────────────────────────────────────────────────
   return (
-    <div className="h-full flex flex-col bg-gray-100">
+    <div className="h-full flex flex-col bg-muted">
       {/* Top bar */}
-      <div className="flex items-center gap-3 px-4 py-2.5 bg-white border-b border-gray-200 z-10">
-        <button onClick={handleBackToList} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500">
+      <div className="flex items-center gap-3 px-4 py-2.5 bg-card border-b border-border z-10">
+        <button onClick={handleBackToList} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground">
           <ChevronLeft className="w-5 h-5" />
         </button>
 
@@ -450,29 +450,29 @@ function WorkflowEditorInner() {
             value={workflowName}
             onChange={(e) => setWorkflowName(e.target.value)}
             placeholder="Workflow-Name *"
-            className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-semibold text-gray-800 w-64 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="px-3 py-1.5 rounded-lg border border-border text-sm font-semibold text-foreground w-64 focus:outline-none focus:ring-2 focus:ring-blue-300"
           />
           <input
             type="text"
             value={workflowDesc}
             onChange={(e) => setWorkflowDesc(e.target.value)}
             placeholder="Beschreibung (optional)"
-            className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 flex-1 max-w-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="px-3 py-1.5 rounded-lg border border-border text-sm text-muted-foreground flex-1 max-w-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
           />
         </div>
 
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-1.5 text-xs text-gray-600">
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="rounded" />
             Öffentlich
           </label>
-          <label className="flex items-center gap-1.5 text-xs text-gray-600">
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <input type="checkbox" checked={isDefault} onChange={(e) => setIsDefault(e.target.checked)} className="rounded" />
             Standard
           </label>
           <button
             onClick={() => setShowPresets(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted-foreground border border-border rounded-lg hover:bg-muted/50"
           >
             <FolderOpen className="w-3.5 h-3.5" />
             Vorlagen
@@ -491,7 +491,7 @@ function WorkflowEditorInner() {
       {/* Main area: palette + canvas + config */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left: Step Palette */}
-        <div className="w-56 bg-white border-r border-gray-200 overflow-y-auto p-3 flex-shrink-0">
+        <div className="w-56 bg-card border-r border-border overflow-y-auto p-3 flex-shrink-0">
           <StepPalette onAddStep={handleAddStep} />
         </div>
 
@@ -541,10 +541,10 @@ function WorkflowEditorInner() {
             {/* Empty state */}
             {nodes.length === 0 && (
               <Panel position="top-center">
-                <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 px-8 py-6 text-center mt-20">
-                  <Workflow className="w-10 h-10 mx-auto text-gray-300 mb-2" />
-                  <p className="text-sm text-gray-500 mb-1">Ziehe Steps aus der Palette hierher</p>
-                  <p className="text-xs text-gray-400">oder klicke auf einen Step-Typ um ihn hinzuzufügen</p>
+                <div className="bg-card/90 backdrop-blur-sm rounded-xl shadow-lg border border-border px-8 py-6 text-center mt-20">
+                  <Workflow className="w-10 h-10 mx-auto text-muted-foreground/50 mb-2" />
+                  <p className="text-sm text-muted-foreground mb-1">Ziehe Steps aus der Palette hierher</p>
+                  <p className="text-xs text-muted-foreground/70">oder klicke auf einen Step-Typ um ihn hinzuzufügen</p>
                 </div>
               </Panel>
             )}
@@ -552,7 +552,7 @@ function WorkflowEditorInner() {
             {/* Stats */}
             {nodes.length > 0 && (
               <Panel position="top-right">
-                <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-sm border border-gray-200 px-3 py-2 text-xs text-gray-500 flex items-center gap-3">
+                <div className="bg-card/90 backdrop-blur-sm rounded-lg shadow-sm border border-border px-3 py-2 text-xs text-muted-foreground flex items-center gap-3">
                   <span>{nodes.length} Nodes</span>
                   <span>·</span>
                   <span>{edges.length} Edges</span>

@@ -121,9 +121,9 @@ export default function AiCachePage() {
   };
 
   const hitRateColor = (rate: number) => {
-    if (rate >= 80) return 'text-green-500';
-    if (rate >= 50) return 'text-yellow-500';
-    return 'text-red-500';
+    if (rate >= 80) return 'text-success';
+    if (rate >= 50) return 'text-warning';
+    return 'text-destructive';
   };
 
   return (
@@ -141,12 +141,12 @@ export default function AiCachePage() {
         </div>
         <div className="flex items-center gap-3">
           {isOnline ? (
-            <span className="flex items-center gap-2 text-green-500 text-sm">
+            <span className="flex items-center gap-2 text-success text-sm">
               <Wifi className="w-4 h-4" />
               AI Online
             </span>
           ) : (
-            <span className="flex items-center gap-2 text-red-500 text-sm">
+            <span className="flex items-center gap-2 text-destructive text-sm">
               <WifiOff className="w-4 h-4" />
               AI Offline
             </span>
@@ -184,7 +184,7 @@ export default function AiCachePage() {
               <CheckCircle className="w-4 h-4" />
               Cache Hits
             </div>
-            <div className="text-2xl font-bold text-green-500">
+            <div className="text-2xl font-bold text-success">
               {stats.totalHits.toLocaleString('de-DE')}
             </div>
           </div>
@@ -268,7 +268,7 @@ export default function AiCachePage() {
           </Button>
 
           {lastWarmUp && (
-            <div className={`text-sm ${lastWarmUp.success ? 'text-green-500' : 'text-red-500'}`}>
+            <div className={`text-sm ${lastWarmUp.success ? 'text-success' : 'text-destructive'}`}>
               {lastWarmUp.success ? (
                 <span className="flex items-center gap-1">
                   <CheckCircle className="w-4 h-4" />
@@ -286,8 +286,8 @@ export default function AiCachePage() {
       </div>
 
       {/* Danger Zone */}
-      <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-6">
-        <h3 className="font-semibold text-red-500 mb-2">Gefahrenzone</h3>
+      <div className="rounded-xl border border-destructive/30 bg-destructive/100/5 p-6">
+        <h3 className="font-semibold text-destructive mb-2">Gefahrenzone</h3>
         <p className="text-sm text-app-muted mb-4">
           Das Leeren des Cache kann die Performance vorübergehend verschlechtern,
           bis neue Einträge generiert werden.
@@ -296,7 +296,7 @@ export default function AiCachePage() {
           variant="outline"
           onClick={handleClearCache}
           disabled={clearing}
-          className="border-red-500/50 text-red-500 hover:bg-red-500/10"
+          className="border-destructive/50 text-destructive hover:bg-destructive/100/10"
         >
           {clearing ? (
             <>

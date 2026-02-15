@@ -133,8 +133,8 @@ export default function CreateEventPage() {
     return (
       <div className="mx-auto w-full max-w-lg py-12">
         <div className="rounded-2xl border border-app-border bg-app-card shadow-sm p-8 text-center">
-          <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4">
-            <Check className="w-8 h-8 text-green-500" />
+          <div className="w-16 h-16 rounded-full bg-success/100/10 flex items-center justify-center mx-auto mb-4">
+            <Check className="w-8 h-8 text-success" />
           </div>
           <h2 className="text-xl font-bold text-app-fg mb-2">Event erstellt!</h2>
           <p className="text-app-muted text-sm mb-2">
@@ -267,7 +267,7 @@ export default function CreateEventPage() {
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-app-fg mb-1.5">
-              Event-Titel <span className="text-red-400">*</span>
+              Event-Titel <span className="text-destructive/80">*</span>
             </label>
             <Input
               value={title}
@@ -348,7 +348,7 @@ export default function CreateEventPage() {
 
       {/* Error */}
       {error && (
-        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-destructive/100/10 border border-destructive/20 text-destructive/80 text-sm">
           <AlertTriangle className="w-4 h-4 flex-shrink-0" />
           {error}
         </div>

@@ -8,6 +8,26 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        foreground: 'var(--foreground)',
+        background: 'var(--background)',
+        card: 'var(--card)',
+        border: 'var(--border)',
+        muted: {
+          DEFAULT: 'var(--muted)',
+          foreground: 'var(--muted-foreground)',
+        },
+        destructive: {
+          DEFAULT: 'var(--destructive)',
+          foreground: 'var(--destructive-foreground)',
+        },
+        success: {
+          DEFAULT: 'var(--success)',
+          foreground: 'var(--success-foreground)',
+        },
+        warning: {
+          DEFAULT: 'var(--warning)',
+          foreground: 'var(--warning-foreground)',
+        },
         app: {
           bg: 'var(--app-bg)',
           fg: 'var(--app-fg)',

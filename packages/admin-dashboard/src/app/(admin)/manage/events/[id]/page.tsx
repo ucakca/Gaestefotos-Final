@@ -307,10 +307,10 @@ export default function EventDetailPage() {
             <span
               className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                 event.deletedAt
-                  ? 'bg-red-500/10 text-red-500'
+                  ? 'bg-destructive/100/10 text-destructive'
                   : event.isActive
-                  ? 'bg-green-500/10 text-green-500'
-                  : 'bg-yellow-500/10 text-yellow-600'
+                  ? 'bg-success/100/10 text-success'
+                  : 'bg-warning/10 text-warning'
               }`}
             >
               {event.deletedAt ? 'Gelöscht' : event.isActive ? 'Aktiv' : 'Inaktiv'}
@@ -358,7 +358,7 @@ export default function EventDetailPage() {
               <Button size="sm" variant="outline" onClick={() => { setEditing(false); if (event) initEditForm(event); }}>
                 <X className="w-4 h-4 mr-1" /> Abbrechen
               </Button>
-              <Button size="sm" onClick={handleSave} disabled={saving} className="bg-green-600 hover:bg-green-700 text-white">
+              <Button size="sm" onClick={handleSave} disabled={saving} className="bg-success hover:bg-success text-white">
                 <Save className="w-4 h-4 mr-1" /> {saving ? 'Speichere...' : 'Speichern'}
               </Button>
             </div>
@@ -622,7 +622,7 @@ export default function EventDetailPage() {
                             <div className="text-xs text-app-muted truncate">{addon.description}</div>
                           )}
                           {addon.priceEurCents && (
-                            <div className="text-xs text-green-500 font-medium mt-0.5">
+                            <div className="text-xs text-success font-medium mt-0.5">
                               {(addon.priceEurCents / 100).toFixed(0)} €
                             </div>
                           )}
@@ -639,7 +639,7 @@ export default function EventDetailPage() {
                         disabled={togglingAddon === addon.sku}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${
                           addon.isActive
-                            ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
+                            ? 'bg-destructive/100/10 text-destructive hover:bg-destructive/100/20'
                             : 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20'
                         }`}
                       >
@@ -767,9 +767,9 @@ export default function EventDetailPage() {
             {toggling ? (
               <Loader2 className="w-4 h-4 mr-1 animate-spin" />
             ) : event.isActive ? (
-              <ToggleRight className="w-4 h-4 mr-1 text-green-500" />
+              <ToggleRight className="w-4 h-4 mr-1 text-success" />
             ) : (
-              <ToggleLeft className="w-4 h-4 mr-1 text-yellow-500" />
+              <ToggleLeft className="w-4 h-4 mr-1 text-warning" />
             )}
             {event.isActive ? 'Deaktivieren' : 'Aktivieren'}
           </Button>
@@ -778,7 +778,7 @@ export default function EventDetailPage() {
             variant="outline"
             onClick={softDelete}
             disabled={deleting || !!event.deletedAt}
-            className="text-red-500 border-red-500/30 hover:bg-red-500/10"
+            className="text-destructive border-destructive/30 hover:bg-destructive/100/10"
           >
             {deleting ? (
               <Loader2 className="w-4 h-4 mr-1 animate-spin" />
@@ -796,7 +796,7 @@ export default function EventDetailPage() {
 function StatCard({ icon: Icon, label, value, color, clickable }: { icon: any; label: string; value: number; color: string; clickable?: boolean }) {
   const colorMap: Record<string, string> = {
     blue: 'bg-blue-500/10 text-blue-500',
-    green: 'bg-green-500/10 text-green-500',
+    green: 'bg-success/100/10 text-success',
     purple: 'bg-purple-500/10 text-purple-500',
   };
   return (

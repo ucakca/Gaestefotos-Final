@@ -90,23 +90,23 @@ export default function EmbedCodePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Code2 className="h-6 w-6 text-indigo-600" />
             Gallery Embed Code
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Bette deine Event-Galerie auf externen Websites ein
           </p>
         </div>
       </div>
 
       {/* Event Selector */}
-      <div className="bg-white rounded-xl border p-6 shadow-sm">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Event auswählen</label>
+      <div className="bg-card rounded-xl border p-6 shadow-sm">
+        <label className="block text-sm font-medium text-foreground/80 mb-2">Event auswählen</label>
         <select
           value={selectedEventId}
           onChange={(e) => handleEventChange(e.target.value)}
-          className="w-full max-w-md rounded-lg border-gray-300 border px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          className="w-full max-w-md rounded-lg border-border border px-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
         >
           <option value="">— Event wählen —</option>
           {events.map((ev) => (
@@ -118,50 +118,50 @@ export default function EmbedCodePage() {
       </div>
 
       {loading && (
-        <div className="bg-white rounded-xl border p-12 text-center shadow-sm">
+        <div className="bg-card rounded-xl border p-12 text-center shadow-sm">
           <div className="animate-spin h-8 w-8 border-2 border-indigo-600 border-t-transparent rounded-full mx-auto" />
-          <p className="mt-3 text-sm text-gray-500">Lade Embed-Code...</p>
+          <p className="mt-3 text-sm text-muted-foreground">Lade Embed-Code...</p>
         </div>
       )}
 
       {embedData && !loading && (
         <>
           {/* URLs */}
-          <div className="bg-white rounded-xl border p-6 shadow-sm">
+          <div className="bg-card rounded-xl border p-6 shadow-sm">
             <h2 className="text-lg font-semibold mb-4">URLs</h2>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-gray-600 w-28">Galerie:</span>
-                <code className="flex-1 bg-gray-50 px-3 py-2 rounded-lg text-sm text-gray-800 font-mono truncate">
+                <span className="text-sm font-medium text-muted-foreground w-28">Galerie:</span>
+                <code className="flex-1 bg-muted/50 px-3 py-2 rounded-lg text-sm text-foreground font-mono truncate">
                   {embedData.urls.gallery}
                 </code>
                 <button
                   onClick={() => copyToClipboard(embedData.urls.gallery, 'gallery-url')}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-muted rounded-lg transition-colors"
                 >
-                  {copied === 'gallery-url' ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4 text-gray-400" />}
+                  {copied === 'gallery-url' ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4 text-muted-foreground/70" />}
                 </button>
-                <a href={embedData.urls.gallery} target="_blank" rel="noopener" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <ExternalLink className="h-4 w-4 text-gray-400" />
+                <a href={embedData.urls.gallery} target="_blank" rel="noopener" className="p-2 hover:bg-muted rounded-lg transition-colors">
+                  <ExternalLink className="h-4 w-4 text-muted-foreground/70" />
                 </a>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-gray-600 w-28">Embed URL:</span>
-                <code className="flex-1 bg-gray-50 px-3 py-2 rounded-lg text-sm text-gray-800 font-mono truncate">
+                <span className="text-sm font-medium text-muted-foreground w-28">Embed URL:</span>
+                <code className="flex-1 bg-muted/50 px-3 py-2 rounded-lg text-sm text-foreground font-mono truncate">
                   {embedData.urls.embed}
                 </code>
                 <button
                   onClick={() => copyToClipboard(embedData.urls.embed, 'embed-url')}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-muted rounded-lg transition-colors"
                 >
-                  {copied === 'embed-url' ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4 text-gray-400" />}
+                  {copied === 'embed-url' ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4 text-muted-foreground/70" />}
                 </button>
               </div>
             </div>
           </div>
 
           {/* Embed Code Tabs */}
-          <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+          <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
             <div className="border-b flex">
               {tabs.map((tab) => (
                 <button
@@ -170,7 +170,7 @@ export default function EmbedCodePage() {
                   className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
                     activeTab === tab.key
                       ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      : 'border-transparent text-muted-foreground hover:text-foreground/80 hover:bg-muted/50'
                   }`}
                 >
                   <tab.icon className="h-4 w-4" />
@@ -181,7 +181,7 @@ export default function EmbedCodePage() {
 
             <div className="p-6">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   {activeTab === 'iframe' && 'Kopiere diesen Code, um die Galerie als iFrame einzubetten.'}
                   {activeTab === 'script' && 'Leichtgewichtiger Script-Tag mit automatischer Größenanpassung.'}
                   {activeTab === 'link' && 'Einfacher Button-Link zur Galerie.'}
@@ -202,7 +202,7 @@ export default function EmbedCodePage() {
                   )}
                 </button>
               </div>
-              <pre className="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed">
+              <pre className="bg-foreground text-success/80 p-4 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed">
                 {activeTab === 'iframe' && embedData.embedCodes.iframe}
                 {activeTab === 'script' && embedData.embedCodes.script}
                 {activeTab === 'link' && embedData.embedCodes.linkButton}
@@ -211,14 +211,14 @@ export default function EmbedCodePage() {
           </div>
 
           {/* Preview */}
-          <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+          <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
             <div className="border-b px-6 py-3 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Vorschau</h2>
-              <div className="flex gap-1 bg-gray-100 rounded-lg p-0.5">
+              <div className="flex gap-1 bg-muted rounded-lg p-0.5">
                 <button
                   onClick={() => setPreviewMode('desktop')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                    previewMode === 'desktop' ? 'bg-white shadow text-gray-900' : 'text-gray-500'
+                    previewMode === 'desktop' ? 'bg-card shadow text-foreground' : 'text-muted-foreground'
                   }`}
                 >
                   <Monitor className="h-3.5 w-3.5" /> Desktop
@@ -226,16 +226,16 @@ export default function EmbedCodePage() {
                 <button
                   onClick={() => setPreviewMode('mobile')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                    previewMode === 'mobile' ? 'bg-white shadow text-gray-900' : 'text-gray-500'
+                    previewMode === 'mobile' ? 'bg-card shadow text-foreground' : 'text-muted-foreground'
                   }`}
                 >
                   <Smartphone className="h-3.5 w-3.5" /> Mobile
                 </button>
               </div>
             </div>
-            <div className="p-6 bg-gray-50 flex justify-center">
+            <div className="p-6 bg-muted/50 flex justify-center">
               <div
-                className={`bg-white border rounded-xl overflow-hidden shadow-sm transition-all ${
+                className={`bg-card border rounded-xl overflow-hidden shadow-sm transition-all ${
                   previewMode === 'desktop' ? 'w-full max-w-4xl' : 'w-[375px]'
                 }`}
               >
@@ -253,9 +253,9 @@ export default function EmbedCodePage() {
       )}
 
       {!selectedEventId && !loading && (
-        <div className="bg-white rounded-xl border p-12 text-center shadow-sm">
-          <Code2 className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">Wähle ein Event aus, um den Embed-Code zu generieren</p>
+        <div className="bg-card rounded-xl border p-12 text-center shadow-sm">
+          <Code2 className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">Wähle ein Event aus, um den Embed-Code zu generieren</p>
         </div>
       )}
     </div>

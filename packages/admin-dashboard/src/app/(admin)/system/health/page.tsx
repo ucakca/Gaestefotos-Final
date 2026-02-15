@@ -63,13 +63,13 @@ const formatUptime = (seconds: number) => {
 const StatusIcon = ({ status }: { status: string }) => {
   switch (status) {
     case 'ok':
-      return <CheckCircle2 className="w-5 h-5 text-green-500" />;
+      return <CheckCircle2 className="w-5 h-5 text-success" />;
     case 'warning':
-      return <AlertCircle className="w-5 h-5 text-yellow-500" />;
+      return <AlertCircle className="w-5 h-5 text-warning" />;
     case 'error':
-      return <XCircle className="w-5 h-5 text-red-500" />;
+      return <XCircle className="w-5 h-5 text-destructive" />;
     default:
-      return <AlertCircle className="w-5 h-5 text-gray-500" />;
+      return <AlertCircle className="w-5 h-5 text-muted-foreground" />;
   }
 };
 
@@ -161,10 +161,10 @@ export default function HealthPage() {
 
       {/* Error */}
       {error && (
-        <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-4">
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/100/5 p-4">
           <div className="flex items-center gap-3">
-            <XCircle className="w-5 h-5 text-red-500" />
-            <p className="text-sm text-red-400">{error}</p>
+            <XCircle className="w-5 h-5 text-destructive" />
+            <p className="text-sm text-destructive/80">{error}</p>
           </div>
         </div>
       )}
@@ -179,15 +179,15 @@ export default function HealthPage() {
           <div
             className={`rounded-2xl border p-6 ${
               health.ok
-                ? 'border-green-500/30 bg-green-500/5'
-                : 'border-red-500/30 bg-red-500/5'
+                ? 'border-success/30 bg-success/100/5'
+                : 'border-destructive/30 bg-destructive/100/5'
             }`}
           >
             <div className="flex items-center gap-4">
               {health.ok ? (
-                <CheckCircle2 className="w-12 h-12 text-green-500" />
+                <CheckCircle2 className="w-12 h-12 text-success" />
               ) : (
-                <XCircle className="w-12 h-12 text-red-500" />
+                <XCircle className="w-12 h-12 text-destructive" />
               )}
               <div>
                 <h2 className="text-xl font-bold">
@@ -222,8 +222,8 @@ export default function HealthPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="rounded-2xl border border-app-border bg-app-card p-5">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-green-500" />
+                <div className="w-10 h-10 rounded-xl bg-success/100/10 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-success" />
                 </div>
                 <span className="text-sm text-app-muted">Uptime</span>
               </div>
@@ -241,7 +241,7 @@ export default function HealthPage() {
               <div className="mt-2 h-1.5 rounded-full bg-app-border overflow-hidden">
                 <div
                   className={`h-full rounded-full ${
-                    memPercent > 85 ? 'bg-red-500' : memPercent > 70 ? 'bg-yellow-500' : 'bg-green-500'
+                    memPercent > 85 ? 'bg-destructive/100' : memPercent > 70 ? 'bg-warning' : 'bg-success/100'
                   }`}
                   style={{ width: `${memPercent}%` }}
                 />

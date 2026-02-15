@@ -276,7 +276,7 @@ export default function Sidebar({
         <Button
           onClick={handleLogout}
           variant="ghost"
-          className="w-full justify-start px-3 py-2.5 text-sm font-medium text-app-muted hover:bg-red-500/10 hover:text-red-500 rounded-xl transition-all"
+          className="w-full justify-start px-3 py-2.5 text-sm font-medium text-app-muted hover:bg-destructive/100/10 hover:text-destructive rounded-xl transition-all"
         >
           <LogOut className="h-4 w-4 mr-2" />
           <span>Abmelden</span>

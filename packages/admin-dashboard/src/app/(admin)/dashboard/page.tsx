@@ -209,14 +209,14 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-3">
           {isHealthy ? (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
-              <CheckCircle2 className="w-4 h-4 text-green-500" />
-              <span className="text-sm font-medium text-green-500">System OK</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/100/10 border border-success/20">
+              <CheckCircle2 className="w-4 h-4 text-success" />
+              <span className="text-sm font-medium text-success">System OK</span>
             </div>
           ) : error ? (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20">
-              <AlertCircle className="w-4 h-4 text-red-500" />
-              <span className="text-sm font-medium text-red-500">Fehler</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-destructive/100/10 border border-destructive/20">
+              <AlertCircle className="w-4 h-4 text-destructive" />
+              <span className="text-sm font-medium text-destructive">Fehler</span>
             </div>
           ) : null}
           <Button size="sm" variant="outline" onClick={load} disabled={loading} className="gap-2">
@@ -234,9 +234,9 @@ export default function DashboardPage() {
               key={alert.id}
               className={`rounded-2xl border p-4 ${
                 alert.type === 'error'
-                  ? 'border-red-500/30 bg-red-500/5'
+                  ? 'border-destructive/30 bg-destructive/100/5'
                   : alert.type === 'warning'
-                  ? 'border-yellow-500/30 bg-yellow-500/5'
+                  ? 'border-yellow-500/30 bg-warning/5'
                   : 'border-blue-500/30 bg-blue-500/5'
               }`}
             >
@@ -245,18 +245,18 @@ export default function DashboardPage() {
                   <div
                     className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                       alert.type === 'error'
-                        ? 'bg-red-500/10'
+                        ? 'bg-destructive/100/10'
                         : alert.type === 'warning'
-                        ? 'bg-yellow-500/10'
+                        ? 'bg-warning/10'
                         : 'bg-blue-500/10'
                     }`}
                   >
                     <AlertTriangle
                       className={`w-4 h-4 ${
                         alert.type === 'error'
-                          ? 'text-red-500'
+                          ? 'text-destructive'
                           : alert.type === 'warning'
-                          ? 'text-yellow-500'
+                          ? 'text-warning'
                           : 'text-blue-500'
                       }`}
                     />
@@ -282,10 +282,10 @@ export default function DashboardPage() {
 
       {/* Error */}
       {error && (
-        <div className="rounded-2xl border border-red-500/30 bg-red-500/5 p-4">
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/100/5 p-4">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0">
-              <AlertCircle className="w-4 h-4 text-red-500" />
+            <div className="w-8 h-8 rounded-lg bg-destructive/100/10 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-4 h-4 text-destructive" />
             </div>
             <div>
               <p className="font-semibold text-sm text-app-fg">Verbindungsfehler</p>
@@ -346,8 +346,8 @@ export default function DashboardPage() {
         {/* Uptime */}
         <div className="rounded-2xl border border-app-border bg-app-card p-5 hover:border-app-accent/30 hover:shadow-lg transition-all">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-              <Clock className="w-5 h-5 text-green-500" />
+            <div className="w-10 h-10 rounded-xl bg-success/100/10 flex items-center justify-center">
+              <Clock className="w-5 h-5 text-success" />
             </div>
             <div className="text-sm font-medium text-app-muted">Uptime</div>
           </div>
@@ -375,7 +375,7 @@ export default function DashboardPage() {
             <div className="mt-2 h-1.5 rounded-full bg-app-border overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all ${
-                  memUsed.percent > 80 ? 'bg-red-500' : memUsed.percent > 60 ? 'bg-yellow-500' : 'bg-green-500'
+                  memUsed.percent > 80 ? 'bg-destructive/100' : memUsed.percent > 60 ? 'bg-warning' : 'bg-success/100'
                 }`}
                 style={{ width: `${memUsed.percent}%` }}
               />
@@ -399,7 +399,7 @@ export default function DashboardPage() {
             <div className="mt-2 h-1.5 rounded-full bg-app-border overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all ${
-                  disk.usedPercent > 90 ? 'bg-red-500' : disk.usedPercent > 75 ? 'bg-yellow-500' : 'bg-orange-500'
+                  disk.usedPercent > 90 ? 'bg-destructive/100' : disk.usedPercent > 75 ? 'bg-warning' : 'bg-orange-500'
                 }`}
                 style={{ width: `${disk.usedPercent}%` }}
               />
@@ -483,7 +483,7 @@ export default function DashboardPage() {
                     <p className="text-sm font-medium text-app-fg">{evt.title}</p>
                     <p className="text-xs text-app-muted">/{evt.slug} · {new Date(evt.createdAt).toLocaleDateString('de-DE')}</p>
                   </div>
-                  <span className={`px-2 py-0.5 rounded-full text-xs ${evt.isActive ? 'bg-green-500/10 text-green-500' : 'bg-yellow-500/10 text-yellow-600'}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-xs ${evt.isActive ? 'bg-success/100/10 text-success' : 'bg-warning/10 text-warning'}`}>
                     {evt.isActive ? 'Aktiv' : 'Inaktiv'}
                   </span>
                 </Link>
@@ -512,7 +512,7 @@ export default function DashboardPage() {
                       <p className="text-xs text-app-muted">{new Date(u.createdAt).toLocaleDateString('de-DE')}</p>
                     </div>
                   </div>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.role === 'ADMIN' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.role === 'ADMIN' ? 'bg-destructive/100/10 text-destructive' : 'bg-blue-500/10 text-blue-500'}`}>
                     {u.role}
                   </span>
                 </div>
@@ -538,7 +538,7 @@ function StatCard({ icon: Icon, label, value, todayValue, growth, color }: {
     indigo: 'bg-indigo-500/10 text-indigo-500',
     pink: 'bg-pink-500/10 text-pink-500',
     cyan: 'bg-cyan-500/10 text-cyan-500',
-    green: 'bg-green-500/10 text-green-500',
+    green: 'bg-success/100/10 text-success',
   };
   const growthNum = growth ? parseFloat(growth) : 0;
 
@@ -556,7 +556,7 @@ function StatCard({ icon: Icon, label, value, todayValue, growth, color }: {
           <span className="text-xs text-app-muted">+{todayValue} heute</span>
         )}
         {growth && growthNum !== 0 && (
-          <span className={`text-xs font-medium flex items-center gap-0.5 ${growthNum > 0 ? 'text-green-500' : 'text-red-500'}`}>
+          <span className={`text-xs font-medium flex items-center gap-0.5 ${growthNum > 0 ? 'text-success' : 'text-destructive'}`}>
             {growthNum > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
             {growthNum > 0 ? '+' : ''}{growth}%
           </span>

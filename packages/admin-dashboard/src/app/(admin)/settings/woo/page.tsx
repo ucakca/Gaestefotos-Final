@@ -116,9 +116,9 @@ export default function WooInboxPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PROCESSED': return 'text-green-500';
-      case 'ERROR': case 'FAILED': return 'text-red-500';
-      case 'SKIPPED': return 'text-yellow-500';
+      case 'PROCESSED': return 'text-success';
+      case 'ERROR': case 'FAILED': return 'text-destructive';
+      case 'SKIPPED': return 'text-warning';
       default: return 'text-blue-500';
     }
   };
@@ -180,7 +180,7 @@ export default function WooInboxPage() {
             <Link2 className="w-3.5 h-3.5" />
             SKU-Mapping
             {orphanedSkus.length > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-yellow-500/10 text-yellow-500">{orphanedSkus.length}</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-warning/10 text-warning">{orphanedSkus.length}</span>
             )}
           </span>
         </button>
@@ -188,10 +188,10 @@ export default function WooInboxPage() {
 
       {/* Failed Alert */}
       {activeTab === 'logs' && failedCount > 0 && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-4">
+        <div className="rounded-xl border border-destructive/30 bg-destructive/100/5 p-4">
           <div className="flex items-center gap-3">
-            <XCircle className="w-5 h-5 text-red-500" />
-            <p className="text-sm text-red-400">
+            <XCircle className="w-5 h-5 text-destructive" />
+            <p className="text-sm text-destructive/80">
               <strong>{failedCount} Webhook(s) fehlgeschlagen.</strong> Klicke auf Replay um erneut zu verarbeiten.
             </p>
           </div>
@@ -210,7 +210,7 @@ export default function WooInboxPage() {
           ) : (
             <div className="divide-y divide-app-border max-h-[500px] overflow-y-auto">
               {logs.map((log) => (
-                <div key={log.id} className={`p-4 ${log.status === 'ERROR' || log.status === 'FAILED' ? 'bg-red-500/5' : ''}`}>
+                <div key={log.id} className={`p-4 ${log.status === 'ERROR' || log.status === 'FAILED' ? 'bg-destructive/100/5' : ''}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {getStatusIcon(log.status)}
@@ -226,7 +226,7 @@ export default function WooInboxPage() {
                           {log.wcSku && <span>SKU: {log.wcSku}</span>}
                           <span>{new Date(log.createdAt).toLocaleString('de-DE')}</span>
                         </div>
-                        {log.error && <p className="text-xs text-red-400 mt-1">{log.error}</p>}
+                        {log.error && <p className="text-xs text-destructive/80 mt-1">{log.error}</p>}
                         {log.reason && <p className="text-xs text-app-muted mt-0.5">{log.reason}</p>}
                       </div>
                     </div>
@@ -248,17 +248,17 @@ export default function WooInboxPage() {
         <div className="space-y-4">
           {/* Orphaned SKUs Warning */}
           {orphanedSkus.length > 0 && (
-            <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4">
+            <div className="rounded-xl border border-yellow-500/30 bg-warning/5 p-4">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-yellow-500 mt-0.5" />
+                <AlertTriangle className="w-5 h-5 text-warning mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-yellow-600">Unbekannte SKUs in Webhook-Logs</p>
+                  <p className="text-sm font-medium text-warning">Unbekannte SKUs in Webhook-Logs</p>
                   <p className="text-xs text-app-muted mt-1">
                     Diese SKUs tauchen in WooCommerce-Bestellungen auf, haben aber kein passendes Paket:
                   </p>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {orphanedSkus.map((o) => (
-                      <span key={o.sku} className="px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-600 text-xs font-mono">
+                      <span key={o.sku} className="px-2 py-1 rounded-lg bg-warning/10 text-warning text-xs font-mono">
                         {o.sku} ({o.orderCount}x)
                       </span>
                     ))}
@@ -301,13 +301,13 @@ export default function WooInboxPage() {
                       {pkg.priceEurCents != null ? `${(pkg.priceEurCents / 100).toFixed(2)}€` : '—'}
                     </div>
                     <div className="col-span-1 text-right">
-                      <span className={`text-sm font-medium ${pkg.orderCount > 0 ? 'text-green-500' : 'text-app-muted'}`}>
+                      <span className={`text-sm font-medium ${pkg.orderCount > 0 ? 'text-success' : 'text-app-muted'}`}>
                         {pkg.orderCount}
                       </span>
                     </div>
                     <div className="col-span-1 text-center">
                       {pkg.isActive ? (
-                        <CheckCircle2 className="w-4 h-4 text-green-500 mx-auto" />
+                        <CheckCircle2 className="w-4 h-4 text-success mx-auto" />
                       ) : (
                         <XCircle className="w-4 h-4 text-app-muted mx-auto" />
                       )}

@@ -66,8 +66,8 @@ export default function ImpersonationPage() {
       </div>
 
       {/* Warning */}
-      <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4">
-        <p className="text-sm text-yellow-400">
+      <div className="rounded-xl border border-yellow-500/30 bg-warning/5 p-4">
+        <p className="text-sm text-warning">
           ⚠️ <strong>Achtung:</strong> Impersonation wird geloggt. Nutze nur für legitime Support-Anfragen.
         </p>
       </div>
@@ -127,8 +127,8 @@ export default function ImpersonationPage() {
           </Button>
         </div>
       ) : (
-        <div className="rounded-2xl border border-green-500/30 bg-green-500/5 p-6 space-y-4">
-          <div className="flex items-center gap-2 text-green-500">
+        <div className="rounded-2xl border border-success/30 bg-success/100/5 p-6 space-y-4">
+          <div className="flex items-center gap-2 text-success">
             <Check className="w-5 h-5" />
             <span className="font-medium">Token generiert</span>
           </div>

@@ -106,7 +106,7 @@ function getTypeBadgeClass(type: string): string {
     case 'BASE': return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
     case 'ADDON': return 'bg-purple-500/10 text-purple-400 border-purple-500/30';
     case 'UPGRADE': return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
-    default: return 'bg-gray-500/10 text-gray-400 border-gray-500/30';
+    default: return 'bg-muted/500/10 text-muted-foreground/70 border-border/30';
   }
 }
 
@@ -364,13 +364,13 @@ function PackageCards({
               <div className="flex items-center gap-3">
                 <div
                   className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    displayPkg.isActive ? 'bg-app-accent/10' : 'bg-gray-500/10'
+                    displayPkg.isActive ? 'bg-app-accent/10' : 'bg-muted/500/10'
                   }`}
                 >
                   {displayPkg.type === 'ADDON' ? (
-                    <Puzzle className={`w-6 h-6 ${displayPkg.isActive ? 'text-app-accent' : 'text-gray-500'}`} />
+                    <Puzzle className={`w-6 h-6 ${displayPkg.isActive ? 'text-app-accent' : 'text-muted-foreground'}`} />
                   ) : (
-                    <Package className={`w-6 h-6 ${displayPkg.isActive ? 'text-app-accent' : 'text-gray-500'}`} />
+                    <Package className={`w-6 h-6 ${displayPkg.isActive ? 'text-app-accent' : 'text-muted-foreground'}`} />
                   )}
                 </div>
                 <div>
@@ -380,7 +380,7 @@ function PackageCards({
                       {getTypeLabel(displayPkg.type)}
                     </span>
                     {!displayPkg.isActive && (
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-red-500/10 text-red-400 border border-red-500/30">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-destructive/100/10 text-destructive/80 border border-destructive/30">
                         Inaktiv
                       </span>
                     )}
@@ -392,7 +392,7 @@ function PackageCards({
                     {displayPkg.priceEurCents != null && (
                       <>
                         <span>·</span>
-                        <span className="text-green-400 font-semibold">{formatPrice(displayPkg.priceEurCents)}</span>
+                        <span className="text-success/80 font-semibold">{formatPrice(displayPkg.priceEurCents)}</span>
                       </>
                     )}
                   </div>
@@ -468,7 +468,7 @@ function PackageCards({
                       title={FEATURE_FIELDS.find((f) => f.key === key)?.description}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 transition-all ${
                         isEnabled
-                          ? 'bg-green-500/10 text-green-500 border border-green-500/30'
+                          ? 'bg-success/100/10 text-success border border-success/30'
                           : 'bg-app-bg text-app-muted border border-app-border hover:border-app-accent/50'
                       }`}
                     >
@@ -525,13 +525,13 @@ function FeatureMatrix({
             <tr className="border-b border-app-border bg-app-bg/30">
               <td className="px-4 py-2.5 sticky left-0 bg-app-bg/30 z-10">
                 <div className="flex items-center gap-2">
-                  <Euro className="w-3.5 h-3.5 text-green-400" />
+                  <Euro className="w-3.5 h-3.5 text-success/80" />
                   <span className="text-sm font-medium text-app-fg">Preis</span>
                 </div>
               </td>
               {packages.map((pkg) => (
                 <td key={pkg.id} className="px-3 py-2.5 text-center">
-                  <span className="text-sm font-semibold text-green-400">
+                  <span className="text-sm font-semibold text-success/80">
                     {formatPrice(pkg.priceEurCents)}
                   </span>
                 </td>
@@ -580,7 +580,7 @@ function FeatureMatrix({
                         disabled={saving === pkg.id}
                         className={`w-8 h-8 rounded-lg flex items-center justify-center mx-auto transition-colors ${
                           value
-                            ? 'bg-green-500/15 text-green-500 hover:bg-green-500/25'
+                            ? 'bg-success/100/15 text-success hover:bg-success/100/25'
                             : 'bg-app-bg text-app-muted/40 hover:bg-app-bg/80 hover:text-app-muted'
                         } ${saving === pkg.id ? 'opacity-50' : ''}`}
                       >

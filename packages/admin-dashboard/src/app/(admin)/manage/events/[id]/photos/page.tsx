@@ -280,7 +280,7 @@ export default function EventPhotosPage() {
             <Button size="sm" variant="outline" onClick={() => handleBulkModerate(false)} disabled={bulkAction}>
               <XCircle className="w-4 h-4 mr-1" /> Ablehnen
             </Button>
-            <Button size="sm" variant="outline" onClick={handleBulkDelete} disabled={bulkAction} className="text-red-500 hover:bg-red-500/10">
+            <Button size="sm" variant="outline" onClick={handleBulkDelete} disabled={bulkAction} className="text-destructive hover:bg-destructive/100/10">
               <Trash2 className="w-4 h-4 mr-1" /> Löschen
             </Button>
           </div>
@@ -338,21 +338,21 @@ export default function EventPhotosPage() {
 
               {/* Status badge */}
               <div className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
-                photo.status === 'APPROVED' ? 'bg-green-500' :
-                photo.status === 'REJECTED' ? 'bg-red-500' : 'bg-yellow-500'
+                photo.status === 'APPROVED' ? 'bg-success/100' :
+                photo.status === 'REJECTED' ? 'bg-destructive/100' : 'bg-warning'
               }`} />
 
               {/* Hover overlay */}
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                 <button
                   onClick={() => setViewPhoto(photo)}
-                  className="p-2 rounded-full bg-white/20 hover:bg-white/30"
+                  className="p-2 rounded-full bg-card/20 hover:bg-card/30"
                 >
                   <Eye className="w-4 h-4 text-white" />
                 </button>
                 <button
                   onClick={() => handleDownload(photo)}
-                  className="p-2 rounded-full bg-white/20 hover:bg-white/30"
+                  className="p-2 rounded-full bg-card/20 hover:bg-card/30"
                   disabled={downloading === photo.id}
                 >
                   {downloading === photo.id ? (
@@ -406,8 +406,8 @@ export default function EventPhotosPage() {
               </div>
 
               <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                photo.status === 'APPROVED' ? 'bg-green-500/10 text-green-500' :
-                photo.status === 'REJECTED' ? 'bg-red-500/10 text-red-500' : 'bg-yellow-500/10 text-yellow-600'
+                photo.status === 'APPROVED' ? 'bg-success/100/10 text-success' :
+                photo.status === 'REJECTED' ? 'bg-destructive/100/10 text-destructive' : 'bg-warning/10 text-warning'
               }`}>
                 {photo.status}
               </span>
@@ -465,7 +465,7 @@ export default function EventPhotosPage() {
           onClick={() => setViewPhoto(null)}
         >
           <button
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20"
+            className="absolute top-4 right-4 p-2 rounded-full bg-card/10 hover:bg-card/20"
             onClick={() => setViewPhoto(null)}
           >
             <X className="w-6 h-6 text-white" />
@@ -480,7 +480,7 @@ export default function EventPhotosPage() {
               alt=""
               className="max-h-[70vh] object-contain rounded-lg"
             />
-            <div className="mt-4 p-4 bg-white/10 rounded-lg text-white">
+            <div className="mt-4 p-4 bg-card/10 rounded-lg text-white">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-mono">{viewPhoto.id}</p>
@@ -521,7 +521,7 @@ function StatCard({ icon: Icon, label, value, sub, color }: {
 }) {
   const colors = {
     blue: 'bg-blue-500/10 text-blue-500',
-    green: 'bg-green-500/10 text-green-500',
+    green: 'bg-success/100/10 text-success',
     purple: 'bg-purple-500/10 text-purple-500',
     amber: 'bg-amber-500/10 text-amber-500',
   };

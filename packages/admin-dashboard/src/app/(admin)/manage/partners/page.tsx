@@ -62,7 +62,7 @@ const TIER_LABELS: Record<string, { label: string; color: string; icon: typeof C
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   ACTIVE: { label: 'Aktiv', color: 'bg-emerald-100 text-emerald-700' },
-  SUSPENDED: { label: 'Gesperrt', color: 'bg-red-100 text-red-700' },
+  SUSPENDED: { label: 'Gesperrt', color: 'bg-destructive/15 text-destructive' },
   TRIAL: { label: 'Trial', color: 'bg-amber-100 text-amber-700' },
 };
 
@@ -216,7 +216,7 @@ export default function PartnersPage() {
 
       {/* Error */}
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center justify-between">
+        <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-sm text-destructive flex items-center justify-between">
           {error}
           <button onClick={() => setError(null)}><X className="w-4 h-4" /></button>
         </div>
@@ -586,11 +586,11 @@ export default function PartnersPage() {
                     <div className="space-y-2">
                       {billingPeriods.map((bp: any) => {
                         const statusColors: Record<string, string> = {
-                          DRAFT: 'bg-gray-100 text-gray-600',
+                          DRAFT: 'bg-muted text-muted-foreground',
                           FINALIZED: 'bg-blue-100 text-blue-700',
                           SENT: 'bg-amber-100 text-amber-700',
                           PAID: 'bg-emerald-100 text-emerald-700',
-                          CANCELLED: 'bg-red-100 text-red-700',
+                          CANCELLED: 'bg-destructive/15 text-destructive',
                         };
                         return (
                           <div key={bp.id} className="p-3 border border-app-border rounded-lg">
@@ -627,7 +627,7 @@ export default function PartnersPage() {
                                 </button>
                                 <button
                                   onClick={() => updateBillingStatus(bp.id, 'CANCELLED')}
-                                  className="flex items-center gap-1 text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                                  className="flex items-center gap-1 text-xs px-2 py-1 bg-destructive/15 text-destructive rounded hover:bg-destructive/20"
                                 >
                                   <Ban className="w-3 h-3" /> Stornieren
                                 </button>

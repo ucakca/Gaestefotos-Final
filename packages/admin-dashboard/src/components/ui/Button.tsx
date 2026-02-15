@@ -15,7 +15,7 @@ const buttonVariants = cva(
         secondary: 'bg-app-bg text-app-fg hover:opacity-90',
         outline: 'border border-app-border bg-app-card text-app-fg hover:bg-app-bg',
         ghost: 'bg-transparent text-app-fg hover:bg-app-bg',
-        destructive: 'bg-red-600 text-white hover:bg-red-700',
+        destructive: 'bg-destructive text-white hover:bg-destructive',
       },
       size: {
         sm: 'h-9 px-3 text-sm',

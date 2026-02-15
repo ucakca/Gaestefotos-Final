@@ -116,15 +116,15 @@ export default function SmsAdminPage() {
   function getStatusBadge(status: string) {
     switch (status) {
       case 'DELIVERED':
-        return <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700"><CheckCircle2 className="w-3 h-3" />Zugestellt</span>;
+        return <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-success/15 text-success"><CheckCircle2 className="w-3 h-3" />Zugestellt</span>;
       case 'SENT':
         return <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700"><Send className="w-3 h-3" />Gesendet</span>;
       case 'PENDING':
-        return <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700"><Clock className="w-3 h-3" />Ausstehend</span>;
+        return <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-warning/15 text-warning"><Clock className="w-3 h-3" />Ausstehend</span>;
       case 'FAILED':
-        return <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700"><XCircle className="w-3 h-3" />Fehlgeschlagen</span>;
+        return <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-destructive/15 text-destructive"><XCircle className="w-3 h-3" />Fehlgeschlagen</span>;
       default:
-        return <span className="text-xs text-gray-500">{status}</span>;
+        return <span className="text-xs text-muted-foreground">{status}</span>;
     }
   }
 
@@ -149,7 +149,7 @@ export default function SmsAdminPage() {
       {/* Toast */}
       {toast && (
         <div className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white ${
-          toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+          toast.type === 'success' ? 'bg-success' : 'bg-destructive'
         }`}>
           {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
           <span className="text-sm">{toast.message}</span>
@@ -158,11 +158,11 @@ export default function SmsAdminPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <MessageSquare className="h-6 w-6 text-emerald-600" />
           SMS Sharing
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           SMS-Versand für Foto-Links — Twilio Integration
         </p>
       </div>
@@ -189,7 +189,7 @@ export default function SmsAdminPage() {
             className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab.key
                 ? 'border-emerald-600 text-emerald-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                : 'border-transparent text-muted-foreground hover:text-foreground/80'
             }`}
           >
             <tab.icon className="h-4 w-4" />
@@ -204,7 +204,7 @@ export default function SmsAdminPage() {
           {/* Filters */}
           <div className="flex gap-3 items-center">
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
               <input
                 type="text"
                 placeholder="Suche nach Nummer, Event, Nachricht..."
@@ -231,30 +231,30 @@ export default function SmsAdminPage() {
               <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
             </div>
           ) : filteredLogs.length === 0 ? (
-            <div className="bg-white rounded-xl border p-12 text-center">
-              <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 text-sm">Keine SMS-Nachrichten gefunden</p>
+            <div className="bg-card rounded-xl border p-12 text-center">
+              <MessageSquare className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
+              <p className="text-muted-foreground text-sm">Keine SMS-Nachrichten gefunden</p>
             </div>
           ) : (
-            <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+            <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Empfänger</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Event</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Nachricht</th>
-                    <th className="text-center px-4 py-3 font-medium text-gray-600">Status</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-600">Datum</th>
+                  <tr className="border-b bg-muted/50">
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">Empfänger</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">Event</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">Nachricht</th>
+                    <th className="text-center px-4 py-3 font-medium text-muted-foreground">Status</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">Datum</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredLogs.map((log) => (
-                    <tr key={log.id} className="border-b last:border-0 hover:bg-gray-50">
-                      <td className="px-4 py-3 font-mono text-gray-800">{log.phoneNumber}</td>
-                      <td className="px-4 py-3 text-gray-600">{log.eventTitle || '—'}</td>
-                      <td className="px-4 py-3 text-gray-600 max-w-xs truncate">{log.message}</td>
+                    <tr key={log.id} className="border-b last:border-0 hover:bg-muted/50">
+                      <td className="px-4 py-3 font-mono text-foreground">{log.phoneNumber}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{log.eventTitle || '—'}</td>
+                      <td className="px-4 py-3 text-muted-foreground max-w-xs truncate">{log.message}</td>
                       <td className="px-4 py-3 text-center">{getStatusBadge(log.status)}</td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">
+                      <td className="px-4 py-3 text-muted-foreground text-xs">
                         {new Date(log.createdAt).toLocaleString('de-DE')}
                       </td>
                     </tr>
@@ -265,22 +265,22 @@ export default function SmsAdminPage() {
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between px-4 py-3 border-t">
-                  <span className="text-xs text-gray-500">{totalLogs} SMS insgesamt</span>
+                  <span className="text-xs text-muted-foreground">{totalLogs} SMS insgesamt</span>
                   <div className="flex gap-1">
                     <button
                       onClick={() => setPage(Math.max(1, page - 1))}
                       disabled={page === 1}
-                      className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-30"
+                      className="px-3 py-1 text-sm border rounded hover:bg-muted/50 disabled:opacity-30"
                     >
                       Zurück
                     </button>
-                    <span className="px-3 py-1 text-sm text-gray-600">
+                    <span className="px-3 py-1 text-sm text-muted-foreground">
                       {page} / {totalPages}
                     </span>
                     <button
                       onClick={() => setPage(Math.min(totalPages, page + 1))}
                       disabled={page === totalPages}
-                      className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-30"
+                      className="px-3 py-1 text-sm border rounded hover:bg-muted/50 disabled:opacity-30"
                     >
                       Weiter
                     </button>
@@ -298,38 +298,38 @@ export default function SmsAdminPage() {
           {stats ? (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div className="bg-white rounded-xl border p-5 shadow-sm">
-                  <div className="text-xs text-gray-500 mb-1">Gesamt gesendet</div>
-                  <div className="text-2xl font-bold text-gray-900">{stats.totalSent}</div>
+                <div className="bg-card rounded-xl border p-5 shadow-sm">
+                  <div className="text-xs text-muted-foreground mb-1">Gesamt gesendet</div>
+                  <div className="text-2xl font-bold text-foreground">{stats.totalSent}</div>
                 </div>
-                <div className="bg-white rounded-xl border p-5 shadow-sm">
-                  <div className="text-xs text-gray-500 mb-1">Zugestellt</div>
-                  <div className="text-2xl font-bold text-green-600">{stats.totalDelivered}</div>
+                <div className="bg-card rounded-xl border p-5 shadow-sm">
+                  <div className="text-xs text-muted-foreground mb-1">Zugestellt</div>
+                  <div className="text-2xl font-bold text-success">{stats.totalDelivered}</div>
                 </div>
-                <div className="bg-white rounded-xl border p-5 shadow-sm">
-                  <div className="text-xs text-gray-500 mb-1">Fehlgeschlagen</div>
-                  <div className="text-2xl font-bold text-red-600">{stats.totalFailed}</div>
+                <div className="bg-card rounded-xl border p-5 shadow-sm">
+                  <div className="text-xs text-muted-foreground mb-1">Fehlgeschlagen</div>
+                  <div className="text-2xl font-bold text-destructive">{stats.totalFailed}</div>
                 </div>
-                <div className="bg-white rounded-xl border p-5 shadow-sm">
-                  <div className="text-xs text-gray-500 mb-1">Ausstehend</div>
-                  <div className="text-2xl font-bold text-yellow-600">{stats.totalPending}</div>
+                <div className="bg-card rounded-xl border p-5 shadow-sm">
+                  <div className="text-xs text-muted-foreground mb-1">Ausstehend</div>
+                  <div className="text-2xl font-bold text-warning">{stats.totalPending}</div>
                 </div>
-                <div className="bg-white rounded-xl border p-5 shadow-sm">
-                  <div className="text-xs text-gray-500 mb-1">Kosten (geschätzt)</div>
-                  <div className="text-2xl font-bold text-gray-900">{(stats.costCents / 100).toFixed(2)} €</div>
+                <div className="bg-card rounded-xl border p-5 shadow-sm">
+                  <div className="text-xs text-muted-foreground mb-1">Kosten (geschätzt)</div>
+                  <div className="text-2xl font-bold text-foreground">{(stats.costCents / 100).toFixed(2)} €</div>
                 </div>
               </div>
 
               {stats.totalSent > 0 && (
-                <div className="bg-white rounded-xl border p-6 shadow-sm">
+                <div className="bg-card rounded-xl border p-6 shadow-sm">
                   <h3 className="text-sm font-semibold mb-4">Zustellrate</h3>
-                  <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                  <div className="w-full bg-muted/80 rounded-full h-4 overflow-hidden">
                     <div
-                      className="h-full bg-green-500 rounded-full transition-all"
+                      className="h-full bg-success/100 rounded-full transition-all"
                       style={{ width: `${(stats.totalDelivered / stats.totalSent * 100).toFixed(1)}%` }}
                     />
                   </div>
-                  <div className="flex justify-between mt-2 text-xs text-gray-500">
+                  <div className="flex justify-between mt-2 text-xs text-muted-foreground">
                     <span>{(stats.totalDelivered / stats.totalSent * 100).toFixed(1)}% Zustellrate</span>
                     <span>{stats.totalDelivered} / {stats.totalSent}</span>
                   </div>
@@ -337,9 +337,9 @@ export default function SmsAdminPage() {
               )}
             </>
           ) : (
-            <div className="bg-white rounded-xl border p-12 text-center">
-              <BarChart3 className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 text-sm">Keine Statistiken verfügbar</p>
+            <div className="bg-card rounded-xl border p-12 text-center">
+              <BarChart3 className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
+              <p className="text-muted-foreground text-sm">Keine Statistiken verfügbar</p>
             </div>
           )}
         </div>
@@ -347,15 +347,15 @@ export default function SmsAdminPage() {
 
       {/* Tab: Config */}
       {activeTab === 'config' && config && (
-        <div className="bg-white rounded-xl border p-6 shadow-sm space-y-6">
+        <div className="bg-card rounded-xl border p-6 shadow-sm space-y-6">
           <div>
             <h3 className="text-lg font-semibold mb-1">Twilio Konfiguration</h3>
-            <p className="text-sm text-gray-500">Verbinde deinen Twilio-Account für den SMS-Versand</p>
+            <p className="text-sm text-muted-foreground">Verbinde deinen Twilio-Account für den SMS-Versand</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Account SID</label>
+              <label className="block text-sm font-medium text-foreground/80 mb-1">Account SID</label>
               <input
                 type="text"
                 value={config.twilioAccountSid}
@@ -365,7 +365,7 @@ export default function SmsAdminPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Auth Token</label>
+              <label className="block text-sm font-medium text-foreground/80 mb-1">Auth Token</label>
               <input
                 type="password"
                 value={config.twilioAuthToken}
@@ -375,7 +375,7 @@ export default function SmsAdminPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Twilio Telefonnummer</label>
+              <label className="block text-sm font-medium text-foreground/80 mb-1">Twilio Telefonnummer</label>
               <input
                 type="text"
                 value={config.twilioPhoneNumber}
@@ -387,7 +387,7 @@ export default function SmsAdminPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Standard-Nachrichtenvorlage</label>
+            <label className="block text-sm font-medium text-foreground/80 mb-1">Standard-Nachrichtenvorlage</label>
             <textarea
               value={config.defaultMessage}
               onChange={(e) => setConfig({ ...config, defaultMessage: e.target.value })}
@@ -395,7 +395,7 @@ export default function SmsAdminPage() {
               placeholder="Hallo! Hier sind deine Fotos von {eventTitle}: {link}"
               className="w-full border rounded-lg px-4 py-2.5 text-sm"
             />
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-muted-foreground/70 mt-1">
               Variablen: {'{eventTitle}'}, {'{link}'}, {'{guestName}'}
             </p>
           </div>

@@ -70,7 +70,7 @@ function Toast({ message, type, onClose }: { message: string; type: 'success' | 
 
   return (
     <div className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white
-      ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+      ${type === 'success' ? 'bg-success' : 'bg-destructive'}`}>
       {type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
       <span className="text-sm">{message}</span>
       <button onClick={onClose} className="ml-2 hover:opacity-80"><X className="w-3 h-3" /></button>
@@ -153,11 +153,11 @@ export default function CreditsPage() {
   const typeIcon = (type: string) => {
     switch (type) {
       case 'PURCHASE': return <CreditCard className="w-3.5 h-3.5 text-blue-500" />;
-      case 'BONUS': return <Gift className="w-3.5 h-3.5 text-green-500" />;
+      case 'BONUS': return <Gift className="w-3.5 h-3.5 text-success" />;
       case 'REFUND': return <RotateCcw className="w-3.5 h-3.5 text-amber-500" />;
-      case 'CONSUMPTION': return <ArrowDownRight className="w-3.5 h-3.5 text-red-500" />;
+      case 'CONSUMPTION': return <ArrowDownRight className="w-3.5 h-3.5 text-destructive" />;
       case 'AUTO_RECHARGE': return <RefreshCw className="w-3.5 h-3.5 text-purple-500" />;
-      default: return <Zap className="w-3.5 h-3.5 text-gray-500" />;
+      default: return <Zap className="w-3.5 h-3.5 text-muted-foreground" />;
     }
   };
 
@@ -212,15 +212,15 @@ export default function CreditsPage() {
           </div>
           <div className="bg-app-card border border-app-border rounded-lg p-4">
             <div className="flex items-center gap-2 text-app-muted text-sm mb-1">
-              <ArrowUpRight className="w-4 h-4 text-green-500" /> Gesamt gekauft
+              <ArrowUpRight className="w-4 h-4 text-success" /> Gesamt gekauft
             </div>
-            <div className="text-2xl font-bold text-green-600">{overview.totals.totalPurchased.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-success">{overview.totals.totalPurchased.toLocaleString()}</div>
           </div>
           <div className="bg-app-card border border-app-border rounded-lg p-4">
             <div className="flex items-center gap-2 text-app-muted text-sm mb-1">
-              <ArrowDownRight className="w-4 h-4 text-red-500" /> Gesamt verbraucht
+              <ArrowDownRight className="w-4 h-4 text-destructive" /> Gesamt verbraucht
             </div>
-            <div className="text-2xl font-bold text-red-600">{overview.totals.totalConsumed.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-destructive">{overview.totals.totalConsumed.toLocaleString()}</div>
           </div>
         </div>
       )}
@@ -300,12 +300,12 @@ export default function CreditsPage() {
                     <div className="text-2xl font-bold text-amber-600">{selectedUser.balance}</div>
                     <div className="text-xs text-app-muted">Balance</div>
                   </div>
-                  <div className="text-center p-3 bg-green-50 dark:bg-green-900/10 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">{selectedUser.totalPurchased}</div>
+                  <div className="text-center p-3 bg-success/10 dark:bg-success/10 rounded-lg">
+                    <div className="text-2xl font-bold text-success">{selectedUser.totalPurchased}</div>
                     <div className="text-xs text-app-muted">Gekauft</div>
                   </div>
-                  <div className="text-center p-3 bg-red-50 dark:bg-red-900/10 rounded-lg">
-                    <div className="text-2xl font-bold text-red-600">{selectedUser.totalConsumed}</div>
+                  <div className="text-center p-3 bg-destructive/10 dark:bg-destructive/10 rounded-lg">
+                    <div className="text-2xl font-bold text-destructive">{selectedUser.totalConsumed}</div>
                     <div className="text-xs text-app-muted">Verbraucht</div>
                   </div>
                 </div>
@@ -348,7 +348,7 @@ export default function CreditsPage() {
                             </span>
                           </td>
                           <td className={`px-4 py-2 text-right font-mono font-bold ${
-                            tx.amount > 0 ? 'text-green-600' : 'text-red-600'
+                            tx.amount > 0 ? 'text-success' : 'text-destructive'
                           }`}>
                             {tx.amount > 0 ? '+' : ''}{tx.amount}
                           </td>
