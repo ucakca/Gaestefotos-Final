@@ -93,10 +93,8 @@ export default function PublicEventPageV2() {
     loading,
     error,
     passwordRequired,
-    password,
-    setPassword,
     passwordError,
-    handlePasswordSubmit,
+    submitPassword,
     hasMore,
     loadingMore,
     loadMore,
@@ -292,10 +290,8 @@ export default function PublicEventPageV2() {
     return (
       <Centered>
         <PasswordGate
-          password={password}
-          onPasswordChange={setPassword}
-          passwordError={passwordError}
-          onSubmit={handlePasswordSubmit}
+          onSubmit={submitPassword}
+          serverError={passwordError}
         />
       </Centered>
     );

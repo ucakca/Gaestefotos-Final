@@ -17,13 +17,24 @@ import {
   User,
   X,
 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
+import { FormInput } from '@/components/ui/FormInput';
+import { FormTextarea } from '@/components/ui/FormTextarea';
 import { IconButton } from '@/components/ui/IconButton';
 import { Dialog, DialogClose, DialogContent, DialogTitle } from '@/components/ui/dialog';
+
+const guestbookEntrySchema = z.object({
+  authorName: z.string().min(1, 'Bitte gib deinen Namen ein').max(100),
+  message: z.string().min(1, 'Bitte gib eine Nachricht ein').max(2000),
+});
+type GuestbookEntryFormData = z.infer<typeof guestbookEntrySchema>;
 
 interface GuestbookEntry {
   id: string;
@@ -52,10 +63,12 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
   const [loading, setLoading] = useState(true);
   const [isHost, setIsHost] = useState(propIsHost);
 
-  const [submitting, setSubmitting] = useState(false);
-  const [authorName, setAuthorName] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [serverError, setServerError] = useState('');
+
+  const { register, handleSubmit: rhfHandleSubmit, reset, formState: { errors, isSubmitting } } = useForm<GuestbookEntryFormData>({
+    resolver: zodResolver(guestbookEntrySchema),
+    defaultValues: { authorName: '', message: '' },
+  });
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -107,7 +120,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       }
     } catch (err: any) {
       void err;
-      setError('Fehler beim Laden der Einträge');
+      setServerError('Fehler beim Laden der Einträge');
     } finally {
       setLoading(false);
     }
@@ -144,7 +157,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       setPhotoUploadId(typeof response.data.uploadId === 'string' ? response.data.uploadId : null);
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Hochladen des Fotos';
-      setError(errorMessage);
+      setServerError(errorMessage);
       // Revoke blob URL if it exists
       if (photoPreview && photoPreview.startsWith('blob:')) {
         URL.revokeObjectURL(photoPreview);
@@ -194,7 +207,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       setAudioDurationMs(typeof response.data.audioDurationMs === 'number' ? response.data.audioDurationMs : audioDurationMs);
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Hochladen des Audios';
-      setError(errorMessage);
+      setServerError(errorMessage);
       setAudioPreviewUrl(null);
       setAudioStoragePath(null);
       setAudioSizeBytes(null);
@@ -232,9 +245,9 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
 
   const startRecording = async () => {
     try {
-      setError('');
+      setServerError('');
       if (typeof window === 'undefined' || !navigator?.mediaDevices?.getUserMedia) {
-        setError('Audio-Aufnahme wird in diesem Browser nicht unterstützt');
+        setServerError('Audio-Aufnahme wird in diesem Browser nicht unterstützt');
         return;
       }
 
@@ -260,14 +273,14 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
 
           if (dur !== null && dur > 60_000) {
             setAudioDurationMs(null);
-            setError('Audio ist zu lang (max. 60 Sekunden)');
+            setServerError('Audio ist zu lang (max. 60 Sekunden)');
             return;
           }
 
           setAudioDurationMs(dur);
           await uploadAudioBlob(blob);
         } catch (e: any) {
-          setError(e?.message || 'Fehler bei der Audio-Aufnahme');
+          setServerError(e?.message || 'Fehler bei der Audio-Aufnahme');
         } finally {
           setIsRecording(false);
         }
@@ -276,7 +289,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       recorder.start();
       setIsRecording(true);
     } catch (err: any) {
-      setError(err?.message || 'Mikrofon-Zugriff fehlgeschlagen');
+      setServerError(err?.message || 'Mikrofon-Zugriff fehlgeschlagen');
       setIsRecording(false);
     }
   };
@@ -298,28 +311,15 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
     setAudioDurationMs(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!message.trim()) {
-      setError('Bitte gib eine Nachricht ein');
-      return;
-    }
-
-    if (!authorName.trim()) {
-      setError('Bitte gib deinen Namen ein');
-      return;
-    }
-
+  const onGuestbookSubmit = async (data: GuestbookEntryFormData) => {
     try {
-      setSubmitting(true);
-      setError('');
+      setServerError('');
       
       // Only send photoStoragePath, not photoUrl (to avoid sending blob URLs)
       // The backend will generate the URL from storagePath
       await api.post(`/events/${eventId}/guestbook`, {
-        authorName: authorName.trim(),
-        message: message.trim(),
+        authorName: data.authorName.trim(),
+        message: data.message.trim(),
         photoUrl: null, // Don't send blob URLs - backend will generate from storagePath
         photoStoragePath: photoStoragePath || null,
         photoSizeBytes: photoSizeBytes || null,
@@ -334,8 +334,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       });
 
       // Reset form
-      setAuthorName('');
-      setMessage('');
+      reset();
       setSelectedPhoto(null);
       // Revoke blob URL if it exists
       if (photoPreview && photoPreview.startsWith('blob:')) {
@@ -352,9 +351,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       // Reload entries
       await loadEntries();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Fehler beim Erstellen des Eintrags');
-    } finally {
-      setSubmitting(false);
+      setServerError(err.response?.data?.error || 'Fehler beim Erstellen des Eintrags');
     }
   };
 
@@ -366,7 +363,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
       setHostMessage(editedHostMessage.trim() || DEFAULT_HOST_MESSAGE);
       setIsEditingHostMessage(false);
     } catch (err: any) {
-      setError('Fehler beim Speichern der Nachricht');
+      setServerError('Fehler beim Speichern der Nachricht');
     }
   };
 
@@ -564,31 +561,28 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
 
       {/* Input Form - Everyone can add messages - Fixed at bottom */}
       <div className="border-t border-border p-4 bg-card flex-shrink-0">
-          <form onSubmit={handleSubmit} className="space-y-3">
-            {error && (
+          <form onSubmit={rhfHandleSubmit(onGuestbookSubmit)} className="space-y-3">
+            {serverError && (
               <div className="bg-background border border-status-danger text-destructive text-sm rounded-lg p-3">
-                {error}
+                {serverError}
               </div>
             )}
             
-            <Input
-              type="text"
-              value={authorName}
-              onChange={(e) => setAuthorName(e.target.value)}
+            <FormInput
               placeholder="Dein Name"
               className="w-full px-4 py-2 text-sm"
-              disabled={submitting}
               maxLength={100}
+              error={errors.authorName?.message}
+              {...register('authorName')}
             />
             
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
+            <FormTextarea
               placeholder="Schreibe eine Nachricht..."
               rows={3}
               className="w-full px-4 py-2 text-sm resize-none"
-              disabled={submitting}
               maxLength={2000}
+              error={errors.message?.message}
+              {...register('message')}
             />
 
             <div>
@@ -602,7 +596,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                     <Button
                       type="button"
                       onClick={startRecording}
-                      disabled={submitting || uploadingAudio}
+                      disabled={isSubmitting || uploadingAudio}
                       variant="secondary"
                       size="sm"
                       className="flex items-center gap-2 px-4 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
@@ -615,7 +609,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                     <Button
                       type="button"
                       onClick={stopRecording}
-                      disabled={submitting || uploadingAudio}
+                      disabled={isSubmitting || uploadingAudio}
                       variant="danger"
                       size="sm"
                       className="flex items-center gap-2 px-4 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
@@ -644,7 +638,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                     variant="danger"
                     size="sm"
                     className="rounded-lg"
-                    disabled={submitting || uploadingAudio}
+                    disabled={isSubmitting || uploadingAudio}
                     aria-label="Audio entfernen"
                     title="Audio entfernen"
                   />
@@ -691,7 +685,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                     accept="image/*"
                     className="hidden"
                     onChange={handlePhotoSelect}
-                    disabled={uploadingPhoto || submitting}
+                    disabled={uploadingPhoto || isSubmitting}
                   />
                 </label>
               )}
@@ -700,7 +694,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
             {/* Public/Private Toggle */}
             <div className="flex items-center gap-2">
               <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <Checkbox checked={isPublic} onCheckedChange={(checked) => setIsPublic(checked)} disabled={submitting} />
+                <Checkbox checked={isPublic} onCheckedChange={(checked) => setIsPublic(checked)} disabled={isSubmitting} />
                 <div className="flex items-center gap-1">
                   {isPublic ? (
                     <>
@@ -719,19 +713,14 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
             
             <Button
               type="submit"
-              disabled={submitting || uploadingPhoto || uploadingAudio || isRecording || !message.trim() || !authorName.trim()}
+              loading={isSubmitting}
+              disabled={uploadingPhoto || uploadingAudio || isRecording}
               variant="primary"
               size="sm"
-              className="w-full py-3 px-4 font-medium flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 font-medium disabled:cursor-not-allowed"
+              leftIcon={<Send className="w-5 h-5" />}
             >
-              {submitting ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-background"></div>
-              ) : (
-                <>
-                  <Send className="w-5 h-5" />
-                  Nachricht senden
-                </>
-              )}
+              Nachricht senden
             </Button>
           </form>
         </div>

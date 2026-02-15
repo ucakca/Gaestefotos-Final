@@ -1,4 +1,3 @@
-import type { FormEvent } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import api from '@/lib/api';
 import { Event as EventType, Photo } from '@gaestefotos/shared';
@@ -13,7 +12,6 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
   const [error, setError] = useState('');
 
   const [passwordRequired, setPasswordRequired] = useState(false);
-  const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
   const featuresConfig = useMemo(() => (event ? event.featuresConfig : null), [event]);
@@ -289,13 +287,12 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
     }
   };
 
-  const handlePasswordSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const submitPassword = async (pw: string) => {
     setPasswordError('');
     if (!event) return;
 
     try {
-      const { data } = await api.post(`/events/${event.id}/verify-password`, { password });
+      const { data } = await api.post(`/events/${event.id}/verify-password`, { password: pw });
       if (data.valid) {
         setPasswordRequired(false);
       }
@@ -378,10 +375,8 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
     loading,
     error,
     passwordRequired,
-    password,
-    setPassword,
     passwordError,
-    handlePasswordSubmit,
+    submitPassword,
     hasMore,
     loadingMore,
     loadMore: async () => {
