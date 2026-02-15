@@ -4,29 +4,39 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { authApi } from '@/lib/auth';
 import Logo from '@/components/Logo';
 import { Checkbox } from '@/components/ui/Checkbox';
-import { Input } from '@/components/ui/Input';
+import { FormInput } from '@/components/ui/FormInput';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
 
+const loginSchema = z.object({
+  email: z.string().min(1, 'E-Mail ist erforderlich').email('Ungültige E-Mail-Adresse'),
+  password: z.string().min(1, 'Passwort ist erforderlich'),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    setServerError('');
 
     try {
-      const response: any = await authApi.login({ email, password });
+      const response: any = await authApi.login({ email: data.email, password: data.password });
 
       if ((response?.twoFactorRequired || response?.twoFactorSetupRequired) && typeof window !== 'undefined') {
         const origin = window.location.origin;
@@ -83,9 +93,7 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.message || 'Login fehlgeschlagen';
-      setError(Array.isArray(errorMessage) ? errorMessage[0]?.message || 'Login fehlgeschlagen' : errorMessage);
-    } finally {
-      setLoading(false);
+      setServerError(Array.isArray(errorMessage) ? errorMessage[0]?.message || 'Login fehlgeschlagen' : errorMessage);
     }
   };
 
@@ -108,49 +116,39 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {serverError && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="bg-background border-2 border-status-danger text-destructive px-4 py-3 rounded-lg"
             >
-              {error}
+              {serverError}
             </motion.div>
           )}
 
-          <div>
-            <label htmlFor="email" className="mb-2 block text-sm font-medium text-foreground">
-              E-Mail
-            </label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full rounded-lg border border-border bg-card px-4 py-3 text-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15"
-              placeholder="deine@email.com"
-              autoComplete="email"
-            />
-          </div>
+          <FormInput
+            id="email"
+            type="email"
+            label="E-Mail"
+            placeholder="deine@email.com"
+            autoComplete="email"
+            error={errors.email?.message}
+            className="rounded-lg border border-border bg-card px-4 py-3"
+            {...register('email')}
+          />
 
           <div>
-            <label htmlFor="password" className="mb-2 block text-sm font-medium text-foreground">
-              Passwort
-            </label>
             <div className="relative">
-              <Input
+              <FormInput
                 id="password"
-                name="password"
                 type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full rounded-lg border border-border bg-card px-4 py-3 pr-12 text-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15"
+                label="Passwort"
                 placeholder="••••••••"
                 autoComplete="current-password"
+                error={errors.password?.message}
+                className="rounded-lg border border-border bg-card px-4 py-3 pr-12"
+                {...register('password')}
               />
               <IconButton
                 type="button"
@@ -160,7 +158,7 @@ export default function LoginPage() {
                 size="sm"
                 aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
                 title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                className="absolute right-3 top-8 text-muted-foreground"
               />
             </div>
           </div>
@@ -182,12 +180,10 @@ export default function LoginPage() {
 
           <Button
             type="submit"
-            disabled={loading}
-            className="w-full text-background py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-primary hover:opacity-90"
+            loading={isSubmitting}
+            className="w-full text-background py-3 rounded-lg font-medium transition-colors bg-primary hover:opacity-90"
           >
-            <motion.span whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="block">
-              {loading ? 'Anmelden...' : 'Anmelden'}
-            </motion.span>
+            Anmelden
           </Button>
 
           <div className="text-center text-sm text-muted-foreground">

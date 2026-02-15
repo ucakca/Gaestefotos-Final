@@ -2,85 +2,83 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import api from '@/lib/api';
+import { FormInput } from '@/components/ui/FormInput';
+import { Button } from '@/components/ui/Button';
+
+const forgotSchema = z.object({
+  email: z.string().min(1, 'E-Mail ist erforderlich').email('Ungültige E-Mail-Adresse'),
+});
+type ForgotFormData = z.infer<typeof forgotSchema>;
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [serverError, setServerError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
-    setError('');
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ForgotFormData>({
+    resolver: zodResolver(forgotSchema),
+    defaultValues: { email: '' },
+  });
+
+  const onSubmit = async (data: ForgotFormData) => {
+    setSuccessMessage('');
+    setServerError('');
 
     try {
-      const response = await api.post('/auth/forgot-password', { email });
-      setMessage(response.data.message || 'Falls ein Konto existiert, wurde eine E-Mail versendet.');
-      setEmail('');
+      const response = await api.post('/auth/forgot-password', { email: data.email });
+      setSuccessMessage(response.data.message || 'Falls ein Konto existiert, wurde eine E-Mail versendet.');
+      reset();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
-    } finally {
-      setLoading(false);
+      setServerError(err.response?.data?.error || 'Ein Fehler ist aufgetreten. Bitte versuche es erneut.');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sage-50 to-terracotta-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-xl p-8">
+        <div className="bg-card rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-forest-800 mb-2">Passwort vergessen</h1>
-            <p className="text-gray-600">
+            <h1 className="text-3xl font-bold text-foreground mb-2">Passwort vergessen</h1>
+            <p className="text-muted-foreground">
               Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen.
             </p>
           </div>
 
-          {message && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-800 text-sm">{message}</p>
+          {successMessage && (
+            <div className="mb-6 p-4 bg-success/10 border border-success/30 rounded-lg">
+              <p className="text-success text-sm">{successMessage}</p>
             </div>
           )}
 
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 text-sm">{error}</p>
+          {serverError && (
+            <div className="mb-6 p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+              <p className="text-destructive text-sm">{serverError}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                E-Mail-Adresse
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 focus:border-transparent"
-                placeholder="deine@email.de"
-                disabled={loading}
-              />
-            </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <FormInput
+              id="email"
+              type="email"
+              label="E-Mail-Adresse"
+              placeholder="deine@email.de"
+              error={errors.email?.message}
+              {...register('email')}
+            />
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-terracotta-500 hover:bg-terracotta-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Wird gesendet...' : 'Reset-Link anfordern'}
-            </button>
+            <Button type="submit" loading={isSubmitting} className="w-full">
+              Reset-Link anfordern
+            </Button>
           </form>
 
           <div className="mt-6 text-center space-y-2">
             <button
               onClick={() => router.push('/login')}
-              className="text-forest-700 hover:text-forest-900 text-sm font-medium"
+              className="text-primary hover:text-primary/80 text-sm font-medium"
             >
               ← Zurück zum Login
             </button>
@@ -88,11 +86,11 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="mt-6 text-center">
-          <p className="text-gray-600 text-sm">
+          <p className="text-muted-foreground text-sm">
             Kein Konto?{' '}
             <a
               href="https://gästefotos.com/registrieren"
-              className="text-terracotta-600 hover:text-terracotta-700 font-medium"
+              className="text-primary hover:text-primary/80 font-medium"
               target="_blank"
               rel="noopener noreferrer"
             >
