@@ -21,7 +21,7 @@ export default function StoriesBar({ stories, onSelect }: { stories: Story[]; on
             size="sm"
             className="flex flex-col items-center gap-1.5 flex-shrink-0 active:scale-[0.98] p-0 h-auto"
           >
-            <div className="w-[60px] h-[60px] rounded-full bg-gradient-to-tr from-[var(--app-accent)] via-[var(--background)] to-[var(--app-accent)] p-[2px] shadow-sm">
+            <div className="w-[60px] h-[60px] rounded-full bg-gradient-to-tr from-[var(--primary)] via-[var(--background)] to-[var(--primary)] p-[2px] shadow-sm">
               <div className="w-full h-full rounded-full overflow-hidden bg-background ring-2 ring-[var(--card)]">
                 {s?.photo?.url ? (
                   <img src={s.photo.url} alt="Story" className="w-full h-full object-cover" />

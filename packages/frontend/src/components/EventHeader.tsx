@@ -86,7 +86,7 @@ export default function EventHeader({
   const headerColor =
     designConfig?.colors?.primary ||
     designConfig.headerColor ||
-    'var(--app-accent)';
+    'var(--primary)';
   const appName = designConfig.appName || 'Gästefotos';
 
   const presetKey = designConfig.designPresetKey || 'classic';
@@ -106,7 +106,7 @@ export default function EventHeader({
     if (hasStories) {
       return {
         backgroundImage:
-          accentGradient || 'linear-gradient(135deg, var(--app-accent) 0%, var(--foreground) 100%)',
+          accentGradient || 'linear-gradient(135deg, var(--primary) 0%, var(--foreground) 100%)',
       };
     }
     return { backgroundImage: 'linear-gradient(135deg, var(--border) 0%, var(--background) 100%)' };
@@ -527,7 +527,7 @@ export default function EventHeader({
           >
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 flex-shrink-0">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-app-accent to-status-warning p-0.5">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-status-warning p-0.5">
                   <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
                     {profileImage ? (
                       <img src={profileImage} alt={event.title} className="w-full h-full object-cover" />

@@ -51,17 +51,17 @@ export default function EventTypeStep({
                 flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all
                 ${
                   isSelected
-                    ? 'border-app-accent bg-app-accent/10 ring-2 ring-app-accent ring-offset-2 shadow-lg'
-                    : 'border-border bg-card hover:border-app-muted hover:bg-background'
+                    ? 'border-primary bg-primary/10 ring-2 ring-primary ring-offset-2 shadow-lg'
+                    : 'border-border bg-card hover:border-muted-foreground hover:bg-background'
                 }
               `}
             >
-              <IconComponent className={`w-12 h-12 mb-3 ${isSelected ? 'text-app-accent' : 'text-muted-foreground'}`} />
-              <span className={`font-medium ${isSelected ? 'text-app-accent' : 'text-foreground'}`}>
+              <IconComponent className={`w-12 h-12 mb-3 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+              <span className={`font-medium ${isSelected ? 'text-primary' : 'text-foreground'}`}>
                 {config.label}
               </span>
               {isSelected && (
-                <div className="mt-2 w-6 h-6 rounded-full bg-app-accent flex items-center justify-center">
+                <div className="mt-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                   <Icons.Check className="w-4 h-4 text-white" />
                 </div>
               )}
@@ -84,16 +84,16 @@ export default function EventTypeStep({
                     px-4 py-3 rounded-lg border-2 transition-all text-left flex items-center justify-between
                     ${
                       isSelected
-                        ? 'border-app-accent bg-app-accent/10 ring-1 ring-app-accent'
-                        : 'border-border bg-card hover:border-app-muted hover:bg-background'
+                        ? 'border-primary bg-primary/10 ring-1 ring-primary'
+                        : 'border-border bg-card hover:border-muted-foreground hover:bg-background'
                     }
                   `}
                 >
-                  <span className={isSelected ? 'text-app-accent font-medium' : 'text-foreground'}>
+                  <span className={isSelected ? 'text-primary font-medium' : 'text-foreground'}>
                     {subtype.label}
                   </span>
                   {isSelected && (
-                    <div className="w-5 h-5 rounded-full bg-app-accent flex items-center justify-center">
+                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
                       <Icons.Check className="w-3 h-3 text-white" />
                     </div>
                   )}

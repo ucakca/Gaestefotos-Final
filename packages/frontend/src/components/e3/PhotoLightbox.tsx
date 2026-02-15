@@ -613,7 +613,7 @@ export default function PhotoLightbox({
                         disabled={submittingComment || !authorName.trim()}
                         variant="ghost"
                         size="sm"
-                        className="text-app-accent hover:text-app-accent/80 p-0"
+                        className="text-primary hover:text-primary/80 p-0"
                       >
                         Posten
                       </Button>

@@ -64,14 +64,6 @@
     --champagne: 45 40% 90%;
     --blush: 340 30% 95%;
     --cream: 40 30% 96%;
-
-    /* Legacy app-* variables (for backward compatibility) */
-    --app-bg: 30 20% 98%;
-    --app-fg: 20 25% 10%;
-    --app-card: 0 0% 100%;
-    --app-border: 30 20% 88%;
-    --app-accent: 340 75% 55%;
-    --app-muted: 20 10% 45%;
   }
 
   .dark {
@@ -117,14 +109,6 @@
     --champagne: 40 25% 25%;
     --blush: 340 20% 18%;
     --cream: 40 20% 15%;
-
-    /* Legacy app-* variables (dark mode) */
-    --app-bg: 20 20% 8%;
-    --app-fg: 30 20% 95%;
-    --app-card: 20 20% 12%;
-    --app-border: 20 20% 20%;
-    --app-accent: 340 75% 60%;
-    --app-muted: 30 15% 60%;
   }
 }
 

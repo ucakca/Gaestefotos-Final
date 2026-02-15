@@ -316,7 +316,7 @@ export default function ChallengeCompletion({
                     onChange={(e) => setUploaderName(e.target.value)}
                     placeholder="z.B. Max Mustermann"
                     required
-                    className="w-full rounded-lg border-2 border-app-accent bg-card px-4 py-3 font-medium text-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15"
+                    className="w-full rounded-lg border-2 border-primary bg-card px-4 py-3 font-medium text-foreground transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15"
                   />
                 </div>
 

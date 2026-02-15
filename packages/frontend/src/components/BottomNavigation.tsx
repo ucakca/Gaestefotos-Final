@@ -193,10 +193,10 @@ export default function BottomNavigation({
               variant="ghost"
               size="sm"
               className={`h-auto flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${
-                activeView === 'feed' ? 'text-app-accent' : 'text-muted-foreground'
+                activeView === 'feed' ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
-              <Home className={`w-6 h-6 ${activeView === 'feed' ? 'fill-app-accent/20' : ''}`} />
+              <Home className={`w-6 h-6 ${activeView === 'feed' ? 'fill-primary/20' : ''}`} />
               <span className="text-[10px] font-medium">Feed</span>
             </MotionButton>
 
@@ -211,10 +211,10 @@ export default function BottomNavigation({
               variant="ghost"
               size="sm"
               className={`h-auto flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${
-                activeView === 'challenges' ? 'text-app-accent' : 'text-muted-foreground'
+                activeView === 'challenges' ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
-              <Trophy className={`w-6 h-6 ${activeView === 'challenges' ? 'fill-app-accent/20' : ''}`} />
+              <Trophy className={`w-6 h-6 ${activeView === 'challenges' ? 'fill-primary/20' : ''}`} />
               <span className="text-[10px] font-medium">Challenges</span>
             </MotionButton>
 
@@ -226,7 +226,7 @@ export default function BottomNavigation({
                 onClick={() => setShowFaceSearch(true)}
                 variant="primary"
                 size="sm"
-                className="absolute left-1/2 -translate-x-1/2 -top-5 h-auto flex flex-col items-center gap-0.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-app-accent to-purple-500 text-white shadow-lg shadow-app-accent/30"
+                className="absolute left-1/2 -translate-x-1/2 -top-5 h-auto flex flex-col items-center gap-0.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-primary to-purple-500 text-white shadow-lg shadow-primary/30"
               >
                 <ScanFace className="w-6 h-6" />
                 <span className="text-[10px] font-semibold whitespace-nowrap">Finde mich</span>
@@ -240,10 +240,10 @@ export default function BottomNavigation({
               variant="ghost"
               size="sm"
               className={`h-auto flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${
-                activeView === 'guestbook' ? 'text-app-accent' : 'text-muted-foreground'
+                activeView === 'guestbook' ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
-              <BookOpen className={`w-6 h-6 ${activeView === 'guestbook' ? 'fill-app-accent/20' : ''}`} />
+              <BookOpen className={`w-6 h-6 ${activeView === 'guestbook' ? 'fill-primary/20' : ''}`} />
               <span className="text-[10px] font-medium">Gästebuch</span>
             </MotionButton>
 
@@ -254,10 +254,10 @@ export default function BottomNavigation({
               variant="ghost"
               size="sm"
               className={`h-auto flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${
-                activeView === 'info' ? 'text-app-accent' : 'text-muted-foreground'
+                activeView === 'info' ? 'text-primary' : 'text-muted-foreground'
               }`}
             >
-              <Info className={`w-6 h-6 ${activeView === 'info' ? 'fill-app-accent/20' : ''}`} />
+              <Info className={`w-6 h-6 ${activeView === 'info' ? 'fill-primary/20' : ''}`} />
               <span className="text-[10px] font-medium">Info</span>
             </MotionButton>
           </div>
@@ -300,7 +300,7 @@ export default function BottomNavigation({
               size="sm"
               className="h-auto w-full bg-background hover:bg-card rounded-lg p-4 flex items-center gap-3 transition-colors"
             >
-              <div className="w-10 h-10 rounded-full bg-app-accent flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
                 <Grid3x3 className="w-5 h-5 text-background" />
               </div>
               <div>
@@ -330,10 +330,10 @@ export default function BottomNavigation({
                   className="h-auto w-full bg-background hover:bg-card rounded-lg p-4 flex items-center gap-3 transition-colors"
                 >
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-full bg-app-accent/10 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                       {(() => {
                         const IconComp = getIcon(category.iconKey);
-                        return <IconComp className="w-5 h-5 text-app-accent" />;
+                        return <IconComp className="w-5 h-5 text-primary" />;
                       })()}
                     </div>
                     <div className="flex-1 min-w-0">

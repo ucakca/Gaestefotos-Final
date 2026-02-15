@@ -61,7 +61,7 @@ export default function AlbumFilter({
             onClick={() => onAlbumSelect(null)}
             className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all ${
               selectedAlbum === null
-                ? 'bg-app-accent text-white shadow-lg'
+                ? 'bg-primary text-white shadow-lg'
                 : 'bg-card text-foreground border border-border hover:bg-background'
             }`}
             whileHover={{ scale: 1.05 }}
@@ -91,7 +91,7 @@ export default function AlbumFilter({
                 onClick={() => onAlbumSelect(category.id)}
                 className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all ${
                   isActive
-                    ? 'bg-app-accent text-white shadow-lg'
+                    ? 'bg-primary text-white shadow-lg'
                     : 'bg-card text-foreground border border-border hover:bg-background'
                 }`}
                 whileHover={{ scale: 1.05 }}

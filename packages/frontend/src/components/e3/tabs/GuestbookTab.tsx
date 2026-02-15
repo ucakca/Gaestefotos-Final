@@ -271,14 +271,14 @@ export default function GuestbookTab({
                 />
                 <label
                   htmlFor="guestbook-photo"
-                  className="flex-1 flex items-center justify-center gap-2 p-4 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-app-accent hover:bg-app-accent/5 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 p-4 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
                 >
                   <ImagePlus className="w-5 h-5 text-muted-foreground" />
                   <span className="text-muted-foreground">Foto auswählen</span>
                 </label>
                 <label
                   htmlFor="guestbook-photo"
-                  className="flex items-center justify-center p-4 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-app-accent hover:bg-app-accent/5 transition-colors"
+                  className="flex items-center justify-center p-4 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
                   onClick={(e) => {
                     e.preventDefault();
                     if (fileInputRef.current) {

@@ -54,8 +54,8 @@ export default function Step1Template({
               onClick={() => onFormatChange(f)}
               className={`flex-1 py-3 px-6 rounded-lg font-semibold text-sm transition-all ${
                 format === f
-                  ? 'bg-app-accent text-background shadow-lg'
-                  : 'bg-background border border-border text-foreground hover:border-app-accent'
+                  ? 'bg-primary text-background shadow-lg'
+                  : 'bg-background border border-border text-foreground hover:border-primary'
               }`}
             >
               {f}
@@ -95,8 +95,8 @@ export default function Step1Template({
               onClick={() => onTemplateSelect(template.slug)}
               className={`relative aspect-[1/1.4] rounded-lg overflow-hidden border-2 transition-all ${
                 isSelected
-                  ? 'border-app-accent shadow-lg ring-2 ring-app-accent/20'
-                  : 'border-border hover:border-app-accent'
+                  ? 'border-primary shadow-lg ring-2 ring-primary/20'
+                  : 'border-border hover:border-primary'
               }`}
             >
               {/* Template Preview */}
@@ -122,7 +122,7 @@ export default function Step1Template({
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute top-2 right-2 w-7 h-7 bg-app-accent rounded-full flex items-center justify-center shadow-lg"
+                  className="absolute top-2 right-2 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow-lg"
                 >
                   <Check className="w-4 h-4 text-background" />
                 </motion.div>

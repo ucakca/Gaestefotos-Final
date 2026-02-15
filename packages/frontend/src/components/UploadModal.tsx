@@ -104,7 +104,7 @@ export default function UploadModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">Datei auswählen</label>
-            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-app-accent transition-colors">
+            <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors">
               <Upload className="w-5 h-5 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">{selectedFile ? selectedFile.name : 'Klicken zum Auswählen'}</span>
               <Input

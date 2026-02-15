@@ -44,10 +44,10 @@ export default function StatsGrid({ stats, eventId }: StatsGridProps) {
           >
             <Wrapper
               {...wrapperProps as any}
-              className={`block rounded-2xl border border-border bg-card p-4 ${stat.href ? 'hover:bg-card/80 hover:border-app-accent/30 transition-all cursor-pointer' : ''}`}
+              className={`block rounded-2xl border border-border bg-card p-4 ${stat.href ? 'hover:bg-card/80 hover:border-primary/30 transition-all cursor-pointer' : ''}`}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color || 'bg-app-accent/10 text-app-accent'}`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color || 'bg-primary/10 text-primary'}`}>
                   {stat.icon}
                 </div>
                 <div className="min-w-0">

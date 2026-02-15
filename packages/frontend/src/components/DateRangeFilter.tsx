@@ -42,7 +42,7 @@ export default function DateRangeFilter({ onApply, onClear }: DateRangeFilterPro
       <Button
         variant={hasActiveFilter ? 'primary' : 'secondary'}
         onClick={() => setIsOpen(!isOpen)}
-        className={`gap-2 ${hasActiveFilter ? 'bg-app-accent' : ''}`}
+        className={`gap-2 ${hasActiveFilter ? 'bg-primary' : ''}`}
         size="sm"
       >
         <Calendar className="w-4 h-4" />
@@ -80,7 +80,7 @@ export default function DateRangeFilter({ onApply, onClear }: DateRangeFilterPro
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm text-foreground focus:ring-2 focus:ring-app-accent focus:border-transparent"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
 
@@ -92,7 +92,7 @@ export default function DateRangeFilter({ onApply, onClear }: DateRangeFilterPro
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm text-foreground focus:ring-2 focus:ring-app-accent focus:border-transparent"
+                className="w-full px-3 py-2 bg-background border border-border rounded-md text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
               />
             </div>
           </div>
@@ -110,7 +110,7 @@ export default function DateRangeFilter({ onApply, onClear }: DateRangeFilterPro
             <Button
               onClick={handleApply}
               variant="primary"
-              className="flex-1 text-sm bg-app-accent hover:opacity-90"
+              className="flex-1 text-sm bg-primary hover:opacity-90"
               size="sm"
             >
               Anwenden

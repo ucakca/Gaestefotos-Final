@@ -286,7 +286,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                       disabled={!consentAccepted}
                       variant="ghost"
                       size="sm"
-                      className="p-6 border-2 border-dashed border-border rounded-lg hover:border-app-accent hover:bg-background transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-6 border-2 border-dashed border-border rounded-lg hover:border-primary hover:bg-background transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Camera className="w-8 h-8 text-muted-foreground" />
                       <span className="font-medium">Selfie aufnehmen</span>
@@ -302,7 +302,7 @@ export default function FaceSearch({ eventId, onResults, onClose, open, showButt
                       disabled={!consentAccepted}
                       variant="ghost"
                       size="sm"
-                      className="p-6 border-2 border-dashed border-border rounded-lg hover:border-app-accent hover:bg-background transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="p-6 border-2 border-dashed border-border rounded-lg hover:border-primary hover:bg-background transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <ImageIcon className="w-8 h-8 text-muted-foreground" />
                       <span className="font-medium">Foto hochladen</span>

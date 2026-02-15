@@ -215,7 +215,7 @@ export default function WorkflowsAdminPage() {
                 <div className="flex flex-wrap gap-2">
                   {STEP_TYPES.map(st => (
                     <button key={st.value} onClick={() => addStep(st.value)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background text-sm text-foreground hover:bg-app-hover transition-colors">
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background text-sm text-foreground hover:bg-muted/50 transition-colors">
                       <st.icon className={`w-3.5 h-3.5 ${st.color}`} />
                       {st.label}
                     </button>
@@ -320,7 +320,7 @@ export default function WorkflowsAdminPage() {
                       {w.description && <p className="text-xs text-muted-foreground mt-0.5">{w.description}</p>}
                     </div>
                     <div className="flex gap-1">
-                      <button onClick={() => startEdit(w)} className="p-1.5 rounded-lg hover:bg-app-hover text-muted-foreground">
+                      <button onClick={() => startEdit(w)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground">
                         <Edit3 className="w-4 h-4" />
                       </button>
                       <button onClick={() => handleDelete(w.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400">
@@ -337,7 +337,7 @@ export default function WorkflowsAdminPage() {
                       return (
                         <div key={idx} className="flex items-center gap-1 flex-shrink-0">
                           {idx > 0 && <div className="w-4 h-px bg-border" />}
-                          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-app-hover text-xs">
+                          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-muted/50 text-xs">
                             <StepIcon className={`w-3 h-3 ${info?.color || ''}`} />
                             <span className="text-foreground">{step.label}</span>
                             {step.duration && <span className="text-muted-foreground">{step.duration}s</span>}

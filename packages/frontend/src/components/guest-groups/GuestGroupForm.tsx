@@ -93,7 +93,7 @@ export function GuestGroupForm({ initialData, onSubmit, onCancel }: GuestGroupFo
               type="button"
               onClick={() => setColor(preset)}
               className={`w-10 h-10 rounded-lg transition-transform hover:scale-110 ${
-                color === preset ? 'ring-2 ring-app-accent ring-offset-2' : ''
+                color === preset ? 'ring-2 ring-primary ring-offset-2' : ''
               }`}
               style={{ backgroundColor: preset }}
               aria-label={`Farbe ${preset}`}

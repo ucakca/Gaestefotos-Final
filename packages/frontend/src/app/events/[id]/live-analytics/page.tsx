@@ -195,7 +195,7 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
                   <Zap className="w-4 h-4 text-yellow-500" />
                 </div>
                 <div className="text-3xl font-bold text-foreground">{uploadsNow}</div>
-                <div className="mt-2 h-2 bg-app-surface rounded-full overflow-hidden">
+                <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
                     animate={{ width: `${Math.min(uploadsNow * 10, 100)}%` }}
@@ -213,7 +213,7 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
                 <div className="text-3xl font-bold text-foreground">
                   {stats.totalPhotos > 0 ? Math.round(stats.approvedPhotos / stats.totalPhotos * 100) : 0}%
                 </div>
-                <div className="mt-2 h-2 bg-app-surface rounded-full overflow-hidden">
+                <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full transition-all"
                     style={{ width: `${stats.totalPhotos > 0 ? (stats.approvedPhotos / stats.totalPhotos * 100) : 0}%` }}
@@ -230,7 +230,7 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
                 <div className="text-3xl font-bold text-foreground">
                   {stats.totalGuests > 0 ? Math.round(stats.acceptedGuests / stats.totalGuests * 100) : 0}%
                 </div>
-                <div className="mt-2 h-2 bg-app-surface rounded-full overflow-hidden">
+                <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-purple-400 to-violet-500 rounded-full transition-all"
                     style={{ width: `${stats.totalGuests > 0 ? (stats.acceptedGuests / stats.totalGuests * 100) : 0}%` }}

@@ -151,7 +151,7 @@ export default function DesignStep({
                   onClick={() => onColorSchemeChange(scheme.id)}
                   className={`
                     p-4 rounded-lg border-2 transition-all
-                    ${colorScheme === scheme.id ? 'border-app-accent ring-2 ring-app-accent ring-offset-1' : 'border-gray-200 hover:border-gray-300'}
+                    ${colorScheme === scheme.id ? 'border-primary ring-2 ring-primary ring-offset-1' : 'border-gray-200 hover:border-gray-300'}
                   `}
                 >
                   <div className={`h-12 rounded mb-2 ${scheme.colors}`} />

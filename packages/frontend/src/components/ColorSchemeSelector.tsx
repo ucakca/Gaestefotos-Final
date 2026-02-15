@@ -60,7 +60,7 @@ export function ColorSchemeSelector({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-foreground">
-        <Palette className="w-5 h-5 text-app-accent" />
+        <Palette className="w-5 h-5 text-primary" />
         <h3 className="font-semibold">KI-Farbschema Generator</h3>
       </div>
       
@@ -74,7 +74,7 @@ export function ColorSchemeSelector({
           value={mood}
           onChange={(e) => setMood(e.target.value)}
           placeholder="Stimmung (z.B. romantisch, elegant, modern)"
-          className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-app-accent/50"
+          className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
         />
         <Button
           type="button"
@@ -100,14 +100,14 @@ export function ColorSchemeSelector({
               onClick={() => handleSelect(scheme, index)}
               className={`relative p-3 rounded-xl border-2 transition-all ${
                 selectedIndex === index
-                  ? 'border-app-accent shadow-lg scale-[1.02]'
+                  ? 'border-primary shadow-lg scale-[1.02]'
                   : currentPrimary === scheme.primary
-                  ? 'border-app-accent/50'
-                  : 'border-border hover:border-app-accent/30'
+                  ? 'border-primary/50'
+                  : 'border-border hover:border-primary/30'
               }`}
             >
               {selectedIndex === index && (
-                <div className="absolute top-2 right-2 w-5 h-5 bg-app-accent rounded-full flex items-center justify-center">
+                <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
                   <Check className="w-3 h-3 text-white" />
                 </div>
               )}

@@ -237,7 +237,7 @@ export default function AssetLibraryPage() {
               <button
                 onClick={() => { setTypeFilter(''); setPage(1); }}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                  !typeFilter ? 'bg-app-accent text-white border-app-accent' : 'bg-card text-muted-foreground border-border'
+                  !typeFilter ? 'bg-primary text-white border-primary' : 'bg-card text-muted-foreground border-border'
                 }`}
               >
                 Alle
@@ -247,7 +247,7 @@ export default function AssetLibraryPage() {
                   key={t}
                   onClick={() => { setTypeFilter(t === typeFilter ? '' : t); setPage(1); }}
                   className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                    typeFilter === t ? 'bg-app-accent text-white border-app-accent' : `${TYPE_LABELS[t]?.color || ''} border-transparent`
+                    typeFilter === t ? 'bg-primary text-white border-primary' : `${TYPE_LABELS[t]?.color || ''} border-transparent`
                   }`}
                 >
                   {TYPE_LABELS[t]?.label || t}
@@ -272,7 +272,7 @@ export default function AssetLibraryPage() {
                 const info = TYPE_LABELS[asset.type] || { label: asset.type, color: 'bg-gray-100 text-gray-600' };
                 return (
                   <div key={asset.id} className="bg-card rounded-xl border border-border overflow-hidden group">
-                    <div className="aspect-square bg-app-hover flex items-center justify-center relative">
+                    <div className="aspect-square bg-muted/50 flex items-center justify-center relative">
                       <img
                         src={`${process.env.NEXT_PUBLIC_API_URL || ''}/api/assets/${asset.id}/file`}
                         alt={asset.name}
@@ -300,7 +300,7 @@ export default function AssetLibraryPage() {
                       {asset.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {asset.tags.slice(0, 3).map(tag => (
-                            <span key={tag} className="text-xs bg-app-hover text-muted-foreground px-1.5 py-0.5 rounded">{tag}</span>
+                            <span key={tag} className="text-xs bg-muted/50 text-muted-foreground px-1.5 py-0.5 rounded">{tag}</span>
                           ))}
                         </div>
                       )}

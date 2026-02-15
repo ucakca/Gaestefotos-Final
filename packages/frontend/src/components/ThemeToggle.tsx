@@ -34,7 +34,7 @@ export function ThemeToggle({ className = '', size = 'md' }: ThemeToggleProps) {
   return (
     <button
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className={`p-2 rounded-lg bg-card border border-border hover:border-app-accent/50 transition-all ${className}`}
+      className={`p-2 rounded-lg bg-card border border-border hover:border-primary/50 transition-all ${className}`}
       aria-label={isDark ? 'Hellen Modus aktivieren' : 'Dunklen Modus aktivieren'}
       title={isDark ? 'Heller Modus' : 'Dunkler Modus'}
     >

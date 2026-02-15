@@ -132,7 +132,7 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           {step !== 'select-photo' && (
-            <button onClick={handleReset} className="p-2 rounded-lg hover:bg-app-surface transition">
+            <button onClick={handleReset} className="p-2 rounded-lg hover:bg-muted transition">
               <ArrowLeft className="w-5 h-5 text-muted-foreground" />
             </button>
           )}
@@ -162,7 +162,7 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 }`}>
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                    isActive ? 'bg-primary text-white' : 'bg-app-surface text-muted-foreground'
+                    isActive ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
                   }`}>{i + 1}</div>
                   {label}
                 </div>
@@ -193,7 +193,7 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
                     {photo.url ? (
                       <img src={photo.url} alt="" className="w-full h-full object-cover" loading="lazy" />
                     ) : (
-                      <div className="w-full h-full bg-app-surface flex items-center justify-center text-muted-foreground">
+                      <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground">
                         <ImageIcon className="w-6 h-6" />
                       </div>
                     )}
@@ -213,7 +213,7 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
             {/* Preview */}
             <div className="bg-card border border-border rounded-2xl p-4">
               <h3 className="text-sm font-semibold text-muted-foreground mb-3">Ausgewähltes Foto</h3>
-              <div className="aspect-square rounded-xl overflow-hidden bg-app-surface">
+              <div className="aspect-square rounded-xl overflow-hidden bg-muted">
                 {selectedPhoto.url && (
                   <img src={selectedPhoto.url} alt="" className="w-full h-full object-cover" />
                 )}
@@ -290,7 +290,7 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
             {/* Original */}
             <div className="bg-card border border-border rounded-2xl p-4">
               <h3 className="text-sm font-semibold text-muted-foreground mb-3">Original</h3>
-              <div className="aspect-square rounded-xl overflow-hidden bg-app-surface">
+              <div className="aspect-square rounded-xl overflow-hidden bg-muted">
                 {selectedPhoto?.url && (
                   <img src={selectedPhoto.url} alt="Original" className="w-full h-full object-cover" />
                 )}
@@ -307,7 +307,7 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
                   <span className="text-xs text-muted-foreground">{(processTime / 1000).toFixed(1)}s</span>
                 )}
               </div>
-              <div className="aspect-square rounded-xl overflow-hidden bg-app-surface">
+              <div className="aspect-square rounded-xl overflow-hidden bg-muted">
                 <img src={resultUrl} alt="KI Ergebnis" className="w-full h-full object-cover" />
               </div>
             </div>

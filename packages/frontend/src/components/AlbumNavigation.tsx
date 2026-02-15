@@ -63,7 +63,7 @@ export default function AlbumNavigation({
                 <div
                   className={`relative w-14 h-14 rounded-full p-0.5 transition-all ${
                     isSelected
-                      ? 'bg-app-accent scale-110'
+                      ? 'bg-primary scale-110'
                       : 'bg-border'
                   }`}
                   style={{ zIndex: 10, position: 'relative' }}

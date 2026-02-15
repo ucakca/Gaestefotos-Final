@@ -37,7 +37,7 @@ export function UsageLimitCounter({
   const barColor = useMemo(() => {
     if (isAtLimit) return 'bg-status-danger';
     if (isNearLimit) return 'bg-status-warning';
-    return 'bg-app-accent';
+    return 'bg-primary';
   }, [isAtLimit, isNearLimit]);
 
   if (isUnlimited) {
@@ -54,7 +54,7 @@ export function UsageLimitCounter({
         {isAtLimit && onUpgrade && (
           <button
             onClick={onUpgrade}
-            className="text-xs text-app-accent hover:underline flex items-center gap-1"
+            className="text-xs text-primary hover:underline flex items-center gap-1"
           >
             <Zap className="w-3 h-3" />
             Upgrade
@@ -96,7 +96,7 @@ export function UsageLimitCounter({
           {onUpgrade && (
             <button
               onClick={onUpgrade}
-              className="text-app-accent hover:underline flex items-center gap-1 font-medium"
+              className="text-primary hover:underline flex items-center gap-1 font-medium"
             >
               <Zap className="w-3 h-3" />
               Jetzt upgraden

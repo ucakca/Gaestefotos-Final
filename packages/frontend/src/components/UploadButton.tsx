@@ -685,9 +685,9 @@ export default function UploadButton({
                 exit={{ opacity: 0, y: -10, height: 0 }}
                 className="mb-4 overflow-hidden"
               >
-                <div className="rounded-lg border-2 border-app-accent bg-gradient-to-br from-card to-background p-4 shadow-lg">
+                <div className="rounded-lg border-2 border-primary bg-gradient-to-br from-card to-background p-4 shadow-lg">
                   <div className="flex items-start gap-3 mb-3">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-app-accent/20 flex items-center justify-center">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
                       <span className="text-lg">📸</span>
                     </div>
                     <div className="flex-1">
@@ -711,7 +711,7 @@ export default function UploadButton({
                     }}
                     placeholder="Dein Name (z.B. Max)"
                     autoFocus
-                    className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm font-medium text-foreground mb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-accent/30"
+                    className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm font-medium text-foreground mb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                   />
                   <Button
                     onClick={handleNameSubmit}
@@ -741,8 +741,8 @@ export default function UploadButton({
                   className={`
                     border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
                     ${isDragActive 
-                      ? 'border-app-accent bg-background' 
-                      : 'border-border hover:border-app-accent hover:bg-background'
+                      ? 'border-primary bg-background' 
+                      : 'border-border hover:border-primary hover:bg-background'
                     }
                     ${disabled ? 'pointer-events-none' : ''}
                   `}
@@ -831,7 +831,7 @@ export default function UploadButton({
                               </div>
                               <div className="w-full bg-border rounded-full h-1.5">
                                 <motion.div
-                                  className="h-1.5 rounded-full bg-app-accent"
+                                  className="h-1.5 rounded-full bg-primary"
                                   initial={{ width: 0 }}
                                   animate={{ width: `${file.progress}%` }}
                                   transition={{ duration: 0.3 }}
@@ -860,7 +860,7 @@ export default function UploadButton({
                             <motion.div
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
-                              className="flex h-6 w-6 items-center justify-center rounded-full bg-app-accent"
+                              className="flex h-6 w-6 items-center justify-center rounded-full bg-primary"
                             >
                               <Check className="w-4 h-4 text-background" />
                             </motion.div>

@@ -103,7 +103,7 @@ export default function Step2TargetImage({ state, onChange, targetImageUrl, anal
           checked={noTarget}
           onChange={(e) => setNoTarget(e.target.checked)}
           className="h-4 w-4 rounded border-gray-300"
-          style={{ accentColor: 'var(--app-accent, #9333ea)' }}
+          style={{ accentColor: 'var(--primary, #9333ea)' }}
         />
         <div>
           <span className="text-sm font-medium text-gray-700">Kein Zielbild</span>

@@ -161,22 +161,22 @@ export function UpgradeModal({
                         className={`
                           relative rounded-xl border-2 p-6 transition-all
                           ${tier.highlighted
-                            ? 'border-app-accent bg-gradient-to-br from-app-accent/5 to-transparent shadow-lg'
+                            ? 'border-primary bg-gradient-to-br from-primary/5 to-transparent shadow-lg'
                             : 'border-border bg-background'
                           }
-                          ${isSelected ? 'ring-2 ring-app-accent' : ''}
+                          ${isSelected ? 'ring-2 ring-primary' : ''}
                         `}
                       >
                         {tier.highlighted && (
                           <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                            <span className="bg-app-accent text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
+                            <span className="bg-primary text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
                               Beliebteste Wahl
                             </span>
                           </div>
                         )}
 
                         <div className="flex items-center gap-2 mb-4">
-                          <Icon className={`w-6 h-6 ${tier.highlighted ? 'text-app-accent' : 'text-muted-foreground'}`} />
+                          <Icon className={`w-6 h-6 ${tier.highlighted ? 'text-primary' : 'text-muted-foreground'}`} />
                           <h3 className="text-xl font-bold text-foreground">{tier.name}</h3>
                         </div>
 
@@ -214,7 +214,7 @@ export function UpgradeModal({
                   <p className="text-sm text-muted-foreground">
                     Alle Preise verstehen sich zzgl. MwSt. · Keine Mindestlaufzeit · Jederzeit kündbar
                   </p>
-                  <a href="/pricing" className="text-sm text-app-accent hover:underline mt-2 inline-block">
+                  <a href="/pricing" className="text-sm text-primary hover:underline mt-2 inline-block">
                     Mehr Details zu den Paketen →
                   </a>
                 </div>

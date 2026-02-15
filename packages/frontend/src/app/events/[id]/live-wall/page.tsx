@@ -560,7 +560,7 @@ export default function LiveWallPage() {
                       <div className="absolute bottom-3 left-3 right-3">
                         <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
                           <div className="flex items-start gap-2">
-                            <MessageCircle className="w-4 h-4 text-app-accent mt-0.5 flex-shrink-0" />
+                            <MessageCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-semibold text-foreground truncate">{photo.guestbookEntry.authorName}</p>
                               <p className="text-xs text-muted-foreground line-clamp-2">{photo.guestbookEntry.message}</p>

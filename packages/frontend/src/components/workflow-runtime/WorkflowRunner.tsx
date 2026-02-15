@@ -120,7 +120,7 @@ export default function WorkflowRunner({
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={start}
-          className="px-6 py-3 bg-app-accent text-white rounded-xl font-semibold shadow-md"
+          className="px-6 py-3 bg-primary text-white rounded-xl font-semibold shadow-md"
         >
           Workflow starten
         </motion.button>
@@ -203,7 +203,7 @@ export default function WorkflowRunner({
           </div>
           <div className="h-1.5 bg-background rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-app-accent rounded-full"
+              className="h-full bg-primary rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${Math.min((stepIndex / totalSteps) * 100, 100)}%` }}
               transition={{ duration: 0.3 }}

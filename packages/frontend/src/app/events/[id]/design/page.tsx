@@ -287,9 +287,9 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
   const welcomeMessage = designConfig.welcomeMessage || '';
   const selectedPreset = getDesignPreset(designConfig.designPresetKey);
   const heroGradient =
-    selectedPreset?.heroGradient || 'linear-gradient(90deg, var(--app-accent) 0%, var(--foreground) 100%)';
+    selectedPreset?.heroGradient || 'linear-gradient(90deg, var(--primary) 0%, var(--foreground) 100%)';
   const accentGradient =
-    selectedPreset?.accentGradient || 'linear-gradient(135deg, var(--app-accent) 0%, var(--foreground) 100%)';
+    selectedPreset?.accentGradient || 'linear-gradient(135deg, var(--primary) 0%, var(--foreground) 100%)';
   const eventUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/e2/${event.slug}`;
 
   return (
@@ -317,7 +317,7 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPreviewMode(previewMode === 'mobile' ? 'desktop' : 'mobile')}
-                className={`p-2 rounded-lg transition-colors ${previewMode === 'mobile' ? 'bg-app-accent/10 text-app-accent' : 'text-muted-foreground hover:bg-background'}`}
+                className={`p-2 rounded-lg transition-colors ${previewMode === 'mobile' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-background'}`}
                 title={previewMode === 'mobile' ? 'Desktop-Vorschau' : 'Mobile Vorschau'}
               >
                 <Smartphone className="w-5 h-5" />
@@ -500,7 +500,7 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                       onClick={() => updateDesignConfig({ designPresetKey: p.key, colors: p.colors })}
                       className={`rounded-xl border-2 p-2 transition-all ${
                         isSelected
-                          ? 'border-app-accent shadow-md scale-[1.02]'
+                          ? 'border-primary shadow-md scale-[1.02]'
                           : 'border-border hover:border-muted-foreground'
                       }`}
                     >
@@ -568,7 +568,7 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
             {/* QR Code — Compact with link to dashboard */}
             <div className="rounded-2xl border border-border bg-card p-5">
               <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                <QrCode className="w-4 h-4 text-app-accent" />
+                <QrCode className="w-4 h-4 text-primary" />
                 QR-Code
               </h3>
               <div className="flex items-center gap-3 mb-3">

@@ -204,8 +204,8 @@ export default function InstagramUploadButton({
               className={`
                 border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
                 ${isDragActive 
-                  ? 'border-app-accent bg-background' 
-                  : 'border-border hover:border-app-accent hover:bg-background'
+                  ? 'border-primary bg-background' 
+                  : 'border-border hover:border-primary hover:bg-background'
                 }
               `}
             >
@@ -262,7 +262,7 @@ export default function InstagramUploadButton({
                       {file.uploading && (
                         <div className="mt-1 w-full bg-border rounded-full h-1.5">
                           <motion.div
-                            className="h-1.5 rounded-full bg-app-accent"
+                            className="h-1.5 rounded-full bg-primary"
                             initial={{ width: 0 }}
                             animate={{ width: `${file.progress}%` }}
                             transition={{ duration: 0.3 }}
@@ -277,7 +277,7 @@ export default function InstagramUploadButton({
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="w-6 h-6 rounded-full bg-app-accent flex items-center justify-center"
+                          className="w-6 h-6 rounded-full bg-primary flex items-center justify-center"
                         >
                           <Check className="w-4 h-4 text-background" />
                         </motion.div>

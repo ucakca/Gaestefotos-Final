@@ -211,12 +211,12 @@ export default function TemplatesAdminPage() {
           {/* Type filter */}
           <div className="flex gap-2">
             <button onClick={() => setTypeFilter('')}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${!typeFilter ? 'bg-app-accent text-white border-app-accent' : 'bg-card text-muted-foreground border-border'}`}>
+              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${!typeFilter ? 'bg-primary text-white border-primary' : 'bg-card text-muted-foreground border-border'}`}>
               Alle
             </button>
             {TEMPLATE_TYPES.map(t => (
               <button key={t.value} onClick={() => setTypeFilter(t.value === typeFilter ? '' : t.value)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-colors flex items-center gap-1 ${typeFilter === t.value ? 'bg-app-accent text-white border-app-accent' : 'bg-card text-muted-foreground border-border'}`}>
+                className={`text-xs px-3 py-1.5 rounded-full border transition-colors flex items-center gap-1 ${typeFilter === t.value ? 'bg-primary text-white border-primary' : 'bg-card text-muted-foreground border-border'}`}>
                 <t.icon className="w-3 h-3" /> {t.label}
               </button>
             ))}
@@ -240,8 +240,8 @@ export default function TemplatesAdminPage() {
                     <div className="p-4 space-y-2">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-lg bg-app-hover flex items-center justify-center">
-                            <TypeIcon className="w-4 h-4 text-app-accent" />
+                          <div className="w-8 h-8 rounded-lg bg-muted/50 flex items-center justify-center">
+                            <TypeIcon className="w-4 h-4 text-primary" />
                           </div>
                           <div>
                             <div className="font-medium text-sm text-foreground">{t.name}</div>
@@ -249,7 +249,7 @@ export default function TemplatesAdminPage() {
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <button onClick={() => startEdit(t)} className="p-1.5 rounded-lg hover:bg-app-hover text-muted-foreground">
+                          <button onClick={() => startEdit(t)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground">
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
                           <button onClick={() => handleDelete(t.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400">
@@ -259,7 +259,7 @@ export default function TemplatesAdminPage() {
                       </div>
                       {t.description && <p className="text-xs text-muted-foreground">{t.description}</p>}
                       <div className="flex items-center gap-2 text-xs">
-                        {t.category && <span className="px-2 py-0.5 rounded-full bg-app-hover text-muted-foreground">{t.category}</span>}
+                        {t.category && <span className="px-2 py-0.5 rounded-full bg-muted/50 text-muted-foreground">{t.category}</span>}
                         <span className={`px-2 py-0.5 rounded-full ${t.isPublic ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                           {t.isPublic ? 'Öffentlich' : 'Privat'}
                         </span>

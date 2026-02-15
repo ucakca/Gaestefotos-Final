@@ -183,7 +183,7 @@ export default function EventWizard() {
           </div>
           <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-app-accent transition-all duration-300 rounded-full"
+              className="h-full bg-primary transition-all duration-300 rounded-full"
               style={{ width: `${(state.currentStep / getTotalSteps()) * 100}%` }}
             />
           </div>

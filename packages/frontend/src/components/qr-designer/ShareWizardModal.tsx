@@ -132,7 +132,7 @@ export default function ShareWizardModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-app-surface transition-colors"
+            className="p-2 rounded-lg hover:bg-muted transition-colors"
           >
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
@@ -154,7 +154,7 @@ export default function ShareWizardModal({
                   ? 'bg-primary/10 border-b-2 border-primary text-primary'
                   : tab.key === 'order'
                   ? 'text-muted-foreground/50 cursor-not-allowed'
-                  : 'text-muted-foreground hover:bg-app-surface'
+                  : 'text-muted-foreground hover:bg-muted'
               }`}
             >
               <div className="font-medium text-sm">{tab.label}</div>
@@ -208,7 +208,7 @@ export default function ShareWizardModal({
                       } ${exporting && !isLoading ? 'opacity-50' : ''}`}
                     >
                       <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-lg ${isSuccess ? 'bg-green-500/20' : 'bg-app-surface'}`}>
+                        <div className={`p-2 rounded-lg ${isSuccess ? 'bg-green-500/20' : 'bg-muted'}`}>
                           {isSuccess ? (
                             <Check className="w-5 h-5 text-green-500" />
                           ) : isLoading ? (
@@ -260,7 +260,7 @@ export default function ShareWizardModal({
                       } ${exporting && !isLoading ? 'opacity-50' : ''}`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`p-3 rounded-lg ${isSuccess ? 'bg-green-500/20' : 'bg-app-surface'}`}>
+                        <div className={`p-3 rounded-lg ${isSuccess ? 'bg-green-500/20' : 'bg-muted'}`}>
                           {isSuccess ? (
                             <Check className="w-6 h-6 text-green-500" />
                           ) : isLoading ? (
@@ -285,7 +285,7 @@ export default function ShareWizardModal({
           {/* Order Tab (Coming Soon) */}
           {activeTab === 'order' && (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="w-16 h-16 rounded-full bg-app-surface flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
                 <span className="text-3xl">📦</span>
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">Bald verfügbar!</h3>
@@ -305,7 +305,7 @@ export default function ShareWizardModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border bg-app-surface/50">
+        <div className="p-4 border-t border-border bg-muted/50">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>QR-Code URL: {publicUrl}</span>
             <button

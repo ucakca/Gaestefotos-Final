@@ -72,9 +72,9 @@ export default function Step2Content({
       </div>
 
       {/* Content Presets */}
-      <div className="bg-gradient-to-br from-app-accent/10 to-card rounded-lg border border-app-accent/20 p-4">
+      <div className="bg-gradient-to-br from-primary/10 to-card rounded-lg border border-primary/20 p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="w-4 h-4 text-app-accent" />
+          <Sparkles className="w-4 h-4 text-primary" />
           <span className="text-sm font-semibold text-foreground">Schnelle Vorlagen</span>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">

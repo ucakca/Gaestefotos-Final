@@ -15,7 +15,7 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio({ c
         className
       )}
       {...props}
-      style={{ accentColor: 'var(--app-accent)' }}
+      style={{ accentColor: 'var(--primary)' }}
     />
   );
 });

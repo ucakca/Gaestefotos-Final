@@ -95,8 +95,8 @@ export const DESIGN_PRESETS: DesignPreset[] = [
   {
     key: 'mono',
     label: 'Professional',
-    heroGradient: 'linear-gradient(135deg, var(--app-fg) 0%, var(--app-muted) 100%)',
-    accentGradient: 'linear-gradient(135deg, var(--app-fg) 0%, var(--app-muted) 100%)',
+    heroGradient: 'linear-gradient(135deg, var(--foreground) 0%, var(--muted-foreground) 100%)',
+    accentGradient: 'linear-gradient(135deg, var(--foreground) 0%, var(--muted-foreground) 100%)',
     colors: { primary: '#1F2937', secondary: '#F9FAFB', accent: '#6B7280' },
     category: 'business',
     emoji: '💼',
@@ -114,7 +114,7 @@ export const DESIGN_PRESETS: DesignPreset[] = [
   {
     key: 'emerald_sand',
     label: 'Emerald & Sand',
-    heroGradient: 'linear-gradient(135deg, var(--app-accent) 0%, var(--app-fg) 100%)',
+    heroGradient: 'linear-gradient(135deg, var(--primary) 0%, var(--foreground) 100%)',
     accentGradient: 'linear-gradient(135deg, #10B981 0%, #F59E0B 100%)',
     colors: { primary: '#10B981', secondary: '#F5F5F5', accent: '#F59E0B' },
     category: 'general',

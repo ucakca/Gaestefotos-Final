@@ -569,7 +569,7 @@ export default function ModernPhotoGrid({
                       <div className="absolute bottom-4 left-4 right-4">
                         <div className="bg-card border border-border rounded-lg px-4 py-3 shadow-xl max-w-md mx-auto">
                           <div className="flex items-center gap-2 mb-2">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-status-warning to-app-accent flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-status-warning to-primary flex items-center justify-center">
                               <User className="w-4 h-4 text-background" />
                             </div>
                             <span className="text-sm font-semibold text-foreground">
@@ -817,7 +817,7 @@ export default function ModernPhotoGrid({
                   ) : (
                     (comments[getUnderlyingPhotoId(photos[selectedPhoto]) || ''] || []).map((comment: any) => (
                       <div key={comment.id} className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-app-accent to-status-warning flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-status-warning flex items-center justify-center flex-shrink-0">
                           <User className="w-4 h-4 text-background" />
                         </div>
                         <div className="flex-1 min-w-0">

@@ -109,8 +109,8 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
           className={`
             border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors
             ${isDragActive 
-              ? 'border-app-accent bg-background' 
-              : 'border-border hover:border-app-accent hover:bg-background'
+              ? 'border-primary bg-background' 
+              : 'border-border hover:border-primary hover:bg-background'
             }
           `}
         >
@@ -163,7 +163,7 @@ export default function PhotoUpload({ eventId, onUploadSuccess }: PhotoUploadPro
                     {file.uploading && (
                       <div className="mt-2 w-full bg-border rounded-full h-2">
                         <motion.div
-                          className="h-2 rounded-full bg-app-accent"
+                          className="h-2 rounded-full bg-primary"
                           initial={{ width: 0 }}
                           animate={{ width: `${file.progress}%` }}
                           transition={{ duration: 0.3 }}

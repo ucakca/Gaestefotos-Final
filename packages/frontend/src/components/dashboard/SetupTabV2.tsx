@@ -376,7 +376,7 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                       aria-checked={!!featuresConfig[key]}
                       onClick={() => setFeaturesConfig((prev: any) => ({ ...prev, [key]: !prev[key] }))}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        featuresConfig[key] ? 'bg-app-accent' : 'bg-border'
+                        featuresConfig[key] ? 'bg-primary' : 'bg-border'
                       }`}
                     >
                       <span

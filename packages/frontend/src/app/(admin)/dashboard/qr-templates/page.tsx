@@ -90,13 +90,13 @@ export default function QrTemplatesPage() {
             <div className="flex border border-border rounded-lg overflow-hidden">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 ${viewMode === 'grid' ? 'bg-app-accent text-white' : 'hover:bg-background'}`}
+                className={`p-2 ${viewMode === 'grid' ? 'bg-primary text-white' : 'hover:bg-background'}`}
               >
                 <Grid className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 ${viewMode === 'list' ? 'bg-app-accent text-white' : 'hover:bg-background'}`}
+                className={`p-2 ${viewMode === 'list' ? 'bg-primary text-white' : 'hover:bg-background'}`}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -112,7 +112,7 @@ export default function QrTemplatesPage() {
               onClick={() => setCategoryFilter(cat.value)}
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 categoryFilter === cat.value
-                  ? 'bg-app-accent text-white'
+                  ? 'bg-primary text-white'
                   : 'bg-background hover:bg-border text-muted-foreground'
               }`}
             >

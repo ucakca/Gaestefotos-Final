@@ -58,7 +58,7 @@ export default function UploadProgressIndicator() {
           <div className="flex items-center justify-between p-3 bg-background/50">
             <div className="flex items-center gap-2">
               {isUploading ? (
-                <Loader2 className="w-5 h-5 text-app-accent animate-spin" />
+                <Loader2 className="w-5 h-5 text-primary animate-spin" />
               ) : (
                 <CheckCircle className="w-5 h-5 text-green-500" />
               )}
@@ -84,7 +84,7 @@ export default function UploadProgressIndicator() {
             <div className="px-3 pb-3">
               <div className="h-2 bg-border rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-app-accent to-purple-500"
+                  className="h-full bg-gradient-to-r from-primary to-purple-500"
                   initial={{ width: 0 }}
                   animate={{ width: `${totalProgress}%` }}
                   transition={{ duration: 0.3 }}

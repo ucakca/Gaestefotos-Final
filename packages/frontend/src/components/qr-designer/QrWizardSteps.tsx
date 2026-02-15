@@ -22,7 +22,7 @@ export default function QrWizardSteps({ currentStep, steps }: QrWizardStepsProps
         {/* Progress Line */}
         <div className="absolute top-5 left-0 right-0 h-0.5 bg-border" style={{ zIndex: 0 }} />
         <div
-          className="absolute top-5 left-0 h-0.5 bg-app-accent transition-all duration-500"
+          className="absolute top-5 left-0 h-0.5 bg-primary transition-all duration-500"
           style={{
             width: `${((currentStep - 1) / (steps.length - 1)) * 100}%`,
             zIndex: 1,
@@ -41,11 +41,11 @@ export default function QrWizardSteps({ currentStep, steps }: QrWizardStepsProps
                 initial={false}
                 animate={{
                   scale: isActive ? 1.1 : 1,
-                  backgroundColor: isCompleted || isActive ? 'var(--app-accent)' : 'var(--card)',
+                  backgroundColor: isCompleted || isActive ? 'var(--primary)' : 'var(--card)',
                 }}
                 className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors ${
                   isCompleted || isActive
-                    ? 'border-app-accent text-background'
+                    ? 'border-primary text-background'
                     : 'border-border text-muted-foreground bg-card'
                 }`}
               >

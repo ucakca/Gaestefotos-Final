@@ -88,16 +88,16 @@ export default function SocialShare({ url, title = 'Event Foto', imageUrl: _imag
       </div>
 
       {/* Copy Link */}
-      <div className="mt-3 flex items-center gap-2 p-3 bg-app-surface rounded-xl border border-border">
+      <div className="mt-3 flex items-center gap-2 p-3 bg-muted rounded-xl border border-border">
         <input value={url} readOnly className="flex-1 text-sm bg-transparent text-foreground truncate outline-none" />
         <button onClick={handleCopy}
-          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-app-primary text-white rounded-lg hover:bg-app-primary/90 transition">
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-primary text-white rounded-lg hover:bg-primary/90 transition">
           {copied ? <><Check className="w-3 h-3" /> Kopiert</> : <><Copy className="w-3 h-3" /> Kopieren</>}
         </button>
       </div>
 
       {/* QR Code hint */}
-      <div className="mt-3 flex items-center gap-2 p-3 bg-app-surface/50 rounded-xl border border-border text-xs text-muted-foreground">
+      <div className="mt-3 flex items-center gap-2 p-3 bg-muted/50 rounded-xl border border-border text-xs text-muted-foreground">
         <QrCode className="w-4 h-4" />
         <span>QR-Code findest du im Dashboard unter „QR-Code & Teilen"</span>
       </div>

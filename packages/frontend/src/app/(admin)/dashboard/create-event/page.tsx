@@ -148,7 +148,7 @@ export default function AdminCreateEventPage() {
             </Link>
             <button
               onClick={resetForm}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-background text-foreground text-sm font-medium hover:bg-app-hover transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-background text-foreground text-sm font-medium hover:bg-muted/50 transition-colors"
             >
               <UserPlus className="w-4 h-4" /> Weiteres Event erstellen
             </button>
@@ -219,7 +219,7 @@ export default function AdminCreateEventPage() {
                     <button
                       key={u.id}
                       onClick={() => { setSelectedUser(u); setUserSearch(''); setUsers([]); }}
-                      className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-app-hover transition-colors text-left border-b border-border/50 last:border-0"
+                      className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-muted/50 transition-colors text-left border-b border-border/50 last:border-0"
                     >
                       <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-xs font-bold flex-shrink-0">
                         {(u.name || u.email)[0]?.toUpperCase()}

@@ -136,21 +136,21 @@ export default function Home() {
 
         {/* Features Section */}
         <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <div className="bg-app-surface p-6 rounded-lg border border-border">
+          <div className="bg-muted p-6 rounded-lg border border-border">
             <h3 className="text-xl font-semibold text-foreground mb-3">📸 Upload & Moderation</h3>
             <p className="text-muted-foreground">
               Gäste laden Fotos hoch, du entscheidest was veröffentlicht wird. 
               QR-Codes machen den Zugang kinderleicht.
             </p>
           </div>
-          <div className="bg-app-surface p-6 rounded-lg border border-border">
+          <div className="bg-muted p-6 rounded-lg border border-border">
             <h3 className="text-xl font-semibold text-foreground mb-3">🎨 Kategorien & Alben</h3>
             <p className="text-muted-foreground">
               Organisiere Fotos in Alben, erstelle Challenges und halte 
               besondere Momente fest.
             </p>
           </div>
-          <div className="bg-app-surface p-6 rounded-lg border border-border">
+          <div className="bg-muted p-6 rounded-lg border border-border">
             <h3 className="text-xl font-semibold text-foreground mb-3">💾 Download & Teilen</h3>
             <p className="text-muted-foreground">
               Alle Fotos als ZIP herunterladen oder einzeln teilen. 
@@ -160,7 +160,7 @@ export default function Home() {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center bg-app-surface p-8 rounded-lg border border-border">
+        <div className="text-center bg-muted p-8 rounded-lg border border-border">
           <h2 className="text-3xl font-bold text-foreground mb-4">
             Bereit loszulegen?
           </h2>

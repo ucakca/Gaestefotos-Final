@@ -78,7 +78,7 @@ export default function AlbumsStep({ albums, onAlbumsChange, onNext, onBack }: A
       </div>
 
       {showAddCustom ? (
-        <div className="p-4 rounded-lg border-2 border-app-accent bg-app-accent/5 space-y-3">
+        <div className="p-4 rounded-lg border-2 border-primary bg-primary/5 space-y-3">
           <div className="text-sm font-medium text-foreground">Neues Album erstellen</div>
           <Input
             placeholder="z.B. Candy Bar, Photobooth..."
@@ -101,7 +101,7 @@ export default function AlbumsStep({ albums, onAlbumsChange, onNext, onBack }: A
         <Button 
           variant="secondary" 
           onClick={() => setShowAddCustom(true)} 
-          className="w-full flex items-center justify-center gap-2 py-4 border-2 border-dashed border-border hover:border-app-accent hover:bg-app-accent/5"
+          className="w-full flex items-center justify-center gap-2 py-4 border-2 border-dashed border-border hover:border-primary hover:bg-primary/5"
           title="Eigenes Album hinzufügen"
           aria-label="Eigenes Album hinzufügen"
         >

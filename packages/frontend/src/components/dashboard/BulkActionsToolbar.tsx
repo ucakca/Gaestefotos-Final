@@ -39,7 +39,7 @@ export default function BulkActionsToolbar({
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-app-accent text-white rounded-full shadow-2xl px-6 py-3 flex items-center gap-4"
+        className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-primary text-white rounded-full shadow-2xl px-6 py-3 flex items-center gap-4"
       >
         {/* Selected Count */}
         <div className="flex items-center gap-2">

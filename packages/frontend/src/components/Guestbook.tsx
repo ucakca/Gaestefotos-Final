@@ -412,7 +412,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
               className="flex items-start gap-3"
             >
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-app-accent to-foreground flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-foreground flex items-center justify-center">
                   <User className="w-5 h-5 text-background" />
                 </div>
               </div>
@@ -503,7 +503,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                   className="flex items-start gap-3 justify-end"
                 >
                   <div className="flex-1 max-w-[75%] flex flex-col items-end">
-                    <div className="bg-app-accent text-background rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm">
+                    <div className="bg-primary text-background rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-semibold text-sm">{entry.authorName}</span>
                       </div>
@@ -549,7 +549,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                   </div>
 
                   <div className="flex-shrink-0">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-app-accent to-foreground flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-foreground flex items-center justify-center">
                       <User className="w-5 h-5 text-background" />
                     </div>
                   </div>
@@ -682,7 +682,7 @@ export default function Guestbook({ eventId, isHost: propIsHost = false, eventTi
                   </div>
                 </div>
               ) : (
-                <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-app-accent transition-colors">
+                <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary transition-colors">
                   <span className="text-sm text-muted-foreground">
                     {uploadingPhoto ? 'Wird hochgeladen...' : 'Foto auswählen'}
                   </span>

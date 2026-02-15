@@ -24,7 +24,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
         onChange?.(e);
       }}
       {...props}
-      style={{ accentColor: 'var(--app-accent)' }}
+      style={{ accentColor: 'var(--primary)' }}
     />
   );
 });

@@ -596,7 +596,7 @@ export default function CategoryManagementPage({ params }: { params: Promise<{ i
                 size="lg"
                 aria-label="Album hinzufügen"
                 title="Album hinzufügen"
-                className="bg-app-accent hover:bg-app-accent/90 text-background"
+                className="bg-primary hover:bg-primary/90 text-background"
               />
             </motion.div>
           </div>

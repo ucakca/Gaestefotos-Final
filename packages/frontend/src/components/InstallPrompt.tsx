@@ -93,11 +93,11 @@ export default function InstallPrompt({ variant = 'guest' }: InstallPromptProps)
         exit={{ opacity: 0, y: 50 }}
         className="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-sm z-50"
       >
-        <div className="bg-card border-2 border-app-accent rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-card border-2 border-primary rounded-2xl shadow-2xl overflow-hidden">
           <div className="p-4">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-app-accent to-purple-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center flex-shrink-0">
                   <Smartphone className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -126,7 +126,7 @@ export default function InstallPrompt({ variant = 'guest' }: InstallPromptProps)
               // iOS manual instructions
               <div className="space-y-2 mb-3">
                 <p className="text-sm text-muted-foreground">
-                  Tippe auf <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-app-accent/10 text-app-accent font-mono text-xs">
+                  Tippe auf <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-primary/10 text-primary font-mono text-xs">
                     <Download className="w-3 h-3 mr-1" />
                     Teilen
                   </span> und dann auf

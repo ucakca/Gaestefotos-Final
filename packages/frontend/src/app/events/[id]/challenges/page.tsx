@@ -331,7 +331,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                 disabled={!challengesEnabled}
                 aria-label="Challenge hinzufügen"
                 title="Challenge hinzufügen"
-                className={challengesEnabled ? 'bg-app-accent hover:bg-app-accent/90 text-background' : 'bg-border text-muted-foreground cursor-not-allowed'}
+                className={challengesEnabled ? 'bg-primary hover:bg-primary/90 text-background' : 'bg-border text-muted-foreground cursor-not-allowed'}
               />
             </motion.div>
           </div>
@@ -367,7 +367,7 @@ export default function ChallengeManagementPage({ params }: { params: Promise<{ 
                 }
               }}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                challengesEnabled ? 'bg-app-accent' : 'bg-border'
+                challengesEnabled ? 'bg-primary' : 'bg-border'
               }`}
             >
               <span

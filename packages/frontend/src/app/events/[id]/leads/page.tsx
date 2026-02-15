@@ -151,7 +151,7 @@ export default function LeadsPage() {
                 <button
                   onClick={() => setSourceFilter('')}
                   className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                    !sourceFilter ? 'bg-app-accent text-white border-app-accent' : 'bg-card text-muted-foreground border-border hover:bg-app-hover'
+                    !sourceFilter ? 'bg-primary text-white border-primary' : 'bg-card text-muted-foreground border-border hover:bg-muted/50'
                   }`}
                 >
                   Alle ({stats.total})
@@ -163,7 +163,7 @@ export default function LeadsPage() {
                       key={source}
                       onClick={() => setSourceFilter(source === sourceFilter ? '' : source)}
                       className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                        sourceFilter === source ? 'bg-app-accent text-white border-app-accent' : `${info.color} border-transparent`
+                        sourceFilter === source ? 'bg-primary text-white border-primary' : `${info.color} border-transparent`
                       }`}
                     >
                       {info.label} ({count})
@@ -189,7 +189,7 @@ export default function LeadsPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-app-hover border-b border-border">
+                  <thead className="bg-muted/50 border-b border-border">
                     <tr>
                       <th className="text-left px-4 py-3 font-medium text-muted-foreground">Name</th>
                       <th className="text-left px-4 py-3 font-medium text-muted-foreground">E-Mail</th>
@@ -203,7 +203,7 @@ export default function LeadsPage() {
                     {leads.map((lead) => {
                       const info = SOURCE_LABELS[lead.source] || { label: lead.source, color: 'bg-gray-100 text-gray-600' };
                       return (
-                        <tr key={lead.id} className="hover:bg-app-hover transition-colors">
+                        <tr key={lead.id} className="hover:bg-muted/50 transition-colors">
                           <td className="px-4 py-3 font-medium text-foreground">{lead.name || '–'}</td>
                           <td className="px-4 py-3 text-muted-foreground">{lead.email || '–'}</td>
                           <td className="px-4 py-3 text-muted-foreground">{lead.phone || '–'}</td>

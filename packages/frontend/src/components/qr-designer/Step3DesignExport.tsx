@@ -67,9 +67,9 @@ export default function Step3DesignExport({
       </div>
 
       {/* Color Presets */}
-      <div className="bg-gradient-to-br from-app-accent/10 to-card rounded-lg border border-app-accent/20 p-4">
+      <div className="bg-gradient-to-br from-primary/10 to-card rounded-lg border border-primary/20 p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="w-4 h-4 text-app-accent" />
+          <Sparkles className="w-4 h-4 text-primary" />
           <span className="text-sm font-semibold text-foreground">Farbschema-Vorlagen</span>
         </div>
         <Select onValueChange={onApplyPreset}>
@@ -137,7 +137,7 @@ export default function Step3DesignExport({
       </div>
 
       {/* Export Section */}
-      <div className="bg-gradient-to-br from-app-accent/10 to-card rounded-lg border border-app-accent/20 p-6">
+      <div className="bg-gradient-to-br from-primary/10 to-card rounded-lg border border-primary/20 p-6">
         <h3 className="text-lg font-bold text-foreground mb-2">Download</h3>
         <p className="text-sm text-muted-foreground mb-4">
           Wähle das Format für deinen QR-Aufsteller. PNG ist ideal für digitale Nutzung, PDF für Druck.

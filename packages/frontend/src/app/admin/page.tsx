@@ -58,9 +58,9 @@ export default function AdminHubPage() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-app-accent/30 hover:shadow-md transition-all group"
+                    className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:border-primary/30 hover:shadow-md transition-all group"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-app-hover flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                       <item.icon className={`w-5 h-5 ${item.color}`} />
                     </div>
                     <div className="min-w-0">

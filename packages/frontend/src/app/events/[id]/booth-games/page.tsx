@@ -140,7 +140,7 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           {activeGame && (
-            <button onClick={() => setActiveGame(null)} className="p-2 rounded-lg hover:bg-app-surface transition">
+            <button onClick={() => setActiveGame(null)} className="p-2 rounded-lg hover:bg-muted transition">
               <ArrowLeft className="w-5 h-5 text-muted-foreground" />
             </button>
           )}
@@ -303,7 +303,7 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
             <motion.div initial={{ rotateY: 180 }} animate={{ rotateY: 0 }} transition={{ duration: 0.6 }}
               className="inline-block bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-2xl p-8 mb-6">
               <div className="text-4xl mb-2">{activeGame.overlay.name}</div>
-              <span className="text-sm text-muted-foreground px-3 py-1 bg-app-surface rounded-full">
+              <span className="text-sm text-muted-foreground px-3 py-1 bg-muted rounded-full">
                 {activeGame.overlay.category}
               </span>
             </motion.div>
@@ -331,7 +331,7 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
                     value={facePhotoId}
                     onChange={e => setFacePhotoId(e.target.value)}
                     placeholder="Photo-ID (aus der Galerie)"
-                    className="w-full px-4 py-2.5 bg-app-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="w-full px-4 py-2.5 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                   />
                   <p className="text-xs text-muted-foreground mt-1">Mindestens 2 Gesichter im Foto nötig</p>
                 </div>
@@ -389,7 +389,7 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
                   value={graffitiPhotoUrl}
                   onChange={e => setGraffitiPhotoUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full px-4 py-2.5 bg-app-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full px-4 py-2.5 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </div>
               <div>
@@ -398,7 +398,7 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
                   value={graffitiPhotoId}
                   onChange={e => setGraffitiPhotoId(e.target.value)}
                   placeholder="Photo-ID für Verknüpfung"
-                  className="w-full px-4 py-2.5 bg-app-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full px-4 py-2.5 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </div>
               <Button
@@ -452,7 +452,7 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
                   value={vowName}
                   onChange={e => setVowName(e.target.value)}
                   placeholder="Anonym"
-                  className="w-full px-4 py-2.5 bg-app-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  className="w-full px-4 py-2.5 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </div>
               <div>
@@ -462,7 +462,7 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
                   onChange={e => setVowMessage(e.target.value)}
                   placeholder="Schreib etwas Liebes, Lustiges oder Weises..."
                   rows={4}
-                  className="w-full px-4 py-2.5 bg-app-surface border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
+                  className="w-full px-4 py-2.5 bg-muted border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
                 />
               </div>
               <Button onClick={handleVowSubmit} disabled={!vowMessage.trim() || sending} className="w-full gap-2" size="lg">

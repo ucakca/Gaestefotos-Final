@@ -112,7 +112,7 @@ export default function QuickActions({ eventId, eventSlug, onShare, onQrCode }: 
                 {...props as any}
                 className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all hover:bg-background ${
                   action.variant === 'primary' 
-                    ? 'bg-app-accent/10 text-app-accent hover:bg-app-accent/20' 
+                    ? 'bg-primary/10 text-primary hover:bg-primary/20' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >

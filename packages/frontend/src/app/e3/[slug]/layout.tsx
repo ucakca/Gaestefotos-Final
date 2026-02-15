@@ -60,7 +60,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         images: [ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`],
       },
       other: {
-        'apple-mobile-web-app-title': title,
+        'apple-mobile-web-foreground': title,
       },
     };
   } catch {
