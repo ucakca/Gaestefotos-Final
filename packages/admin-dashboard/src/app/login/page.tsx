@@ -2,17 +2,30 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useAdminAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import { FormInput } from '@/components/ui/FormInput';
 import { Button } from '@/components/ui/Button';
+
+const loginSchema = z.object({
+  email: z.string().min(1, 'E-Mail ist erforderlich').email('Ungültige E-Mail'),
+  password: z.string().min(1, 'Passwort ist erforderlich'),
+});
+type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAdminAuthStore();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+
+  const { register, handleSubmit: rhfHandleSubmit, getValues, formState: { errors: formErrors } } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
   const [twoFactorVerifyToken, setTwoFactorVerifyToken] = useState<string | null>(null);
   const [twoFactorSetupToken, setTwoFactorSetupToken] = useState<string | null>(null);
   const [twoFactorCode, setTwoFactorCode] = useState('');
@@ -72,10 +85,10 @@ export default function LoginPage() {
     })();
   }, [login, router]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setError('');
     setLoading(true);
+    const { email, password } = getValues();
 
     try {
       if (twoFactorVerifyToken) {
@@ -226,7 +239,7 @@ export default function LoginPage() {
         </div>
 
         <Card className="p-6 sm:p-8">
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form className="space-y-5" onSubmit={rhfHandleSubmit(handleSubmit)}>
             {error ? (
               <div className="rounded-lg border border-[var(--status-danger)] bg-app-bg px-4 py-3 text-sm text-[var(--status-danger)]">
                 {error}
@@ -235,37 +248,25 @@ export default function LoginPage() {
 
             {!twoFactorVerifyToken && !twoFactorSetupToken ? (
               <>
-                <div className="space-y-2">
-                  <label htmlFor="email" className="block text-sm font-medium text-app-fg">
-                    E-Mail-Adresse
-                  </label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@example.com"
-                  />
-                </div>
+                <FormInput
+                  id="email"
+                  label="E-Mail-Adresse"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="admin@example.com"
+                  error={formErrors.email?.message}
+                  {...register('email')}
+                />
 
-                <div className="space-y-2">
-                  <label htmlFor="password" className="block text-sm font-medium text-app-fg">
-                    Passwort
-                  </label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                  />
-                </div>
+                <FormInput
+                  id="password"
+                  label="Passwort"
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  error={formErrors.password?.message}
+                  {...register('password')}
+                />
               </>
             ) : twoFactorVerifyToken ? (
               <>

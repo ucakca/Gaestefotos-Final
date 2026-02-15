@@ -56,9 +56,9 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Nur Admins können Workflows erstellen' });
     }
 
-    const { name, description, steps, isPublic, isDefault } = req.body;
-    if (!name || !steps || !Array.isArray(steps)) {
-      return res.status(400).json({ error: 'Name und Steps (Array) sind erforderlich' });
+    const { name, description, steps, flowType, isPublic, isDefault } = req.body;
+    if (!name || !steps) {
+      return res.status(400).json({ error: 'Name und Steps sind erforderlich' });
     }
 
     // If setting as default, unset other defaults
@@ -74,6 +74,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         name,
         description,
         steps,
+        flowType: flowType || undefined,
         isPublic: isPublic ?? false,
         isDefault: isDefault ?? false,
         createdBy: req.userId,
@@ -95,11 +96,19 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Nur Admins können Workflows bearbeiten' });
     }
 
-    const { name, description, steps, isPublic, isDefault } = req.body;
+    const { name, description, steps, flowType, isPublic, isDefault } = req.body;
+
+    // Block editing locked workflows
+    const existing = await prisma.boothWorkflow.findUnique({ where: { id: req.params.id } });
+    if (existing?.isLocked) {
+      return res.status(400).json({ error: 'Workflow ist gesperrt. Bitte zuerst entsperren.' });
+    }
+
     const data: any = {};
     if (name !== undefined) data.name = name;
     if (description !== undefined) data.description = description;
     if (steps !== undefined) data.steps = steps;
+    if (flowType !== undefined) data.flowType = flowType;
     if (isPublic !== undefined) data.isPublic = isPublic;
     if (isDefault !== undefined) {
       data.isDefault = isDefault;
