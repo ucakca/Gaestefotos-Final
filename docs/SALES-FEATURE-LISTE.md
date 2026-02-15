@@ -1,6 +1,6 @@
-# gästefotos.com – Vollständige Feature-Liste
+# gästefotos.com – Vollständige Sales Feature-Liste
 
-> Die All-in-One Plattform für Event-Fotografie | SaaS für Hochzeiten, Firmenfeiern & mehr
+> Die All-in-One Plattform für Event-Fotografie | SaaS + Hardware für Hochzeiten, Firmenfeiern & mehr
 
 ---
 
@@ -10,168 +10,216 @@
 |---------|-------------|---------|
 | **Live-Foto-Upload** | Gäste laden Fotos direkt vom Smartphone hoch | Keine App-Installation nötig |
 | **QR-Code Zugang** | Gäste scannen QR-Code → Galerie öffnet sich | Sofortiger Zugang in 2 Sekunden |
-| **QR-Code Designer** | Individuelles QR-Code-Design mit Logo, Farben, Rahmen | Professionelles Branding |
-| **Resumable Upload (TUS)** | Upload wird bei Verbindungsabbruch fortgesetzt | Kein Fotoverlust bei schlechtem WLAN |
-| **Foto-Moderation** | Host kann Fotos vor Veröffentlichung prüfen | Kontrolle über Galerie-Inhalte |
-| **Duplikat-Erkennung** | Automatische Erkennung doppelter Fotos | Saubere Galerie ohne Duplikate |
-| **Album-System** | Fotos in Alben organisieren | Übersichtliche Struktur |
-| **Smart Albums** | KI sortiert Fotos automatisch in Alben | Zeitsparend für den Host |
-| **Kategorien** | Fotos nach Kategorien filtern | Schnelles Finden von Motiven |
-| **Video-Support** | Auch Videos können hochgeladen werden | Komplettes Medien-Erlebnis |
-| **Kommentare & Likes** | Gäste können Fotos kommentieren und liken | Interaktion und Engagement |
-| **Download-Manager** | Einzelne oder alle Fotos herunterladen | Einfacher Export |
-| **Gallery Embed** | Galerie in eigene Website einbetten | Nahtlose Integration |
+| **QR-Code Designer** | Individuelles QR-Code-Design mit Logo, Farben, Rahmen, Vorlagen | Professionelles Branding |
+| **Resumable Upload (TUS)** | Upload wird bei Verbindungsabbruch automatisch fortgesetzt | Kein Fotoverlust bei schlechtem WLAN |
+| **Foto-Moderation** | Host kann Fotos vor Veröffentlichung prüfen/genehmigen | Kontrolle über Galerie-Inhalte |
+| **Duplikat-Erkennung** | Automatische Erkennung und Markierung doppelter Fotos | Saubere Galerie ohne Duplikate |
+| **Album- & Kategorien-System** | Fotos in Alben/Kategorien organisieren + Smart Albums per KI | Übersichtliche Struktur |
+| **Video-Support** | Videos hochladen, verarbeiten, streamen | Komplettes Medien-Erlebnis |
+| **Kommentare & Likes** | Gäste können Fotos kommentieren, liken, bewerten | Interaktion und Engagement |
+| **Download-Manager** | Einzelne, Bulk- oder ZIP-Downloads | Einfacher Export für alle |
+| **Gallery Embed** | Galerie per iFrame in eigene Website einbetten | Nahtlose Integration |
+| **Foto-Rating** | Sterne-Bewertung für Fotos | Beste Fotos identifizieren |
+| **Date-Range-Filter** | Fotos nach Datum filtern | Schnelles Finden von Momenten |
+| **Hashtag-Import** | Fotos von Social Media per Hashtag importieren (GRATIS) | Alle Fotos an einem Ort |
 
 ---
 
-## 🤖 Künstliche Intelligenz (KI-Features)
+## 🔍 Face Search — "Finde mein Foto" (GRATIS für alle Pakete)
 
 | Feature | Beschreibung | Vorteil |
 |---------|-------------|---------|
-| **"Finde mein Foto"** | Gesichtserkennung: Selfie machen → alle eigenen Fotos finden | WOW-Effekt für Gäste |
-| **KI-Album-Vorschläge** | Automatische Album-Namen basierend auf Event-Typ | Zeitersparnis bei der Einrichtung |
-| **KI-Event-Beschreibung** | Generiert passende Event-Texte | Professionelle Beschreibungen in Sekunden |
-| **KI-Einladungstexte** | Personalisierte Einladungen per KI | Kreative Texte ohne Schreibarbeit |
-| **KI-Challenge-Ideen** | Kreative Foto-Challenge-Vorschläge | Mehr Engagement der Gäste |
-| **KI-Gästebuch** | Automatische Begrüßungstexte fürs Gästebuch | Persönliche Note ohne Aufwand |
-| **KI-Farbdesign** | Harmonische Farbschemata passend zum Event | Professionelles Design per Klick |
-| **KI-Chat-Assistent** | Intelligenter Hilfe-Bot für Hosts | 24/7 Support ohne Personal |
-| **Face Switch** | Gesichter in Fotos tauschen (Spaß-Feature) | Entertainment-Faktor |
-| **Hintergrund entfernen** | Automatische Hintergrund-Entfernung | Professionelle Porträts |
-| **AI Oldify** | Fotos "altern lassen" – so siehst du in 40 Jahren aus | Unterhaltung auf Events |
-| **AI Cartoon** | Fotos in Cartoon-Stil umwandeln | Einzigartige Erinnerungen |
-| **Style Transfer** | Fotos im Stil berühmter Künstler | Kunstwerke aus jedem Foto |
-| **DrawBot** | KI zeichnet Porträts der Gäste | Personalisierte Kunst als Geschenk |
-| **Highlight Reel** | Automatische Video-Zusammenstellung der besten Fotos | Professionelles Event-Video |
-| **Compliment Mirror** | KI generiert Komplimente zu Fotos | Positive Stimmung & Spaß |
+| **Gesichtserkennung** | Selfie machen → alle eigenen Fotos sofort finden | WOW-Effekt, Alleinstellungsmerkmal |
+| **WASM-basiert** | Läuft serverseitig ohne GPU-Abhängigkeit | Stabil auf jedem Server |
+| **Consent-Management** | Einwilligung vor Nutzung | DSGVO-konform |
+| **Gratis für alle Tiers** | Verfügbar in Free, Basic, Smart, Premium | Wettbewerbsvorteil: kein Konkurrent bietet das kostenlos |
+
+---
+
+## 🎮 Foto-Spaß — Interaktive Gäste-Features
+
+| Feature | Beschreibung | Vorteil |
+|---------|-------------|---------|
+| **Photobomb Challenge** | Schmuggle dich in Fotos anderer Gäste | Garantierte Lacher |
+| **Cover-Shooting** | Magazin-Overlays (Vogue, GQ, Rolling Stone) über Selfies | Instagram-taugliche Ergebnisse |
+| **Emoji Challenge** | Emoji-Gesichter nachstellen, KI bewertet | Suchtfaktor für Gäste |
+| **Filter Roulette** | Zufälliger KI-Foto-Effekt nach Selfie | Überraschungsmoment |
+| **Digital Graffiti** | Auf Touchscreen zeichnen, Emojis platzieren | Kreativität ausleben |
+| **Face Switch** | Gesichter in Gruppenfotos tauschen (KI) | Viraler Spaß-Faktor |
+| **Compliment Mirror** | KI gibt Komplimente + "Urteil" auf Foto | Positive Stimmung |
+| **Mystery Overlay** | Blind posieren ohne Live-View | Chaotisch-lustige Ergebnisse |
+| **Leaderboard** | Rangliste: Fotos, Spiele, Champion | Wettbewerb & Motivation |
+| **Badges & Achievements** | Vollbildschirm-Animationen bei Erfolgen | Gamification pur |
+
+> Foto-Spaß ist **GRATIS in allen Paketen** (Free: 3 Spiele/Tag, Standard+: unbegrenzt). Jedes geteilte Foto trägt das gästefotos.com-Branding = **kostenlose Werbung**.
+
+---
+
+## 🎨 KI-Kunst — Foto-Styles per App
+
+| Feature | Beschreibung | Vorteil |
+|---------|-------------|---------|
+| **Selfie → Kunstwerk** | Selfie aufnehmen → KI verwandelt in Stil (Van Gogh, Anime, etc.) | Einzigartige Erinnerungen |
+| **Vorlagen-Carousel** | Beispiel-Vorlagen vor dem Shooting | Inspiration für Gäste |
+| **Galerie-Teilen** | Ergebnis direkt in Event-Galerie teilen | Sofort sichtbar für alle |
+| **AI Oldify** | Fotos "altern lassen" — so siehst du in 40 Jahren aus | Viraler Entertainment-Faktor |
+| **AI Cartoon** | Fotos in Cartoon-Stil umwandeln | Einzigartige Andenken |
+| **DrawBot** | KI zeichnet Live-Porträts | Personalisiertes Geschenk |
+
+---
+
+## 🤖 KI-Features (17 AI-Funktionen)
+
+| Feature | Beschreibung | Vorteil |
+|---------|-------------|---------|
+| **KI-Album-Vorschläge** | Automatische Album-Namen und Struktur | Zeitersparnis |
+| **KI-Event-Beschreibung** | Generiert passende Event-Texte | Professionell in Sekunden |
+| **KI-Einladungstexte** | Personalisierte Einladungen | Kreativ ohne Schreibarbeit |
+| **KI-Challenge-Ideen** | Kreative Foto-Challenge-Vorschläge | Mehr Engagement |
+| **KI-Gästebuch-Intro** | Automatische Begrüßungstexte | Persönliche Note |
+| **KI-Farbdesign** | Harmonische Farbschemata per Klick | Professionelles Design |
+| **KI-Chat-Assistent** | Intelligenter Hilfe-Bot für Hosts | 24/7 Support |
+| **Highlight Reel** | Automatisches Best-of-Video aus Event-Fotos | Professionelles Event-Video |
+| **Multi-Provider** | Groq + Grok + OpenAI (Text), Replicate + Stability AI (Bild) | Immer der beste Provider |
 
 ---
 
 ## 🧠 KI-Resilienz & Offline-Fähigkeit
 
 | Feature | Beschreibung | Vorteil |
-|---------|-------------|--------|
-| **Lernendes AI-Cache** | Jede AI-Antwort wird 30 Tage gespeichert und bei gleicher Anfrage sofort geliefert | Blitzschnell + funktioniert offline |
-| **Offline Text-AI** | Text-KI (Vorschläge, Chat, Challenges) funktioniert auch ohne Internet | Ausfallsicherheit auf Events |
-| **Cache Warm-Up** | Vor einem Event werden häufige AI-Anfragen vorgeladen | Sofortige Antworten ab Minute 1 |
-| **Automatischer Fallback** | Bei Provider-Ausfall: Cache → alternativer Provider → statische Antwort | Kein Feature-Ausfall |
-| **Multi-Provider Text-AI** | Groq (schnell & günstig) → OpenAI (Fallback) | Beste Qualität zum besten Preis |
-| **Dedizierter Server-Fallback** | Ollama auf eigenem Server als lokale AI (optional) | 100% unabhängig von Cloud-Anbietern |
-| **Hit-Count Tracking** | System lernt welche Anfragen häufig kommen | Intelligente Priorisierung |
-| **AI Connectivity Check** | Automatische Erkennung ob AI-Provider erreichbar ist | Nahtloser Offline-Wechsel |
-
----
-
-## 🎨 KI-Bildbearbeitung (Cloud-powered)
-
-| Feature | Beschreibung | Vorteil |
-|---------|-------------|--------|
-| **Face Switch** | Gesichter tauschen via Replicate API | Spaß-Faktor auf Events |
-| **Hintergrund entfernen** | Profi-Freisteller via Stability AI / Replicate | Studio-Qualität automatisch |
-| **AI Oldify** | Alterungs-Simulation via Cloud-AI | Viraler Unterhaltungsfaktor |
-| **AI Cartoon** | Cartoon-Stil-Konvertierung | Einzigartige Erinnerungen |
-| **Style Transfer** | Fotos im Stil berühmter Künstler (Van Gogh, Monet, etc.) | Kunstwerke aus Schnappschüssen |
-| **DrawBot** | KI zeichnet Live-Porträts | Personalisiertes Geschenk |
-| **Highlight Reel** | Automatische Best-of-Video-Zusammenstellung | Professionelles Event-Video |
-| **Compliment Mirror** | KI-generierte Komplimente zu Selfies | WOW-Moment am Booth |
-| **Multi-Provider Bilder** | Replicate + Stability AI mit Fallback | Immer der beste Provider |
-
-> 💡 *Bild-AI benötigt Internetverbindung. Text-AI funktioniert auch offline dank lernendem Cache.*
-
----
-
-## 🎮 Interaktion & Gamification
-
-| Feature | Beschreibung | Vorteil |
 |---------|-------------|---------|
-| **Foto-Challenges** | Kreative Aufgaben für Gäste (z.B. "Selfie mit Brautpaar") | 3x mehr Fotos durch Motivation |
-| **Booth Games** | Interaktive Foto-Spiele am Booth | Unterhaltung & Engagement |
-| **Air Graffiti** | Digitales Graffiti auf Fotos malen | Kreatives Spaß-Feature |
-| **Digitales Gästebuch** | Text- und Audio-Nachrichten hinterlassen | Emotionale Erinnerungen |
-| **Votes / Likes** | Gäste können über beste Fotos abstimmen | Wettbewerb & Spaß |
-| **Stories** | Event-Stories im Instagram-Stil | Modernes Social-Media-Erlebnis |
-| **Glücksrad (Spinner)** | Glücksrad mit Gewinnchancen | Lead-Generierung & Spaß |
+| **Lernendes AI-Cache** | Jede AI-Antwort 30 Tage gecacht, sofort wiederverwendet | Blitzschnell + offline-fähig |
+| **Cache Warm-Up** | Vor Event werden häufige Anfragen vorgeladen | Sofortige Antworten ab Minute 1 |
+| **Automatischer Fallback** | Cache → alternativer Provider → statische Antwort | Kein Feature-Ausfall |
+| **Offline Text-AI** | Text-KI funktioniert ohne Internet | Ausfallsicherheit auf Events |
+| **AI Connectivity Check** | Automatische Provider-Erkennung | Nahtloser Wechsel |
 
 ---
 
-## 🖥️ Live-Display & Print
+## 🖥️ Event Wall — Live-Display System
 
 | Feature | Beschreibung | Vorteil |
 |---------|-------------|---------|
 | **Live Wall** | Echtzeit-Fotowand auf großem Screen | Atmosphäre & Stimmung |
-| **Mosaik-Wand** | Alle Fotos bilden zusammen ein großes Bild | Einzigartiges Gemeinschaftskunstwerk |
-| **Print Station** | Mosaik direkt vor Ort ausdrucken | Physisches Andenken |
-| **Slideshow** | Automatische Diashow mit Übergängen | Hintergrund-Entertainment |
-| **KI-Kunst-Booth** | Fotos werden live in Kunstwerke verwandelt | Premium-Entertainment |
+| **Multi-Source** | Alle Foto-Quellen gemischt (Galerie, Booth, KI-Kunst, Gästebuch) | Ein Screen, alle Inhalte |
+| **5 Animationen** | Fade, Slide, Zoom, Flip, Collage — einzeln oder gemischt | Abwechslung für Gäste |
+| **Diashow-Modus** | Automatische Diashow mit verschiedenen Übergängen | Hintergrund-Entertainment |
+| **Konfigurierbar** | Quellen wählbar nach gebuchtem Paket, Rest ausgegraut (Upsell) | Smart Upselling |
 
 ---
 
-## 👥 Gäste- & Event-Management
+## 🧩 Mosaic Wall — Gemeinschaftskunstwerk
 
 | Feature | Beschreibung | Vorteil |
 |---------|-------------|---------|
-| **Gästeliste** | Gäste importieren und verwalten | Überblick über Teilnehmer |
-| **Co-Hosts** | Mehrere Personen verwalten das Event | Team-Arbeit möglich |
-| **Co-Host Einladungen** | Co-Hosts per Link einladen | Einfache Delegation |
-| **Lead-Erfassung** | Kontaktdaten der Gäste sammeln | Wertvolle Marketing-Daten |
-| **Einladungs-Templates** | Vorgefertigte Einladungs-Designs | Schnelle, professionelle Einladungen |
-| **SMS-Sharing** | Fotos per SMS teilen | Gäste ohne Smartphone erreichen |
-| **Hashtag-Import** | Fotos von Social Media importieren | Alle Fotos an einem Ort |
-| **E-Mail-Templates** | Anpassbare E-Mail-Vorlagen | Professionelle Kommunikation |
-| **WLAN-Integration** | Event-WLAN-Daten direkt im Event | Gäste kommen schneller online |
+| **Digital-Modus** | Fotos bilden zusammen ein großes Bild auf Screen | Visuelles Highlight |
+| **Print-Modus** | Mosaic-Sticker vor Ort drucken, Gäste kleben selbst | Physisches Gemeinschaftsprojekt |
+| **Board-Designer** | Gebrandetes Banner (Mosaic + Logo + Text + Farben) | Professionelles Branding |
+| **5-Step Wizard** | Modus → Zielbild → Overlay → Display → Vorschau | Einfache Einrichtung |
+| **KI-Overlay-Analyse** | KI analysiert Zielbild für optimale Platzierung | Perfektes Ergebnis |
+| **Mosaic-Animation** | Spezial-Animation: Foto "klebt" auf Wall, Gesamtbild baut sich auf | WOW-Effekt für Zuschauer |
+| **Print-on-Demand** | Host druckt selbst ODER bestellt über Plattform (POD) | Flexibel + höhere Marge bei POD |
 
 ---
 
-## 🎨 Design & Branding
+## 📖 Digitales Gästebuch
 
 | Feature | Beschreibung | Vorteil |
 |---------|-------------|---------|
-| **Theme-System** | Komplettes Branding anpassbar (Farben, Fonts, Logo) | Corporate Design für jedes Event |
-| **QR-Template Designer** | Individuelles QR-Code-Design | Zum Event passendes QR-Design |
-| **Booth Templates** | Vorgefertigte Photo-Booth-Designs | Professionelle Booth-Optik |
-| **Logo Overlay** | Automatisches Logo-Wasserzeichen auf Fotos | Branding auf jedem Foto |
-| **KI-Farbschema** | Harmonische Farben per KI generiert | Perfektes Design ohne Designer |
+| **Text-Nachrichten** | Gäste hinterlassen persönliche Botschaften | Emotionale Erinnerungen |
+| **Foto + Text** | Selfie + Nachricht im Polaroid-Style | Visuelles Gästebuch |
+| **Moderation** | Host prüft Einträge vor Veröffentlichung | Qualitätskontrolle |
+| **Event Wall Integration** | Gästebuch-Einträge (mit Foto) auf der Event Wall | Sichtbar für alle |
+| **PDF-Export** | Gästebuch als PDF herunterladen (geplant) | Zum Ausdrucken & Aufbewahren |
 
 ---
 
-## 📊 Analytics & Dashboard
+## 💌 Digitale Einladungskarten
 
 | Feature | Beschreibung | Vorteil |
 |---------|-------------|---------|
-| **Live Analytics** | Echtzeit-Statistiken (Uploads, Views, Engagement) | Sofortiger Überblick |
-| **Event-Dashboard** | Zentrales Kontrollzentrum pro Event | Alles auf einen Blick |
-| **Admin-Dashboard** | Globale Verwaltung aller Events und User | Effiziente Administration |
-| **Statistiken** | Detaillierte Auswertungen pro Event | Datenbasierte Entscheidungen |
-| **AI Usage Tracking** | Übersicht über KI-Nutzung und Credits | Kostenkontrolle |
-| **System Health** | Echtzeit-Monitoring der Plattform | Proaktive Fehlererkennung |
-| **Log-System** | Detaillierte System- und Fehler-Logs | Schnelle Problemlösung |
+| **Design-Editor** | Akzentfarbe, Hintergrundbild, Nachricht anpassbar | Individuelles Design |
+| **RSVP-System** | Ja / Vielleicht / Nein mit visuellen Buttons | Gäste-Rückmeldung in Sekunden |
+| **WhatsApp Share** | Einladung direkt per WhatsApp teilen | Höchste Öffnungsrate |
+| **QR-Code** | QR-Code zur Einladung generieren | Offline-Verteilung möglich |
+| **ICS-Kalender** | Event direkt in Kalender importieren | Kein Vergessen |
+| **Link zur Galerie** | Direkter Link von Einladung zur Event-Galerie | Nahtloser Übergang |
 
 ---
 
-## 🔧 Workflow Builder (Pro-Feature)
+## 👥 Host-Dashboard — 4-Tab-Struktur
 
-| Feature | Beschreibung | Vorteil |
-|---------|-------------|---------|
-| **Visueller Editor** | Drag & Drop Workflow-Erstellung | Keine Programmierkenntnisse nötig |
-| **5 Presets** | Vorkonfigurierte Workflows (Photo Booth, KI-Kunst, Mosaik, etc.) | Sofort einsatzbereit |
-| **Custom Workflows** | Eigene Abläufe erstellen | Maximale Flexibilität |
-| **Event-Zuweisung** | Workflows bestimmten Events zuordnen | Unterschiedliche Setups pro Event |
-| **Step-Kategorien** | Eingabe, KI, Output, Interaktiv | Übersichtliche Bausteine |
-| **Live-Konfiguration** | Jeder Step einzeln konfigurierbar | Feinsteuerung per Klick |
+| Tab | Inhalt | Besonderheit |
+|-----|--------|-------------|
+| **Übersicht** | Stat-Kacheln, Event-Banner, Wizard, Paket/Upsell, Quick Actions | Alles auf einen Blick |
+| **Galerie** | Fotos + Videos vereint, Filter-Tabs, Moderation | Kein Wegnavigieren nötig |
+| **Gästebuch** | Einträge, Moderation | Emotionale Erinnerungen verwalten |
+| **Setup** | Progressive Disclosure, Feature-Cards, Wizard | Einfache Einrichtung |
 
 ---
 
-## 💰 Business & E-Commerce
+## 🏢 Partner-/Franchise-Modell (B2B)
 
 | Feature | Beschreibung | Vorteil |
 |---------|-------------|---------|
-| **Paket-System** | Bronze / Silber / Gold Pakete | Klare Preisstruktur |
-| **Credit-System** | KI-Credits für Premium-Features | Faire Abrechnung nach Nutzung |
-| **WooCommerce Integration** | Direkter Shop-Anschluss mit Webhooks | Automatisierter Verkauf |
-| **Rechnungs-System** | Automatische Rechnungserstellung | Professionelle Buchhaltung |
-| **Partner-Programm** | Affiliate/Partner-Management | Vertriebsnetzwerk aufbauen |
-| **Marketing-Tools** | Integrierte Marketing-Funktionen | Kundenbindung & Wachstum |
-| **Feature Flags** | Features pro Paket ein/ausschalten | Flexibles Upselling |
+| **Partner-Dashboard** | Stats, Events, Hardware, Team, Branding | Volle Kontrolle für Partner |
+| **Team-Management** | Owner, Manager, Operator Rollen | Klare Verantwortlichkeiten |
+| **Hardware-Verwaltung** | Print Terminal, Photo Booth, Display — mit Seriennummer und Status | Inventar im Griff |
+| **Branding** | Logo, Primärfarbe, Akzentfarbe pro Partner | Eigenes Erscheinungsbild |
+| **Billing-System** | Automatische Rechnungsperioden, Status-Workflow (Draft→Sent→Paid) | Professionelle Abrechnung |
+| **Monatliche Geräte-Lizenz** | Pro Gerät/Monat, -20% bei Jahreszahlung | Planbare Kosten |
+| **Unbegrenzte Events** | Pro Gerät unbegrenzt viele Events | Maximale Rendite |
+
+---
+
+## 🔧 Workflow Builder — Visueller Flow-Editor (Admin)
+
+| Feature | Beschreibung | Vorteil |
+|---------|-------------|---------|
+| **Drag & Drop Editor** | ReactFlow-basierter visueller Node-Editor | Intuitiv ohne Code |
+| **12 Flow-Typen** | Photo Booth, Mirror Booth, KI Booth, KI-Kunst, Foto-Spiele, Upload, Face Search, Mosaic, Gästebuch, 360° Spinner, Drawbot, Custom | Jeder Flow konfigurierbar |
+| **5 Presets** | Standard Photo Booth, KI-Kunst, Mosaic Print, Foto-Spiel, QR-Only | Sofort einsatzbereit |
+| **Lock/Unlock** | System-Workflows sperren, Backup vor Entsperren | Schutz vor versehentlichen Änderungen |
+| **Versionierung** | Automatische Versionsnummer, Backup bei jeder Änderung | Änderungshistorie |
+| **Backup/Restore** | Manuelles Backup + Restore auf beliebige Version | Rollback jederzeit |
+| **Duplicate** | Workflow klonen als Ausgangsbasis | Schnelle Varianten |
+| **Event-Zuweisung** | Workflows bestimmten Events zuordnen | Multi-Session pro Event |
+| **Step-Palette** | Trigger, Logic, Animation, Features, AI, Cloud, Hardware | Modulare Bausteine |
+| **Config Panel** | Jeder Step einzeln konfigurierbar (Duration, Parameter) | Feinsteuerung |
+
+---
+
+## 💰 Preismodell (B2C — pro Event)
+
+| Paket | Preis | Highlights |
+|-------|-------|-----------|
+| **Free** | 0 € | 50 Fotos, 7 Tage Galerie, Face Search, Foto-Spaß (3/Tag), 1 Kategorie |
+| **Basic** | 49 € | ∞ Fotos, 30 Tage, Gästebuch, ZIP, Passwortschutz, 3 Kategorien |
+| **Smart** | 99 € | + Video, Stories, Live Wall, Einladungen, 3 Co-Hosts, 6 Kategorien |
+| **Premium** | 199 € | + 180 Tage, ∞ Kategorien, 10 Co-Hosts, Werbefrei, Custom Branding |
+
+### Add-ons (Hardware inklusive)
+
+| Add-on | Preis | Enthält |
+|--------|-------|---------|
+| **Mosaic Wall Digital** | 199 € | Digitale Mosaic Wall + HD-Export |
+| **Mosaic Wall + Print** | 599 € | + Drucker, Tablet, Banner, Wall, Sticker-Druck |
+| **Photo Booth** | 449 € | Hardware + Workflow + Zubehör |
+| **Mirror Booth** | 549 € | Mirror-Hardware + Workflow |
+| **KI Booth** | 599 € | KI-Kunst Hardware + Live-Style-Transfer |
+| **Drawbot** | 990 € | KI-Zeichenroboter |
+| **Highlight Reel** | 49 € | Automatisches Event-Video |
+
+### Partner-Lizenzen (B2B — monatlich pro Gerät)
+
+| Lizenz | Preis/Monat | Jahresrabatt |
+|--------|-------------|-------------|
+| **Basis-Zugang** | 49 € | -20% |
+| **Mosaic Wall** | 59 € | -20% |
+| **Photo Booth** | 69 € | -20% |
+| **Mirror Booth** | 79 € | -20% |
+| **KI Booth** | 79 € | -20% |
+| **Drawbot** | 99 € | -20% |
 
 ---
 
@@ -179,68 +227,66 @@
 
 | Feature | Beschreibung | Vorteil |
 |---------|-------------|---------|
-| **SSL-Verschlüsselung** | Ende-zu-Ende verschlüsselt | Höchste Datensicherheit |
-| **API-Key-Verschlüsselung** | AES-256-GCM für alle Schlüssel | Bankentaugliche Sicherheit |
-| **DSGVO-konform** | Europäischer Datenschutz | Rechtssicherheit in der EU |
+| **SSL/TLS** | Ende-zu-Ende verschlüsselt | Höchste Datensicherheit |
+| **AES-256-GCM** | API-Key-Verschlüsselung | Bankentaugliche Sicherheit |
+| **DSGVO-konform** | Made in Germany, EU-Hosting | Rechtssicherheit |
 | **Virus-Scan** | Automatischer Scan aller Uploads | Schutz vor Schadsoftware |
-| **EXIF-Stripping** | Metadaten automatisch entfernt | Schutz der Privatsphäre |
-| **Consent-Management** | Einwilligungsverwaltung für Gesichtserkennung | Transparente Datennutzung |
-| **Rate Limiting** | Schutz vor Überlastung und Missbrauch | Stabile Performance |
-| **Daten-Retention** | Automatische Löschung nach Ablauf | DSGVO-konforme Datenhaltung |
+| **EXIF-Stripping** | Metadaten automatisch entfernt | Privatsphäre geschützt |
+| **Consent-Management** | Einwilligungsverwaltung für Face Search | Transparente Datennutzung |
+| **Rate Limiting** | DDoS-Schutz, Brute-Force-Prävention | Stabile Performance |
+| **Daten-Retention** | Automatische Löschung nach Paket-Ablauf | DSGVO-konforme Datenhaltung |
 
 ---
 
-## 🏗️ Technische Highlights
+## 🏗️ Technische Plattform
 
 | Feature | Beschreibung | Vorteil |
 |---------|-------------|---------|
-| **Multi-Provider AI** | 3 AI-Provider (Groq, Grok, OpenAI) mit Fallback | Ausfallsicherheit |
+| **Next.js Frontend** | React-basiert, SSR, PWA-ready | Moderne, schnelle UX |
+| **Express Backend** | Node.js, TypeScript, Prisma ORM | Robust & typsicher |
+| **5 AI-Provider** | Groq, Grok, OpenAI (Text) + Replicate, Stability AI (Bild) | Ausfallsicherheit |
 | **Redis Cache** | Schnelle Zwischenspeicherung | Blitzschnelle Ladezeiten |
-| **CMS Sync** | WordPress/CMS Integration | Nahtlose Content-Verwaltung |
-| **API Key Management** | Zentrale Schlüsselverwaltung | Sichere Drittanbieter-Integration |
-| **Hardware-Management** | Booth-Hardware verwalten | Professionelles Setup |
-| **Erweitertes Log-System** | Filterbare Logs mit AI-Analyse für Event-Debugging | Fehler sofort erkennen |
-| **Kiosk-Browser (geplant)** | Eigener Browser mit USB/Hardware-Schnittstellen | Volle Hardware-Kontrolle |
-| **360° Booth App (geplant)** | Android App für GoPro/Kamera-Steuerung | Professionelle 360°-Aufnahmen |
-| **Storage Policy** | Intelligente Speicherverwaltung | Kostenoptimierung |
-| **Image Processing** | Automatische Größenanpassung & Thumbnails | Schnelle Galerie-Darstellung |
-| **Video Processing** | Automatische Video-Konvertierung | Alle Formate unterstützt |
-| **PWA-Ready** | Progressive Web App mit Offline-Support | App-Erlebnis ohne App Store |
+| **WooCommerce** | Direkte Shop-Integration via Webhooks | Sofort verkaufsfertig |
+| **Admin-Dashboard** | Separates Next.js App (dash.gästefotos.com) | Volle Kontrolle |
+| **E2E-Tests** | Playwright, 100+ Tests, Pre-Push-Hook | Qualitätssicherung |
+| **Hardware-Management** | Booth-Inventar, Kalender, Buchungs-Flow | Professionelles Setup |
+| **Storage Policy** | Intelligente Speicherverwaltung + Blur | Kostenoptimierung |
+| **Image/Video Processing** | Automatische Thumbnails, Konvertierung | Schnelle Darstellung |
 
 ---
 
-## 📈 Zahlen auf einen Blick
+## 📈 Plattform-Zahlen
 
 | Metrik | Wert |
 |--------|------|
-| **Backend API Routes** | 78 |
-| **Frontend Pages** | 55 |
-| **Admin Dashboard Pages** | 30 |
-| **Backend Services** | 37 |
+| **Backend API Routes** | 90+ |
+| **Frontend Pages** | 60+ |
+| **Admin Dashboard Pages** | 35+ |
 | **KI-Features** | 17 |
+| **Workflow Flow-Typen** | 12 |
 | **Workflow Presets** | 5 |
-| **Datenbank-Tabellen** | 2.100+ Zeilen Schema |
-| **AI Provider (Text)** | 3 (Groq, Grok, OpenAI) |
-| **AI Provider (Bild)** | 2 (Replicate, Stability AI) |
-| **Unterstützte Event-Typen** | Hochzeit, Familie, Geburtstag, Business, Party, Custom |
+| **E2E-Tests** | 100+ |
+| **Prisma Schema** | 2.200+ Zeilen |
+| **AI Provider** | 5 (3 Text + 2 Bild) |
+| **Event-Typen** | Hochzeit, Familie, Geburtstag, Business, Party, Messe, Custom |
 
 ---
 
 ## 🎯 USPs (Unique Selling Points)
 
-1. **Keine App nötig** — QR-Code scannen, fertig
-2. **KI-powered** — 17 KI-Features für einzigartige Erlebnisse
-3. **"Finde mein Foto"** — Gesichtserkennung als WOW-Effekt
-4. **Live Wall & Mosaik** — Echtzeit-Erlebnis auf großem Screen
-5. **DSGVO-konform** — Made in Germany, europäischer Datenschutz
-6. **Workflow Builder** — Jedes Setup visuell konfigurierbar
-7. **White-Label fähig** — Komplettes Branding anpassbar
-8. **Multi-AI** — 5 AI-Provider, beste KI für jede Aufgabe, mit Fallback
-9. **Offline-fähig** — Text-AI funktioniert auch ohne Internet dank lernendem Cache
-10. **Credit-System** — Faire Abrechnung, kein Abo-Zwang
-11. **WooCommerce** — Sofort verkaufsfertig mit Shop-Integration
+1. **Keine App nötig** — QR-Code scannen, fertig. Funktioniert auf jedem Smartphone.
+2. **Face Search GRATIS** — Einziger Anbieter mit kostenloser Gesichtserkennung in allen Paketen.
+3. **Foto-Spaß für alle** — 6 Foto-Spiele kostenlos = jedes geteilte Foto trägt gästefotos.com-Branding = Gratis-Marketing.
+4. **KI-powered** — 17 KI-Features, 5 Provider, Offline-fähig dank lernendem Cache.
+5. **Event Wall + Mosaic** — Live-Fotowand + Gemeinschaftskunstwerk mit Print-Option.
+6. **Workflow Builder** — 12 Flow-Typen, visueller Editor, Lock/Unlock, Versionierung — jedes Setup konfigurierbar.
+7. **Partner-Modell** — B2B-Franchise mit Hardware-Lizenzen, eigenem Dashboard, Team & Billing.
+8. **DSGVO-konform** — Made in Germany, EU-Hosting, EXIF-Stripping, Consent-Management.
+9. **Smart Upselling** — Nicht-gebuchte Features sichtbar aber gesperrt, mit Erklärung, Preis & CTA.
+10. **Hardware inklusive** — Add-ons kommen mit kompletter Hardware (Drucker, Tablet, Booth).
+11. **WooCommerce** — Sofort verkaufsfertig mit automatischer Paket-Aktivierung.
+12. **Digitale Einladungen** — Design-Editor, RSVP, WhatsApp-Share, QR, Kalender-Integration.
 
 ---
 
-> *Dieses Dokument wird automatisch aktualisiert wenn neue Features hinzugefügt werden.*
-> *Letzte Aktualisierung: Februar 2026*
+> *Letzte Aktualisierung: 15. Februar 2026*
