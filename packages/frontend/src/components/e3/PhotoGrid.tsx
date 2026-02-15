@@ -294,18 +294,41 @@ export default function PhotoGrid({
                 {/* Hover Actions (bottom) */}
                 <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                   <div className="flex items-center justify-between">
-                    {/* Like Button */}
+                    {/* Like Button — with particle burst */}
                     <motion.button
                       onClick={(e) => handleLikeClick(photo, e)}
-                      className="flex items-center gap-2 px-3 py-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
+                      className="relative flex items-center gap-2 px-3 py-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
                       whileTap={{ scale: 0.95 }}
                     >
-                      <Heart
-                        className={`w-5 h-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`}
-                      />
+                      <motion.div
+                        animate={isLiked ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                      >
+                        <Heart
+                          className={`w-5 h-5 transition-colors duration-200 ${isLiked ? 'fill-red-500 text-red-500' : ''}`}
+                        />
+                      </motion.div>
                       {likeCount > 0 && (
                         <span className="text-sm font-medium">{likeCount}</span>
                       )}
+                      {/* Particle burst */}
+                      <AnimatePresence>
+                        {isLiked && Array.from({ length: 6 }).map((_, i) => (
+                          <motion.div
+                            key={`pb-${photo.id}-${i}`}
+                            className="absolute top-1/2 left-4 w-1 h-1 rounded-full bg-red-400"
+                            initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+                            animate={{
+                              x: Math.cos((i / 6) * Math.PI * 2) * 16,
+                              y: Math.sin((i / 6) * Math.PI * 2) * 16,
+                              scale: 0,
+                              opacity: 0,
+                            }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.4, ease: 'easeOut' }}
+                          />
+                        ))}
+                      </AnimatePresence>
                     </motion.button>
 
                     {/* Action Buttons */}
@@ -343,13 +366,14 @@ export default function PhotoGrid({
                   </div>
                 </div>
 
-                {/* Like Animation (Double-tap feedback) */}
+                {/* Like Animation (Double-tap feedback) — enhanced */}
                 <AnimatePresence>
                   {isLiked && (
                     <motion.div
                       initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: [0, 1.2, 1], opacity: [0, 1, 1] }}
+                      exit={{ scale: 1.5, opacity: 0 }}
+                      transition={{ duration: 0.6, ease: 'easeOut' }}
                       className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
                     >
                       <Heart className="w-20 h-20 fill-white text-white drop-shadow-2xl" />

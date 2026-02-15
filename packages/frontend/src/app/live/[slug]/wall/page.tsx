@@ -310,28 +310,58 @@ export default function LiveWallPage() {
         
         <div className="flex gap-2 items-center flex-wrap">
           {/* View Mode Selector */}
-          <div className="flex bg-background/10 rounded-lg p-1 flex-wrap max-w-2xl">
-            {(['grid', 'collage', 'masonry', 'floating', 'slideshow', 'cinematic', 'coverflow', 'bento', ...(hasMosaic ? ['mosaic', 'mixed'] as const : [])] as const).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setViewMode(mode as any)}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                  viewMode === mode 
-                    ? 'bg-background text-foreground' 
-                    : 'text-background/70 hover:text-background'
-                }`}
-              >
-                {mode === 'grid' ? 'Grid' : 
-                 mode === 'collage' ? 'Collage' :
-                 mode === 'masonry' ? 'Masonry' :
-                 mode === 'floating' ? 'Floating' :
-                 mode === 'cinematic' ? '🎬 Cinematic' :
-                 mode === 'coverflow' ? '🎠 CoverFlow' :
-                 mode === 'bento' ? '🍱 Bento' :
-                 mode === 'mosaic' ? '🧩 Mosaik' :
-                 mode === 'mixed' ? '🔀 Mix' : 'Slideshow'}
-              </button>
-            ))}
+          <div className="flex flex-col gap-1 bg-background/10 rounded-lg p-1 max-w-3xl">
+            {/* Row 1: Base Modes */}
+            <div className="flex flex-wrap">
+              {([
+                ['grid', 'Grid'],
+                ['collage', 'Collage'],
+                ['masonry', 'Masonry'],
+                ['floating', 'Floating'],
+                ['slideshow', 'Slideshow'],
+                ...(hasMosaic ? [['mosaic', '🧩 Mosaik'], ['mixed', '🔀 Mix']] : []),
+              ] as [string, string][]).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  onClick={() => setViewMode(mode as any)}
+                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                    viewMode === mode 
+                      ? 'bg-background text-foreground' 
+                      : 'text-background/70 hover:text-background'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {/* Row 2: Animation & Premium Modes */}
+            <div className="flex flex-wrap border-t border-background/10 pt-1">
+              {([
+                ['cinematic', '🎬 Cinematic'],
+                ['polaroid', '🎞️ Polaroid'],
+                ['coverflow', '🎠 CoverFlow'],
+                ['bento', '🍱 Bento'],
+                ['liquid', '💧 Liquid'],
+                ['scramble', '🔀 Scramble'],
+                ['infinite', '♾️ Infinite'],
+                ['timetravel', '⏳ Zeitreise'],
+                ['holographic', '🌈 Holo'],
+                ['ai-smart', '� AI'],
+                ['cinema', '🎥 Kino'],
+              ] as [string, string][]).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  onClick={() => setViewMode(mode as any)}
+                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                    viewMode === mode 
+                      ? 'bg-background text-foreground' 
+                      : 'text-background/70 hover:text-background'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <Button
@@ -737,7 +767,7 @@ export default function LiveWallPage() {
               id: p.id, 
               url: p.url, 
               timestamp: new Date(p.createdAt).toLocaleString('de-DE'),
-              source: Math.random() > 0.5 ? 'host' : 'challenge'
+              source: (p as any).category || 'upload'
             }))}
             autoStackInterval={5000}
           />

@@ -20,6 +20,8 @@ import QRCodeShare from '@/components/e3/QRCodeShare';
 import SlideshowMode from '@/components/e3/SlideshowMode';
 import LeaderboardOverlay from '@/components/e3/LeaderboardOverlay';
 import AchievementToast from '@/components/e3/AchievementToast';
+const SocialProofToast = dynamic(() => import('@/components/gamification/SocialProofToast'), { ssr: false });
+const NewPhotoIndicator = dynamic(() => import('@/components/gamification/MicroInteractions').then(m => ({ default: m.NewPhotoIndicator })), { ssr: false });
 import PushNotificationBanner from '@/components/e3/PushNotificationBanner';
 import { Alert } from '@/components/ui/Alert';
 import { Centered } from '@/components/ui/Centered';
@@ -33,6 +35,7 @@ import { Section } from '@/components/ui/Section';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Play, X } from 'lucide-react';
 import { useGuestEventData } from '@/hooks/useGuestEventData';
+import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import { useScrollHeader } from '@/hooks/useScrollHeader';
 import { useStoriesViewer } from '@/hooks/useStoriesViewer';
 import api, { formatApiError } from '@/lib/api';
@@ -112,6 +115,13 @@ export default function PublicEventPageV2() {
     onStoryResume,
     reloadStories,
   } = useStoriesViewer(event?.id ?? null, inviteExchangeBump);
+
+  // Realtime notifications for gamification (Social Proof Toast + New Photo Indicator)
+  const {
+    notifications: realtimeNotifications,
+    newPhotoCount,
+    clearNewPhotos,
+  } = useRealtimeNotifications(event?.id || '');
 
   // Check if mosaic wall is active for this event
   useEffect(() => {
@@ -668,6 +678,20 @@ export default function PublicEventPageV2() {
 
       <AchievementToast eventId={event?.id || ''} />
       <PushNotificationBanner eventId={event?.id || ''} />
+
+      {/* Gamification: Social Proof Toast (realtime activity) */}
+      <SocialProofToast notifications={realtimeNotifications} maxVisible={2} />
+
+      {/* Gamification: New Photo Indicator (realtime) */}
+      <AnimatePresence>
+        {newPhotoCount > 0 && activeTab === 'feed' && (
+          <NewPhotoIndicator onClick={() => {
+            clearNewPhotos();
+            reloadPhotos();
+            scrollToTop();
+          }} />
+        )}
+      </AnimatePresence>
     </main>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
-import { motion, useMotionValue, useTransform } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
+import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 
 interface PremiumModesProps {
@@ -11,7 +11,17 @@ interface PremiumModesProps {
 }
 
 // Holographic Mode
-export function HolographicMode({ photos, currentIndex = 0 }: PremiumModesProps) {
+export function HolographicMode({ photos }: PremiumModesProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (photos.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % photos.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [photos.length]);
+
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const rotateX = useTransform(mouseY, [-300, 300], [10, -10]);
@@ -129,7 +139,7 @@ export function HolographicMode({ photos, currentIndex = 0 }: PremiumModesProps)
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          HOLOGRAPHIC MODE
+          HOLOGRAFISCH
         </motion.p>
       </div>
     </div>
@@ -231,7 +241,7 @@ export function AISmartMode({ photos }: PremiumModesProps) {
             animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           />
-          <span className="text-white/60 text-xs uppercase tracking-wider">AI Analysis</span>
+          <span className="text-white/60 text-xs uppercase tracking-wider">KI-Analyse</span>
         </div>
         
         <motion.p
@@ -240,7 +250,7 @@ export function AISmartMode({ photos }: PremiumModesProps) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          Detected: {detectedContent || 'analyzing...'}
+          Erkannt: {detectedContent === 'faces' ? 'Gesichter' : detectedContent === 'action' ? 'Aktion' : detectedContent === 'scenery' ? 'Landschaft' : 'analysiere...'}
         </motion.p>
         
         <motion.p
@@ -250,7 +260,7 @@ export function AISmartMode({ photos }: PremiumModesProps) {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          Transition: {transitionType}
+          Übergang: {transitionType}
         </motion.p>
       </div>
 
@@ -266,14 +276,24 @@ export function AISmartMode({ photos }: PremiumModesProps) {
             />
           ))}
         </div>
-        <span className="text-white/40 text-xs font-mono">AI PROCESSING</span>
+        <span className="text-white/40 text-xs font-mono">KI-VERARBEITUNG</span>
       </div>
     </div>
   );
 }
 
 // Cinema Mode
-export function CinemaMode({ photos, currentIndex = 0 }: PremiumModesProps) {
+export function CinemaMode({ photos }: PremiumModesProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (photos.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % photos.length);
+    }, 7000);
+    return () => clearInterval(interval);
+  }, [photos.length]);
+
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden">
       {/* Letterbox Bars */}
@@ -330,12 +350,12 @@ export function CinemaMode({ photos, currentIndex = 0 }: PremiumModesProps) {
           animate={{ opacity: [1, 0.3, 1] }}
           transition={{ duration: 0.1, repeat: Infinity }}
         />
-        <span className="text-amber-500/60 text-xs font-mono tracking-wider">PROJECTION ACTIVE</span>
+        <span className="text-amber-500/60 text-xs font-mono tracking-wider">PROJEKTION AKTIV</span>
       </div>
 
       {/* Frame Counter */}
       <div className="absolute bottom-[12vh] right-8 z-20 text-amber-500/60 text-xs font-mono">
-        FRAME: {String(currentIndex + 1).padStart(4, '0')} / {String(photos.length).padStart(4, '0')}
+        BILD: {String(currentIndex + 1).padStart(4, '0')} / {String(photos.length).padStart(4, '0')}
       </div>
     </div>
   );

@@ -62,7 +62,7 @@ export default function XPProgress({
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold shadow-lg">
             {level}
           </div>
-          <span className="text-white font-medium">Level {level}</span>
+          <span className="text-foreground font-medium">Stufe {level}</span>
         </motion.div>
 
         <AnimatePresence>
@@ -82,7 +82,7 @@ export default function XPProgress({
       </div>
 
       {/* Progress Bar Container */}
-      <div className="relative h-6 bg-slate-700 rounded-full overflow-hidden">
+      <div className="relative h-6 bg-muted rounded-full overflow-hidden">
         {/* Wave Animation Background */}
         <div className="absolute inset-0 opacity-30">
           <motion.div
@@ -161,14 +161,14 @@ export default function XPProgress({
       {/* XP Text */}
       <div className="flex justify-between mt-2 text-sm">
         <motion.span 
-          className="text-white/80"
+          className="text-foreground/80"
           key={displayXP}
           initial={{ scale: 1.2, color: '#fbbf24' }}
-          animate={{ scale: 1, color: 'rgba(255,255,255,0.8)' }}
+          animate={{ scale: 1, color: 'var(--foreground)' }}
         >
           {displayXP.toLocaleString()} XP
         </motion.span>
-        <span className="text-white/60">{maxXP.toLocaleString()} XP</span>
+        <span className="text-muted-foreground">{maxXP.toLocaleString()} XP</span>
       </div>
 
       {/* Zap Icon for energy */}

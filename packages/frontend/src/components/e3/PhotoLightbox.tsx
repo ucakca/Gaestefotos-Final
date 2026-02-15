@@ -68,6 +68,43 @@ interface Comment {
   status?: string;
 }
 
+// Animated Share Button with Send fly-out
+function ShareButtonAnimated({ onShare }: { onShare: () => void }) {
+  const [isSending, setIsSending] = useState(false);
+
+  return (
+    <motion.button
+      onClick={() => {
+        setIsSending(true);
+        setTimeout(() => setIsSending(false), 1200);
+        onShare();
+      }}
+      className="p-1 relative"
+      whileTap={{ scale: 0.9 }}
+    >
+      <motion.div
+        animate={isSending ? { scale: [1, 0.8, 1] } : {}}
+        transition={{ duration: 0.3 }}
+      >
+        <Share2 className="w-7 h-7 text-white" />
+      </motion.div>
+      <AnimatePresence>
+        {isSending && (
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center"
+            initial={{ opacity: 0, scale: 0.5, x: 0, y: 0 }}
+            animate={{ opacity: [0, 1, 1, 0], scale: [0.5, 1, 1, 0.5], x: [0, 15, 40], y: [0, -20, -40] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+          >
+            <Send className="w-5 h-5 text-green-400" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.button>
+  );
+}
+
 export default function PhotoLightbox({
   photos,
   selectedIndex,
@@ -433,15 +470,38 @@ export default function PhotoLightbox({
               {/* Action Buttons Row */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  {/* Like */}
+                  {/* Like — with particle burst */}
                   <motion.button
                     onClick={toggleLike}
-                    className="p-1"
+                    className="p-1 relative"
                     whileTap={{ scale: 0.9 }}
                   >
-                    <Heart
-                      className={`w-7 h-7 ${isLiked ? 'fill-red-500 text-red-500' : 'text-white'}`}
-                    />
+                    <motion.div
+                      animate={isLiked ? { scale: [1, 1.35, 1] } : { scale: 1 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                    >
+                      <Heart
+                        className={`w-7 h-7 transition-colors duration-200 ${isLiked ? 'fill-red-500 text-red-500' : 'text-white'}`}
+                      />
+                    </motion.div>
+                    {/* Particle burst on like */}
+                    <AnimatePresence>
+                      {isLiked && Array.from({ length: 8 }).map((_, i) => (
+                        <motion.div
+                          key={`p-${i}`}
+                          className="absolute top-1/2 left-1/2 w-1.5 h-1.5 rounded-full bg-red-400"
+                          initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+                          animate={{
+                            x: Math.cos((i / 8) * Math.PI * 2) * 22,
+                            y: Math.sin((i / 8) * Math.PI * 2) * 22,
+                            scale: 0,
+                            opacity: 0,
+                          }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.45, ease: 'easeOut' }}
+                        />
+                      ))}
+                    </AnimatePresence>
                   </motion.button>
 
                   {/* Comment Icon - Shows count */}
@@ -454,14 +514,8 @@ export default function PhotoLightbox({
                     </div>
                   )}
 
-                  {/* Share */}
-                  <motion.button
-                    onClick={handleShare}
-                    className="p-1"
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <Share2 className="w-7 h-7 text-white" />
-                  </motion.button>
+                  {/* Share — with send animation */}
+                  <ShareButtonAnimated onShare={handleShare} />
                 </div>
 
                 {/* Download */}

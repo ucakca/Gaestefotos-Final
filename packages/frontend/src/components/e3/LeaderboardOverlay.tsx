@@ -144,36 +144,49 @@ export default function LeaderboardOverlay({ isOpen, onClose, eventId }: Leaderb
                     </div>
                   )}
 
-                  {/* Rest of the list */}
+                  {/* Rest of the list — with layout animations for reordering */}
                   {rest.length > 0 && (
                     <div className="space-y-1.5">
-                      {rest.map((entry, idx) => (
-                        <motion.div
-                          key={entry.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.3 + idx * 0.04 }}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
-                        >
-                          <span className="text-sm font-bold text-muted-foreground w-6 text-center">
-                            {idx + 4}
-                          </span>
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-muted to-muted-foreground/20 flex items-center justify-center text-xs font-bold">
-                            {getInitials(entry.name)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium truncate">{entry.name}</div>
-                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                              <StatBadge icon={Camera} count={entry.photoCount} />
-                              <StatBadge icon={Gamepad2} count={entry.gameCount} />
-                              <StatBadge icon={Sparkles} count={entry.kiCount} />
+                      <AnimatePresence mode="popLayout">
+                        {rest.map((entry, idx) => (
+                          <motion.div
+                            key={entry.id}
+                            layout
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 50 }}
+                            transition={{
+                              layout: { type: 'spring', stiffness: 300, damping: 30 },
+                              delay: 0.3 + idx * 0.04,
+                            }}
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
+                          >
+                            <span className="text-sm font-bold text-muted-foreground w-6 text-center">
+                              {idx + 4}
+                            </span>
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-muted to-muted-foreground/20 flex items-center justify-center text-xs font-bold">
+                              {getInitials(entry.name)}
                             </div>
-                          </div>
-                          <div className="text-sm font-bold" style={{ color: 'hsl(var(--primary))' }}>
-                            {entry.totalScore}
-                          </div>
-                        </motion.div>
-                      ))}
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium truncate">{entry.name}</div>
+                              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                <StatBadge icon={Camera} count={entry.photoCount} />
+                                <StatBadge icon={Gamepad2} count={entry.gameCount} />
+                                <StatBadge icon={Sparkles} count={entry.kiCount} />
+                              </div>
+                            </div>
+                            <motion.div
+                              key={entry.totalScore}
+                              initial={{ scale: 1.3, color: '#fbbf24' }}
+                              animate={{ scale: 1, color: 'hsl(var(--primary))' }}
+                              transition={{ duration: 0.3 }}
+                              className="text-sm font-bold"
+                            >
+                              {entry.totalScore}
+                            </motion.div>
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
                     </div>
                   )}
                 </>

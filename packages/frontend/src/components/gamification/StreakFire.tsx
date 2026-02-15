@@ -104,12 +104,12 @@ export default function StreakFire({ streak, maxStreak = 30 }: StreakFireProps) 
           } : {}}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          {streak} Day Streak!
+          {streak}-Tage-Serie!
         </motion.span>
         <span className="text-xs text-white/60">
-          {streak >= 7 ? '🔥 On Fire!' : 
-           streak >= 5 ? '🔥 Heating Up!' : 
-           'Keep it going!'}
+          {streak >= 7 ? '🔥 Feuer frei!' : 
+           streak >= 5 ? '🔥 Wird heiß!' : 
+           'Weiter so!'}
         </span>
       </div>
     </div>

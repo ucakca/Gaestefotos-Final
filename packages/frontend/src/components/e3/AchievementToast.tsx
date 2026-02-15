@@ -3,6 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { wsManager } from '@/lib/websocket';
+import dynamic from 'next/dynamic';
+
+const BadgeUnlockAnimation = dynamic(
+  () => import('@/components/gamification/BadgeUnlockAnimation'),
+  { ssr: false }
+);
 
 interface Achievement {
   key: string;
@@ -61,94 +67,120 @@ export default function AchievementToast({ eventId }: AchievementToastProps) {
     setShowConfetti(false);
   }, []);
 
+  const getTier = (points: number): 'bronze' | 'silver' | 'gold' | 'platinum' => {
+    if (points >= 100) return 'platinum';
+    if (points >= 50) return 'gold';
+    if (points >= 25) return 'silver';
+    return 'bronze';
+  };
+
+  const isBigAchievement = current && current.points >= 50;
+
   return (
-    <AnimatePresence>
-      {current && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[80] flex items-center justify-center pointer-events-none"
-        >
-          {/* Semi-transparent backdrop */}
+    <>
+      {/* Big achievements → dramatic BadgeUnlockAnimation */}
+      {current && isBigAchievement && (
+        <BadgeUnlockAnimation
+          badge={{
+            name: current.title,
+            description: `+${current.points} Punkte`,
+            icon: current.icon,
+            tier: getTier(current.points),
+          }}
+          isVisible={true}
+          onComplete={dismiss}
+        />
+      )}
+
+      {/* Normal achievements → existing toast */}
+      <AnimatePresence>
+        {current && !isBigAchievement && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/40 pointer-events-auto"
-            onClick={dismiss}
-          />
-
-          {/* Achievement card */}
-          <motion.div
-            initial={{ scale: 0.3, opacity: 0, y: 50 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.5, opacity: 0, y: -30 }}
-            transition={{ type: 'spring', damping: 15, stiffness: 300 }}
-            className="relative z-10 pointer-events-auto"
-            onClick={dismiss}
+            className="fixed inset-0 z-[80] flex items-center justify-center pointer-events-none"
           >
-            <div className="bg-card rounded-3xl shadow-2xl px-8 py-7 text-center max-w-[280px] mx-auto border border-border/50">
-              {/* Glow ring */}
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: [0, 1.2, 1] }}
-                transition={{ delay: 0.1, duration: 0.5 }}
-                className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center"
-                style={{
-                  background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))',
-                  boxShadow: '0 0 40px hsl(var(--primary) / 0.3)',
-                }}
-              >
-                <motion.span
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                  className="text-4xl"
+            {/* Semi-transparent backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/40 pointer-events-auto"
+              onClick={dismiss}
+            />
+
+            {/* Achievement card */}
+            <motion.div
+              initial={{ scale: 0.3, opacity: 0, y: 50 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.5, opacity: 0, y: -30 }}
+              transition={{ type: 'spring', damping: 15, stiffness: 300 }}
+              className="relative z-10 pointer-events-auto"
+              onClick={dismiss}
+            >
+              <div className="bg-card rounded-3xl shadow-2xl px-8 py-7 text-center max-w-[280px] mx-auto border border-border/50">
+                {/* Glow ring */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: [0, 1.2, 1] }}
+                  transition={{ delay: 0.1, duration: 0.5 }}
+                  className="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))',
+                    boxShadow: '0 0 40px hsl(var(--primary) / 0.3)',
+                  }}
                 >
-                  {current.icon}
-                </motion.span>
-              </motion.div>
+                  <motion.span
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                    className="text-4xl"
+                  >
+                    {current.icon}
+                  </motion.span>
+                </motion.div>
 
-              {/* Title */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                  Achievement freigeschaltet!
-                </div>
-                <div className="text-xl font-black">{current.title}</div>
-              </motion.div>
+                {/* Title */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                    Erfolg freigeschaltet!
+                  </div>
+                  <div className="text-xl font-black">{current.title}</div>
+                </motion.div>
 
-              {/* Points */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5, type: 'spring' }}
-                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold"
-                style={{
-                  background: 'hsl(var(--primary) / 0.1)',
-                  color: 'hsl(var(--primary))',
-                }}
-              >
-                +{current.points} Punkte
-              </motion.div>
-            </div>
+                {/* Points */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.5, type: 'spring' }}
+                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-bold"
+                  style={{
+                    background: 'hsl(var(--primary) / 0.1)',
+                    color: 'hsl(var(--primary))',
+                  }}
+                >
+                  +{current.points} Punkte
+                </motion.div>
+              </div>
+            </motion.div>
+
+            {/* Confetti particles */}
+            {showConfetti && (
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                {Array.from({ length: 20 }).map((_, i) => (
+                  <ConfettiParticle key={i} index={i} />
+                ))}
+              </div>
+            )}
           </motion.div>
-
-          {/* Confetti particles */}
-          {showConfetti && (
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              {Array.from({ length: 20 }).map((_, i) => (
-                <ConfettiParticle key={i} index={i} />
-              ))}
-            </div>
-          )}
-        </motion.div>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 

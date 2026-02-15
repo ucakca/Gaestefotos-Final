@@ -158,7 +158,7 @@ export default function TrophyReveal({
               >
                 <Sparkles className="w-5 h-5 text-yellow-400" />
                 <span className="text-yellow-400 font-bold tracking-widest uppercase">
-                  Trophy Earned
+                  Trophäe erhalten
                 </span>
                 <Sparkles className="w-5 h-5 text-yellow-400" />
               </motion.div>

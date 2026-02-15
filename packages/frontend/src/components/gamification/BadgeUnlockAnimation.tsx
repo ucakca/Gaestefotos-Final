@@ -128,7 +128,7 @@ export default function BadgeUnlockAnimation({
                 >
                   <Sparkles className="w-4 h-4 text-yellow-400" />
                   <span className="text-sm uppercase tracking-widest text-white/60">
-                    Achievement Unlocked
+                    Erfolg freigeschaltet
                   </span>
                   <Sparkles className="w-4 h-4 text-yellow-400" />
                 </motion.div>

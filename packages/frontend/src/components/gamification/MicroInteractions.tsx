@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Heart, MessageCircle, Share2, Send } from 'lucide-react';
 
 // Animated Like Button with Particle Burst
@@ -194,21 +194,25 @@ export function AnimatedShareButton({ onClick }: { onClick?: () => void }) {
 // Scroll Velocity Skew Effect
 export function useScrollSkew() {
   const [skew, setSkew] = useState(0);
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const [lastTime, setLastTime] = useState(Date.now());
+  const lastScrollYRef = useRef(typeof window !== 'undefined' ? window.scrollY : 0);
+  const lastTimeRef = useRef(Date.now());
 
-  if (typeof window !== 'undefined') {
-    window.addEventListener('scroll', () => {
+  useEffect(() => {
+    const handleScroll = () => {
       const now = Date.now();
-      const delta = now - lastTime;
-      const scrollDelta = window.scrollY - lastScrollY;
+      const delta = now - lastTimeRef.current;
+      if (delta === 0) return;
+      const scrollDelta = window.scrollY - lastScrollYRef.current;
       const velocity = scrollDelta / delta;
-      
+
       setSkew(Math.max(-5, Math.min(5, velocity * 2)));
-      setLastScrollY(window.scrollY);
-      setLastTime(now);
-    }, { passive: true });
-  }
+      lastScrollYRef.current = window.scrollY;
+      lastTimeRef.current = now;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return skew;
 }
@@ -255,7 +259,7 @@ export function PullToRefreshIndicator({
         className="text-xs text-slate-500 mt-2"
         animate={{ opacity: progress > 0.5 ? 1 : 0 }}
       >
-        {isRefreshing ? 'Refreshing...' : shouldRefresh ? 'Release to refresh' : 'Pull to refresh'}
+        {isRefreshing ? 'Wird aktualisiert...' : shouldRefresh ? 'Loslassen zum Aktualisieren' : 'Ziehen zum Aktualisieren'}
       </motion.p>
     </motion.div>
   );
@@ -279,7 +283,7 @@ export function NewPhotoIndicator({ onClick }: { onClick?: () => void }) {
       >
         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
       </motion.div>
-      <span className="text-sm font-medium">New Photos</span>
+      <span className="text-sm font-medium">Neue Fotos</span>
       
       {/* Ripple Effect */}
       <motion.div

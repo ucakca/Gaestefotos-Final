@@ -39,10 +39,10 @@ export default function ComboMultiplier({
   }, [isVisible, combo, timeout, onTimeout]);
 
   const getComboText = (n: number) => {
-    if (n >= 10) return 'UNSTOPPABLE!';
-    if (n >= 7) return 'SENSATIONAL!';
-    if (n >= 5) return 'AWESOME!';
-    if (n >= 3) return 'GREAT!';
+    if (n >= 10) return 'UNAUFHALTBAR!';
+    if (n >= 7) return 'SENSATIONELL!';
+    if (n >= 5) return 'FANTASTISCH!';
+    if (n >= 3) return 'SUPER!';
     return '';
   };
 

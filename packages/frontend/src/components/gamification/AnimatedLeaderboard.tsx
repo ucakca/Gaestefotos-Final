@@ -66,14 +66,14 @@ export default function AnimatedLeaderboard({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-slate-800 rounded-2xl p-4 shadow-xl">
+    <div className="w-full max-w-md mx-auto bg-card rounded-2xl p-4 shadow-xl border border-border">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-white flex items-center gap-2">
           <Trophy className="w-5 h-5 text-yellow-400" />
-          Leaderboard
+          Bestenliste
         </h3>
-        <span className="text-sm text-slate-400">Live</span>
+        <span className="text-sm text-muted-foreground">Live</span>
       </div>
 
       {/* Top 3 Podium */}
@@ -81,7 +81,7 @@ export default function AnimatedLeaderboard({
         {sortedEntries.slice(0, 3).map((entry, index) => {
           const heights = ['h-24', 'h-32', 'h-20'];
           const positions = [1, 0, 2]; // 2nd, 1st, 3rd
-          const colors = ['from-slate-400 to-slate-300', 'from-yellow-500 to-yellow-300', 'from-amber-700 to-amber-500'];
+          const colors = ['from-muted-foreground to-muted-foreground/70', 'from-yellow-500 to-yellow-300', 'from-amber-700 to-amber-500'];
           const pos = positions[index];
           
           return (
@@ -113,7 +113,7 @@ export default function AnimatedLeaderboard({
                 transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
                 style={{ originY: 1 }}
               />
-              <span className="text-xs text-white/80 mt-1 truncate w-16 text-center">
+              <span className="text-xs text-foreground/80 mt-1 truncate w-16 text-center">
                 {entry.name}
               </span>
             </motion.div>
@@ -150,12 +150,12 @@ export default function AnimatedLeaderboard({
                 className={`flex items-center gap-3 p-3 rounded-xl ${
                   entry.isCurrentUser 
                     ? 'bg-primary/20 border border-primary/30' 
-                    : 'bg-slate-700/50'
+                    : 'bg-muted/50'
                 }`}
               >
                 {/* Rank */}
                 <div className="w-8 text-center">
-                  <span className="text-lg font-bold text-slate-400">{rank}</span>
+                  <span className="text-lg font-bold text-muted-foreground">{rank}</span>
                 </div>
 
                 {/* Avatar */}
@@ -170,7 +170,7 @@ export default function AnimatedLeaderboard({
 
                 {/* Name */}
                 <div className="flex-1">
-                  <p className={`font-medium ${entry.isCurrentUser ? 'text-primary' : 'text-white'}`}>
+                  <p className={`font-medium ${entry.isCurrentUser ? 'text-primary' : 'text-foreground'}`}>
                     {entry.name}
                   </p>
                 </div>
@@ -185,10 +185,10 @@ export default function AnimatedLeaderboard({
 
                 {/* Score */}
                 <motion.span
-                  className="font-bold text-white tabular-nums"
+                  className="font-bold text-foreground tabular-nums"
                   key={entry.score}
                   initial={{ scale: 1.5, color: '#fbbf24' }}
-                  animate={{ scale: 1, color: '#ffffff' }}
+                  animate={{ scale: 1, color: 'var(--foreground)' }}
                   transition={{ duration: 0.3 }}
                 >
                   {entry.score.toLocaleString()}

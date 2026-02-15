@@ -80,10 +80,10 @@ export default function SocialProofToast({
             }}
             className="pointer-events-auto"
           >
-            <div className="flex items-center gap-3 p-3 bg-slate-800/95 backdrop-blur-sm rounded-xl shadow-lg border border-white/10 min-w-[300px]">
+            <div className="flex items-center gap-3 p-3 bg-card/95 backdrop-blur-sm rounded-xl shadow-lg border border-border min-w-[300px]">
               {/* Avatar */}
               <div className="relative">
-                <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/20">
+                <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-border">
                   <Image
                     src={notification.user.avatar}
                     alt={notification.user.name}
@@ -109,11 +109,11 @@ export default function SocialProofToast({
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-medium truncate">
+                <p className="text-foreground text-sm font-medium truncate">
                   {getText(notification)}
                 </p>
                 {notification.content && (
-                  <p className="text-white/60 text-xs truncate">
+                  <p className="text-muted-foreground text-xs truncate">
                     "{notification.content}"
                   </p>
                 )}
@@ -134,9 +134,9 @@ export default function SocialProofToast({
               {/* Dismiss */}
               <button
                 onClick={() => dismiss(notification.id)}
-                className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                className="p-1 hover:bg-muted rounded-full transition-colors"
               >
-                <X className="w-4 h-4 text-white/40" />
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
           </motion.div>
