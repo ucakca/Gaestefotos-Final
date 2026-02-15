@@ -989,7 +989,42 @@ router.get(
   }
 });
 
+// ─── GET /:eventId/guestbook/export-pdf ─────────────────────────────────────
+// Export guestbook entries as a formatted PDF (host/admin only)
+router.get('/:eventId/guestbook/export-pdf', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+
+    // Check event exists and user has access
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, hostId: true, title: true, slug: true, deletedAt: true, isActive: true },
+    });
+
+    if (!event || event.deletedAt || !event.isActive) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    if (req.userId !== event.hostId && req.userRole !== 'ADMIN') {
+      return res.status(403).json({ error: 'Kein Zugriff' });
+    }
+
+    const { generateGuestbookPdf } = await import('../services/guestbookPdf');
+    const includePhotos = req.query.photos !== 'false';
+    const onlyApproved = req.query.all !== 'true';
+
+    const pdfBuffer = await generateGuestbookPdf(eventId, { includePhotos, onlyApproved });
+
+    const filename = `gaestebuch-${event.slug}-${new Date().toISOString().slice(0, 10)}.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+    res.send(pdfBuffer);
+  } catch (error) {
+    logger.error('Guestbook PDF export failed', { message: getErrorMessage(error) });
+    res.status(500).json({ error: 'PDF-Export fehlgeschlagen' });
+  }
+});
+
 export default router;
-
-
-
