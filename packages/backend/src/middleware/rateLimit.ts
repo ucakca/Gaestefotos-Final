@@ -284,6 +284,32 @@ export const aiFeatureLimiter: any = rateLimit({
   },
 });
 
+// Push notification subscribe limiter
+export const pushSubscribeLimiter: any = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 Minuten
+  max: devMultiplier(10), // 10 Subscriptions pro 15 Min pro IP
+  message: 'Zu viele Push-Anfragen.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    logRateLimitHit('push:subscribe', req);
+    res.status(429).json({ error: 'Zu viele Push-Anfragen.' });
+  },
+});
+
+// Analytics limiter — prevent expensive query spam
+export const analyticsLimiter: any = rateLimit({
+  windowMs: 60 * 1000, // 1 Minute
+  max: devMultiplier(30), // 30 Analytics-Anfragen pro Minute pro IP
+  message: 'Zu viele Analytics-Anfragen.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    logRateLimitHit('analytics', req);
+    res.status(429).json({ error: 'Zu viele Analytics-Anfragen.' });
+  },
+});
+
 
 
 
