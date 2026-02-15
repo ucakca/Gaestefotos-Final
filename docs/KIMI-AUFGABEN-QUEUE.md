@@ -255,12 +255,12 @@ Build testen + Commit nach jedem Teil.
 
 ## 🔄 Status-Tracking
 
-| # | Aufgabe | Status | Blockiert von |
-|---|---------|--------|---------------|
-| 1 | Design-Token Unification | ⬜ Offen | — |
-| 2 | Button-System Refactoring | ⬜ Offen | — |
-| 3 | Form System Unification | ⬜ Offen | — |
-| 4 | PWA Polish | 🔒 Blockiert | Opus: PWA Architektur |
-| 5 | Event Wall UI | 🔒 Blockiert | Opus: Event Wall Backend |
-| 6 | Mosaic Wizard UI | 🔒 Blockiert | Opus: Mosaic Konzept + Backend |
-| 7 | Gamification + KI-Kunst + Upsell | ⬜ Offen | — |
+| # | Aufgabe | Status | Details |
+|---|---------|--------|---------|
+| 1 | Design-Token Unification | ✅ Fertig | 67 Dateien, 234 app-* Tokens → moderne Tokens |
+| 2 | Button-System Refactoring | ✅ Fertig | 5→2 Dateien, -204 LOC, unified Button + IconButton |
+| 3 | Form System Unification | ✅ Fertig | FormField + RHF/zod, 3 Auth-Seiten migriert |
+| 4 | PWA Polish | ✅ Fertig | Kimi + Opus Fixes |
+| 5 | Event Wall UI | ✅ Fertig | Kimi + Opus Fixes + Gamification Integration |
+| 6 | Mosaic Wizard UI | ✅ Fertig | Kimi |
+| 7 | Gamification + KI-Kunst + Upsell | ✅ Fertig | Kimi + Opus Fixes + Integration |
