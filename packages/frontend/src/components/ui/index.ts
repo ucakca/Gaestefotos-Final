@@ -1,8 +1,9 @@
 // UI Components Barrel Export
-export { Button, buttonVariants } from './Button';
-export { Button as ButtonV2 } from './ButtonV2';
-export { BaseButton } from './BaseButton';
-export { IconButton, IconButton as IconButtonV2 } from './IconButtonV2';
+export { Button, buttonVariants, type ButtonProps } from './Button';
+export { Button as ButtonV2 } from './Button';
+export { Button as BaseButton } from './Button';
+export { IconButton, type IconButtonProps } from './IconButton';
+export { IconButton as IconButtonV2 } from './IconButton';
 export { Input } from './Input';
 export { FormInput } from './FormInput';
 export { FormTextarea } from './FormTextarea';
