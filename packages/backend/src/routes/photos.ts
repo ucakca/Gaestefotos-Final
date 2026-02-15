@@ -902,6 +902,103 @@ router.post(
   }
 );
 
+// ─── Batch Approve/Reject ───────────────────────────────────────────────────
+// POST /bulk/moderate — approve or reject multiple photos at once
+router.post(
+  '/bulk/moderate',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoIds, action, eventId } = req.body;
+
+      if (!Array.isArray(photoIds) || photoIds.length === 0) {
+        return res.status(400).json({ error: 'photoIds array required' });
+      }
+      if (!['approve', 'reject'].includes(action)) {
+        return res.status(400).json({ error: 'action must be "approve" or "reject"' });
+      }
+      if (!eventId) {
+        return res.status(400).json({ error: 'eventId required' });
+      }
+      if (photoIds.length > 200) {
+        return res.status(400).json({ error: 'Max 200 photos per batch' });
+      }
+
+      // Check permissions
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      const newStatus = action === 'approve' ? 'APPROVED' : 'REJECTED';
+
+      const result = await prisma.photo.updateMany({
+        where: {
+          id: { in: photoIds },
+          eventId, // Safety: only update photos belonging to this event
+        },
+        data: { status: newStatus },
+      });
+
+      // Emit WebSocket events for approved photos
+      if (action === 'approve') {
+        io.to(`event:${eventId}`).emit('photos_bulk_approved', {
+          photoIds,
+          count: result.count,
+        });
+      }
+
+      logger.info('Bulk moderation', { eventId, action, requested: photoIds.length, updated: result.count });
+
+      res.json({
+        action,
+        requested: photoIds.length,
+        updated: result.count,
+      });
+    } catch (error: any) {
+      logger.error('Bulk moderate error', { error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+// POST /bulk/approve-all — approve all pending photos for an event
+router.post(
+  '/bulk/approve-all',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.body;
+
+      if (!eventId) {
+        return res.status(400).json({ error: 'eventId required' });
+      }
+
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      const result = await prisma.photo.updateMany({
+        where: { eventId, status: 'PENDING' },
+        data: { status: 'APPROVED' },
+      });
+
+      if (result.count > 0) {
+        io.to(`event:${eventId}`).emit('photos_bulk_approved', {
+          count: result.count,
+          all: true,
+        });
+      }
+
+      logger.info('Bulk approve all', { eventId, approved: result.count });
+
+      res.json({ approved: result.count });
+    } catch (error: any) {
+      logger.error('Bulk approve-all error', { error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
 // Delete photo
 router.delete(
   '/:photoId',
