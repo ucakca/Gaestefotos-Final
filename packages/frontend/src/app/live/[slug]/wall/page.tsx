@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, Suspense, lazy } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
@@ -12,6 +12,19 @@ import { Button } from '@/components/ui/Button';
 import MosaicGrid, { MosaicTileData } from '@/components/mosaic/MosaicGrid';
 import MosaicTicker from '@/components/mosaic/MosaicTicker';
 
+// Lazy load new animation components
+const CinematicFlow = lazy(() => import('@/components/wall/CinematicFlow'));
+const PolaroidRain = lazy(() => import('@/components/wall/PolaroidRain'));
+const CoverFlowCarousel = lazy(() => import('@/components/wall/CoverFlowCarousel'));
+const BentoGridMorph = lazy(() => import('@/components/wall/BentoGridMorph'));
+const LiquidTransition = lazy(() => import('@/components/wall/LiquidTransition'));
+const GenerativeScramble = lazy(() => import('@/components/wall/GenerativeScramble'));
+const InfiniteScroll = lazy(() => import('@/components/wall/InfiniteScroll'));
+const TimeTravelStack = lazy(() => import('@/components/wall/TimeTravelStack'));
+const HolographicMode = lazy(() => import('@/components/wall/PremiumModes').then(m => ({ default: m.HolographicMode })));
+const AISmartMode = lazy(() => import('@/components/wall/PremiumModes').then(m => ({ default: m.AISmartMode })));
+const CinemaMode = lazy(() => import('@/components/wall/PremiumModes').then(m => ({ default: m.CinemaMode })));
+
 export default function LiveWallPage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -21,7 +34,7 @@ export default function LiveWallPage() {
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const initialMode = (searchParams.get('mode') || 'grid') as any;
-  const [viewMode, setViewMode] = useState<'grid' | 'slideshow' | 'collage' | 'masonry' | 'floating' | 'mosaic' | 'mixed'>(initialMode);
+  const [viewMode, setViewMode] = useState<'grid' | 'slideshow' | 'collage' | 'masonry' | 'floating' | 'mosaic' | 'mixed' | 'cinematic' | 'polaroid' | 'coverflow' | 'bento' | 'liquid' | 'scramble' | 'infinite' | 'timetravel' | 'holographic' | 'ai-smart' | 'cinema'>(initialMode);
   const [sortMode, setSortMode] = useState<'newest' | 'random'>('newest');
   const [currentSlide, setCurrentSlide] = useState(0);
   const [realtimeEnabled, setRealtimeEnabled] = useState(true);
@@ -297,8 +310,8 @@ export default function LiveWallPage() {
         
         <div className="flex gap-2 items-center flex-wrap">
           {/* View Mode Selector */}
-          <div className="flex bg-background/10 rounded-lg p-1">
-            {(['grid', 'collage', 'masonry', 'floating', 'slideshow', ...(hasMosaic ? ['mosaic', 'mixed'] as const : [])] as const).map((mode) => (
+          <div className="flex bg-background/10 rounded-lg p-1 flex-wrap max-w-2xl">
+            {(['grid', 'collage', 'masonry', 'floating', 'slideshow', 'cinematic', 'coverflow', 'bento', ...(hasMosaic ? ['mosaic', 'mixed'] as const : [])] as const).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setViewMode(mode as any)}
@@ -312,6 +325,9 @@ export default function LiveWallPage() {
                  mode === 'collage' ? 'Collage' :
                  mode === 'masonry' ? 'Masonry' :
                  mode === 'floating' ? 'Floating' :
+                 mode === 'cinematic' ? '🎬 Cinematic' :
+                 mode === 'coverflow' ? '🎠 CoverFlow' :
+                 mode === 'bento' ? '🍱 Bento' :
                  mode === 'mosaic' ? '🧩 Mosaik' :
                  mode === 'mixed' ? '🔀 Mix' : 'Slideshow'}
               </button>
@@ -637,6 +653,127 @@ export default function LiveWallPage() {
       <div className="lg:hidden fixed bottom-4 right-4">
         <QRCode value={publicUrl} size={100} />
       </div>
+
+      {/* New Animation Modes */}
+      {/* Cinematic Flow Mode */}
+      {viewMode === 'cinematic' && (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+          <CinematicFlow 
+            photos={displayPhotos.map(p => ({ id: p.id, url: p.url, caption: (p as any).caption }))} 
+            autoplay={true}
+            duration={6000}
+          />
+        </Suspense>
+      )}
+
+      {/* Polaroid Rain Mode */}
+      {viewMode === 'polaroid' && (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+          <PolaroidRain 
+            photos={displayPhotos.map(p => ({ id: p.id, url: p.url }))}
+            autoDropInterval={2000}
+          />
+        </Suspense>
+      )}
+
+      {/* CoverFlow Carousel Mode */}
+      {viewMode === 'coverflow' && (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+          <CoverFlowCarousel 
+            photos={displayPhotos.map(p => ({ id: p.id, url: p.url, caption: (p as any).caption }))}
+            autoplay={true}
+            interval={4000}
+          />
+        </Suspense>
+      )}
+
+      {/* Bento Grid Morph Mode */}
+      {viewMode === 'bento' && (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+          <BentoGridMorph 
+            photos={displayPhotos.map(p => ({ id: p.id, url: p.url }))}
+            autoplay={true}
+            morphInterval={8000}
+          />
+        </Suspense>
+      )}
+
+      {/* Liquid Transition Mode */}
+      {viewMode === 'liquid' && (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+          <LiquidTransition 
+            photos={displayPhotos.map(p => ({ id: p.id, url: p.url }))}
+            autoplay={true}
+            interval={5000}
+          />
+        </Suspense>
+      )}
+
+      {/* Generative Scramble Mode */}
+      {viewMode === 'scramble' && (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+          <GenerativeScramble 
+            photos={displayPhotos.map(p => ({ id: p.id, url: p.url }))}
+            scrambleInterval={6000}
+          />
+        </Suspense>
+      )}
+
+      {/* Infinite Scroll Mode */}
+      {viewMode === 'infinite' && (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+          <InfiniteScroll 
+            photos={displayPhotos.map(p => ({ id: p.id, url: p.url }))}
+            density={15}
+          />
+        </Suspense>
+      )}
+
+      {/* Time Travel Stack Mode */}
+      {viewMode === 'timetravel' && (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+          <TimeTravelStack 
+            photos={displayPhotos.map(p => ({ 
+              id: p.id, 
+              url: p.url, 
+              timestamp: new Date(p.createdAt).toLocaleString('de-DE'),
+              source: Math.random() > 0.5 ? 'host' : 'challenge'
+            }))}
+            autoStackInterval={5000}
+          />
+        </Suspense>
+      )}
+
+      {/* Premium Modes */}
+      {/* Holographic Mode */}
+      {viewMode === 'holographic' && (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+          <HolographicMode 
+            photos={displayPhotos.map(p => ({ id: p.id, url: p.url }))}
+            mode="holographic"
+          />
+        </Suspense>
+      )}
+
+      {/* AI Smart Mode */}
+      {viewMode === 'ai-smart' && (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+          <AISmartMode 
+            photos={displayPhotos.map(p => ({ id: p.id, url: p.url }))}
+            mode="ai-smart"
+          />
+        </Suspense>
+      )}
+
+      {/* Cinema Mode */}
+      {viewMode === 'cinema' && (
+        <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+          <CinemaMode 
+            photos={displayPhotos.map(p => ({ id: p.id, url: p.url }))}
+            mode="cinema"
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
