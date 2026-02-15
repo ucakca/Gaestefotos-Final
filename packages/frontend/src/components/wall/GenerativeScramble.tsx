@@ -163,9 +163,9 @@ export default function GenerativeScramble({
         <span className="text-white/60 text-sm">
           {currentPhotoIndex + 1} / {photos.length}
         </span>
-        <div className="w-32 h-1 bg-white/20 rounded-full overflow-hidden">
+        <div className="w-32 h-1 bg-card/20 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-white/80"
+            className="h-full bg-card/80"
             initial={{ width: '0%' }}
             animate={{ width: '100%' }}
             transition={{ duration: scrambleInterval / 1000, ease: 'linear' }}

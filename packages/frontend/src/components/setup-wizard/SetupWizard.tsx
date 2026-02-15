@@ -637,15 +637,15 @@ export default function SetupWizard() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl"
+            className="mt-4 p-4 bg-destructive/10 border border-destructive/30 rounded-xl"
           >
-            <p className="text-sm text-red-700 font-medium">{state.error}</p>
+            <p className="text-sm text-destructive font-medium">{state.error}</p>
             {state.error.includes('Limit') && (
               <a
                 href="https://gästefotos.com/pakete"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block mt-2 text-sm font-medium text-red-600 hover:text-red-800 underline"
+                className="inline-block mt-2 text-sm font-medium text-destructive hover:text-destructive underline"
               >
                 Pakete ansehen →
               </a>

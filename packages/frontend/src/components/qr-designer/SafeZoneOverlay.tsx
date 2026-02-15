@@ -25,11 +25,11 @@ export function SafeZoneOverlay({ enabled, safeZoneMm = 5 }: SafeZoneOverlayProp
       />
       
       {/* Corner Labels */}
-      <div className="absolute top-2 left-2 bg-yellow-500 text-black text-xs px-2 py-1 rounded font-mono">
+      <div className="absolute top-2 left-2 bg-warning text-black text-xs px-2 py-1 rounded font-mono">
         Safe Zone: {safeZoneMm}mm
       </div>
       
-      <div className="absolute bottom-2 right-2 bg-yellow-500 text-black text-xs px-2 py-1 rounded font-mono">
+      <div className="absolute bottom-2 right-2 bg-warning text-black text-xs px-2 py-1 rounded font-mono">
         ⚠️ Nicht schneiden
       </div>
     </div>

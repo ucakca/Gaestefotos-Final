@@ -28,8 +28,8 @@ export default function Step3Overlay({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-bold text-gray-900 mb-1">Overlay & Farbanpassung</h2>
-        <p className="text-sm text-gray-500 mb-4">
+        <h2 className="text-lg font-bold text-foreground mb-1">Overlay & Farbanpassung</h2>
+        <p className="text-sm text-muted-foreground mb-4">
           Steuere wie stark das Zielbild über den Gäste-Fotos sichtbar ist.
         </p>
       </div>
@@ -74,7 +74,7 @@ export default function Step3Overlay({
             </p>
 
             {aiRecommendation && (
-              <div className="mt-3 p-3 bg-white rounded-lg border border-purple-100">
+              <div className="mt-3 p-3 bg-card rounded-lg border border-purple-100">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-purple-700">
                     Empfehlung: {aiRecommendation.intensity}%
@@ -87,7 +87,7 @@ export default function Step3Overlay({
                     Übernehmen
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{aiRecommendation.reasoning}</p>
+                <p className="text-xs text-muted-foreground mt-1">{aiRecommendation.reasoning}</p>
               </div>
             )}
           </div>
@@ -95,7 +95,7 @@ export default function Step3Overlay({
           {/* Overlay Intensity Slider */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-foreground/80">
                 Zielbild-Overlay
               </label>
               <span className="text-sm font-bold text-purple-600">{state.overlayIntensity}%</span>
@@ -107,7 +107,7 @@ export default function Step3Overlay({
               max={100}
               step={1}
             />
-            <div className="flex justify-between text-[10px] text-gray-400 mt-1.5">
+            <div className="flex justify-between text-[10px] text-muted-foreground/70 mt-1.5">
               <span>Nur Fotos</span>
               <span>Ausgewogen</span>
               <span>Zielbild dominant</span>
@@ -116,7 +116,7 @@ export default function Step3Overlay({
 
           {/* Live Preview */}
           <div>
-            <div className="text-xs font-medium text-gray-500 mb-2">Vorschau</div>
+            <div className="text-xs font-medium text-muted-foreground mb-2">Vorschau</div>
             <div
               className="relative w-full rounded-xl overflow-hidden border"
               style={{ aspectRatio: `${state.gridWidth} / ${state.gridHeight}`, maxHeight: '220px' }}
@@ -153,7 +153,7 @@ export default function Step3Overlay({
           {/* Scatter Value */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-foreground/80">
                 Scatter (Zufälligkeit)
               </label>
               <span className="text-sm font-bold text-purple-600">{state.scatterValue}%</span>
@@ -165,11 +165,11 @@ export default function Step3Overlay({
               max={100}
               step={5}
             />
-            <div className="flex justify-between text-[10px] text-gray-400 mt-1.5">
+            <div className="flex justify-between text-[10px] text-muted-foreground/70 mt-1.5">
               <span>Exakte Farbplatzierung</span>
               <span>Komplett zufällig</span>
             </div>
-            <p className="text-xs text-gray-400 mt-2">
+            <p className="text-xs text-muted-foreground/70 mt-2">
               0% = Fotos werden exakt nach Farbe platziert. Höhere Werte verteilen Fotos zufälliger über das Grid.
             </p>
           </div>

@@ -361,7 +361,7 @@ export default function SlideshowMode({
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                <Camera className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
+                <Camera className="w-16 h-16 text-warning mx-auto mb-4" />
                 <h2 className="text-4xl font-bold text-white mb-2">Top Fotografen</h2>
                 <p className="text-white/60 mb-8">{eventTitle}</p>
               </motion.div>
@@ -376,11 +376,11 @@ export default function SlideshowMode({
                     className="text-center"
                   >
                     <div className="w-24 h-24 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center mb-3 mx-auto shadow-xl">
-                      <Medal className="w-12 h-12 text-gray-700" />
+                      <Medal className="w-12 h-12 text-foreground/80" />
                     </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl px-6 py-4">
+                    <div className="bg-card/10 backdrop-blur-sm rounded-xl px-6 py-4">
                       <p className="text-white font-bold text-lg">{topUploaders[1].name}</p>
-                      <p className="text-gray-300 text-sm">{topUploaders[1].count} Fotos</p>
+                      <p className="text-muted-foreground/50 text-sm">{topUploaders[1].count} Fotos</p>
                     </div>
                     <div className="h-20 w-24 bg-gradient-to-t from-gray-500 to-gray-400 rounded-t-lg mt-2 flex items-center justify-center">
                       <span className="text-4xl font-bold text-white/80">2</span>
@@ -401,11 +401,11 @@ export default function SlideshowMode({
                       transition={{ repeat: Infinity, duration: 2 }}
                       className="w-32 h-32 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-500 flex items-center justify-center mb-3 mx-auto shadow-2xl ring-4 ring-yellow-300/50"
                     >
-                      <Crown className="w-16 h-16 text-yellow-800" />
+                      <Crown className="w-16 h-16 text-warning" />
                     </motion.div>
                     <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 backdrop-blur-sm rounded-xl px-8 py-5 border border-yellow-500/30">
                       <p className="text-white font-bold text-xl">{topUploaders[0].name}</p>
-                      <p className="text-yellow-300 text-sm">{topUploaders[0].count} Fotos</p>
+                      <p className="text-warning/70 text-sm">{topUploaders[0].count} Fotos</p>
                     </div>
                     <div className="h-28 w-32 bg-gradient-to-t from-yellow-600 to-yellow-400 rounded-t-lg mt-2 flex items-center justify-center">
                       <span className="text-5xl font-bold text-white">1</span>
@@ -424,7 +424,7 @@ export default function SlideshowMode({
                     <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-600 to-amber-700 flex items-center justify-center mb-3 mx-auto shadow-xl">
                       <Award className="w-10 h-10 text-amber-200" />
                     </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl px-5 py-3">
+                    <div className="bg-card/10 backdrop-blur-sm rounded-xl px-5 py-3">
                       <p className="text-white font-bold">{topUploaders[2].name}</p>
                       <p className="text-amber-300 text-sm">{topUploaders[2].count} Fotos</p>
                     </div>
@@ -486,7 +486,7 @@ export default function SlideshowMode({
               transition={{ duration: 3, ease: 'easeOut' }}
               className="absolute z-30 pointer-events-none"
             >
-              <Heart className="w-12 h-12 text-red-500 fill-red-500 drop-shadow-lg" />
+              <Heart className="w-12 h-12 text-destructive fill-red-500 drop-shadow-lg" />
             </motion.div>
           ))}
         </AnimatePresence>
@@ -532,15 +532,15 @@ export default function SlideshowMode({
               transition={{ delay: 0.5, type: 'spring', bounce: 0.4 }}
               className="absolute bottom-6 left-6 z-30 max-w-xs"
             >
-              <div className="bg-white rounded-2xl p-4 shadow-2xl relative">
-                <div className="absolute -bottom-2 left-6 w-4 h-4 bg-white transform rotate-45" />
+              <div className="bg-card rounded-2xl p-4 shadow-2xl relative">
+                <div className="absolute -bottom-2 left-6 w-4 h-4 bg-card transform rotate-45" />
                 <div className="flex items-start gap-2">
                   <MessageCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-semibold text-gray-800">
+                    <p className="text-xs font-semibold text-foreground">
                       {(currentPhoto as any)?.guestbookEntry?.authorName || 'Gast'}
                     </p>
-                    <p className="text-sm text-gray-600 line-clamp-3">
+                    <p className="text-sm text-muted-foreground line-clamp-3">
                       {(currentPhoto as any)?.guestbookEntry?.message}
                     </p>
                   </div>
@@ -560,15 +560,15 @@ export default function SlideshowMode({
               transition={{ delay: 0.5, type: 'spring', bounce: 0.4 }}
               className="absolute bottom-6 left-6 z-30 max-w-sm"
             >
-              <div className="bg-white rounded-2xl p-3 shadow-2xl relative">
-                <div className="absolute -bottom-2 left-6 w-4 h-4 bg-white transform rotate-45" />
+              <div className="bg-card rounded-2xl p-3 shadow-2xl relative">
+                <div className="absolute -bottom-2 left-6 w-4 h-4 bg-card transform rotate-45" />
                 <div className="space-y-2">
                   {currentComments.map((comment, idx) => (
                     <div key={comment.id || idx} className="flex items-start gap-2">
                       <MessageCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-gray-700">
-                        <span className="font-semibold text-gray-800">{comment.authorName}</span>{' '}
-                        <span className="text-gray-600">{comment.comment}</span>
+                      <p className="text-sm text-foreground/80">
+                        <span className="font-semibold text-foreground">{comment.authorName}</span>{' '}
+                        <span className="text-muted-foreground">{comment.comment}</span>
                       </p>
                     </div>
                   ))}
@@ -605,25 +605,25 @@ export default function SlideshowMode({
         <motion.div
           animate={{ y: [0, -5, 0] }}
           transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-          className="bg-white rounded-2xl p-4 shadow-2xl text-center"
+          className="bg-card rounded-2xl p-4 shadow-2xl text-center"
         >
-          <p className="text-sm font-bold text-gray-800 mb-3">📸 Mach mit!</p>
+          <p className="text-sm font-bold text-foreground mb-3">📸 Mach mit!</p>
           {qrDataUrl && (
             <img src={qrDataUrl} alt="QR Code" className="w-28 h-28 rounded-lg mx-auto" />
           )}
-          <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-border/50">
             <img 
               src="/icon-192.svg" 
               alt="Gästefotos" 
               className="w-6 h-6"
             />
-            <span className="text-sm font-semibold text-gray-700">gästefotos</span>
+            <span className="text-sm font-semibold text-foreground/80">gästefotos</span>
           </div>
         </motion.div>
       </motion.div>
 
       {/* Progress Bar */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-white/20 z-30">
+      <div className="absolute top-0 left-0 right-0 h-1 bg-card/20 z-30">
         <motion.div
           className="h-full bg-gradient-to-r from-primary via-purple-500 to-pink-500"
           initial={{ width: 0 }}
@@ -645,7 +645,7 @@ export default function SlideshowMode({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-white hover:bg-white/10"
+            className="text-white hover:bg-card/10"
           >
             <X className="h-6 w-6" />
           </Button>
@@ -665,7 +665,7 @@ export default function SlideshowMode({
               variant="ghost"
               size="sm"
               onClick={goToPrevious}
-              className="text-white hover:bg-white/10"
+              className="text-white hover:bg-card/10"
             >
               <SkipBack className="h-6 w-6" />
             </Button>
@@ -674,7 +674,7 @@ export default function SlideshowMode({
               variant="ghost"
               size="lg"
               onClick={() => setIsPlaying(!isPlaying)}
-              className="text-white hover:bg-white/10 h-14 w-14 rounded-full"
+              className="text-white hover:bg-card/10 h-14 w-14 rounded-full"
             >
               {isPlaying ? (
                 <Pause className="h-8 w-8" />
@@ -687,7 +687,7 @@ export default function SlideshowMode({
               variant="ghost"
               size="sm"
               onClick={goToNext}
-              className="text-white hover:bg-white/10"
+              className="text-white hover:bg-card/10"
             >
               <SkipForward className="h-6 w-6" />
             </Button>

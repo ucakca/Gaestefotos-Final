@@ -147,7 +147,7 @@ export default function ShareSection({ eventId, eventSlug, onQrCode }: ShareSect
               </div>
             </div>
           )}
-          {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+          {error && <p className="text-xs text-destructive mt-2">{error}</p>}
         </div>
 
         {/* QR Code Button */}

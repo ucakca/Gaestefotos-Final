@@ -63,7 +63,7 @@ export default function MosaicCalculator({ onSelectPreset, className = '' }: Mos
   }, [guestCount, eventHours, uploadRate]);
 
   return (
-    <div className={`bg-white rounded-xl border p-6 ${className}`}>
+    <div className={`bg-card rounded-xl border p-6 ${className}`}>
       <h3 className="font-semibold mb-4 flex items-center gap-2">
         <Calculator className="w-5 h-5 text-purple-500" />
         Mosaik-Rechner
@@ -72,8 +72,8 @@ export default function MosaicCalculator({ onSelectPreset, className = '' }: Mos
       {/* Inputs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div>
-          <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
-            <Users className="w-4 h-4 text-gray-400" />
+          <label className="flex items-center gap-1.5 text-sm font-medium text-foreground/80 mb-1">
+            <Users className="w-4 h-4 text-muted-foreground/70" />
             Gästeanzahl
           </label>
           <input
@@ -86,8 +86,8 @@ export default function MosaicCalculator({ onSelectPreset, className = '' }: Mos
           />
         </div>
         <div>
-          <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
-            <Clock className="w-4 h-4 text-gray-400" />
+          <label className="flex items-center gap-1.5 text-sm font-medium text-foreground/80 mb-1">
+            <Clock className="w-4 h-4 text-muted-foreground/70" />
             Event-Dauer (Std.)
           </label>
           <input
@@ -100,8 +100,8 @@ export default function MosaicCalculator({ onSelectPreset, className = '' }: Mos
           />
         </div>
         <div>
-          <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
-            <Zap className="w-4 h-4 text-gray-400" />
+          <label className="flex items-center gap-1.5 text-sm font-medium text-foreground/80 mb-1">
+            <Zap className="w-4 h-4 text-muted-foreground/70" />
             Upload-Rate ({uploadRate}%)
           </label>
           <input
@@ -113,7 +113,7 @@ export default function MosaicCalculator({ onSelectPreset, className = '' }: Mos
             step={5}
             className="w-full mt-1"
           />
-          <div className="flex justify-between text-xs text-gray-400">
+          <div className="flex justify-between text-xs text-muted-foreground/70">
             <span>konservativ</span>
             <span>optimistisch</span>
           </div>
@@ -123,12 +123,12 @@ export default function MosaicCalculator({ onSelectPreset, className = '' }: Mos
       {/* Results */}
       <div className="bg-purple-50 rounded-xl p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Erwartete Fotos</span>
+          <span className="text-sm text-muted-foreground">Erwartete Fotos</span>
           <span className="font-bold text-purple-700">{result.expectedPhotos}</span>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Empfohlenes Board</span>
+          <span className="text-sm text-muted-foreground">Empfohlenes Board</span>
           <button
             onClick={() => onSelectPreset?.(result.recommended.w, result.recommended.h)}
             className="font-bold text-purple-700 hover:underline flex items-center gap-1"
@@ -139,24 +139,24 @@ export default function MosaicCalculator({ onSelectPreset, className = '' }: Mos
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Echte Fotos</span>
+          <span className="text-sm text-muted-foreground">Echte Fotos</span>
           <span className="font-medium">{result.realPhotoPercent}%</span>
         </div>
 
         {result.needsAutoFill && (
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Auto-Fill nötig</span>
+            <span className="text-sm text-muted-foreground">Auto-Fill nötig</span>
             <span className="font-medium text-amber-600">{result.autoFillCount} Tiles ({result.autoFillPercent}%)</span>
           </div>
         )}
 
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Tiles/Minute</span>
+          <span className="text-sm text-muted-foreground">Tiles/Minute</span>
           <span className="font-medium">{result.tilesPerMinute}</span>
         </div>
 
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Geschätzte Fertigstellung</span>
+          <span className="text-sm text-muted-foreground">Geschätzte Fertigstellung</span>
           <span className="font-medium">~{result.estimatedHours} Stunden</span>
         </div>
 
@@ -164,7 +164,7 @@ export default function MosaicCalculator({ onSelectPreset, className = '' }: Mos
         <div className="pt-2 border-t border-purple-200">
           <div className="flex items-start gap-2 text-sm">
             <Info className="w-4 h-4 text-purple-500 mt-0.5 shrink-0" />
-            <span className="text-gray-600">
+            <span className="text-muted-foreground">
               {result.realPhotoPercent >= 80
                 ? 'Das Board wird großteils mit echten Fotos gefüllt. Auto-Fill empfohlen für letzte Lücken.'
                 : result.realPhotoPercent >= 50

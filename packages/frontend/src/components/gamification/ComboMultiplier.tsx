@@ -70,7 +70,7 @@ export default function ComboMultiplier({
           {/* Freeze Frame Effect */}
           {showFreeze && combo >= 5 && (
             <motion.div
-              className="absolute inset-0 bg-white/20 rounded-2xl blur-xl"
+              className="absolute inset-0 bg-card/20 rounded-2xl blur-xl"
               initial={{ scale: 0 }}
               animate={{ scale: 2, opacity: 0 }}
               transition={{ duration: 0.5 }}
@@ -140,9 +140,9 @@ export default function ComboMultiplier({
             </div>
 
             {/* Progress Bar */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30 rounded-b-2xl overflow-hidden">
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-card/30 rounded-b-2xl overflow-hidden">
               <motion.div
-                className="h-full bg-white"
+                className="h-full bg-card"
                 initial={{ width: '100%' }}
                 animate={{ width: '0%' }}
                 transition={{ duration: timeout / 1000, ease: 'linear' }}

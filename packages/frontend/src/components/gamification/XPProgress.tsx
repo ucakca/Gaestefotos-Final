@@ -71,7 +71,7 @@ export default function XPProgress({
               initial={{ opacity: 0, y: 20, scale: 0.5 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20 }}
-              className="flex items-center gap-1 text-yellow-400 font-bold"
+              className="flex items-center gap-1 text-warning font-bold"
             >
               <ChevronUp className="w-5 h-5" />
               <span>LEVEL UP!</span>
@@ -110,7 +110,7 @@ export default function XPProgress({
             {[...Array(3)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute top-0 bottom-0 w-2 bg-white/50 blur-sm"
+                className="absolute top-0 bottom-0 w-2 bg-card/50 blur-sm"
                 animate={{
                   x: ['0%', '1000%'],
                 }}
@@ -126,7 +126,7 @@ export default function XPProgress({
 
           {/* Glowing tip */}
           <motion.div
-            className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-8 bg-white rounded-full blur-sm"
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-8 bg-card rounded-full blur-sm"
             animate={{
               opacity: [0.5, 1, 0.5],
               scale: [1, 1.2, 1],
@@ -143,7 +143,7 @@ export default function XPProgress({
           {particles.map((particle) => (
             <motion.div
               key={particle.id}
-              className="absolute bottom-full w-2 h-2 rounded-full bg-yellow-400"
+              className="absolute bottom-full w-2 h-2 rounded-full bg-warning/80"
               style={{ left: `${particle.x}%` }}
               initial={{ y: 0, opacity: 1, scale: 1 }}
               animate={{ 
@@ -184,7 +184,7 @@ export default function XPProgress({
           repeatDelay: 2,
         }}
       >
-        <Zap className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+        <Zap className="w-5 h-5 text-warning fill-yellow-400" />
       </motion.div>
     </div>
   );

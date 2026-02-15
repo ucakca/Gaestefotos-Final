@@ -48,7 +48,7 @@ export default function DateRangeFilter({ onApply, onClear }: DateRangeFilterPro
         <Calendar className="w-4 h-4" />
         Datumsfilter
         {hasActiveFilter && (
-          <span className="ml-1 px-2 py-0.5 bg-white/20 rounded-full text-xs">
+          <span className="ml-1 px-2 py-0.5 bg-card/20 rounded-full text-xs">
             aktiv
           </span>
         )}

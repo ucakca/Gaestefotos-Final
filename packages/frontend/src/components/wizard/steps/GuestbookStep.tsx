@@ -35,7 +35,7 @@ export default function GuestbookStep({
       </div>
 
       <div className="space-y-6">
-        <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
+        <div className="flex items-center space-x-3 p-4 bg-muted/50 rounded-lg">
           <Checkbox checked={enabled} onCheckedChange={(checked) => onEnabledChange(!!checked)} />
           <label className="font-medium cursor-pointer" onClick={() => onEnabledChange(!enabled)}>
             Gästebuch aktivieren
@@ -59,12 +59,12 @@ export default function GuestbookStep({
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+              <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
                 <Checkbox checked={true} disabled />
                 <span className="flex-1">Textnachrichten erlauben</span>
               </div>
               <div className="space-y-2">
-                <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
                   <Checkbox
                     checked={allowVoiceMessages}
                     onCheckedChange={(checked) => onAllowVoiceMessagesChange(!!checked)}

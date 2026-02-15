@@ -34,8 +34,8 @@ export function StepCondition({ node, onComplete }: StepRendererProps) {
             onClick={() => onComplete(output.id, { condition_choice: output.id })}
             className={`w-full py-4 px-5 rounded-xl font-medium transition-colors border-2 ${
               output.type === 'default'
-                ? 'bg-green-50 text-green-700 border-green-200 hover:border-green-400'
-                : 'bg-red-50 text-red-700 border-red-200 hover:border-red-400'
+                ? 'bg-success/10 text-success border-success/30 hover:border-success/60'
+                : 'bg-destructive/10 text-destructive border-destructive/30 hover:border-destructive/50'
             }`}
           >
             {output.label}

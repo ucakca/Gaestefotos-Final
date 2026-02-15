@@ -129,14 +129,14 @@ export default function HighlightReelGenerator({ eventId, eventSlug }: Highlight
 
   const getProgressColor = (status: string) => {
     switch (status) {
-      case 'complete': return 'bg-green-500';
-      case 'error': return 'bg-red-500';
+      case 'complete': return 'bg-success/100';
+      case 'error': return 'bg-destructive/100';
       default: return 'bg-amber-500';
     }
   };
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
+    <div className="rounded-2xl border border-stone-200 bg-card shadow-sm overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-stone-100 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -274,7 +274,7 @@ export default function HighlightReelGenerator({ eventId, eventSlug }: Highlight
                   </a>
                   <button
                     onClick={() => handleDelete(url)}
-                    className="p-2 rounded-lg hover:bg-red-100 text-stone-500 hover:text-red-600"
+                    className="p-2 rounded-lg hover:bg-destructive/15 text-stone-500 hover:text-destructive"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

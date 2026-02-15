@@ -49,14 +49,14 @@ export default function BulkActionsToolbar({
           </span>
         </div>
 
-        <div className="w-px h-6 bg-white/20" />
+        <div className="w-px h-6 bg-card/20" />
 
         {/* Actions */}
         <div className="flex items-center gap-2">
           {onMarkConfirmed && (
             <motion.button
               onClick={onMarkConfirmed}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              className="p-2 rounded-lg hover:bg-card/10 transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               title="Als bestätigt markieren"
@@ -68,7 +68,7 @@ export default function BulkActionsToolbar({
           {onMarkDeclined && (
             <motion.button
               onClick={onMarkDeclined}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              className="p-2 rounded-lg hover:bg-card/10 transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               title="Als abgesagt markieren"
@@ -80,7 +80,7 @@ export default function BulkActionsToolbar({
           {onSendEmail && (
             <motion.button
               onClick={onSendEmail}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              className="p-2 rounded-lg hover:bg-card/10 transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               title="E-Mail senden"
@@ -92,7 +92,7 @@ export default function BulkActionsToolbar({
           {onExport && (
             <motion.button
               onClick={onExport}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              className="p-2 rounded-lg hover:bg-card/10 transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               title="Exportieren"
@@ -104,7 +104,7 @@ export default function BulkActionsToolbar({
           {onDelete && (
             <motion.button
               onClick={onDelete}
-              className="p-2 rounded-lg hover:bg-red-500 transition-colors"
+              className="p-2 rounded-lg hover:bg-destructive/100 transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               title="Löschen"
@@ -114,12 +114,12 @@ export default function BulkActionsToolbar({
           )}
         </div>
 
-        <div className="w-px h-6 bg-white/20" />
+        <div className="w-px h-6 bg-card/20" />
 
         {/* Clear Button */}
         <motion.button
           onClick={onClear}
-          className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+          className="p-2 rounded-lg hover:bg-card/10 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           title="Auswahl aufheben"

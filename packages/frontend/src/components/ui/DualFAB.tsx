@@ -35,7 +35,7 @@ export function DualFAB({
         className={cn(
           'relative flex items-stretch',
           'rounded-2xl overflow-hidden',
-          'bg-gray-900/90 backdrop-blur-xl',
+          'bg-foreground/90 backdrop-blur-xl',
           'border border-white/10',
         )}
         style={{
@@ -49,7 +49,7 @@ export function DualFAB({
           className={cn(
             'flex items-center justify-center',
             'w-14 h-14',
-            'hover:bg-white/10 active:bg-white/5',
+            'hover:bg-card/10 active:bg-card/5',
             'transition-colors duration-150',
           )}
           title="Foto hochladen"
@@ -71,7 +71,7 @@ export function DualFAB({
           className={cn(
             'flex items-center justify-center',
             'w-14 h-14',
-            'hover:bg-white/10 active:bg-white/5',
+            'hover:bg-card/10 active:bg-card/5',
             'transition-colors duration-150',
           )}
           title="KI Studio"

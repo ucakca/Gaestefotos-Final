@@ -50,8 +50,8 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
     <div className="space-y-6">
       {/* Mode Selection */}
       <div>
-        <h2 className="text-lg font-bold text-gray-900 mb-1">Modus wählen</h2>
-        <p className="text-sm text-gray-500 mb-4">Wie soll dein Mosaik angezeigt werden?</p>
+        <h2 className="text-lg font-bold text-foreground mb-1">Modus wählen</h2>
+        <p className="text-sm text-muted-foreground mb-4">Wie soll dein Mosaik angezeigt werden?</p>
 
         <div className="grid grid-cols-2 gap-3">
           {/* Digital */}
@@ -63,21 +63,21 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
               state.mode === 'DIGITAL' && canMosaic
                 ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100'
                 : canMosaic
-                  ? 'border-gray-200 hover:border-purple-300 bg-white'
-                  : 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                  ? 'border-border hover:border-purple-300 bg-card'
+                  : 'border-border bg-muted/50 opacity-60 cursor-not-allowed'
             }`}
           >
             <div className="flex items-start gap-3">
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                state.mode === 'DIGITAL' && canMosaic ? 'bg-purple-100' : 'bg-gray-100'
+                state.mode === 'DIGITAL' && canMosaic ? 'bg-purple-100' : 'bg-muted'
               }`}>
                 <Monitor className={`w-5 h-5 ${
-                  state.mode === 'DIGITAL' && canMosaic ? 'text-purple-600' : 'text-gray-400'
+                  state.mode === 'DIGITAL' && canMosaic ? 'text-purple-600' : 'text-muted-foreground/70'
                 }`} />
               </div>
               <div className="min-w-0">
                 <div className="font-semibold text-sm sm:text-base">Digital</div>
-                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                   Live auf Screen oder Beamer
                 </p>
               </div>
@@ -87,7 +87,7 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
                 <Check className="w-2.5 h-2.5" /> In Print enthalten
               </span>
             ) : canMosaic ? (
-              <span className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+              <span className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-success/15 text-success font-medium">
                 Gebucht
               </span>
             ) : (
@@ -106,27 +106,27 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
               state.mode === 'PRINT' && canPrint
                 ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100'
                 : canPrint
-                  ? 'border-gray-200 hover:border-purple-300 bg-white'
-                  : 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                  ? 'border-border hover:border-purple-300 bg-card'
+                  : 'border-border bg-muted/50 opacity-60 cursor-not-allowed'
             }`}
           >
             <div className="flex items-start gap-3">
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                state.mode === 'PRINT' && canPrint ? 'bg-purple-100' : 'bg-gray-100'
+                state.mode === 'PRINT' && canPrint ? 'bg-purple-100' : 'bg-muted'
               }`}>
                 <Printer className={`w-5 h-5 ${
-                  state.mode === 'PRINT' && canPrint ? 'text-purple-600' : 'text-gray-400'
+                  state.mode === 'PRINT' && canPrint ? 'text-purple-600' : 'text-muted-foreground/70'
                 }`} />
               </div>
               <div className="min-w-0">
                 <div className="font-semibold text-sm sm:text-base">Print + Digital</div>
-                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                   Sticker drucken + Live-Display
                 </p>
               </div>
             </div>
             {canPrint ? (
-              <span className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+              <span className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5 rounded-full bg-success/15 text-success font-medium">
                 Gebucht
               </span>
             ) : (
@@ -177,8 +177,8 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
 
         return (
           <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Grid-Größe</h2>
-            <p className="text-sm text-gray-500 mb-4">
+            <h2 className="text-lg font-bold text-foreground mb-1">Grid-Größe</h2>
+            <p className="text-sm text-muted-foreground mb-4">
               {isDemo ? `Demo: Maximal ${demoMaxGrid}×${demoMaxGrid} Grid` : 'Wie viele Tiles soll das Mosaik haben?'}
             </p>
 
@@ -190,10 +190,10 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
                   <span className="font-semibold text-sm">Demo</span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">FREE</span>
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-muted-foreground">
                   {demoMaxGrid}×{demoMaxGrid} = {demoMaxGrid * demoMaxGrid} Tiles
                 </div>
-                <div className="text-[10px] text-gray-400 mt-0.5">
+                <div className="text-[10px] text-muted-foreground/70 mt-0.5">
                   ~{demoMaxGrid * demoMaxGrid} Gäste • Wasserzeichen
                 </div>
               </div>
@@ -207,19 +207,19 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
                     className={`p-3 sm:p-4 rounded-xl border-2 text-left transition-all ${
                       isPresetSelected(preset.w, preset.h)
                         ? 'border-purple-500 bg-purple-50 shadow-sm'
-                        : 'border-gray-200 hover:border-purple-300 bg-white'
+                        : 'border-border hover:border-purple-300 bg-card'
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <LayoutGrid className={`w-4 h-4 ${
-                        isPresetSelected(preset.w, preset.h) ? 'text-purple-500' : 'text-gray-400'
+                        isPresetSelected(preset.w, preset.h) ? 'text-purple-500' : 'text-muted-foreground/70'
                       }`} />
                       <span className="font-semibold text-sm">{preset.label}</span>
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       {preset.w}×{preset.h} = {preset.tiles} Tiles
                     </div>
-                    <div className="text-[10px] text-gray-400 mt-0.5">
+                    <div className="text-[10px] text-muted-foreground/70 mt-0.5">
                       ~{preset.guests} Gäste
                     </div>
                   </button>
@@ -240,32 +240,32 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
                 </button>
 
                 {showCustomGrid && (
-                  <div className="mt-3 p-4 bg-gray-50 rounded-xl border space-y-3">
+                  <div className="mt-3 p-4 bg-muted/50 rounded-xl border space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs font-medium text-gray-600 mb-1 block">Spalten</label>
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Spalten</label>
                         <input
                           type="number"
                           value={state.gridWidth}
                           onChange={(e) => onChange({ gridWidth: Math.max(4, Math.min(maxGrid, Number(e.target.value))) })}
                           min={4}
                           max={maxGrid}
-                          className="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                          className="w-full px-3 py-2 border rounded-lg text-sm bg-card"
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-gray-600 mb-1 block">Reihen</label>
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Reihen</label>
                         <input
                           type="number"
                           value={state.gridHeight}
                           onChange={(e) => onChange({ gridHeight: Math.max(4, Math.min(maxGrid, Number(e.target.value))) })}
                           min={4}
                           max={maxGrid}
-                          className="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                          className="w-full px-3 py-2 border rounded-lg text-sm bg-card"
                         />
                       </div>
                     </div>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-muted-foreground/70">
                       = {state.gridWidth * state.gridHeight} Tiles
                     </p>
                   </div>
@@ -281,8 +281,8 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
         <div className="space-y-5">
           {/* Board Size */}
           <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Board-Größe</h2>
-            <p className="text-sm text-gray-500 mb-4">Maße der physischen Mosaic-Wand</p>
+            <h2 className="text-lg font-bold text-foreground mb-1">Board-Größe</h2>
+            <p className="text-sm text-muted-foreground mb-4">Maße der physischen Mosaic-Wand</p>
 
             <div className="grid grid-cols-2 gap-2.5">
               {PRINT_BOARD_PRESETS.map((preset) => (
@@ -293,7 +293,7 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
                   className={`p-3 rounded-xl border-2 text-left transition-all ${
                     state.boardWidthMm === preset.wmm && state.boardHeightMm === preset.hmm
                       ? 'border-purple-500 bg-purple-50'
-                      : 'border-gray-200 hover:border-purple-300 bg-white'
+                      : 'border-border hover:border-purple-300 bg-card'
                   }`}
                 >
                   <span className="font-semibold text-sm">{preset.label}</span>
@@ -311,9 +311,9 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
             </button>
 
             {showPrintDetails && (
-              <div className="mt-3 p-4 bg-gray-50 rounded-xl border grid grid-cols-2 gap-3">
+              <div className="mt-3 p-4 bg-muted/50 rounded-xl border grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1 block">Breite (mm)</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Breite (mm)</label>
                   <input
                     type="number"
                     value={state.boardWidthMm || ''}
@@ -321,11 +321,11 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
                       const v = Number(e.target.value);
                       if (v > 0) calcPrintGrid(v, state.boardHeightMm || 600, state.tileSizeMm);
                     }}
-                    className="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                    className="w-full px-3 py-2 border rounded-lg text-sm bg-card"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1 block">Höhe (mm)</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Höhe (mm)</label>
                   <input
                     type="number"
                     value={state.boardHeightMm || ''}
@@ -333,7 +333,7 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
                       const v = Number(e.target.value);
                       if (v > 0) calcPrintGrid(state.boardWidthMm || 800, v, state.tileSizeMm);
                     }}
-                    className="w-full px-3 py-2 border rounded-lg text-sm bg-white"
+                    className="w-full px-3 py-2 border rounded-lg text-sm bg-card"
                   />
                 </div>
               </div>
@@ -342,8 +342,8 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
 
           {/* Tile Size */}
           <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Sticker-Größe</h2>
-            <p className="text-sm text-gray-500 mb-4">Abhängig vom Drucker</p>
+            <h2 className="text-lg font-bold text-foreground mb-1">Sticker-Größe</h2>
+            <p className="text-sm text-muted-foreground mb-4">Abhängig vom Drucker</p>
 
             <div className="flex gap-2">
               {TILE_SIZE_PRESETS.map((preset) => (
@@ -360,7 +360,7 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
                   className={`flex-1 p-3 rounded-xl border-2 text-center transition-all ${
                     state.tileSizeMm === preset.mm
                       ? 'border-purple-500 bg-purple-50'
-                      : 'border-gray-200 hover:border-purple-300 bg-white'
+                      : 'border-border hover:border-purple-300 bg-card'
                   }`}
                 >
                   <span className="font-semibold text-sm">{preset.label}</span>
@@ -398,9 +398,9 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
       {/* Live Preview */}
       {(canMosaic || canPrint) && (
         <div className="mt-2">
-          <div className="text-xs font-medium text-gray-500 mb-2">Vorschau</div>
+          <div className="text-xs font-medium text-muted-foreground mb-2">Vorschau</div>
           <div
-            className="w-full bg-gray-900 rounded-xl overflow-hidden border border-gray-200"
+            className="w-full bg-foreground rounded-xl overflow-hidden border border-border"
             style={{ aspectRatio: `${state.gridWidth} / ${state.gridHeight}`, maxHeight: '200px' }}
           >
             <div
@@ -412,11 +412,11 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
               }}
             >
               {Array.from({ length: Math.min(state.gridWidth, 36) * Math.min(state.gridHeight, 36) }).map((_, i) => (
-                <div key={i} className="bg-gray-800 rounded-[1px]" />
+                <div key={i} className="bg-foreground/90 rounded-[1px]" />
               ))}
             </div>
           </div>
-          <div className="flex justify-between text-[10px] text-gray-400 mt-1.5">
+          <div className="flex justify-between text-[10px] text-muted-foreground/70 mt-1.5">
             <span>{state.gridWidth}×{state.gridHeight} Grid</span>
             <span>{state.gridWidth * state.gridHeight} Tiles</span>
           </div>

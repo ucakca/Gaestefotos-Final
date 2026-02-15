@@ -40,11 +40,11 @@ export default function TitleStep({
         <motion.h2
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-gray-900 mb-2"
+          className="text-2xl font-bold text-foreground mb-2"
         >
           Wie heißt dein Event? ✨
         </motion.h2>
-        <p className="text-gray-500">Gib deinem Event einen Namen</p>
+        <p className="text-muted-foreground">Gib deinem Event einen Namen</p>
       </div>
 
       {/* Title Input */}
@@ -59,14 +59,14 @@ export default function TitleStep({
             value={title}
             onChange={(e) => onTitleChange(e.target.value)}
             placeholder={placeholder}
-            className="w-full px-4 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors"
+            className="w-full px-4 py-4 text-lg border-2 border-border rounded-2xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors"
             autoFocus
           />
           {title.length > 0 && (
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground/70"
             >
               {title.length}/50
             </motion.span>
@@ -79,7 +79,7 @@ export default function TitleStep({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="text-center text-sm text-gray-400"
+        className="text-center text-sm text-muted-foreground/70"
       >
         Der Titel wird auf der Event-Seite angezeigt
       </motion.p>

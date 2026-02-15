@@ -58,7 +58,7 @@ export function CountdownTimer({ targetDate }: CountdownTimerProps) {
             { value: seconds, label: 'Sekunden' },
           ].map((unit, index) => (
             <div key={index} className="text-center">
-              <div className="bg-white rounded-xl shadow-sm p-4 md:p-6 mb-2">
+              <div className="bg-card rounded-xl shadow-sm p-4 md:p-6 mb-2">
                 <div className="text-3xl md:text-5xl font-bold text-rose font-mono">
                   {String(unit.value).padStart(2, '0')}
                 </div>

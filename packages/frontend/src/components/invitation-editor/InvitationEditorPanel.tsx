@@ -287,10 +287,10 @@ export function InvitationEditorPanel({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-muted/50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Design wird geladen...</p>
+          <p className="text-muted-foreground">Design wird geladen...</p>
         </div>
       </div>
     );
@@ -299,12 +299,12 @@ export function InvitationEditorPanel({
   return (
     <div className="flex h-screen">
       {/* Left Sidebar - Tools & Properties */}
-      <div className="w-80 bg-white border-r overflow-y-auto">
+      <div className="w-80 bg-card border-r overflow-y-auto">
         <div className="p-4 space-y-6">
           {/* Header */}
           <div>
             <h2 className="text-xl font-bold">Einladungs-Editor</h2>
-            <p className="text-sm text-gray-600">Event: {eventSlug}</p>
+            <p className="text-sm text-muted-foreground">Event: {eventSlug}</p>
           </div>
 
           {/* Size Selector */}
@@ -408,11 +408,11 @@ export function InvitationEditorPanel({
       </div>
 
       {/* Right Sidebar - Layers */}
-      <div className="w-64 bg-white border-l overflow-y-auto">
+      <div className="w-64 bg-card border-l overflow-y-auto">
         <div className="p-4 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-medium">Ebenen</h3>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted-foreground">
               {activeDesign.elements.length} Element{activeDesign.elements.length !== 1 ? 'e' : ''}
             </span>
           </div>

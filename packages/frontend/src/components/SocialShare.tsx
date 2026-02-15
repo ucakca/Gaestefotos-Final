@@ -22,13 +22,13 @@ export default function SocialShare({ url, title = 'Event Foto', imageUrl: _imag
   const encodedText = encodeURIComponent(`${title} — ${url}`);
 
   const channels = [
-    { key: 'whatsapp', label: 'WhatsApp', icon: MessageCircle, color: 'bg-green-500 hover:bg-green-600',
+    { key: 'whatsapp', label: 'WhatsApp', icon: MessageCircle, color: 'bg-success/100 hover:bg-success',
       action: () => window.open(`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`, '_blank') },
     { key: 'facebook', label: 'Facebook', icon: Facebook, color: 'bg-blue-600 hover:bg-blue-700',
       action: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, '_blank', 'width=600,height=400') },
     { key: 'sms', label: 'SMS', icon: Smartphone, color: 'bg-orange-500 hover:bg-orange-600',
       action: () => window.open(`sms:?body=${encodedText}`) },
-    { key: 'email', label: 'E-Mail', icon: Mail, color: 'bg-red-500 hover:bg-red-600',
+    { key: 'email', label: 'E-Mail', icon: Mail, color: 'bg-destructive/100 hover:bg-destructive',
       action: () => window.open(`mailto:?subject=${encodedTitle}&body=${encodedText}`) },
   ];
 
@@ -69,7 +69,7 @@ export default function SocialShare({ url, title = 'Event Foto', imageUrl: _imag
         <IconButton onClick={handleCopy} variant="ghost" size="sm"
           className="border border-border bg-card hover:bg-background"
           aria-label="Link kopieren" title="Link kopieren"
-          icon={copied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />} />
+          icon={copied ? <Check className="h-5 w-5 text-success" /> : <Copy className="h-5 w-5" />} />
       </div>
     );
   }

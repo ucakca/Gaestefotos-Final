@@ -48,7 +48,7 @@ const STEP_TYPES = [
   { value: 'CAPTURE', label: 'Foto aufnehmen', icon: Camera, color: 'text-emerald-500' },
   { value: 'PREVIEW', label: 'Vorschau', icon: ImageIcon, color: 'text-purple-500' },
   { value: 'FILTER', label: 'Filter/Effekt', icon: Sparkles, color: 'text-pink-500' },
-  { value: 'GRAFFITI', label: 'Digital Graffiti', icon: Edit3, color: 'text-red-500' },
+  { value: 'GRAFFITI', label: 'Digital Graffiti', icon: Edit3, color: 'text-destructive' },
   { value: 'SHARE', label: 'Teilen/Drucken', icon: Star, color: 'text-indigo-500' },
   { value: 'THANK_YOU', label: 'Danke-Screen', icon: CheckCircle2, color: 'text-teal-500' },
 ];
@@ -269,7 +269,7 @@ export default function WorkflowsAdminPage() {
                               <ArrowDown className="w-3.5 h-3.5" />
                             </button>
                             <button onClick={() => removeStep(idx)}
-                              className="p-1 rounded text-red-400 hover:text-red-600">
+                              className="p-1 rounded text-destructive/80 hover:text-destructive">
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
@@ -323,7 +323,7 @@ export default function WorkflowsAdminPage() {
                       <button onClick={() => startEdit(w)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground">
                         <Edit3 className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(w.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400">
+                      <button onClick={() => handleDelete(w.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive/80">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>

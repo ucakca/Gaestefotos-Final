@@ -93,7 +93,7 @@ export default function CoHostsStep({ emails, onEmailsChange, onNext, onSkip, on
             />
             <Button onClick={handleAddEmail}>Hinzufügen</Button>
           </div>
-          {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
+          {error && <p className="text-sm text-destructive mt-1">{error}</p>}
         </div>
 
         {emails.length > 0 && (
@@ -101,11 +101,11 @@ export default function CoHostsStep({ emails, onEmailsChange, onNext, onSkip, on
             <h3 className="text-sm font-medium">Eingeladene Co-Hosts ({emails.length})</h3>
             <div className="space-y-2">
               {emails.map((email, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <span className="text-sm">{email}</span>
                   <button
                     onClick={() => handleRemoveEmail(index)}
-                    className="text-red-600 hover:text-red-700"
+                    className="text-destructive hover:text-destructive"
                     aria-label="Entfernen"
                   >
                     <X className="w-4 h-4" />

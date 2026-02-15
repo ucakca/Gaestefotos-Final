@@ -104,7 +104,7 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           transition={{ duration: 0.2 }}
-          className="fixed bottom-24 right-4 w-[360px] max-w-[calc(100vw-2rem)] h-[500px] max-h-[70vh] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden z-50"
+          className="fixed bottom-24 right-4 w-[360px] max-w-[calc(100vw-2rem)] h-[500px] max-h-[70vh] bg-card rounded-2xl shadow-2xl border border-border flex flex-col overflow-hidden z-50"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white">
@@ -117,7 +117,7 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
             </div>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+              className="p-1 hover:bg-card/20 rounded-lg transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -134,7 +134,7 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
                   className={`max-w-[85%] px-4 py-2 rounded-2xl ${
                     message.role === 'user'
                       ? 'bg-amber-500 text-white rounded-br-md'
-                      : 'bg-gray-100 text-gray-800 rounded-bl-md'
+                      : 'bg-muted text-foreground rounded-bl-md'
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -144,10 +144,10 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
             
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 px-4 py-3 rounded-2xl rounded-bl-md">
+                <div className="bg-muted px-4 py-3 rounded-2xl rounded-bl-md">
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
-                    <span className="text-sm text-gray-500">Denke nach...</span>
+                    <span className="text-sm text-muted-foreground">Denke nach...</span>
                   </div>
                 </div>
               </div>
@@ -157,8 +157,8 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
           </div>
 
           {/* Input */}
-          <div className="p-3 border-t border-gray-100">
-            <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2">
+          <div className="p-3 border-t border-border/50">
+            <div className="flex items-center gap-2 bg-muted/50 rounded-xl px-3 py-2">
               <input
                 ref={inputRef}
                 type="text"
@@ -177,7 +177,7 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
                 <Send className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-xs text-gray-400 text-center mt-2">
+            <p className="text-xs text-muted-foreground/70 text-center mt-2">
               Antworten basieren auf FAQ & KI
             </p>
           </div>

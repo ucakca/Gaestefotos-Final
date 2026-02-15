@@ -43,17 +43,17 @@ export default function PhotoCard({
   const statusConfig = {
     approved: {
       icon: Check,
-      color: 'bg-green-500/10 text-green-600 border-green-500/20',
+      color: 'bg-success/100/10 text-success border-success/20',
       label: 'Freigegeben',
     },
     rejected: {
       icon: X,
-      color: 'bg-red-500/10 text-red-600 border-red-500/20',
+      color: 'bg-destructive/100/10 text-destructive border-destructive/20',
       label: 'Abgelehnt',
     },
     pending: {
       icon: Eye,
-      color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
+      color: 'bg-warning/10 text-warning border-yellow-500/20',
       label: 'Ausstehend',
     },
   };
@@ -78,7 +78,7 @@ export default function PhotoCard({
             className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${
               isSelected
                 ? 'bg-primary border-primary text-white'
-                : 'bg-white/90 border-border hover:border-primary'
+                : 'bg-card/90 border-border hover:border-primary'
             }`}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -147,7 +147,7 @@ export default function PhotoCard({
               {onApprove && (
                 <motion.button
                   onClick={onApprove}
-                  className="p-1.5 rounded-lg hover:bg-green-500/10 text-green-600 transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-success/100/10 text-success transition-colors"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   title="Freigeben"
@@ -158,7 +158,7 @@ export default function PhotoCard({
               {onReject && (
                 <motion.button
                   onClick={onReject}
-                  className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-600 transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-destructive/100/10 text-destructive transition-colors"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   title="Ablehnen"
@@ -196,7 +196,7 @@ export default function PhotoCard({
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={onDelete}
-                    className="cursor-pointer text-red-600 focus:text-red-600"
+                    className="cursor-pointer text-destructive focus:text-destructive"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
                     <span>Löschen</span>

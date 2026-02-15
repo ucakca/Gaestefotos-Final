@@ -141,7 +141,7 @@ export default function SpinnerFlow({ eventId, visitorId, visitorName, onClose }
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
-        <button onClick={onClose} className="p-2 rounded-full bg-white/10 text-white">
+        <button onClick={onClose} className="p-2 rounded-full bg-card/10 text-white">
           <X className="w-5 h-5" />
         </button>
         <h2 className="text-white font-bold flex items-center gap-2">
@@ -167,7 +167,7 @@ export default function SpinnerFlow({ eventId, visitorId, visitorName, onClose }
                     className={`p-3 rounded-xl text-center transition-all ${
                       speed === opt.key
                         ? 'bg-cyan-500 text-white ring-2 ring-cyan-300 ring-offset-2 ring-offset-gray-900'
-                        : 'bg-white/10 text-white/70 hover:bg-white/20'
+                        : 'bg-card/10 text-white/70 hover:bg-card/20'
                     }`}
                   >
                     <div className="text-2xl mb-1">{opt.icon}</div>
@@ -188,7 +188,7 @@ export default function SpinnerFlow({ eventId, visitorId, visitorName, onClose }
                     className={`p-3 rounded-xl text-center transition-all ${
                       effect === opt.key
                         ? 'bg-purple-500 text-white ring-2 ring-purple-300 ring-offset-2 ring-offset-gray-900'
-                        : 'bg-white/10 text-white/70 hover:bg-white/20'
+                        : 'bg-card/10 text-white/70 hover:bg-card/20'
                     }`}
                   >
                     <div className="text-2xl mb-1">{opt.icon}</div>
@@ -207,7 +207,7 @@ export default function SpinnerFlow({ eventId, visitorId, visitorName, onClose }
                           className={`p-3 rounded-xl text-center transition-all ${
                             effect === opt.key
                               ? 'bg-purple-500 text-white ring-2 ring-purple-300 ring-offset-2 ring-offset-gray-900'
-                              : 'bg-white/10 text-white/70 hover:bg-white/20'
+                              : 'bg-card/10 text-white/70 hover:bg-card/20'
                           }`}
                         >
                           <div className="text-2xl mb-1">{opt.icon}</div>
@@ -238,7 +238,7 @@ export default function SpinnerFlow({ eventId, visitorId, visitorName, onClose }
             </div>
 
             {error && (
-              <div className="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-sm text-center">{error}</div>
+              <div className="px-3 py-2 rounded-lg bg-destructive/100/20 text-destructive/60 text-sm text-center">{error}</div>
             )}
 
             <button
@@ -272,7 +272,7 @@ export default function SpinnerFlow({ eventId, visitorId, visitorName, onClose }
               transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
               className="w-32 h-32 rounded-full bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-red-500/50"
             >
-              <div className="w-6 h-6 rounded-full bg-white animate-pulse" />
+              <div className="w-6 h-6 rounded-full bg-card animate-pulse" />
             </motion.div>
             <h3 className="text-2xl font-bold text-white mb-2">Aufnahme läuft!</h3>
             <p className="text-white/50 text-sm">Bitte auf der Plattform stehen bleiben</p>
@@ -302,7 +302,7 @@ export default function SpinnerFlow({ eventId, visitorId, visitorName, onClose }
               />
             </div>
             <div className="flex items-center gap-3 justify-center">
-              <button onClick={handleDownload} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-sm font-semibold">
+              <button onClick={handleDownload} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-card text-black text-sm font-semibold">
                 <Download className="w-4 h-4" /> Speichern
               </button>
               <button onClick={handleShare} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-semibold">
@@ -310,7 +310,7 @@ export default function SpinnerFlow({ eventId, visitorId, visitorName, onClose }
               </button>
               <button
                 onClick={() => { setStep('config'); setSessionId(null); setVideoUrl(null); }}
-                className="p-2.5 rounded-full bg-white/10 text-white"
+                className="p-2.5 rounded-full bg-card/10 text-white"
               >
                 <RotateCw className="w-4 h-4" />
               </button>

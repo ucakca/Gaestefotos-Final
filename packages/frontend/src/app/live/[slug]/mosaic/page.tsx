@@ -223,9 +223,9 @@ export default function LiveMosaicPage() {
 
         {/* QR Code overlay - top right */}
         {wall.showQrOverlay && publicUrl && (
-          <div className="absolute top-4 right-4 z-50 bg-white p-2 rounded-lg shadow-2xl">
+          <div className="absolute top-4 right-4 z-50 bg-card p-2 rounded-lg shadow-2xl">
             <QRCode value={publicUrl} size={100} />
-            <p className="text-xs text-center mt-1 text-gray-600 font-medium">Foto hochladen</p>
+            <p className="text-xs text-center mt-1 text-muted-foreground font-medium">Foto hochladen</p>
           </div>
         )}
       </div>

@@ -55,7 +55,7 @@ export default function AccessStep({
               placeholder="Mindestens 4 Zeichen (leer lassen für offenen Zugang)"
               value={password}
               onChange={(e) => onPasswordChange(e.target.value)}
-              className={`pr-10 ${passwordError ? 'border-red-500' : ''}`}
+              className={`pr-10 ${passwordError ? 'border-destructive' : ''}`}
             />
             <button
               type="button"
@@ -67,7 +67,7 @@ export default function AccessStep({
             </button>
           </div>
           {passwordError && (
-            <p className="text-sm text-red-600 mt-1">{passwordError}</p>
+            <p className="text-sm text-destructive mt-1">{passwordError}</p>
           )}
           <p className="text-xs text-muted-foreground mt-1">💡 Teile das Passwort mit deinen Gästen (z.B. auf Einladungen oder QR-Code)</p>
           <div className="mt-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
@@ -85,16 +85,16 @@ export default function AccessStep({
                 onClick={() => onVisibilityModeChange(mode.id)}
                 className={`
                   w-full text-left p-4 rounded-lg border-2 transition-all
-                  ${visibilityMode === mode.id ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'}
+                  ${visibilityMode === mode.id ? 'border-primary bg-primary/5' : 'border-border hover:border-border'}
                 `}
               >
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-4 h-4 rounded-full border-2 ${
-                      visibilityMode === mode.id ? 'border-primary bg-primary' : 'border-gray-300'
+                      visibilityMode === mode.id ? 'border-primary bg-primary' : 'border-border'
                     }`}
                   >
-                    {visibilityMode === mode.id && <div className="w-2 h-2 bg-white rounded-full m-0.5" />}
+                    {visibilityMode === mode.id && <div className="w-2 h-2 bg-card rounded-full m-0.5" />}
                   </div>
                   <div className="flex-1">
                     <div className="font-medium">{mode.label}</div>

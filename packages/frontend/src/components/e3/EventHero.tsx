@@ -357,15 +357,15 @@ export default function EventHero({
         {(isStorageLocked || (uploadDisabled && uploadDisabledReason)) && (
           <div className="px-4 pb-3 space-y-2">
             {isStorageLocked && (
-              <div className="px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-yellow-800 text-sm">
+              <div className="px-3 py-2 bg-warning/10 border border-yellow-200 rounded-lg">
+                <p className="text-warning text-sm">
                   ⚠️ Speicherplatz voll - Upload aktuell nicht möglich
                 </p>
               </div>
             )}
             {uploadDisabled && uploadDisabledReason && (
-              <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-800 text-sm">
+              <div className="px-3 py-2 bg-destructive/10 border border-destructive/30 rounded-lg">
+                <p className="text-destructive text-sm">
                   {uploadDisabledReason}
                 </p>
               </div>

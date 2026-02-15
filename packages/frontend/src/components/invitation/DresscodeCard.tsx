@@ -19,7 +19,7 @@ export function DresscodeCard({ title, description, examples, theme = 'classic' 
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
     >
-      <div className="bg-white rounded-2xl shadow-sm border border-blush/20 p-8 md:p-10">
+      <div className="bg-card rounded-2xl shadow-sm border border-blush/20 p-8 md:p-10">
         <div className="flex items-center justify-center gap-3 mb-6">
           <Sparkles className="text-gold" size={28} />
           <h2 className="text-3xl font-serif text-foreground">{title}</h2>

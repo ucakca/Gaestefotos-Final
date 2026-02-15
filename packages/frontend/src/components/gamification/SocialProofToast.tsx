@@ -41,9 +41,9 @@ export default function SocialProofToast({
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'like': return <Heart className="w-4 h-4 text-red-500 fill-red-500" />;
+      case 'like': return <Heart className="w-4 h-4 text-destructive fill-red-500" />;
       case 'comment': return <MessageCircle className="w-4 h-4 text-blue-500 fill-blue-500" />;
-      case 'share': return <Share2 className="w-4 h-4 text-green-500" />;
+      case 'share': return <Share2 className="w-4 h-4 text-success" />;
       default: return <Heart className="w-4 h-4 text-primary" />;
     }
   };

@@ -34,8 +34,8 @@ export default function Step5Preview({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-bold text-gray-900 mb-1">Zusammenfassung</h2>
-        <p className="text-sm text-gray-500 mb-4">
+        <h2 className="text-lg font-bold text-foreground mb-1">Zusammenfassung</h2>
+        <p className="text-sm text-muted-foreground mb-4">
           Überprüfe deine Einstellungen und starte das Mosaik.
         </p>
       </div>
@@ -43,56 +43,56 @@ export default function Step5Preview({
       {/* Summary Cards */}
       <div className="space-y-3">
         {/* Mode + Grid */}
-        <div className="p-4 bg-white rounded-xl border">
+        <div className="p-4 bg-card rounded-xl border">
           <div className="flex items-center gap-2 mb-2">
             {state.mode === 'DIGITAL' ? (
               <Monitor className="w-4 h-4 text-purple-500" />
             ) : (
               <Printer className="w-4 h-4 text-purple-500" />
             )}
-            <span className="text-sm font-semibold text-gray-700">
+            <span className="text-sm font-semibold text-foreground/80">
               {state.mode === 'DIGITAL' ? 'Digital' : 'Print'} Mosaik
             </span>
           </div>
           <div className="grid grid-cols-3 gap-3 text-center">
             <div>
-              <div className="text-lg font-bold text-gray-900">{state.gridWidth}×{state.gridHeight}</div>
-              <div className="text-[10px] text-gray-400">Grid</div>
+              <div className="text-lg font-bold text-foreground">{state.gridWidth}×{state.gridHeight}</div>
+              <div className="text-[10px] text-muted-foreground/70">Grid</div>
             </div>
             <div>
-              <div className="text-lg font-bold text-gray-900">{totalCells}</div>
-              <div className="text-[10px] text-gray-400">Tiles</div>
+              <div className="text-lg font-bold text-foreground">{totalCells}</div>
+              <div className="text-[10px] text-muted-foreground/70">Tiles</div>
             </div>
             {state.mode === 'PRINT' && state.boardWidthMm && state.boardHeightMm && (
               <div>
-                <div className="text-lg font-bold text-gray-900">{state.boardWidthMm/10}×{state.boardHeightMm/10}cm</div>
-                <div className="text-[10px] text-gray-400">Board</div>
+                <div className="text-lg font-bold text-foreground">{state.boardWidthMm/10}×{state.boardHeightMm/10}cm</div>
+                <div className="text-[10px] text-muted-foreground/70">Board</div>
               </div>
             )}
             {state.mode === 'DIGITAL' && (
               <div>
-                <div className="text-lg font-bold text-gray-900">{state.gridWidth}:{state.gridHeight}</div>
-                <div className="text-[10px] text-gray-400">Ratio</div>
+                <div className="text-lg font-bold text-foreground">{state.gridWidth}:{state.gridHeight}</div>
+                <div className="text-[10px] text-muted-foreground/70">Ratio</div>
               </div>
             )}
           </div>
         </div>
 
         {/* Target Image */}
-        <div className="p-4 bg-white rounded-xl border">
+        <div className="p-4 bg-card rounded-xl border">
           <div className="flex items-center gap-2 mb-2">
             <Image className="w-4 h-4 text-purple-500" />
-            <span className="text-sm font-semibold text-gray-700">Zielbild</span>
+            <span className="text-sm font-semibold text-foreground/80">Zielbild</span>
           </div>
           {targetImageUrl ? (
             <div className="flex items-center gap-3">
               <div
-                className="w-16 h-16 rounded-lg overflow-hidden border bg-gray-100 shrink-0"
+                className="w-16 h-16 rounded-lg overflow-hidden border bg-muted shrink-0"
                 style={{ aspectRatio: `${state.gridWidth} / ${state.gridHeight}` }}
               >
                 <img src={targetImageUrl} alt="Zielbild" className="w-full h-full object-contain" />
               </div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-muted-foreground">
                 Overlay: <strong>{state.overlayIntensity}%</strong>
                 {state.scatterValue > 0 && (
                   <> · Scatter: <strong>{state.scatterValue}%</strong></>
@@ -100,15 +100,15 @@ export default function Step5Preview({
               </div>
             </div>
           ) : (
-            <p className="text-sm text-gray-400">Kein Zielbild — reines Foto-Raster</p>
+            <p className="text-sm text-muted-foreground/70">Kein Zielbild — reines Foto-Raster</p>
           )}
         </div>
 
         {/* Animations */}
-        <div className="p-4 bg-white rounded-xl border">
+        <div className="p-4 bg-card rounded-xl border">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-4 h-4 text-purple-500" />
-            <span className="text-sm font-semibold text-gray-700">Animationen</span>
+            <span className="text-sm font-semibold text-foreground/80">Animationen</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {selectedAnimNames.map((name) => (
@@ -117,7 +117,7 @@ export default function Step5Preview({
               </span>
             ))}
           </div>
-          <p className="text-xs text-gray-400 mt-1.5">
+          <p className="text-xs text-muted-foreground/70 mt-1.5">
             {selectedAnimNames.length === ANIMATIONS.length
               ? 'Zufällige Animation pro Tile'
               : selectedAnimNames.length === 1
@@ -127,20 +127,20 @@ export default function Step5Preview({
         </div>
 
         {/* Display Options */}
-        <div className="p-4 bg-white rounded-xl border">
+        <div className="p-4 bg-card rounded-xl border">
           <div className="flex items-center gap-2 mb-2">
             <Sliders className="w-4 h-4 text-purple-500" />
-            <span className="text-sm font-semibold text-gray-700">Optionen</span>
+            <span className="text-sm font-semibold text-foreground/80">Optionen</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${state.showTicker ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${state.showTicker ? 'bg-success/15 text-success' : 'bg-muted text-muted-foreground/70'}`}>
               Ticker {state.showTicker ? '✓' : '✗'}
             </span>
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${state.autoFillEnabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${state.autoFillEnabled ? 'bg-success/15 text-success' : 'bg-muted text-muted-foreground/70'}`}>
               Auto-Fill {state.autoFillEnabled ? `ab ${state.autoFillThreshold}%` : '✗'}
             </span>
             {state.mode === 'PRINT' && (
-              <span className="text-xs px-2 py-1 rounded-full font-medium bg-green-100 text-green-700">
+              <span className="text-xs px-2 py-1 rounded-full font-medium bg-success/15 text-success">
                 Sticker-Druck ✓
               </span>
             )}
@@ -152,10 +152,10 @@ export default function Step5Preview({
       {wallExists && tileCount > 0 && (
         <div>
           <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-500">Fortschritt</span>
+            <span className="text-muted-foreground">Fortschritt</span>
             <span className="font-medium">{progress}% ({tileCount}/{totalCells})</span>
           </div>
-          <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+          <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
               style={{ width: `${progress}%` }}
@@ -210,7 +210,7 @@ export default function Step5Preview({
             href={`/live/${eventSlug}/mosaic`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-3 bg-gray-100 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-3 bg-muted rounded-xl text-sm font-medium text-foreground/80 hover:bg-muted/80 transition-colors"
           >
             <Eye className="w-4 h-4" />
             Live-Display öffnen

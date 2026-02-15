@@ -128,8 +128,8 @@ export default function AdminCreateEventPage() {
           animate={{ opacity: 1, scale: 1 }}
           className="rounded-2xl bg-card border border-border shadow-lg p-8 text-center"
         >
-          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-            <Check className="w-8 h-8 text-green-600" />
+          <div className="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center mx-auto mb-4">
+            <Check className="w-8 h-8 text-success" />
           </div>
           <h2 className="text-xl font-bold text-foreground mb-2">Event erstellt!</h2>
           <p className="text-muted-foreground text-sm mb-4">
@@ -221,7 +221,7 @@ export default function AdminCreateEventPage() {
                       onClick={() => { setSelectedUser(u); setUserSearch(''); setUsers([]); }}
                       className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-muted/50 transition-colors text-left border-b border-border/50 last:border-0"
                     >
-                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-xs font-bold flex-shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-muted/80 flex items-center justify-center text-muted-foreground text-xs font-bold flex-shrink-0">
                         {(u.name || u.email)[0]?.toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -252,7 +252,7 @@ export default function AdminCreateEventPage() {
         <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">
-              Event-Titel <span className="text-red-400">*</span>
+              Event-Titel <span className="text-destructive/80">*</span>
             </label>
             <input
               value={title}
@@ -330,7 +330,7 @@ export default function AdminCreateEventPage() {
 
       {/* Error */}
       {error && (
-        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm mb-4">
+        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-destructive/10 text-destructive text-sm mb-4">
           <AlertTriangle className="w-4 h-4 flex-shrink-0" />
           {error}
         </div>

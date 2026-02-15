@@ -152,7 +152,7 @@ export default function CoHostsStep({
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="text-sm text-red-600"
+                  className="text-sm text-destructive"
                 >
                   {error}
                 </motion.p>
@@ -162,7 +162,7 @@ export default function CoHostsStep({
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="text-sm text-green-600 flex items-center gap-1"
+                  className="text-sm text-success flex items-center gap-1"
                 >
                   <Check className="w-4 h-4" /> {success}
                 </motion.p>
@@ -189,7 +189,7 @@ export default function CoHostsStep({
                 </div>
                 <div className="flex gap-2">
                   <Button onClick={handleCopyLink} variant="outline" size="sm" className="flex-1 gap-1">
-                    {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
                     {copied ? 'Kopiert!' : 'Kopieren'}
                   </Button>
                   {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (

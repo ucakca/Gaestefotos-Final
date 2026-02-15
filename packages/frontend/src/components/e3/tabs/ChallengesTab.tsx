@@ -28,7 +28,7 @@ export interface Challenge {
 }
 
 const TYPE_CONFIG: Record<string, { icon: any; gradient: string; badge: string; badgeColor: string }> = {
-  PHOTOBOMB: { icon: Bomb, gradient: 'from-red-500 to-pink-500', badge: 'Spiel', badgeColor: 'bg-red-100 text-red-700' },
+  PHOTOBOMB: { icon: Bomb, gradient: 'from-red-500 to-pink-500', badge: 'Spiel', badgeColor: 'bg-destructive/15 text-destructive' },
   COVER_SHOOT: { icon: BookOpen, gradient: 'from-emerald-500 to-teal-500', badge: 'Spiel', badgeColor: 'bg-emerald-100 text-emerald-700' },
   EMOJI_CHALLENGE: { icon: SmilePlus, gradient: 'from-amber-500 to-yellow-500', badge: 'Spiel', badgeColor: 'bg-amber-100 text-amber-700' },
   FILTER_ROULETTE: { icon: Sparkles, gradient: 'from-purple-500 to-violet-500', badge: 'Spiel', badgeColor: 'bg-purple-100 text-purple-700' },
@@ -106,7 +106,7 @@ export default function ChallengesTab({
 
             {challenge.isCompleted && (
               <div className="flex-shrink-0">
-                <CheckCircle className="w-6 h-6 text-green-500" />
+                <CheckCircle className="w-6 h-6 text-success" />
               </div>
             )}
           </div>

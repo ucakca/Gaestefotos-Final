@@ -60,7 +60,7 @@ interface SetupTabV2Props {
 
 const FEATURE_CARDS: { key: FeatureKey; icon: any; color: string; gradient: string }[] = [
   { key: 'videoUpload', icon: Video, color: 'text-purple-500', gradient: 'from-purple-50 to-purple-100' },
-  { key: 'guestbook', icon: BookOpen, color: 'text-green-500', gradient: 'from-green-50 to-green-100' },
+  { key: 'guestbook', icon: BookOpen, color: 'text-success', gradient: 'from-green-50 to-green-100' },
   { key: 'liveWall', icon: Monitor, color: 'text-blue-500', gradient: 'from-blue-50 to-blue-100' },
   { key: 'faceSearch', icon: ScanFace, color: 'text-cyan-500', gradient: 'from-cyan-50 to-cyan-100' },
   { key: 'boothGames', icon: Gamepad2, color: 'text-orange-500', gradient: 'from-orange-50 to-orange-100' },
@@ -68,7 +68,7 @@ const FEATURE_CARDS: { key: FeatureKey; icon: any; color: string; gradient: stri
   { key: 'mosaicWall', icon: Grid3X3, color: 'text-pink-500', gradient: 'from-pink-50 to-pink-100' },
   { key: 'coHosts', icon: UserPlus, color: 'text-teal-500', gradient: 'from-teal-50 to-teal-100' },
   { key: 'passwordProtect', icon: Shield, color: 'text-amber-500', gradient: 'from-amber-50 to-amber-100' },
-  { key: 'adFree', icon: Zap, color: 'text-yellow-500', gradient: 'from-yellow-50 to-yellow-100' },
+  { key: 'adFree', icon: Zap, color: 'text-warning', gradient: 'from-yellow-50 to-yellow-100' },
 ];
 
 export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2Props) {
@@ -197,11 +197,11 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                 }`}
               >
                 <div className="flex items-start justify-between mb-2">
-                  <div className={`p-1.5 rounded-lg ${enabled ? 'bg-white/80' : 'bg-card'}`}>
+                  <div className={`p-1.5 rounded-lg ${enabled ? 'bg-card/80' : 'bg-card'}`}>
                     <FIcon className={`w-4 h-4 ${enabled ? color : 'text-muted-foreground'}`} />
                   </div>
                   {enabled ? (
-                    <span className="flex items-center gap-1 text-[10px] font-medium text-green-600 bg-green-100 px-1.5 py-0.5 rounded-full">
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-success bg-success/15 px-1.5 py-0.5 rounded-full">
                       <Check className="w-3 h-3" /> Aktiv
                     </span>
                   ) : (
@@ -380,7 +380,7 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                       }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+                        className={`inline-block h-4 w-4 rounded-full bg-card transition-transform ${
                           featuresConfig[key] ? 'translate-x-6' : 'translate-x-1'
                         }`}
                       />
@@ -443,9 +443,9 @@ function SetupRow({
   const content = (
     <>
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        <Icon className={`w-5 h-5 flex-shrink-0 ${danger ? 'text-red-500' : 'text-muted-foreground'}`} />
+        <Icon className={`w-5 h-5 flex-shrink-0 ${danger ? 'text-destructive' : 'text-muted-foreground'}`} />
         <div className="flex-1 min-w-0">
-          <span className={`block ${danger ? 'text-red-600' : 'text-foreground'}`}>{label}</span>
+          <span className={`block ${danger ? 'text-destructive' : 'text-foreground'}`}>{label}</span>
           {value && (
             <span className="block text-xs text-muted-foreground truncate">{value}</span>
           )}

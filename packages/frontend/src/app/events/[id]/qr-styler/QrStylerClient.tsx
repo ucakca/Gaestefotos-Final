@@ -20,12 +20,12 @@ import dynamic from 'next/dynamic';
 
 const StyledQRCode = dynamic(() => import('@/components/qr-designer/StyledQRCode'), { 
   ssr: false,
-  loading: () => <div className="w-full h-full bg-gray-100 animate-pulse rounded" />
+  loading: () => <div className="w-full h-full bg-muted animate-pulse rounded" />
 });
 
 const SvgRenderer = dynamic(() => import('@/components/qr-designer/SvgRenderer'), {
   ssr: false,
-  loading: () => <div className="absolute inset-0 bg-gray-100 animate-pulse" />
+  loading: () => <div className="absolute inset-0 bg-muted animate-pulse" />
 });
 
 const ShareWizardModal = dynamic(() => import('@/components/qr-designer/ShareWizardModal'), {
@@ -794,7 +794,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <span className="text-sm text-gray-500">QR-Designer wird geladen...</span>
+            <span className="text-sm text-muted-foreground">QR-Designer wird geladen...</span>
           </div>
         </div>
       </AppLayout>
@@ -1273,7 +1273,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
             {/* Add padding-bottom on mobile for bottom tabs */}
             <div className="flex-1 flex items-center lg:items-start justify-center py-4 pb-20 lg:pb-4 lg:pt-8 px-4 lg:px-8 overflow-hidden min-h-[300px] lg:min-h-[500px]">
               <div
-                className="relative bg-white rounded-xl shadow-2xl transition-all"
+                className="relative bg-card rounded-xl shadow-2xl transition-all"
                 style={{ 
                   width: 'auto',
                   height: previewMode === 'mobile' ? '350px' : '500px',
@@ -1294,7 +1294,7 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
                 {mounted && qrOverlayStyle && publicUrl && (
                   <div
                     ref={qrContainerRef}
-                    className="absolute bg-white rounded-md flex items-center justify-center"
+                    className="absolute bg-card rounded-md flex items-center justify-center"
                     style={{
                       ...qrOverlayStyle,
                       padding: '2%',

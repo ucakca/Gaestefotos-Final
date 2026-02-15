@@ -131,10 +131,10 @@ export default function StyledQRCode({
   if (!isClient) {
     return (
       <div 
-        className={`flex items-center justify-center bg-gray-100 ${className}`}
+        className={`flex items-center justify-center bg-muted ${className}`}
         style={{ width: size, height: size }}
       >
-        <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-border border-t-gray-600 rounded-full animate-spin" />
       </div>
     );
   }

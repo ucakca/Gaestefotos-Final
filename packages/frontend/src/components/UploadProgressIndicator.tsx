@@ -60,7 +60,7 @@ export default function UploadProgressIndicator() {
               {isUploading ? (
                 <Loader2 className="w-5 h-5 text-primary animate-spin" />
               ) : (
-                <CheckCircle className="w-5 h-5 text-green-500" />
+                <CheckCircle className="w-5 h-5 text-success" />
               )}
               <span className="font-medium text-sm">
                 {isUploading 
@@ -99,7 +99,7 @@ export default function UploadProgressIndicator() {
           {/* Error Summary */}
           {errorCount > 0 && (
             <div className="px-3 pb-3">
-              <p className="text-xs text-red-500">
+              <p className="text-xs text-destructive">
                 {errorCount} Upload{errorCount !== 1 ? 's' : ''} fehlgeschlagen
               </p>
             </div>

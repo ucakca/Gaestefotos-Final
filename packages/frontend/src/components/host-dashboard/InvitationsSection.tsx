@@ -113,7 +113,7 @@ export default function InvitationsSection({
         </div>
 
         {error && (
-          <p className="text-xs text-red-500">{error}</p>
+          <p className="text-xs text-destructive">{error}</p>
         )}
 
         {/* Invitations List */}
@@ -143,8 +143,8 @@ export default function InvitationsSection({
                   {/* Status Icon */}
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                     invitation.isActive 
-                      ? 'bg-green-500/10 text-green-500' 
-                      : 'bg-yellow-500/10 text-yellow-500'
+                      ? 'bg-success/100/10 text-success' 
+                      : 'bg-warning/10 text-warning'
                   }`}>
                     {invitation.hasPassword ? (
                       <Lock className="w-4 h-4" />
@@ -173,7 +173,7 @@ export default function InvitationsSection({
                       className="p-2"
                     >
                       {copiedId === invitation.id ? (
-                        <Check className="w-4 h-4 text-green-500" />
+                        <Check className="w-4 h-4 text-success" />
                       ) : (
                         <Copy className="w-4 h-4" />
                       )}
@@ -195,7 +195,7 @@ export default function InvitationsSection({
                         {onDeleteInvitation && (
                           <DropdownMenuItem 
                             onClick={() => onDeleteInvitation(invitation.id)}
-                            className="text-red-500"
+                            className="text-destructive"
                           >
                             <Trash2 className="w-4 h-4 mr-2" />
                             Löschen

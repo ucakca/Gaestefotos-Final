@@ -205,7 +205,7 @@ export default function TimeTravelStack({
       </div>
 
       {/* Progress */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 h-1 bg-white/10 rounded-full overflow-hidden">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 h-1 bg-card/10 rounded-full overflow-hidden">
         <motion.div
           className="h-full bg-indigo-400"
           initial={{ width: '0%' }}

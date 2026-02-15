@@ -31,10 +31,10 @@ export function QRPreview({ config, galleryUrl, showSafeZone }: QRPreviewProps) 
   };
 
   return (
-    <div className="bg-gray-50 rounded-lg p-6 flex items-center justify-center">
+    <div className="bg-muted/50 rounded-lg p-6 flex items-center justify-center">
       <div
         ref={previewRef}
-        className={`relative bg-white p-8 flex flex-col items-center gap-4 ${getFrameClass()}`}
+        className={`relative bg-card p-8 flex flex-col items-center gap-4 ${getFrameClass()}`}
         style={{
           backgroundColor: config.colors.background,
           borderColor: config.colors.frame || config.colors.foreground,

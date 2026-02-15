@@ -66,7 +66,7 @@ export default function PhotoFilterBar({
                 <span>{filter.label}</span>
                 {count > 0 && (
                   <span className={`px-2 py-0.5 rounded-full text-xs ${
-                    isActive ? 'bg-white/20' : 'bg-primary/10 text-primary'
+                    isActive ? 'bg-card/20' : 'bg-primary/10 text-primary'
                   }`}>
                     {count}
                   </span>

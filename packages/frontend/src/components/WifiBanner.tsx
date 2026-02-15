@@ -116,7 +116,7 @@ export function WifiBanner({ eventId, onWifiAvailable }: WifiBannerProps) {
               </div>
               <button
                 onClick={handleDismiss}
-                className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-1 hover:bg-card/20 rounded-lg transition-colors"
                 aria-label="Schließen"
               >
                 <X className="w-4 h-4" />
@@ -128,11 +128,11 @@ export function WifiBanner({ eventId, onWifiAvailable }: WifiBannerProps) {
               <p className="text-xs opacity-80 mb-1">Netzwerk-Name</p>
               <button
                 onClick={() => handleCopy(wifi.name, 'name')}
-                className="w-full flex items-center justify-between bg-white/20 hover:bg-white/30 rounded-lg px-3 py-2 transition-colors"
+                className="w-full flex items-center justify-between bg-card/20 hover:bg-card/30 rounded-lg px-3 py-2 transition-colors"
               >
                 <span className="font-mono font-medium truncate">{wifi.name}</span>
                 {copied === 'name' ? (
-                  <Check className="w-4 h-4 text-green-300 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-success/70 flex-shrink-0" />
                 ) : (
                   <Copy className="w-4 h-4 opacity-70 flex-shrink-0" />
                 )}
@@ -145,11 +145,11 @@ export function WifiBanner({ eventId, onWifiAvailable }: WifiBannerProps) {
                 <p className="text-xs opacity-80 mb-1">Passwort</p>
                 <button
                   onClick={() => handleCopy(wifi.password!, 'password')}
-                  className="w-full flex items-center justify-between bg-white/20 hover:bg-white/30 rounded-lg px-3 py-2 transition-colors"
+                  className="w-full flex items-center justify-between bg-card/20 hover:bg-card/30 rounded-lg px-3 py-2 transition-colors"
                 >
                   <span className="font-mono font-medium truncate">{wifi.password}</span>
                   {copied === 'password' ? (
-                    <Check className="w-4 h-4 text-green-300 flex-shrink-0" />
+                    <Check className="w-4 h-4 text-success/70 flex-shrink-0" />
                   ) : (
                     <Copy className="w-4 h-4 opacity-70 flex-shrink-0" />
                   )}

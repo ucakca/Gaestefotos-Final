@@ -21,26 +21,26 @@ const STATUS_CONFIG = {
   ZUSAGE: {
     icon: Check,
     label: 'Zusage',
-    color: 'bg-green-500/10 text-green-600 border-green-500/20',
-    hoverColor: 'hover:bg-green-500/20',
+    color: 'bg-success/100/10 text-success border-success/20',
+    hoverColor: 'hover:bg-success/100/20',
   },
   ABSAGE: {
     icon: X,
     label: 'Absage',
-    color: 'bg-red-500/10 text-red-600 border-red-500/20',
-    hoverColor: 'hover:bg-red-500/20',
+    color: 'bg-destructive/100/10 text-destructive border-destructive/20',
+    hoverColor: 'hover:bg-destructive/100/20',
   },
   AUSSTEHEND: {
     icon: Clock,
     label: 'Ausstehend',
-    color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
-    hoverColor: 'hover:bg-yellow-500/20',
+    color: 'bg-warning/10 text-warning border-yellow-500/20',
+    hoverColor: 'hover:bg-warning/20',
   },
   UNBEKANNT: {
     icon: HelpCircle,
     label: 'Unbekannt',
-    color: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    hoverColor: 'hover:bg-gray-500/20',
+    color: 'bg-muted/500/10 text-muted-foreground border-border/20',
+    hoverColor: 'hover:bg-muted/500/20',
   },
 };
 

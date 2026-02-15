@@ -269,7 +269,7 @@ export default function AssetLibraryPage() {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {assets.map((asset) => {
-                const info = TYPE_LABELS[asset.type] || { label: asset.type, color: 'bg-gray-100 text-gray-600' };
+                const info = TYPE_LABELS[asset.type] || { label: asset.type, color: 'bg-muted text-muted-foreground' };
                 return (
                   <div key={asset.id} className="bg-card rounded-xl border border-border overflow-hidden group">
                     <div className="aspect-square bg-muted/50 flex items-center justify-center relative">
@@ -281,7 +281,7 @@ export default function AssetLibraryPage() {
                       />
                       <button
                         onClick={() => handleDelete(asset.id)}
-                        className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-2 right-2 p-1.5 rounded-lg bg-destructive/100/80 text-white opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

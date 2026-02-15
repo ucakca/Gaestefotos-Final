@@ -79,10 +79,10 @@ export default function EventCard({ event, index = 0, photoCount = 0, guestCount
   
   const statusConfig = {
     live: {
-      color: 'bg-green-500',
+      color: 'bg-success/100',
       label: 'Live',
-      textColor: 'text-green-700',
-      bgColor: 'bg-green-50',
+      textColor: 'text-success',
+      bgColor: 'bg-success/10',
     },
     archived: {
       color: 'bg-orange-500',
@@ -91,10 +91,10 @@ export default function EventCard({ event, index = 0, photoCount = 0, guestCount
       bgColor: 'bg-orange-50',
     },
     locked: {
-      color: 'bg-red-500',
+      color: 'bg-destructive/100',
       label: 'Gesperrt',
-      textColor: 'text-red-700',
-      bgColor: 'bg-red-50',
+      textColor: 'text-destructive',
+      bgColor: 'bg-destructive/10',
     },
   };
 
@@ -107,7 +107,7 @@ export default function EventCard({ event, index = 0, photoCount = 0, guestCount
       <Link
         href={`/events/${event.id}/dashboard`}
         prefetch={false}
-        className="group block bg-white border border-stone-200 rounded-2xl overflow-hidden hover:border-blue-300 hover:shadow-lg transition-all"
+        className="group block bg-card border border-stone-200 rounded-2xl overflow-hidden hover:border-blue-300 hover:shadow-lg transition-all"
       >
         {/* Cover Image */}
         <div className="relative h-32 bg-gradient-to-br from-stone-200 to-stone-100 overflow-hidden">
@@ -129,7 +129,7 @@ export default function EventCard({ event, index = 0, photoCount = 0, guestCount
                   {statusConfig[status].label}
                 </span>
               </div>
-              <span className="px-2 py-0.5 bg-white/90 backdrop-blur-sm text-[10px] font-medium text-stone-600 rounded-full">
+              <span className="px-2 py-0.5 bg-card/90 backdrop-blur-sm text-[10px] font-medium text-stone-600 rounded-full">
                 {packageType}
               </span>
             </div>
@@ -146,7 +146,7 @@ export default function EventCard({ event, index = 0, photoCount = 0, guestCount
           {/* Locked Overlay */}
           {status === 'locked' && (
             <div className="absolute inset-0 bg-stone-900/40 flex items-center justify-center">
-              <span className="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-full shadow-lg">
+              <span className="px-3 py-1.5 bg-destructive text-white text-xs font-medium rounded-full shadow-lg">
                 Galerie gesperrt
               </span>
             </div>
@@ -199,7 +199,7 @@ export default function EventCard({ event, index = 0, photoCount = 0, guestCount
           {(status === 'archived' || status === 'locked') && daysUntilDeletion !== null && (
             <div className={`mt-2 flex items-center gap-1.5 text-[11px] px-2 py-1 rounded-lg ${
               daysUntilDeletion <= 7 
-                ? 'bg-red-50 text-red-600' 
+                ? 'bg-destructive/10 text-destructive' 
                 : daysUntilDeletion <= 30 
                   ? 'bg-orange-50 text-orange-600' 
                   : 'bg-stone-50 text-stone-500'

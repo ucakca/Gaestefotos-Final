@@ -126,11 +126,11 @@ export default function BadgeUnlockAnimation({
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.8 }}
                 >
-                  <Sparkles className="w-4 h-4 text-yellow-400" />
+                  <Sparkles className="w-4 h-4 text-warning" />
                   <span className="text-sm uppercase tracking-widest text-white/60">
                     Erfolg freigeschaltet
                   </span>
-                  <Sparkles className="w-4 h-4 text-yellow-400" />
+                  <Sparkles className="w-4 h-4 text-warning" />
                 </motion.div>
 
                 <h2 className="text-2xl font-bold text-white mb-2">

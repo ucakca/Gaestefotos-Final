@@ -440,7 +440,7 @@ export default function MosaicGrid({
                 className="w-full h-full object-cover"
               />
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                <span className="text-yellow-300 text-lg font-bold">Hero Moment</span>
+                <span className="text-warning/70 text-lg font-bold">Hero Moment</span>
               </div>
             </motion.div>
           </motion.div>
@@ -457,7 +457,7 @@ export default function MosaicGrid({
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="text-6xl md:text-8xl font-black text-yellow-400 drop-shadow-2xl"
+              className="text-6xl md:text-8xl font-black text-warning drop-shadow-2xl"
               initial={{ scale: 0, rotate: -20 }}
               animate={{ scale: [0, 1.3, 1], rotate: [-20, 5, 0] }}
               exit={{ scale: 0, opacity: 0 }}
@@ -521,7 +521,7 @@ export default function MosaicGrid({
               />
               <button
                 onClick={() => setPreviewTile(null)}
-                className="absolute -top-4 -right-4 w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-xl hover:bg-gray-100 transition-colors text-xl font-bold leading-none"
+                className="absolute -top-4 -right-4 w-10 h-10 rounded-full bg-card text-black flex items-center justify-center shadow-xl hover:bg-muted transition-colors text-xl font-bold leading-none"
               >
                 &times;
               </button>

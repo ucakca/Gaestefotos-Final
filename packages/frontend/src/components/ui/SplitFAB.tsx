@@ -105,7 +105,7 @@ export function SplitFAB({
                     action.shadow
                   )}
                 >
-                  <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                  <span className="w-8 h-8 rounded-full bg-card/20 flex items-center justify-center">
                     {action.icon}
                   </span>
                   <span className="text-sm font-medium whitespace-nowrap">

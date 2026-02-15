@@ -107,9 +107,9 @@ export default function MosaicPrintUpload({ eventId, eventSlug }: MosaicPrintUpl
               </div>
               <div className="text-left flex-1">
                 <div className="font-semibold text-sm">Foto für Mosaic Wall</div>
-                <div className="text-xs text-gray-400">Hochladen & am Terminal drucken</div>
+                <div className="text-xs text-muted-foreground/70">Hochladen & am Terminal drucken</div>
               </div>
-              <Camera className="w-5 h-5 text-gray-400" />
+              <Camera className="w-5 h-5 text-muted-foreground/70" />
             </button>
           </motion.div>
         )}
@@ -121,13 +121,13 @@ export default function MosaicPrintUpload({ eventId, eventSlug }: MosaicPrintUpl
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="w-full px-4 py-4 bg-gray-800/50 border border-gray-700 rounded-2xl"
+            className="w-full px-4 py-4 bg-foreground/90/50 border border-foreground/80 rounded-2xl"
           >
             <div className="flex items-center gap-3">
               <Loader2 className="w-5 h-5 animate-spin text-emerald-300" />
               <div className="flex-1">
                 <div className="text-sm font-medium">Wird hochgeladen...</div>
-                <div className="mt-1 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                <div className="mt-1 h-1.5 bg-foreground/80 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-emerald-500 rounded-full"
                     initial={{ width: 0 }}
@@ -135,7 +135,7 @@ export default function MosaicPrintUpload({ eventId, eventSlug }: MosaicPrintUpl
                   />
                 </div>
               </div>
-              <span className="text-xs text-gray-400">{progress}%</span>
+              <span className="text-xs text-muted-foreground/70">{progress}%</span>
             </div>
           </motion.div>
         )}
@@ -154,32 +154,32 @@ export default function MosaicPrintUpload({ eventId, eventSlug }: MosaicPrintUpl
                 <Check className="w-5 h-5 text-emerald-400" />
                 <span className="text-sm font-medium text-emerald-300">Foto hochgeladen!</span>
               </div>
-              <button onClick={reset} className="p-1 rounded-lg hover:bg-gray-700/50">
-                <X className="w-4 h-4 text-gray-400" />
+              <button onClick={reset} className="p-1 rounded-lg hover:bg-foreground/80/50">
+                <X className="w-4 h-4 text-muted-foreground/70" />
               </button>
             </div>
 
             <div className="text-center mb-3">
-              <div className="text-xs text-gray-400 mb-1">Dein Mosaic-Code:</div>
+              <div className="text-xs text-muted-foreground/70 mb-1">Dein Mosaic-Code:</div>
               <div className="flex items-center justify-center gap-2">
                 <span className="text-3xl font-mono font-bold tracking-[0.3em] text-white">
                   {printCode.pinCode}
                 </span>
                 <button
                   onClick={copyCode}
-                  className="p-2 rounded-lg hover:bg-gray-700/50 transition-colors"
+                  className="p-2 rounded-lg hover:bg-foreground/80/50 transition-colors"
                   title="Code kopieren"
                 >
                   {copied ? (
                     <Check className="w-4 h-4 text-emerald-400" />
                   ) : (
-                    <Copy className="w-4 h-4 text-gray-400" />
+                    <Copy className="w-4 h-4 text-muted-foreground/70" />
                   )}
                 </button>
               </div>
             </div>
 
-            <div className="text-center text-xs text-gray-400 mb-3">
+            <div className="text-center text-xs text-muted-foreground/70 mb-3">
               Gehe zum <strong className="text-emerald-300">Print-Terminal</strong> und gib diesen Code ein, um deinen Sticker zu drucken.
             </div>
 
@@ -200,14 +200,14 @@ export default function MosaicPrintUpload({ eventId, eventSlug }: MosaicPrintUpl
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="w-full px-4 py-3 bg-red-900/20 border border-red-500/30 rounded-2xl"
+            className="w-full px-4 py-3 bg-destructive/20 border border-destructive/30 rounded-2xl"
           >
             <div className="flex items-center gap-3">
-              <X className="w-5 h-5 text-red-400 shrink-0" />
-              <div className="flex-1 text-sm text-red-300">{error}</div>
+              <X className="w-5 h-5 text-destructive/80 shrink-0" />
+              <div className="flex-1 text-sm text-destructive/60">{error}</div>
               <button
                 onClick={reset}
-                className="px-3 py-1.5 text-xs font-medium bg-red-500/20 hover:bg-red-500/30 rounded-lg text-red-300 transition-colors"
+                className="px-3 py-1.5 text-xs font-medium bg-destructive/100/20 hover:bg-destructive/100/30 rounded-lg text-destructive/60 transition-colors"
               >
                 Nochmal
               </button>

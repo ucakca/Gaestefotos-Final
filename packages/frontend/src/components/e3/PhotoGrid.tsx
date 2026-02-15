@@ -297,7 +297,7 @@ export default function PhotoGrid({
                     {/* Like Button — with particle burst */}
                     <motion.button
                       onClick={(e) => handleLikeClick(photo, e)}
-                      className="relative flex items-center gap-2 px-3 py-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
+                      className="relative flex items-center gap-2 px-3 py-2 bg-card/20 backdrop-blur-md rounded-full text-white hover:bg-card/30 transition-colors"
                       whileTap={{ scale: 0.95 }}
                     >
                       <motion.div
@@ -305,7 +305,7 @@ export default function PhotoGrid({
                         transition={{ type: 'spring', stiffness: 400, damping: 10 }}
                       >
                         <Heart
-                          className={`w-5 h-5 transition-colors duration-200 ${isLiked ? 'fill-red-500 text-red-500' : ''}`}
+                          className={`w-5 h-5 transition-colors duration-200 ${isLiked ? 'fill-red-500 text-destructive' : ''}`}
                         />
                       </motion.div>
                       {likeCount > 0 && (
@@ -316,7 +316,7 @@ export default function PhotoGrid({
                         {isLiked && Array.from({ length: 6 }).map((_, i) => (
                           <motion.div
                             key={`pb-${photo.id}-${i}`}
-                            className="absolute top-1/2 left-4 w-1 h-1 rounded-full bg-red-400"
+                            className="absolute top-1/2 left-4 w-1 h-1 rounded-full bg-destructive/80"
                             initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
                             animate={{
                               x: Math.cos((i / 6) * Math.PI * 2) * 16,
@@ -336,7 +336,7 @@ export default function PhotoGrid({
                       {/* Comment Icon (if enabled) */}
                       {allowComments && (
                         <motion.button
-                          className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
+                          className="p-2 bg-card/20 backdrop-blur-md rounded-full text-white hover:bg-card/30 transition-colors"
                           whileTap={{ scale: 0.95 }}
                         >
                           <MessageCircle className="w-5 h-5" />
@@ -346,7 +346,7 @@ export default function PhotoGrid({
                       {/* Share */}
                       <motion.button
                         onClick={(e) => handleShare(photo, e)}
-                        className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
+                        className="p-2 bg-card/20 backdrop-blur-md rounded-full text-white hover:bg-card/30 transition-colors"
                         whileTap={{ scale: 0.95 }}
                       >
                         <Share2 className="w-5 h-5" />
@@ -356,7 +356,7 @@ export default function PhotoGrid({
                       {allowDownloads && (
                         <motion.button
                           onClick={(e) => handleDownload(photo, e)}
-                          className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
+                          className="p-2 bg-card/20 backdrop-blur-md rounded-full text-white hover:bg-card/30 transition-colors"
                           whileTap={{ scale: 0.95 }}
                         >
                           <Download className="w-5 h-5" />

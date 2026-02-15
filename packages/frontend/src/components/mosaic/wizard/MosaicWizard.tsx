@@ -251,22 +251,22 @@ export default function MosaicWizard({ eventId }: Props) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-400 animate-pulse">Mosaik wird geladen...</div>
+      <div className="min-h-screen bg-muted/50 flex items-center justify-center">
+        <div className="text-muted-foreground/70 animate-pulse">Mosaik wird geladen...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-muted/50 flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-20">
+      <div className="bg-card border-b sticky top-0 z-20">
         <div className="max-w-lg mx-auto px-4 py-3">
           <div className="flex items-center gap-3 mb-3">
             <button
               type="button"
               onClick={() => router.push(`/events/${eventId}/dashboard`)}
-              className="p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 -ml-2 hover:bg-muted rounded-lg transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -283,9 +283,9 @@ export default function MosaicWizard({ eventId }: Props) {
             </div>
             {wall && (
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
-                wall.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
+                wall.status === 'ACTIVE' ? 'bg-success/15 text-success' :
                 wall.status === 'COMPLETED' ? 'bg-blue-100 text-blue-700' :
-                'bg-gray-100 text-gray-500'
+                'bg-muted text-muted-foreground'
               }`}>
                 {wall.status === 'ACTIVE' ? 'Aktiv' : wall.status === 'COMPLETED' ? 'Fertig' : 'Entwurf'}
               </span>
@@ -350,13 +350,13 @@ export default function MosaicWizard({ eventId }: Props) {
 
       {/* Bottom Navigation */}
       {state.currentStep < 3 && (
-        <div className="sticky bottom-0 bg-white border-t px-4 py-3 safe-bottom">
+        <div className="sticky bottom-0 bg-card border-t px-4 py-3 safe-bottom">
           <div className="max-w-lg mx-auto flex gap-3">
             {state.currentStep > 1 && (
               <button
                 type="button"
                 onClick={handleBack}
-                className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gray-100 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-muted rounded-xl text-sm font-medium text-foreground/80 hover:bg-muted/80 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Zurück

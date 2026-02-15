@@ -77,8 +77,8 @@ export default function Step4Display({ state, onChange, canPrint, hasBoothAddon,
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-bold text-gray-900 mb-1">Display & Animationen</h2>
-        <p className="text-sm text-gray-500 mb-4">
+        <h2 className="text-lg font-bold text-foreground mb-1">Display & Animationen</h2>
+        <p className="text-sm text-muted-foreground mb-4">
           Wähle wie neue Fotos im Mosaik erscheinen.
         </p>
       </div>
@@ -86,12 +86,12 @@ export default function Step4Display({ state, onChange, canPrint, hasBoothAddon,
       {/* Animation Tiles */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <label className="text-sm font-medium text-gray-700">Tile-Animationen</label>
+          <label className="text-sm font-medium text-foreground/80">Tile-Animationen</label>
           <button
             type="button"
             onClick={selectAll}
             className={`text-xs font-medium transition-colors ${
-              allSelected ? 'text-gray-400' : 'text-purple-600 hover:text-purple-700'
+              allSelected ? 'text-muted-foreground/70' : 'text-purple-600 hover:text-purple-700'
             }`}
           >
             Alle auswählen
@@ -110,12 +110,12 @@ export default function Step4Display({ state, onChange, canPrint, hasBoothAddon,
                 className={`relative rounded-xl border-2 overflow-hidden transition-all ${
                   selected
                     ? 'border-purple-500 bg-purple-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
+                    : 'border-border bg-card hover:border-border'
                 }`}
               >
                 {/* Preview area */}
                 <div
-                  className="aspect-square bg-gray-900 flex items-center justify-center cursor-pointer relative"
+                  className="aspect-square bg-foreground flex items-center justify-center cursor-pointer relative"
                   onClick={() => playPreview(anim.value)}
                 >
                   <AnimatePresence mode="wait">
@@ -148,11 +148,11 @@ export default function Step4Display({ state, onChange, canPrint, hasBoothAddon,
                     type="checkbox"
                     checked={selected}
                     onChange={() => toggleAnimation(anim.value)}
-                    className="h-3.5 w-3.5 rounded border-gray-300 shrink-0"
+                    className="h-3.5 w-3.5 rounded border-border shrink-0"
                     style={{ accentColor: '#9333ea' }}
                   />
                   <div className="min-w-0">
-                    <div className="text-xs font-medium text-gray-700 truncate">{anim.label}</div>
+                    <div className="text-xs font-medium text-foreground/80 truncate">{anim.label}</div>
                   </div>
                 </div>
               </div>
@@ -161,7 +161,7 @@ export default function Step4Display({ state, onChange, canPrint, hasBoothAddon,
         </div>
 
         {/* Hint */}
-        <p className="text-xs text-gray-400 mt-2">
+        <p className="text-xs text-muted-foreground/70 mt-2">
           {selectedCount === 1
             ? `Alle Tiles erscheinen mit "${ANIMATIONS.find((a) => a.value === state.selectedAnimations[0])?.label}".`
             : selectedCount === ANIMATIONS.length
@@ -172,10 +172,10 @@ export default function Step4Display({ state, onChange, canPrint, hasBoothAddon,
 
       {/* Foto-Quellen */}
       <div>
-        <label className="text-sm font-medium text-gray-700 mb-3 block">Foto-Quellen</label>
+        <label className="text-sm font-medium text-foreground/80 mb-3 block">Foto-Quellen</label>
         <div className="space-y-2">
           {/* QR — always available */}
-          <label className="flex items-center gap-3 p-3 bg-white rounded-xl border cursor-pointer">
+          <label className="flex items-center gap-3 p-3 bg-card rounded-xl border cursor-pointer">
             <input
               type="checkbox"
               checked={true}
@@ -184,14 +184,14 @@ export default function Step4Display({ state, onChange, canPrint, hasBoothAddon,
               style={{ accentColor: '#9333ea' }}
             />
             <div className="flex-1 min-w-0">
-              <span className="text-sm font-medium text-gray-700">QR-Code (Smartphone)</span>
-              <p className="text-xs text-gray-400">Gäste scannen und laden Fotos hoch</p>
+              <span className="text-sm font-medium text-foreground/80">QR-Code (Smartphone)</span>
+              <p className="text-xs text-muted-foreground/70">Gäste scannen und laden Fotos hoch</p>
             </div>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium shrink-0">Inkl.</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-success/15 text-success font-medium shrink-0">Inkl.</span>
           </label>
 
           {/* Hashtag — always free with #gästefotos */}
-          <label className="flex items-center gap-3 p-3 bg-white rounded-xl border cursor-pointer">
+          <label className="flex items-center gap-3 p-3 bg-card rounded-xl border cursor-pointer">
             <input
               type="checkbox"
               checked={state.showQrOverlay}
@@ -202,15 +202,15 @@ export default function Step4Display({ state, onChange, canPrint, hasBoothAddon,
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <Hash className="w-3.5 h-3.5 text-purple-500" />
-                <span className="text-sm font-medium text-gray-700">Hashtag-Import</span>
+                <span className="text-sm font-medium text-foreground/80">Hashtag-Import</span>
               </div>
-              <p className="text-xs text-gray-400">#gästefotos — automatisch aus Social Media</p>
+              <p className="text-xs text-muted-foreground/70">#gästefotos — automatisch aus Social Media</p>
             </div>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium shrink-0">Free</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-success/15 text-success font-medium shrink-0">Free</span>
           </label>
 
           {/* Admin Upload — always available */}
-          <label className="flex items-center gap-3 p-3 bg-white rounded-xl border cursor-pointer">
+          <label className="flex items-center gap-3 p-3 bg-card rounded-xl border cursor-pointer">
             <input
               type="checkbox"
               checked={true}
@@ -219,14 +219,14 @@ export default function Step4Display({ state, onChange, canPrint, hasBoothAddon,
               style={{ accentColor: '#9333ea' }}
             />
             <div className="flex-1 min-w-0">
-              <span className="text-sm font-medium text-gray-700">Admin-Upload</span>
-              <p className="text-xs text-gray-400">Du lädst Fotos manuell hoch</p>
+              <span className="text-sm font-medium text-foreground/80">Admin-Upload</span>
+              <p className="text-xs text-muted-foreground/70">Du lädst Fotos manuell hoch</p>
             </div>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium shrink-0">Inkl.</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-success/15 text-success font-medium shrink-0">Inkl.</span>
           </label>
 
           {/* Photo Booth */}
-          <div className={`flex items-center gap-3 p-3 rounded-xl border ${hasBoothAddon ? 'bg-white' : 'bg-gray-50 opacity-60'}`}>
+          <div className={`flex items-center gap-3 p-3 rounded-xl border ${hasBoothAddon ? 'bg-card' : 'bg-muted/50 opacity-60'}`}>
             <input
               type="checkbox"
               checked={hasBoothAddon}
@@ -235,11 +235,11 @@ export default function Step4Display({ state, onChange, canPrint, hasBoothAddon,
               style={{ accentColor: '#9333ea' }}
             />
             <div className="flex-1 min-w-0">
-              <span className="text-sm font-medium text-gray-700">Photo Booth</span>
-              <p className="text-xs text-gray-400">Fotos direkt von der Fotobox</p>
+              <span className="text-sm font-medium text-foreground/80">Photo Booth</span>
+              <p className="text-xs text-muted-foreground/70">Fotos direkt von der Fotobox</p>
             </div>
             {hasBoothAddon ? (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium shrink-0">Gebucht</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-success/15 text-success font-medium shrink-0">Gebucht</span>
             ) : (
               <button type="button" onClick={onUpgrade} className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium shrink-0 hover:bg-amber-200 transition-colors">
                 <Crown className="w-2.5 h-2.5" /> Addon
@@ -248,7 +248,7 @@ export default function Step4Display({ state, onChange, canPrint, hasBoothAddon,
           </div>
 
           {/* KI Booth */}
-          <div className={`flex items-center gap-3 p-3 rounded-xl border ${hasKiBoothAddon ? 'bg-white' : 'bg-gray-50 opacity-60'}`}>
+          <div className={`flex items-center gap-3 p-3 rounded-xl border ${hasKiBoothAddon ? 'bg-card' : 'bg-muted/50 opacity-60'}`}>
             <input
               type="checkbox"
               checked={hasKiBoothAddon}
@@ -257,11 +257,11 @@ export default function Step4Display({ state, onChange, canPrint, hasBoothAddon,
               style={{ accentColor: '#9333ea' }}
             />
             <div className="flex-1 min-w-0">
-              <span className="text-sm font-medium text-gray-700">KI-Booth</span>
-              <p className="text-xs text-gray-400">AI Style-Transfer Fotos</p>
+              <span className="text-sm font-medium text-foreground/80">KI-Booth</span>
+              <p className="text-xs text-muted-foreground/70">AI Style-Transfer Fotos</p>
             </div>
             {hasKiBoothAddon ? (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium shrink-0">Gebucht</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-success/15 text-success font-medium shrink-0">Gebucht</span>
             ) : (
               <button type="button" onClick={onUpgrade} className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium shrink-0 hover:bg-amber-200 transition-colors">
                 <Crown className="w-2.5 h-2.5" /> Addon
@@ -273,30 +273,30 @@ export default function Step4Display({ state, onChange, canPrint, hasBoothAddon,
 
       {/* Display Options */}
       <div>
-        <label className="text-sm font-medium text-gray-700 mb-3 block">Anzeige-Optionen</label>
+        <label className="text-sm font-medium text-foreground/80 mb-3 block">Anzeige-Optionen</label>
         <div className="space-y-2">
-          <label className="flex items-center justify-between p-3 bg-white rounded-xl border cursor-pointer">
+          <label className="flex items-center justify-between p-3 bg-card rounded-xl border cursor-pointer">
             <div>
-              <span className="text-sm font-medium text-gray-700">Statistik-Ticker</span>
-              <p className="text-xs text-gray-400">Fortschritt am unteren Rand</p>
+              <span className="text-sm font-medium text-foreground/80">Statistik-Ticker</span>
+              <p className="text-xs text-muted-foreground/70">Fortschritt am unteren Rand</p>
             </div>
             <button
               type="button"
               onClick={() => onChange({ showTicker: !state.showTicker })}
               className={`relative w-11 h-6 rounded-full transition-colors ${
-                state.showTicker ? 'bg-purple-600' : 'bg-gray-300'
+                state.showTicker ? 'bg-purple-600' : 'bg-muted/60'
               }`}
             >
-              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-card shadow transition-transform ${
                 state.showTicker ? 'translate-x-5' : 'translate-x-0.5'
               }`} />
             </button>
           </label>
 
-          <label className="flex items-center justify-between p-3 bg-white rounded-xl border cursor-pointer">
+          <label className="flex items-center justify-between p-3 bg-card rounded-xl border cursor-pointer">
             <div>
-              <span className="text-sm font-medium text-gray-700">Auto-Fill</span>
-              <p className="text-xs text-gray-400">
+              <span className="text-sm font-medium text-foreground/80">Auto-Fill</span>
+              <p className="text-xs text-muted-foreground/70">
                 Ab {state.autoFillThreshold}% automatisch füllen
               </p>
             </div>
@@ -304,10 +304,10 @@ export default function Step4Display({ state, onChange, canPrint, hasBoothAddon,
               type="button"
               onClick={() => onChange({ autoFillEnabled: !state.autoFillEnabled })}
               className={`relative w-11 h-6 rounded-full transition-colors ${
-                state.autoFillEnabled ? 'bg-purple-600' : 'bg-gray-300'
+                state.autoFillEnabled ? 'bg-purple-600' : 'bg-muted/60'
               }`}
             >
-              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-card shadow transition-transform ${
                 state.autoFillEnabled ? 'translate-x-5' : 'translate-x-0.5'
               }`} />
             </button>

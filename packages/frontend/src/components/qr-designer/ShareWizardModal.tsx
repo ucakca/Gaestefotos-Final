@@ -184,7 +184,7 @@ export default function ShareWizardModal({
                   variant="secondary"
                   className="flex-1 gap-2"
                 >
-                  {copied ? <Check className="w-4 h-4 text-green-500" /> : <Link2 className="w-4 h-4" />}
+                  {copied ? <Check className="w-4 h-4 text-success" /> : <Link2 className="w-4 h-4" />}
                   {copied ? 'Kopiert!' : 'Link kopieren'}
                 </Button>
               </div>
@@ -203,14 +203,14 @@ export default function ShareWizardModal({
                       disabled={!!exporting}
                       className={`p-4 rounded-xl border transition-all text-left ${
                         isSuccess
-                          ? 'border-green-500 bg-green-500/10'
+                          ? 'border-success bg-success/100/10'
                           : 'border-border hover:border-primary hover:bg-primary/5'
                       } ${exporting && !isLoading ? 'opacity-50' : ''}`}
                     >
                       <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-lg ${isSuccess ? 'bg-green-500/20' : 'bg-muted'}`}>
+                        <div className={`p-2 rounded-lg ${isSuccess ? 'bg-success/100/20' : 'bg-muted'}`}>
                           {isSuccess ? (
-                            <Check className="w-5 h-5 text-green-500" />
+                            <Check className="w-5 h-5 text-success" />
                           ) : isLoading ? (
                             <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                           ) : (
@@ -255,14 +255,14 @@ export default function ShareWizardModal({
                       disabled={!!exporting}
                       className={`p-4 rounded-xl border transition-all text-left ${
                         isSuccess
-                          ? 'border-green-500 bg-green-500/10'
+                          ? 'border-success bg-success/100/10'
                           : 'border-border hover:border-primary hover:bg-primary/5'
                       } ${exporting && !isLoading ? 'opacity-50' : ''}`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className={`p-3 rounded-lg ${isSuccess ? 'bg-green-500/20' : 'bg-muted'}`}>
+                        <div className={`p-3 rounded-lg ${isSuccess ? 'bg-success/100/20' : 'bg-muted'}`}>
                           {isSuccess ? (
-                            <Check className="w-6 h-6 text-green-500" />
+                            <Check className="w-6 h-6 text-success" />
                           ) : isLoading ? (
                             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                           ) : (

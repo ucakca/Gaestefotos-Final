@@ -421,7 +421,7 @@ export default function LiveWallPage() {
 
           <Button
             onClick={() => setRealtimeEnabled((v) => !v)}
-            className={`px-3 py-1.5 rounded text-sm ${realtimeEnabled ? 'bg-green-500/30 text-green-200' : 'bg-background/20'}`}
+            className={`px-3 py-1.5 rounded text-sm ${realtimeEnabled ? 'bg-success/100/30 text-success/50' : 'bg-background/20'}`}
           >
             {realtimeEnabled ? '⚡ Live' : '🔄 Polling'}
           </Button>
@@ -589,7 +589,7 @@ export default function LiveWallPage() {
                     left: `${randomX}%`,
                     top: `${randomY + 10}%`,
                   }}
-                  className={`w-48 md:w-64 lg:w-80 rounded-xl overflow-hidden shadow-2xl bg-white p-2 ${
+                  className={`w-48 md:w-64 lg:w-80 rounded-xl overflow-hidden shadow-2xl bg-card p-2 ${
                     newIds.has(photo.id) ? 'ring-4 ring-yellow-400 z-50' : ''
                   }`}
                 >

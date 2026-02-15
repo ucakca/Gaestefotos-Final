@@ -72,7 +72,7 @@ export default function AlbumFilter({
             {totalPhotos > 0 && (
               <span className={`text-xs px-2 py-0.5 rounded-full ${
                 selectedAlbum === null
-                  ? 'bg-white/20 text-white'
+                  ? 'bg-card/20 text-white'
                   : 'bg-background text-muted-foreground'
               }`}>
                 {totalPhotos}
@@ -102,7 +102,7 @@ export default function AlbumFilter({
                 {(category.photoCount || 0) > 0 && (
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
                     isActive
-                      ? 'bg-white/20 text-white'
+                      ? 'bg-card/20 text-white'
                       : 'bg-background text-muted-foreground'
                   }`}>
                     {category.photoCount}

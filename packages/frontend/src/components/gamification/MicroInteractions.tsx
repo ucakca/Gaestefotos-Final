@@ -38,7 +38,7 @@ export function AnimatedLikeButton({
   return (
     <button 
       onClick={handleClick}
-      className="relative flex items-center gap-2 p-2 rounded-full hover:bg-red-50 transition-colors"
+      className="relative flex items-center gap-2 p-2 rounded-full hover:bg-destructive/10 transition-colors"
     >
       <div className="relative">
         <motion.div
@@ -49,7 +49,7 @@ export function AnimatedLikeButton({
         >
           <Heart 
             className={`w-6 h-6 transition-colors duration-300 ${
-              liked ? 'text-red-500 fill-red-500' : 'text-slate-400'
+              liked ? 'text-destructive fill-red-500' : 'text-slate-400'
             }`}
           />
         </motion.div>
@@ -59,7 +59,7 @@ export function AnimatedLikeButton({
           {particles.map((particle) => (
             <motion.div
               key={particle.id}
-              className="absolute top-1/2 left-1/2 w-2 h-2 rounded-full bg-red-500"
+              className="absolute top-1/2 left-1/2 w-2 h-2 rounded-full bg-destructive/100"
               initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
               animate={{ 
                 x: particle.x, 
@@ -75,7 +75,7 @@ export function AnimatedLikeButton({
       </div>
       
       <motion.span 
-        className={`text-sm font-medium ${liked ? 'text-red-500' : 'text-slate-500'}`}
+        className={`text-sm font-medium ${liked ? 'text-destructive' : 'text-slate-500'}`}
         animate={liked ? { scale: [1, 1.2, 1] } : {}}
       >
         {count + (liked && !initialLiked ? 1 : 0)}
@@ -151,7 +151,7 @@ export function AnimatedShareButton({ onClick }: { onClick?: () => void }) {
   return (
     <button 
       onClick={handleClick}
-      className="relative flex items-center gap-2 p-2 rounded-full hover:bg-green-50 transition-colors"
+      className="relative flex items-center gap-2 p-2 rounded-full hover:bg-success/10 transition-colors"
     >
       <div className="relative">
         <motion.div
@@ -182,7 +182,7 @@ export function AnimatedShareButton({ onClick }: { onClick?: () => void }) {
               exit={{ opacity: 0 }}
               transition={{ duration: 1, ease: 'easeOut' }}
             >
-              <Send className="w-5 h-5 text-green-500" />
+              <Send className="w-5 h-5 text-success" />
             </motion.div>
           )}
         </AnimatePresence>

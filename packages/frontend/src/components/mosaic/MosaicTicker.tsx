@@ -61,15 +61,15 @@ export default function MosaicTicker({ stats, className = '' }: MosaicTickerProp
       <div className="flex items-center justify-between max-w-screen-xl mx-auto">
         {/* Progress bar */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="w-32 h-2 bg-white/20 rounded-full overflow-hidden">
+          <div className="w-32 h-2 bg-card/20 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-yellow-400 rounded-full"
+              className="h-full bg-warning/80 rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${stats.progress}%` }}
               transition={{ duration: 1, ease: 'easeOut' }}
             />
           </div>
-          <span className="text-sm font-mono text-yellow-300">{stats.progress}%</span>
+          <span className="text-sm font-mono text-warning/70">{stats.progress}%</span>
         </div>
 
         {/* Scrolling messages */}

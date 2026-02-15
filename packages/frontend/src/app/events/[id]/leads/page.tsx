@@ -157,7 +157,7 @@ export default function LeadsPage() {
                   Alle ({stats.total})
                 </button>
                 {Object.entries(stats.bySource).map(([source, count]) => {
-                  const info = SOURCE_LABELS[source] || { label: source, color: 'bg-gray-100 text-gray-600' };
+                  const info = SOURCE_LABELS[source] || { label: source, color: 'bg-muted text-muted-foreground' };
                   return (
                     <button
                       key={source}
@@ -201,7 +201,7 @@ export default function LeadsPage() {
                   </thead>
                   <tbody className="divide-y divide-border">
                     {leads.map((lead) => {
-                      const info = SOURCE_LABELS[lead.source] || { label: lead.source, color: 'bg-gray-100 text-gray-600' };
+                      const info = SOURCE_LABELS[lead.source] || { label: lead.source, color: 'bg-muted text-muted-foreground' };
                       return (
                         <tr key={lead.id} className="hover:bg-muted/50 transition-colors">
                           <td className="px-4 py-3 font-medium text-foreground">{lead.name || '–'}</td>
@@ -214,7 +214,7 @@ export default function LeadsPage() {
                             {lead.consentGiven ? (
                               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                             ) : (
-                              <XCircle className="w-4 h-4 text-gray-300" />
+                              <XCircle className="w-4 h-4 text-muted-foreground/50" />
                             )}
                           </td>
                           <td className="px-4 py-3 text-muted-foreground text-xs">

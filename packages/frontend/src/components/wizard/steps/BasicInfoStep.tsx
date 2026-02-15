@@ -100,10 +100,10 @@ export default function BasicInfoStep({
             value={title}
             onChange={(e) => onTitleChange(e.target.value)}
             required
-            className={titleError ? 'border-red-500' : ''}
+            className={titleError ? 'border-destructive' : ''}
           />
           {titleError && (
-            <p className="text-sm text-red-600 mt-1">{titleError}</p>
+            <p className="text-sm text-destructive mt-1">{titleError}</p>
           )}
         </div>
 
@@ -138,9 +138,9 @@ export default function BasicInfoStep({
           
           {/* Map Preview */}
           {location && location.trim().length >= 3 && (
-            <div className="mt-3 rounded-lg overflow-hidden border border-gray-200">
+            <div className="mt-3 rounded-lg overflow-hidden border border-border">
               {mapLoading ? (
-                <div className="h-32 bg-gray-100 flex items-center justify-center">
+                <div className="h-32 bg-muted flex items-center justify-center">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
                     <span>Karte wird geladen...</span>
@@ -161,14 +161,14 @@ export default function BasicInfoStep({
                     href={`https://www.openstreetmap.org/?mlat=${mapCoords.lat}&mlon=${mapCoords.lon}#map=16/${mapCoords.lat}/${mapCoords.lon}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="absolute bottom-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-white transition-colors"
+                    className="absolute bottom-2 right-2 bg-card/90 backdrop-blur px-2 py-1 rounded text-xs flex items-center gap-1 hover:bg-card transition-colors"
                   >
                     <ExternalLink className="w-3 h-3" />
                     Größere Karte
                   </a>
                 </div>
               ) : (
-                <div className="h-24 bg-gray-50 flex items-center justify-center">
+                <div className="h-24 bg-muted/50 flex items-center justify-center">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="w-4 h-4" />
                     <span>Ort nicht gefunden</span>

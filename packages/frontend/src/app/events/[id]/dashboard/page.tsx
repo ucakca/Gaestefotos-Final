@@ -405,8 +405,8 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
     return (
       <div className="min-h-screen bg-[hsl(30_20%_98%)] flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-            <X className="w-8 h-8 text-red-500" />
+          <div className="w-16 h-16 rounded-full bg-destructive/15 flex items-center justify-center mx-auto mb-4">
+            <X className="w-8 h-8 text-destructive" />
           </div>
           <h2 className="text-lg font-semibold text-foreground mb-2">Event nicht gefunden</h2>
           <p className="text-muted-foreground mb-4">{error || 'Das Event konnte nicht geladen werden.'}</p>
@@ -453,7 +453,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
             <div className="min-w-0">
               <h1 className="font-semibold text-foreground truncate">{event.title}</h1>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className={`w-2 h-2 rounded-full ${(event as any).isActive !== false ? 'bg-green-500' : 'bg-red-500'}`} />
+                <span className={`w-2 h-2 rounded-full ${(event as any).isActive !== false ? 'bg-success/100' : 'bg-destructive/100'}`} />
                 <span>{(event as any).isActive !== false ? 'Live' : 'Gesperrt'}</span>
               </div>
             </div>
@@ -986,12 +986,12 @@ function OverviewTab({
                   const content = (
                     <>
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                        step.completed ? 'bg-green-500 text-white' : step.current ? 'bg-amber-500 text-white' : 'bg-border text-muted-foreground'
+                        step.completed ? 'bg-success/100 text-white' : step.current ? 'bg-amber-500 text-white' : 'bg-border text-muted-foreground'
                       }`}>
                         {step.completed ? <Check className="w-4 h-4" /> : index + 1}
                       </div>
                       <span className={`text-sm flex-1 ${
-                        step.completed ? 'text-green-700' : step.current ? 'text-amber-700 font-medium' : 'text-muted-foreground'
+                        step.completed ? 'text-success' : step.current ? 'text-amber-700 font-medium' : 'text-muted-foreground'
                       }`}>
                         {step.label}
                       </span>
@@ -1002,7 +1002,7 @@ function OverviewTab({
                   );
                   
                   const className = `flex items-center gap-3 p-3 rounded-xl transition-colors ${
-                    step.completed ? 'bg-green-50' : step.current ? 'bg-amber-50' : 'hover:bg-background'
+                    step.completed ? 'bg-success/10' : step.current ? 'bg-amber-50' : 'hover:bg-background'
                   }`;
                   
                   return (
@@ -1145,7 +1145,7 @@ function OverviewTab({
             { label: 'Co-Hosts', icon: Users, enabled: (event as any).tier === 'smart' || (event as any).tier === 'premium' },
           ].map(f => (
             <div key={f.label} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium ${
-              f.enabled ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-gray-50 text-gray-400 border border-gray-200'
+              f.enabled ? 'bg-success/10 text-success border border-success/30' : 'bg-muted/50 text-muted-foreground/70 border border-border'
             }`}>
               <f.icon className="w-3.5 h-3.5" />
               {f.label}
@@ -1172,7 +1172,7 @@ function OverviewTab({
           </div>
         </div>
         <div className="flex items-center gap-2 mt-2">
-          <div className="flex-1 bg-white border border-teal-200 rounded-lg px-3 py-2 font-mono text-sm font-bold text-teal-800">
+          <div className="flex-1 bg-card border border-teal-200 rounded-lg px-3 py-2 font-mono text-sm font-bold text-teal-800">
             #gästefotos
           </div>
           <button
@@ -1206,8 +1206,8 @@ function OverviewTab({
       <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
-              <Mail className="w-4 h-4 text-green-600" />
+            <div className="w-8 h-8 rounded-lg bg-success/15 flex items-center justify-center">
+              <Mail className="w-4 h-4 text-success" />
             </div>
             <div>
               <h3 className="font-medium text-foreground">Einladungen</h3>
@@ -1231,7 +1231,7 @@ function OverviewTab({
                     {inv.opens || 0} Aufrufe • RSVP: {inv?.rsvp?.yes || 0}/{inv?.rsvp?.no || 0}/{inv?.rsvp?.maybe || 0}
                   </div>
                 </div>
-                <div className={`w-2 h-2 rounded-full ${inv.isActive !== false ? 'bg-green-500' : 'bg-border'}`} />
+                <div className={`w-2 h-2 rounded-full ${inv.isActive !== false ? 'bg-success/100' : 'bg-border'}`} />
               </div>
             ))}
           </div>
@@ -1416,7 +1416,7 @@ function GalleryTab({
             {f.label}
             {f.count !== undefined && f.count > 0 && (
               <span className={`px-1.5 py-0.5 rounded-full text-xs ${
-                filter === f.id ? 'bg-white/30 text-white' : 'bg-orange-100 text-orange-600'
+                filter === f.id ? 'bg-card/30 text-white' : 'bg-orange-100 text-orange-600'
               }`}>
                 {f.count}
               </span>
@@ -1466,8 +1466,8 @@ function GalleryTab({
             onClick={() => setSelectedGuest(null)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
               !selectedGuest
-                ? 'bg-green-500 text-white'
-                : 'bg-green-50 border border-green-200 text-green-600 hover:border-green-300'
+                ? 'bg-success/100 text-white'
+                : 'bg-success/10 border border-success/30 text-success hover:border-success/40'
             }`}
           >
             Alle Gäste
@@ -1478,13 +1478,13 @@ function GalleryTab({
               onClick={() => setSelectedGuest(guest.id)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                 selectedGuest === guest.id
-                  ? 'bg-green-500 text-white'
-                  : 'bg-green-50 border border-green-200 text-green-600 hover:border-green-300'
+                  ? 'bg-success/100 text-white'
+                  : 'bg-success/10 border border-success/30 text-success hover:border-success/40'
               }`}
             >
               {guest.name}
               <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
-                selectedGuest === guest.id ? 'bg-card/20' : 'bg-green-100'
+                selectedGuest === guest.id ? 'bg-card/20' : 'bg-success/15'
               }`}>
                 {guest.count}
               </span>
@@ -1540,7 +1540,7 @@ function GalleryTab({
               {/* Top/Favorite Overlay */}
               {(photo.isFavorite || photo.likes > 0) && photo.status === 'APPROVED' && (
                 <div className="absolute top-1 right-1">
-                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                  <Star className="w-4 h-4 text-warning fill-yellow-400" />
                 </div>
               )}
             </button>
@@ -1598,8 +1598,8 @@ function GalleryTab({
                 {lightboxPhoto.uploadedBy || 'Unbekannt'} • {new Date(lightboxPhoto.createdAt).toLocaleDateString('de-DE')}
               </span>
               <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                lightboxPhoto.status === 'APPROVED' ? 'bg-green-500/20 text-green-300' :
-                lightboxPhoto.status === 'REJECTED' ? 'bg-red-500/20 text-red-300' :
+                lightboxPhoto.status === 'APPROVED' ? 'bg-success/100/20 text-success/70' :
+                lightboxPhoto.status === 'REJECTED' ? 'bg-destructive/100/20 text-destructive/60' :
                 'bg-orange-500/20 text-orange-300'
               }`}>
                 {lightboxPhoto.status === 'APPROVED' ? 'Freigegeben' : lightboxPhoto.status === 'REJECTED' ? 'Abgelehnt' : 'Ausstehend'}
@@ -1648,7 +1648,7 @@ function GuestbookTab({ eventId }: { eventId: string }) {
           {entries.map((entry: any) => (
             <div key={entry.id} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-sm font-bold">
+                <div className="w-8 h-8 rounded-full bg-success/15 flex items-center justify-center text-success text-sm font-bold">
                   {(entry.name || 'G').charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -1772,15 +1772,15 @@ function StatCard({ icon: Icon, value, label, color, highlight, onClick }: {
     },
     green: {
       bg: 'bg-gradient-to-br from-green-100 to-green-50',
-      border: 'border-green-200',
-      icon: 'text-green-500',
-      text: 'text-green-900',
+      border: 'border-success/30',
+      icon: 'text-success',
+      text: 'text-success',
     },
     yellow: {
       bg: 'bg-gradient-to-br from-yellow-100 to-yellow-50',
       border: highlight ? 'border-yellow-400 border-2' : 'border-yellow-200',
-      icon: 'text-yellow-600',
-      text: 'text-yellow-900',
+      icon: 'text-warning',
+      text: 'text-warning',
     },
     purple: {
       bg: 'bg-gradient-to-br from-purple-100 to-purple-50',
@@ -1821,8 +1821,8 @@ function SetupRow({ icon: Icon, label, danger, link }: {
   const content = (
     <>
       <div className="flex items-center gap-3">
-        <Icon className={`w-5 h-5 ${danger ? 'text-red-500' : 'text-muted-foreground'}`} />
-        <span className={danger ? 'text-red-600' : 'text-foreground'}>{label}</span>
+        <Icon className={`w-5 h-5 ${danger ? 'text-destructive' : 'text-muted-foreground'}`} />
+        <span className={danger ? 'text-destructive' : 'text-foreground'}>{label}</span>
       </div>
       <ChevronRight className="w-5 h-5 text-muted-foreground" />
     </>
@@ -1859,7 +1859,7 @@ function EventStatusCard({
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${(event as any).isActive !== false ? 'bg-green-500' : 'bg-red-500'}`} />
+            <div className={`w-3 h-3 rounded-full ${(event as any).isActive !== false ? 'bg-success/100' : 'bg-destructive/100'}`} />
             <span className="font-semibold text-foreground">Event Status</span>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
@@ -1869,7 +1869,7 @@ function EventStatusCard({
               onChange={onToggleActive}
               className="sr-only peer" 
             />
-            <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+            <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-card after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-success/100"></div>
           </label>
         </div>
         <div className="flex items-center gap-2 mt-1 ml-6">

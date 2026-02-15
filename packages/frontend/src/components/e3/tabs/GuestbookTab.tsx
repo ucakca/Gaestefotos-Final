@@ -298,12 +298,12 @@ export default function GuestbookTab({
                     </div>
                   )}
                   {photo.error && (
-                    <div className="absolute inset-0 bg-red-500/80 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-destructive/100/80 flex items-center justify-center">
                       <p className="text-white text-sm px-4 text-center">{photo.error}</p>
                     </div>
                   )}
                   {photo.uploadId && !photo.error && (
-                    <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                    <div className="absolute top-2 left-2 bg-success/100 text-white text-xs px-2 py-1 rounded-full">
                       ✓ Hochgeladen
                     </div>
                   )}
@@ -388,7 +388,7 @@ export default function GuestbookTab({
 
                 {/* Like Button (optional - could be added later) */}
                 <div className="mt-4 pt-4 border-t border-border">
-                  <button className="flex items-center gap-2 text-muted-foreground hover:text-red-500 transition-colors">
+                  <button className="flex items-center gap-2 text-muted-foreground hover:text-destructive transition-colors">
                     <Heart className="w-4 h-4" />
                     <span className="text-sm">Gefällt mir</span>
                   </button>

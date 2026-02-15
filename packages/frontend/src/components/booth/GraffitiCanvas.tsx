@@ -240,22 +240,22 @@ export default function GraffitiCanvas({ photoUrl, photoId, eventId, onSave, onC
       {/* Toolbar */}
       <div className="flex items-center justify-between px-4 py-2 bg-black/60">
         <div className="flex items-center gap-2">
-          <button onClick={onClose} className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10">
+          <button onClick={onClose} className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-card/10">
             <X className="w-5 h-5" />
           </button>
           <span className="text-sm text-white/80 font-medium">Digital Graffiti</span>
         </div>
         <div className="flex items-center gap-1">
           <button onClick={handleUndo} disabled={actions.length === 0}
-            className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-30">
+            className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-card/10 disabled:opacity-30">
             <Undo2 className="w-4 h-4" />
           </button>
           <button onClick={handleRedo} disabled={undoneActions.length === 0}
-            className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-30">
+            className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-card/10 disabled:opacity-30">
             <Redo2 className="w-4 h-4" />
           </button>
           <button onClick={handleClear} disabled={actions.length === 0}
-            className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-30">
+            className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-card/10 disabled:opacity-30">
             <Trash2 className="w-4 h-4" />
           </button>
           <button onClick={handleSave} disabled={saving || actions.length === 0}
@@ -295,25 +295,25 @@ export default function GraffitiCanvas({ photoUrl, photoId, eventId, onSave, onC
         <div className="flex items-center justify-center gap-2">
           <button
             onClick={() => setIsEraser(false)}
-            className={`p-2 rounded-lg ${!isEraser ? 'bg-white/20 text-white' : 'text-white/50'}`}
+            className={`p-2 rounded-lg ${!isEraser ? 'bg-card/20 text-white' : 'text-white/50'}`}
           >
             <Pen className="w-5 h-5" />
           </button>
           <button
             onClick={() => setIsEraser(true)}
-            className={`p-2 rounded-lg ${isEraser ? 'bg-white/20 text-white' : 'text-white/50'}`}
+            className={`p-2 rounded-lg ${isEraser ? 'bg-card/20 text-white' : 'text-white/50'}`}
           >
             <Eraser className="w-5 h-5" />
           </button>
-          <div className="w-px h-6 bg-white/20 mx-2" />
+          <div className="w-px h-6 bg-card/20 mx-2" />
           {BRUSH_SIZES.map(size => (
             <button
               key={size}
               onClick={() => setBrushSize(size)}
-              className={`p-1 rounded-lg ${brushSize === size ? 'bg-white/20' : ''}`}
+              className={`p-1 rounded-lg ${brushSize === size ? 'bg-card/20' : ''}`}
             >
               <div
-                className="rounded-full bg-white mx-auto"
+                className="rounded-full bg-card mx-auto"
                 style={{ width: Math.min(size, 20), height: Math.min(size, 20) }}
               />
             </button>

@@ -217,7 +217,7 @@ export default function KiKunstFlow({ eventId, onClose, onComplete }: KiKunstFlo
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-black/80">
-        <button onClick={onClose} className="p-2 rounded-full bg-white/10 text-white">
+        <button onClick={onClose} className="p-2 rounded-full bg-card/10 text-white">
           <X className="w-5 h-5" />
         </button>
         <div className="text-center">
@@ -249,7 +249,7 @@ export default function KiKunstFlow({ eventId, onClose, onComplete }: KiKunstFlo
                 className={`w-full h-full object-cover rounded-3xl ${facingMode === 'user' ? 'scale-x-[-1]' : ''}`}
               />
               {!cameraReady && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-900 rounded-3xl">
+                <div className="absolute inset-0 flex items-center justify-center bg-foreground rounded-3xl">
                   <Loader2 className="w-8 h-8 text-white animate-spin" />
                 </div>
               )}
@@ -258,7 +258,7 @@ export default function KiKunstFlow({ eventId, onClose, onComplete }: KiKunstFlo
             <canvas ref={canvasRef} className="hidden" />
 
             {error && (
-              <div className="mt-4 px-4 py-2 bg-red-500/20 text-red-300 rounded-lg text-sm text-center max-w-sm">
+              <div className="mt-4 px-4 py-2 bg-destructive/100/20 text-destructive/60 rounded-lg text-sm text-center max-w-sm">
                 {error}
               </div>
             )}
@@ -266,16 +266,16 @@ export default function KiKunstFlow({ eventId, onClose, onComplete }: KiKunstFlo
             <div className="flex items-center gap-6 mt-8">
               <button
                 onClick={() => setFacingMode(f => f === 'user' ? 'environment' : 'user')}
-                className="p-3 rounded-full bg-white/10 text-white"
+                className="p-3 rounded-full bg-card/10 text-white"
               >
                 <FlipHorizontal className="w-5 h-5" />
               </button>
               <button
                 onClick={takeSelfie}
                 disabled={!cameraReady}
-                className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-lg active:scale-90 transition disabled:opacity-50"
+                className="w-20 h-20 rounded-full bg-card flex items-center justify-center shadow-lg active:scale-90 transition disabled:opacity-50"
               >
-                <div className="w-16 h-16 rounded-full border-4 border-gray-300" />
+                <div className="w-16 h-16 rounded-full border-4 border-border" />
               </button>
               <div className="w-11" />
             </div>
@@ -291,7 +291,7 @@ export default function KiKunstFlow({ eventId, onClose, onComplete }: KiKunstFlo
             </div>
 
             {error && (
-              <div className="mb-4 px-4 py-2 bg-red-500/20 text-red-300 rounded-lg text-sm text-center max-w-sm">
+              <div className="mb-4 px-4 py-2 bg-destructive/100/20 text-destructive/60 rounded-lg text-sm text-center max-w-sm">
                 {error}
               </div>
             )}
@@ -340,7 +340,7 @@ export default function KiKunstFlow({ eventId, onClose, onComplete }: KiKunstFlo
             <div className="flex items-center gap-3 mt-6">
               <button
                 onClick={() => { setStep('camera'); setSelfieDataUrl(null); setSelfieBlob(null); }}
-                className="px-5 py-2.5 rounded-full bg-white/10 text-white text-sm font-medium"
+                className="px-5 py-2.5 rounded-full bg-card/10 text-white text-sm font-medium"
               >
                 Nochmal
               </button>
@@ -398,7 +398,7 @@ export default function KiKunstFlow({ eventId, onClose, onComplete }: KiKunstFlo
             >
               <button
                 onClick={handleDownload}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-sm font-semibold"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-card text-black text-sm font-semibold"
               >
                 <Download className="w-4 h-4" /> Speichern
               </button>
@@ -410,7 +410,7 @@ export default function KiKunstFlow({ eventId, onClose, onComplete }: KiKunstFlo
               </button>
               <button
                 onClick={() => { setStep('camera'); setSelfieDataUrl(null); setSelfieBlob(null); setResultUrl(null); }}
-                className="p-2.5 rounded-full bg-white/10 text-white"
+                className="p-2.5 rounded-full bg-card/10 text-white"
               >
                 <RotateCw className="w-4 h-4" />
               </button>

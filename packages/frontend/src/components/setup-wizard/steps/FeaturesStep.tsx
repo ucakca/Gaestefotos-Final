@@ -85,12 +85,12 @@ export default function FeaturesStep({
                     {feature.label}
                   </span>
                   {feature.comingSoon && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
                       Coming Soon
                     </span>
                   )}
                   {feature.recommended && !feature.comingSoon && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-success/15 text-success font-medium">
                       Empfohlen
                     </span>
                   )}
@@ -101,7 +101,7 @@ export default function FeaturesStep({
                 <div className={`relative w-11 h-6 rounded-full flex-shrink-0 transition-colors ${
                   isEnabled ? 'bg-amber-500' : 'bg-border'
                 }`}>
-                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-card transition-transform ${
                     isEnabled ? 'translate-x-6' : 'translate-x-1'
                   }`} />
                 </div>

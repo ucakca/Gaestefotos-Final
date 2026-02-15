@@ -137,7 +137,7 @@ export default function TrophyReveal({
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.5 }}
                 >
-                  <Crown className="w-12 h-12 text-yellow-300 fill-yellow-300 drop-shadow-lg" />
+                  <Crown className="w-12 h-12 text-warning/70 fill-yellow-300 drop-shadow-lg" />
                 </motion.div>
               )}
             </motion.div>
@@ -156,11 +156,11 @@ export default function TrophyReveal({
                 } : {}}
                 transition={{ duration: 0.5, repeat: Infinity }}
               >
-                <Sparkles className="w-5 h-5 text-yellow-400" />
-                <span className="text-yellow-400 font-bold tracking-widest uppercase">
+                <Sparkles className="w-5 h-5 text-warning" />
+                <span className="text-warning font-bold tracking-widest uppercase">
                   Trophäe erhalten
                 </span>
-                <Sparkles className="w-5 h-5 text-yellow-400" />
+                <Sparkles className="w-5 h-5 text-warning" />
               </motion.div>
               
               <h2 className="text-4xl font-black text-white mb-2 drop-shadow-lg">

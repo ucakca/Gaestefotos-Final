@@ -1,8 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { FormInput } from '@/components/ui/FormInput';
+
+const guestGroupSchema = z.object({
+  name: z.string().min(1, 'Name ist erforderlich').max(100),
+  description: z.string().max(500).optional(),
+});
+type GuestGroupFormData = z.infer<typeof guestGroupSchema>;
 
 interface GuestGroupFormProps {
   initialData?: {
@@ -26,61 +35,48 @@ const COLOR_PRESETS = [
 ];
 
 export function GuestGroupForm({ initialData, onSubmit, onCancel }: GuestGroupFormProps) {
-  const [name, setName] = useState(initialData?.name || '');
-  const [description, setDescription] = useState(initialData?.description || '');
   const [color, setColor] = useState(initialData?.color || COLOR_PRESETS[0]);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!name.trim()) {
-      setError('Name ist erforderlich');
-      return;
-    }
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<GuestGroupFormData>({
+    resolver: zodResolver(guestGroupSchema),
+    defaultValues: {
+      name: initialData?.name || '',
+      description: initialData?.description || '',
+    },
+  });
 
+  const onFormSubmit = async (data: GuestGroupFormData) => {
     try {
-      setSubmitting(true);
-      setError(null);
+      setServerError(null);
       await onSubmit({
-        name: name.trim(),
-        description: description.trim() || undefined,
+        name: data.name.trim(),
+        description: data.description?.trim() || undefined,
         color,
       });
     } catch (error) {
-      setError('Fehler beim Speichern');
-    } finally {
-      setSubmitting(false);
+      setServerError('Fehler beim Speichern');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
-          Name *
-        </label>
-        <Input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="z.B. Familie, Freunde, Kollegen"
-          maxLength={100}
-          required
-        />
-      </div>
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+      <FormInput
+        label="Name"
+        placeholder="z.B. Familie, Freunde, Kollegen"
+        maxLength={100}
+        required
+        error={errors.name?.message}
+        {...register('name')}
+      />
 
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
-          Beschreibung (optional)
-        </label>
-        <Input
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Kurze Beschreibung der Gruppe"
-          maxLength={500}
-        />
-      </div>
+      <FormInput
+        label="Beschreibung (optional)"
+        placeholder="Kurze Beschreibung der Gruppe"
+        maxLength={500}
+        error={errors.description?.message}
+        {...register('description')}
+      />
 
       <div>
         <label className="block text-sm font-medium text-foreground mb-2">
@@ -102,16 +98,16 @@ export function GuestGroupForm({ initialData, onSubmit, onCancel }: GuestGroupFo
         </div>
       </div>
 
-      {error && (
-        <div className="text-sm text-destructive">{error}</div>
+      {serverError && (
+        <div className="text-sm text-destructive">{serverError}</div>
       )}
 
       <div className="flex gap-2 justify-end pt-2">
-        <Button type="button" variant="ghost" onClick={onCancel} disabled={submitting}>
+        <Button type="button" variant="ghost" onClick={onCancel} disabled={isSubmitting}>
           Abbrechen
         </Button>
-        <Button type="submit" variant="primary" disabled={submitting}>
-          {submitting ? 'Speichern...' : initialData ? 'Aktualisieren' : 'Erstellen'}
+        <Button type="submit" variant="primary" loading={isSubmitting}>
+          {initialData ? 'Aktualisieren' : 'Erstellen'}
         </Button>
       </div>
     </form>

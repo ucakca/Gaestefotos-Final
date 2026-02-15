@@ -252,7 +252,7 @@ export default function TemplatesAdminPage() {
                           <button onClick={() => startEdit(t)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground">
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => handleDelete(t.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400">
+                          <button onClick={() => handleDelete(t.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive/80">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>

@@ -92,7 +92,7 @@ export default function GuestActionMenu({
                 onDelete();
                 setOpen(false);
               }}
-              className="cursor-pointer text-red-600 focus:text-red-600"
+              className="cursor-pointer text-destructive focus:text-destructive"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               <span>Löschen</span>

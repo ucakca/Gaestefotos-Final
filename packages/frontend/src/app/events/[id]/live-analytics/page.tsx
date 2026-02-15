@@ -165,7 +165,7 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
           </div>
           <div className="flex items-center gap-3">
             <div className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full ${
-              connected ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+              connected ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'
             }`}>
               {connected ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
               {connected ? 'Live' : 'Offline'}
@@ -181,7 +181,7 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
             {/* Stat Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <StatCard icon={Camera} label="Fotos gesamt" value={stats.totalPhotos} color="text-blue-500" />
-              <StatCard icon={CheckCircle} label="Freigegeben" value={stats.approvedPhotos} color="text-green-500" />
+              <StatCard icon={CheckCircle} label="Freigegeben" value={stats.approvedPhotos} color="text-success" />
               <StatCard icon={Clock} label="Ausstehend" value={stats.pendingPhotos} color="text-amber-500" pulse={stats.pendingPhotos > 0} />
               <StatCard icon={Users} label="Gäste" value={stats.totalGuests} sub={`${stats.acceptedGuests} bestätigt`} color="text-purple-500" />
             </div>
@@ -192,7 +192,7 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
               <div className="bg-card border border-border rounded-xl p-5">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-medium text-muted-foreground">Uploads / Minute</span>
-                  <Zap className="w-4 h-4 text-yellow-500" />
+                  <Zap className="w-4 h-4 text-warning" />
                 </div>
                 <div className="text-3xl font-bold text-foreground">{uploadsNow}</div>
                 <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
@@ -208,7 +208,7 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
               <div className="bg-card border border-border rounded-xl p-5">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-medium text-muted-foreground">Freigabequote</span>
-                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <CheckCircle className="w-4 h-4 text-success" />
                 </div>
                 <div className="text-3xl font-bold text-foreground">
                   {stats.totalPhotos > 0 ? Math.round(stats.approvedPhotos / stats.totalPhotos * 100) : 0}%
@@ -292,8 +292,8 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
                         >
                           <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
                             item.type === 'upload' ? 'bg-blue-100 text-blue-600' :
-                            item.type === 'approve' ? 'bg-green-100 text-green-600' :
-                            item.type === 'reject' ? 'bg-red-100 text-red-600' :
+                            item.type === 'approve' ? 'bg-success/15 text-success' :
+                            item.type === 'reject' ? 'bg-destructive/15 text-destructive' :
                             'bg-purple-100 text-purple-600'
                           }`}>
                             {item.type === 'upload' ? <Upload className="w-3 h-3" /> :

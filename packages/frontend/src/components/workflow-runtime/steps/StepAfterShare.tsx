@@ -30,11 +30,11 @@ export function StepAfterShare({ node, onComplete }: StepRendererProps) {
         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
       >
         {isError ? (
-          <AlertTriangle className="w-16 h-16 text-red-500" />
+          <AlertTriangle className="w-16 h-16 text-destructive" />
         ) : animation === 'sparkle' ? (
           <Sparkles className="w-16 h-16 text-purple-500" />
         ) : (
-          <CheckCircle className="w-16 h-16 text-green-500" />
+          <CheckCircle className="w-16 h-16 text-success" />
         )}
       </motion.div>
 
@@ -49,7 +49,7 @@ export function StepAfterShare({ node, onComplete }: StepRendererProps) {
               onClick={() => onComplete(output.id)}
               className={`w-full py-3 px-5 rounded-xl font-medium border-2 transition-colors ${
                 output.type === 'retake'
-                  ? 'bg-gray-100 text-gray-700 border-gray-200 hover:border-gray-400'
+                  ? 'bg-muted text-foreground/80 border-border hover:border-border'
                   : 'bg-primary text-white border-primary'
               }`}
             >

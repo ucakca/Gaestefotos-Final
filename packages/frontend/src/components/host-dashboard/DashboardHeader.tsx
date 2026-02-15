@@ -29,9 +29,9 @@ export default function DashboardHeader({
   actions,
 }: DashboardHeaderProps) {
   const statusConfig = {
-    active: { label: 'Aktiv', className: 'bg-green-500/10 text-green-600' },
-    inactive: { label: 'Inaktiv', className: 'bg-yellow-500/10 text-yellow-600' },
-    locked: { label: 'Gesperrt', className: 'bg-red-500/10 text-red-600' },
+    active: { label: 'Aktiv', className: 'bg-success/100/10 text-success' },
+    inactive: { label: 'Inaktiv', className: 'bg-warning/10 text-warning' },
+    locked: { label: 'Gesperrt', className: 'bg-destructive/100/10 text-destructive' },
   };
 
   const currentStatus = statusConfig[status];

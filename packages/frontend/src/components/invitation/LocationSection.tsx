@@ -24,9 +24,9 @@ export function LocationSection({ title, location, theme = 'classic' }: Location
         {title}
       </h2>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-blush/20 overflow-hidden">
+      <div className="bg-card rounded-2xl shadow-sm border border-blush/20 overflow-hidden">
         {location.mapsUrl && (
-          <div className="aspect-video bg-gray-100">
+          <div className="aspect-video bg-muted">
             <iframe
               src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(location.address)}`}
               width="100%"

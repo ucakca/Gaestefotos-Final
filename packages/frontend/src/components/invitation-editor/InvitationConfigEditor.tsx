@@ -71,15 +71,15 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-card rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="border-b border-border px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold">Einladung konfigurieren</h2>
           <Button onClick={onClose} variant="ghost" size="sm">✕</Button>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200 px-6 flex gap-4 overflow-x-auto">
+        <div className="border-b border-border px-6 flex gap-4 overflow-x-auto">
           {[
             { id: 'basic', label: 'Basis', icon: Settings },
             { id: 'design', label: 'Design', icon: Palette },
@@ -95,7 +95,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                 className={`py-3 px-4 border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-rose text-rose font-medium'
-                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <Icon size={16} />
@@ -188,7 +188,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   placeholder="Wir freuen uns auf euch! Bitte bringt gute Laune mit."
                   rows={3}
                 />
-                <p className="text-xs text-gray-400 mt-1">Wird unter dem Titel auf der Einladungskarte angezeigt</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">Wird unter dem Titel auf der Einladungskarte angezeigt</p>
               </div>
 
               <div>
@@ -207,7 +207,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                     className="flex-1"
                   />
                 </div>
-                <p className="text-xs text-gray-400 mt-1">Hauptfarbe des Einladungsdesigns</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">Hauptfarbe des Einladungsdesigns</p>
               </div>
 
               <div>
@@ -217,7 +217,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
                   onChange={(e) => setConfig({ ...config, design: { ...((config as any).design || {}), backgroundImage: e.target.value } } as any)}
                   placeholder="https://example.com/bild.jpg"
                 />
-                <p className="text-xs text-gray-400 mt-1">Wird als Hero-Hintergrund auf der Einladungskarte verwendet</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">Wird als Hero-Hintergrund auf der Einladungskarte verwendet</p>
                 {(config as any).design?.backgroundImage && (
                   <div className="mt-3 rounded-xl overflow-hidden border h-32">
                     <img
@@ -240,7 +240,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
           {activeTab === 'groups' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-gray-600">Definiere verschiedene Gästegruppen mit unterschiedlichen Berechtigungen</p>
+                <p className="text-sm text-muted-foreground">Definiere verschiedene Gästegruppen mit unterschiedlichen Berechtigungen</p>
                 <Button onClick={addGuestGroup} size="sm">
                   <Plus size={16} className="mr-2" />
                   Gruppe
@@ -304,7 +304,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
               ))}
 
               {(!config.availableGroups || config.availableGroups.length === 0) && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-muted-foreground">
                   Noch keine Gruppen definiert. Klicke auf "+ Gruppe" um zu starten.
                 </div>
               )}
@@ -314,7 +314,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
           {activeTab === 'schedule' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-4">
-                <p className="text-sm text-gray-600">Zeitplan für den Event-Ablauf</p>
+                <p className="text-sm text-muted-foreground">Zeitplan für den Event-Ablauf</p>
                 <Button onClick={addScheduleItem} size="sm">
                   <Plus size={16} className="mr-2" />
                   Punkt
@@ -422,7 +422,7 @@ export function InvitationConfigEditor({ invitationId, initialConfig, onSave, on
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 px-6 py-4 flex items-center justify-end gap-3">
+        <div className="border-t border-border px-6 py-4 flex items-center justify-end gap-3">
           <Button onClick={onClose} variant="ghost">Abbrechen</Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving ? 'Speichert...' : 'Speichern'}

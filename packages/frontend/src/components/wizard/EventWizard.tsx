@@ -168,10 +168,10 @@ export default function EventWizard() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => router.push('/events')}
-                className="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors"
                 title="Abbrechen"
               >
-                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -181,7 +181,7 @@ export default function EventWizard() {
               Schritt {state.currentStep} von {getTotalSteps()}
             </span>
           </div>
-          <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-3 bg-muted/80 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary transition-all duration-300 rounded-full"
               style={{ width: `${(state.currentStep / getTotalSteps()) * 100}%` }}
@@ -192,7 +192,7 @@ export default function EventWizard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+        <div className="bg-card rounded-xl shadow-sm border border-border p-6 md:p-8">
           {state.currentStep === 1 && (
             <EventTypeStep
               selectedType={state.eventType}
@@ -300,18 +300,18 @@ export default function EventWizard() {
 
         {/* Error Display */}
         {error && (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mt-4 p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
             <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
               <div className="flex-1">
-                <h3 className="text-sm font-semibold text-red-800">Fehler beim Erstellen</h3>
-                <p className="text-sm text-red-700 mt-1">{error}</p>
+                <h3 className="text-sm font-semibold text-destructive">Fehler beim Erstellen</h3>
+                <p className="text-sm text-destructive mt-1">{error}</p>
               </div>
               <button
                 onClick={() => setError(null)}
-                className="text-red-400 hover:text-red-600 transition-colors"
+                className="text-destructive/80 hover:text-destructive transition-colors"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />

@@ -105,11 +105,11 @@ export default function ColorSchemeStep({
         <motion.h2
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-gray-900 mb-2"
+          className="text-2xl font-bold text-foreground mb-2"
         >
           Wähle dein Farbschema 🎨
         </motion.h2>
-        <p className="text-gray-500">Die Farben für deine Event-Seite</p>
+        <p className="text-muted-foreground">Die Farben für deine Event-Seite</p>
       </div>
 
       {/* AI Suggestion (if cover image exists) */}
@@ -216,8 +216,8 @@ export default function ColorSchemeStep({
               onClick={() => onColorSchemeChange(scheme.id)}
               className={`relative p-4 rounded-2xl border-2 transition-all ${
                 isSelected
-                  ? 'border-gray-900 shadow-lg'
-                  : 'border-gray-100 hover:border-gray-200'
+                  ? 'border-foreground shadow-lg'
+                  : 'border-border/50 hover:border-border'
               }`}
             >
               {/* Color Preview */}
@@ -229,7 +229,7 @@ export default function ColorSchemeStep({
               </div>
               
               {/* Label */}
-              <p className={`text-sm font-medium ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>
+              <p className={`text-sm font-medium ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
                 {scheme.label}
               </p>
 
@@ -238,7 +238,7 @@ export default function ColorSchemeStep({
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gray-900 flex items-center justify-center"
+                  className="absolute top-2 right-2 w-6 h-6 rounded-full bg-foreground flex items-center justify-center"
                 >
                   <Check className="w-4 h-4 text-white" />
                 </motion.div>
@@ -253,12 +253,12 @@ export default function ColorSchemeStep({
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          className="bg-gray-50 rounded-2xl p-4 space-y-4"
+          className="bg-muted/50 rounded-2xl p-4 space-y-4"
         >
-          <p className="text-sm font-medium text-gray-700">Eigene Farben wählen</p>
+          <p className="text-sm font-medium text-foreground/80">Eigene Farben wählen</p>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Primär</label>
+              <label className="text-xs text-muted-foreground mb-1 block">Primär</label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -270,11 +270,11 @@ export default function ColorSchemeStep({
                   }}
                   className="w-10 h-10 rounded-lg border-0 cursor-pointer"
                 />
-                <span className="text-xs font-mono text-gray-500">{customColors.primary}</span>
+                <span className="text-xs font-mono text-muted-foreground">{customColors.primary}</span>
               </div>
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Sekundär</label>
+              <label className="text-xs text-muted-foreground mb-1 block">Sekundär</label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -286,11 +286,11 @@ export default function ColorSchemeStep({
                   }}
                   className="w-10 h-10 rounded-lg border-0 cursor-pointer"
                 />
-                <span className="text-xs font-mono text-gray-500">{customColors.secondary}</span>
+                <span className="text-xs font-mono text-muted-foreground">{customColors.secondary}</span>
               </div>
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Akzent</label>
+              <label className="text-xs text-muted-foreground mb-1 block">Akzent</label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -302,7 +302,7 @@ export default function ColorSchemeStep({
                   }}
                   className="w-10 h-10 rounded-lg border-0 cursor-pointer"
                 />
-                <span className="text-xs font-mono text-gray-500">{customColors.accent}</span>
+                <span className="text-xs font-mono text-muted-foreground">{customColors.accent}</span>
               </div>
             </div>
           </div>
@@ -322,8 +322,8 @@ export default function ColorSchemeStep({
               style={{ backgroundColor: selectedScheme.accent }}
             />
             <div>
-              <p className="font-semibold text-gray-900">Vorschau</p>
-              <p className="text-sm text-gray-600">So wird dein Event aussehen</p>
+              <p className="font-semibold text-foreground">Vorschau</p>
+              <p className="text-sm text-muted-foreground">So wird dein Event aussehen</p>
             </div>
           </div>
         </motion.div>

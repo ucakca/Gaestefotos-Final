@@ -188,8 +188,8 @@ export default function CoverFlowCarousel({
             onClick={() => setCurrentIndex(index)}
             className={`w-2 h-2 rounded-full transition-all duration-300 ${
               index === currentIndex 
-                ? 'w-8 bg-white' 
-                : 'bg-white/40 hover:bg-white/60'
+                ? 'w-8 bg-card' 
+                : 'bg-card/40 hover:bg-card/60'
             }`}
           />
         ))}

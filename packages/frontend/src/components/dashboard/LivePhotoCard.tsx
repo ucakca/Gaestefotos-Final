@@ -38,7 +38,7 @@ const typeBadges = {
   challenge: {
     icon: Trophy,
     label: 'Challenge',
-    color: 'bg-yellow-500/90 text-white',
+    color: 'bg-warning/90 text-white',
   },
   story: {
     icon: Sparkles,
@@ -48,7 +48,7 @@ const typeBadges = {
   photo: {
     icon: User,
     label: 'Foto',
-    color: 'bg-green-500/90 text-white',
+    color: 'bg-success/100/90 text-white',
   },
 };
 
@@ -114,7 +114,7 @@ export default function LivePhotoCard({
         initial={{ scale: 0, rotate: -180 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-        className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg"
+        className="absolute top-3 right-3 bg-destructive/100 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg"
       >
         NEU
       </motion.div>

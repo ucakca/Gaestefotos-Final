@@ -59,9 +59,9 @@ export default function AnimatedLeaderboard({
 
   const getRankIcon = (change: string | null) => {
     switch (change) {
-      case 'up': return <TrendingUp className="w-4 h-4 text-green-500" />;
-      case 'down': return <TrendingDown className="w-4 h-4 text-red-500" />;
-      default: return <Minus className="w-4 h-4 text-gray-400" />;
+      case 'up': return <TrendingUp className="w-4 h-4 text-success" />;
+      case 'down': return <TrendingDown className="w-4 h-4 text-destructive" />;
+      default: return <Minus className="w-4 h-4 text-muted-foreground/70" />;
     }
   };
 
@@ -70,7 +70,7 @@ export default function AnimatedLeaderboard({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-white flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-yellow-400" />
+          <Trophy className="w-5 h-5 text-warning" />
           Bestenliste
         </h3>
         <span className="text-sm text-muted-foreground">Live</span>

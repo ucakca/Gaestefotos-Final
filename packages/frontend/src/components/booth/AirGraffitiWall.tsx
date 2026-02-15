@@ -263,7 +263,7 @@ export default function AirGraffitiWall({ onSave, onClose, width = 1280, height 
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2 bg-black/60 z-10">
         <div className="flex items-center gap-2">
-          <button onClick={onClose} className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10">
+          <button onClick={onClose} className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-card/10">
             <X className="w-5 h-5" />
           </button>
           <Hand className="w-5 h-5 text-emerald-400" />
@@ -272,11 +272,11 @@ export default function AirGraffitiWall({ onSave, onClose, width = 1280, height 
         </div>
         <div className="flex items-center gap-1">
           <button onClick={handleUndo} disabled={strokes.length === 0}
-            className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-30">
+            className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-card/10 disabled:opacity-30">
             <Undo2 className="w-4 h-4" />
           </button>
           <button onClick={handleClear} disabled={strokes.length === 0}
-            className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-30">
+            className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-card/10 disabled:opacity-30">
             <Trash2 className="w-4 h-4" />
           </button>
           <button onClick={handleSave} disabled={saving || strokes.length === 0}
@@ -339,7 +339,7 @@ export default function AirGraffitiWall({ onSave, onClose, width = 1280, height 
         {error && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/70 z-10">
             <div className="text-center">
-              <X className="w-12 h-12 text-red-400 mx-auto mb-4" />
+              <X className="w-12 h-12 text-destructive/80 mx-auto mb-4" />
               <p className="text-white/80 mb-2">Fehler: {error}</p>
               <p className="text-white/50 text-sm">Bitte Kamera-Zugriff erlauben und erneut versuchen.</p>
             </div>
@@ -352,13 +352,13 @@ export default function AirGraffitiWall({ onSave, onClose, width = 1280, height 
         {/* Brush size + neon toggle */}
         <div className="flex items-center justify-center gap-3">
           <button onClick={() => setUseNeon(!useNeon)}
-            className={`px-3 py-1 rounded-lg text-xs font-medium ${useNeon ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/50' : 'bg-white/10 text-white/50 border border-white/20'}`}>
+            className={`px-3 py-1 rounded-lg text-xs font-medium ${useNeon ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/50' : 'bg-card/10 text-white/50 border border-white/20'}`}>
             {useNeon ? '✨ Neon' : '● Normal'}
           </button>
-          <div className="w-px h-6 bg-white/20" />
+          <div className="w-px h-6 bg-card/20" />
           {[4, 8, 14, 22, 32].map(size => (
             <button key={size} onClick={() => setBrushSize(size)}
-              className={`p-1 rounded-lg ${brushSize === size ? 'bg-white/20' : ''}`}>
+              className={`p-1 rounded-lg ${brushSize === size ? 'bg-card/20' : ''}`}>
               <div className="rounded-full mx-auto" style={{
                 width: Math.min(size, 20),
                 height: Math.min(size, 20),

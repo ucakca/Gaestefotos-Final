@@ -49,8 +49,8 @@ export function TrialBanner({
     expiring: {
       icon: Clock,
       bgColor: 'bg-gradient-to-r from-red-500/10 to-orange-500/10',
-      borderColor: 'border-red-500/20',
-      iconColor: 'text-red-500',
+      borderColor: 'border-destructive/20',
+      iconColor: 'text-destructive',
       title: daysLeft ? `Noch ${daysLeft} Tage Trial` : 'Trial läuft bald ab',
       description: 'Upgrade jetzt und behalte alle Features',
       cta: 'Jetzt sichern',

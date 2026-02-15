@@ -308,7 +308,7 @@ export default function InvitationsPage({ params }: { params: Promise<{ id: stri
       cell: ({ row }) => {
         const isPublic = row.original.visibility === 'PUBLIC';
         return (
-          <span className={`text-xs px-2 py-0.5 rounded ${isPublic ? 'bg-green-500/10 text-green-700' : 'bg-muted text-muted-foreground'}`}>
+          <span className={`text-xs px-2 py-0.5 rounded ${isPublic ? 'bg-success/100/10 text-success' : 'bg-muted text-muted-foreground'}`}>
             {isPublic ? 'Öffentlich' : 'Unlisted'}
           </span>
         );
@@ -321,9 +321,9 @@ export default function InvitationsPage({ params }: { params: Promise<{ id: stri
         const rsvp = row.original.rsvp;
         return (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="text-green-600">✓ {rsvp?.yes ?? 0}</span>
-            <span className="text-red-600">✗ {rsvp?.no ?? 0}</span>
-            <span className="text-yellow-600">? {rsvp?.maybe ?? 0}</span>
+            <span className="text-success">✓ {rsvp?.yes ?? 0}</span>
+            <span className="text-destructive">✗ {rsvp?.no ?? 0}</span>
+            <span className="text-warning">? {rsvp?.maybe ?? 0}</span>
           </div>
         );
       },

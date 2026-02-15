@@ -80,7 +80,7 @@ export default function UpsellModal({ isOpen, onClose, featureId, onUpgrade }: U
                   <div>
                     <h3 className="font-semibold text-foreground">{feature.name}</h3>
                     {feature.isNew && (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-success/15 text-success px-2 py-0.5 rounded-full">
                         Neu
                       </span>
                     )}

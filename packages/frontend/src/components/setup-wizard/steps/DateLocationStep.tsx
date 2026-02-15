@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/Button';
 const LocationMap = dynamic(() => import('../LocationMap'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-48 rounded-xl border-2 border-gray-200 bg-gray-50 flex items-center justify-center">
-      <div className="text-gray-400 text-sm">Karte wird geladen...</div>
+    <div className="w-full h-48 rounded-xl border-2 border-border bg-muted/50 flex items-center justify-center">
+      <div className="text-muted-foreground/70 text-sm">Karte wird geladen...</div>
     </div>
   ),
 });
@@ -70,11 +70,11 @@ export default function DateLocationStep({
         <motion.h2
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold text-gray-900 mb-2"
+          className="text-2xl font-bold text-foreground mb-2"
         >
           Wann & Wo? 📍
         </motion.h2>
-        <p className="text-gray-500">Diese Angaben sind optional</p>
+        <p className="text-muted-foreground">Diese Angaben sind optional</p>
       </div>
 
       {/* Date Input */}
@@ -84,7 +84,7 @@ export default function DateLocationStep({
         className="space-y-4"
       >
         <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-foreground/80 mb-2">
             <Calendar className="w-4 h-4" />
             Datum & Uhrzeit
           </label>
@@ -94,13 +94,13 @@ export default function DateLocationStep({
             onChange={(e) => handleDateChange(e.target.value)}
             min="2020-01-01T00:00"
             max="2099-12-31T23:59"
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors"
+            className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors"
           />
         </div>
 
         {/* Location Input */}
         <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-foreground/80 mb-2">
             <MapPin className="w-4 h-4" />
             Ort / Location
           </label>
@@ -109,7 +109,7 @@ export default function DateLocationStep({
             value={location}
             onChange={(e) => onLocationChange(e.target.value)}
             placeholder="z.B. Schloss Neuschwanstein"
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors"
+            className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors"
           />
         </div>
 
@@ -167,7 +167,7 @@ export default function DateLocationStep({
         
         <button
           onClick={onSkip}
-          className="w-full py-2 text-sm text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1"
+          className="w-full py-2 text-sm text-muted-foreground hover:text-foreground/80 flex items-center justify-center gap-1"
         >
           <SkipForward className="w-4 h-4" />
           Überspringen, später hinzufügen

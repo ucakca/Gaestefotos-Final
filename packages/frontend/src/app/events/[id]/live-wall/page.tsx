@@ -309,10 +309,10 @@ export default function LiveWallPage() {
           
           <div className="flex items-center gap-1">
             {/* View Mode Toggle */}
-            <div className={`flex rounded-lg p-0.5 ${viewMode === 'slideshow' ? 'bg-white/10' : 'bg-background'}`}>
+            <div className={`flex rounded-lg p-0.5 ${viewMode === 'slideshow' ? 'bg-card/10' : 'bg-background'}`}>
               <button
                 onClick={() => setViewMode('slideshow')}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'slideshow' ? 'bg-white/20 text-white' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'slideshow' ? 'bg-card/20 text-white' : 'text-muted-foreground hover:text-foreground'}`}
                 title="Slideshow"
               >
                 <Monitor className="w-4 h-4" />
@@ -331,28 +331,28 @@ export default function LiveWallPage() {
               <div className="flex items-center gap-1 ml-2">
                 <button
                   onClick={() => setIsPlaying(!isPlaying)}
-                  className="p-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  className="p-1.5 rounded-lg bg-card/10 text-white hover:bg-card/20 transition-colors"
                   title={isPlaying ? 'Pause' : 'Play'}
                 >
                   {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                 </button>
                 <button
                   onClick={nextSlide}
-                  className="p-1.5 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  className="p-1.5 rounded-lg bg-card/10 text-white hover:bg-card/20 transition-colors"
                   title="Nächstes"
                 >
                   <SkipForward className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setShuffleMode(!shuffleMode)}
-                  className={`p-1.5 rounded-lg transition-colors ${shuffleMode ? 'bg-blue-500 text-white' : 'bg-white/10 text-white/60 hover:bg-white/20'}`}
+                  className={`p-1.5 rounded-lg transition-colors ${shuffleMode ? 'bg-blue-500 text-white' : 'bg-card/10 text-white/60 hover:bg-card/20'}`}
                   title={shuffleMode ? 'Zufällig (an)' : 'Zufällig (aus)'}
                 >
                   <Shuffle className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setShowSettings(!showSettings)}
-                  className="p-1.5 rounded-lg bg-white/10 text-white/60 hover:bg-white/20 transition-colors"
+                  className="p-1.5 rounded-lg bg-card/10 text-white/60 hover:bg-card/20 transition-colors"
                   title="Einstellungen"
                 >
                   <Settings className="w-4 h-4" />
@@ -389,7 +389,7 @@ export default function LiveWallPage() {
               <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-white/60">Animation:</span>
-                  <div className="flex rounded-lg bg-white/10 p-0.5">
+                  <div className="flex rounded-lg bg-card/10 p-0.5">
                     {(['fade', 'slide', 'zoom', 'flip', 'collage'] as AnimationType[]).map(a => (
                       <button
                         key={a}
@@ -510,7 +510,7 @@ export default function LiveWallPage() {
                   )}
                   {currentPhoto.isChallengeCompletion && currentPhoto.challenge && (
                     <div className="absolute top-4 right-4">
-                      <div className="bg-yellow-400 text-yellow-900 rounded-full px-4 py-2 shadow-lg flex items-center gap-2">
+                      <div className="bg-warning/80 text-warning rounded-full px-4 py-2 shadow-lg flex items-center gap-2">
                         <Trophy className="w-5 h-5" />
                         <span className="font-bold">{currentPhoto.challenge.emoji || '🏆'} {currentPhoto.challenge.title}</span>
                       </div>
@@ -529,7 +529,7 @@ export default function LiveWallPage() {
             )}
           </AnimatePresence>
           {/* Progress bar */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-card/10">
             <motion.div
               key={currentIndex}
               className="h-full bg-blue-500"
@@ -553,12 +553,12 @@ export default function LiveWallPage() {
                   transition={{ delay: index * 0.05, duration: 0.4 }}
                   className="break-inside-avoid mb-4"
                 >
-                  <div className="relative group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 bg-white">
+                  <div className="relative group rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 bg-card">
                     <img src={photo.url} alt="" className="w-full h-auto object-cover" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     {photo.isGuestbookEntry && photo.guestbookEntry && (
                       <div className="absolute bottom-3 left-3 right-3">
-                        <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
+                        <div className="bg-card/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
                           <div className="flex items-start gap-2">
                             <MessageCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
@@ -571,7 +571,7 @@ export default function LiveWallPage() {
                     )}
                     {photo.isChallengeCompletion && photo.challenge && (
                       <div className="absolute top-3 right-3">
-                        <div className="bg-yellow-400 text-yellow-900 rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5">
+                        <div className="bg-warning/80 text-warning rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5">
                           <Trophy className="w-4 h-4" />
                           <span className="text-xs font-bold">{photo.challenge.emoji || '🏆'} {photo.challenge.title}</span>
                         </div>

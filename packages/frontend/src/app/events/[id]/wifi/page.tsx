@@ -196,10 +196,10 @@ export default function WifiSettingsPage() {
                 value={wifiPasswordConfirm}
                 onChange={(e) => setWifiPasswordConfirm(e.target.value)}
                 placeholder="Passwort erneut eingeben"
-                className={`px-4 py-3 ${!passwordsMatch ? 'border-red-500 focus:ring-red-500' : ''}`}
+                className={`px-4 py-3 ${!passwordsMatch ? 'border-destructive focus:ring-red-500' : ''}`}
               />
               {!passwordsMatch && (
-                <p className="mt-1.5 text-sm text-red-500">
+                <p className="mt-1.5 text-sm text-destructive">
                   Passwörter stimmen nicht überein
                 </p>
               )}

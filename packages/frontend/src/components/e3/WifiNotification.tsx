@@ -91,7 +91,7 @@ export default function WifiNotification({ ssid, password, eventId, forceShow, o
                 e.stopPropagation();
                 handleDismiss();
               }}
-              className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-white/20 transition-colors"
+              className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-card/20 transition-colors"
             >
               <X className="w-4 h-4 text-white/80" />
             </button>
@@ -100,7 +100,7 @@ export default function WifiNotification({ ssid, password, eventId, forceShow, o
               {/* Icon */}
               <div className={`
                 w-10 h-10 rounded-full flex items-center justify-center
-                ${copied ? 'bg-green-400' : 'bg-white/20'}
+                ${copied ? 'bg-success/80' : 'bg-card/20'}
                 transition-colors duration-300
               `}>
                 <AnimatePresence mode="wait">
@@ -161,7 +161,7 @@ export default function WifiNotification({ ssid, password, eventId, forceShow, o
             {/* Swipe hint indicator */}
             {!copied && (
               <div className="absolute bottom-1 left-1/2 -translate-x-1/2">
-                <div className="w-8 h-1 bg-white/30 rounded-full" />
+                <div className="w-8 h-1 bg-card/30 rounded-full" />
               </div>
             )}
           </div>

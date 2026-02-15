@@ -121,7 +121,7 @@ export default function ProfileImageStep({
               </button>
               <button
                 onClick={handleRemove}
-                className="w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors shadow-md"
+                className="w-7 h-7 rounded-full bg-destructive/100 text-white flex items-center justify-center hover:bg-destructive transition-colors shadow-md"
                 title="Entfernen"
               >
                 <X className="w-3 h-3" />

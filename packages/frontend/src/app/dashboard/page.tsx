@@ -238,12 +238,12 @@ export default function DashboardPage() {
                   </div>
                   <p className="text-2xl font-bold text-blue-900">{totalMedia}</p>
                 </div>
-                <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-3">
-                  <div className="flex items-center gap-2 text-green-600 mb-1">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 border border-success/30 rounded-xl p-3">
+                  <div className="flex items-center gap-2 text-success mb-1">
                     <Users className="w-4 h-4" />
                     <span className="text-xs font-medium">BESUCHER</span>
                   </div>
-                  <p className="text-2xl font-bold text-green-900">{totalVisitors}</p>
+                  <p className="text-2xl font-bold text-success">{totalVisitors}</p>
                 </div>
                 <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-3">
                   <div className="flex items-center gap-2 text-purple-600 mb-1">
@@ -288,9 +288,9 @@ export default function DashboardPage() {
                           <h4 className="font-medium text-foreground text-sm mb-2">Event-Status Erklärung</h4>
                           <div className="space-y-2 text-xs">
                             <div className="flex items-start gap-2">
-                              <div className="w-2.5 h-2.5 rounded-full bg-green-500 mt-0.5 flex-shrink-0" />
+                              <div className="w-2.5 h-2.5 rounded-full bg-success/100 mt-0.5 flex-shrink-0" />
                               <div>
-                                <span className="font-medium text-green-700">Live</span>
+                                <span className="font-medium text-success">Live</span>
                                 <p className="text-muted-foreground">Event läuft/kommt, Galerie aktiv</p>
                               </div>
                             </div>
@@ -302,9 +302,9 @@ export default function DashboardPage() {
                               </div>
                             </div>
                             <div className="flex items-start gap-2">
-                              <div className="w-2.5 h-2.5 rounded-full bg-red-500 mt-0.5 flex-shrink-0" />
+                              <div className="w-2.5 h-2.5 rounded-full bg-destructive/100 mt-0.5 flex-shrink-0" />
                               <div>
-                                <span className="font-medium text-red-700">Gesperrt</span>
+                                <span className="font-medium text-destructive">Gesperrt</span>
                                 <p className="text-muted-foreground">Galerie deaktiviert, kein Zugang</p>
                               </div>
                             </div>
@@ -369,7 +369,7 @@ export default function DashboardPage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6"
+              className="bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 rounded-xl mb-6"
             >
               {error}
             </motion.div>

@@ -119,7 +119,7 @@ export function RSVPForm({ questions, currentGroup, onSubmit, theme = 'classic' 
         Rückmeldung
       </h2>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-blush/20 p-6 md:p-8 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-card rounded-2xl shadow-sm border border-blush/20 p-6 md:p-8 space-y-6">
         {visibleQuestions.map((question) => (
           <div key={question.id} className="space-y-2">
             <label className="block text-sm font-medium text-foreground">

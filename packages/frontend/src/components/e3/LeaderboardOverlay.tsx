@@ -214,7 +214,7 @@ function PodiumCard({ entry, rank, isWinner = false }: { entry: LeaderboardEntry
             transition={{ delay: 0.3, type: 'spring' }}
             className="absolute -top-3 left-1/2 -translate-x-1/2 z-10"
           >
-            <Crown className="w-5 h-5 text-yellow-500 drop-shadow-md" />
+            <Crown className="w-5 h-5 text-warning drop-shadow-md" />
           </motion.div>
         )}
         <div

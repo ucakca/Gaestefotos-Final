@@ -151,7 +151,7 @@ export default function DesignStep({
                   onClick={() => onColorSchemeChange(scheme.id)}
                   className={`
                     p-4 rounded-lg border-2 transition-all
-                    ${colorScheme === scheme.id ? 'border-primary ring-2 ring-primary ring-offset-1' : 'border-gray-200 hover:border-gray-300'}
+                    ${colorScheme === scheme.id ? 'border-primary ring-2 ring-primary ring-offset-1' : 'border-border hover:border-border'}
                   `}
                 >
                   <div className={`h-12 rounded mb-2 ${scheme.colors}`} />
@@ -164,8 +164,8 @@ export default function DesignStep({
 
         <div className="hidden md:block">
           <label className="block text-sm font-medium mb-2">📱 Vorschau</label>
-          <div className="border-4 border-gray-800 rounded-3xl p-2 bg-gray-800">
-            <div className="bg-white rounded-2xl overflow-hidden">
+          <div className="border-4 border-foreground/90 rounded-3xl p-2 bg-foreground/90">
+            <div className="bg-card rounded-2xl overflow-hidden">
               <div className="relative h-32">
                 {coverImagePreview ? (
                   <img src={coverImagePreview} alt="Cover Preview" className="w-full h-full object-cover" />
@@ -174,7 +174,7 @@ export default function DesignStep({
                 )}
               </div>
               <div className="px-4 py-3 -mt-8 relative">
-                <div className="w-16 h-16 rounded-full border-4 border-white overflow-hidden bg-gray-200">
+                <div className="w-16 h-16 rounded-full border-4 border-white overflow-hidden bg-muted/80">
                   {profileImagePreview && (
                     <img src={profileImagePreview} alt="Profile Preview" className="w-full h-full object-cover" />
                   )}

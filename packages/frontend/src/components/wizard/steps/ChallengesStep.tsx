@@ -60,9 +60,9 @@ export default function ChallengesStep({
           const IconComponent = Icons[challenge.icon as keyof typeof Icons] as Icons.LucideIcon;
 
           return (
-            <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+            <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
               <Checkbox checked={challenge.enabled} onCheckedChange={() => handleToggleChallenge(index)} />
-              {IconComponent && <IconComponent className="w-5 h-5 text-gray-600" />}
+              {IconComponent && <IconComponent className="w-5 h-5 text-muted-foreground" />}
               <span className="flex-1 font-medium">{challenge.label}</span>
             </div>
           );

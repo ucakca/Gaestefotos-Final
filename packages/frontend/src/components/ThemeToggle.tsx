@@ -39,7 +39,7 @@ export function ThemeToggle({ className = '', size = 'md' }: ThemeToggleProps) {
       title={isDark ? 'Heller Modus' : 'Dunkler Modus'}
     >
       {isDark ? (
-        <Sun className={`${iconSize} text-yellow-400`} />
+        <Sun className={`${iconSize} text-warning`} />
       ) : (
         <Moon className={`${iconSize} text-muted-foreground`} />
       )}
@@ -68,7 +68,7 @@ export function ThemeToggleText({ className = '' }: { className?: string }) {
     >
       {isDark ? (
         <>
-          <Sun className="w-4 h-4 text-yellow-400" />
+          <Sun className="w-4 h-4 text-warning" />
           <span>Heller Modus</span>
         </>
       ) : (

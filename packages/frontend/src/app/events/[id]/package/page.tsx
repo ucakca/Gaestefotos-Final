@@ -156,23 +156,23 @@ export default function PackagePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-muted/50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/50">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-20">
+      <div className="bg-card border-b sticky top-0 z-20">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
-          <button onClick={() => router.back()} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
+          <button onClick={() => router.back()} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+            <ChevronLeft className="w-5 h-5 text-muted-foreground" />
           </button>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">Paket verwalten</h1>
-            <p className="text-xs text-gray-500">
+            <h1 className="text-lg font-bold text-foreground">Paket verwalten</h1>
+            <p className="text-xs text-muted-foreground">
               Aktuell: <span className="font-medium text-purple-600">{packageName}</span> ({currentTier})
             </p>
           </div>
@@ -182,16 +182,16 @@ export default function PackagePage() {
       {/* Messages */}
       {success && (
         <div className="max-w-4xl mx-auto px-4 mt-4">
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
-            <Check className="w-5 h-5 text-green-500 shrink-0" />
-            <p className="text-sm text-green-700">{success}</p>
+          <div className="bg-success/10 border border-success/30 rounded-xl p-4 flex items-center gap-3">
+            <Check className="w-5 h-5 text-success shrink-0" />
+            <p className="text-sm text-success">{success}</p>
           </div>
         </div>
       )}
       {error && (
         <div className="max-w-4xl mx-auto px-4 mt-4">
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4">
+            <p className="text-sm text-destructive">{error}</p>
           </div>
         </div>
       )}
@@ -200,7 +200,7 @@ export default function PackagePage() {
       <div className="max-w-4xl mx-auto px-4 py-6">
         {packages.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">Keine Pakete verfügbar.</p>
+            <p className="text-muted-foreground">Keine Pakete verfügbar.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -215,8 +215,8 @@ export default function PackagePage() {
                   key={pkg.id}
                   className={`relative rounded-2xl border-2 transition-all ${
                     isCurrent
-                      ? 'border-purple-400 bg-white shadow-lg shadow-purple-100'
-                      : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+                      ? 'border-purple-400 bg-card shadow-lg shadow-purple-100'
+                      : 'border-border bg-card hover:border-border hover:shadow-md'
                   }`}
                 >
                   {isCurrent && (
@@ -229,48 +229,48 @@ export default function PackagePage() {
                     {/* Header */}
                     <div className="flex items-start gap-3 mb-4">
                       <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${tier.gradient} flex items-center justify-center`}>
-                        <TierIcon className="w-6 h-6 text-gray-700" />
+                        <TierIcon className="w-6 h-6 text-foreground/80" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-bold text-gray-900 text-lg">{pkg.name}</h3>
-                        <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                        <h3 className="font-bold text-foreground text-lg">{pkg.name}</h3>
+                        <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                           {tier.badge}
                         </span>
                       </div>
                       <div className="text-right">
-                        <div className="text-xl font-bold text-gray-900">
+                        <div className="text-xl font-bold text-foreground">
                           {formatPrice(pkg.priceEurCents)}
                         </div>
                         {pkg.priceEurCents && pkg.priceEurCents > 0 && (
-                          <div className="text-xs text-gray-400">einmalig</div>
+                          <div className="text-xs text-muted-foreground/70">einmalig</div>
                         )}
                       </div>
                     </div>
 
                     {pkg.description && (
-                      <p className="text-sm text-gray-500 mb-4">{pkg.description}</p>
+                      <p className="text-sm text-muted-foreground mb-4">{pkg.description}</p>
                     )}
 
                     {/* Key Stats */}
                     <div className="grid grid-cols-3 gap-2 mb-4">
-                      <div className="bg-gray-50 rounded-lg p-2 text-center">
-                        <HardDrive className="w-4 h-4 mx-auto text-gray-400 mb-1" />
-                        <div className="text-xs font-medium text-gray-700">{formatBytes(pkg.storageLimitBytes)}</div>
-                        <div className="text-[10px] text-gray-400">Speicher</div>
+                      <div className="bg-muted/50 rounded-lg p-2 text-center">
+                        <HardDrive className="w-4 h-4 mx-auto text-muted-foreground/70 mb-1" />
+                        <div className="text-xs font-medium text-foreground/80">{formatBytes(pkg.storageLimitBytes)}</div>
+                        <div className="text-[10px] text-muted-foreground/70">Speicher</div>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-2 text-center">
-                        <Camera className="w-4 h-4 mx-auto text-gray-400 mb-1" />
-                        <div className="text-xs font-medium text-gray-700">
+                      <div className="bg-muted/50 rounded-lg p-2 text-center">
+                        <Camera className="w-4 h-4 mx-auto text-muted-foreground/70 mb-1" />
+                        <div className="text-xs font-medium text-foreground/80">
                           {pkg.storageLimitPhotos ? `${pkg.storageLimitPhotos}` : '∞'}
                         </div>
-                        <div className="text-[10px] text-gray-400">Fotos</div>
+                        <div className="text-[10px] text-muted-foreground/70">Fotos</div>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-2 text-center">
-                        <Shield className="w-4 h-4 mx-auto text-gray-400 mb-1" />
-                        <div className="text-xs font-medium text-gray-700">
+                      <div className="bg-muted/50 rounded-lg p-2 text-center">
+                        <Shield className="w-4 h-4 mx-auto text-muted-foreground/70 mb-1" />
+                        <div className="text-xs font-medium text-foreground/80">
                           {pkg.storageDurationDays ? `${pkg.storageDurationDays}d` : '∞'}
                         </div>
-                        <div className="text-[10px] text-gray-400">Laufzeit</div>
+                        <div className="text-[10px] text-muted-foreground/70">Laufzeit</div>
                       </div>
                     </div>
 
@@ -289,12 +289,12 @@ export default function PackagePage() {
                           return (
                             <div key={key} className="flex items-center gap-2 text-sm">
                               {enabled ? (
-                                <Check className="w-4 h-4 text-green-500 shrink-0" />
+                                <Check className="w-4 h-4 text-success shrink-0" />
                               ) : (
-                                <Lock className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                                <Lock className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
                               )}
-                              <Icon className={`w-3.5 h-3.5 ${enabled ? 'text-gray-600' : 'text-gray-300'}`} />
-                              <span className={enabled ? 'text-gray-700' : 'text-gray-400'}>{label}</span>
+                              <Icon className={`w-3.5 h-3.5 ${enabled ? 'text-muted-foreground' : 'text-muted-foreground/50'}`} />
+                              <span className={enabled ? 'text-foreground/80' : 'text-muted-foreground/70'}>{label}</span>
                             </div>
                           );
                         })}
@@ -312,7 +312,7 @@ export default function PackagePage() {
                         disabled={!!switching}
                         className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
                           switching === pkg.sku
-                            ? 'bg-gray-200 text-gray-400'
+                            ? 'bg-muted/80 text-muted-foreground/70'
                             : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-sm'
                         }`}
                       >

@@ -104,8 +104,8 @@ export default function Step3SettingsActivate({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-bold text-gray-900 mb-1">Einstellungen & Start</h2>
-        <p className="text-sm text-gray-500 mb-4">
+        <h2 className="text-lg font-bold text-foreground mb-1">Einstellungen & Start</h2>
+        <p className="text-sm text-muted-foreground mb-4">
           Animationen, Quellen und Optionen konfigurieren.
         </p>
       </div>
@@ -113,12 +113,12 @@ export default function Step3SettingsActivate({
       {/* ─── Animation Tiles ─── */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <label className="text-sm font-medium text-gray-700">Tile-Animationen</label>
+          <label className="text-sm font-medium text-foreground/80">Tile-Animationen</label>
           <button
             type="button"
             onClick={selectAll}
             className={`text-xs font-medium transition-colors ${
-              allSelected ? 'text-gray-400' : 'text-purple-600 hover:text-purple-700'
+              allSelected ? 'text-muted-foreground/70' : 'text-purple-600 hover:text-purple-700'
             }`}
           >
             Alle auswählen
@@ -137,11 +137,11 @@ export default function Step3SettingsActivate({
                 className={`relative rounded-xl border-2 overflow-hidden transition-all ${
                   selected
                     ? 'border-purple-500 bg-purple-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
+                    : 'border-border bg-card hover:border-border'
                 }`}
               >
                 <div
-                  className="aspect-square bg-gray-900 flex items-center justify-center cursor-pointer relative"
+                  className="aspect-square bg-foreground flex items-center justify-center cursor-pointer relative"
                   onClick={() => playPreview(anim.value)}
                 >
                   <AnimatePresence mode="wait">
@@ -173,11 +173,11 @@ export default function Step3SettingsActivate({
                     type="checkbox"
                     checked={selected}
                     onChange={() => toggleAnimation(anim.value)}
-                    className="h-3.5 w-3.5 rounded border-gray-300 shrink-0"
+                    className="h-3.5 w-3.5 rounded border-border shrink-0"
                     style={{ accentColor: '#9333ea' }}
                   />
                   <div className="min-w-0">
-                    <div className="text-xs font-medium text-gray-700 truncate">{anim.label}</div>
+                    <div className="text-xs font-medium text-foreground/80 truncate">{anim.label}</div>
                   </div>
                 </div>
               </div>
@@ -185,7 +185,7 @@ export default function Step3SettingsActivate({
           })}
         </div>
 
-        <p className="text-xs text-gray-400 mt-2">
+        <p className="text-xs text-muted-foreground/70 mt-2">
           {selectedCount === 1
             ? `Alle Tiles: "${ANIMATIONS.find((a) => a.value === state.selectedAnimations[0])?.label}"`
             : selectedCount === ANIMATIONS.length
@@ -196,37 +196,37 @@ export default function Step3SettingsActivate({
 
       {/* ─── Display Options (compact) ─── */}
       <div className="space-y-2">
-        <label className="flex items-center justify-between p-3 bg-white rounded-xl border cursor-pointer">
+        <label className="flex items-center justify-between p-3 bg-card rounded-xl border cursor-pointer">
           <div>
-            <span className="text-sm font-medium text-gray-700">Statistik-Ticker</span>
-            <p className="text-xs text-gray-400">Fortschritt am unteren Rand</p>
+            <span className="text-sm font-medium text-foreground/80">Statistik-Ticker</span>
+            <p className="text-xs text-muted-foreground/70">Fortschritt am unteren Rand</p>
           </div>
           <button
             type="button"
             onClick={() => onChange({ showTicker: !state.showTicker })}
             className={`relative w-11 h-6 rounded-full transition-colors ${
-              state.showTicker ? 'bg-purple-600' : 'bg-gray-300'
+              state.showTicker ? 'bg-purple-600' : 'bg-muted/60'
             }`}
           >
-            <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+            <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-card shadow transition-transform ${
               state.showTicker ? 'translate-x-5' : 'translate-x-0.5'
             }`} />
           </button>
         </label>
 
-        <label className="flex items-center justify-between p-3 bg-white rounded-xl border cursor-pointer">
+        <label className="flex items-center justify-between p-3 bg-card rounded-xl border cursor-pointer">
           <div>
-            <span className="text-sm font-medium text-gray-700">Auto-Fill</span>
-            <p className="text-xs text-gray-400">Ab {state.autoFillThreshold}% automatisch füllen</p>
+            <span className="text-sm font-medium text-foreground/80">Auto-Fill</span>
+            <p className="text-xs text-muted-foreground/70">Ab {state.autoFillThreshold}% automatisch füllen</p>
           </div>
           <button
             type="button"
             onClick={() => onChange({ autoFillEnabled: !state.autoFillEnabled })}
             className={`relative w-11 h-6 rounded-full transition-colors ${
-              state.autoFillEnabled ? 'bg-purple-600' : 'bg-gray-300'
+              state.autoFillEnabled ? 'bg-purple-600' : 'bg-muted/60'
             }`}
           >
-            <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+            <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-card shadow transition-transform ${
               state.autoFillEnabled ? 'translate-x-5' : 'translate-x-0.5'
             }`} />
           </button>
@@ -234,35 +234,35 @@ export default function Step3SettingsActivate({
       </div>
 
       {/* ─── Compact Summary ─── */}
-      <div className="p-4 bg-gray-50 rounded-xl border space-y-3">
+      <div className="p-4 bg-muted/50 rounded-xl border space-y-3">
         <div className="flex items-center gap-2 mb-1">
           <Sliders className="w-4 h-4 text-purple-500" />
-          <span className="text-sm font-semibold text-gray-700">Zusammenfassung</span>
+          <span className="text-sm font-semibold text-foreground/80">Zusammenfassung</span>
         </div>
 
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
-            <div className="text-lg font-bold text-gray-900">{state.gridWidth}×{state.gridHeight}</div>
-            <div className="text-[10px] text-gray-400">Grid</div>
+            <div className="text-lg font-bold text-foreground">{state.gridWidth}×{state.gridHeight}</div>
+            <div className="text-[10px] text-muted-foreground/70">Grid</div>
           </div>
           <div>
-            <div className="text-lg font-bold text-gray-900">{totalCells}</div>
-            <div className="text-[10px] text-gray-400">Tiles</div>
+            <div className="text-lg font-bold text-foreground">{totalCells}</div>
+            <div className="text-[10px] text-muted-foreground/70">Tiles</div>
           </div>
           <div>
-            <div className="text-lg font-bold text-gray-900">
+            <div className="text-lg font-bold text-foreground">
               {state.mode === 'DIGITAL' ? 'Digital' : 'Print'}
             </div>
-            <div className="text-[10px] text-gray-400">Modus</div>
+            <div className="text-[10px] text-muted-foreground/70">Modus</div>
           </div>
         </div>
 
         {targetImageUrl && (
           <div className="flex items-center gap-3 pt-2 border-t">
-            <div className="w-10 h-10 rounded-lg overflow-hidden border bg-gray-100 shrink-0">
+            <div className="w-10 h-10 rounded-lg overflow-hidden border bg-muted shrink-0">
               <img src={targetImageUrl} alt="Zielbild" className="w-full h-full object-contain" />
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               Overlay: <strong>{state.overlayIntensity}%</strong>
               {state.scatterValue > 0 && (
                 <> · Scatter: <strong>{state.scatterValue}%</strong></>
@@ -284,10 +284,10 @@ export default function Step3SettingsActivate({
       {wallExists && tileCount > 0 && (
         <div>
           <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-500">Fortschritt</span>
+            <span className="text-muted-foreground">Fortschritt</span>
             <span className="font-medium">{progress}% ({tileCount}/{totalCells})</span>
           </div>
-          <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+          <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
               style={{ width: `${progress}%` }}
@@ -340,7 +340,7 @@ export default function Step3SettingsActivate({
             href={`/live/${eventSlug}/mosaic`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-3 bg-gray-100 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-3 bg-muted rounded-xl text-sm font-medium text-foreground/80 hover:bg-muted/80 transition-colors"
           >
             <Eye className="w-4 h-4" />
             Live-Display öffnen

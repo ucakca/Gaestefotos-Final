@@ -61,7 +61,7 @@ export default function SummaryStep({ state, onFinish, onBack, onEditStep, isCre
           </div>
           <button
             onClick={() => onEditStep(2)}
-            className="p-2 rounded-lg hover:bg-white/50 transition-colors"
+            className="p-2 rounded-lg hover:bg-card/50 transition-colors"
             title="Bearbeiten"
           >
             <Pencil className="w-4 h-4 text-muted-foreground" />
@@ -75,7 +75,7 @@ export default function SummaryStep({ state, onFinish, onBack, onEditStep, isCre
           </div>
           <button
             onClick={() => onEditStep(5)}
-            className="p-2 rounded-lg hover:bg-white/50 transition-colors"
+            className="p-2 rounded-lg hover:bg-card/50 transition-colors"
             title="Bearbeiten"
           >
             <Pencil className="w-4 h-4 text-muted-foreground" />
@@ -84,7 +84,7 @@ export default function SummaryStep({ state, onFinish, onBack, onEditStep, isCre
       </div>
 
       <div className="grid gap-4">
-        <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+        <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg">
           <Palette className="w-5 h-5 text-primary mt-0.5" />
           <div className="flex-1">
             <h3 className="font-medium mb-1">Design</h3>
@@ -93,25 +93,25 @@ export default function SummaryStep({ state, onFinish, onBack, onEditStep, isCre
               {state.profileImagePreview ? ', Profilbild gesetzt' : ''}
             </p>
           </div>
-          <button onClick={() => onEditStep(3)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Bearbeiten">
+          <button onClick={() => onEditStep(3)} className="p-2 rounded-lg hover:bg-muted transition-colors" title="Bearbeiten">
             <Pencil className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
 
-        <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+        <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg">
           <FolderOpen className="w-5 h-5 text-primary mt-0.5" />
           <div className="flex-1">
             <h3 className="font-medium mb-1">{enabledAlbums.length} Alben</h3>
             <p className="text-sm text-muted-foreground">{enabledAlbums.map((a) => a.label).join(', ')}</p>
           </div>
-          <button onClick={() => onEditStep(4)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Bearbeiten">
+          <button onClick={() => onEditStep(4)} className="p-2 rounded-lg hover:bg-muted transition-colors" title="Bearbeiten">
             <Pencil className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
 
         {state.isExtendedMode && (
           <>
-            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg">
               <Trophy className="w-5 h-5 text-primary mt-0.5" />
               <div className="flex-1">
                 <h3 className="font-medium mb-1">{enabledChallenges.length} Challenges</h3>
@@ -121,12 +121,12 @@ export default function SummaryStep({ state, onFinish, onBack, onEditStep, isCre
                     : 'Keine Challenges aktiviert'}
                 </p>
               </div>
-              <button onClick={() => onEditStep(6)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Bearbeiten">
+              <button onClick={() => onEditStep(6)} className="p-2 rounded-lg hover:bg-muted transition-colors" title="Bearbeiten">
                 <Pencil className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg">
               <BookOpen className="w-5 h-5 text-primary mt-0.5" />
               <div className="flex-1">
                 <h3 className="font-medium mb-1">Gästebuch</h3>
@@ -134,12 +134,12 @@ export default function SummaryStep({ state, onFinish, onBack, onEditStep, isCre
                   {state.guestbookEnabled ? state.guestbookMessage || 'Aktiviert' : 'Deaktiviert'}
                 </p>
               </div>
-              <button onClick={() => onEditStep(7)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Bearbeiten">
+              <button onClick={() => onEditStep(7)} className="p-2 rounded-lg hover:bg-muted transition-colors" title="Bearbeiten">
                 <Pencil className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-lg">
               <Users className="w-5 h-5 text-primary mt-0.5" />
               <div className="flex-1">
                 <h3 className="font-medium mb-1">Co-Hosts</h3>
@@ -147,7 +147,7 @@ export default function SummaryStep({ state, onFinish, onBack, onEditStep, isCre
                   {state.coHostEmails.length > 0 ? state.coHostEmails.join(', ') : 'Keine Co-Hosts eingeladen'}
                 </p>
               </div>
-              <button onClick={() => onEditStep(8)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Bearbeiten">
+              <button onClick={() => onEditStep(8)} className="p-2 rounded-lg hover:bg-muted transition-colors" title="Bearbeiten">
                 <Pencil className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>

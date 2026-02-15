@@ -117,16 +117,16 @@ export default function LocationMap({ location, onLocationChange }: LocationMapP
     <div className="space-y-2">
       <div 
         ref={mapRef} 
-        className="w-full h-48 rounded-xl border-2 border-gray-200 overflow-hidden"
+        className="w-full h-48 rounded-xl border-2 border-border overflow-hidden"
         style={{ zIndex: 0 }}
       />
       {coords && (
-        <p className="text-xs text-gray-500 flex items-center gap-1">
+        <p className="text-xs text-muted-foreground flex items-center gap-1">
           <MapPin className="w-3 h-3" />
           {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
         </p>
       )}
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-muted-foreground/70">
         Verschiebe den Marker für die genaue Position
       </p>
     </div>

@@ -106,7 +106,7 @@ export default function MosaicGalleryPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-foreground flex items-center justify-center">
         <div className="text-white/60 animate-pulse text-lg">Mosaik wird geladen...</div>
       </div>
     );
@@ -114,7 +114,7 @@ export default function MosaicGalleryPage() {
 
   if (error || !wall) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-foreground flex items-center justify-center">
         <div className="text-white/60 text-center">
           <p className="text-xl mb-2">{error || 'Kein Mosaik verfügbar'}</p>
           <p className="text-sm text-white/30">Das Mosaik wird nach dem Event hier sichtbar.</p>
@@ -124,9 +124,9 @@ export default function MosaicGalleryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-foreground text-white">
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-gray-950/90 backdrop-blur-md border-b border-white/10">
+      <header className="sticky top-0 z-30 bg-foreground/90 backdrop-blur-md border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div>
             <h1 className="text-lg font-bold">{eventTitle}</h1>
@@ -139,7 +139,7 @@ export default function MosaicGalleryPage() {
             {/* Search Toggle */}
             <button
               onClick={() => { setShowSearch(!showSearch); if (showSearch) { setSearchQuery(''); setHighlightedTiles(new Set()); } }}
-              className={`p-2 rounded-lg transition-colors ${showSearch ? 'bg-purple-600' : 'bg-white/10 hover:bg-white/20'}`}
+              className={`p-2 rounded-lg transition-colors ${showSearch ? 'bg-purple-600' : 'bg-card/10 hover:bg-card/20'}`}
               title="Mein Tile finden"
             >
               <Search className="w-5 h-5" />
@@ -148,7 +148,7 @@ export default function MosaicGalleryPage() {
             {/* Share */}
             <button
               onClick={handleShare}
-              className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+              className="p-2 bg-card/10 rounded-lg hover:bg-card/20 transition-colors"
               title="Teilen"
             >
               <Share2 className="w-5 h-5" />
@@ -160,7 +160,7 @@ export default function MosaicGalleryPage() {
                 href={`/api/events/${eventId}/mosaic/export?format=jpg`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                className="p-2 bg-card/10 rounded-lg hover:bg-card/20 transition-colors"
                 title="HD-Poster herunterladen"
               >
                 <Download className="w-5 h-5" />
@@ -186,7 +186,7 @@ export default function MosaicGalleryPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Name eingeben um dein Tile zu finden..."
-                    className="w-full bg-white/10 border border-white/20 rounded-lg pl-10 pr-10 py-2.5 text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-500"
+                    className="w-full bg-card/10 border border-white/20 rounded-lg pl-10 pr-10 py-2.5 text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-500"
                     autoFocus
                   />
                   {searchQuery && (
@@ -252,7 +252,7 @@ export default function MosaicGalleryPage() {
                   {tile?.url ? (
                     <img src={tile.url} alt="" className="w-full h-full object-cover" loading="lazy" />
                   ) : (
-                    <div className="w-full h-full bg-white/5" />
+                    <div className="w-full h-full bg-card/5" />
                   )}
                   {isHighlighted && (
                     <div className="absolute inset-0 border-2 border-yellow-400 animate-pulse pointer-events-none" />
@@ -266,11 +266,11 @@ export default function MosaicGalleryPage() {
 
       {/* Stats Footer */}
       <div className="max-w-7xl mx-auto px-4 py-6 text-center">
-        <div className="inline-flex items-center gap-4 bg-white/5 rounded-full px-6 py-3 text-sm text-white/50">
+        <div className="inline-flex items-center gap-4 bg-card/5 rounded-full px-6 py-3 text-sm text-white/50">
           <span>{filledCells} Fotos</span>
-          <span className="w-px h-4 bg-white/20" />
+          <span className="w-px h-4 bg-card/20" />
           <span>{progress}% fertig</span>
-          <span className="w-px h-4 bg-white/20" />
+          <span className="w-px h-4 bg-card/20" />
           <span>{wall.gridWidth}x{wall.gridHeight} Grid</span>
         </div>
       </div>
@@ -286,14 +286,14 @@ export default function MosaicGalleryPage() {
             onClick={() => setSelectedTile(null)}
           >
             <motion.div
-              className="relative bg-gray-900 rounded-2xl overflow-hidden max-w-lg w-full shadow-2xl border border-white/10"
+              className="relative bg-foreground rounded-2xl overflow-hidden max-w-lg w-full shadow-2xl border border-white/10"
               initial={{ scale: 0.8, y: 30 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.8, y: 30 }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Photo */}
-              <div className="aspect-square bg-gray-800">
+              <div className="aspect-square bg-foreground/90">
                 {(selectedTile.photoUrl || selectedTile.url) && (
                   <img
                     src={selectedTile.photoUrl || selectedTile.url || ''}
@@ -319,7 +319,7 @@ export default function MosaicGalleryPage() {
                     </div>
                   </div>
                   {selectedTile.hero && (
-                    <span className="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full text-xs font-medium">
+                    <span className="bg-warning/20 text-warning px-2 py-1 rounded-full text-xs font-medium">
                       Hero
                     </span>
                   )}

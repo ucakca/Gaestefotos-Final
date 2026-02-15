@@ -48,7 +48,7 @@ export default function AlbumsStep({ albums, onAlbumsChange, onNext, onBack }: A
         <h2 className="text-2xl font-semibold mb-2">In welche Alben sollen die Fotos?</h2>
         <p className="text-muted-foreground">Wähle vorgeschlagene Alben aus oder erstelle eigene</p>
         {hasError && (
-          <p className="text-sm text-red-600 mt-2">⚠️ Bitte wähle mindestens ein Album aus</p>
+          <p className="text-sm text-destructive mt-2">⚠️ Bitte wähle mindestens ein Album aus</p>
         )}
       </div>
 
@@ -58,9 +58,9 @@ export default function AlbumsStep({ albums, onAlbumsChange, onNext, onBack }: A
 
           return (
             <div key={album.id} className="space-y-2">
-              <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+              <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
                 <Checkbox checked={album.enabled} onCheckedChange={() => handleToggleAlbum(album.id)} />
-                {IconComponent && <IconComponent className="w-5 h-5 text-gray-600" />}
+                {IconComponent && <IconComponent className="w-5 h-5 text-muted-foreground" />}
                 <span className="flex-1 font-medium">{album.label}</span>
                 {album.hostOnly && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">

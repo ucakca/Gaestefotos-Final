@@ -39,7 +39,7 @@ function TextPropertyPanel({ element, onChange }: { element: TextElement; onChan
       
       {/* Text Content */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">Text</label>
+        <label className="block text-xs font-medium text-foreground/80">Text</label>
         <textarea
           value={element.text}
           onChange={(e) => onChange({ text: e.target.value })}
@@ -50,7 +50,7 @@ function TextPropertyPanel({ element, onChange }: { element: TextElement; onChan
 
       {/* Font Family */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">Schriftart</label>
+        <label className="block text-xs font-medium text-foreground/80">Schriftart</label>
         <select
           value={element.fontFamily}
           onChange={(e) => onChange({ fontFamily: e.target.value })}
@@ -66,7 +66,7 @@ function TextPropertyPanel({ element, onChange }: { element: TextElement; onChan
 
       {/* Font Size */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">
+        <label className="block text-xs font-medium text-foreground/80">
           Schriftgröße: {element.fontSize}px
         </label>
         <input
@@ -81,7 +81,7 @@ function TextPropertyPanel({ element, onChange }: { element: TextElement; onChan
 
       {/* Color */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">Farbe</label>
+        <label className="block text-xs font-medium text-foreground/80">Farbe</label>
         <input
           type="color"
           value={element.color}
@@ -92,7 +92,7 @@ function TextPropertyPanel({ element, onChange }: { element: TextElement; onChan
 
       {/* Alignment */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">Ausrichtung</label>
+        <label className="block text-xs font-medium text-foreground/80">Ausrichtung</label>
         <div className="grid grid-cols-3 gap-2">
           {(['left', 'center', 'right'] as const).map((align) => (
             <button
@@ -101,7 +101,7 @@ function TextPropertyPanel({ element, onChange }: { element: TextElement; onChan
               className={`px-3 py-2 text-xs rounded-md border ${
                 element.align === align
                   ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                  : 'bg-card text-foreground/80 border-border hover:border-border'
               }`}
             >
               {align === 'left' ? 'Links' : align === 'center' ? 'Mitte' : 'Rechts'}
@@ -112,14 +112,14 @@ function TextPropertyPanel({ element, onChange }: { element: TextElement; onChan
 
       {/* Font Style */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">Stil</label>
+        <label className="block text-xs font-medium text-foreground/80">Stil</label>
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => onChange({ fontStyle: 'normal' })}
             className={`px-3 py-2 text-xs rounded-md border ${
               element.fontStyle === 'normal'
                 ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                : 'bg-card text-foreground/80 border-border hover:border-border'
             }`}
           >
             Normal
@@ -129,7 +129,7 @@ function TextPropertyPanel({ element, onChange }: { element: TextElement; onChan
             className={`px-3 py-2 text-xs rounded-md border font-bold ${
               element.fontStyle === 'bold'
                 ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                : 'bg-card text-foreground/80 border-border hover:border-border'
             }`}
           >
             Fett
@@ -139,7 +139,7 @@ function TextPropertyPanel({ element, onChange }: { element: TextElement; onChan
             className={`px-3 py-2 text-xs rounded-md border italic ${
               element.fontStyle === 'italic'
                 ? 'bg-blue-600 text-white border-blue-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                : 'bg-card text-foreground/80 border-border hover:border-border'
             }`}
           >
             Kursiv
@@ -149,10 +149,10 @@ function TextPropertyPanel({ element, onChange }: { element: TextElement; onChan
 
       {/* Position */}
       <div className="space-y-2 pt-4 border-t">
-        <label className="block text-xs font-medium text-gray-700">Position & Größe</label>
+        <label className="block text-xs font-medium text-foreground/80">Position & Größe</label>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-xs text-gray-600">X</label>
+            <label className="text-xs text-muted-foreground">X</label>
             <input
               type="number"
               value={Math.round(element.x)}
@@ -161,7 +161,7 @@ function TextPropertyPanel({ element, onChange }: { element: TextElement; onChan
             />
           </div>
           <div>
-            <label className="text-xs text-gray-600">Y</label>
+            <label className="text-xs text-muted-foreground">Y</label>
             <input
               type="number"
               value={Math.round(element.y)}
@@ -174,7 +174,7 @@ function TextPropertyPanel({ element, onChange }: { element: TextElement; onChan
 
       {/* Opacity */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">
+        <label className="block text-xs font-medium text-foreground/80">
           Deckkraft: {Math.round((element.opacity || 1) * 100)}%
         </label>
         <input
@@ -198,7 +198,7 @@ function ImagePropertyPanel({ element, onChange }: { element: ImageElement; onCh
       
       {/* Image URL */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">Bild-URL</label>
+        <label className="block text-xs font-medium text-foreground/80">Bild-URL</label>
         <input
           type="text"
           value={element.src}
@@ -210,10 +210,10 @@ function ImagePropertyPanel({ element, onChange }: { element: ImageElement; onCh
 
       {/* Position */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">Position</label>
+        <label className="block text-xs font-medium text-foreground/80">Position</label>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-xs text-gray-600">X</label>
+            <label className="text-xs text-muted-foreground">X</label>
             <input
               type="number"
               value={Math.round(element.x)}
@@ -222,7 +222,7 @@ function ImagePropertyPanel({ element, onChange }: { element: ImageElement; onCh
             />
           </div>
           <div>
-            <label className="text-xs text-gray-600">Y</label>
+            <label className="text-xs text-muted-foreground">Y</label>
             <input
               type="number"
               value={Math.round(element.y)}
@@ -235,10 +235,10 @@ function ImagePropertyPanel({ element, onChange }: { element: ImageElement; onCh
 
       {/* Size */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">Größe</label>
+        <label className="block text-xs font-medium text-foreground/80">Größe</label>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-xs text-gray-600">Breite</label>
+            <label className="text-xs text-muted-foreground">Breite</label>
             <input
               type="number"
               value={Math.round(element.width)}
@@ -247,7 +247,7 @@ function ImagePropertyPanel({ element, onChange }: { element: ImageElement; onCh
             />
           </div>
           <div>
-            <label className="text-xs text-gray-600">Höhe</label>
+            <label className="text-xs text-muted-foreground">Höhe</label>
             <input
               type="number"
               value={Math.round(element.height)}
@@ -260,7 +260,7 @@ function ImagePropertyPanel({ element, onChange }: { element: ImageElement; onCh
 
       {/* Opacity */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">
+        <label className="block text-xs font-medium text-foreground/80">
           Deckkraft: {Math.round((element.opacity || 1) * 100)}%
         </label>
         <input
@@ -284,7 +284,7 @@ function ShapePropertyPanel({ element, onChange }: { element: ShapeElement; onCh
       
       {/* Shape Type */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">Form-Typ</label>
+        <label className="block text-xs font-medium text-foreground/80">Form-Typ</label>
         <select
           value={element.shapeType}
           onChange={(e) => onChange({ shapeType: e.target.value as 'rectangle' | 'circle' | 'line' })}
@@ -298,7 +298,7 @@ function ShapePropertyPanel({ element, onChange }: { element: ShapeElement; onCh
 
       {/* Fill Color */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">Füllfarbe</label>
+        <label className="block text-xs font-medium text-foreground/80">Füllfarbe</label>
         <input
           type="color"
           value={element.fill || '#000000'}
@@ -309,7 +309,7 @@ function ShapePropertyPanel({ element, onChange }: { element: ShapeElement; onCh
 
       {/* Stroke Color */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">Rahmenfarbe</label>
+        <label className="block text-xs font-medium text-foreground/80">Rahmenfarbe</label>
         <input
           type="color"
           value={element.stroke || '#000000'}
@@ -320,7 +320,7 @@ function ShapePropertyPanel({ element, onChange }: { element: ShapeElement; onCh
 
       {/* Stroke Width */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">
+        <label className="block text-xs font-medium text-foreground/80">
           Rahmenstärke: {element.strokeWidth || 0}px
         </label>
         <input
@@ -335,10 +335,10 @@ function ShapePropertyPanel({ element, onChange }: { element: ShapeElement; onCh
 
       {/* Position */}
       <div className="space-y-2 pt-4 border-t">
-        <label className="block text-xs font-medium text-gray-700">Position</label>
+        <label className="block text-xs font-medium text-foreground/80">Position</label>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-xs text-gray-600">X</label>
+            <label className="text-xs text-muted-foreground">X</label>
             <input
               type="number"
               value={Math.round(element.x)}
@@ -347,7 +347,7 @@ function ShapePropertyPanel({ element, onChange }: { element: ShapeElement; onCh
             />
           </div>
           <div>
-            <label className="text-xs text-gray-600">Y</label>
+            <label className="text-xs text-muted-foreground">Y</label>
             <input
               type="number"
               value={Math.round(element.y)}
@@ -360,7 +360,7 @@ function ShapePropertyPanel({ element, onChange }: { element: ShapeElement; onCh
 
       {/* Opacity */}
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-gray-700">
+        <label className="block text-xs font-medium text-foreground/80">
           Deckkraft: {Math.round((element.opacity || 1) * 100)}%
         </label>
         <input

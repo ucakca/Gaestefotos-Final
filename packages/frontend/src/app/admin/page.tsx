@@ -45,7 +45,7 @@ export default function AdminHubPage() {
         <div className="max-w-5xl mx-auto px-4 py-6 space-y-8">
           <div>
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <Shield className="w-5 h-5 text-red-500" /> Admin-Bereich
+              <Shield className="w-5 h-5 text-destructive" /> Admin-Bereich
             </h1>
             <p className="text-sm text-muted-foreground mt-1">System-Verwaltung — nur für Administratoren</p>
           </div>

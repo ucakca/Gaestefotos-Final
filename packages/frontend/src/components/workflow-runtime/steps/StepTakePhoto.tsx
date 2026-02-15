@@ -135,7 +135,7 @@ export function StepTakePhoto({ node, onComplete }: StepRendererProps) {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={stopCamera}
-              className="py-3 px-4 bg-gray-200 rounded-xl"
+              className="py-3 px-4 bg-muted/80 rounded-xl"
             >
               <X className="w-5 h-5" />
             </motion.button>
@@ -152,7 +152,7 @@ export function StepTakePhoto({ node, onComplete }: StepRendererProps) {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={retake}
-              className="flex-1 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium flex items-center justify-center gap-2"
+              className="flex-1 py-3 bg-muted/80 text-foreground/80 rounded-xl font-medium flex items-center justify-center gap-2"
             >
               <RotateCcw className="w-4 h-4" /> Nochmal
             </motion.button>

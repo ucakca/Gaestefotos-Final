@@ -35,7 +35,7 @@ export default function BadgePopup({ achievement, onClose }: BadgePopupProps) {
         >
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 p-1.5 rounded-full bg-white/80 text-muted-foreground hover:bg-white transition-colors"
+            className="absolute top-3 right-3 p-1.5 rounded-full bg-card/80 text-muted-foreground hover:bg-card transition-colors"
           >
             <X className="w-4 h-4" />
           </button>

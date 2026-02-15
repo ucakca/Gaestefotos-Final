@@ -65,9 +65,9 @@ export default function StarRating({
               <Star
                 className={`${sizeClasses[size]} transition-colors ${
                   isFilled
-                    ? 'fill-yellow-400 text-yellow-400'
+                    ? 'fill-yellow-400 text-warning'
                     : isPartiallyFilled
-                    ? 'fill-yellow-400/50 text-yellow-400'
+                    ? 'fill-yellow-400/50 text-warning'
                     : 'text-white/30'
                 }`}
               />
@@ -88,7 +88,7 @@ export default function StarRating({
       )}
       
       {userRating && userRating > 0 && (
-        <span className="text-xs text-yellow-400/80 ml-1">
+        <span className="text-xs text-warning/80 ml-1">
           Deine Bewertung
         </span>
       )}

@@ -136,9 +136,9 @@ export default function CinematicFlow({
       </motion.div>
 
       {/* Progress Bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-card/20">
         <motion.div
-          className="h-full bg-white/80"
+          className="h-full bg-card/80"
           initial={{ width: '0%' }}
           animate={{ width: '100%' }}
           transition={{ duration: duration / 1000, ease: 'linear' }}

@@ -56,21 +56,21 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  AVAILABLE: { label: 'Verfügbar', color: 'bg-green-100 text-green-700' },
+  AVAILABLE: { label: 'Verfügbar', color: 'bg-success/15 text-success' },
   BOOKED: { label: 'Gebucht', color: 'bg-blue-100 text-blue-700' },
   IN_USE: { label: 'Im Einsatz', color: 'bg-purple-100 text-purple-700' },
-  MAINTENANCE: { label: 'Wartung', color: 'bg-yellow-100 text-yellow-700' },
-  RETIRED: { label: 'Ausgemustert', color: 'bg-gray-100 text-gray-600' },
+  MAINTENANCE: { label: 'Wartung', color: 'bg-warning/15 text-warning' },
+  RETIRED: { label: 'Ausgemustert', color: 'bg-muted text-muted-foreground' },
 };
 
 const BOOKING_STATUS_LABELS: Record<string, { label: string; color: string }> = {
   RESERVED: { label: 'Reserviert', color: 'bg-blue-100 text-blue-700' },
-  CONFIRMED: { label: 'Bestätigt', color: 'bg-green-100 text-green-700' },
+  CONFIRMED: { label: 'Bestätigt', color: 'bg-success/15 text-success' },
   DELIVERED: { label: 'Geliefert', color: 'bg-purple-100 text-purple-700' },
   ACTIVE: { label: 'Aktiv', color: 'bg-indigo-100 text-indigo-700' },
   RETURNED: { label: 'Zurück', color: 'bg-teal-100 text-teal-700' },
-  INSPECTED: { label: 'Geprüft', color: 'bg-green-100 text-green-700' },
-  CANCELLED: { label: 'Storniert', color: 'bg-red-100 text-red-700' },
+  INSPECTED: { label: 'Geprüft', color: 'bg-success/15 text-success' },
+  CANCELLED: { label: 'Storniert', color: 'bg-destructive/15 text-destructive' },
 };
 
 type ViewMode = 'inventory' | 'calendar';
@@ -191,7 +191,7 @@ export default function HardwareAdminPage() {
           </button>
           <button
             onClick={() => setShowBookingModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-500 text-white text-sm font-medium hover:bg-green-600 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success/100 text-white text-sm font-medium hover:bg-success transition-colors"
           >
             <Plus className="w-4 h-4" /> Buchung
           </button>
@@ -252,7 +252,7 @@ export default function HardwareAdminPage() {
                       </button>
                       <button
                         onClick={() => handleDeleteItem(item.id)}
-                        className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive/80 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -315,7 +315,7 @@ export default function HardwareAdminPage() {
                         <div
                           key={b.id}
                           className={`text-[10px] px-1 py-0.5 rounded mb-0.5 truncate ${
-                            BOOKING_STATUS_LABELS[b.status]?.color || 'bg-gray-100 text-gray-600'
+                            BOOKING_STATUS_LABELS[b.status]?.color || 'bg-muted text-muted-foreground'
                           }`}
                           title={`${b.hardware?.name || 'Hardware'} - ${b.customerName || 'N/A'}`}
                         >
@@ -504,7 +504,7 @@ function BookingModal({
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-background"><X className="w-5 h-5 text-muted-foreground" /></button>
         </div>
         {error && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 text-red-600 text-sm mb-3">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-destructive/10 text-destructive text-sm mb-3">
             <AlertTriangle className="w-4 h-4" />
             {error}
           </div>
@@ -545,7 +545,7 @@ function BookingModal({
         </div>
         <div className="flex justify-end gap-2 mt-5">
           <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-background">Abbrechen</button>
-          <button onClick={handleSave} disabled={!hardwareId || !startDate || !endDate || saving} className="px-4 py-2 rounded-lg bg-green-500 text-white text-sm font-medium hover:bg-green-600 disabled:opacity-50 flex items-center gap-1.5">
+          <button onClick={handleSave} disabled={!hardwareId || !startDate || !endDate || saving} className="px-4 py-2 rounded-lg bg-success/100 text-white text-sm font-medium hover:bg-success disabled:opacity-50 flex items-center gap-1.5">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
             Buchen
           </button>

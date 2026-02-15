@@ -120,7 +120,7 @@ export function QRDesignerPanel({ eventId, eventSlug, galleryUrl }: QRDesignerPa
               className={`px-4 py-2 rounded-lg border transition-colors ${
                 activeDesign?.id === design.id
                   ? 'bg-rose text-white border-rose'
-                  : 'bg-white border-border hover:border-rose/50'
+                  : 'bg-card border-border hover:border-rose/50'
               }`}
             >
               {design.name}

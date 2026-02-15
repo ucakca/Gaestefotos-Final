@@ -13,8 +13,8 @@ export function StepGeneric({ node, onComplete }: StepRendererProps) {
 
   return (
     <div className="flex flex-col items-center gap-6 py-8">
-      <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center">
-        <Cog className="w-7 h-7 text-gray-400" />
+      <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center">
+        <Cog className="w-7 h-7 text-muted-foreground/70" />
       </div>
 
       <div className="text-center">

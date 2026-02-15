@@ -54,7 +54,7 @@ export default function SetupChecklist({
                 <span className="text-sm">{phaseInfo.icon}</span>
                 <span className="text-xs font-medium text-muted-foreground">{phaseInfo.title}</span>
                 {isPhaseCompleted && (
-                  <Icons.CheckCircle className="w-4 h-4 text-green-500 ml-auto" />
+                  <Icons.CheckCircle className="w-4 h-4 text-success ml-auto" />
                 )}
               </div>
 
@@ -73,7 +73,7 @@ export default function SetupChecklist({
                       status === 'active'
                         ? 'bg-amber-50'
                         : status === 'completed'
-                        ? 'bg-green-50/50 hover:bg-green-50'
+                        ? 'bg-success/10/50 hover:bg-success/10'
                         : 'hover:bg-background'
                     } ${!canClick ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                     whileTap={canClick ? { scale: 0.98 } : {}}
@@ -81,7 +81,7 @@ export default function SetupChecklist({
                     {/* Status Icon */}
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                       status === 'completed'
-                        ? 'bg-green-500'
+                        ? 'bg-success/100'
                         : status === 'active'
                         ? 'bg-orange-500'
                         : 'bg-border'
@@ -115,7 +115,7 @@ export default function SetupChecklist({
                     {/* Step Title */}
                     <span className={`flex-1 font-medium ${
                       status === 'completed'
-                        ? 'text-green-700'
+                        ? 'text-success'
                         : status === 'active'
                         ? 'text-orange-700'
                         : 'text-muted-foreground'

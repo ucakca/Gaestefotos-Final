@@ -229,8 +229,8 @@ export default function UploadModal({
                 <span className="text-white text-lg">🏆</span>
               </div>
               <div>
-                <p className="font-medium text-gray-900">Nimm an der Challenge teil!</p>
-                <p className="text-sm text-gray-600">Dein Foto wird mit einem Challenge-Badge markiert.</p>
+                <p className="font-medium text-foreground">Nimm an der Challenge teil!</p>
+                <p className="text-sm text-muted-foreground">Dein Foto wird mit einem Challenge-Badge markiert.</p>
               </div>
             </div>
           )}
@@ -354,11 +354,11 @@ export default function UploadModal({
                             </div>
                           )}
                           {uploadFile.status === 'success' && (
-                            <CheckCircle className="w-12 h-12 text-green-500" />
+                            <CheckCircle className="w-12 h-12 text-success" />
                           )}
                           {uploadFile.status === 'error' && (
                             <div className="text-center px-2">
-                              <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-2" />
+                              <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-2" />
                               <p className="text-white text-xs">{uploadFile.error}</p>
                             </div>
                           )}

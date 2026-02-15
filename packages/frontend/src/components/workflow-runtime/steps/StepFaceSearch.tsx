@@ -66,7 +66,7 @@ export function StepFaceSearch({ node, collectedData, onComplete, eventId }: Ste
       )}
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm text-center max-w-sm">
+        <div className="p-3 bg-destructive/10 border border-destructive/30 text-destructive rounded-lg text-sm text-center max-w-sm">
           {error}
         </div>
       )}

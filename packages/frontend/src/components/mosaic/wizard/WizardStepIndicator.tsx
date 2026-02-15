@@ -34,14 +34,14 @@ export default function WizardStepIndicator({ currentStep, onStepClick, maxReach
                     ? 'bg-purple-600 text-white shadow-lg shadow-purple-200 scale-110'
                     : isDone
                       ? 'bg-purple-100 text-purple-600'
-                      : 'bg-gray-100 text-gray-400'
+                      : 'bg-muted text-muted-foreground/70'
                 }`}
               >
                 {isDone ? <Check className="w-4 h-4" /> : step.num}
               </div>
               <span
                 className={`text-[10px] sm:text-xs font-medium transition-colors ${
-                  isActive ? 'text-purple-700' : isDone ? 'text-purple-500' : 'text-gray-400'
+                  isActive ? 'text-purple-700' : isDone ? 'text-purple-500' : 'text-muted-foreground/70'
                 }`}
               >
                 {step.label}
@@ -53,7 +53,7 @@ export default function WizardStepIndicator({ currentStep, onStepClick, maxReach
               <div className="flex-1 mx-1.5 sm:mx-3">
                 <div
                   className={`h-0.5 rounded-full transition-colors ${
-                    step.num < currentStep ? 'bg-purple-400' : 'bg-gray-200'
+                    step.num < currentStep ? 'bg-purple-400' : 'bg-muted/80'
                   }`}
                 />
               </div>

@@ -237,7 +237,7 @@ export function AISmartMode({ photos }: PremiumModesProps) {
       <div className="absolute top-8 left-8 p-4 bg-black/50 backdrop-blur-md rounded-xl border border-white/20">
         <div className="flex items-center gap-2 mb-2">
           <motion.div
-            className="w-2 h-2 rounded-full bg-green-400"
+            className="w-2 h-2 rounded-full bg-success/80"
             animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           />

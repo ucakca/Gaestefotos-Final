@@ -60,7 +60,7 @@ export function InvitationCanvas({
   }, []);
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-gray-100 rounded-lg">
+    <div className="relative w-full h-full overflow-hidden bg-muted rounded-lg">
       <Stage
         ref={stageRef}
         width={800}
@@ -87,7 +87,7 @@ export function InvitationCanvas({
       </Stage>
 
       {/* Zoom indicator */}
-      <div className="absolute bottom-4 right-4 bg-white px-3 py-1 rounded-md shadow text-sm">
+      <div className="absolute bottom-4 right-4 bg-card px-3 py-1 rounded-md shadow text-sm">
         {Math.round(scale * 100)}%
       </div>
     </div>

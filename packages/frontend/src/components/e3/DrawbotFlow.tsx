@@ -153,7 +153,7 @@ export default function DrawbotFlow({ eventId, visitorId, visitorName, photos = 
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
-        <button onClick={onClose} className="p-2 rounded-full bg-white/10 text-white">
+        <button onClick={onClose} className="p-2 rounded-full bg-card/10 text-white">
           <X className="w-5 h-5" />
         </button>
         <h2 className="text-white font-bold flex items-center gap-2">
@@ -208,7 +208,7 @@ export default function DrawbotFlow({ eventId, visitorId, visitorName, photos = 
                     className={`p-3 rounded-xl text-center transition-all ${
                       style === opt.key
                         ? 'bg-amber-500 text-white ring-2 ring-amber-300 ring-offset-2 ring-offset-stone-900'
-                        : 'bg-white/10 text-white/70 hover:bg-white/20'
+                        : 'bg-card/10 text-white/70 hover:bg-card/20'
                     }`}
                   >
                     <div className="text-xl mb-1">{opt.icon}</div>
@@ -256,13 +256,13 @@ export default function DrawbotFlow({ eventId, visitorId, visitorName, photos = 
             </div>
 
             {error && (
-              <div className="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-sm text-center">{error}</div>
+              <div className="px-3 py-2 rounded-lg bg-destructive/100/20 text-destructive/60 text-sm text-center">{error}</div>
             )}
 
             <div className="flex gap-3">
               <button
                 onClick={() => { setStep('photo'); setSelectedPhoto(null); }}
-                className="flex-1 py-2.5 rounded-xl bg-white/10 text-white text-sm font-medium"
+                className="flex-1 py-2.5 rounded-xl bg-card/10 text-white text-sm font-medium"
               >
                 Zurück
               </button>
@@ -297,7 +297,7 @@ export default function DrawbotFlow({ eventId, visitorId, visitorName, photos = 
               <PenTool className="w-16 h-16 text-amber-400" />
             </motion.div>
             <h3 className="text-xl font-bold text-white mb-4">Drawbot zeichnet...</h3>
-            <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-card/10 rounded-full h-3 overflow-hidden">
               <motion.div
                 className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
                 animate={{ width: `${drawProgress}%` }}
@@ -311,11 +311,11 @@ export default function DrawbotFlow({ eventId, visitorId, visitorName, photos = 
         {/* RESULT */}
         {step === 'result' && outputUrl && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm">
-            <div className="aspect-square rounded-3xl overflow-hidden bg-white mb-6 shadow-2xl p-4">
+            <div className="aspect-square rounded-3xl overflow-hidden bg-card mb-6 shadow-2xl p-4">
               <img src={outputUrl} alt="Drawbot Zeichnung" className="w-full h-full object-contain" />
             </div>
             <div className="flex items-center gap-3 justify-center">
-              <button onClick={handleDownload} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black text-sm font-semibold">
+              <button onClick={handleDownload} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-card text-black text-sm font-semibold">
                 <Download className="w-4 h-4" /> Speichern
               </button>
               <button onClick={handleShare} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold">
@@ -323,7 +323,7 @@ export default function DrawbotFlow({ eventId, visitorId, visitorName, photos = 
               </button>
               <button
                 onClick={() => { setStep('photo'); setSelectedPhoto(null); setOutputUrl(null); setJobId(null); }}
-                className="p-2.5 rounded-full bg-white/10 text-white"
+                className="p-2.5 rounded-full bg-card/10 text-white"
               >
                 <RotateCw className="w-4 h-4" />
               </button>

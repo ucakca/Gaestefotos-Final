@@ -65,7 +65,7 @@ export default function QrTemplatesPage() {
           <h1 className="text-2xl font-bold mb-6">QR-Code Templates</h1>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {[1,2,3,4,5,6,7,8].map(i => (
-              <div key={i} className="aspect-[3/4] bg-gray-200 rounded-xl animate-pulse" />
+              <div key={i} className="aspect-[3/4] bg-muted/80 rounded-xl animate-pulse" />
             ))}
           </div>
         </div>
@@ -155,7 +155,7 @@ export default function QrTemplatesPage() {
                       }}
                     />
                     {template.isPremium && (
-                      <div className="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1">
+                      <div className="absolute top-2 right-2 bg-warning text-white px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1">
                         <Star className="w-3 h-3 fill-white" /> Premium
                       </div>
                     )}
@@ -218,7 +218,7 @@ export default function QrTemplatesPage() {
                       <div className="flex items-center gap-2">
                         <span className="font-semibold truncate">{template.name}</span>
                         {template.isPremium && (
-                          <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                          <Star className="w-4 h-4 text-warning fill-yellow-500" />
                         )}
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -268,7 +268,7 @@ export default function QrTemplatesPage() {
                         {['A6', 'A5', 'story', 'square'].map(format => (
                           <div key={format} className="text-center">
                             <div 
-                              className="aspect-[3/4] bg-gray-100 rounded border overflow-hidden mb-1"
+                              className="aspect-[3/4] bg-muted rounded border overflow-hidden mb-1"
                               style={{ backgroundColor: template.defaultBgColor }}
                             >
                               <img

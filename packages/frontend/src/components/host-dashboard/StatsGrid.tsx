@@ -20,8 +20,8 @@ interface StatsGridProps {
 
 const iconColors: Record<string, string> = {
   photos: 'bg-blue-500/10 text-blue-500',
-  guests: 'bg-green-500/10 text-green-500',
-  pending: 'bg-yellow-500/10 text-yellow-500',
+  guests: 'bg-success/100/10 text-success',
+  pending: 'bg-warning/10 text-warning',
   storage: 'bg-purple-500/10 text-purple-500',
   videos: 'bg-pink-500/10 text-pink-500',
   comments: 'bg-orange-500/10 text-orange-500',
@@ -56,7 +56,7 @@ export default function StatsGrid({ stats, eventId }: StatsGridProps) {
                 </div>
               </div>
               {stat.trend && (
-                <div className={`mt-2 text-xs ${stat.trend.isUp ? 'text-green-500' : 'text-red-500'}`}>
+                <div className={`mt-2 text-xs ${stat.trend.isUp ? 'text-success' : 'text-destructive'}`}>
                   {stat.trend.isUp ? '↑' : '↓'} {stat.trend.value}% heute
                 </div>
               )}

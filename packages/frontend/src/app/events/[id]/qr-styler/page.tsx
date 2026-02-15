@@ -16,7 +16,7 @@ const QrStylerClient = dynamic(
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <span className="text-sm text-gray-500">QR-Designer wird geladen...</span>
+            <span className="text-sm text-muted-foreground">QR-Designer wird geladen...</span>
           </div>
         </div>
       </AppLayout>

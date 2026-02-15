@@ -90,24 +90,24 @@ export default function Step2TargetImage({ state, onChange, targetImageUrl, anal
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-bold text-gray-900 mb-1">Zielbild</h2>
-        <p className="text-sm text-gray-500 mb-4">
+        <h2 className="text-lg font-bold text-foreground mb-1">Zielbild</h2>
+        <p className="text-sm text-muted-foreground mb-4">
           Das Bild, das aus den Gäste-Fotos zusammengesetzt wird (z.B. Logo, Brautpaar, Firmenlogo).
         </p>
       </div>
 
       {/* No-Target Toggle */}
-      <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border cursor-pointer">
+      <label className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl border cursor-pointer">
         <input
           type="checkbox"
           checked={noTarget}
           onChange={(e) => setNoTarget(e.target.checked)}
-          className="h-4 w-4 rounded border-gray-300"
+          className="h-4 w-4 rounded border-border"
           style={{ accentColor: 'var(--primary, #9333ea)' }}
         />
         <div>
-          <span className="text-sm font-medium text-gray-700">Kein Zielbild</span>
-          <p className="text-xs text-gray-400">Reines Foto-Raster ohne Hintergrundbild</p>
+          <span className="text-sm font-medium text-foreground/80">Kein Zielbild</span>
+          <p className="text-xs text-muted-foreground/70">Reines Foto-Raster ohne Hintergrundbild</p>
         </div>
       </label>
 
@@ -117,7 +117,7 @@ export default function Step2TargetImage({ state, onChange, targetImageUrl, anal
           {targetImageUrl ? (
             <div className="relative">
               <div
-                className="w-full bg-gray-100 rounded-xl overflow-hidden border"
+                className="w-full bg-muted rounded-xl overflow-hidden border"
                 style={{ aspectRatio: `${state.gridWidth} / ${state.gridHeight}`, maxHeight: '280px' }}
               >
                 <img
@@ -149,7 +149,7 @@ export default function Step2TargetImage({ state, onChange, targetImageUrl, anal
                 type="button"
                 onClick={openFilePicker}
                 disabled={analyzing}
-                className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-card border border-border rounded-xl text-sm font-medium text-foreground/80 hover:bg-muted/50 transition-colors disabled:opacity-50"
               >
                 <CropIcon className="w-4 h-4" />
                 {analyzing ? 'Analysiere...' : 'Anderes Bild wählen'}
@@ -160,7 +160,7 @@ export default function Step2TargetImage({ state, onChange, targetImageUrl, anal
               type="button"
               onClick={openFilePicker}
               disabled={analyzing}
-              className="w-full p-8 sm:p-12 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center gap-3 hover:border-purple-400 hover:bg-purple-50/30 transition-all disabled:opacity-50"
+              className="w-full p-8 sm:p-12 border-2 border-dashed border-border rounded-xl flex flex-col items-center gap-3 hover:border-purple-400 hover:bg-purple-50/30 transition-all disabled:opacity-50"
               style={{ aspectRatio: `${state.gridWidth} / ${state.gridHeight}`, maxHeight: '280px' }}
             >
               {analyzing ? (
@@ -170,17 +170,17 @@ export default function Step2TargetImage({ state, onChange, targetImageUrl, anal
                 </>
               ) : (
                 <>
-                  <Upload className="w-8 h-8 text-gray-400" />
+                  <Upload className="w-8 h-8 text-muted-foreground/70" />
                   <div className="text-center">
-                    <span className="text-sm font-medium text-gray-700 block">Zielbild hochladen</span>
-                    <span className="text-xs text-gray-400">Wird auf {state.gridWidth}:{state.gridHeight} zugeschnitten</span>
+                    <span className="text-sm font-medium text-foreground/80 block">Zielbild hochladen</span>
+                    <span className="text-xs text-muted-foreground/70">Wird auf {state.gridWidth}:{state.gridHeight} zugeschnitten</span>
                   </div>
                 </>
               )}
             </button>
           )}
 
-          <p className="text-xs text-gray-400 text-center">
+          <p className="text-xs text-muted-foreground/70 text-center">
             Tipp: Bilder mit klarem Motiv und gutem Kontrast ergeben die besten Mosaike.
           </p>
         </>
@@ -189,23 +189,23 @@ export default function Step2TargetImage({ state, onChange, targetImageUrl, anal
       {/* Crop Modal */}
       {showCropper && cropImageSrc && (
         <div className="fixed inset-0 z-[9999] bg-black/80 flex items-end sm:items-center justify-center">
-          <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col rounded-t-2xl">
+          <div className="bg-card w-full sm:max-w-lg sm:rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col rounded-t-2xl">
             {/* Header */}
             <div className="p-4 border-b flex items-center justify-between shrink-0">
-              <h3 className="font-semibold text-gray-900">
+              <h3 className="font-semibold text-foreground">
                 Zuschneiden ({state.gridWidth}:{state.gridHeight})
               </h3>
               <button
                 type="button"
                 onClick={handleCropCancel}
-                className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
+                className="p-2 rounded-lg hover:bg-muted text-muted-foreground"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Crop Area */}
-            <div className="flex-1 overflow-auto p-4 bg-gray-50 flex items-center justify-center">
+            <div className="flex-1 overflow-auto p-4 bg-muted/50 flex items-center justify-center">
               <ReactCrop
                 crop={crop}
                 onChange={(_, percentCrop) => setCrop(percentCrop)}
@@ -228,7 +228,7 @@ export default function Step2TargetImage({ state, onChange, targetImageUrl, anal
               <button
                 type="button"
                 onClick={handleCropCancel}
-                className="flex-1 px-4 py-2.5 text-gray-600 bg-gray-100 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
+                className="flex-1 px-4 py-2.5 text-muted-foreground bg-muted rounded-xl text-sm font-medium hover:bg-muted/80 transition-colors"
               >
                 Abbrechen
               </button>

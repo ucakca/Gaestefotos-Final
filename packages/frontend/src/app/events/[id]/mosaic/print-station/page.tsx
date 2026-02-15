@@ -232,13 +232,13 @@ export default function PrintStationPage() {
   // Feature Gate: show upsell if mosaicPrint not enabled
   if (!canPrint) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl border shadow-sm max-w-md w-full p-8 text-center">
+      <div className="min-h-screen bg-muted/50 flex items-center justify-center p-4">
+        <div className="bg-card rounded-2xl border shadow-sm max-w-md w-full p-8 text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8 text-purple-500" />
           </div>
           <h2 className="text-xl font-bold mb-2">Print-Station — Pro Feature</h2>
-          <p className="text-gray-500 mb-4 text-sm">
+          <p className="text-muted-foreground mb-4 text-sm">
             {getUpgradeMessage('mosaicPrint')}
           </p>
           <div className="flex flex-col gap-2">
@@ -259,7 +259,7 @@ export default function PrintStationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/50">
       {/* Notification sound (short beep) */}
       <audio ref={audioRef} preload="auto">
         <source src="data:audio/wav;base64,UklGRl9vT19teleVjTQBGABAACAEAgATAA..." type="audio/wav" />
@@ -274,13 +274,13 @@ export default function PrintStationPage() {
       />
 
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-20">
+      <div className="bg-card border-b sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => router.push(`/events/${eventId}/dashboard`)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-muted rounded-lg transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -289,7 +289,7 @@ export default function PrintStationPage() {
                   <Printer className="w-5 h-5 text-purple-600" />
                   Print-Station
                 </h1>
-                <p className="text-sm text-gray-500">{eventTitle}</p>
+                <p className="text-sm text-muted-foreground">{eventTitle}</p>
               </div>
             </div>
 
@@ -299,8 +299,8 @@ export default function PrintStationPage() {
                 onClick={() => setAutoPrint(!autoPrint)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                   autoPrint
-                    ? 'bg-green-100 text-green-700 border border-green-300'
-                    : 'bg-gray-100 text-gray-600 border border-gray-200'
+                    ? 'bg-success/15 text-success border border-success/40'
+                    : 'bg-muted text-muted-foreground border border-border'
                 }`}
               >
                 {autoPrint ? <Zap className="w-4 h-4" /> : <ZapOff className="w-4 h-4" />}
@@ -311,7 +311,7 @@ export default function PrintStationPage() {
               <button
                 onClick={() => setSoundEnabled(!soundEnabled)}
                 className={`p-2 rounded-lg transition-colors ${
-                  soundEnabled ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'
+                  soundEnabled ? 'bg-blue-100 text-blue-600' : 'bg-muted text-muted-foreground/70'
                 }`}
                 title={soundEnabled ? 'Sound an' : 'Sound aus'}
               >
@@ -322,7 +322,7 @@ export default function PrintStationPage() {
               <button
                 onClick={() => setShowHistory(!showHistory)}
                 className={`p-2 rounded-lg transition-colors ${
-                  showHistory ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-400'
+                  showHistory ? 'bg-purple-100 text-purple-600' : 'bg-muted text-muted-foreground/70'
                 }`}
                 title="Druckhistorie"
               >
@@ -332,7 +332,7 @@ export default function PrintStationPage() {
               {/* Refresh */}
               <button
                 onClick={() => { loadQueue(); loadHistory(); }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-muted rounded-lg transition-colors"
                 title="Aktualisieren"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -343,19 +343,19 @@ export default function PrintStationPage() {
           {/* Stats Bar */}
           <div className="flex gap-4 mt-2 text-sm">
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-yellow-400" />
-              <span className="text-gray-600">{pendingCount} wartend</span>
+              <div className="w-2 h-2 rounded-full bg-warning/80" />
+              <span className="text-muted-foreground">{pendingCount} wartend</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-              <span className="text-gray-600">{printingCount} druckt</span>
+              <span className="text-muted-foreground">{printingCount} druckt</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-green-400" />
-              <span className="text-gray-600">{queue.filter(t => t.printStatus === 'PRINTED').length} gedruckt</span>
+              <div className="w-2 h-2 rounded-full bg-success/80" />
+              <span className="text-muted-foreground">{queue.filter(t => t.printStatus === 'PRINTED').length} gedruckt</span>
             </div>
             {wallInfo && (
-              <div className="ml-auto text-gray-400 flex items-center gap-1">
+              <div className="ml-auto text-muted-foreground/70 flex items-center gap-1">
                 <LayoutGrid className="w-3.5 h-3.5" />
                 {wallInfo.gridWidth}x{wallInfo.gridHeight} | {wallInfo.tileSizeMm}mm
               </div>
@@ -379,7 +379,7 @@ export default function PrintStationPage() {
           {queue.filter(t => t.printStatus === 'PRINTED').length > 0 && (
             <Button
               onClick={markAllPlaced}
-              className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+              className="flex items-center gap-2 bg-success text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-success transition-colors"
             >
               <CheckCircle2 className="w-4 h-4" />
               Alle als platziert markieren
@@ -391,17 +391,17 @@ export default function PrintStationPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-4">
         {loading ? (
-          <div className="text-center py-20 text-gray-400">
+          <div className="text-center py-20 text-muted-foreground/70">
             <RefreshCw className="w-8 h-8 mx-auto mb-3 animate-spin" />
             <p>Druckqueue wird geladen...</p>
           </div>
         ) : queue.length === 0 ? (
           <div className="text-center py-20">
-            <Printer className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <h2 className="text-xl font-semibold text-gray-500 mb-2">Keine Druckaufträge</h2>
-            <p className="text-gray-400">Sobald Gäste Fotos hochladen, erscheinen die Tiles hier automatisch.</p>
+            <Printer className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+            <h2 className="text-xl font-semibold text-muted-foreground mb-2">Keine Druckaufträge</h2>
+            <p className="text-muted-foreground/70">Sobald Gäste Fotos hochladen, erscheinen die Tiles hier automatisch.</p>
             {autoPrint && (
-              <div className="mt-4 inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full text-sm">
+              <div className="mt-4 inline-flex items-center gap-2 bg-success/10 text-success px-4 py-2 rounded-full text-sm">
                 <Zap className="w-4 h-4" />
                 Auto-Print ist aktiv — Tiles werden automatisch gedruckt
               </div>
@@ -418,16 +418,16 @@ export default function PrintStationPage() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: -20 }}
                   transition={{ duration: 0.3 }}
-                  className={`bg-white rounded-xl shadow-sm border-2 overflow-hidden transition-colors ${
+                  className={`bg-card rounded-xl shadow-sm border-2 overflow-hidden transition-colors ${
                     tile.printStatus === 'PENDING'
                       ? 'border-yellow-300'
                       : tile.printStatus === 'PRINTING'
                         ? 'border-blue-400 animate-pulse'
-                        : 'border-green-300'
+                        : 'border-success/40'
                   }`}
                 >
                   {/* Tile Image */}
-                  <div className="aspect-square bg-gray-100 relative">
+                  <div className="aspect-square bg-muted relative">
                     {tile.croppedImageUrl ? (
                       <img
                         src={tile.croppedImageUrl}
@@ -435,7 +435,7 @@ export default function PrintStationPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300">
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground/50">
                         Kein Bild
                       </div>
                     )}
@@ -466,10 +466,10 @@ export default function PrintStationPage() {
                   {/* Tile Info */}
                   <div className="p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-muted-foreground">
                         {tile.photo?.uploadedBy || 'Gast'}
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-muted-foreground/70">
                         {new Date(tile.createdAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
@@ -489,7 +489,7 @@ export default function PrintStationPage() {
                       {tile.printStatus === 'PRINTING' && (
                         <button
                           onClick={() => updateStatus(tile.id, 'PRINTED')}
-                          className="flex-1 flex items-center justify-center gap-1.5 bg-green-600 text-white py-1.5 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                          className="flex-1 flex items-center justify-center gap-1.5 bg-success text-white py-1.5 rounded-lg text-sm font-medium hover:bg-success transition-colors"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           Fertig
@@ -507,7 +507,7 @@ export default function PrintStationPage() {
                       {tile.printStatus !== 'PENDING' && (
                         <button
                           onClick={() => updateStatus(tile.id, 'PENDING')}
-                          className="px-2 py-1.5 bg-gray-100 text-gray-500 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+                          className="px-2 py-1.5 bg-muted text-muted-foreground rounded-lg text-sm hover:bg-muted/80 transition-colors"
                           title="Zurücksetzen"
                         >
                           <RefreshCw className="w-3.5 h-3.5" />
@@ -524,13 +524,13 @@ export default function PrintStationPage() {
         {/* Print History */}
         {showHistory && history.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-foreground/80 mb-3 flex items-center gap-2">
               <History className="w-5 h-5" />
               Letzte Drucke
             </h2>
-            <div className="bg-white rounded-xl border overflow-hidden">
+            <div className="bg-card rounded-xl border overflow-hidden">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-gray-500">
+                <thead className="bg-muted/50 text-muted-foreground">
                   <tr>
                     <th className="px-4 py-2 text-left">#</th>
                     <th className="px-4 py-2 text-left">Position</th>
@@ -541,22 +541,22 @@ export default function PrintStationPage() {
                 </thead>
                 <tbody className="divide-y">
                   {history.map((tile) => (
-                    <tr key={tile.id} className="hover:bg-gray-50">
+                    <tr key={tile.id} className="hover:bg-muted/50">
                       <td className="px-4 py-2 font-mono font-bold text-purple-600">
                         {tile.printNumber ? `#${tile.printNumber}` : '-'}
                       </td>
                       <td className="px-4 py-2 font-mono">{tile.positionLabel}</td>
-                      <td className="px-4 py-2 text-gray-600">{tile.photo?.uploadedBy || '-'}</td>
+                      <td className="px-4 py-2 text-muted-foreground">{tile.photo?.uploadedBy || '-'}</td>
                       <td className="px-4 py-2">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                           tile.printStatus === 'PRINTED'
-                            ? 'bg-green-100 text-green-700'
+                            ? 'bg-success/15 text-success'
                             : 'bg-emerald-100 text-emerald-700'
                         }`}>
                           {tile.printStatus === 'PRINTED' ? 'Gedruckt' : 'Platziert'}
                         </span>
                       </td>
-                      <td className="px-4 py-2 text-gray-400">
+                      <td className="px-4 py-2 text-muted-foreground/70">
                         {new Date(tile.updatedAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
                       </td>
                     </tr>

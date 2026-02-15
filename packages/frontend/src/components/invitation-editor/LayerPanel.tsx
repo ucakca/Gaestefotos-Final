@@ -58,7 +58,7 @@ export function LayerPanel({
   return (
     <div className="space-y-2">
       {sortedElements.length === 0 ? (
-        <div className="text-center py-8 text-gray-400">
+        <div className="text-center py-8 text-muted-foreground/70">
           <p className="text-sm">Noch keine Elemente</p>
           <p className="text-xs mt-1">Füge Text, Bilder oder Formen hinzu</p>
         </div>
@@ -69,7 +69,7 @@ export function LayerPanel({
             className={`group relative p-2 rounded-lg border transition-all ${
               selectedId === element.id
                 ? 'bg-blue-50 border-blue-300 shadow-sm'
-                : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                : 'bg-card border-border hover:border-border hover:shadow-sm'
             }`}
           >
             {/* Main row */}
@@ -85,7 +85,7 @@ export function LayerPanel({
                 <p className="text-sm font-medium truncate">
                   {getElementLabel(element)}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   z:{element.zIndex} · {Math.round(element.x)},{Math.round(element.y)}
                 </p>
               </div>
@@ -98,13 +98,13 @@ export function LayerPanel({
                     e.stopPropagation();
                     onToggleVisibility(element.id);
                   }}
-                  className="p-1 hover:bg-gray-100 rounded"
+                  className="p-1 hover:bg-muted rounded"
                   title={(element as any).visible === false ? 'Einblenden' : 'Ausblenden'}
                 >
                   {(element as any).visible === false ? (
-                    <EyeOff className="w-4 h-4 text-gray-400" />
+                    <EyeOff className="w-4 h-4 text-muted-foreground/70" />
                   ) : (
-                    <Eye className="w-4 h-4 text-gray-600" />
+                    <Eye className="w-4 h-4 text-muted-foreground" />
                   )}
                 </button>
 
@@ -114,13 +114,13 @@ export function LayerPanel({
                     e.stopPropagation();
                     onToggleLock(element.id);
                   }}
-                  className="p-1 hover:bg-gray-100 rounded"
+                  className="p-1 hover:bg-muted rounded"
                   title={(element as any).locked ? 'Entsperren' : 'Sperren'}
                 >
                   {(element as any).locked ? (
-                    <Lock className="w-4 h-4 text-gray-400" />
+                    <Lock className="w-4 h-4 text-muted-foreground/70" />
                   ) : (
-                    <Unlock className="w-4 h-4 text-gray-600" />
+                    <Unlock className="w-4 h-4 text-muted-foreground" />
                   )}
                 </button>
 
@@ -132,7 +132,7 @@ export function LayerPanel({
                       onDeleteElement(element.id);
                     }
                   }}
-                  className="p-1 hover:bg-red-100 rounded text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="p-1 hover:bg-destructive/15 rounded text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                   title="Löschen"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -148,7 +148,7 @@ export function LayerPanel({
                   onReorderElement(element.id, 'up');
                 }}
                 disabled={index === 0}
-                className="p-0.5 bg-white border rounded shadow-sm hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-0.5 bg-card border rounded shadow-sm hover:bg-muted/50 disabled:opacity-30 disabled:cursor-not-allowed"
                 title="Nach vorne"
               >
                 <ChevronUp className="w-3 h-3" />
@@ -159,7 +159,7 @@ export function LayerPanel({
                   onReorderElement(element.id, 'down');
                 }}
                 disabled={index === sortedElements.length - 1}
-                className="p-0.5 bg-white border rounded shadow-sm hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-0.5 bg-card border rounded shadow-sm hover:bg-muted/50 disabled:opacity-30 disabled:cursor-not-allowed"
                 title="Nach hinten"
               >
                 <ChevronDown className="w-3 h-3" />

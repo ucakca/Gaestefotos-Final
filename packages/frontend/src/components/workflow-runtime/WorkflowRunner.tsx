@@ -132,12 +132,12 @@ export default function WorkflowRunner({
   if (state.status === 'error') {
     return (
       <div className={`flex flex-col items-center justify-center p-8 gap-4 ${className}`}>
-        <div className="text-red-500 text-lg font-bold">Fehler</div>
+        <div className="text-destructive text-lg font-bold">Fehler</div>
         <p className="text-muted-foreground text-center">{state.error}</p>
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={reset}
-          className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium flex items-center gap-2"
+          className="px-6 py-3 bg-muted/80 text-foreground/80 rounded-xl font-medium flex items-center gap-2"
         >
           <RotateCcw className="w-4 h-4" /> Neu starten
         </motion.button>
@@ -161,7 +161,7 @@ export default function WorkflowRunner({
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={reset}
-          className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium flex items-center gap-2"
+          className="px-6 py-3 bg-muted/80 text-foreground/80 rounded-xl font-medium flex items-center gap-2"
         >
           <RotateCcw className="w-4 h-4" /> Nochmal
         </motion.button>

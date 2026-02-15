@@ -185,7 +185,7 @@ export default function AlbumsStep({
             {album.isCustom && (
               <button
                 onClick={() => handleRemoveAlbum(album.id)}
-                className="p-1 text-muted-foreground hover:text-red-500 transition-colors"
+                className="p-1 text-muted-foreground hover:text-destructive transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>

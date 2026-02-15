@@ -79,7 +79,7 @@ export default function SetupStepWrapper({
           disabled={!isValid || saving}
           className={`w-full justify-center gap-2 ${
             saved 
-              ? 'bg-green-500 hover:bg-green-600' 
+              ? 'bg-success/100 hover:bg-success' 
               : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600'
           } text-white disabled:opacity-50`}
         >

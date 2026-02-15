@@ -175,7 +175,7 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
                     <div className="flex gap-2 mt-2">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${
                         game.category === 'booth' ? 'bg-blue-100 text-blue-700' :
-                        game.category === 'app' ? 'bg-green-100 text-green-700' :
+                        game.category === 'app' ? 'bg-success/15 text-success' :
                         'bg-pink-100 text-pink-700'
                       }`}>
                         {game.category === 'booth' ? '📱 Booth' : game.category === 'app' ? '📱 App' : '📖 Gästebuch'}

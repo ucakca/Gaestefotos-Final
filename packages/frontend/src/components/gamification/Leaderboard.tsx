@@ -52,15 +52,15 @@ export default function Leaderboard({ eventId, visitorId }: LeaderboardProps) {
   }
 
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="w-5 h-5 text-yellow-500" />;
-    if (rank === 2) return <Medal className="w-5 h-5 text-gray-400" />;
+    if (rank === 1) return <Crown className="w-5 h-5 text-warning" />;
+    if (rank === 2) return <Medal className="w-5 h-5 text-muted-foreground/70" />;
     if (rank === 3) return <Medal className="w-5 h-5 text-amber-600" />;
     return <span className="w-5 h-5 flex items-center justify-center text-xs font-bold text-muted-foreground">{rank}</span>;
   };
 
   const getRankBg = (rank: number) => {
     if (rank === 1) return 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200';
-    if (rank === 2) return 'bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200';
+    if (rank === 2) return 'bg-gradient-to-r from-gray-50 to-slate-50 border-border';
     if (rank === 3) return 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200';
     return 'bg-card border-border';
   };

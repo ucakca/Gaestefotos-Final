@@ -106,7 +106,7 @@ export default function PolaroidRain({
       {stackedPhotos.map((photo, index) => (
         <motion.div
           key={photo.id}
-          className="absolute w-48 h-56 bg-white p-2 shadow-xl rounded-sm"
+          className="absolute w-48 h-56 bg-card p-2 shadow-xl rounded-sm"
           initial={{ scale: 0, opacity: 0 }}
           animate={{ 
             x: photo.x,
@@ -133,7 +133,7 @@ export default function PolaroidRain({
               className="object-cover"
             />
           </div>
-          <div className="h-12 bg-white flex items-center justify-center">
+          <div className="h-12 bg-card flex items-center justify-center">
             <div className="w-16 h-1 bg-slate-200 rounded-full" />
           </div>
         </motion.div>
@@ -143,7 +143,7 @@ export default function PolaroidRain({
       {fallingPhotos.map((photo) => (
         <motion.div
           key={photo.id}
-          className="absolute w-48 h-56 bg-white p-2 shadow-lg rounded-sm pointer-events-none"
+          className="absolute w-48 h-56 bg-card p-2 shadow-lg rounded-sm pointer-events-none"
           style={{
             x: photo.x,
             y: photo.y,
@@ -159,7 +159,7 @@ export default function PolaroidRain({
               className="object-cover"
             />
           </div>
-          <div className="h-12 bg-white" />
+          <div className="h-12 bg-card" />
         </motion.div>
       ))}
 

@@ -97,7 +97,7 @@ function ShareButtonAnimated({ onShare }: { onShare: () => void }) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
           >
-            <Send className="w-5 h-5 text-green-400" />
+            <Send className="w-5 h-5 text-success/80" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -393,7 +393,7 @@ export default function PhotoLightbox({
               {/* Close Button (X) */}
               <motion.button
                 onClick={onClose}
-                className="p-2 rounded-full hover:bg-white/10 transition-colors ml-4"
+                className="p-2 rounded-full hover:bg-card/10 transition-colors ml-4"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
@@ -413,7 +413,7 @@ export default function PhotoLightbox({
             {onPrev && selectedIndex !== null && selectedIndex > 0 && (
               <motion.button
                 onClick={onPrev}
-                className="absolute left-4 z-40 p-3 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
+                className="absolute left-4 z-40 p-3 rounded-full bg-card/10 backdrop-blur-sm hover:bg-card/20 transition-colors"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
@@ -424,7 +424,7 @@ export default function PhotoLightbox({
             {onNext && selectedIndex !== null && selectedIndex < photos.length - 1 && (
               <motion.button
                 onClick={onNext}
-                className="absolute right-4 z-40 p-3 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
+                className="absolute right-4 z-40 p-3 rounded-full bg-card/10 backdrop-blur-sm hover:bg-card/20 transition-colors"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
@@ -481,7 +481,7 @@ export default function PhotoLightbox({
                       transition={{ type: 'spring', stiffness: 400, damping: 10 }}
                     >
                       <Heart
-                        className={`w-7 h-7 transition-colors duration-200 ${isLiked ? 'fill-red-500 text-red-500' : 'text-white'}`}
+                        className={`w-7 h-7 transition-colors duration-200 ${isLiked ? 'fill-red-500 text-destructive' : 'text-white'}`}
                       />
                     </motion.div>
                     {/* Particle burst on like */}
@@ -489,7 +489,7 @@ export default function PhotoLightbox({
                       {isLiked && Array.from({ length: 8 }).map((_, i) => (
                         <motion.div
                           key={`p-${i}`}
-                          className="absolute top-1/2 left-1/2 w-1.5 h-1.5 rounded-full bg-red-400"
+                          className="absolute top-1/2 left-1/2 w-1.5 h-1.5 rounded-full bg-destructive/80"
                           initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
                           animate={{
                             x: Math.cos((i / 8) * Math.PI * 2) * 22,
@@ -571,7 +571,7 @@ export default function PhotoLightbox({
                     <div className="space-y-2">
                       {photoComments.slice(0, showAllComments ? undefined : 5).map((comment) => (
                         <div key={comment.id} className="flex gap-2">
-                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-card/20 flex items-center justify-center">
                             <User className="w-3 h-3 text-white" />
                           </div>
                           <div className="flex-1">
@@ -624,7 +624,7 @@ export default function PhotoLightbox({
                       placeholder="Dein Name"
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 text-sm"
+                      className="bg-card/10 border-white/20 text-white placeholder:text-white/50 text-sm"
                     />
                   )}
                 </div>

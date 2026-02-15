@@ -72,7 +72,7 @@ export default function QRCodeShare({
 
         <div className="flex justify-center mb-6">
           <div
-            className="flex items-center justify-center rounded-2xl bg-white p-4"
+            className="flex items-center justify-center rounded-2xl bg-card p-4"
             style={{ width: qrSize + 32, height: qrSize + 32 }}
           >
             <div className="relative">
@@ -117,7 +117,7 @@ export default function QRCodeShare({
               </svg>
               
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="rounded-lg bg-white p-2 shadow-sm">
+                <div className="rounded-lg bg-card p-2 shadow-sm">
                   <QrCode className="h-6 w-6 text-primary" />
                 </div>
               </div>
