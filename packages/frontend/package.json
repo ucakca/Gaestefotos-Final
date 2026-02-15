@@ -8,7 +8,9 @@
     "build:prod": "bash ../../scripts/ensure-frontend-service-stopped.sh && next build",
     "start": "next start",
     "lint": "next lint --max-warnings=10000",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@gaestefotos/shared": "workspace:*",
@@ -64,6 +66,9 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^16.1.2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/canvas-confetti": "^1.9.0",
     "@types/dompurify": "^3.2.0",
     "@types/lodash": "^4.17.23",
@@ -71,12 +76,15 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^18.2.42",
     "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^5.1.4",
     "autoprefixer": "^10.4.16",
     "eslint": "^8.54.0",
     "eslint-config-next": "14.0.0",
+    "jsdom": "^28.1.0",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",
     "typescript": "^5.3.3",
-    "vercel": "^50.5.0"
+    "vercel": "^50.5.0",
+    "vitest": "^4.0.18"
   }
 }
