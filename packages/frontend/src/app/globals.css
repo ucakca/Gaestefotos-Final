@@ -387,6 +387,53 @@
     padding-top: env(safe-area-inset-top);
   }
 
+  /* V0 Design - Safe Area Bottom */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* V0 Design - Safe Area Horizontal */
+  .safe-area-x {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* V0 Design - Touch Target (min 48px for accessibility) */
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  .touch-target-sm {
+    min-height: 40px;
+    min-width: 40px;
+  }
+
+  .touch-target-lg {
+    min-height: 56px;
+    min-width: 56px;
+  }
+
+  /* V0 Design - Touch Ripple */
+  .touch-ripple {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .touch-ripple::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  .touch-ripple:active::after {
+    opacity: 0.1;
+  }
+
   /* V0 Design - Skeleton Shimmer */
   @keyframes skeleton-shimmer {
     0% { background-position: -200% 0; }
