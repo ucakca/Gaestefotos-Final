@@ -40,6 +40,9 @@ export default function LiveWallPage() {
   const [realtimeEnabled, setRealtimeEnabled] = useState(true);
   const prevIdsRef = useRef<Set<string>>(new Set());
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [cursorHidden, setCursorHidden] = useState(false);
+  const cursorTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Mosaic state (for mosaic + mixed modes)
   const [mosaicWall, setMosaicWall] = useState<any>(null);
@@ -55,6 +58,51 @@ export default function LiveWallPage() {
   const mixedPhotosPerCycle = 3;
   const mixedMosaicDuration = 10000; // 10s mosaic
   const mixedPhotoDuration = 5000;   // 5s per photo
+
+  // Fullscreen API + cursor auto-hide
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch { /* Fullscreen not supported */ }
+  }, []);
+
+  useEffect(() => {
+    const onFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'F11') {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [toggleFullscreen]);
+
+  // Cursor auto-hide after 3s inactivity
+  useEffect(() => {
+    const resetCursor = () => {
+      setCursorHidden(false);
+      if (cursorTimerRef.current) clearTimeout(cursorTimerRef.current);
+      cursorTimerRef.current = setTimeout(() => setCursorHidden(true), 3000);
+    };
+    window.addEventListener('mousemove', resetCursor);
+    window.addEventListener('mousedown', resetCursor);
+    cursorTimerRef.current = setTimeout(() => setCursorHidden(true), 3000);
+    return () => {
+      window.removeEventListener('mousemove', resetCursor);
+      window.removeEventListener('mousedown', resetCursor);
+      if (cursorTimerRef.current) clearTimeout(cursorTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     loadEvent();
@@ -303,7 +351,7 @@ export default function LiveWallPage() {
     : '';
 
   return (
-    <div className="min-h-screen bg-foreground text-background">
+    <div className={`min-h-screen bg-foreground text-background ${cursorHidden ? 'cursor-none' : ''}`}>
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-10 bg-foreground/50 p-4 flex justify-between items-center">
         <h1 className="text-2xl font-bold">{event.title}</h1>
@@ -376,6 +424,13 @@ export default function LiveWallPage() {
             className={`px-3 py-1.5 rounded text-sm ${realtimeEnabled ? 'bg-green-500/30 text-green-200' : 'bg-background/20'}`}
           >
             {realtimeEnabled ? '⚡ Live' : '🔄 Polling'}
+          </Button>
+
+          <Button
+            onClick={toggleFullscreen}
+            className="px-3 py-1.5 bg-background/20 rounded text-sm hover:bg-background/30"
+          >
+            {isFullscreen ? '⬜ Fenster' : '⛶ Vollbild'}
           </Button>
           
           {/* QR Code */}
