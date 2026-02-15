@@ -3,12 +3,21 @@
 import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, User, Send, Heart, Camera, X, ImagePlus, Loader2, Workflow } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
+import { FormInput } from '@/components/ui/FormInput';
+import { FormTextarea } from '@/components/ui/FormTextarea';
 import api from '@/lib/api';
 import dynamic from 'next/dynamic';
 import { useWorkflow } from '@/hooks/useWorkflow';
+
+const guestbookSchema = z.object({
+  name: z.string().min(1, 'Bitte gib deinen Namen ein').max(100),
+  message: z.string().min(1, 'Bitte schreibe eine Nachricht').max(2000),
+});
+type GuestbookFormData = z.infer<typeof guestbookSchema>;
 
 const WorkflowRunner = dynamic(
   () => import('@/components/workflow-runtime/WorkflowRunner'),
@@ -51,13 +60,15 @@ export default function GuestbookTab({
   eventId,
   onEntrySubmit,
 }: GuestbookTabProps) {
-  const [name, setName] = useState('');
-  const [message, setMessage] = useState('');
-  const [submitting, setSubmitting] = useState(false);
   const [photo, setPhoto] = useState<PhotoUpload | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [useWorkflowMode, setUseWorkflowMode] = useState(true);
   const { definition: workflowDef, loading: wfLoading } = useWorkflow('GUESTBOOK');
+
+  const { register, handleSubmit: rhfHandleSubmit, reset, formState: { errors, isSubmitting } } = useForm<GuestbookFormData>({
+    resolver: zodResolver(guestbookSchema),
+    defaultValues: { name: '', message: '' },
+  });
 
   const handleWorkflowComplete = useCallback(async (collectedData: Record<string, any>) => {
     try {
@@ -144,17 +155,13 @@ export default function GuestbookTab({
     setPhoto(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !message.trim()) return;
+  const onClassicSubmit = async (data: GuestbookFormData) => {
     if (photo?.uploading) return; // Wait for upload
 
     try {
-      setSubmitting(true);
-      
       const payload: any = {
-        authorName: name.trim(),
-        message: message.trim(),
+        authorName: data.name.trim(),
+        message: data.message.trim(),
       };
 
       // Add photo data if uploaded
@@ -167,16 +174,13 @@ export default function GuestbookTab({
       await api.post(`/events/${eventId}/guestbook`, payload);
 
       // Clear form
-      setName('');
-      setMessage('');
+      reset();
       removePhoto();
       
       // Callback
       onEntrySubmit?.();
     } catch (err) {
       void err;
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -225,33 +229,23 @@ export default function GuestbookTab({
         animate={{ opacity: 1, y: 0 }}
         className="bg-card border border-border rounded-2xl p-6 mb-8 shadow-sm"
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Dein Name *
-            </label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Max Mustermann"
-              required
-              disabled={submitting}
-            />
-          </div>
+        <form onSubmit={rhfHandleSubmit(onClassicSubmit)} className="space-y-4">
+          <FormInput
+            label="Dein Name"
+            placeholder="Max Mustermann"
+            required
+            error={errors.name?.message}
+            {...register('name')}
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Deine Nachricht *
-            </label>
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Schreibe deine Glückwünsche..."
-              rows={4}
-              required
-              disabled={submitting}
-            />
-          </div>
+          <FormTextarea
+            label="Deine Nachricht"
+            placeholder="Schreibe deine Glückwünsche..."
+            rows={4}
+            required
+            error={errors.message?.message}
+            {...register('message')}
+          />
 
           {/* Photo Upload Section */}
           <div>
@@ -327,17 +321,12 @@ export default function GuestbookTab({
 
           <Button
             type="submit"
-            disabled={submitting || !name.trim() || !message.trim() || photo?.uploading}
+            loading={isSubmitting}
+            disabled={photo?.uploading}
             className="w-full"
+            leftIcon={<Send className="w-4 h-4" />}
           >
-            {submitting ? (
-              'Wird gesendet...'
-            ) : (
-              <>
-                <Send className="w-4 h-4 mr-2" />
-                Nachricht senden
-              </>
-            )}
+            Nachricht senden
           </Button>
         </form>
       </motion.div>

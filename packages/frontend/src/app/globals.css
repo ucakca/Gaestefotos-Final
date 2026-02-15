@@ -115,6 +115,7 @@
 @layer base {
   * {
     border-color: hsl(var(--border));
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
