@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
+import { auditLog, AuditType } from '../services/auditLogger';
 
 const router = Router();
 
@@ -58,7 +59,7 @@ router.patch('/:id/role', authMiddleware, requireRole('ADMIN'), async (req: Auth
     const { id } = req.params;
     const { role } = req.body;
 
-    if (!['USER', 'HOST', 'ADMIN'].includes(role)) {
+    if (!['HOST', 'ADMIN', 'PARTNER'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
 
@@ -67,6 +68,8 @@ router.patch('/:id/role', authMiddleware, requireRole('ADMIN'), async (req: Auth
       data: { role },
       select: { id: true, email: true, name: true, role: true },
     });
+
+    auditLog({ type: AuditType.ADMIN_USER_UPDATED, message: `User-Rolle geändert: ${user.email} → ${role}`, data: { targetUserId: id, newRole: role }, req });
 
     return res.json({ ok: true, user });
   } catch (error: any) {
@@ -86,7 +89,10 @@ router.delete('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequ
       return res.status(400).json({ error: 'Cannot delete yourself' });
     }
 
+    const deletedUser = await prisma.user.findUnique({ where: { id }, select: { email: true, name: true } });
     await prisma.user.delete({ where: { id } });
+
+    auditLog({ type: AuditType.ADMIN_USER_DELETED, message: `User gelöscht: ${deletedUser?.email || id}`, data: { targetUserId: id, email: deletedUser?.email }, req });
 
     return res.json({ ok: true });
   } catch (error: any) {

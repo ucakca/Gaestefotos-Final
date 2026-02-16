@@ -20,7 +20,7 @@ export default function AIFloatingButton() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-24 right-4 w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg flex items-center justify-center z-40 hover:shadow-xl transition-all border border-amber-400/30"
+            className="fixed bottom-24 right-4 w-12 h-12 bg-warning rounded-xl shadow-lg flex items-center justify-center z-40 hover:shadow-xl transition-all border border-warning/30"
           >
             <AIBotIcon size={26} />
           </motion.button>

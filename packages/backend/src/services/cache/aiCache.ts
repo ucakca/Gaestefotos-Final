@@ -29,6 +29,7 @@ export type AiCacheFeatureKnown =
   | 'suggest-challenges'
   | 'suggest-guestbook'
   | 'suggest-colors'
+  | 'suggest-theme'
   | 'chat';
 
 // Erweiterbar: Neue Features werden automatisch akzeptiert
@@ -311,6 +312,23 @@ export async function warmUpCache(
     }
   }
 
+  // Theme-Vorschläge für alle Event-Types × Seasons vorwärmen
+  const seasons = ['spring', 'summer', 'autumn', 'winter'];
+  for (const eventType of types) {
+    for (const season of seasons) {
+      const themeParams = { eventType, season };
+      if (!(await aiCacheGet('suggest-theme', themeParams))) {
+        try {
+          const result = await generateFn('suggest-theme', themeParams);
+          if (result) {
+            await aiCacheSet('suggest-theme', themeParams, result, 'warm-up');
+            warmed++;
+          }
+        } catch { errors++; }
+      } else { skipped++; }
+    }
+  }
+
   logger.info('[AI-Cache] Warm-up complete', { warmed, skipped, errors });
   return { warmed, skipped, errors };
 }
@@ -393,7 +411,7 @@ export async function getAiCacheStats(): Promise<AiCacheStats> {
     const redis = getRedis();
     const features: AiCacheFeature[] = [
       'suggest-albums', 'suggest-description', 'suggest-invitation',
-      'suggest-challenges', 'suggest-guestbook', 'suggest-colors', 'chat',
+      'suggest-challenges', 'suggest-guestbook', 'suggest-colors', 'suggest-theme', 'chat',
     ];
 
     let totalEntries = 0;
@@ -446,7 +464,7 @@ export async function getAiCacheEntryCount(): Promise<Record<AiCacheFeature, num
     const redis = getRedis();
     const features: AiCacheFeature[] = [
       'suggest-albums', 'suggest-description', 'suggest-invitation',
-      'suggest-challenges', 'suggest-guestbook', 'suggest-colors', 'chat',
+      'suggest-challenges', 'suggest-guestbook', 'suggest-colors', 'suggest-theme', 'chat',
     ];
 
     const counts: Record<string, number> = {};

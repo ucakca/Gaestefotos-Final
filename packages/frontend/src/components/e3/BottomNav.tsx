@@ -159,10 +159,14 @@ export default function BottomNav({
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 350 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) setAiSheetOpen(false); }}
               className="fixed bottom-0 left-0 right-0 z-[61] bg-card rounded-t-3xl shadow-2xl max-h-[70vh] overflow-y-auto"
             >
               {/* Handle */}
-              <div className="flex justify-center pt-3 pb-1">
+              <div className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
                 <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
               </div>
 
@@ -210,7 +214,7 @@ export default function BottomNav({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 }}
                       onClick={() => handleAiAction('game')}
-                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-200/30 hover:from-amber-500/20 hover:to-orange-500/20 active:scale-[0.97] transition-all text-left"
+                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 hover:from-amber-500/20 hover:to-orange-500/20 active:scale-[0.97] transition-all text-left"
                     >
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md shadow-amber-500/20">
                         <Gamepad2 className="w-5 h-5 text-white" />
@@ -229,7 +233,7 @@ export default function BottomNav({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.15 }}
                       onClick={() => handleAiAction('face-search')}
-                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-200/30 hover:from-cyan-500/20 hover:to-blue-500/20 active:scale-[0.97] transition-all text-left"
+                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 hover:from-cyan-500/20 hover:to-blue-500/20 active:scale-[0.97] transition-all text-left"
                     >
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-md shadow-cyan-500/20">
                         <ScanFace className="w-5 h-5 text-white" />
@@ -247,7 +251,7 @@ export default function BottomNav({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                     onClick={() => handleAiAction('ki-style')}
-                    className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-200/30 hover:from-purple-500/20 hover:to-pink-500/20 active:scale-[0.97] transition-all text-left"
+                    className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 hover:from-purple-500/20 hover:to-pink-500/20 active:scale-[0.97] transition-all text-left"
                   >
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-md shadow-purple-500/20">
                       <Sparkles className="w-5 h-5 text-white" />
@@ -265,7 +269,7 @@ export default function BottomNav({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.25 }}
                       onClick={() => handleAiAction('filter-roulette')}
-                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-200/30 hover:from-emerald-500/20 hover:to-teal-500/20 active:scale-[0.97] transition-all text-left"
+                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 hover:from-emerald-500/20 hover:to-teal-500/20 active:scale-[0.97] transition-all text-left"
                     >
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-md shadow-emerald-500/20">
                         <Shuffle className="w-5 h-5 text-white" />
@@ -284,7 +288,7 @@ export default function BottomNav({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 }}
                       onClick={() => handleAiAction('emoji-challenge')}
-                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-rose-500/10 to-red-500/10 border border-rose-200/30 hover:from-rose-500/20 hover:to-red-500/20 active:scale-[0.97] transition-all text-left col-span-2 sm:col-span-1"
+                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-rose-500/10 to-red-500/10 border border-rose-500/20 hover:from-rose-500/20 hover:to-red-500/20 active:scale-[0.97] transition-all text-left col-span-2 sm:col-span-1"
                     >
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-400 to-red-500 flex items-center justify-center shadow-md shadow-rose-500/20">
                         <Camera className="w-5 h-5 text-white" />

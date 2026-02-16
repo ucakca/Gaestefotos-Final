@@ -77,6 +77,24 @@ router.get('/usage/stats', authMiddleware, async (req: AuthRequest, res: Respons
       _avg: { durationMs: true },
     });
 
+    // Error rate per provider
+    const errorsPerProvider = await prisma.aiUsageLog.groupBy({
+      by: ['providerId'],
+      where: { createdAt: { gte: since }, success: false },
+      _count: true,
+    });
+    const totalsPerProvider = await prisma.aiUsageLog.groupBy({
+      by: ['providerId'],
+      where: { createdAt: { gte: since } },
+      _count: true,
+    });
+    const errorRateMap: Record<string, string> = {};
+    for (const t of totalsPerProvider) {
+      const errEntry = errorsPerProvider.find(e => e.providerId === t.providerId);
+      const errCount = errEntry?._count || 0;
+      errorRateMap[t.providerId] = t._count > 0 ? (errCount / t._count * 100).toFixed(1) : '0';
+    }
+
     const perFeature = await prisma.aiUsageLog.groupBy({
       by: ['feature'],
       where: { createdAt: { gte: since } },
@@ -128,6 +146,7 @@ router.get('/usage/stats', authMiddleware, async (req: AuthRequest, res: Respons
       perFeature,
       daily,
       errorRate: total > 0 ? (errors / total * 100).toFixed(1) : '0',
+      errorRatePerProvider: errorRateMap,
       monthly: {
         requests: monthlyAgg._count,
         tokens: monthlyAgg._sum.totalTokens || 0,
@@ -221,12 +240,23 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       },
     });
 
+    // Get last-used timestamp per provider
+    const lastUsedRaw = await prisma.aiUsageLog.groupBy({
+      by: ['providerId'],
+      _max: { createdAt: true },
+    });
+    const lastUsedMap: Record<string, Date | null> = {};
+    for (const row of lastUsedRaw) {
+      lastUsedMap[row.providerId] = row._max.createdAt;
+    }
+
     const safe = providers.map(p => ({
       ...p,
       apiKeyEncrypted: undefined,
       apiKeyIv: undefined,
       apiKeyTag: undefined,
       hasApiKey: !!(p.apiKeyEncrypted && p.apiKeyIv && p.apiKeyTag),
+      lastUsedAt: lastUsedMap[p.id] || null,
     }));
 
     res.json({ providers: safe });

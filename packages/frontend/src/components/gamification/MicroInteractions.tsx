@@ -49,7 +49,7 @@ export function AnimatedLikeButton({
         >
           <Heart 
             className={`w-6 h-6 transition-colors duration-300 ${
-              liked ? 'text-destructive fill-red-500' : 'text-slate-400'
+              liked ? 'text-destructive fill-red-500' : 'text-muted-foreground'
             }`}
           />
         </motion.div>
@@ -75,7 +75,7 @@ export function AnimatedLikeButton({
       </div>
       
       <motion.span 
-        className={`text-sm font-medium ${liked ? 'text-destructive' : 'text-slate-500'}`}
+        className={`text-sm font-medium ${liked ? 'text-destructive' : 'text-muted-foreground'}`}
         animate={liked ? { scale: [1, 1.2, 1] } : {}}
       >
         {count + (liked && !initialLiked ? 1 : 0)}
@@ -101,7 +101,7 @@ export function AnimatedCommentButton({
         setTimeout(() => setIsTyping(false), 1000);
         onClick?.();
       }}
-      className="relative flex items-center gap-2 p-2 rounded-full hover:bg-blue-50 transition-colors"
+      className="relative flex items-center gap-2 p-2 rounded-full hover:bg-primary/10 transition-colors"
     >
       <motion.div
         animate={isTyping ? {
@@ -109,7 +109,7 @@ export function AnimatedCommentButton({
         } : {}}
         transition={{ duration: 0.2, repeat: isTyping ? 2 : 0 }}
       >
-        <MessageCircle className="w-6 h-6 text-slate-400" />
+        <MessageCircle className="w-6 h-6 text-muted-foreground" />
       </motion.div>
       
       {/* Typing Indicator */}
@@ -133,7 +133,7 @@ export function AnimatedCommentButton({
         )}
       </AnimatePresence>
       
-      <span className="text-sm font-medium text-slate-500">{count}</span>
+      <span className="text-sm font-medium text-muted-foreground">{count}</span>
     </button>
   );
 }
@@ -164,7 +164,7 @@ export function AnimatedShareButton({ onClick }: { onClick?: () => void }) {
           } : {}}
           transition={{ duration: 0.8, ease: 'easeOut' }}
         >
-          <Share2 className="w-6 h-6 text-slate-400" />
+          <Share2 className="w-6 h-6 text-muted-foreground" />
         </motion.div>
         
         {/* Paper Plane Animation */}
@@ -246,7 +246,7 @@ export function PullToRefreshIndicator({
         }}
       >
         <div className={`w-8 h-8 rounded-full border-2 ${
-          shouldRefresh ? 'border-primary bg-primary/10' : 'border-slate-300'
+          shouldRefresh ? 'border-primary bg-primary/10' : 'border-border'
         } flex items-center justify-center`}>
           <motion.div
             className="w-2 h-2 rounded-full bg-current"
@@ -256,7 +256,7 @@ export function PullToRefreshIndicator({
       </motion.div>
       
       <motion.p 
-        className="text-xs text-slate-500 mt-2"
+        className="text-xs text-muted-foreground mt-2"
         animate={{ opacity: progress > 0.5 ? 1 : 0 }}
       >
         {isRefreshing ? 'Wird aktualisiert...' : shouldRefresh ? 'Loslassen zum Aktualisieren' : 'Ziehen zum Aktualisieren'}

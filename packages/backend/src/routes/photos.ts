@@ -23,6 +23,7 @@ import { checkAchievements } from '../services/achievementTracker';
 import { sendPushToEvent, notifyEventHost, pushTemplates } from '../services/pushNotification';
 import archiver from 'archiver';
 import { logger } from '../utils/logger';
+import { auditLog, AuditType } from '../services/auditLogger';
 
 // Sharp is optional; if missing we fall back to a tiny placeholder for blurred previews.
 let sharp: any;
@@ -348,6 +349,8 @@ router.post(
       io.to(`event:${eventId}`).emit('photo_uploaded', {
         photo: serializeBigInt(photoWithProxyUrl),
       });
+
+      auditLog({ type: AuditType.PHOTO_UPLOADED, message: `Foto hochgeladen: ${file.originalname}`, eventId, data: { photoId: photo.id, filename: file.originalname, status: photo.status }, req, level: 'DEBUG' });
 
       // Gamification: auto-check achievements (async, non-blocking)
       if (photo.uploadedBy) {
@@ -845,6 +848,8 @@ router.post(
         data: { status: 'APPROVED' },
       });
 
+      auditLog({ type: AuditType.PHOTO_MODERATED, message: `Foto freigegeben`, eventId: photo.eventId, data: { photoId, action: 'approve' }, req });
+
       // Emit WebSocket event
       io.to(`event:${photo.eventId}`).emit('photo_approved', {
         photo: updatedPhoto,
@@ -893,6 +898,8 @@ router.post(
         where: { id: photoId },
         data: { status: 'REJECTED' },
       });
+
+      auditLog({ type: AuditType.PHOTO_MODERATED, message: `Foto abgelehnt`, eventId: photo.eventId, data: { photoId, action: 'reject' }, req });
 
       res.json({ photo: updatedPhoto });
     } catch (error: any) {
@@ -1033,6 +1040,8 @@ router.delete(
         where: { id: photoId },
         data: { status: 'DELETED' },
       });
+
+      auditLog({ type: AuditType.PHOTO_DELETED, message: `Foto gelöscht`, eventId: photo.eventId, data: { photoId: req.params.photoId }, req });
 
       res.json({ message: 'Photo deleted' });
     } catch (error: any) {

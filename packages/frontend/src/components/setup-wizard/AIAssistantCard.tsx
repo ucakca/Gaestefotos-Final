@@ -77,7 +77,7 @@ export default function AIAssistantCard({
             )}
           </div>
           {selectedItems.size > 0 && (
-            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+            <span className="text-xs bg-purple-500/15 text-purple-500 px-2 py-1 rounded-full">
               {selectedItems.size} ausgewählt
             </span>
           )}
@@ -122,8 +122,8 @@ export default function AIAssistantCard({
                           onClick={() => toggleItem(suggestion)}
                           className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all ${
                             isSelected 
-                              ? 'bg-purple-50 border-2 border-purple-400' 
-                              : 'bg-background border-2 border-transparent hover:border-purple-200'
+                              ? 'bg-purple-500/10 border-2 border-purple-500/40' 
+                              : 'bg-background border-2 border-transparent hover:border-purple-500/20'
                           }`}
                         >
                           <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-colors ${
@@ -133,7 +133,7 @@ export default function AIAssistantCard({
                           }`}>
                             {isSelected && <Check className="w-3 h-3 text-white" />}
                           </div>
-                          <span className={`text-sm ${isSelected ? 'text-purple-900 font-medium' : 'text-foreground'}`}>
+                          <span className={`text-sm ${isSelected ? 'text-foreground font-medium' : 'text-foreground'}`}>
                             {suggestion}
                           </span>
                         </button>
@@ -162,7 +162,7 @@ export default function AIAssistantCard({
                       onClick={onGenerateMore}
                       size="sm"
                       variant="ghost"
-                      className="flex-1 border border-purple-200 text-purple-600 hover:bg-purple-50"
+                      className="flex-1 border border-purple-500/20 text-purple-500 hover:bg-purple-500/10"
                       disabled={isLoading}
                     >
                       <RefreshCw className="w-4 h-4 mr-1" />

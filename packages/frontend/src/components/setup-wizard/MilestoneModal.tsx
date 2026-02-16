@@ -88,7 +88,7 @@ export default function MilestoneModal({
                   transition={{ delay: 0.4 }}
                   className="mb-4"
                 >
-                  <p className="text-xl font-bold text-amber-600 mb-2">
+                  <p className="text-xl font-bold text-warning mb-2">
                     "{eventTitle}"
                   </p>
                   {eventSlug && (
@@ -98,7 +98,7 @@ export default function MilestoneModal({
                         href={`/e3/${eventSlug}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-block mt-1 px-3 py-1.5 bg-amber-50 text-amber-700 font-mono text-sm rounded-lg hover:bg-amber-100 transition-colors"
+                        className="inline-block mt-1 px-3 py-1.5 bg-warning/10 text-warning font-mono text-sm rounded-lg hover:bg-warning/20 transition-colors"
                       >
                         app.gästefotos.com/e3/{eventSlug}
                       </a><br />
@@ -163,7 +163,7 @@ export default function MilestoneModal({
                   <Button
                     onClick={onViewEvent}
                     variant="secondary"
-                    className="w-full border-2 border-amber-200 hover:border-amber-300 hover:bg-amber-50"
+                    className="w-full border-2 border-warning/30 hover:border-warning/50 hover:bg-warning/10"
                   >
                     Event ansehen →
                   </Button>
@@ -171,7 +171,7 @@ export default function MilestoneModal({
                 
                 <Button
                   onClick={onContinue}
-                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                  className="w-full bg-warning hover:opacity-90 text-warning-foreground"
                 >
                   {phase < 5 ? 'Weiter einrichten →' : 'Zum Dashboard →'}
                 </Button>

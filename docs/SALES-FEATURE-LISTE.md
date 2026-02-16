@@ -130,7 +130,7 @@
 | **Foto + Text** | Selfie + Nachricht im Polaroid-Style | Visuelles Gästebuch |
 | **Moderation** | Host prüft Einträge vor Veröffentlichung | Qualitätskontrolle |
 | **Event Wall Integration** | Gästebuch-Einträge (mit Foto) auf der Event Wall | Sichtbar für alle |
-| **PDF-Export** | Gästebuch als PDF herunterladen (geplant) | Zum Ausdrucken & Aufbewahren |
+| **PDF-Export** | Gästebuch als PDF herunterladen | Zum Ausdrucken & Aufbewahren |
 
 ---
 
@@ -228,13 +228,20 @@
 | Feature | Beschreibung | Vorteil |
 |---------|-------------|---------|
 | **SSL/TLS** | Ende-zu-Ende verschlüsselt | Höchste Datensicherheit |
-| **AES-256-GCM** | API-Key-Verschlüsselung | Bankentaugliche Sicherheit |
-| **DSGVO-konform** | Made in Germany, EU-Hosting | Rechtssicherheit |
+| **JWT + Refresh Tokens** | 1h Access-Token + 30-Tage Refresh-Token-Rotation (Redis-backed) | Sichere Session ohne ständiges Einloggen |
+| **AES-256-GCM** | API-Key- und 2FA-Secret-Verschlüsselung | Bankentaugliche Sicherheit |
+| **2FA (TOTP)** | Pflicht für Admins, Recovery Codes, verschlüsselte Secrets | Maximaler Account-Schutz |
+| **CSRF-Schutz** | Double-Submit Cookie mit Redis-Token-Store | Schutz vor Cross-Site-Angriffen |
+| **CSP mit Nonce** | Content Security Policy mit Per-Request-Nonce | XSS-Schutz auf Enterprise-Niveau |
+| **DSGVO-konform** | Made in Austria, EU-Hosting | Rechtssicherheit |
 | **Virus-Scan** | Automatischer Scan aller Uploads | Schutz vor Schadsoftware |
 | **EXIF-Stripping** | Metadaten automatisch entfernt | Privatsphäre geschützt |
 | **Consent-Management** | Einwilligungsverwaltung für Face Search | Transparente Datennutzung |
-| **Rate Limiting** | DDoS-Schutz, Brute-Force-Prävention | Stabile Performance |
+| **Rate Limiting** | 20 Redis-basierte Endpoint-Limiter, Brute-Force-Prävention | Stabile Performance unter Last |
+| **Biometrische Datenlöschung** | Automatisches Scrubbing von Face-Deskriptoren bei Event-Löschung | DSGVO-konform, kein Datenresiduum |
+| **Account-Lockout** | Konfigurierbares Sperrsystem (Versuche/Zeitfenster/Dauer) | Brute-Force-Schutz |
 | **Daten-Retention** | Automatische Löschung nach Paket-Ablauf | DSGVO-konforme Datenhaltung |
+| **Security Audit** | Professioneller Audit (Feb 2026), alle Findings behoben | Nachweisbare Sicherheit |
 
 ---
 
@@ -242,16 +249,18 @@
 
 | Feature | Beschreibung | Vorteil |
 |---------|-------------|---------|
-| **Next.js Frontend** | React-basiert, SSR, PWA-ready | Moderne, schnelle UX |
-| **Express Backend** | Node.js, TypeScript, Prisma ORM | Robust & typsicher |
+| **Next.js 16 Frontend** | React 19, App Router, Turbopack, PWA-ready | Modernste Web-Technologie |
+| **Express Backend** | Node.js, TypeScript, Prisma ORM (78 Models) | Robust & typsicher |
 | **5 AI-Provider** | Groq, Grok, OpenAI (Text) + Replicate, Stability AI (Bild) | Ausfallsicherheit |
-| **Redis Cache** | Schnelle Zwischenspeicherung | Blitzschnelle Ladezeiten |
+| **Redis Cache** | Sessions, CSRF, Rate-Limiting, Refresh-Tokens — alles Redis-backed | Blitzschnelle Ladezeiten |
+| **Mehrsprachig** | 5 Sprachen (DE/EN/FR/ES/IT), Cookie-basiert, sofort umschaltbar | Internationale Events |
 | **WooCommerce** | Direkte Shop-Integration via Webhooks | Sofort verkaufsfertig |
 | **Admin-Dashboard** | Separates Next.js App (dash.gästefotos.com) | Volle Kontrolle |
-| **E2E-Tests** | Playwright, 100+ Tests, Pre-Push-Hook | Qualitätssicherung |
+| **E2E-Tests** | 19 Playwright-Specs, Pre-Push-Hook | Qualitätssicherung |
 | **Hardware-Management** | Booth-Inventar, Kalender, Buchungs-Flow | Professionelles Setup |
 | **Storage Policy** | Intelligente Speicherverwaltung + Blur | Kostenoptimierung |
 | **Image/Video Processing** | Automatische Thumbnails, Konvertierung | Schnelle Darstellung |
+| **SEO** | robots.txt, dynamische Sitemap, Meta-Tags | Bessere Auffindbarkeit |
 
 ---
 
@@ -259,15 +268,20 @@
 
 | Metrik | Wert |
 |--------|------|
-| **Backend API Routes** | 90+ |
-| **Frontend Pages** | 60+ |
-| **Admin Dashboard Pages** | 35+ |
+| **Backend API Routes** | 85 |
+| **Frontend Pages** | 55 |
+| **React Components** | 282 |
+| **Admin Dashboard Pages** | 35 |
 | **KI-Features** | 17 |
 | **Workflow Flow-Typen** | 12 |
+| **Workflow Step-Typen** | 37 |
 | **Workflow Presets** | 5 |
-| **E2E-Tests** | 100+ |
-| **Prisma Schema** | 2.200+ Zeilen |
+| **E2E-Test-Specs** | 19 |
+| **Prisma Models** | 78 (2.255 Zeilen Schema) |
+| **DB-Migrationen** | 50 |
 | **AI Provider** | 5 (3 Text + 2 Bild) |
+| **Sprachen** | 5 (DE/EN/FR/ES/IT) |
+| **Redis Rate-Limiter** | 20 (alle Redis-backed) |
 | **Event-Typen** | Hochzeit, Familie, Geburtstag, Business, Party, Messe, Custom |
 
 ---
@@ -281,7 +295,7 @@
 5. **Event Wall + Mosaic** — Live-Fotowand + Gemeinschaftskunstwerk mit Print-Option.
 6. **Workflow Builder** — 12 Flow-Typen, visueller Editor, Lock/Unlock, Versionierung — jedes Setup konfigurierbar.
 7. **Partner-Modell** — B2B-Franchise mit Hardware-Lizenzen, eigenem Dashboard, Team & Billing.
-8. **DSGVO-konform** — Made in Germany, EU-Hosting, EXIF-Stripping, Consent-Management.
+8. **DSGVO-konform** — Made in Austria, EU-Hosting, EXIF-Stripping, Consent-Management, Security-Audit bestanden.
 9. **Smart Upselling** — Nicht-gebuchte Features sichtbar aber gesperrt, mit Erklärung, Preis & CTA.
 10. **Hardware inklusive** — Add-ons kommen mit kompletter Hardware (Drucker, Tablet, Booth).
 11. **WooCommerce** — Sofort verkaufsfertig mit automatischer Paket-Aktivierung.
@@ -289,4 +303,4 @@
 
 ---
 
-> *Letzte Aktualisierung: 15. Februar 2026*
+> *Letzte Aktualisierung: 16. Februar 2026 — Security Audit abgeschlossen, alle Findings behoben*

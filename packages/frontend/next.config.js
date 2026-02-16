@@ -1,5 +1,4 @@
 const { withSentryConfig } = require('@sentry/nextjs');
-
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 });
@@ -21,7 +20,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=3600, must-revalidate',
+            value: 'public, max-age=31536000, immutable',
           },
           {
             key: 'Content-Type',

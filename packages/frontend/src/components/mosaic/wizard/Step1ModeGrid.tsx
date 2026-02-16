@@ -61,15 +61,15 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
             disabled={!canMosaic}
             className={`relative p-4 sm:p-5 rounded-xl border-2 text-left transition-all ${
               state.mode === 'DIGITAL' && canMosaic
-                ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100'
+                ? 'border-purple-500 bg-purple-500/10 shadow-md shadow-purple-500/10'
                 : canMosaic
-                  ? 'border-border hover:border-purple-300 bg-card'
+                  ? 'border-border hover:border-purple-500/30 bg-card'
                   : 'border-border bg-muted/50 opacity-60 cursor-not-allowed'
             }`}
           >
             <div className="flex items-start gap-3">
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                state.mode === 'DIGITAL' && canMosaic ? 'bg-purple-100' : 'bg-muted'
+                state.mode === 'DIGITAL' && canMosaic ? 'bg-purple-500/15' : 'bg-muted'
               }`}>
                 <Monitor className={`w-5 h-5 ${
                   state.mode === 'DIGITAL' && canMosaic ? 'text-purple-600' : 'text-muted-foreground/70'
@@ -83,7 +83,7 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
               </div>
             </div>
             {canPrint ? (
-              <span className="absolute top-2 right-2 flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
+              <span className="absolute top-2 right-2 flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-500 font-medium">
                 <Check className="w-2.5 h-2.5" /> In Print enthalten
               </span>
             ) : canMosaic ? (
@@ -91,7 +91,7 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
                 Gebucht
               </span>
             ) : (
-              <span className="absolute top-2 right-2 flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
+              <span className="absolute top-2 right-2 flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-warning/15 text-warning font-medium">
                 <Lock className="w-2.5 h-2.5" /> Upgrade
               </span>
             )}
@@ -104,15 +104,15 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
             disabled={!canPrint}
             className={`relative p-4 sm:p-5 rounded-xl border-2 text-left transition-all ${
               state.mode === 'PRINT' && canPrint
-                ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100'
+                ? 'border-purple-500 bg-purple-500/10 shadow-md shadow-purple-500/10'
                 : canPrint
-                  ? 'border-border hover:border-purple-300 bg-card'
+                  ? 'border-border hover:border-purple-500/30 bg-card'
                   : 'border-border bg-muted/50 opacity-60 cursor-not-allowed'
             }`}
           >
             <div className="flex items-start gap-3">
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                state.mode === 'PRINT' && canPrint ? 'bg-purple-100' : 'bg-muted'
+                state.mode === 'PRINT' && canPrint ? 'bg-purple-500/15' : 'bg-muted'
               }`}>
                 <Printer className={`w-5 h-5 ${
                   state.mode === 'PRINT' && canPrint ? 'text-purple-600' : 'text-muted-foreground/70'
@@ -133,7 +133,7 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onUpgrade?.(); }}
-                className="absolute top-2 right-2 flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium hover:bg-amber-200 transition-colors"
+                className="absolute top-2 right-2 flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-warning/15 text-warning font-medium hover:bg-warning/25 transition-colors"
               >
                 <Crown className="w-2.5 h-2.5" /> Upgraden
               </button>
@@ -142,8 +142,8 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
         </div>
 
         {!canMosaic && (
-          <div className="mt-3 p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg">
-            <p className="text-xs text-purple-700">
+          <div className="mt-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+            <p className="text-xs text-foreground">
               Mosaic Wall ist ein Premium-Feature. <button type="button" onClick={onUpgrade} className="font-semibold underline">Jetzt upgraden</button> um loszulegen.
             </p>
           </div>
@@ -152,12 +152,12 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
 
       {/* Demo Banner */}
       {isDemo && (
-        <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl">
+        <div className="p-3 bg-warning/10 border border-warning/20 rounded-xl">
           <div className="flex items-start gap-2">
-            <Crown className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+            <Crown className="w-4 h-4 text-warning mt-0.5 shrink-0" />
             <div>
-              <p className="text-xs font-semibold text-amber-800">Demo-Modus — Kostenlos testen!</p>
-              <p className="text-[11px] text-amber-700 mt-0.5">
+              <p className="text-xs font-semibold text-foreground">Demo-Modus — Kostenlos testen!</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
                 Du kannst den kompletten Wizard durchlaufen. Im Demo-Modus ist das Grid auf {demoMaxGrid}×{demoMaxGrid} begrenzt und das Live-Display enthält ein Wasserzeichen.
               </p>
               <button type="button" onClick={onUpgrade} className="mt-1.5 text-[11px] font-semibold text-purple-600 hover:text-purple-700 underline">
@@ -184,11 +184,11 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
 
             {/* Demo: show only 4×4 preset */}
             {isDemo ? (
-              <div className="p-4 rounded-xl border-2 border-purple-500 bg-purple-50 shadow-sm">
+              <div className="p-4 rounded-xl border-2 border-purple-500 bg-purple-500/10 shadow-sm">
                 <div className="flex items-center gap-2 mb-1">
                   <LayoutGrid className="w-4 h-4 text-purple-500" />
                   <span className="font-semibold text-sm">Demo</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">FREE</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-warning/15 text-warning font-medium">FREE</span>
                 </div>
                 <div className="text-xs text-muted-foreground">
                   {demoMaxGrid}×{demoMaxGrid} = {demoMaxGrid * demoMaxGrid} Tiles
@@ -206,8 +206,8 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
                     onClick={() => selectPreset(preset.w, preset.h)}
                     className={`p-3 sm:p-4 rounded-xl border-2 text-left transition-all ${
                       isPresetSelected(preset.w, preset.h)
-                        ? 'border-purple-500 bg-purple-50 shadow-sm'
-                        : 'border-border hover:border-purple-300 bg-card'
+                        ? 'border-purple-500 bg-purple-500/10 shadow-sm'
+                        : 'border-border hover:border-purple-500/30 bg-card'
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
@@ -292,8 +292,8 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
                   onClick={() => calcPrintGrid(preset.wmm, preset.hmm, state.tileSizeMm)}
                   className={`p-3 rounded-xl border-2 text-left transition-all ${
                     state.boardWidthMm === preset.wmm && state.boardHeightMm === preset.hmm
-                      ? 'border-purple-500 bg-purple-50'
-                      : 'border-border hover:border-purple-300 bg-card'
+                      ? 'border-purple-500 bg-purple-500/10'
+                      : 'border-border hover:border-purple-500/30 bg-card'
                   }`}
                 >
                   <span className="font-semibold text-sm">{preset.label}</span>
@@ -359,8 +359,8 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
                   }}
                   className={`flex-1 p-3 rounded-xl border-2 text-center transition-all ${
                     state.tileSizeMm === preset.mm
-                      ? 'border-purple-500 bg-purple-50'
-                      : 'border-border hover:border-purple-300 bg-card'
+                      ? 'border-purple-500 bg-purple-500/10'
+                      : 'border-border hover:border-purple-500/30 bg-card'
                   }`}
                 >
                   <span className="font-semibold text-sm">{preset.label}</span>
@@ -371,23 +371,23 @@ export default function Step1ModeGrid({ state, onChange, canMosaic, canPrint, is
 
           {/* Calculated Grid Info */}
           {state.boardWidthMm && state.boardHeightMm && (
-            <div className="p-4 bg-purple-50 border border-purple-200 rounded-xl">
+            <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
               <div className="flex items-center gap-2 mb-2">
                 <LayoutGrid className="w-4 h-4 text-purple-500" />
-                <span className="font-semibold text-sm text-purple-700">Berechnetes Grid</span>
+                <span className="font-semibold text-sm text-purple-500">Berechnetes Grid</span>
               </div>
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div>
-                  <div className="text-lg font-bold text-purple-700">{state.gridWidth}×{state.gridHeight}</div>
-                  <div className="text-[10px] text-purple-500">Grid</div>
+                  <div className="text-lg font-bold text-purple-500">{state.gridWidth}×{state.gridHeight}</div>
+                  <div className="text-[10px] text-purple-500/70">Grid</div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-purple-700">{state.gridWidth * state.gridHeight}</div>
-                  <div className="text-[10px] text-purple-500">Tiles</div>
+                  <div className="text-lg font-bold text-purple-500">{state.gridWidth * state.gridHeight}</div>
+                  <div className="text-[10px] text-purple-500/70">Tiles</div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-purple-700">{state.tileSizeMm}mm</div>
-                  <div className="text-[10px] text-purple-500">Sticker</div>
+                  <div className="text-lg font-bold text-purple-500">{state.tileSizeMm}mm</div>
+                  <div className="text-[10px] text-purple-500/70">Sticker</div>
                 </div>
               </div>
             </div>

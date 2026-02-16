@@ -135,8 +135,8 @@ export default function ImageCropper({
         </div>
 
         {/* Hint */}
-        <div className="px-4 py-2 bg-blue-50 border-t border-blue-100">
-          <p className="text-xs text-blue-700 text-center">
+        <div className="px-4 py-2 bg-blue-500/10 border-t border-blue-500/20">
+          <p className="text-xs text-foreground text-center">
             Ziehe die Ecken um den Ausschnitt anzupassen
           </p>
         </div>
@@ -160,7 +160,7 @@ export default function ImageCropper({
           </Button>
           <button
             onClick={handleCropComplete}
-            className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg transition-all"
+            className="flex items-center justify-center w-12 h-12 rounded-full bg-warning hover:opacity-90 text-warning-foreground shadow-lg transition-all"
             title="Übernehmen"
           >
             <Check className="w-6 h-6" />

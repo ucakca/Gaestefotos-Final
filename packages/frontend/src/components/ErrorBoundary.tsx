@@ -39,10 +39,25 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: any) {
     console.error('ErrorBoundary caught error:', error, errorInfo);
     
-    // Log to external service in production
+    // Log to backend in production
     if (process.env.NODE_ENV === 'production') {
-      // TODO: Send to Sentry or similar
-      // logErrorToService(error, errorInfo);
+      try {
+        const payload = {
+          message: error.message,
+          stack: error.stack?.slice(0, 2000),
+          componentStack: errorInfo?.componentStack?.slice(0, 2000),
+          url: typeof window !== 'undefined' ? window.location.href : '',
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+          timestamp: new Date().toISOString(),
+        };
+        fetch('/api/qa-logs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ level: 'error', source: 'ErrorBoundary', message: error.message, metadata: payload }),
+        }).catch(() => {});
+      } catch {
+        // Silent fail — logging should never break the app
+      }
     }
 
     this.setState({

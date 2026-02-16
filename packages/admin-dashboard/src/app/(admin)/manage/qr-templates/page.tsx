@@ -448,7 +448,7 @@ export default function QrTemplatesAdminPage() {
           <button
             onClick={saveTemplate}
             disabled={saving || !editingTemplate.slug || !editingTemplate.name}
-            className="px-6 py-2 bg-pink-600 hover:bg-pink-700 disabled:bg-pink-400 text-white rounded-lg font-medium flex items-center gap-2"
+            className="btn-primary px-6 py-2.5 disabled:opacity-50 rounded-xl font-medium flex items-center gap-2"
           >
             {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {saving ? 'Speichern...' : 'Speichern'}
@@ -463,30 +463,32 @@ export default function QrTemplatesAdminPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <QrCode className="w-6 h-6 text-pink-600" />
+          <h1 className="text-2xl font-bold text-app-fg flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-md shadow-pink-500/20">
+              <QrCode className="w-5 h-5 text-white" />
+            </div>
             QR-Code Templates
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-app-muted mt-1 ml-[52px]">
             {templates.length} Templates verwalten
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={loadTemplates}
-            className="p-2 hover:bg-muted rounded-lg"
+            className="p-2.5 hover:bg-app-bg rounded-xl transition-colors"
           >
-            <RefreshCw className="w-5 h-5 text-muted-foreground" />
+            <RefreshCw className="w-5 h-5 text-app-muted" />
           </button>
           <button
             onClick={() => setShowImportTool(true)}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center gap-2"
+            className="px-4 py-2.5 bg-app-surface border border-app-border hover:shadow-md hover:-translate-y-0.5 text-app-fg rounded-xl font-medium flex items-center gap-2 transition-all"
           >
             <Upload className="w-4 h-4" /> SVG importieren
           </button>
           <button
             onClick={startCreate}
-            className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium flex items-center gap-2"
+            className="btn-primary px-4 py-2.5 rounded-xl font-medium flex items-center gap-2"
           >
             <Plus className="w-4 h-4" /> Neues Template
           </button>
@@ -593,12 +595,12 @@ export default function QrTemplatesAdminPage() {
           templates.map(template => (
             <div 
               key={template.id} 
-              className={`bg-card border rounded-xl overflow-hidden ${!template.isActive ? 'opacity-60' : ''}`}
+              className={`group bg-app-card border border-app-border rounded-2xl overflow-hidden hover:shadow-md transition-all ${!template.isActive ? 'opacity-60' : ''}`}
             >
               <div className="p-4 flex items-center gap-4">
                 {/* Preview */}
                 <div 
-                  className="w-14 h-18 rounded border overflow-hidden flex-shrink-0"
+                  className="w-14 h-18 rounded-lg border border-app-border overflow-hidden flex-shrink-0 shadow-sm"
                   style={{ backgroundColor: template.defaultBgColor }}
                 >
                   <img
@@ -612,20 +614,24 @@ export default function QrTemplatesAdminPage() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold">{template.name}</span>
-                    {template.isPremium && <Star className="w-4 h-4 text-warning fill-yellow-500" />}
-                    {!template.isPublic && <EyeOff className="w-4 h-4 text-muted-foreground/70" />}
+                    <span className="font-semibold text-app-fg">{template.name}</span>
+                    {template.isPremium && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-amber-500 to-yellow-400 text-white rounded-md">
+                        <Star className="w-3 h-3" /> PRO
+                      </span>
+                    )}
+                    {!template.isPublic && <EyeOff className="w-4 h-4 text-app-muted" />}
                     {!template.isActive && (
-                      <span className="text-xs bg-muted/80 text-muted-foreground px-2 py-0.5 rounded">Inaktiv</span>
+                      <span className="text-[10px] bg-app-border text-app-muted px-2 py-0.5 rounded-md font-medium">Inaktiv</span>
                     )}
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {CATEGORIES.find(c => c.value === template.category)?.label} · {template.slug}
+                  <div className="text-sm text-app-muted mt-0.5">
+                    {CATEGORIES.find(c => c.value === template.category)?.label} · <span className="font-mono text-xs">{template.slug}</span>
                   </div>
-                  <div className="flex gap-1.5 mt-1">
-                    <span className="w-4 h-4 rounded-full border" style={{ backgroundColor: template.defaultBgColor }} />
-                    <span className="w-4 h-4 rounded-full border" style={{ backgroundColor: template.defaultTextColor }} />
-                    <span className="w-4 h-4 rounded-full border" style={{ backgroundColor: template.defaultAccentColor }} />
+                  <div className="flex gap-1.5 mt-1.5">
+                    <span className="w-5 h-5 rounded-md border border-app-border shadow-sm" style={{ backgroundColor: template.defaultBgColor }} />
+                    <span className="w-5 h-5 rounded-md border border-app-border shadow-sm" style={{ backgroundColor: template.defaultTextColor }} />
+                    <span className="w-5 h-5 rounded-md border border-app-border shadow-sm" style={{ backgroundColor: template.defaultAccentColor }} />
                   </div>
                 </div>
 
@@ -633,35 +639,35 @@ export default function QrTemplatesAdminPage() {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => toggleActive(template)}
-                    className="p-2 hover:bg-muted rounded-lg"
+                    className="p-2 hover:bg-app-bg rounded-xl transition-colors"
                     title={template.isActive ? 'Deaktivieren' : 'Aktivieren'}
                   >
-                    {template.isActive ? <Eye className="w-4 h-4 text-success" /> : <EyeOff className="w-4 h-4 text-muted-foreground/70" />}
+                    {template.isActive ? <Eye className="w-4 h-4 text-app-success" /> : <EyeOff className="w-4 h-4 text-app-muted" />}
                   </button>
                   <button
                     onClick={() => duplicateTemplate(template.slug)}
-                    className="p-2 hover:bg-muted rounded-lg"
+                    className="p-2 hover:bg-app-bg rounded-xl transition-colors"
                     title="Duplizieren"
                   >
-                    <Copy className="w-4 h-4 text-muted-foreground" />
+                    <Copy className="w-4 h-4 text-app-muted" />
                   </button>
                   <button
                     onClick={() => loadTemplateDetails(template.slug)}
-                    className="p-2 hover:bg-muted rounded-lg"
+                    className="p-2 hover:bg-blue-500/10 rounded-xl transition-colors"
                     title="Bearbeiten"
                   >
-                    <Pencil className="w-4 h-4 text-blue-600" />
+                    <Pencil className="w-4 h-4 text-blue-500" />
                   </button>
                   <button
                     onClick={() => deleteTemplate(template.slug)}
-                    className="p-2 hover:bg-destructive/10 rounded-lg"
+                    className="p-2 hover:bg-destructive/10 rounded-xl transition-colors"
                     title="Löschen"
                   >
                     <Trash2 className="w-4 h-4 text-destructive" />
                   </button>
                   <button
                     onClick={() => setExpandedId(expandedId === template.id ? null : template.id)}
-                    className="p-2 hover:bg-muted rounded-lg"
+                    className="p-2 hover:bg-app-bg rounded-xl transition-colors"
                   >
                     {expandedId === template.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>

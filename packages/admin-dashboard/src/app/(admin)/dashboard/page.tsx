@@ -23,6 +23,10 @@ import {
 import Link from 'next/link';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
+import { ModernCard } from '@/components/ui/ModernCard';
+import { Badge } from '@/components/ui/Badge';
+import { PageTransition, StaggerContainer, StaggerItem } from '@/components/ui/PageTransition';
+import { SkeletonCard, SkeletonStats } from '@/components/ui/Skeleton';
 
 type BackendVersionResponse = {
   service: string;
@@ -200,7 +204,7 @@ export default function DashboardPage() {
   const isHealthy = server?.ok && backend?.version;
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
+    <PageTransition className="mx-auto w-full max-w-6xl space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -296,117 +300,131 @@ export default function DashboardPage() {
       )}
 
       {/* Quick Actions */}
-      <div className="rounded-2xl border border-app-border bg-app-card p-5">
+      <ModernCard variant="default" className="p-5">
         <h2 className="text-sm font-semibold text-app-fg mb-4 flex items-center gap-2">
-          <Zap className="w-4 h-4 text-app-accent" />
+          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-app-accent to-purple-500 flex items-center justify-center">
+            <Zap className="w-3.5 h-3.5 text-white" />
+          </div>
           Quick Actions
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Link href="/manage/users">
-            <div className="p-4 rounded-xl border border-app-border hover:border-app-accent/50 hover:bg-app-accent/5 transition-all cursor-pointer group">
-              <Users className="w-5 h-5 text-app-muted group-hover:text-app-accent mb-2" />
-              <p className="text-sm font-medium">Benutzer</p>
+            <div className="group p-4 rounded-xl border border-app-border hover:border-app-accent/50 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-sm shadow-indigo-500/20">
+                <Users className="w-4 h-4 text-white" />
+              </div>
+              <p className="text-sm font-medium text-app-fg">Benutzer</p>
             </div>
           </Link>
           <Link href="/manage/events">
-            <div className="p-4 rounded-xl border border-app-border hover:border-app-accent/50 hover:bg-app-accent/5 transition-all cursor-pointer group">
-              <Calendar className="w-5 h-5 text-app-muted group-hover:text-app-accent mb-2" />
-              <p className="text-sm font-medium">Events</p>
+            <div className="group p-4 rounded-xl border border-app-border hover:border-app-accent/50 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-sm shadow-pink-500/20">
+                <Calendar className="w-4 h-4 text-white" />
+              </div>
+              <p className="text-sm font-medium text-app-fg">Events</p>
             </div>
           </Link>
           <Link href="/design/theme">
-            <div className="p-4 rounded-xl border border-app-border hover:border-app-accent/50 hover:bg-app-accent/5 transition-all cursor-pointer group">
-              <ImageIcon className="w-5 h-5 text-app-muted group-hover:text-app-accent mb-2" />
-              <p className="text-sm font-medium">Theme</p>
+            <div className="group p-4 rounded-xl border border-app-border hover:border-app-accent/50 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-sm shadow-cyan-500/20">
+                <ImageIcon className="w-4 h-4 text-white" />
+              </div>
+              <p className="text-sm font-medium text-app-fg">Theme</p>
             </div>
           </Link>
           <Link href="/system/health">
-            <div className="p-4 rounded-xl border border-app-border hover:border-app-accent/50 hover:bg-app-accent/5 transition-all cursor-pointer group">
-              <Server className="w-5 h-5 text-app-muted group-hover:text-app-accent mb-2" />
-              <p className="text-sm font-medium">System</p>
+            <div className="group p-4 rounded-xl border border-app-border hover:border-app-accent/50 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-sm shadow-amber-500/20">
+                <Server className="w-4 h-4 text-white" />
+              </div>
+              <p className="text-sm font-medium text-app-fg">System</p>
             </div>
           </Link>
         </div>
-      </div>
+      </ModernCard>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Backend Version */}
-        <div className="rounded-2xl border border-app-border bg-app-card p-5 hover:border-app-accent/30 hover:shadow-lg transition-all">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-              <Server className="w-5 h-5 text-blue-500" />
+      <StaggerContainer className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StaggerItem>
+          <ModernCard variant="default" hover className="p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-sm shadow-blue-500/20">
+                <Server className="w-5 h-5 text-white" />
+              </div>
+              <div className="text-xs font-semibold text-app-muted uppercase tracking-wider">Backend</div>
             </div>
-            <div className="text-sm font-medium text-app-muted">Backend</div>
-          </div>
-          <div className="text-2xl font-bold text-app-fg">{backend?.version || '—'}</div>
-          <div className="mt-1 text-xs text-app-muted">Env: {backend?.nodeEnv || '—'}</div>
-        </div>
+            <div className="text-2xl font-bold text-app-fg">{backend?.version || '—'}</div>
+            <div className="mt-1 text-xs text-app-muted">Env: {backend?.nodeEnv || '—'}</div>
+          </ModernCard>
+        </StaggerItem>
 
-        {/* Uptime */}
-        <div className="rounded-2xl border border-app-border bg-app-card p-5 hover:border-app-accent/30 hover:shadow-lg transition-all">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-success/100/10 flex items-center justify-center">
-              <Clock className="w-5 h-5 text-success" />
+        <StaggerItem>
+          <ModernCard variant="default" hover className="p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-sm shadow-emerald-500/20">
+                <Clock className="w-5 h-5 text-white" />
+              </div>
+              <div className="text-xs font-semibold text-app-muted uppercase tracking-wider">Uptime</div>
             </div>
-            <div className="text-sm font-medium text-app-muted">Uptime</div>
-          </div>
-          <div className="text-2xl font-bold text-app-fg">
-            {server?.uptimeSeconds ? formatUptime(server.uptimeSeconds) : '—'}
-          </div>
-          <div className="mt-1 text-xs text-app-muted">
-            Start: {server?.startedAt ? new Date(server.startedAt).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : '—'}
-          </div>
-        </div>
+            <div className="text-2xl font-bold text-app-fg">
+              {server?.uptimeSeconds ? formatUptime(server.uptimeSeconds) : '—'}
+            </div>
+            <div className="mt-1 text-xs text-app-muted">
+              Start: {server?.startedAt ? new Date(server.startedAt).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : '—'}
+            </div>
+          </ModernCard>
+        </StaggerItem>
 
-        {/* Memory */}
-        <div className="rounded-2xl border border-app-border bg-app-card p-5 hover:border-app-accent/30 hover:shadow-lg transition-all">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-              <Cpu className="w-5 h-5 text-purple-500" />
+        <StaggerItem>
+          <ModernCard variant="default" hover className="p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center shadow-sm shadow-purple-500/20">
+                <Cpu className="w-5 h-5 text-white" />
+              </div>
+              <div className="text-xs font-semibold text-app-muted uppercase tracking-wider">Memory</div>
             </div>
-            <div className="text-sm font-medium text-app-muted">Memory</div>
-          </div>
-          <div className="text-2xl font-bold text-app-fg">{memUsed ? `${memUsed.percent}%` : '—'}</div>
-          <div className="mt-1 text-xs text-app-muted">
-            {memUsed ? `${fmtBytes(memUsed.used)} / ${fmtBytes(memUsed.total)}` : '—'}
-          </div>
-          {memUsed && (
-            <div className="mt-2 h-1.5 rounded-full bg-app-border overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${
-                  memUsed.percent > 80 ? 'bg-destructive/100' : memUsed.percent > 60 ? 'bg-warning' : 'bg-success/100'
-                }`}
-                style={{ width: `${memUsed.percent}%` }}
-              />
+            <div className="text-2xl font-bold text-app-fg">{memUsed ? `${memUsed.percent}%` : '—'}</div>
+            <div className="mt-1 text-xs text-app-muted">
+              {memUsed ? `${fmtBytes(memUsed.used)} / ${fmtBytes(memUsed.total)}` : '—'}
             </div>
-          )}
-        </div>
+            {memUsed && (
+              <div className="mt-2 h-2 rounded-full bg-app-border overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    memUsed.percent > 80 ? 'bg-gradient-to-r from-destructive to-red-400' : memUsed.percent > 60 ? 'bg-gradient-to-r from-warning to-amber-400' : 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                  }`}
+                  style={{ width: `${memUsed.percent}%` }}
+                />
+              </div>
+            )}
+          </ModernCard>
+        </StaggerItem>
 
-        {/* Disk */}
-        <div className="rounded-2xl border border-app-border bg-app-card p-5 hover:border-app-accent/30 hover:shadow-lg transition-all">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
-              <HardDrive className="w-5 h-5 text-orange-500" />
+        <StaggerItem>
+          <ModernCard variant="default" hover className="p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-sm shadow-amber-500/20">
+                <HardDrive className="w-5 h-5 text-white" />
+              </div>
+              <div className="text-xs font-semibold text-app-muted uppercase tracking-wider">Festplatte</div>
             </div>
-            <div className="text-sm font-medium text-app-muted">Festplatte</div>
-          </div>
-          <div className="text-2xl font-bold text-app-fg">{disk ? `${disk.usedPercent}%` : '—'}</div>
-          <div className="mt-1 text-xs text-app-muted">
-            {disk ? `${fmtBytes(disk.availableBytes)} frei` : '—'}
-          </div>
-          {disk && (
-            <div className="mt-2 h-1.5 rounded-full bg-app-border overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${
-                  disk.usedPercent > 90 ? 'bg-destructive/100' : disk.usedPercent > 75 ? 'bg-warning' : 'bg-orange-500'
-                }`}
-                style={{ width: `${disk.usedPercent}%` }}
-              />
+            <div className="text-2xl font-bold text-app-fg">{disk ? `${disk.usedPercent}%` : '—'}</div>
+            <div className="mt-1 text-xs text-app-muted">
+              {disk ? `${fmtBytes(disk.availableBytes)} frei` : '—'}
             </div>
-          )}
-        </div>
-      </div>
+            {disk && (
+              <div className="mt-2 h-2 rounded-full bg-app-border overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    disk.usedPercent > 90 ? 'bg-gradient-to-r from-destructive to-red-400' : disk.usedPercent > 75 ? 'bg-gradient-to-r from-warning to-amber-400' : 'bg-gradient-to-r from-amber-500 to-orange-400'
+                  }`}
+                  style={{ width: `${disk.usedPercent}%` }}
+                />
+              </div>
+            )}
+          </ModernCard>
+        </StaggerItem>
+      </StaggerContainer>
 
       {/* App Stats with Growth */}
       {stats && (
@@ -422,37 +440,41 @@ export default function DashboardPage() {
       {stats && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Daily Activity Chart */}
-          <div className="lg:col-span-2 rounded-2xl border border-app-border bg-app-card p-5">
+          <ModernCard variant="default" className="lg:col-span-2 p-5">
             <h3 className="text-sm font-semibold text-app-fg mb-4 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-app-accent" />
+              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+                <Activity className="w-3.5 h-3.5 text-white" />
+              </div>
               Aktivität (30 Tage)
             </h3>
             <ActivityChart />
-          </div>
+          </ModernCard>
 
           {/* Storage */}
-          <div className="rounded-2xl border border-app-border bg-app-card p-5">
+          <ModernCard variant="default" className="p-5">
             <h3 className="text-sm font-semibold text-app-fg mb-4 flex items-center gap-2">
-              <HardDrive className="w-4 h-4 text-app-accent" />
+              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+                <HardDrive className="w-3.5 h-3.5 text-white" />
+              </div>
               Speicher
             </h3>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-xs text-app-muted mb-1">
-                  <span>Fotos</span>
+                  <span className="font-medium">Fotos</span>
                   <span>{fmtBytes(stats.stats?.storage?.photosBytes ?? 0)}</span>
                 </div>
                 <div className="h-2 rounded-full bg-app-border overflow-hidden">
-                  <div className="h-full rounded-full bg-cyan-500" style={{ width: stats.stats?.storage?.totalBytes ? `${Math.min(100, (stats.stats.storage.photosBytes / stats.stats.storage.totalBytes) * 100)}%` : '0%' }} />
+                  <div className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-teal-400" style={{ width: stats.stats?.storage?.totalBytes ? `${Math.min(100, (stats.stats.storage.photosBytes / stats.stats.storage.totalBytes) * 100)}%` : '0%' }} />
                 </div>
               </div>
               <div>
                 <div className="flex justify-between text-xs text-app-muted mb-1">
-                  <span>Videos</span>
+                  <span className="font-medium">Videos</span>
                   <span>{fmtBytes(stats.stats?.storage?.videosBytes ?? 0)}</span>
                 </div>
                 <div className="h-2 rounded-full bg-app-border overflow-hidden">
-                  <div className="h-full rounded-full bg-purple-500" style={{ width: stats.stats?.storage?.totalBytes ? `${Math.min(100, (stats.stats.storage.videosBytes / stats.stats.storage.totalBytes) * 100)}%` : '0%' }} />
+                  <div className="h-full rounded-full bg-gradient-to-r from-purple-500 to-violet-400" style={{ width: stats.stats?.storage?.totalBytes ? `${Math.min(100, (stats.stats.storage.videosBytes / stats.stats.storage.totalBytes) * 100)}%` : '0%' }} />
                 </div>
               </div>
               <div className="pt-3 border-t border-app-border">
@@ -460,7 +482,7 @@ export default function DashboardPage() {
                 <div className="text-xs text-app-muted">Gesamtspeicher</div>
               </div>
             </div>
-          </div>
+          </ModernCard>
         </div>
       )}
 
@@ -468,43 +490,47 @@ export default function DashboardPage() {
       {stats?.recent && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Recent Events */}
-          <div className="rounded-2xl border border-app-border bg-app-card p-5">
+          <ModernCard variant="default" className="p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-app-fg flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-pink-500" />
+                <div className="w-6 h-6 rounded-md bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+                  <Calendar className="w-3.5 h-3.5 text-white" />
+                </div>
                 Neueste Events
               </h3>
-              <Link href="/manage/events" className="text-xs text-app-accent hover:underline">Alle →</Link>
+              <Link href="/manage/events" className="text-xs text-app-accent hover:underline font-medium">Alle →</Link>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {stats.recent.events.map((evt) => (
-                <Link key={evt.id} href={`/manage/events/${evt.id}`} className="flex items-center justify-between p-2 rounded-lg hover:bg-app-bg transition-colors">
+                <Link key={evt.id} href={`/manage/events/${evt.id}`} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-app-bg transition-colors group">
                   <div>
-                    <p className="text-sm font-medium text-app-fg">{evt.title}</p>
+                    <p className="text-sm font-medium text-app-fg group-hover:text-app-accent transition-colors">{evt.title}</p>
                     <p className="text-xs text-app-muted">/{evt.slug} · {new Date(evt.createdAt).toLocaleDateString('de-DE')}</p>
                   </div>
-                  <span className={`px-2 py-0.5 rounded-full text-xs ${evt.isActive ? 'bg-success/100/10 text-success' : 'bg-warning/10 text-warning'}`}>
+                  <Badge variant={evt.isActive ? 'success' : 'warning'}>
                     {evt.isActive ? 'Aktiv' : 'Inaktiv'}
-                  </span>
+                  </Badge>
                 </Link>
               ))}
             </div>
-          </div>
+          </ModernCard>
 
           {/* Recent Users */}
-          <div className="rounded-2xl border border-app-border bg-app-card p-5">
+          <ModernCard variant="default" className="p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-app-fg flex items-center gap-2">
-                <Users className="w-4 h-4 text-indigo-500" />
+                <div className="w-6 h-6 rounded-md bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center">
+                  <Users className="w-3.5 h-3.5 text-white" />
+                </div>
                 Neueste Benutzer
               </h3>
-              <Link href="/manage/users" className="text-xs text-app-accent hover:underline">Alle →</Link>
+              <Link href="/manage/users" className="text-xs text-app-accent hover:underline font-medium">Alle →</Link>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {stats.recent.users.map((u) => (
-                <div key={u.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-app-bg transition-colors">
+                <div key={u.id} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-app-bg transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-app-accent/10 flex items-center justify-center text-app-accent font-semibold text-xs">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-app-accent/20 to-purple-500/10 flex items-center justify-center text-app-accent font-bold text-xs">
                       {(u.name || u.email)[0].toUpperCase()}
                     </div>
                     <div>
@@ -512,13 +538,13 @@ export default function DashboardPage() {
                       <p className="text-xs text-app-muted">{new Date(u.createdAt).toLocaleDateString('de-DE')}</p>
                     </div>
                   </div>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.role === 'ADMIN' ? 'bg-destructive/100/10 text-destructive' : 'bg-blue-500/10 text-blue-500'}`}>
+                  <Badge variant={u.role === 'ADMIN' || u.role === 'SUPERADMIN' ? 'error' : u.role === 'PARTNER' ? 'accent' : 'info'}>
                     {u.role}
-                  </span>
+                  </Badge>
                 </div>
               ))}
             </div>
-          </div>
+          </ModernCard>
         </div>
       )}
 
@@ -527,28 +553,28 @@ export default function DashboardPage() {
         Letzte Aktualisierung: {server?.checkedAt ? new Date(server.checkedAt).toLocaleTimeString('de-DE') : '—'}
         {' • '}Auto-Refresh alle 30 Sekunden
       </div>
-    </div>
+    </PageTransition>
   );
 }
 
 function StatCard({ icon: Icon, label, value, todayValue, growth, color }: {
   icon: any; label: string; value: number; todayValue?: number; growth?: string; color: string;
 }) {
-  const colorMap: Record<string, string> = {
-    indigo: 'bg-indigo-500/10 text-indigo-500',
-    pink: 'bg-pink-500/10 text-pink-500',
-    cyan: 'bg-cyan-500/10 text-cyan-500',
-    green: 'bg-success/100/10 text-success',
+  const gradientMap: Record<string, string> = {
+    indigo: 'from-indigo-500 to-blue-500 shadow-indigo-500/20',
+    pink: 'from-pink-500 to-rose-500 shadow-pink-500/20',
+    cyan: 'from-cyan-500 to-teal-500 shadow-cyan-500/20',
+    green: 'from-emerald-500 to-teal-500 shadow-emerald-500/20',
   };
   const growthNum = growth ? parseFloat(growth) : 0;
 
   return (
-    <div className="rounded-2xl border border-app-border bg-app-card p-4 hover:border-app-accent/30 transition-all">
+    <div className="group rounded-2xl border border-app-border bg-app-card p-4 hover:shadow-md hover:-translate-y-0.5 transition-all">
       <div className="flex items-center gap-2 mb-2">
-        <div className={`w-8 h-8 rounded-lg ${colorMap[color]} flex items-center justify-center`}>
-          <Icon className="w-4 h-4" />
+        <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${gradientMap[color]} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform`}>
+          <Icon className="w-4 h-4 text-white" />
         </div>
-        <span className="text-xs font-medium text-app-muted">{label}</span>
+        <span className="text-xs font-semibold text-app-muted uppercase tracking-wider">{label}</span>
       </div>
       <div className="text-2xl font-bold text-app-fg">{value.toLocaleString('de-DE')}</div>
       <div className="flex items-center gap-2 mt-1">

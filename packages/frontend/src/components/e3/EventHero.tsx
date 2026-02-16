@@ -186,7 +186,7 @@ export default function EventHero({
               setTheme(theme === 'dark' ? 'light' : 'dark');
             }}
             className={`absolute top-4 z-10 rounded-full bg-black/40 p-2.5 text-white backdrop-blur-sm transition-colors hover:bg-black/60 ${hasWifi && onWifiClick ? 'right-28' : 'right-16'}`}
-            aria-label={theme === 'dark' ? 'Hell-Modus' : 'Dunkel-Modus'}
+            aria-label={theme === 'dark' ? 'Heller Modus' : 'Dunkler Modus'}
           >
             {theme === 'dark' ? (
               <Sun className="h-5 w-5" />
@@ -202,7 +202,7 @@ export default function EventHero({
           <button
             onClick={() => setShowCoverLightbox(false)}
             className="absolute top-4 right-4 z-50 rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
-            aria-label="Schliessen"
+            aria-label="Schließen"
           >
             <X className="h-6 w-6" />
           </button>
@@ -298,7 +298,7 @@ export default function EventHero({
             <button
               onClick={() => setShowAvatarLightbox(false)}
               className="absolute top-4 right-4 z-50 rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
-              aria-label="Schliessen"
+              aria-label="Schließen"
             >
               <X className="h-6 w-6" />
             </button>
@@ -357,7 +357,7 @@ export default function EventHero({
         {(isStorageLocked || (uploadDisabled && uploadDisabledReason)) && (
           <div className="px-4 pb-3 space-y-2">
             {isStorageLocked && (
-              <div className="px-3 py-2 bg-warning/10 border border-yellow-200 rounded-lg">
+              <div className="px-3 py-2 bg-warning/10 border border-warning/30 rounded-lg">
                 <p className="text-warning text-sm">
                   ⚠️ Speicherplatz voll - Upload aktuell nicht möglich
                 </p>

@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, hasEventManageAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
@@ -58,46 +59,45 @@ router.get(
           .then((e: any) => e?.visitCount || 0),
 
         // Total likes (via raw query since likeCount may not be on model)
-        prisma.$queryRawUnsafe<any[]>(
-          `SELECT COALESCE(SUM("likeCount"), 0)::int as total FROM photos WHERE "eventId" = $1`, eventId
+        prisma.$queryRaw<any[]>(Prisma.sql`SELECT COALESCE(SUM("likeCount"), 0)::int as total FROM photos WHERE "eventId" = ${eventId}`
         ).then((r: any[]) => r[0]?.total || 0).catch(() => 0),
 
         // Photos per hour (last 24h)
-        prisma.$queryRawUnsafe<any[]>(`
+        prisma.$queryRaw<any[]>(Prisma.sql`
           SELECT 
             date_trunc('hour', "createdAt") as hour,
             COUNT(*)::int as count
           FROM photos 
-          WHERE "eventId" = $1 
+          WHERE "eventId" = ${eventId} 
             AND "createdAt" > NOW() - INTERVAL '24 hours'
           GROUP BY date_trunc('hour', "createdAt")
           ORDER BY hour ASC
-        `, eventId).catch(() => []),
+        `).catch(() => []),
 
         // Top 10 uploaders
-        prisma.$queryRawUnsafe<any[]>(`
+        prisma.$queryRaw<any[]>(Prisma.sql`
           SELECT 
             "uploadedBy" as name,
             COUNT(*)::int as count
           FROM photos 
-          WHERE "eventId" = $1 
+          WHERE "eventId" = ${eventId} 
             AND "uploadedBy" IS NOT NULL
             AND "status" = 'APPROVED'
           GROUP BY "uploadedBy"
           ORDER BY count DESC
           LIMIT 10
-        `, eventId).catch(() => []),
+        `).catch(() => []),
 
         // Source breakdown (by source field or category)
-        prisma.$queryRawUnsafe<any[]>(`
+        prisma.$queryRaw<any[]>(Prisma.sql`
           SELECT 
             COALESCE("source", 'gallery') as source,
             COUNT(*)::int as count
           FROM photos 
-          WHERE "eventId" = $1
+          WHERE "eventId" = ${eventId}
           GROUP BY COALESCE("source", 'gallery')
           ORDER BY count DESC
-        `, eventId).catch(() => []),
+        `).catch(() => []),
 
         // Recent activity (last 20 photos)
         prisma.photo.findMany({
@@ -195,17 +195,19 @@ router.get(
 
       const config = intervalMap[period] || intervalMap['24h'];
 
-      const timeline = await prisma.$queryRawUnsafe<any[]>(`
+      const bucketSql = Prisma.raw(config.bucket);
+      const intervalSql = Prisma.raw(config.interval);
+      const timeline = await prisma.$queryRaw<any[]>(Prisma.sql`
         SELECT 
-          date_trunc('${config.bucket}', "createdAt") as bucket,
+          date_trunc(${bucketSql}, "createdAt") as bucket,
           COUNT(*)::int as photos,
           COUNT(DISTINCT "uploadedBy")::int as uploaders
         FROM photos 
-        WHERE "eventId" = $1 
-          AND "createdAt" > NOW() - INTERVAL '${config.interval}'
-        GROUP BY date_trunc('${config.bucket}', "createdAt")
+        WHERE "eventId" = ${eventId} 
+          AND "createdAt" > NOW() - INTERVAL ${intervalSql}
+        GROUP BY date_trunc(${bucketSql}, "createdAt")
         ORDER BY bucket ASC
-      `, eventId).catch(() => []);
+      `).catch(() => []);
 
       res.json({
         period,

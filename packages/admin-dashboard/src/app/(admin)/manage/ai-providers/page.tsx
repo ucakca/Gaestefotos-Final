@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '@/lib/api';
 import {
   Brain,
@@ -22,7 +22,22 @@ import {
   EyeOff,
   Save,
   X,
+  AlertTriangle,
+  TrendingUp,
+  Sparkles,
+  Clock,
+  PlayCircle,
+  CheckCircle,
+  Search,
 } from 'lucide-react';
+import { StatCard } from '@/components/ui/StatCard';
+import { ModernCard } from '@/components/ui/ModernCard';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Badge } from '@/components/ui/Badge';
+import { PageTransition } from '@/components/ui/PageTransition';
+import { SkeletonCard, SkeletonStats } from '@/components/ui/Skeleton';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import toast from 'react-hot-toast';
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -46,6 +61,7 @@ interface AiProvider {
   config: any;
   createdAt: string;
   updatedAt: string;
+  lastUsedAt: string | null;
   _count: { usageLogs: number; featureMappings: number };
 }
 
@@ -63,6 +79,7 @@ interface AiFeatureMapping {
 interface UsageStats {
   monthly: { requests: number; tokens: number; costCents: number };
   errorRate: string;
+  errorRatePerProvider: Record<string, string>;
   perProvider: any[];
   perFeature: any[];
   daily: { day: string; requests: number; tokens: number; cost: number }[];
@@ -161,6 +178,31 @@ const PROVIDER_PRESETS = [
   },
 ];
 
+// Known models per provider slug for quick selection
+const MODEL_LIBRARY: Record<string, { id: string; label: string }[]> = {
+  groq: [
+    { id: 'llama-3.1-70b-versatile', label: 'Llama 3.1 70B Versatile' },
+    { id: 'llama-3.1-8b-instant', label: 'Llama 3.1 8B Instant' },
+    { id: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B Versatile' },
+    { id: 'mixtral-8x7b-32768', label: 'Mixtral 8x7B' },
+    { id: 'gemma2-9b-it', label: 'Gemma 2 9B' },
+  ],
+  openai: [
+    { id: 'gpt-4o', label: 'GPT-4o' },
+    { id: 'gpt-4o-mini', label: 'GPT-4o Mini' },
+    { id: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
+    { id: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
+  ],
+  grok: [
+    { id: 'grok-2-latest', label: 'Grok 2 Latest' },
+    { id: 'grok-2-mini', label: 'Grok 2 Mini' },
+  ],
+  'stability-ai': [
+    { id: 'stable-diffusion-xl-1024-v1-0', label: 'SDXL 1.0' },
+    { id: 'stable-diffusion-3-medium', label: 'SD 3 Medium' },
+  ],
+};
+
 function getTypeInfo(type: string) {
   return PROVIDER_TYPES.find(t => t.value === type) || { value: type, label: type, color: 'bg-muted/500' };
 }
@@ -169,22 +211,26 @@ function formatCents(cents: number): string {
   return (cents / 100).toFixed(2) + ' €';
 }
 
-// ─────────────────────────────────────────────────────────────
-// Toast
-// ─────────────────────────────────────────────────────────────
-
-function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
-  useEffect(() => {
-    const t = setTimeout(onClose, 4000);
-    return () => clearTimeout(t);
-  }, [onClose]);
-
+function BudgetProgressBar({ usedCents, budgetCents }: { usedCents: number; budgetCents: number }) {
+  const pct = Math.min((usedCents / budgetCents) * 100, 100);
+  const isWarning = pct > 75;
+  const isDanger = pct > 90;
   return (
-    <div className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white
-      ${type === 'success' ? 'bg-success' : 'bg-destructive'}`}>
-      {type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-      <span className="text-sm">{message}</span>
-      <button onClick={onClose} className="ml-2 hover:opacity-80"><X className="w-3 h-3" /></button>
+    <div className="mt-2">
+      <div className="flex items-center justify-between text-xs mb-1">
+        <span className="text-app-muted">Budget</span>
+        <span className={isDanger ? 'text-app-error font-medium' : isWarning ? 'text-app-warning font-medium' : 'text-app-muted'}>
+          {formatCents(usedCents)} / {formatCents(budgetCents)}
+        </span>
+      </div>
+      <div className="h-1.5 rounded-full bg-app-border overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${
+            isDanger ? 'bg-app-error' : isWarning ? 'bg-app-warning' : 'bg-app-accent'
+          }`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
     </div>
   );
 }
@@ -199,15 +245,18 @@ export default function AiProvidersPage() {
   const [stats, setStats] = useState<UsageStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'providers' | 'features' | 'usage'>('providers');
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [editProvider, setEditProvider] = useState<Partial<AiProvider> & { apiKey?: string } | null>(null);
   const [showApiKey, setShowApiKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState<string | null>(null);
+  const [testingAll, setTestingAll] = useState(false);
+  const [featureSearch, setFeatureSearch] = useState('');
   const [testResult, setTestResult] = useState<{ id: string; success: boolean; message: string; durationMs: number } | null>(null);
+  const [testAllResults, setTestAllResults] = useState<Record<string, { success: boolean; message: string; durationMs: number }>>({});
 
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
-    setToast({ message, type });
+    if (type === 'success') toast.success(message);
+    else toast.error(message);
   }, []);
 
   const fetchAll = useCallback(async () => {
@@ -293,6 +342,97 @@ export default function AiProvidersPage() {
     }
   };
 
+  // ─── Test All Providers ───
+  const handleTestAll = async () => {
+    const testable = providers.filter(p => p.isActive && p.hasApiKey);
+    if (testable.length === 0) {
+      showToast('Keine testbaren Provider gefunden', 'error');
+      return;
+    }
+    setTestingAll(true);
+    setTestAllResults({});
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const provider of testable) {
+      try {
+        const res = await api.post(`/admin/ai-providers/${provider.id}/test`);
+        setTestAllResults(prev => ({ ...prev, [provider.id]: res.data }));
+        if (res.data.success) successCount++; else failCount++;
+      } catch (err: any) {
+        const result = { success: false, message: err.response?.data?.error || 'Test fehlgeschlagen', durationMs: 0 };
+        setTestAllResults(prev => ({ ...prev, [provider.id]: result }));
+        failCount++;
+      }
+    }
+
+    setTestingAll(false);
+    showToast(`Test abgeschlossen: ${successCount} OK, ${failCount} Fehler`, successCount > 0 && failCount === 0 ? 'success' : 'error');
+  };
+
+  // ─── Bulk Toggle ───
+  const handleBulkToggle = async (active: boolean) => {
+    if (!confirm(`Alle Provider ${active ? 'aktivieren' : 'deaktivieren'}?`)) return;
+    try {
+      await Promise.all(providers.map(p => api.put(`/admin/ai-providers/${p.id}`, { ...p, isActive: active, apiKeyEncrypted: undefined, apiKeyIv: undefined, apiKeyTag: undefined })));
+      showToast(`Alle Provider ${active ? 'aktiviert' : 'deaktiviert'}`, 'success');
+      fetchAll();
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Fehler bei Bulk-Operation', 'error');
+    }
+  };
+
+  // ─── Computed Alerts ───
+  const alerts = useMemo(() => {
+    const list: { type: 'error' | 'warning' | 'info'; message: string }[] = [];
+    if (stats && parseFloat(stats.errorRate) > 10) {
+      list.push({ type: 'error', message: `Hohe Fehlerrate: ${stats.errorRate}% in den letzten 30 Tagen` });
+    }
+    if (stats && parseFloat(stats.errorRate) > 5 && parseFloat(stats.errorRate) <= 10) {
+      list.push({ type: 'warning', message: `Erhöhte Fehlerrate: ${stats.errorRate}% — Überprüfe Provider-Konfiguration` });
+    }
+    providers.forEach(p => {
+      if (p.monthlyBudgetCents && p.monthlyBudgetCents > 0) {
+        const used = stats?.perProvider.find((s: any) => s.providerId === p.id)?._sum?.costCents || 0;
+        const pct = (used / p.monthlyBudgetCents) * 100;
+        if (pct > 90) list.push({ type: 'error', message: `${p.name}: Budget ${pct.toFixed(0)}% ausgeschöpft (${formatCents(used)} / ${formatCents(p.monthlyBudgetCents)})` });
+        else if (pct > 75) list.push({ type: 'warning', message: `${p.name}: Budget bei ${pct.toFixed(0)}% (${formatCents(used)} / ${formatCents(p.monthlyBudgetCents)})` });
+      }
+    });
+    const noKey = providers.filter(p => p.isActive && !p.hasApiKey);
+    if (noKey.length > 0) {
+      list.push({ type: 'warning', message: `${noKey.length} aktive Provider ohne API Key: ${noKey.map(p => p.name).join(', ')}` });
+    }
+    const noMapping = AI_FEATURES.filter(f => !mappings.find(m => m.feature === f.key && m.isEnabled));
+    if (noMapping.length > 0) {
+      list.push({ type: 'info', message: `${noMapping.length} Features ohne aktive Provider-Zuordnung` });
+    }
+    return list;
+  }, [stats, providers, mappings]);
+
+  // ─── Cost Insights ───
+  const costInsights = useMemo(() => {
+    if (!stats || stats.perProvider.length === 0) return [];
+    const insights: { icon: string; text: string }[] = [];
+    const sorted = [...stats.perProvider].sort((a, b) => (b._sum?.costCents || 0) - (a._sum?.costCents || 0));
+    const topProv = providers.find(p => p.id === sorted[0]?.providerId);
+    if (topProv && sorted[0]._sum?.costCents > 0) {
+      insights.push({ icon: '💰', text: `Höchste Kosten: ${topProv.name} mit ${formatCents(sorted[0]._sum.costCents)} (${sorted[0]._count} Requests)` });
+    }
+    const fastest = [...stats.perProvider].sort((a, b) => (a._avg?.durationMs || 999999) - (b._avg?.durationMs || 999999));
+    const fastProv = providers.find(p => p.id === fastest[0]?.providerId);
+    if (fastProv) {
+      insights.push({ icon: '⚡', text: `Schnellster Provider: ${fastProv.name} mit Ø ${Math.round(fastest[0]._avg?.durationMs || 0)}ms` });
+    }
+    const avgCost = stats.monthly.costCents / Math.max(stats.monthly.requests, 1);
+    insights.push({ icon: '📊', text: `Durchschnittliche Kosten pro Request: ${(avgCost / 100).toFixed(4)} €` });
+    if (stats.monthly.requests > 0) {
+      const projectedMonthly = (stats.monthly.costCents / 30) * 30;
+      insights.push({ icon: '📈', text: `Prognostizierte Monatskosten: ${formatCents(projectedMonthly)}` });
+    }
+    return insights;
+  }, [stats, providers]);
+
   // ─── Update Feature Mapping ───
   const handleUpdateMapping = async (feature: string, providerId: string, isEnabled: boolean) => {
     try {
@@ -306,69 +446,109 @@ export default function AiProvidersPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-app-primary" />
-      </div>
+      <PageTransition className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-md shadow-violet-500/20">
+            <Brain className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-app-foreground">AI Provider Management</h1>
+            <p className="text-sm text-app-muted">Lade Daten…</p>
+          </div>
+        </div>
+        <SkeletonStats count={4} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          <SkeletonCard /><SkeletonCard />
+        </div>
+      </PageTransition>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-
+    <PageTransition className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <Brain className="w-8 h-8 text-app-primary" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-md shadow-violet-500/20">
+            <Brain className="w-5 h-5 text-white" />
+          </div>
           <div>
             <h1 className="text-2xl font-bold text-app-foreground">AI Provider Management</h1>
             <p className="text-sm text-app-muted">API Keys, Token-Tracking, Kosten & Feature-Zuordnung</p>
           </div>
         </div>
-        <button
-          onClick={() => setEditProvider({
-            slug: '', name: '', type: 'LLM', isActive: true, isDefault: false,
-            baseUrl: null, defaultModel: null, apiKey: '',
-            rateLimitPerMinute: null, rateLimitPerDay: null, monthlyBudgetCents: null,
-          })}
-          className="flex items-center gap-2 px-4 py-2 bg-app-primary text-white rounded-lg hover:bg-app-primary/90 transition"
-        >
-          <Plus className="w-4 h-4" />
-          Neuer Provider
-        </button>
+        <div className="flex items-center gap-2">
+          {providers.filter(p => p.isActive && p.hasApiKey).length > 0 && (
+            <button
+              onClick={handleTestAll}
+              disabled={testingAll}
+              className="flex items-center gap-2 px-4 py-2.5 border border-app-border text-app-fg rounded-xl hover:bg-app-surface hover:shadow-soft transition-all text-sm font-medium disabled:opacity-50"
+            >
+              {testingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlayCircle className="w-4 h-4" />}
+              Alle testen
+            </button>
+          )}
+          <button
+            onClick={() => setEditProvider({
+              slug: '', name: '', type: 'LLM', isActive: true, isDefault: false,
+              baseUrl: null, defaultModel: null, apiKey: '',
+              rateLimitPerMinute: null, rateLimitPerDay: null, monthlyBudgetCents: null,
+            })}
+            className="flex items-center gap-2 px-5 py-2.5 bg-app-accent text-white rounded-xl hover:bg-app-accent-hover hover:shadow-glow transition-all text-sm font-medium"
+          >
+            <Plus className="w-4 h-4" />
+            Neuer Provider
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
-          <div className="bg-app-card border border-app-border rounded-lg p-4">
-            <div className="flex items-center gap-2 text-app-muted text-sm mb-1">
-              <Plug className="w-4 h-4" /> Provider
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard
+            icon={Plug}
+            label="Provider"
+            value={providers.length}
+            change={{ value: `${providers.filter(p => p.isActive).length} aktiv`, positive: true }}
+            gradient="from-blue-500 to-cyan-500"
+          />
+          <StatCard
+            icon={Zap}
+            label="Requests (Monat)"
+            value={stats.monthly.requests.toLocaleString()}
+            change={{ value: `${stats.monthly.tokens.toLocaleString()} Tokens`, positive: true }}
+            gradient="from-violet-500 to-purple-500"
+          />
+          <StatCard
+            icon={BarChart3}
+            label="Kosten (Monat)"
+            value={formatCents(stats.monthly.costCents)}
+            change={{ value: 'geschätzt', positive: true }}
+            gradient="from-amber-500 to-orange-500"
+          />
+          <StatCard
+            icon={Shield}
+            label="Fehlerrate"
+            value={`${stats.errorRate}%`}
+            change={{ value: 'letzte 30 Tage', positive: parseFloat(stats.errorRate) < 5 }}
+            gradient="from-emerald-500 to-teal-500"
+          />
+        </div>
+      )}
+
+      {/* ═══════════ Alerts ═══════════ */}
+      {alerts.length > 0 && (
+        <div className="space-y-2 mb-6">
+          {alerts.map((alert, i) => (
+            <div key={i} className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm border ${
+              alert.type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
+              alert.type === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+              'bg-blue-500/10 border-blue-500/20 text-blue-400'
+            }`}>
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span>{alert.message}</span>
             </div>
-            <div className="text-2xl font-bold text-app-foreground">{providers.length}</div>
-            <div className="text-xs text-app-muted">{providers.filter(p => p.isActive).length} aktiv</div>
-          </div>
-          <div className="bg-app-card border border-app-border rounded-lg p-4">
-            <div className="flex items-center gap-2 text-app-muted text-sm mb-1">
-              <Zap className="w-4 h-4" /> Requests (Monat)
-            </div>
-            <div className="text-2xl font-bold text-app-foreground">{stats.monthly.requests.toLocaleString()}</div>
-            <div className="text-xs text-app-muted">{stats.monthly.tokens.toLocaleString()} Tokens</div>
-          </div>
-          <div className="bg-app-card border border-app-border rounded-lg p-4">
-            <div className="flex items-center gap-2 text-app-muted text-sm mb-1">
-              <BarChart3 className="w-4 h-4" /> Kosten (Monat)
-            </div>
-            <div className="text-2xl font-bold text-app-foreground">{formatCents(stats.monthly.costCents)}</div>
-            <div className="text-xs text-app-muted">geschätzt</div>
-          </div>
-          <div className="bg-app-card border border-app-border rounded-lg p-4">
-            <div className="flex items-center gap-2 text-app-muted text-sm mb-1">
-              <Shield className="w-4 h-4" /> Fehlerrate
-            </div>
-            <div className="text-2xl font-bold text-app-foreground">{stats.errorRate}%</div>
-            <div className="text-xs text-app-muted">letzte 30 Tage</div>
-          </div>
+          ))}
         </div>
       )}
 
@@ -396,92 +576,155 @@ export default function AiProvidersPage() {
       {/* ═══════════ Tab: Provider List ═══════════ */}
       {activeTab === 'providers' && (
         <div className="space-y-4">
-          {/* Quick Presets */}
-          {providers.length < PROVIDER_PRESETS.length && (
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 border border-indigo-200 dark:border-indigo-800 rounded-lg p-5 mb-4">
-              <h3 className="text-sm font-semibold text-indigo-900 dark:text-indigo-200 mb-3">Schnelleinrichtung — Bekannte Provider</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {PROVIDER_PRESETS.filter(preset => !providers.some(p => p.slug === preset.slug)).map(preset => {
-                  const typeInfo = getTypeInfo(preset.type);
-                  return (
-                    <button
-                      key={preset.slug}
-                      onClick={() => setEditProvider({
-                        slug: preset.slug,
-                        name: preset.name,
-                        type: preset.type,
-                        baseUrl: preset.baseUrl,
-                        defaultModel: preset.defaultModel,
-                        isActive: true,
-                        isDefault: preset.slug === 'groq',
-                        apiKey: '',
-                        rateLimitPerMinute: null,
-                        rateLimitPerDay: null,
-                        monthlyBudgetCents: null,
-                      })}
-                      className="flex items-start gap-3 p-3 bg-card dark:bg-foreground/90 rounded-lg border border-border dark:border-foreground/80 hover:border-indigo-400 hover:shadow-md transition-all text-left"
-                    >
-                      <div className={`w-8 h-8 rounded-lg ${typeInfo.color} flex items-center justify-center flex-shrink-0`}>
-                        <Brain className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-sm font-medium text-foreground dark:text-foreground/90">{preset.name}</div>
-                        <div className="text-xs text-muted-foreground dark:text-muted-foreground/70 mt-0.5">{preset.description}</div>
-                        <div className="text-xs text-muted-foreground/70 dark:text-muted-foreground mt-1 font-mono">ENV: {preset.envKey}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+          {/* Bulk Ops */}
+          {providers.length > 1 && (
+            <div className="flex items-center gap-2 justify-end">
+              <span className="text-xs text-app-muted mr-1">Bulk:</span>
+              <button
+                onClick={() => handleBulkToggle(true)}
+                className="px-3 py-1.5 text-xs rounded-lg border border-app-success/30 text-app-success hover:bg-app-success/10 transition"
+              >
+                Alle aktivieren
+              </button>
+              <button
+                onClick={() => handleBulkToggle(false)}
+                className="px-3 py-1.5 text-xs rounded-lg border border-app-error/30 text-app-error hover:bg-app-error/10 transition"
+              >
+                Alle deaktivieren
+              </button>
             </div>
           )}
 
-          {providers.length === 0 ? (
-            <div className="text-center py-16 text-app-muted">
-              <Brain className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">Noch keine AI Provider konfiguriert</p>
-              <p className="text-sm mt-1">Erstelle deinen ersten Provider um KI-Features zu nutzen.</p>
+          {/* Quick Presets */}
+          <ModernCard variant="gradient" className="mb-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="w-5 h-5 text-app-secondary" />
+              <h3 className="text-sm font-semibold text-app-fg">Bekannte Provider</h3>
+              <span className="text-xs text-app-muted ml-1">
+                {PROVIDER_PRESETS.filter(p => providers.some(pr => pr.slug === p.slug)).length}/{PROVIDER_PRESETS.length} konfiguriert
+              </span>
             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {PROVIDER_PRESETS.map(preset => {
+                const typeInfo = getTypeInfo(preset.type);
+                const existingProvider = providers.find(p => p.slug === preset.slug);
+                const isConfigured = !!existingProvider;
+                return (
+                  <button
+                    key={preset.slug}
+                    onClick={() => {
+                      if (isConfigured) {
+                        setEditProvider({ ...existingProvider, apiKey: undefined });
+                      } else {
+                        setEditProvider({
+                          slug: preset.slug,
+                          name: preset.name,
+                          type: preset.type,
+                          baseUrl: preset.baseUrl,
+                          defaultModel: preset.defaultModel,
+                          isActive: true,
+                          isDefault: preset.slug === 'groq',
+                          apiKey: '',
+                          rateLimitPerMinute: null,
+                          rateLimitPerDay: null,
+                          monthlyBudgetCents: null,
+                        });
+                      }
+                    }}
+                    className={`flex items-start gap-3 p-3 rounded-xl border transition-all text-left group ${
+                      isConfigured
+                        ? 'bg-app-success/5 border-app-success/20 hover:border-app-success/40'
+                        : 'bg-app-surface border-app-border hover:border-app-secondary/50 hover:shadow-medium'
+                    }`}
+                  >
+                    <div className="relative shrink-0">
+                      <div className={`w-9 h-9 rounded-xl ${typeInfo.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                        <Brain className="w-4 h-4 text-white" />
+                      </div>
+                      {isConfigured && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-app-success flex items-center justify-center">
+                          <CheckCircle className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-medium text-app-fg">{preset.name}</span>
+                        {isConfigured && existingProvider?.hasApiKey && (
+                          <Badge variant="success" className="!text-[10px] !px-1.5 !py-0">Bereit</Badge>
+                        )}
+                        {isConfigured && !existingProvider?.hasApiKey && (
+                          <Badge variant="warning" className="!text-[10px] !px-1.5 !py-0">Key fehlt</Badge>
+                        )}
+                      </div>
+                      <div className="text-xs text-app-muted mt-0.5 line-clamp-1">{preset.description}</div>
+                      <div className="text-xs text-app-muted/60 mt-1 font-mono">ENV: {preset.envKey}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </ModernCard>
+
+          {providers.length === 0 ? (
+            <EmptyState
+              icon={Brain}
+              title="Noch keine AI Provider konfiguriert"
+              description="Erstelle deinen ersten Provider um KI-Features zu nutzen. Nutze die Schnelleinrichtung oben für bekannte Provider."
+              action={{
+                label: 'Neuer Provider',
+                onClick: () => setEditProvider({
+                  slug: '', name: '', type: 'LLM', isActive: true, isDefault: false,
+                  baseUrl: null, defaultModel: null, apiKey: '',
+                  rateLimitPerMinute: null, rateLimitPerDay: null, monthlyBudgetCents: null,
+                }),
+                icon: Plus,
+              }}
+            />
           ) : (
             providers.map(provider => {
               const typeInfo = getTypeInfo(provider.type);
+              const providerUsage = stats?.perProvider.find((p: any) => p.providerId === provider.id);
+              const usedCents = providerUsage?._sum?.costCents || 0;
+              const errorRate = stats?.errorRatePerProvider?.[provider.id];
+              const testAllResult = testAllResults[provider.id];
+              const activeTestResult = testAllResult || (testResult?.id === provider.id ? testResult : null);
               return (
-                <div key={provider.id} className="bg-app-card border border-app-border rounded-lg p-5">
+                <ModernCard key={provider.id} variant="default" hover className="!p-5">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4">
-                      <div className={`w-10 h-10 rounded-lg ${typeInfo.color} flex items-center justify-center`}>
+                      <div className={`w-11 h-11 rounded-xl ${typeInfo.color} flex items-center justify-center shrink-0`}>
                         <Brain className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-app-foreground">{provider.name}</h3>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold text-app-fg">{provider.name}</h3>
                           {provider.isDefault && (
-                            <span className="flex items-center gap-1 text-xs bg-warning/15 text-warning px-2 py-0.5 rounded-full">
-                              <Star className="w-3 h-3" /> Default
-                            </span>
+                            <Badge variant="warning"><Star className="w-3 h-3" /> Default</Badge>
                           )}
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${
-                            provider.isActive ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'
-                          }`}>
+                          <Badge variant={provider.isActive ? 'success' : 'error'}>
                             {provider.isActive ? 'Aktiv' : 'Inaktiv'}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 mt-1 text-sm text-app-muted">
-                          <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded ${typeInfo.color} text-white`}>
-                            {typeInfo.label}
-                          </span>
-                          <span className="font-mono text-xs">{provider.slug}</span>
-                          {provider.defaultModel && (
-                            <span className="text-xs">Modell: <strong>{provider.defaultModel}</strong></span>
+                          </Badge>
+                          {errorRate && parseFloat(errorRate) > 0 && (
+                            <Badge variant={parseFloat(errorRate) > 10 ? 'error' : 'warning'}>
+                              <AlertTriangle className="w-3 h-3" /> {errorRate}% Fehler
+                            </Badge>
                           )}
                         </div>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-app-muted">
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          <Badge variant="info">{typeInfo.label}</Badge>
+                          <span className="font-mono text-xs text-app-muted">{provider.slug}</span>
+                          {provider.defaultModel && (
+                            <span className="text-xs text-app-muted">Modell: <strong className="text-app-fg">{provider.defaultModel}</strong></span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 mt-2 text-xs text-app-muted flex-wrap">
                           <span className="flex items-center gap-1">
-                            <Key className="w-3 h-3" />
+                            <Key className="w-3.5 h-3.5" />
                             {provider.hasApiKey ? (
-                              <span className="text-success">API Key: {provider.apiKeyHint}</span>
+                              <span className="text-app-success">Key: {provider.apiKeyHint}</span>
                             ) : (
-                              <span className="text-destructive">Kein API Key</span>
+                              <span className="text-app-error font-medium">Kein API Key</span>
                             )}
                           </span>
                           {provider.rateLimitPerMinute && (
@@ -490,48 +733,54 @@ export default function AiProvidersPage() {
                           {provider.rateLimitPerDay && (
                             <span>{provider.rateLimitPerDay} Req/Tag</span>
                           )}
-                          {provider.monthlyBudgetCents && (
-                            <span>Budget: {formatCents(provider.monthlyBudgetCents)}/Mo</span>
-                          )}
                           <span>{provider._count.usageLogs} Logs</span>
                           <span>{provider._count.featureMappings} Features</span>
+                          {provider.lastUsedAt && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5" />
+                              {new Date(provider.lastUsedAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
                         </div>
-                        {/* Test result */}
-                        {testResult && testResult.id === provider.id && (
-                          <div className={`mt-2 text-xs px-3 py-2 rounded ${
-                            testResult.success ? 'bg-success/10 text-success border border-success/30' : 'bg-destructive/10 text-destructive border border-destructive/30'
+                        {provider.monthlyBudgetCents && provider.monthlyBudgetCents > 0 && (
+                          <BudgetProgressBar usedCents={usedCents} budgetCents={provider.monthlyBudgetCents} />
+                        )}
+                        {/* Test result (single or test-all) */}
+                        {activeTestResult && (
+                          <div className={`mt-2.5 text-xs px-3 py-2 rounded-lg ${
+                            activeTestResult.success ? 'bg-app-success/10 text-app-success border border-app-success/20' : 'bg-app-error/10 text-app-error border border-app-error/20'
                           }`}>
-                            {testResult.success ? '✓' : '✗'} {testResult.message} ({testResult.durationMs}ms)
+                            {activeTestResult.success ? '✓' : '✗'} {activeTestResult.message} ({activeTestResult.durationMs}ms)
                           </div>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleTestProvider(provider.id)}
-                        disabled={testing === provider.id || !provider.hasApiKey}
-                        className="p-2 text-app-muted hover:text-blue-600 transition disabled:opacity-30"
+                        disabled={testing === provider.id || testingAll || !provider.hasApiKey}
+                        className="p-2 rounded-lg text-app-muted hover:text-app-info hover:bg-app-info/10 transition disabled:opacity-30"
                         title="Verbindung testen"
                       >
-                        {testing === provider.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <TestTube className="w-4 h-4" />}
+                        {(testing === provider.id || (testingAll && !testAllResults[provider.id])) ? <Loader2 className="w-5 h-5 animate-spin" /> : <TestTube className="w-5 h-5" />}
                       </button>
                       <button
                         onClick={() => setEditProvider({ ...provider, apiKey: undefined })}
-                        className="p-2 text-app-muted hover:text-app-primary transition"
+                        className="p-2 rounded-lg text-app-muted hover:text-app-accent hover:bg-app-accent/10 transition"
                         title="Bearbeiten"
                       >
-                        <Pencil className="w-4 h-4" />
+                        <Pencil className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => handleDeleteProvider(provider.id)}
-                        className="p-2 text-app-muted hover:text-destructive transition"
+                        className="p-2 rounded-lg text-app-muted hover:text-app-error hover:bg-app-error/10 transition"
                         title="Löschen"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
-                </div>
+                </ModernCard>
               );
             })
           )}
@@ -540,49 +789,60 @@ export default function AiProvidersPage() {
 
       {/* ═══════════ Tab: Feature Mappings ═══════════ */}
       {activeTab === 'features' && (
-        <div className="bg-app-card border border-app-border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="space-y-4">
+          {/* Feature Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted" />
+            <input
+              value={featureSearch}
+              onChange={e => setFeatureSearch(e.target.value)}
+              placeholder="Features durchsuchen… (Name, Key oder Typ)"
+              className="w-full pl-10 pr-4 py-2.5 text-sm border border-app-border rounded-xl bg-transparent text-app-fg placeholder:text-app-muted/60"
+            />
+          </div>
+
+          <ModernCard variant="default" className="!p-0 overflow-hidden">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[640px]">
             <thead>
-              <tr className="border-b border-app-border bg-app-muted/5">
-                <th className="text-left px-4 py-3 font-medium text-app-muted">Feature</th>
-                <th className="text-left px-4 py-3 font-medium text-app-muted">Typ</th>
-                <th className="text-center px-4 py-3 font-medium text-app-muted">Credits</th>
-                <th className="text-center px-4 py-3 font-medium text-app-muted">Workflow</th>
-                <th className="text-left px-4 py-3 font-medium text-app-muted">Provider</th>
-                <th className="text-center px-4 py-3 font-medium text-app-muted">Aktiviert</th>
+              <tr className="border-b border-app-border bg-app-surface">
+                <th className="text-left px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Feature</th>
+                <th className="text-left px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Typ</th>
+                <th className="text-center px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Credits</th>
+                <th className="text-center px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Workflow</th>
+                <th className="text-left px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Provider</th>
+                <th className="text-center px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Aktiviert</th>
               </tr>
             </thead>
             <tbody>
-              {AI_FEATURES.map(feat => {
+              {AI_FEATURES.filter(feat => {
+                if (!featureSearch) return true;
+                const q = featureSearch.toLowerCase();
+                return feat.label.toLowerCase().includes(q) || feat.key.toLowerCase().includes(q) || feat.type.toLowerCase().includes(q);
+              }).map(feat => {
                 const mapping = mappings.find(m => m.feature === feat.key);
                 const compatible = providers.filter(p => p.type === feat.type && p.isActive);
                 const typeInfo = getTypeInfo(feat.type);
 
                 return (
-                  <tr key={feat.key} className="border-b border-app-border last:border-0 hover:bg-app-muted/5">
+                  <tr key={feat.key} className="border-b border-app-border/50 last:border-0 hover:bg-app-surface/50 transition-colors">
                     <td className="px-4 py-3">
-                      <span className="font-medium text-app-foreground">{feat.label}</span>
-                      <div className="text-xs text-app-muted font-mono">{feat.key}</div>
+                      <span className="font-medium text-app-fg">{feat.label}</span>
+                      <div className="text-xs text-app-muted font-mono mt-0.5">{feat.key}</div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex text-xs px-2 py-0.5 rounded ${typeInfo.color} text-white`}>
-                        {typeInfo.label}
-                      </span>
+                      <Badge variant="info">{typeInfo.label}</Badge>
                     </td>
                     <td className="px-4 py-3 text-center">
                       {feat.credits > 0 ? (
-                        <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 font-medium">
-                          <Zap className="w-3 h-3" />{feat.credits}
-                        </span>
+                        <Badge variant="warning"><Zap className="w-3 h-3" />{feat.credits}</Badge>
                       ) : (
-                        <span className="text-xs text-success dark:text-success/80 font-medium">Gratis</span>
+                        <Badge variant="success">Gratis</Badge>
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
                       {feat.workflow ? (
-                        <span className="inline-flex text-xs px-2 py-0.5 rounded bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 font-medium">
-                          Workflow
-                        </span>
+                        <Badge variant="secondary">Workflow</Badge>
                       ) : (
                         <span className="text-xs text-app-muted">—</span>
                       )}
@@ -596,7 +856,7 @@ export default function AiProvidersPage() {
                               handleUpdateMapping(feat.key, e.target.value, mapping?.isEnabled ?? true);
                             }
                           }}
-                          className="text-sm bg-transparent border border-app-border rounded px-2 py-1 text-app-foreground"
+                          className="text-sm bg-transparent border border-app-border rounded-lg px-2.5 py-1.5 text-app-fg"
                         >
                           <option value="">— nicht zugeordnet —</option>
                           {compatible.map(p => (
@@ -612,10 +872,10 @@ export default function AiProvidersPage() {
                         <button
                           onClick={() => handleUpdateMapping(feat.key, mapping.providerId, !mapping.isEnabled)}
                           className={`w-10 h-5 rounded-full relative transition-colors ${
-                            mapping.isEnabled ? 'bg-success/100' : 'bg-muted/60'
+                            mapping.isEnabled ? 'bg-app-success' : 'bg-app-border'
                           }`}
                         >
-                          <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-card shadow transition-transform ${
+                          <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-soft transition-transform ${
                             mapping.isEnabled ? 'translate-x-5' : 'translate-x-0.5'
                           }`} />
                         </button>
@@ -628,6 +888,8 @@ export default function AiProvidersPage() {
               })}
             </tbody>
           </table>
+          </div>
+        </ModernCard>
         </div>
       )}
 
@@ -636,18 +898,19 @@ export default function AiProvidersPage() {
         <div className="space-y-6">
           {/* Per Provider */}
           <div>
-            <h3 className="text-lg font-semibold text-app-foreground mb-3">Nutzung pro Provider (30 Tage)</h3>
-            <div className="bg-app-card border border-app-border rounded-lg overflow-hidden">
-              <table className="w-full text-sm">
+            <h3 className="text-lg font-semibold text-app-fg mb-3">Nutzung pro Provider (30 Tage)</h3>
+            <ModernCard variant="default" className="!p-0 overflow-hidden">
+              <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[700px]">
                 <thead>
-                  <tr className="border-b border-app-border bg-app-muted/5">
-                    <th className="text-left px-4 py-3 font-medium text-app-muted">Provider</th>
-                    <th className="text-right px-4 py-3 font-medium text-app-muted">Requests</th>
-                    <th className="text-right px-4 py-3 font-medium text-app-muted">Input Tokens</th>
-                    <th className="text-right px-4 py-3 font-medium text-app-muted">Output Tokens</th>
-                    <th className="text-right px-4 py-3 font-medium text-app-muted">Total Tokens</th>
-                    <th className="text-right px-4 py-3 font-medium text-app-muted">Kosten</th>
-                    <th className="text-right px-4 py-3 font-medium text-app-muted">Ø Latenz</th>
+                  <tr className="border-b border-app-border bg-app-surface">
+                    <th className="text-left px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Provider</th>
+                    <th className="text-right px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Requests</th>
+                    <th className="text-right px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Input Tokens</th>
+                    <th className="text-right px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Output Tokens</th>
+                    <th className="text-right px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Total Tokens</th>
+                    <th className="text-right px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Kosten</th>
+                    <th className="text-right px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Ø Latenz</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -657,8 +920,8 @@ export default function AiProvidersPage() {
                     stats.perProvider.map((row: any) => {
                       const prov = providers.find(p => p.id === row.providerId);
                       return (
-                        <tr key={row.providerId} className="border-b border-app-border last:border-0">
-                          <td className="px-4 py-3 font-medium text-app-foreground">{prov?.name || row.providerId}</td>
+                        <tr key={row.providerId} className="border-b border-app-border/50 last:border-0 hover:bg-app-surface/50 transition-colors">
+                          <td className="px-4 py-3 font-medium text-app-fg">{prov?.name || row.providerId}</td>
                           <td className="px-4 py-3 text-right">{row._count.toLocaleString()}</td>
                           <td className="px-4 py-3 text-right">{(row._sum.inputTokens || 0).toLocaleString()}</td>
                           <td className="px-4 py-3 text-right">{(row._sum.outputTokens || 0).toLocaleString()}</td>
@@ -671,21 +934,23 @@ export default function AiProvidersPage() {
                   )}
                 </tbody>
               </table>
-            </div>
+              </div>
+            </ModernCard>
           </div>
 
           {/* Per Feature */}
           <div>
-            <h3 className="text-lg font-semibold text-app-foreground mb-3">Nutzung pro Feature (30 Tage)</h3>
-            <div className="bg-app-card border border-app-border rounded-lg overflow-hidden">
-              <table className="w-full text-sm">
+            <h3 className="text-lg font-semibold text-app-fg mb-3">Nutzung pro Feature (30 Tage)</h3>
+            <ModernCard variant="default" className="!p-0 overflow-hidden">
+              <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[600px]">
                 <thead>
-                  <tr className="border-b border-app-border bg-app-muted/5">
-                    <th className="text-left px-4 py-3 font-medium text-app-muted">Feature</th>
-                    <th className="text-right px-4 py-3 font-medium text-app-muted">Requests</th>
-                    <th className="text-right px-4 py-3 font-medium text-app-muted">Tokens</th>
-                    <th className="text-right px-4 py-3 font-medium text-app-muted">Kosten</th>
-                    <th className="text-right px-4 py-3 font-medium text-app-muted">Ø Latenz</th>
+                  <tr className="border-b border-app-border bg-app-surface">
+                    <th className="text-left px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Feature</th>
+                    <th className="text-right px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Requests</th>
+                    <th className="text-right px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Tokens</th>
+                    <th className="text-right px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Kosten</th>
+                    <th className="text-right px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Ø Latenz</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -695,9 +960,9 @@ export default function AiProvidersPage() {
                     stats.perFeature.map((row: any) => {
                       const feat = AI_FEATURES.find(f => f.key === row.feature);
                       return (
-                        <tr key={row.feature} className="border-b border-app-border last:border-0">
+                        <tr key={row.feature} className="border-b border-app-border/50 last:border-0 hover:bg-app-surface/50 transition-colors">
                           <td className="px-4 py-3">
-                            <span className="font-medium text-app-foreground">{feat?.label || row.feature}</span>
+                            <span className="font-medium text-app-fg">{feat?.label || row.feature}</span>
                             <span className="text-xs text-app-muted ml-2 font-mono">{row.feature}</span>
                           </td>
                           <td className="px-4 py-3 text-right">{row._count.toLocaleString()}</td>
@@ -710,32 +975,100 @@ export default function AiProvidersPage() {
                   )}
                 </tbody>
               </table>
-            </div>
+              </div>
+            </ModernCard>
           </div>
 
-          {/* Daily Chart (simple text-based) */}
+          {/* Daily Chart — Recharts */}
           {stats.daily.length > 0 && (
             <div>
-              <h3 className="text-lg font-semibold text-app-foreground mb-3">Tagesverlauf (30 Tage)</h3>
-              <div className="bg-app-card border border-app-border rounded-lg p-4">
-                <div className="flex items-end gap-1 h-32">
-                  {stats.daily.map((d, i) => {
-                    const maxReq = Math.max(...stats.daily.map(x => x.requests), 1);
-                    const height = (d.requests / maxReq) * 100;
-                    return (
-                      <div
-                        key={i}
-                        className="flex-1 bg-app-primary/70 hover:bg-app-primary rounded-t transition-colors"
-                        style={{ height: `${Math.max(height, 2)}%` }}
-                        title={`${new Date(d.day).toLocaleDateString('de-DE')}: ${d.requests} Requests, ${d.tokens} Tokens, ${formatCents(d.cost)}`}
-                      />
-                    );
-                  })}
+              <h3 className="text-lg font-semibold text-app-fg mb-3">Tagesverlauf (30 Tage)</h3>
+              <ModernCard variant="glass">
+                <ResponsiveContainer width="100%" height={200}>
+                  <AreaChart data={stats.daily.map(d => ({
+                    ...d,
+                    date: new Date(d.day).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }),
+                    costEur: d.cost / 100,
+                  }))}>
+                    <defs>
+                      <linearGradient id="colorReq" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--app-accent))" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="hsl(var(--app-accent))" stopOpacity={0.05} />
+                      </linearGradient>
+                      <linearGradient id="colorTokens" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--app-border))" strokeOpacity={0.5} />
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'hsl(var(--app-muted))' }} tickLine={false} axisLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--app-muted))' }} tickLine={false} axisLine={false} width={40} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--app-surface))',
+                        border: '1px solid hsl(var(--app-border))',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      }}
+                      labelStyle={{ fontWeight: 600, marginBottom: 4 }}
+                    />
+                    <Area type="monotone" dataKey="requests" name="Requests" stroke="hsl(var(--app-accent))" fill="url(#colorReq)" strokeWidth={2} />
+                    <Area type="monotone" dataKey="tokens" name="Tokens" stroke="#8b5cf6" fill="url(#colorTokens)" strokeWidth={1.5} />
+                  </AreaChart>
+                </ResponsiveContainer>
+                <div className="flex justify-center gap-6 text-xs text-app-muted mt-2">
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-full bg-app-accent inline-block" /> Requests</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-1.5 rounded-full bg-violet-500 inline-block" /> Tokens</span>
                 </div>
-                <div className="flex justify-between text-xs text-app-muted mt-2">
-                  <span>{stats.daily.length > 0 ? new Date(stats.daily[0].day).toLocaleDateString('de-DE') : ''}</span>
-                  <span>{stats.daily.length > 0 ? new Date(stats.daily[stats.daily.length - 1].day).toLocaleDateString('de-DE') : ''}</span>
+              </ModernCard>
+            </div>
+          )}
+
+          {/* Cost Insights */}
+          {costInsights.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold text-app-fg mb-3">Kosten-Insights</h3>
+              <ModernCard variant="gradient">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {costInsights.map((insight, i) => (
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-app-surface/50 border border-app-border/30">
+                      <span className="text-lg">{insight.icon}</span>
+                      <span className="text-sm text-app-fg">{insight.text}</span>
+                    </div>
+                  ))}
                 </div>
+              </ModernCard>
+            </div>
+          )}
+
+          {/* Error Rate per Provider */}
+          {stats.errorRatePerProvider && Object.keys(stats.errorRatePerProvider).length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold text-app-fg mb-3">Fehlerrate pro Provider</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {Object.entries(stats.errorRatePerProvider).map(([provId, rate]) => {
+                  const prov = providers.find(p => p.id === provId);
+                  const pctVal = parseFloat(rate as string);
+                  return (
+                    <ModernCard key={provId} variant="default" className="!p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-app-fg">{prov?.name || provId}</span>
+                        <Badge variant={pctVal > 10 ? 'error' : pctVal > 5 ? 'warning' : 'success'}>
+                          {rate}%
+                        </Badge>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-app-border overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            pctVal > 10 ? 'bg-red-500' : pctVal > 5 ? 'bg-amber-500' : 'bg-emerald-500'
+                          }`}
+                          style={{ width: `${Math.min(pctVal, 100)}%` }}
+                        />
+                      </div>
+                    </ModernCard>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -744,13 +1077,13 @@ export default function AiProvidersPage() {
 
       {/* ═══════════ Edit/Create Modal ═══════════ */}
       {editProvider && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50" onClick={() => setEditProvider(null)}>
-          <div className="bg-app-card rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setEditProvider(null)}>
+          <div className="bg-app-surface rounded-2xl shadow-strong w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto border border-app-border/50" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b border-app-border">
-              <h2 className="text-lg font-semibold text-app-foreground">
+              <h2 className="text-lg font-semibold text-app-fg">
                 {editProvider.id ? 'Provider bearbeiten' : 'Neuer Provider'}
               </h2>
-              <button onClick={() => setEditProvider(null)} className="text-app-muted hover:text-app-foreground">
+              <button onClick={() => setEditProvider(null)} className="p-1 rounded-lg text-app-muted hover:text-app-fg hover:bg-app-border/50 transition">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -830,12 +1163,25 @@ export default function AiProvidersPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-app-muted mb-1">Default Model</label>
-                  <input
-                    value={editProvider.defaultModel || ''}
-                    onChange={e => setEditProvider({ ...editProvider, defaultModel: e.target.value || null })}
-                    placeholder="llama-3.1-70b-versatile"
-                    className="w-full px-3 py-2 text-sm border border-app-border rounded-lg bg-transparent text-app-foreground font-mono"
-                  />
+                  {editProvider.slug && MODEL_LIBRARY[editProvider.slug] ? (
+                    <select
+                      value={editProvider.defaultModel || ''}
+                      onChange={e => setEditProvider({ ...editProvider, defaultModel: e.target.value || null })}
+                      className="w-full px-3 py-2 text-sm border border-app-border rounded-lg bg-transparent text-app-foreground font-mono"
+                    >
+                      <option value="">— Kein Default —</option>
+                      {MODEL_LIBRARY[editProvider.slug].map(m => (
+                        <option key={m.id} value={m.id}>{m.label}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      value={editProvider.defaultModel || ''}
+                      onChange={e => setEditProvider({ ...editProvider, defaultModel: e.target.value || null })}
+                      placeholder="model-name"
+                      className="w-full px-3 py-2 text-sm border border-app-border rounded-lg bg-transparent text-app-foreground font-mono"
+                    />
+                  )}
                 </div>
               </div>
 
@@ -900,14 +1246,14 @@ export default function AiProvidersPage() {
             <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-app-border">
               <button
                 onClick={() => setEditProvider(null)}
-                className="px-4 py-2 text-sm text-app-muted hover:text-app-foreground transition"
+                className="px-4 py-2 text-sm rounded-xl text-app-muted hover:text-app-fg hover:bg-app-border/30 transition"
               >
                 Abbrechen
               </button>
               <button
                 onClick={handleSaveProvider}
                 disabled={saving || !editProvider.name || !editProvider.slug}
-                className="flex items-center gap-2 px-4 py-2 text-sm bg-app-primary text-white rounded-lg hover:bg-app-primary/90 transition disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2.5 text-sm bg-app-accent text-white rounded-xl hover:bg-app-accent-hover hover:shadow-glow transition-all disabled:opacity-50"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {editProvider.id ? 'Speichern' : 'Erstellen'}
@@ -916,6 +1262,6 @@ export default function AiProvidersPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 }

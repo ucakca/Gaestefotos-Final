@@ -135,12 +135,12 @@ export default function CoHostsStep({
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); setError(null); }}
                 onKeyDown={(e) => e.key === 'Enter' && sendEmailInvite()}
-                className="flex-1 px-3 py-2.5 text-sm border border-border rounded-lg bg-background focus:outline-none focus:border-amber-400 transition-colors"
+                className="flex-1 px-3 py-2.5 text-sm border border-border rounded-lg bg-background text-foreground focus:outline-none focus:border-warning transition-colors"
               />
               <Button
                 onClick={sendEmailInvite}
                 disabled={sending || !email.trim()}
-                className="bg-amber-500 hover:bg-amber-600 text-white px-4"
+                className="bg-warning hover:opacity-90 text-warning-foreground px-4"
               >
                 {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
               </Button>
@@ -229,9 +229,9 @@ export default function CoHostsStep({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="bg-amber-50 border border-amber-100 rounded-xl p-4"
+        className="bg-warning/10 border border-warning/20 rounded-xl p-4"
       >
-        <p className="text-sm text-amber-700">
+        <p className="text-sm text-foreground">
           💡 <strong>Tipp:</strong> Co-Hosts können Fotos freigeben, löschen und die Galerie verwalten — perfekt für Trauzeugen oder Eventplaner.
         </p>
       </motion.div>
@@ -250,7 +250,7 @@ export default function CoHostsStep({
           </Button>
           <Button
             onClick={() => onNext(hasInvited)}
-            className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+            className="flex-1 bg-warning hover:opacity-90 text-warning-foreground"
           >
             Weiter
             <ArrowRight className="w-4 h-4 ml-2" />

@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /events/
+Disallow: /moderation
+Disallow: /settings
+
+# Public event pages are indexable
+Allow: /e/
+Allow: /e2/
+Allow: /e3/
+Allow: /i/
+
+Sitemap: https://app.xn--gstefotos-v2a.com/sitemap.xml

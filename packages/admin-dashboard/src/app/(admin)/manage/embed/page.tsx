@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Code2, Copy, Check, ExternalLink, Monitor, Smartphone, Link2, FileCode } from 'lucide-react';
+import { PageTransition } from '@/components/ui/PageTransition';
 
 interface EmbedData {
   eventId: string;
@@ -86,17 +87,15 @@ export default function EmbedCodePage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md shadow-indigo-500/20">
+          <Code2 className="w-5 h-5 text-white" />
+        </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Code2 className="h-6 w-6 text-indigo-600" />
-            Gallery Embed Code
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Bette deine Event-Galerie auf externen Websites ein
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">Gallery Embed Code</h1>
+          <p className="text-sm text-muted-foreground">Bette deine Event-Galerie auf externen Websites ein</p>
         </div>
       </div>
 
@@ -258,6 +257,6 @@ export default function EmbedCodePage() {
           <p className="text-muted-foreground text-sm">Wähle ein Event aus, um den Embed-Code zu generieren</p>
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 }

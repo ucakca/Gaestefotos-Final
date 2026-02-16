@@ -30,6 +30,7 @@ import ChallengesStep from './steps/ChallengesStep';
 import GuestbookStep from './steps/GuestbookStep';
 import FeaturesStep from './steps/FeaturesStep';
 import CoHostsStep from './steps/CoHostsStep';
+import ThemeSelectionStep from './steps/ThemeSelectionStep';
 
 export default function SetupWizard() {
   const router = useRouter();
@@ -395,6 +396,17 @@ export default function SetupWizard() {
         );
       
       // Phase 2: Design
+      case 'event-theme':
+        return (
+          <ThemeSelectionStep
+            eventType={state.eventType}
+            selectedThemeId={state.themeId}
+            onThemeSelect={(themeId, themeData) => updateState({ themeId, themeData })}
+            onNext={() => handleCompleteStep('event-theme')}
+            onBack={() => goToStep('date-location')}
+          />
+        );
+
       case 'cover-image':
         return (
           <CoverImageStep
@@ -402,7 +414,7 @@ export default function SetupWizard() {
             coverImagePreview={state.coverImagePreview}
             onCoverImageChange={(file, preview) => updateState({ coverImage: file, coverImagePreview: preview })}
             onNext={() => handleCompleteStep('cover-image')}
-            onBack={() => goToStep('date-location')}
+            onBack={() => goToStep('event-theme')}
             onSkip={() => handleCompleteStep('cover-image')}
           />
         );
@@ -528,7 +540,7 @@ export default function SetupWizard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50/50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-warning/5 to-background">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-card/80 backdrop-blur-lg border-b border-border">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
@@ -550,7 +562,7 @@ export default function SetupWizard() {
             </button>
             <button
               onClick={() => setShowChecklist(!showChecklist)}
-              className="text-sm text-amber-600 font-medium"
+              className="text-sm text-warning font-medium"
             >
               {showChecklist ? 'Schließen' : 'Alle Schritte'}
             </button>
@@ -565,19 +577,19 @@ export default function SetupWizard() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl"
+            className="mb-4 p-4 bg-warning/10 border border-warning/30 rounded-xl"
           >
-            <p className="text-sm text-amber-800 font-medium">
+            <p className="text-sm text-foreground font-medium">
               Du hast das Limit von {eventLimitInfo.limit} kostenlosen Events erreicht.
             </p>
-            <p className="text-xs text-amber-700 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Bitte upgrade dein Paket, um weitere Events zu erstellen.
             </p>
             <a
               href="https://gästefotos.com/preise"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block mt-2 text-sm font-medium text-amber-600 hover:text-amber-800"
+              className="inline-block mt-2 text-sm font-medium text-warning hover:underline"
             >
               Pakete ansehen →
             </a>
@@ -614,7 +626,7 @@ export default function SetupWizard() {
         <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
           {state.isCreating ? (
             <div className="py-12 flex flex-col items-center justify-center gap-4">
-              <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+              <Loader2 className="w-8 h-8 text-warning animate-spin" />
               <p className="text-muted-foreground font-medium">Event wird erstellt...</p>
             </div>
           ) : (
@@ -670,8 +682,8 @@ export default function SetupWizard() {
               className="bg-card rounded-2xl shadow-2xl max-w-sm w-full p-6"
             >
               <div className="text-center mb-5">
-                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-amber-100 flex items-center justify-center">
-                  <RotateCcw className="w-6 h-6 text-amber-600" />
+                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-warning/20 flex items-center justify-center">
+                  <RotateCcw className="w-6 h-6 text-warning" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-1">Wizard neu starten?</h3>
                 <p className="text-sm text-muted-foreground">
@@ -689,7 +701,7 @@ export default function SetupWizard() {
                 </Button>
                 <Button
                   onClick={confirmReset}
-                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-white"
+                  className="flex-1 bg-warning hover:opacity-90 text-warning-foreground"
                 >
                   Neu starten
                 </Button>

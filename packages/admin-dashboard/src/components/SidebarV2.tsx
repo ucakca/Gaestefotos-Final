@@ -35,6 +35,8 @@ import {
   MessageSquare,
   Shield,
   ToggleLeft,
+  Globe,
+  Sparkles,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -72,6 +74,7 @@ const navigation: NavGroup[] = [
       { name: 'Pakete & Features', href: '/manage/packages', icon: Package },
       { name: 'Impersonation', href: '/manage/impersonation', icon: UserCog },
       { name: 'QR-Templates', href: '/manage/qr-templates', icon: QrCode },
+      { name: 'Event Themes', href: '/manage/event-themes', icon: Palette },
       { name: 'E-Mail Templates', href: '/manage/email-templates', icon: Mail },
       { name: 'Einladungs-Templates', href: '/invitation-templates', icon: FileText },
       { name: 'Partner', href: '/manage/partners', icon: Building2 },
@@ -81,6 +84,7 @@ const navigation: NavGroup[] = [
       { name: 'Embed Code', href: '/manage/embed', icon: Code2 },
       { name: 'Slideshow', href: '/manage/slideshow', icon: Presentation },
       { name: 'SMS Sharing', href: '/manage/sms', icon: MessageSquare },
+      { name: 'Landing Page', href: '/manage/landing', icon: Globe },
       { name: 'Feature Flags', href: '/feature-flags', icon: ToggleLeft },
     ],
   },
@@ -91,6 +95,7 @@ const navigation: NavGroup[] = [
       { name: 'Health', href: '/system/health', icon: Server },
       { name: 'Logs', href: '/system/logs', icon: FileText },
       { name: 'AI Analyse', href: '/system/ai-analyse', icon: Bot },
+      { name: 'AI Logs', href: '/system/ai-logs', icon: Sparkles },
       { name: 'Rate Limits', href: '/system/rate-limits', icon: Shield },
     ],
   },

@@ -59,6 +59,8 @@ export interface SetupState {
   profileImage: File | null;
   profileImagePreview: string | null;
   colorScheme: string;
+  themeId: string | null;
+  themeData: any | null;
   
   // Phase 3: Galerie einrichten
   albums: AlbumConfig[];
@@ -105,6 +107,8 @@ export const INITIAL_SETUP_STATE: SetupState = {
   profileImage: null,
   profileImagePreview: null,
   colorScheme: 'elegant',
+  themeId: null,
+  themeData: null,
   
   albums: [],
   challenges: [],
@@ -130,6 +134,7 @@ export const SETUP_STEPS: SetupStep[] = [
   { id: 'date-location', phase: 1, title: 'Datum & Ort', status: 'pending', isRequired: false, icon: 'Calendar' },
   
   // Phase 2: Gestalten
+  { id: 'event-theme', phase: 2, title: 'Event-Theme', status: 'pending', isRequired: false, icon: 'Palette' },
   { id: 'cover-image', phase: 2, title: 'Cover-Bild', status: 'pending', isRequired: false, icon: 'Image' },
   { id: 'profile-image', phase: 2, title: 'Profilbild', status: 'pending', isRequired: false, icon: 'User' },
   { id: 'color-scheme', phase: 2, title: 'Farbschema', status: 'pending', isRequired: false, icon: 'Palette' },

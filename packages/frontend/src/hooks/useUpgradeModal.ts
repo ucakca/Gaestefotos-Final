@@ -18,9 +18,11 @@ export function useUpgradeModal() {
   }, []);
 
   const handleSelectTier = useCallback((tier: string) => {
-    // TODO: Redirect to checkout or contact form
-    window.location.href = `/pricing?tier=${tier}`;
-  }, []);
+    const params = new URLSearchParams({ tier });
+    if (triggerFeature) params.set('feature', triggerFeature);
+    params.set('ref', 'upgrade-modal');
+    window.location.href = `/pricing?${params.toString()}`;
+  }, [triggerFeature]);
 
   return {
     isOpen,

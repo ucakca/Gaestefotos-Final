@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    color-scheme: light only;
+    color-scheme: light;
 
     /* Core Colors - Warm & Romantic */
     --background: 30 20% 98%;
@@ -67,26 +67,28 @@
   }
 
   .dark {
-    --background: 20 20% 8%;
-    --foreground: 30 20% 95%;
+    color-scheme: dark;
+    /* Migrated: Braun (hue 20, sat 20%) → Slate/Zinc (hue 240, sat 4-6%) */
+    --background: 240 6% 6%;
+    --foreground: 0 0% 98%;
 
-    --card: 20 20% 12%;
-    --card-foreground: 30 20% 95%;
+    --card: 240 5% 11%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 20 20% 12%;
-    --popover-foreground: 30 20% 95%;
+    --popover: 240 5% 11%;
+    --popover-foreground: 0 0% 98%;
 
     --primary: 340 75% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 20 20% 18%;
+    --secondary: 240 4% 16%;
     --secondary-foreground: 340 60% 75%;
 
-    --muted: 20 20% 18%;
-    --muted-foreground: 30 15% 60%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
 
     --accent: 38 92% 55%;
-    --accent-foreground: 20 25% 10%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
@@ -95,10 +97,10 @@
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 55%;
-    --warning-foreground: 20 25% 10%;
+    --warning-foreground: 240 6% 10%;
 
-    --border: 20 20% 20%;
-    --input: 20 20% 20%;
+    --border: 240 4% 18%;
+    --input: 240 4% 18%;
     --ring: 340 75% 60%;
 
     --rose: 340 75% 60%;
@@ -106,9 +108,9 @@
     --rose-dark: 340 80% 45%;
     --gold: 38 92% 55%;
     --gold-light: 45 100% 70%;
-    --champagne: 40 25% 25%;
-    --blush: 340 20% 18%;
-    --cream: 40 20% 15%;
+    --champagne: 240 5% 22%;
+    --blush: 340 10% 16%;
+    --cream: 240 5% 14%;
   }
 }
 
@@ -144,7 +146,25 @@
     background-image: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-light)) 100%);
   }
 
-  /* Festive Buttons */
+  /* Brand Primary Button — Gradient (used as brand identity across all apps) */
+  .btn-primary {
+    @apply relative overflow-hidden text-white font-medium;
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, #10b981 50%, #14b8a6 100%);
+    box-shadow: 0 4px 14px -3px hsl(var(--primary) / 0.4);
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px -4px hsl(var(--primary) / 0.5);
+    filter: brightness(1.05);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  /* Legacy alias */
   .btn-festive {
     @apply relative overflow-hidden text-white;
     background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--rose-dark)) 100%);

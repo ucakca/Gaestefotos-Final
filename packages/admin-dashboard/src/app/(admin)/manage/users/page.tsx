@@ -8,6 +8,7 @@ import {
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { PageTransition } from '@/components/ui/PageTransition';
 import toast from 'react-hot-toast';
 
 interface User {
@@ -104,17 +105,21 @@ export default function UsersPage() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
+    <PageTransition className="mx-auto w-full max-w-6xl space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-app-fg flex items-center gap-2">
-            <Users className="w-6 h-6 text-app-accent" />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md shadow-emerald-500/20">
+            <Users className="w-5 h-5 text-white" />
+          </div>
+          <div>
+          <h1 className="text-2xl font-bold tracking-tight text-app-fg">
             Benutzer
           </h1>
-          <p className="mt-1 text-sm text-app-muted">
+          <p className="text-sm text-app-muted">
             {total} Benutzer insgesamt
           </p>
+          </div>
         </div>
         <Button size="sm" variant="outline" onClick={loadUsers} disabled={loading}>
           <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
@@ -291,6 +296,6 @@ export default function UsersPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageTransition>
   );
 }

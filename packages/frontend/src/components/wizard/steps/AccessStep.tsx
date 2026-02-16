@@ -70,9 +70,9 @@ export default function AccessStep({
             <p className="text-sm text-destructive mt-1">{passwordError}</p>
           )}
           <p className="text-xs text-muted-foreground mt-1">💡 Teile das Passwort mit deinen Gästen (z.B. auf Einladungen oder QR-Code)</p>
-          <div className="mt-3 p-3 rounded-lg bg-blue-50 border border-blue-200">
-            <p className="text-sm text-blue-800 font-medium">ℹ️ Hinweis zum Passwort</p>
-            <p className="text-xs text-blue-700 mt-1">Ein Passwort schützt dein Event vor unerwünschten Uploads. Du kannst aber auch ohne Passwort starten und es später jederzeit hinzufügen.</p>
+          <div className="mt-3 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+            <p className="text-sm text-foreground font-medium">ℹ️ Hinweis zum Passwort</p>
+            <p className="text-xs text-muted-foreground mt-1">Ein Passwort schützt dein Event vor unerwünschten Uploads. Du kannst aber auch ohne Passwort starten und es später jederzeit hinzufügen.</p>
           </div>
         </div>
 

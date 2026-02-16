@@ -8,6 +8,24 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        /* ═══ App Design System (primary) ═══ */
+        app: {
+          bg: 'var(--app-bg)',
+          fg: 'var(--app-fg)',
+          surface: 'var(--app-surface)',
+          card: 'var(--app-card)',
+          border: 'var(--app-border)',
+          muted: 'var(--app-muted)',
+          accent: 'var(--app-accent)',
+          'accent-hover': 'var(--app-accent-hover)',
+          secondary: 'var(--app-secondary)',
+          tertiary: 'var(--app-tertiary)',
+          success: 'var(--app-success)',
+          warning: 'var(--app-warning)',
+          error: 'var(--app-error)',
+          info: 'var(--app-info)',
+        },
+        /* ═══ Backward-compat (old tokens still work) ═══ */
         foreground: 'var(--foreground)',
         background: 'var(--background)',
         card: 'var(--card)',
@@ -28,14 +46,6 @@ module.exports = {
           DEFAULT: 'var(--warning)',
           foreground: 'var(--warning-foreground)',
         },
-        app: {
-          bg: 'var(--app-bg)',
-          fg: 'var(--app-fg)',
-          card: 'var(--app-card)',
-          border: 'var(--app-border)',
-          muted: 'var(--app-muted)',
-          accent: 'var(--app-accent)',
-        },
         primary: {
           50: '#e8f5f0',
           100: '#d1ebe1',
@@ -48,6 +58,16 @@ module.exports = {
           800: '#10271f',
           900: '#081510',
         },
+      },
+      boxShadow: {
+        soft: 'var(--shadow-soft)',
+        medium: 'var(--shadow-medium)',
+        strong: 'var(--shadow-strong)',
+        glow: 'var(--shadow-glow)',
+      },
+      borderRadius: {
+        '2xl': '16px',
+        '3xl': '24px',
       },
     },
   },

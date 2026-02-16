@@ -76,6 +76,7 @@ import pushRoutes from './routes/push';
 import analyticsRoutes from './routes/analytics';
 import hardwareRoutes from './routes/hardware';
 import leadsRoutes from './routes/leads';
+import demoRoutes from './routes/demo';
 import assetsRoutes from './routes/assets';
 import boothTemplatesRoutes from './routes/boothTemplates';
 import graffitiRoutes from './routes/graffiti';
@@ -91,6 +92,10 @@ import paymentsRoutes from './routes/payments';
 import spinnerRoutes from './routes/spinner';
 import drawbotRoutes from './routes/drawbot';
 import videoJobsRoutes from './routes/videoJobs';
+import adminLandingRoutes from './routes/adminLanding';
+import landingPublicRoutes from './routes/landingPublic';
+import adminAiLogsRoutes from './routes/adminAiLogs';
+import eventThemesRoutes from './routes/themes';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter, smsLimiter, paymentLimiter, leadLimiter, aiFeatureLimiter, pushSubscribeLimiter, analyticsLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -101,6 +106,7 @@ import { startEventRecapWorker } from './services/eventRecap';
 import { startVirusScanWorker } from './services/virusScan';
 import { startOrphanCleanupWorker } from './services/orphanCleanup';
 import { startStorageReminderWorker } from './services/storageReminder';
+import { startWorkflowTimerWorker } from './services/workflowTimerWorker';
 import { startFaceSearchConsentRetentionWorker } from './services/faceSearchConsentRetention';
 import { startQaLogRetentionWorker } from './services/qaLogRetention';
 import { startWooLogRetentionWorker } from './services/wooLogRetention';
@@ -147,6 +153,7 @@ startEventRecapWorker();
 startVirusScanWorker();
 startOrphanCleanupWorker();
 startStorageReminderWorker();
+startWorkflowTimerWorker();
 startFaceSearchConsentRetentionWorker();
 startQaLogRetentionWorker();
 startWooLogRetentionWorker();
@@ -266,11 +273,8 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: IS_PROD
-        ? ["'self'", "'unsafe-inline'"]
-        : ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      scriptSrcElem: ["'self'", "'unsafe-inline'"], // Separate directive für script elements
+      styleSrc: ["'self'"],
+      scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:", "http:"],
       // Keep connect-src ASCII-only to avoid broken header encoding; 'self' covers same-origin API calls.
       connectSrc: cspConnectSrc,
@@ -332,8 +336,8 @@ app.use((req, res, next) => {
 // Sentry request handler (must be before routes)
 // Note: Sentry v10 uses automatic instrumentation, no manual handlers needed
 
-// Apply rate limiting - nur für bestimmte Routen, nicht global
-// app.use('/api', apiLimiter); // Deaktiviert - zu restriktiv für normale Nutzung
+// Apply global rate limiting as safety net (2000 req/15min per IP, skips file requests)
+app.use('/api', apiLimiter);
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -537,7 +541,11 @@ const swaggerOptions = {
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+} else {
+  app.use('/api-docs', (_req, res) => res.status(404).json({ error: 'Not found' }));
+}
 
  // API Routes with rate limiting
  // Note: authLimiter is applied per-route in auth.ts for more granular control
@@ -620,6 +628,10 @@ app.use('/api/push', pushSubscribeLimiter, pushRoutes); // Push Notifications: /
 app.use('/api/events', analyticsLimiter, analyticsRoutes); // Analytics: /api/events/:eventId/analytics
 app.use('/api/hardware', hardwareRoutes); // Hardware: /api/hardware/*
 app.use('/api/leads', leadLimiter, leadsRoutes);
+app.use('/api/demo', demoRoutes);
+app.use('/api/admin/landing', adminLandingRoutes);
+app.use('/api/landing', landingPublicRoutes);
+app.use('/api/admin/ai-logs', adminAiLogsRoutes);
 app.use('/api/assets', assetsRoutes);
 app.use('/api/booth-templates', boothTemplatesRoutes);
 app.use('/api/graffiti', graffitiRoutes);
@@ -629,6 +641,9 @@ app.use('/api', paymentLimiter, paymentsRoutes); // Payment per Session: /api/ev
 app.use('/api', spinnerRoutes); // 360° Spinner: /api/events/:eventId/spinner
 app.use('/api', drawbotRoutes); // Drawbot: /api/events/:eventId/drawbot
 app.use('/api', videoJobsRoutes); // Video/GIF/Boomerang: /api/events/:eventId/video-jobs
+
+// Event Themes (AI generation + CRUD)
+app.use('/api/event-themes', eventThemesRoutes);
 
 // Tus.io resumable uploads
 app.use('/api/uploads', uploadsRoutes);

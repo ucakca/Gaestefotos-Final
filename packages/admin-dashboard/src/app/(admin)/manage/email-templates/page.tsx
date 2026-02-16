@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Mail, Save, Eye, Send, Check, AlertCircle, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
+import { PageTransition } from '@/components/ui/PageTransition';
 
 type EmailTemplateKind = 'INVITATION' | 'STORAGE_ENDS_REMINDER' | 'PHOTO_NOTIFICATION';
 
@@ -166,15 +167,15 @@ export default function EmailTemplatesPage() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Mail className="w-6 h-6" />
-          E-Mail Templates
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Verwalte E-Mail-Vorlagen für automatische Benachrichtigungen
-        </p>
+    <PageTransition className="p-8 max-w-7xl mx-auto">
+      <div className="mb-6 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-md shadow-sky-500/20">
+          <Mail className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">E-Mail Templates</h1>
+          <p className="text-muted-foreground">Verwalte E-Mail-Vorlagen für automatische Benachrichtigungen</p>
+        </div>
       </div>
 
       {error && (
@@ -371,6 +372,6 @@ export default function EmailTemplatesPage() {
           )}
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }

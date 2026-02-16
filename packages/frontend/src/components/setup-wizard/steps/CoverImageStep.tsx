@@ -139,12 +139,12 @@ export default function CoverImageStep({
             onClick={() => fileInputRef.current?.click()}
             className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-colors ${
               isDragging
-                ? 'border-amber-500 bg-amber-50'
-                : 'border-border hover:border-amber-300 hover:bg-amber-50/50'
+                ? 'border-warning bg-warning/10'
+                : 'border-border hover:border-warning/50 hover:bg-warning/5'
             }`}
           >
-            <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
-              <Upload className="w-8 h-8 text-amber-600" />
+            <div className="w-16 h-16 rounded-full bg-warning/20 flex items-center justify-center mx-auto mb-4">
+              <Upload className="w-8 h-8 text-warning" />
             </div>
             <p className="font-medium text-foreground mb-1">
               Bild hochladen
@@ -188,7 +188,7 @@ export default function CoverImageStep({
               <button
                 key={i}
                 onClick={() => onCoverImageChange(null, url)}
-                className="rounded-xl overflow-hidden aspect-video hover:ring-2 hover:ring-amber-500 transition-all"
+                className="rounded-xl overflow-hidden aspect-video hover:ring-2 hover:ring-warning transition-all"
               >
                 <img src={url} alt={`Sample ${i + 1}`} className="w-full h-full object-cover" />
               </button>
@@ -212,7 +212,7 @@ export default function CoverImageStep({
           <Button
             onClick={onNext}
             disabled={!coverImagePreview}
-            className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white disabled:opacity-50"
+            className="flex-1 bg-warning hover:opacity-90 text-warning-foreground disabled:opacity-50"
           >
             Weiter
             <ArrowRight className="w-4 h-4 ml-2" />

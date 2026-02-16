@@ -104,7 +104,7 @@ export default function ProfileImageStep({
       >
         {profileImagePreview ? (
           <div className="relative">
-            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-amber-200 shadow-lg">
+            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-warning/30 shadow-lg">
               <img
                 src={profileImagePreview}
                 alt="Profile Preview"
@@ -114,7 +114,7 @@ export default function ProfileImageStep({
             <div className="absolute -top-1 -right-1 flex gap-1">
               <button
                 onClick={handleEditCrop}
-                className="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center hover:bg-amber-600 transition-colors shadow-md"
+                className="w-7 h-7 rounded-full bg-warning text-warning-foreground flex items-center justify-center hover:opacity-90 transition-colors shadow-md"
                 title="Zuschneiden"
               >
                 <Crop className="w-3 h-3" />
@@ -136,8 +136,8 @@ export default function ProfileImageStep({
             onClick={() => fileInputRef.current?.click()}
             className={`w-32 h-32 rounded-full border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors ${
               isDragging
-                ? 'border-amber-500 bg-amber-50'
-                : 'border-border hover:border-amber-400 hover:bg-amber-50/50'
+                ? 'border-warning bg-warning/10'
+                : 'border-border hover:border-warning/50 hover:bg-warning/5'
             }`}
           >
             <User className="w-10 h-10 text-muted-foreground mb-1" />
@@ -187,7 +187,7 @@ export default function ProfileImageStep({
           <Button
             onClick={onNext}
             disabled={!profileImagePreview}
-            className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white disabled:opacity-50"
+            className="flex-1 bg-warning hover:opacity-90 text-warning-foreground disabled:opacity-50"
           >
             Weiter
             <ArrowRight className="w-4 h-4 ml-2" />

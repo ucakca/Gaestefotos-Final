@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
+import { PageTransition } from '@/components/ui/PageTransition';
 
 interface Partner {
   id: string;
@@ -186,12 +187,17 @@ export default function PartnersPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-app-fg">Partner-Verwaltung</h1>
-          <p className="text-sm text-app-muted mt-1">{partners.length} Partner registriert</p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-md shadow-indigo-500/20">
+            <Building2 className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-app-fg">Partner-Verwaltung</h1>
+            <p className="text-sm text-app-muted">{partners.length} Partner registriert</p>
+          </div>
         </div>
         <Button
           onClick={() => { setShowForm(true); setFormData(emptyForm); }}
@@ -664,6 +670,6 @@ export default function PartnersPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 }

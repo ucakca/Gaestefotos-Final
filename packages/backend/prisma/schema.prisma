@@ -34,6 +34,33 @@ model User {
   @@map("users")
 }
 
+model EventTheme {
+  id            String   @id @default(uuid())
+  slug          String   @unique
+  name          String
+  eventType     String
+  season        String?
+  locationStyle String?
+  colors        Json
+  animations    Json
+  fonts         Json
+  wallLayout    String   @default("masonry")
+  previewImage  String?
+  description   String?
+  tags          String[]
+  usageCount    Int      @default(0)
+  isPremium     Boolean  @default(false)
+  isPublic      Boolean  @default(true)
+  isAiGenerated Boolean  @default(false)
+  events        Event[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([eventType, isPremium])
+  @@index([isPublic, eventType])
+  @@map("event_themes")
+}
+
 model Event {
   id                      String                      @id @default(uuid())
   hostId                  String
@@ -55,6 +82,9 @@ model Event {
   designAssetsBytes       BigInt?
   profileDescription      String?
   invitationDesign        Json?
+  themeId                 String?
+  theme                   EventTheme?                 @relation(fields: [themeId], references: [id], onDelete: SetNull)
+  customThemeData         Json?
   categories              Category[]
   challenges              Challenge[]
   design_projects         design_projects[]
@@ -94,6 +124,7 @@ model Event {
   @@index([partnerId])
   @@index([deletedAt])
   @@index([purgeAfter])
+  @@index([themeId])
   @@map("events")
 }
 
@@ -1721,6 +1752,10 @@ model BoothWorkflow {
   createdBy     String?
   lockedAt      DateTime?
   lockedBy      String?
+  ownerId       String?                                 // Partner ID — null = global/admin
+  ownerType     String?             @default("admin")   // "admin" | "partner"
+  tags          String[]            @default([])        // Tags for marketplace search
+  isTemplate    Boolean             @default(false)     // Available in template marketplace
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
   events        Event[]
@@ -1729,6 +1764,7 @@ model BoothWorkflow {
   @@index([flowType])
   @@index([isSystem])
   @@index([parentId])
+  @@index([ownerId])
   @@map("booth_workflows")
 }
 

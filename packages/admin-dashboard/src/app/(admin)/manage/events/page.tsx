@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Calendar, Search, RefreshCw, Image, Users, Loader2, ExternalLink, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
+import { PageTransition } from '@/components/ui/PageTransition';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
@@ -57,17 +58,21 @@ export default function EventsPage() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
+    <PageTransition className="mx-auto w-full max-w-6xl space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-app-fg flex items-center gap-2">
-            <Calendar className="w-6 h-6 text-app-accent" />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-md shadow-blue-500/20">
+            <Calendar className="w-5 h-5 text-white" />
+          </div>
+          <div>
+          <h1 className="text-2xl font-bold tracking-tight text-app-fg">
             Events
           </h1>
-          <p className="mt-1 text-sm text-app-muted">
+          <p className="text-sm text-app-muted">
             {total} Events insgesamt
           </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" onClick={loadEvents} disabled={loading}>
@@ -161,6 +166,6 @@ export default function EventsPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageTransition>
   );
 }

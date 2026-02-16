@@ -136,7 +136,7 @@ export default function Step3SettingsActivate({
                 key={anim.value}
                 className={`relative rounded-xl border-2 overflow-hidden transition-all ${
                   selected
-                    ? 'border-purple-500 bg-purple-50'
+                    ? 'border-purple-500 bg-purple-500/10'
                     : 'border-border bg-card hover:border-border'
                 }`}
               >
@@ -273,7 +273,7 @@ export default function Step3SettingsActivate({
 
         <div className="flex flex-wrap gap-1.5 pt-2 border-t">
           {selectedAnimNames.map((name) => (
-            <span key={name} className="text-[10px] px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full font-medium">
+            <span key={name} className="text-[10px] px-2 py-0.5 bg-purple-500/15 text-purple-500 rounded-full font-medium">
               {name}
             </span>
           ))}
@@ -353,7 +353,7 @@ export default function Step3SettingsActivate({
             href={`/events/${eventSlug}/mosaic/print-station`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-3 bg-purple-50 border border-purple-200 rounded-xl text-sm font-medium text-purple-700 hover:bg-purple-100 transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-3 bg-purple-500/10 border border-purple-500/20 rounded-xl text-sm font-medium text-purple-500 hover:bg-purple-500/15 transition-colors"
           >
             <Printer className="w-4 h-4" />
             Print-Station öffnen

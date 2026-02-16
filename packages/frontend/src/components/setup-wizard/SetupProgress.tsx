@@ -17,7 +17,7 @@ export default function SetupProgress({
   const phaseInfo = PHASE_INFO[currentPhase];
 
   return (
-    <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 mb-4 shadow-sm border border-amber-100">
+    <div className="bg-warning/10 rounded-2xl p-4 mb-4 shadow-sm border border-warning/20">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
@@ -27,11 +27,11 @@ export default function SetupProgress({
             <p className="text-sm text-muted-foreground">{phaseInfo.title}</p>
           </div>
         </div>
-        <span className="text-lg font-bold text-amber-600">{overallProgress}%</span>
+        <span className="text-lg font-bold text-warning">{overallProgress}%</span>
       </div>
 
       {/* Progress Bar */}
-      <div className="h-2 bg-amber-100 rounded-full overflow-hidden mb-4">
+      <div className="h-2 bg-warning/20 rounded-full overflow-hidden mb-4">
         <motion.div
           className="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full"
           initial={{ width: 0 }}
@@ -44,10 +44,10 @@ export default function SetupProgress({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card rounded-xl p-3 flex items-center justify-between shadow-sm border border-amber-100"
+        className="bg-card rounded-xl p-3 flex items-center justify-between shadow-sm border border-warning/20"
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-warning/20 flex items-center justify-center">
             <motion.div
               animate={{ x: [0, 3, 0] }}
               transition={{ repeat: Infinity, duration: 1.5 }}

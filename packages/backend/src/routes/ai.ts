@@ -355,6 +355,8 @@ router.post('/cache/warm-up', async (req: Request, res: Response) => {
           return groqService.suggestGuestbookMessage({ eventType: params.eventType, eventTitle: params.eventTitle || 'Event' });
         case 'suggest-colors':
           return groqService.suggestColorScheme({ eventType: params.eventType });
+        case 'suggest-theme':
+          return groqService.suggestTheme({ eventType: params.eventType, season: params.season });
         default:
           return null;
       }

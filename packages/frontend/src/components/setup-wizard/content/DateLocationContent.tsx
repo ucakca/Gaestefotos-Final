@@ -86,10 +86,10 @@ export default function DateLocationContent({
             min="2020-01-01T00:00"
             max="2099-12-31T23:59"
             disabled={dateLocked}
-            className={`w-full px-4 py-3 border-2 border-border bg-card text-foreground rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors ${dateLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`w-full px-4 py-3 border-2 border-border bg-card text-foreground rounded-xl focus:border-warning focus:ring-0 focus:outline-none transition-colors ${dateLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
           {dateLocked && (
-            <p className="mt-1 text-xs text-amber-600">Das Datum kann nicht mehr geändert werden, da das Event bereits gestartet ist.</p>
+            <p className="mt-1 text-xs text-warning">Das Datum kann nicht mehr geändert werden, da das Event bereits gestartet ist.</p>
           )}
         </div>
 
@@ -103,7 +103,7 @@ export default function DateLocationContent({
             value={location}
             onChange={(e) => onLocationChange(e.target.value)}
             placeholder="z.B. Schloss Neuschwanstein"
-            className="w-full px-4 py-3 border-2 border-border bg-card text-foreground rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors placeholder:text-muted-foreground"
+            className="w-full px-4 py-3 border-2 border-border bg-card text-foreground rounded-xl focus:border-warning focus:ring-0 focus:outline-none transition-colors placeholder:text-muted-foreground"
           />
         </div>
 
@@ -126,9 +126,9 @@ export default function DateLocationContent({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="bg-blue-50 border border-blue-100 rounded-xl p-4"
+          className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4"
         >
-          <p className="text-sm text-blue-700">
+          <p className="text-sm text-foreground">
             💡 <strong>Tipp:</strong> Datum und Ort werden auf der Event-Seite angezeigt und helfen Gästen bei der Orientierung.
           </p>
         </motion.div>

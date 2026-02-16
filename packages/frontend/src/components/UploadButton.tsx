@@ -8,6 +8,7 @@ import api, { formatApiError, isRetryableUploadError } from '@/lib/api';
 import { enqueueUpload, processUploadQueue, getQueueCount } from '@/lib/uploadQueue';
 import { uploadWithTus } from '@/lib/tusUpload';
 import { trackUpload } from '@/lib/uploadMetrics';
+import { triggerUploadConfetti } from '@/lib/confetti';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { Input } from '@/components/ui/Input';
@@ -421,7 +422,7 @@ export default function UploadButton({
         });
 
         // Celebrate with confetti!
-        // triggerUploadConfetti(); // TODO: Re-implement confetti
+        triggerUploadConfetti();
 
         setTimeout(() => {
           setFiles((prev) => prev.filter((f) => f.id !== uploadId));

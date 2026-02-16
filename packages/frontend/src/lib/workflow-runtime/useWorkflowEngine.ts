@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { WorkflowEngine } from './engine';
+import { XStateWorkflowEngine } from './xstate-engine';
+import { workflowEventBus } from './event-bus';
 import type {
   WorkflowDefinition,
   WorkflowState,
@@ -23,46 +24,43 @@ export interface UseWorkflowEngineReturn {
   events: EngineEvent[];
 }
 
+const INITIAL_STATE: WorkflowState = {
+  status: 'idle',
+  currentNodeId: null,
+  history: [],
+  collectedData: {},
+  error: null,
+  startedAt: null,
+};
+
 export function useWorkflowEngine(
   definition: WorkflowDefinition | null
 ): UseWorkflowEngineReturn {
-  const engineRef = useRef<WorkflowEngine | null>(null);
-  const [state, setState] = useState<WorkflowState>({
-    status: 'idle',
-    currentNodeId: null,
-    history: [],
-    collectedData: {},
-    error: null,
-    startedAt: null,
-  });
+  const engineRef = useRef<XStateWorkflowEngine | null>(null);
+  const [state, setState] = useState<WorkflowState>(INITIAL_STATE);
   const [currentNode, setCurrentNode] = useState<WorkflowNode | null>(null);
   const [events, setEvents] = useState<EngineEvent[]>([]);
 
   // Create/recreate engine when definition changes
   useEffect(() => {
     if (!definition) {
+      engineRef.current?.destroy();
       engineRef.current = null;
-      setState({
-        status: 'idle',
-        currentNodeId: null,
-        history: [],
-        collectedData: {},
-        error: null,
-        startedAt: null,
-      });
+      setState(INITIAL_STATE);
       setCurrentNode(null);
       setEvents([]);
       return;
     }
 
-    const engine = new WorkflowEngine(definition);
+    const engine = new XStateWorkflowEngine(definition);
     engineRef.current = engine;
 
-    // Sync state on every event
+    // Sync React state on every engine event + forward to Event Bus
     const unsub = engine.on((event) => {
       setState(engine.getState());
       setCurrentNode(engine.getCurrentNode());
-      setEvents((prev) => [...prev.slice(-49), event]); // keep last 50 events
+      setEvents((prev) => [...prev.slice(-49), event]);
+      workflowEventBus.emit(event);
     });
 
     // Set initial state
@@ -70,6 +68,7 @@ export function useWorkflowEngine(
 
     return () => {
       unsub();
+      engine.destroy();
     };
   }, [definition]);
 
@@ -79,14 +78,7 @@ export function useWorkflowEngine(
 
   const reset = useCallback(() => {
     engineRef.current?.reset();
-    setState(engineRef.current?.getState() || {
-      status: 'idle',
-      currentNodeId: null,
-      history: [],
-      collectedData: {},
-      error: null,
-      startedAt: null,
-    });
+    setState(engineRef.current?.getState() || INITIAL_STATE);
     setCurrentNode(null);
   }, []);
 

@@ -200,7 +200,7 @@ export default function Step2TargetOverlay({
               type="button"
               onClick={openFilePicker}
               disabled={analyzing}
-              className="w-full p-8 sm:p-10 border-2 border-dashed border-border rounded-xl flex flex-col items-center gap-3 hover:border-purple-400 hover:bg-purple-50/30 transition-all disabled:opacity-50"
+              className="w-full p-8 sm:p-10 border-2 border-dashed border-border rounded-xl flex flex-col items-center gap-3 hover:border-purple-500/40 hover:bg-purple-500/5 transition-all disabled:opacity-50"
               style={{ aspectRatio: `${state.gridWidth} / ${state.gridHeight}`, maxHeight: '240px' }}
             >
               {analyzing ? (
@@ -224,10 +224,10 @@ export default function Step2TargetOverlay({
           {hasTarget && (
             <div className="space-y-5 pt-2">
               {/* KI Analysis Status */}
-              <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl">
+              <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
                 <div className="flex items-center gap-2 mb-1">
                   <Sparkles className="w-4 h-4 text-purple-500" />
-                  <span className="text-sm font-semibold text-purple-700">KI-Empfehlung</span>
+                  <span className="text-sm font-semibold text-purple-500">KI-Empfehlung</span>
                   {analyzingOverlay && (
                     <div className="w-3 h-3 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
                   )}
@@ -279,7 +279,7 @@ export default function Step2TargetOverlay({
                       onClick={() => setScatterMode('auto')}
                       className={`text-xs px-2 py-1 rounded-md font-medium transition-colors ${
                         scatterMode === 'auto'
-                          ? 'bg-purple-100 text-purple-700'
+                          ? 'bg-purple-500/15 text-purple-500'
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                     >
@@ -291,7 +291,7 @@ export default function Step2TargetOverlay({
                       onClick={() => setScatterMode('manual')}
                       className={`text-xs px-2 py-1 rounded-md font-medium transition-colors ${
                         scatterMode === 'manual'
-                          ? 'bg-purple-100 text-purple-700'
+                          ? 'bg-purple-500/15 text-purple-500'
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                     >

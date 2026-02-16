@@ -1,7 +1,9 @@
 // ─── Workflow Runtime - Public API ───────────────────────────────────────────
 
 export { WorkflowEngine } from './engine';
+export { XStateWorkflowEngine } from './xstate-engine';
 export { useWorkflowEngine } from './useWorkflowEngine';
+export { workflowEventBus } from './event-bus';
 export type {
   WorkflowDefinition,
   WorkflowNode,

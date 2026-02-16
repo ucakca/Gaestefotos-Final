@@ -323,10 +323,10 @@ export default function EventWizard() {
 
         {/* Upload Progress Display */}
         {uploadProgress && (
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
             <div className="flex items-center gap-3">
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
-              <p className="text-sm text-blue-700 font-medium">{uploadProgress}</p>
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent"></div>
+              <p className="text-sm text-foreground font-medium">{uploadProgress}</p>
             </div>
           </div>
         )}

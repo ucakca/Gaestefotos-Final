@@ -1,10 +1,9 @@
 'use client';
 
-import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from '@/components/I18nProvider';
 import { ChevronDown, Globe } from 'lucide-react';
-import { locales, type Locale } from '../../i18n/config';
+import { locales, type Locale } from '../../i18n/locales';
 import { Button } from '@/components/ui/Button';
 import {
   DropdownMenu,
@@ -37,7 +36,6 @@ export default function LanguageSelector({
   const t = useTranslations('language');
   const locale = useLocale();
   const router = useRouter();
-  const pathname = usePathname();
 
   const currentLocale = (eventLanguage || locale) as Locale;
 
@@ -46,9 +44,9 @@ export default function LanguageSelector({
       // Custom onChange handler (e.g., for event language selection)
       onChange(newLocale);
     } else {
-      // Standard locale switching
-      const newPathname = pathname.replace(`/${locale}`, `/${newLocale}`);
-      router.push(newPathname);
+      // Cookie-based locale switching (no URL prefix change)
+      document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
+      router.refresh();
     }
   };
 

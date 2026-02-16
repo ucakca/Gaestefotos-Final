@@ -1,7 +1,7 @@
 # 🐛 Bug-Liste & Architektur-Probleme - Gästefotos App
 
 Erstellt: 2026-02-03
-Letzte Aktualisierung: 2026-02-03
+Letzte Aktualisierung: 2026-02-15
 Status: In Bearbeitung
 
 ---
@@ -12,9 +12,9 @@ Status: In Bearbeitung
 
 | ID | Problem | Bereich | Priorität | Status |
 |----|---------|---------|-----------|--------|
-| BUG-001 | Theme wechselt nach Login von Dark → Light | Theme-System | 🔴 Hoch | ⏳ Offen |
-| BUG-002 | Input-Felder im Bottom-Sheet unlesbar im Dark Mode | Dark Mode CSS | 🔴 Hoch | ⏳ Offen |
-| BUG-003 | Setup-Checkliste Header öffnet nicht beim Klick | Dashboard Accordion | 🟡 Mittel | ⏳ Offen |
+| BUG-001 | Theme wechselt nach Login von Dark → Light | Theme-System | 🔴 Hoch | ✅ Erledigt |
+| BUG-002 | Input-Felder im Bottom-Sheet unlesbar im Dark Mode | Dark Mode CSS | 🔴 Hoch | ✅ Erledigt |
+| BUG-003 | Setup-Checkliste Header öffnet nicht beim Klick | Dashboard Accordion | 🟡 Mittel | ✅ Erledigt (kein Bug) |
 | BUG-005 | Service Worker: "Response body already used" Fehler | PWA/Caching | 🟠 Niedrig | ✅ Erledigt |
 | BUG-006 | 404 bei design-image URLs | API/Images | 🟡 Mittel | ✅ Erledigt |
 | BUG-007 | Doppeltes /api/api/ in Foto-URLs | API/URLs | 🔴 Hoch | ✅ Erledigt |
@@ -30,8 +30,9 @@ Status: In Bearbeitung
 |----|---------|---------|-----------|--------|
 | ARCH-001 | Doppelte Funktionen: KI-Farbgenerator, Design-Seite, Setup-Menu | UX/Architektur | 🔴 Hoch | ⏳ Offen |
 | ARCH-002 | Design-Seite altmodisch vs. QR-Styler/Wizard modern | UI-Konsistenz | 🔴 Hoch | ⏳ Offen |
-| ARCH-003 | Setup-Checkliste Navigation inkonsistent | UX | 🟡 Mittel | ⏳ Offen |
-| ARCH-004 | Erweiterte Optionen im Setup versteckt | UX | 🟡 Mittel | ⏳ Offen |
+| ARCH-003 | Setup-Checkliste Navigation inkonsistent | UX | 🟡 Mittel | ✅ Erledigt |
+| ARCH-004 | Erweiterte Optionen im Setup versteckt | UX | 🟡 Mittel | ✅ Erledigt |
+| DM-001 | Dark Mode: Hardcoded Light-Mode Farben in ~40 Komponenten | Dark Mode CSS | 🔴 Hoch | ✅ Erledigt |
 | UX-001 | Challenges Toggle nur in erweiterten Einstellungen | UX | 🔴 Hoch | ✅ Erledigt |
 | ARCH-004 | /edit Seite aufräumen, Optionen in Setup-Tab einbauen | UX/Architektur | 🟡 Mittel | ✅ Erledigt |
 
@@ -280,6 +281,7 @@ Setup-Checkliste (erweitert):
 - [x] UX-001: Challenges Toggle ✅ (Schieberegler direkt auf Challenges-Seite)
 - [x] BUG-012: Setup Galerie/Design Links ✅ (?wizard=1 an alle /design Links)
 - [x] ARCH-004: /edit aufgeräumt ✅ (Feature-Toggles + Slug in SetupTabV2, /edit → Redirect)
+- [x] DM-001: Dark Mode Fixes ✅ (40+ Dateien: setup-wizard, gamification, e3, ai-chat, workflow-runtime, invitation-editor, mosaic, highlight-reel, wizard — alle hardcoded light-mode Farben durch opacity-based Theme-Tokens ersetzt)
 - [ ] Unused Code entfernen
 - [ ] Dokumentation aktualisieren
 

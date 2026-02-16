@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { MessageSquare, Send, Phone, Clock, CheckCircle2, XCircle, Loader2, Search, Download, BarChart3, Settings } from 'lucide-react';
+import { PageTransition } from '@/components/ui/PageTransition';
 
 interface SmsLog {
   id: string;
@@ -145,7 +146,7 @@ export default function SmsAdminPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       {/* Toast */}
       {toast && (
         <div className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white ${
@@ -157,14 +158,14 @@ export default function SmsAdminPage() {
       )}
 
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <MessageSquare className="h-6 w-6 text-emerald-600" />
-          SMS Sharing
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          SMS-Versand für Foto-Links — Twilio Integration
-        </p>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-md shadow-emerald-500/20">
+          <MessageSquare className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">SMS Sharing</h1>
+          <p className="text-sm text-muted-foreground">SMS-Versand für Foto-Links — Twilio Integration</p>
+        </div>
       </div>
 
       {/* Config Warning */}
@@ -412,6 +413,6 @@ export default function SmsAdminPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 }

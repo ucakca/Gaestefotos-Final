@@ -1,566 +1,299 @@
-# 📸 Gästefotos - Event Foto-Sharing Plattform
+# Gaestefotos — Enterprise Event Photo Platform
 
-**Version:** 2.0.0  
-**Status:** ✅ Produktionsbereit  
-**Letzte Aktualisierung:** 2026-02-01
+**Version 2.1.0** | **Production** | **Updated 2026-02-16**
 
----
+The all-in-one SaaS + Hardware platform for event photography. QR-Upload, Live Wall, Face Search, Photo Booth, Mosaic Wall, AI Photo Styles, Workflow Builder — GDPR-compliant, made in Austria.
 
-## 📋 Inhaltsverzeichnis
-
-- [Überblick](#überblick)
-- [Architektur](#architektur)
-- [Features](#features)
-- [Technologie-Stack](#technologie-stack)
-- [Projektstruktur](#projektstruktur)
-- [Installation](#installation)
-- [API-Dokumentation](#api-dokumentation)
-- [Admin Dashboard](#admin-dashboard)
-- [Deployment](#deployment)
-- [Testing](#testing)
+**Live:** [app.gaestefotos.com](https://app.xn--gstefotos-v2a.com) | **Admin:** [dash.gaestefotos.com](https://dash.xn--gstefotos-v2a.com)
 
 ---
 
-## Überblick
-
-Gästefotos ist eine Enterprise-grade Event-Foto-Sharing Plattform. Die Anwendung ermöglicht Event-Organisatoren (Hosts), Fotos und Videos von Veranstaltungen zu sammeln, zu moderieren und mit Gästen zu teilen.
-
-### Architektur
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Gästefotos Platform                       │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
-│  │  Frontend   │  │    Admin    │  │        Backend          │  │
-│  │  Next.js 16 │  │  Dashboard  │  │       Express.js        │  │
-│  │  Port 3002  │  │  Port 3003  │  │       Port 8002         │  │
-│  └──────┬──────┘  └──────┬──────┘  └───────────┬─────────────┘  │
-│         │                │                      │                │
-│         └────────────────┴──────────────────────┘                │
-│                          │                                       │
-│  ┌───────────────────────┴───────────────────────────────────┐  │
-│  │                      PostgreSQL + Prisma                   │  │
-│  │                        43 Models                           │  │
-│  └───────────────────────────────────────────────────────────┘  │
-│  ┌───────────────────────┐  ┌────────────────────────────────┐  │
-│  │      SeaweedFS        │  │           Redis                │  │
-│  │    (S3 Storage)       │  │    (Cache/Sessions)            │  │
-│  └───────────────────────┘  └────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
+                        ┌──────────────────────┐
+                        │       Cloudflare      │
+                        │     (CDN / WAF)       │
+                        └──────────┬───────────┘
+                                   │
+                        ┌──────────┴───────────┐
+                        │        Nginx         │
+                        │  (Reverse Proxy, SSL) │
+                        └───┬──────┬──────┬────┘
+                            │      │      │
+               ┌────────────┘      │      └────────────┐
+               │                   │                    │
+    ┌──────────┴──────┐  ┌────────┴────────┐  ┌───────┴──────────┐
+    │    Frontend     │  │  Admin Dashboard │  │     Backend      │
+    │   Next.js 16    │  │   Next.js 16     │  │   Express.js     │
+    │   Port 3000     │  │   Port 3001      │  │   Port 8001      │
+    │  app.gästefotos │  │ dash.gästefotos  │  │  Socket.IO WS    │
+    └────────┬────────┘  └────────┬─────────┘  └──┬───────────────┘
+             │                    │               │
+             └────────────────────┴───────────────┘
+                                  │
+          ┌───────────┬───────────┼───────────┬──────────┐
+          │           │           │           │          │
+    ┌─────┴────┐ ┌────┴───┐ ┌────┴────┐ ┌────┴───┐ ┌───┴────┐
+    │PostgreSQL│ │ Redis  │ │SeaweedFS│ │ Groq   │ │Twilio  │
+    │ 78 Models│ │ Cache  │ │S3 Store │ │+4 AI   │ │ SMS    │
+    │ Prisma   │ │Sessions│ │ Photos  │ │Providers│ │        │
+    └──────────┘ │CSRF/RL │ │ Videos  │ └────────┘ └────────┘
+                 └────────┘ └─────────┘
 ```
-
-### Rollen
-
-| Rolle | Beschreibung |
-|-------|-------------|
-| **Host** | Erstellt Events, verwaltet Inhalte, Gäste-Settings, Downloads |
-| **Co-Host** | Verwaltet ein Event im Auftrag des Hosts |
-| **Gast** | Lädt Medien hoch, sieht Galerie, kann herunterladen |
-| **Admin** | Administrative Funktionen im Admin-Dashboard |
-| **Superadmin** | Voller Systemzugriff, 2FA erforderlich |
-
-### Dokumentation
-
-| Dokument | Beschreibung |
-|----------|-------------|
-| `docs/INDEX.md` | Start hier |
-| `docs/API_MAP.md` | Endpoints → Dateien |
-| `docs/FEATURES.md` | Feature-Übersicht |
-| `docs/DEPLOYMENT.md` | Deployment-Anleitung |
-| `docs/DB_FIELD_MEANINGS.md` | Datenbank-Felder |
 
 ---
 
-## ✨ Features
+## Packages
 
-### Core Features
-
-| Feature | Beschreibung |
-|---------|-------------|
-| 📷 **Foto-Upload** | TUS-Resumable Upload, EXIF-Extraktion, Auto-Rotation |
-| 🎬 **Video-Upload** | MP4/MOV Support, Thumbnail-Generierung |
-| 🔐 **Event-Schutz** | Passwort, Shortlinks, QR-Codes |
-| 📊 **Statistiken** | Event-Analytics, Gäste-Aktivität, Upload-Trends |
-| 🏷️ **Kategorien** | Album-Organisation, Drag & Drop Sortierung |
-| 📥 **Downloads** | Einzel-Downloads, Bulk-ZIP (bis 10GB) |
-| 💬 **Gästebuch** | Text, Audio, Foto-Uploads |
-| 🏆 **Challenges** | Foto-Wettbewerbe mit Voting |
-| 📖 **Stories** | Instagram-Style Stories |
-| 🖼️ **Live Wall** | Echtzeit Foto-Projektion via WebSocket |
-| 👥 **Co-Hosts** | Event-Mitverwalter mit Einladungs-Flow |
-| ✉️ **Einladungen** | Dynamische Seiten, RSVP, Gästegruppen |
-
-### QR-Code Designer
-
-- **10+ SVG Templates** in 6 Kategorien (Minimal, Elegant, Natur, Festlich, Modern, Rustikal)
-- **Formate**: A6/A5 Tischaufsteller, Story, Square
-- **Export**: PNG, PDF (Druckqualität)
-- **Anpassbar**: Farben, QR-Stil, Logo-Integration
-
-### PWA / Offline
-
-- **Service Worker**: Network-First API, Cache-First Images
-- **Offline-Fallback**: `/offline` Seite
-- **Installierbar**: iOS, Android, Desktop
-- **Update-Banner**: Automatische Aktualisierung
-
-### Sicherheit
-
-| Feature | Details |
-|---------|---------|
-| **JWT Auth** | httpOnly Cookies, 7d Expiry |
-| **2FA (TOTP)** | Für Admins verpflichtend, AES-256-GCM verschlüsselt |
-| **Rate Limiting** | Per-Endpoint Limits |
-| **Helmet.js** | Security Headers |
-| **Zod Validation** | Input-Validierung auf allen Endpoints |
-| **WordPress Auth** | Optional: Passwort-Verifikation via WP REST |
+| Package | Stack | Port | Description |
+|---------|-------|------|-------------|
+| `backend` | Express, Prisma, Socket.IO | 8001 | API Server — 85 route files, 78 DB models |
+| `frontend` | Next.js 16, React, Tailwind | 3000 | User App — 55 pages, 282 components |
+| `admin-dashboard` | Next.js 16, React, Tailwind | 3001 | Admin UI — 35 pages |
+| `shared` | TypeScript | — | Shared types & utils |
 
 ---
 
-## 🛠️ Technologie-Stack
-
-### Packages
-
-| Package | Stack | Port |
-|---------|-------|------|
-| `@gaestefotos/backend` | Express.js, Prisma, Socket.io | 8002 |
-| `@gaestefotos/frontend` | Next.js 16, React 18, TailwindCSS | 3002 |
-| `@gaestefotos/admin-dashboard` | Next.js 16, React 18, TailwindCSS | 3003 |
-| `@gaestefotos/shared` | TypeScript Types & Utils | - |
-
-### Backend Stack
-
-```
-Express.js          - Web Framework
-Prisma              - ORM (43 Models, 50 Migrations)
-Socket.io           - Realtime WebSockets
-Sharp               - Image Processing
-@tus/server         - Resumable Uploads
-@aws-sdk/client-s3  - S3 Storage (SeaweedFS)
-pdf-lib             - PDF Generation
-qrcode              - QR Code Generation
-nodemailer          - Email
-winston             - Logging
-zod                 - Input Validation
-bcryptjs            - Password Hashing
-jsonwebtoken        - JWT Auth
-```
-
-### Frontend Stack
-
-```
-Next.js 16          - React Framework (App Router)
-React 18            - UI Library
-TailwindCSS         - Utility-First CSS
-Radix UI            - Accessible Components
-Framer Motion       - Animations
-React Query         - Server State Management
-Lucide React        - Icons
-react-hook-form     - Form Handling
-qr-code-styling     - QR Code Rendering
-```
-
-### Infrastruktur
-
-| Service | Verwendung |
-|---------|-----------|
-| PostgreSQL 14+ | Hauptdatenbank |
-| SeaweedFS | S3-kompatibler Objektspeicher |
-| Redis | Cache, Rate Limiting, Sessions |
-| Nginx | Reverse Proxy, SSL Termination |
-| systemd | Process Management |
-
----
-
-## 📁 Projektstruktur
+## Project Structure
 
 ```
 gaestefotos-app-v2/
 ├── packages/
-│   ├── backend/                 # Express.js API Server
+│   ├── backend/
 │   │   ├── src/
-│   │   │   ├── routes/          # 55 API Route Files
-│   │   │   ├── services/        # Business Logic
-│   │   │   ├── middleware/      # Auth, Rate Limit, Validation
-│   │   │   └── index.ts         # Entry Point
+│   │   │   ├── routes/             # 85 API route files
+│   │   │   ├── services/           # Business logic (AI, cache, billing, face search, …)
+│   │   │   ├── middleware/         # Auth, CSRF (Redis), rate-limit (Redis), CSP
+│   │   │   └── index.ts
 │   │   ├── prisma/
-│   │   │   ├── schema.prisma    # 43 Database Models
-│   │   │   └── migrations/      # 50 Migrations
-│   │   └── uploads/             # Temp Upload Directory
+│   │   │   ├── schema.prisma       # 78 models, 2255 lines
+│   │   │   └── migrations/         # 50 migrations
+│   │   └── package.json
 │   │
-│   ├── frontend/                # Next.js User App
+│   ├── frontend/
 │   │   ├── src/
-│   │   │   ├── app/             # 30+ Routes (App Router)
-│   │   │   │   ├── events/[id]/ # Event Management
-│   │   │   │   ├── e3/[slug]/   # Public Event Gallery
-│   │   │   │   ├── i/[slug]/    # Invitation Pages
-│   │   │   │   ├── live/[slug]/ # Live Wall + Camera
-│   │   │   │   └── dashboard/   # Host Dashboard
-│   │   │   ├── components/      # 200+ React Components
-│   │   │   └── hooks/           # Custom React Hooks
+│   │   │   ├── app/                # 55 pages (App Router)
+│   │   │   │   ├── e3/[slug]/      # Public event gallery
+│   │   │   │   ├── i/[slug]/       # Digital invitations
+│   │   │   │   ├── live/[slug]/    # Live wall + camera
+│   │   │   │   ├── events/[id]/    # Host event management (15 sub-pages)
+│   │   │   │   └── dashboard/      # Host dashboard
+│   │   │   ├── components/         # 282 React components
+│   │   │   ├── hooks/              # Custom hooks
+│   │   │   ├── lib/                # API client, auth, i18n
+│   │   │   └── store/              # Zustand stores
+│   │   ├── i18n/                   # Locale config
+│   │   ├── messages/               # 5 languages (de/en/fr/es/it)
 │   │   └── public/
-│   │       └── qr-templates/    # 10+ SVG Templates
+│   │       ├── robots.txt
+│   │       └── qr-templates/       # 10+ SVG templates
 │   │
-│   ├── admin-dashboard/         # Admin UI
+│   ├── admin-dashboard/
 │   │   └── src/app/(admin)/
-│   │       ├── dashboard/       # Overview, Stats
-│   │       ├── manage/          # Events, Users, QR-Templates, Packages
-│   │       ├── settings/        # API Keys, Theme, WooCommerce, Maintenance
-│   │       └── system/          # Health, Logs, AI-Analyse, Rate Limits
+│   │       ├── dashboard/          # Stats overview
+│   │       ├── manage/             # Events, Users, Partners, Workflows, …
+│   │       ├── settings/           # General, API Keys, WooCommerce
+│   │       └── system/             # Health, Logs, AI Cache, Rate Limits
 │   │
-│   └── shared/                  # Shared TypeScript Types
+│   └── shared/                     # TypeScript types
 │
-├── e2e/                         # Playwright E2E Tests (12 Specs)
-├── scripts/                     # Deploy & Ops Scripts (16 Files)
-├── docs/                        # Documentation (23 Files)
-└── photo-booth/                 # Photo Booth Konzept
+├── e2e/                            # 19 Playwright E2E specs
+├── docs/                           # 41 documentation files
+├── scripts/                        # Deploy & ops scripts
+└── deploy.sh                       # Unified deploy (backend|frontend|admin)
 ```
 
 ---
 
-## 🚀 Installation
+## Features
 
-### Voraussetzungen
+### Core
 
-- Node.js 24+ und pnpm installiert
-- PostgreSQL 14+ Datenbank
-- SeaweedFS (optional, für Storage)
-- Git
+- **Photo Upload** — TUS resumable upload, EXIF extraction, auto-rotation, deduplication
+- **Video Upload** — MP4/MOV, thumbnail generation, streaming
+- **Event Protection** — Password, shortlinks, QR codes
+- **Categories** — Album organization, drag & drop, smart albums (AI)
+- **Downloads** — Single, bulk, ZIP (up to 10GB)
+- **Guestbook** — Text + photo entries, moderation, PDF export
+- **Challenges** — Photo contests with voting
+- **Stories** — Instagram-style stories
+- **Live Wall** — Real-time photo projection (5 animations), multi-source
+- **Co-Hosts** — Event co-management with invitation flow
+- **Digital Invitations** — Design editor, RSVP, WhatsApp share, ICS calendar
+- **Comments & Likes** — Social interaction on photos/videos
 
-### Schritt 1: Repository klonen
+### Face Search (free for all tiers)
+
+Server-side WASM face detection. Selfie → instantly find all your photos. GDPR consent management with automatic biometric data scrubbing on event deletion.
+
+### AI Features (17 functions, 5 providers)
+
+Groq + Grok + OpenAI (text) / Replicate + Stability AI (image). Intelligent 30-day cache with warm-up, auto-fallback, offline-capable.
+
+- Album suggestions, event descriptions, invitation texts, challenge ideas, guestbook intros
+- Color design, chat assistant, highlight reel
+- Photo styles: Van Gogh, Anime, Cartoon, Oldify, DrawBot
+
+### Photo Games (free in all packages)
+
+Photobomb Challenge, Cover Shooting, Emoji Challenge, Filter Roulette, Digital Graffiti, Face Switch, Compliment Mirror, Mystery Overlay — with leaderboard, badges & achievements.
+
+### Mosaic Wall
+
+Digital + print mode. 5-step wizard. AI overlay analysis. Board designer for branded banners. Print-on-demand option.
+
+### Workflow Builder (Admin)
+
+Visual ReactFlow node editor. 12 flow types, 37 step types. Lock/unlock, versioning, backup/restore, duplicate. XState v5 runtime, event bus, sub-workflows, multi-user editing with OCC.
+
+### Partner/Franchise Model (B2B)
+
+Partner dashboard with stats, team management (Owner/Manager/Operator), hardware inventory, branding. Automated billing with status workflow (Draft → Finalized → Sent → Paid).
+
+### QR-Code Designer
+
+10+ SVG templates in 6 categories. A6/A5 table stands, Story, Square formats. PNG + PDF export. Custom colors, QR style, logo integration.
+
+### Dynamic Event Themes
+
+15 default themes (wedding, party, business, …). AI theme generation. CSS custom properties injection, Google Fonts loading, Framer Motion animations.
+
+---
+
+## Security (Audit-Hardened Feb 2026)
+
+| Layer | Implementation |
+|-------|---------------|
+| **Authentication** | JWT httpOnly cookies, 1h access + 30d refresh token rotation (Redis) |
+| **2FA (TOTP)** | Mandatory for admins, AES-256-GCM encrypted secrets, recovery codes |
+| **CSRF** | Double-submit cookie, Redis-backed token store |
+| **Rate Limiting** | 20 endpoint-specific limiters, all Redis-backed (`rate-limit-redis`) |
+| **CSP** | Nonce-based Content Security Policy (per-request nonce in middleware) |
+| **Input Validation** | Zod schemas on all endpoints |
+| **Account Lockout** | Configurable attempts/window/duration |
+| **Admin Impersonation** | Admin-to-admin blocked, audit-logged |
+| **Face Data Retention** | Automatic biometric scrubbing for deleted/expired events (GDPR) |
+| **Helmet.js** | Security headers (HSTS, X-Frame, etc.) |
+
+---
+
+## i18n
+
+Cookie-based locale switching (no URL prefix routing). 5 languages: German, English, French, Spanish, Italian. Custom lightweight `I18nProvider` compatible with Next.js 16 Turbopack.
+
+---
+
+## Tech Stack
+
+### Backend
+
+Express.js, Prisma ORM (78 models), Socket.IO, Sharp, @tus/server, @aws-sdk/client-s3, rate-limit-redis, pdf-lib, qrcode, nodemailer, winston, zod, bcryptjs, jsonwebtoken, ioredis
+
+### Frontend
+
+Next.js 16 (App Router, Turbopack), React 19, TailwindCSS, Radix UI, Framer Motion, Zustand, Lucide, react-hook-form, XState v5, @xstate/react
+
+### Infrastructure
+
+PostgreSQL 14+, Redis 7+, SeaweedFS (S3), Nginx, systemd, Cloudflare (CDN/WAF)
+
+---
+
+## Quick Start
 
 ```bash
-git clone <repository-url>
-cd <repo-root>
-```
-
-### Schritt 2: Dependencies installieren
-
-```bash
+# Clone & install
+git clone <repo-url> && cd gaestefotos-app-v2
 pnpm install
-```
-
-### Schritt 3: Datenbank einrichten
-
-```bash
-cd packages/backend
-pnpm prisma migrate dev
-```
-
-### Schritt 4: Umgebungsvariablen konfigurieren
-
-Kopiere `.env.example` zu `.env` und passe die Werte an:
-
-```bash
-cp .env.example .env
-nano .env
-```
-
----
-
-## Ops Runbooks
-
-- **WooCommerce Webhooks Monitoring**: `OPSRUNBOOK-webhooks.md`
-- **DB Cutover (localhost -> staging/prod Postgres)**: `OPSRUNBOOK-db-cutover.md`
-
-Quick smoke (local):
-
-```bash
-curl -sS -X POST http://localhost:8002/api/webhooks/woocommerce/order-paid \
-  -H 'Content-Type: application/json' \
-  --data '{}' \
-  -w "\nHTTP_STATUS=%{http_code}\n"
-grep -E "woocommerce_webhook_(ignored|duplicate)" /tmp/backend-local.log | tail -n 50
-```
-
-Siehe [Konfiguration](#konfiguration) für Details.
-
-### Schritt 5: Services starten
-
-**Backend:**
-```bash
-cd packages/backend
-pnpm dev
-```
-
-**Frontend (neues Terminal):**
-```bash
-cd packages/frontend
-pnpm dev
-```
-
-Die Anwendung ist jetzt verfügbar unter:
-- Frontend: http://localhost:3002
-- Backend API: http://localhost:8002
-
----
-
-## ⚙️ Konfiguration
-
-### Backend `.env` Datei
-
-```env
-# Server
-PORT=8002
-NODE_ENV=development
-
-# Frontend URL (für CORS)
-FRONTEND_URL=http://localhost:3002
 
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/gaestefotos_v2
+cd packages/backend
+cp .env.example .env   # edit DATABASE_URL, JWT_SECRET, etc.
+pnpm prisma migrate dev
 
-# JWT
-JWT_SECRET=your-secret-key-change-this
-JWT_EXPIRES_IN=7d
-
-# SeaweedFS S3 API
-SEAWEEDFS_ENDPOINT=localhost:8333
-SEAWEEDFS_ACCESS_KEY=admin
-SEAWEEDFS_SECRET_KEY=password
-SEAWEEDFS_BUCKET=gaestefotos-v2
-SEAWEEDFS_SECURE=false
-
-# SMTP (optional, für Email)
-SMTP_HOST=smtp.example.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=your-email@example.com
-SMTP_PASSWORD=your-password
-SMTP_FROM=noreply@example.com
+# Start dev
+pnpm dev               # backend (port 8001)
+cd ../frontend && pnpm dev   # frontend (port 3000)
 ```
 
-### Frontend Konfiguration
-
-Die Frontend-Konfiguration erfolgt über Umgebungsvariablen oder direkt im Code:
+### Environment Variables
 
 ```env
-# .env.local
-# Dev/E2E only:
-NEXT_PUBLIC_API_URL=http://localhost:8002
-```
-
-In Produktion werden API Calls **same-origin** gemacht (Browser: relative `'/api'`).
-
-Siehe `EMAIL_SETUP.md` für detaillierte Email-Konfiguration.
-
----
-
-## 💻 Entwicklung
-
-### E2E Quickstart (Playwright)
-
-Stabiler lokaler E2E-Run (startet Frontend + Backend automatisch über Playwright `webServer`):
-
-```bash
-pnpm run e2e:stable
-```
-
-Optional: Git pre-push Hook installieren (führt vor `git push` automatisch `e2e:stable` aus):
-
-```bash
-pnpm run hooks:install
-```
-
-Hook in Ausnahmefällen überspringen:
-
-```bash
-SKIP_E2E_HOOK=1 git push
-```
-
-### Backend entwickeln
-
-```bash
-cd packages/backend
-pnpm dev  # Startet mit Hot Reload
-```
-
-### Frontend entwickeln
-
-```bash
-cd packages/frontend
-pnpm dev  # Startet Next.js Dev Server
-```
-
-### Datenbank-Migrationen
-
-```bash
-cd packages/backend
-pnpm prisma migrate dev    # Neue Migration erstellen
-pnpm prisma generate       # Prisma Client generieren
-pnpm prisma studio         # Database Browser öffnen
-```
-
-### Build für Produktion
-
-```bash
-# Backend
-cd packages/backend
-pnpm build
-
-# Frontend
-cd packages/frontend
-pnpm build
+PORT=8001
+NODE_ENV=development
+DATABASE_URL=postgresql://user:pass@localhost:5432/gaestefotos
+JWT_SECRET=change-me
+JWT_EXPIRES_IN=1h
+REFRESH_TOKEN_TTL_SECONDS=2592000
+REDIS_URL=redis://localhost:6379
+SEAWEEDFS_ENDPOINT=localhost:8333
+SEAWEEDFS_BUCKET=gaestefotos-v2
+TUS_MAX_SIZE=104857600
 ```
 
 ---
 
-## 📡 API-Dokumentation
-
-**Base URL:** `http://localhost:8002/api` (Dev) | `/api` (Prod, same-origin)
-
-### API Routes (55 Dateien)
-
-| Bereich | Routes | Beschreibung |
-|---------|--------|--------------|
-| **Core** | `auth`, `events`, `photos`, `videos`, `uploads` | Hauptfunktionen |
-| **Social** | `likes`, `comments`, `votes`, `guestbook`, `stories` | Interaktionen |
-| **Organization** | `categories`, `challenges`, `guests`, `cohosts` | Event-Verwaltung |
-| **Invitations** | `invitations`, `cohostInvites` | Einladungssystem |
-| **Downloads** | `downloads` | ZIP-Downloads, Einzeldownloads |
-| **Statistics** | `statistics` | Analytics |
-| **AI** | `ai`, `faceSearch`, `duplicates` | KI-Features |
-| **QR/Design** | `qrDesigns`, `qrTemplates`, `theme` | QR-Codes, Branding |
-| **Admin** | `admin*` (20 Routes) | Admin-Dashboard APIs |
-| **Integrations** | `woocommerceWebhooks`, `cmsPublic`, `wpConsent` | WordPress/WooCommerce |
-
-### Admin API Routes
-
-```
-/api/admin/dashboard      - Stats & Übersicht
-/api/admin/events         - Event-Management
-/api/admin/users          - User-Management
-/api/admin/photos         - Foto-Moderation
-/api/admin/qr-templates   - QR-Template CRUD
-/api/admin/theme          - Theme-Tokens
-/api/admin/api-keys       - API-Key Management
-/api/admin/logs           - System-Logs
-/api/admin/maintenance    - Wartungsmodus
-/api/admin/impersonation  - User-Impersonation
-```
-
-Vollständige API-Dokumentation: `docs/API_MAP.md`
-
----
-
-## 🎛️ Admin Dashboard
-
-Das Admin-Dashboard (`dash.gästefotos.com`) bietet vollständige Plattform-Verwaltung:
-
-| Bereich | Funktionen |
-|---------|-----------|
-| **Dashboard** | Statistiken, aktive Events, System-Health |
-| **Events** | Liste, Details, Moderation, Löschen |
-| **Users** | Übersicht, Rollen, Impersonation |
-| **QR-Templates** | CRUD, SVG-Upload, Kategorien, Premium-Flags |
-| **Packages** | Paket-Definitionen verwalten |
-| **Theme** | CSS-Token-Editor mit Live-Preview |
-| **API Keys** | Key-Management für Integrationen |
-| **WooCommerce** | Webhook-Logs, Replay, Event-Zuordnung |
-| **Maintenance** | Wartungsmodus aktivieren |
-| **Health** | System-Status, Service-Checks |
-| **Logs** | QA-Logs, System-Logs |
-
----
-
-## 🚢 Deployment
-
-### Deploy Scripts (empfohlen)
+## Deployment
 
 ```bash
-# Frontend
-bash ./scripts/deploy-frontend-prod.sh
-
-# Admin-Dashboard  
-bash ./scripts/deploy-admin-dashboard-prod.sh
-
-# Backend
-bash ./scripts/deploy-backend-prod.sh
+# Unified deploy script (rsync → install → build → restart)
+bash deploy.sh backend
+bash deploy.sh frontend
+bash deploy.sh admin
 ```
 
-### Wichtig: Build-Reihenfolge
+| Service | Port | systemd Unit | Domain |
+|---------|------|-------------|--------|
+| Backend | 8001 | `gaestefotos-backend.service` | API via nginx |
+| Frontend | 3000 | `gaestefotos-frontend.service` | app.gaestefotos.com |
+| Admin | 3001 | `gaestefotos-admin-dashboard.service` | dash.gaestefotos.com |
 
-**Niemals** `next build` während der Service läuft! Sonst: `ChunkLoadError` / 404.
+---
+
+## Testing
 
 ```bash
-# Korrekte Reihenfolge:
-sudo systemctl stop gaestefotos-frontend.service
-pnpm build:prod
-sudo systemctl start gaestefotos-frontend.service
+pnpm run e2e:stable    # 19 Playwright specs (auto-starts servers)
+pnpm run e2e:ui        # Interactive UI mode
+pnpm run e2e:report    # View HTML report
+pnpm run hooks:install # Git pre-push hook
 ```
 
-### Services
+---
 
-| Service | Port | systemd Unit |
-|---------|------|--------------|
-| Backend | 8002 | `gaestefotos-backend.service` |
-| Frontend | 3002 | `gaestefotos-frontend.service` |
-| Admin | 3003 | `gaestefotos-admin.service` |
+## Documentation
+
+See `docs/` for 41 documentation files including:
+
+- `docs/INDEX.md` — Start here
+- `docs/API_MAP.md` — All API endpoints mapped to files
+- `docs/FEATURES.md` — Feature overview
+- `docs/DEPLOYMENT.md` — Deployment guide
+- `docs/PRICING-STRATEGY.md` — Pricing model (B2C + B2B)
+- `docs/SALES-FEATURE-LISTE.md` — Complete sales feature list
+- `docs/SECURITY-BADGES.md` — Security audit results
+- `docs/AUTH_FLOWS.md` — Authentication flow documentation
 
 ---
 
-## 🧪 Testing
+## Platform Numbers
 
-### E2E Tests (Playwright)
-
-```bash
-# Alle Tests (startet Server automatisch)
-pnpm run e2e:stable
-
-# Mit UI
-pnpm run e2e:ui
-
-# Report anzeigen
-pnpm run e2e:report
-```
-
-### Git Pre-Push Hook
-
-```bash
-# Installieren (führt e2e:stable vor push aus)
-pnpm run hooks:install
-
-# Überspringen
-SKIP_E2E_HOOK=1 git push
-```
-
-### Test-Specs (12)
-
-- `auth-flows.spec.ts` - Login/Logout
-- `cohost-invitation.spec.ts` - Co-Host Flow
-- `invitation-flow.spec.ts` - Einladungen
-- `security.spec.ts` - Security Tests
-- `stories.spec.ts` - Stories Feature
-- `tus-resumable.spec.ts` - Upload Tests
-- ...
+| Metric | Value |
+|--------|-------|
+| Backend API routes | 85 |
+| Frontend pages | 55 |
+| React components | 282 |
+| Admin pages | 35 |
+| Prisma models | 78 |
+| DB migrations | 50 |
+| E2E test specs | 19 |
+| AI features | 17 |
+| AI providers | 5 |
+| Workflow step types | 37 |
+| Languages | 5 |
+| Rate limiters | 20 (all Redis-backed) |
 
 ---
 
-## 📚 Dokumentation
-
-| Dokument | Beschreibung |
-|----------|-------------|
-| `BEDIENUNGSANLEITUNG.md` | Endbenutzer-Anleitung |
-| `CHANGELOG.md` | Versionshistorie |
-| `docs/INDEX.md` | Dokumentations-Index |
-| `docs/FEATURES.md` | Feature-Übersicht |
-| `docs/API_MAP.md` | API-Endpoints |
-| `docs/DEPLOYMENT.md` | Deploy-Anleitung |
-| `docs/DB_FIELD_MEANINGS.md` | Datenbank-Felder |
-
----
-
-## � Troubleshooting
-
-| Problem | Lösung |
-|---------|--------|
-| Backend startet nicht | `.env` prüfen, DB-Verbindung, Port 8002 |
-| Frontend startet nicht | Port 3002, Logs in `/tmp/frontend.log` |
-| ChunkLoadError | Service stoppen → Build → Service starten |
-| Sharp Fehler | `pnpm remove sharp && pnpm add sharp@latest` |
-| DB Fehler | `pnpm prisma migrate dev` |
-
----
-
-**Version 2.0.0** | **Status:** ✅ Produktionsbereit | **Stand:** 2026-02-01
+**v2.1.0** | Audit-hardened | GDPR-compliant | Made in Austria

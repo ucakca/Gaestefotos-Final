@@ -155,7 +155,7 @@ export default function AlbumsStep({
             transition={{ delay: index * 0.05 }}
             className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-colors ${
               album.enabled
-                ? 'border-amber-200 bg-amber-50'
+                ? 'border-warning/30 bg-warning/10'
                 : 'border-border bg-card'
             }`}
           >
@@ -165,7 +165,7 @@ export default function AlbumsStep({
               onClick={() => handleToggleAlbum(album.id)}
               className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${
                 album.enabled
-                  ? 'border-amber-500 bg-amber-500'
+                  ? 'border-warning bg-warning'
                   : 'border-border'
               }`}
             >
@@ -176,7 +176,7 @@ export default function AlbumsStep({
               )}
             </button>
             
-            <FolderOpen className={`w-5 h-5 ${album.enabled ? 'text-amber-600' : 'text-muted-foreground'}`} />
+            <FolderOpen className={`w-5 h-5 ${album.enabled ? 'text-warning' : 'text-muted-foreground'}`} />
             
             <span className={`flex-1 font-medium ${album.enabled ? 'text-foreground' : 'text-muted-foreground'}`}>
               {album.name}
@@ -201,7 +201,7 @@ export default function AlbumsStep({
           value={newAlbumName}
           onChange={(e) => setNewAlbumName(e.target.value)}
           placeholder="Neues Album hinzufügen..."
-          className="flex-1 px-4 py-2 border-2 border-border rounded-xl focus:border-amber-500 focus:outline-none"
+          className="flex-1 px-4 py-2 border-2 border-border rounded-xl focus:border-warning focus:outline-none bg-background text-foreground"
           onKeyDown={(e) => e.key === 'Enter' && handleAddAlbum()}
         />
         <Button
@@ -234,7 +234,7 @@ export default function AlbumsStep({
           <Button
             onClick={onNext}
             disabled={enabledCount === 0}
-            className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white disabled:opacity-50"
+            className="flex-1 bg-warning hover:opacity-90 text-warning-foreground disabled:opacity-50"
           >
             Weiter
             <ArrowRight className="w-4 h-4 ml-2" />

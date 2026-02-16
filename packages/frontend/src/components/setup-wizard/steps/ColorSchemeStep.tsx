@@ -117,22 +117,22 @@ export default function ColorSchemeStep({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="bg-purple-50 border border-purple-200 rounded-xl p-4"
+          className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4"
         >
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-4 h-4 text-purple-600" />
+            <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-4 h-4 text-purple-500" />
             </div>
             <div className="flex-1">
-              <p className="text-sm text-purple-900 font-medium mb-1">
+              <p className="text-sm text-foreground font-medium mb-1">
                 KI-Farbanalyse verfügbar
               </p>
-              <p className="text-xs text-purple-700 mb-3">
+              <p className="text-xs text-muted-foreground mb-3">
                 Dein Titelbild wird analysiert um passende Farben vorzuschlagen.
               </p>
               <button
                 onClick={handleAISuggest}
-                className="text-sm font-medium text-purple-600 hover:text-purple-800 flex items-center gap-1"
+                className="text-sm font-medium text-purple-500 hover:text-purple-400 flex items-center gap-1"
               >
                 <Sparkles className="w-3 h-3" />
                 Farben extrahieren
@@ -146,27 +146,27 @@ export default function ColorSchemeStep({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-4"
+          className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4"
         >
           {isLoadingAI ? (
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center animate-pulse">
-                <Sparkles className="w-4 h-4 text-purple-600" />
+              <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center animate-pulse">
+                <Sparkles className="w-4 h-4 text-purple-500" />
               </div>
               <div>
-                <p className="text-sm text-purple-900 font-medium">Analysiere Bilder...</p>
-                <p className="text-xs text-purple-600">Titelbild wird ausgewertet</p>
+                <p className="text-sm text-foreground font-medium">Analysiere Bilder...</p>
+                <p className="text-xs text-muted-foreground">Titelbild wird ausgewertet</p>
               </div>
             </div>
           ) : aiSuggestion ? (
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-purple-600" />
+                <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-purple-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-purple-900 font-medium">Benutzerdefinierte Farben extrahiert</p>
-                  <p className="text-xs text-purple-600">Basierend auf deinem Titelbild</p>
+                  <p className="text-sm text-foreground font-medium">Benutzerdefinierte Farben extrahiert</p>
+                  <p className="text-xs text-muted-foreground">Basierend auf deinem Titelbild</p>
                 </div>
               </div>
               {/* Preview extracted colors */}
@@ -188,7 +188,7 @@ export default function ColorSchemeStep({
                 </button>
                 <button
                   onClick={() => setShowAI(false)}
-                  className="py-2 px-4 text-purple-600 text-sm font-medium rounded-lg border border-purple-200 hover:bg-purple-50 transition-colors"
+                  className="py-2 px-4 text-purple-500 text-sm font-medium rounded-lg border border-purple-500/20 hover:bg-purple-500/10 transition-colors"
                 >
                   Selbst wählen
                 </button>
@@ -342,7 +342,7 @@ export default function ColorSchemeStep({
         </Button>
         <Button
           onClick={onNext}
-          className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+          className="flex-1 bg-warning hover:opacity-90 text-warning-foreground"
         >
           Weiter
           <ArrowRight className="w-4 h-4 ml-2" />

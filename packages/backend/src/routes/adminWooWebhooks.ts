@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
 import { processWooOrderPaidWebhook } from './woocommerceWebhooks';
@@ -233,7 +234,7 @@ router.get('/sku-mapping', authMiddleware, requireRole('ADMIN'), async (_req: Au
     });
 
     // Count orders per SKU from webhook logs
-    const skuCounts = await (prisma as any).$queryRawUnsafe(`
+    const skuCounts = await prisma.$queryRaw<any[]>(Prisma.sql`
       SELECT "wcSku" as sku, COUNT(*)::int as count
       FROM woo_webhook_event_logs
       WHERE "wcSku" IS NOT NULL AND status = 'PROCESSED'

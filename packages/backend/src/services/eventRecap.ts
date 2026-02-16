@@ -1,6 +1,11 @@
+import { Prisma } from '@prisma/client';
 import prisma from '../config/database';
 import { emailService } from './email';
 import { logger } from '../utils/logger';
+
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 
 interface EventRecapStats {
   totalPhotos: number;
@@ -20,16 +25,16 @@ async function getEventRecapStats(eventId: string): Promise<EventRecapStats> {
       where: { id: eventId },
       select: { visitCount: true, dateTime: true, createdAt: true },
     }),
-    prisma.$queryRawUnsafe<any[]>(`
+    prisma.$queryRaw<any[]>(Prisma.sql`
       SELECT "uploadedBy" as name, COUNT(*)::int as count
-      FROM photos WHERE "eventId" = $1 AND "uploadedBy" IS NOT NULL AND "status" = 'APPROVED'
+      FROM photos WHERE "eventId" = ${eventId} AND "uploadedBy" IS NOT NULL AND "status" = 'APPROVED'
       GROUP BY "uploadedBy" ORDER BY count DESC LIMIT 5
-    `, eventId).catch(() => []),
-    prisma.$queryRawUnsafe<any[]>(`
+    `).catch(() => []),
+    prisma.$queryRaw<any[]>(Prisma.sql`
       SELECT date_trunc('hour', "createdAt") as hour, COUNT(*)::int as count
-      FROM photos WHERE "eventId" = $1
+      FROM photos WHERE "eventId" = ${eventId}
       GROUP BY date_trunc('hour', "createdAt") ORDER BY count DESC LIMIT 1
-    `, eventId).catch(() => []),
+    `).catch(() => []),
     (prisma as any).challengeCompletion
       ? (prisma as any).challengeCompletion.count({ where: { eventId } }).catch(() => 0)
       : Promise.resolve(0),
@@ -77,7 +82,7 @@ export async function sendEventRecapEmail(eventId: string): Promise<boolean> {
 
     const topUploadersHtml = stats.topUploaders.length > 0
       ? stats.topUploaders
-          .map((u, i) => `<tr><td style="padding:4px 12px;color:#666">${i + 1}.</td><td style="padding:4px 12px;font-weight:600">${u.name}</td><td style="padding:4px 12px;color:#666">${u.count} Fotos</td></tr>`)
+          .map((u, i) => `<tr><td style="padding:4px 12px;color:#666">${i + 1}.</td><td style="padding:4px 12px;font-weight:600">${escapeHtml(u.name)}</td><td style="padding:4px 12px;color:#666">${u.count} Fotos</td></tr>`)
           .join('\n')
       : '<tr><td colspan="3" style="padding:8px;color:#999">Noch keine Uploads</td></tr>';
 
@@ -87,13 +92,13 @@ export async function sendEventRecapEmail(eventId: string): Promise<boolean> {
 
     const baseUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
 
-    const subject = `📸 Event-Zusammenfassung: ${event.title}`;
+    const subject = `📸 Event-Zusammenfassung: ${escapeHtml(event.title)}`;
     const html = `
       <div style="max-width:600px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#222">
         <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:32px;border-radius:16px 16px 0 0;text-align:center">
           <h1 style="color:white;margin:0;font-size:24px">📸 Event-Zusammenfassung</h1>
-          <p style="color:rgba(255,255,255,0.85);margin:8px 0 0;font-size:16px">${event.title}</p>
-          ${eventDate ? `<p style="color:rgba(255,255,255,0.7);margin:4px 0 0;font-size:13px">${eventDate}${event.locationName ? ` • ${event.locationName}` : ''}</p>` : ''}
+          <p style="color:rgba(255,255,255,0.85);margin:8px 0 0;font-size:16px">${escapeHtml(event.title)}</p>
+          ${eventDate ? `<p style="color:rgba(255,255,255,0.7);margin:4px 0 0;font-size:13px">${eventDate}${event.locationName ? ` • ${escapeHtml(event.locationName)}` : ''}</p>` : ''}
         </div>
 
         <div style="background:#f9fafb;padding:24px;border:1px solid #e5e7eb;border-top:none">

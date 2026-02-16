@@ -93,19 +93,70 @@ export function isRetryableUploadError(err: any): boolean {
   return !!err?.request;
 }
 
-// Add response interceptor for better error handling
+// Track refresh state to avoid concurrent refresh attempts
+let isRefreshing = false;
+let refreshSubscribers: Array<(err?: any) => void> = [];
+
+function onRefreshed(err?: any) {
+  refreshSubscribers.forEach((cb) => cb(err));
+  refreshSubscribers = [];
+}
+
+function addRefreshSubscriber(callback: (err?: any) => void) {
+  refreshSubscribers.push(callback);
+}
+
+// Add response interceptor with auto-refresh on 401
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    try {
-      const status = error?.response?.status;
-      const url = error?.config?.url;
-      const method = error?.config?.method;
-      const message = error?.message;
-      const isAuthRelated = typeof url === 'string' && (url.includes('/auth/login') || url.includes('/auth/register') || url.includes('/auth/logout'));
+  async (error) => {
+    const originalRequest = error?.config;
+    const status = error?.response?.status;
+    const url = originalRequest?.url || '';
 
-      // Keep noise low: log only meaningful API failures.
-      if (!isAuthRelated && (status >= 500 || status === 401 || status === 403 || status === 429)) {
+    // Auto-refresh: if 401 and not already a refresh/login/register/logout request
+    const isAuthEndpoint = typeof url === 'string' && (
+      url.includes('/auth/login') ||
+      url.includes('/auth/register') ||
+      url.includes('/auth/logout') ||
+      url.includes('/auth/refresh')
+    );
+
+    if (status === 401 && !isAuthEndpoint && !originalRequest?._retry) {
+      if (isRefreshing) {
+        // Queue this request until refresh completes
+        return new Promise((resolve, reject) => {
+          addRefreshSubscriber((err?: any) => {
+            if (err) return reject(err);
+            originalRequest._retry = true;
+            resolve(api(originalRequest));
+          });
+        });
+      }
+
+      isRefreshing = true;
+      originalRequest._retry = true;
+
+      try {
+        await api.post('/auth/refresh');
+        isRefreshing = false;
+        onRefreshed();
+        // Retry the original request
+        return api(originalRequest);
+      } catch (refreshError) {
+        isRefreshing = false;
+        onRefreshed(refreshError);
+        // Refresh failed — user needs to re-login
+        return Promise.reject(error);
+      }
+    }
+
+    // Standard error logging
+    try {
+      const method = originalRequest?.method;
+      const message = error?.message;
+
+      if (!isAuthEndpoint && (status >= 500 || status === 401 || status === 403 || status === 429)) {
         qaLog({
           level: 'IMPORTANT',
           type: 'api_error',

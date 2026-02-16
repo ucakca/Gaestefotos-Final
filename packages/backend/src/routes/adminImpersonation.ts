@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
+import { auditLog, AuditType } from '../services/auditLogger';
 
 const router = Router();
 
@@ -30,6 +31,11 @@ router.post('/token', authMiddleware, requireRole('ADMIN', 'SUPERADMIN'), async 
     return res.status(404).json({ error: 'User not found' });
   }
 
+  // Prevent impersonating other admins
+  if (target.role === 'ADMIN') {
+    return res.status(403).json({ error: 'Cannot impersonate another admin' });
+  }
+
   const ttlSeconds = data.expiresInSeconds ?? 60 * 15;
 
   const ipHashSecret = String(process.env.IP_HASH_SECRET || process.env.JWT_SECRET || '').trim();
@@ -52,6 +58,8 @@ router.post('/token', authMiddleware, requireRole('ADMIN', 'SUPERADMIN'), async 
     jwtSecret,
     { expiresIn: ttlSeconds }
   );
+
+  auditLog({ type: AuditType.ADMIN_IMPERSONATION, message: `Admin impersoniert User: ${target.email}`, data: { targetUserId: target.id, targetEmail: target.email, reason: data.reason, ttlSeconds }, req });
 
   res.json({
     token,

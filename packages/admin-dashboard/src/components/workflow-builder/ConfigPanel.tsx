@@ -1,8 +1,10 @@
 'use client';
 
 import { X, Settings, Trash2 } from 'lucide-react';
+import type { Node } from '@xyflow/react';
 import type { WorkflowNodeData, ConfigField } from './types';
 import { getStepType } from './types';
+import ConditionSuggestions from './ConditionSuggestions';
 
 interface ConfigPanelProps {
   nodeId: string;
@@ -11,9 +13,10 @@ interface ConfigPanelProps {
   onUpdateLabel: (nodeId: string, label: string) => void;
   onDelete: (nodeId: string) => void;
   onClose: () => void;
+  allNodes?: Node[];
 }
 
-export default function ConfigPanel({ nodeId, data, onUpdate, onUpdateLabel, onDelete, onClose }: ConfigPanelProps) {
+export default function ConfigPanel({ nodeId, data, onUpdate, onUpdateLabel, onDelete, onClose, allNodes }: ConfigPanelProps) {
   const stepDef = getStepType(data.type);
   const fields = stepDef?.configFields || [];
 
@@ -72,6 +75,17 @@ export default function ConfigPanel({ nodeId, data, onUpdate, onUpdateLabel, onD
 
         {fields.length === 0 && (
           <p className="text-xs text-muted-foreground/70 italic">Keine konfigurierbaren Einstellungen für diesen Step.</p>
+        )}
+
+        {/* Smart Condition Suggestions */}
+        {(data.type === 'CONDITION' || data.type === 'SWITCH') && allNodes && (
+          <ConditionSuggestions
+            nodes={allNodes}
+            currentNodeId={nodeId}
+            onApply={(field, operator, value) => {
+              onUpdate(nodeId, { ...data.config, field, operator, value });
+            }}
+          />
         )}
       </div>
 

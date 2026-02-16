@@ -52,9 +52,9 @@ export default function CoHostsStep({ emails, onEmailsChange, onNext, onSkip, on
         <p className="text-muted-foreground">Lade Co-Hosts ein, die dir beim Moderieren helfen</p>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
-        <h3 className="font-medium text-blue-900">Co-Hosts können:</h3>
-        <ul className="space-y-1 text-sm text-blue-800">
+      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 space-y-2">
+        <h3 className="font-medium text-foreground">Co-Hosts können:</h3>
+        <ul className="space-y-1 text-sm text-foreground">
           <li className="flex items-center gap-2">
             <Check className="w-4 h-4" />
             Fotos genehmigen/löschen

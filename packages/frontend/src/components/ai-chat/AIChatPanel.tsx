@@ -107,7 +107,7 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
           className="fixed bottom-24 right-4 w-[360px] max-w-[calc(100vw-2rem)] h-[500px] max-h-[70vh] bg-card rounded-2xl shadow-2xl border border-border flex flex-col overflow-hidden z-50"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+          <div className="flex items-center justify-between px-4 py-3 bg-warning text-warning-foreground">
             <div className="flex items-center gap-3">
               <AIBotIcon size={32} className="text-white" />
               <div>
@@ -133,7 +133,7 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
                 <div
                   className={`max-w-[85%] px-4 py-2 rounded-2xl ${
                     message.role === 'user'
-                      ? 'bg-amber-500 text-white rounded-br-md'
+                      ? 'bg-warning text-warning-foreground rounded-br-md'
                       : 'bg-muted text-foreground rounded-bl-md'
                   }`}
                 >
@@ -146,7 +146,7 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
               <div className="flex justify-start">
                 <div className="bg-muted px-4 py-3 rounded-2xl rounded-bl-md">
                   <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
+                    <Loader2 className="w-4 h-4 animate-spin text-warning" />
                     <span className="text-sm text-muted-foreground">Denke nach...</span>
                   </div>
                 </div>
@@ -172,7 +172,7 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
-                className="p-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 bg-warning text-warning-foreground rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Send className="w-4 h-4" />
               </button>

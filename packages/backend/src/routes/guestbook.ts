@@ -6,6 +6,7 @@ import prisma from '../config/database';
 import { AuthRequest, authMiddleware, optionalAuthMiddleware, requireEventAccess, hasEventAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
 import { getErrorMessage } from '../utils/typeHelpers';
+import { auditLog, AuditType } from '../services/auditLogger';
 import { storageService } from '../services/storage';
 import { imageProcessor } from '../services/imageProcessor';
 import { validateUploadedFile } from '../middleware/uploadSecurity';
@@ -533,6 +534,8 @@ router.post(
       logger.warn('Guestbook WebSocket emit failed', { error: (wsErr as Error).message });
     }
 
+    auditLog({ type: AuditType.GUESTBOOK_ENTRY_CREATED, message: `Gästebuch-Eintrag von ${entry.authorName || 'Anonym'}`, eventId, data: { entryId: entry.id }, req, level: 'DEBUG' });
+
     // Gamification: auto-check achievements (async, non-blocking)
     const visitorId = req.userId || entry.authorName || 'anonymous';
     checkAchievements(eventId, visitorId, entry.authorName || 'Anonym').catch(() => {});
@@ -588,6 +591,8 @@ router.post('/guestbook/:entryId/:action', authMiddleware, async (req: AuthReque
       },
     });
 
+    auditLog({ type: AuditType.GUESTBOOK_ENTRY_MODERATED, message: `Gästebuch-Eintrag ${action === 'approve' ? 'freigegeben' : 'abgelehnt'}`, eventId: entry.eventId, data: { entryId, action }, req });
+
     res.json(serializeBigInt({ entry: updatedEntry }));
   } catch (error) {
     logger.error('Fehler beim Aktualisieren des Eintrags:', error);
@@ -623,6 +628,8 @@ router.delete('/guestbook/:entryId', authMiddleware, async (req: AuthRequest, re
     await (prisma as any).guestbookEntry.delete({
       where: { id: entryId },
     });
+
+    auditLog({ type: AuditType.GUESTBOOK_ENTRY_DELETED, message: `Gästebuch-Eintrag gelöscht: ${entry.authorName || 'Anonym'}`, eventId: entry.eventId, data: { entryId, authorName: entry.authorName }, req });
 
     res.json({ message: 'Eintrag gelöscht' });
   } catch (error) {

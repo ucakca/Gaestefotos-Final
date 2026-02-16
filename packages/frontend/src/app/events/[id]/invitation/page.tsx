@@ -1,8 +1,20 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { InvitationEditorPanel } from '@/components/invitation-editor/InvitationEditorPanel';
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
+
+const InvitationEditorPanel = dynamic(
+  () => import('@/components/invitation-editor/InvitationEditorPanel').then(mod => mod.InvitationEditorPanel),
+  { ssr: false, loading: () => (
+    <div className="flex items-center justify-center h-screen">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Editor wird geladen...</p>
+      </div>
+    </div>
+  )}
+);
 
 export default function InvitationEditorPage() {
   const params = useParams();

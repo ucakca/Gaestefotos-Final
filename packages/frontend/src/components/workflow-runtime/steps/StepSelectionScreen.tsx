@@ -40,7 +40,7 @@ export function StepSelectionScreen({ node, onComplete }: StepRendererProps) {
               output.type === 'default'
                 ? 'bg-primary text-white border-primary'
                 : output.type === 'skip'
-                ? 'bg-amber-50 text-amber-700 border-amber-200 hover:border-amber-400'
+                ? 'bg-warning/10 text-warning border-warning/30 hover:border-warning/50'
                 : 'bg-card text-foreground border-border hover:border-primary/50'
             }`}
           >

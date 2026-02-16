@@ -1,7 +1,26 @@
 import { Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
+import { RedisStore } from 'rate-limit-redis';
 import { logger } from '../utils/logger';
 import prisma from '../config/database';
+import { getRedis } from '../services/cache/redis';
+
+/**
+ * Create a Redis-backed store for rate limiting (multi-instance safe).
+ * Falls back to in-memory if Redis is unavailable.
+ */
+function createRedisStore(prefix: string) {
+  try {
+    const client = getRedis();
+    return new RedisStore({
+      sendCommand: (...args: string[]) => (client as any).call(...(args as [string, ...string[]])) as any,
+      prefix: `rl:${prefix}:`,
+    });
+  } catch (err) {
+    logger.warn(`[RateLimit] Redis store creation failed for '${prefix}', using in-memory fallback`, { error: err });
+    return undefined; // express-rate-limit defaults to MemoryStore
+  }
+}
 
 // Helper: Check if running in development mode
 const isDev = () => process.env.NODE_ENV === 'development';
@@ -16,6 +35,7 @@ export const apiLimiter: any = rateLimit({
   message: 'Zu viele Anfragen, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('api'),
   // Skip rate limiting for file requests (they are served via proxy)
   skip: (req: Request) => {
     if (req.path.includes('/file') || req.path.includes('/photo/')) return true;
@@ -31,6 +51,7 @@ export const authLimiter: any = rateLimit({
   message: 'Zu viele Anmeldeversuche, bitte versuchen Sie es in 15 Minuten erneut.',
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('auth'),
 });
 
 // Dedicated limiter for WordPress SSO bridge (WP → App)
@@ -41,6 +62,7 @@ export const wordpressSsoLimiter: any = rateLimit({
   message: 'Zu viele SSO-Anfragen, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('wp-sso'),
 });
 
 export const twoFactorVerifyLimiter: any = rateLimit({
@@ -50,6 +72,7 @@ export const twoFactorVerifyLimiter: any = rateLimit({
   message: 'Zu viele 2FA-Versuche, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('2fa-verify'),
   handler: (req: Request, res: Response) => {
     logRateLimitHit('2fa:verify', req);
     res.status(429).json({ error: 'Zu viele 2FA-Versuche, bitte versuchen Sie es später erneut.' });
@@ -63,6 +86,7 @@ export const twoFactorSetupLimiter: any = rateLimit({
   message: 'Zu viele 2FA-Setup-Versuche, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('2fa-setup'),
   handler: (req: Request, res: Response) => {
     logRateLimitHit('2fa:setup', req);
     res.status(429).json({ error: 'Zu viele 2FA-Setup-Versuche, bitte versuchen Sie es später erneut.' });
@@ -76,6 +100,7 @@ export const uploadLimiter: any = rateLimit({
   message: 'Zu viele Uploads, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('upload'),
 });
 
 function getEventIdFromRequest(req: any): string | null {
@@ -139,6 +164,7 @@ function logRateLimitHit(label: string, req: any) {
 
 export const photoUploadIpLimiter: any = rateLimit({
   windowMs: 5 * 60 * 1000,
+  store: createRedisStore('photo-ip'),
   max: (req: Request) => {
     const override = Number((req as any)?.uploadRateLimits?.photoIpMax);
     const base = Number.isFinite(override) && override > 0 ? override : 120;
@@ -155,6 +181,7 @@ export const photoUploadIpLimiter: any = rateLimit({
 
 export const photoUploadEventLimiter: any = rateLimit({
   windowMs: 5 * 60 * 1000,
+  store: createRedisStore('photo-event'),
   max: (req: Request) => {
     const override = Number((req as any)?.uploadRateLimits?.photoEventMax);
     const base = Number.isFinite(override) && override > 0 ? override : 1000;
@@ -176,6 +203,7 @@ export const photoUploadEventLimiter: any = rateLimit({
 
 export const videoUploadIpLimiter: any = rateLimit({
   windowMs: 10 * 60 * 1000,
+  store: createRedisStore('video-ip'),
   max: (req: Request) => {
     const override = Number((req as any)?.uploadRateLimits?.videoIpMax);
     const base = Number.isFinite(override) && override > 0 ? override : 20;
@@ -192,6 +220,7 @@ export const videoUploadIpLimiter: any = rateLimit({
 
 export const videoUploadEventLimiter: any = rateLimit({
   windowMs: 10 * 60 * 1000,
+  store: createRedisStore('video-event'),
   max: (req: Request) => {
     const override = Number((req as any)?.uploadRateLimits?.videoEventMax);
     const base = Number.isFinite(override) && override > 0 ? override : 150;
@@ -218,6 +247,7 @@ export const passwordLimiter: any = rateLimit({
   message: 'Zu viele Passwort-Versuche, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('password'),
   // Skip in E2E to avoid test flakiness
   skip: (req: Request) => process.env.E2E === 'true',
 });
@@ -230,6 +260,7 @@ export const adminAuthLimiter: any = rateLimit({
   message: 'Zu viele Anmeldeversuche, bitte versuchen Sie es in 15 Minuten erneut.',
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('admin-auth'),
 });
 
 // SMS sending limiter — prevent abuse of paid Twilio API
@@ -239,6 +270,7 @@ export const smsLimiter: any = rateLimit({
   message: 'Zu viele SMS-Anfragen, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('sms'),
   handler: (req: Request, res: Response) => {
     logRateLimitHit('sms:send', req);
     res.status(429).json({ error: 'Zu viele SMS-Anfragen, bitte versuchen Sie es später erneut.' });
@@ -252,6 +284,7 @@ export const paymentLimiter: any = rateLimit({
   message: 'Zu viele Zahlungsanfragen, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('payment'),
   handler: (req: Request, res: Response) => {
     logRateLimitHit('payment:session', req);
     res.status(429).json({ error: 'Zu viele Zahlungsanfragen, bitte versuchen Sie es später erneut.' });
@@ -265,6 +298,7 @@ export const leadLimiter: any = rateLimit({
   message: 'Zu viele Anfragen, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('lead'),
   handler: (req: Request, res: Response) => {
     logRateLimitHit('lead:create', req);
     res.status(429).json({ error: 'Zu viele Anfragen, bitte versuchen Sie es später erneut.' });
@@ -278,6 +312,7 @@ export const aiFeatureLimiter: any = rateLimit({
   message: 'Zu viele KI-Anfragen, bitte versuchen Sie es später erneut.',
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('ai'),
   handler: (req: Request, res: Response) => {
     logRateLimitHit('ai:feature', req);
     res.status(429).json({ error: 'Zu viele KI-Anfragen, bitte versuchen Sie es später erneut.' });
@@ -291,6 +326,7 @@ export const pushSubscribeLimiter: any = rateLimit({
   message: 'Zu viele Push-Anfragen.',
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('push'),
   handler: (req: Request, res: Response) => {
     logRateLimitHit('push:subscribe', req);
     res.status(429).json({ error: 'Zu viele Push-Anfragen.' });
@@ -304,6 +340,7 @@ export const analyticsLimiter: any = rateLimit({
   message: 'Zu viele Analytics-Anfragen.',
   standardHeaders: true,
   legacyHeaders: false,
+  store: createRedisStore('analytics'),
   handler: (req: Request, res: Response) => {
     logRateLimitHit('analytics', req);
     res.status(429).json({ error: 'Zu viele Analytics-Anfragen.' });

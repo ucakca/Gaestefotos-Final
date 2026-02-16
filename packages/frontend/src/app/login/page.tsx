@@ -181,7 +181,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             loading={isSubmitting}
-            className="w-full text-background py-3 rounded-lg font-medium transition-colors bg-primary hover:opacity-90"
+            className="w-full py-3 rounded-xl"
           >
             Anmelden
           </Button>

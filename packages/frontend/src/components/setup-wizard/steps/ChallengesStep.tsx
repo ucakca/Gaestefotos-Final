@@ -112,7 +112,7 @@ export default function ChallengesStep({
             value={customTitle}
             onChange={(e) => setCustomTitle(e.target.value)}
             placeholder="Challenge-Titel (z.B. 'Bestes Selfie')"
-            className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-warning"
             autoFocus
           />
           <input
@@ -120,7 +120,7 @@ export default function ChallengesStep({
             value={customDescription}
             onChange={(e) => setCustomDescription(e.target.value)}
             placeholder="Beschreibung (optional)"
-            className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-warning"
           />
           <div className="flex gap-2">
             <button
@@ -132,7 +132,7 @@ export default function ChallengesStep({
             <button
               onClick={handleAddCustomChallenge}
               disabled={!customTitle.trim()}
-              className="flex-1 py-2 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-2 text-sm bg-warning text-warning-foreground rounded-lg hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Hinzufügen
             </button>
@@ -210,7 +210,7 @@ export default function ChallengesStep({
             transition={{ delay: index * 0.05 }}
             className={`p-4 rounded-xl border-2 transition-colors ${
               challenge.enabled
-                ? 'border-amber-200 bg-amber-50'
+                ? 'border-warning/30 bg-warning/10'
                 : 'border-border bg-card'
             }`}
           >
@@ -219,7 +219,7 @@ export default function ChallengesStep({
                 onClick={() => handleToggleChallenge(challenge.id)}
                 className={`mt-1 w-6 h-6 rounded-lg border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
                   challenge.enabled
-                    ? 'border-amber-500 bg-amber-500'
+                    ? 'border-warning bg-warning'
                     : 'border-border'
                 }`}
               >
@@ -232,7 +232,7 @@ export default function ChallengesStep({
               
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <Trophy className={`w-4 h-4 ${challenge.enabled ? 'text-amber-600' : 'text-muted-foreground'}`} />
+                  <Trophy className={`w-4 h-4 ${challenge.enabled ? 'text-warning' : 'text-muted-foreground'}`} />
                   <span className={`font-medium ${challenge.enabled ? 'text-foreground' : 'text-muted-foreground'}`}>
                     {challenge.title}
                   </span>
@@ -281,7 +281,7 @@ export default function ChallengesStep({
           </Button>
           <Button
             onClick={onNext}
-            className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+            className="flex-1 bg-warning hover:opacity-90 text-warning-foreground"
           >
             Weiter
             <ArrowRight className="w-4 h-4 ml-2" />

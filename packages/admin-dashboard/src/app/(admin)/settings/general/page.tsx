@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Settings, Save, Loader2, RefreshCw } from 'lucide-react';
 import api from '@/lib/api';
+import { PageTransition } from '@/components/ui/PageTransition';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
@@ -74,17 +75,21 @@ export default function GeneralSettingsPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6">
+    <PageTransition className="mx-auto w-full max-w-3xl space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-app-fg flex items-center gap-2">
-            <Settings className="w-6 h-6 text-app-accent" />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-500 to-slate-600 flex items-center justify-center shadow-md shadow-gray-500/20">
+            <Settings className="w-5 h-5 text-white" />
+          </div>
+          <div>
+          <h1 className="text-2xl font-bold tracking-tight text-app-fg">
             Allgemeine Einstellungen
           </h1>
-          <p className="mt-1 text-sm text-app-muted">
+          <p className="text-sm text-app-muted">
             Globale App-Einstellungen verwalten
           </p>
+          </div>
         </div>
         <div className="flex gap-2">
           {hasChanges && (
@@ -155,6 +160,6 @@ export default function GeneralSettingsPage() {
           💡 <strong>Hinweis:</strong> Änderungen werden sofort auf allen Seiten wirksam.
         </p>
       </div>
-    </div>
+    </PageTransition>
   );
 }

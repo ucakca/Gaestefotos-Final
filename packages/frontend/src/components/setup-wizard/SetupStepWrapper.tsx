@@ -50,18 +50,18 @@ export default function SetupStepWrapper({
       className="flex flex-col h-full"
     >
       {/* Header with Breadcrumb */}
-      <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b border-stone-200 px-4 py-3">
+      <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="p-2 -ml-2 rounded-lg hover:bg-stone-100 transition-colors"
+            className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors"
           >
-            <ChevronLeft className="w-5 h-5 text-stone-500" />
+            <ChevronLeft className="w-5 h-5 text-muted-foreground" />
           </button>
           <div className="flex-1 min-w-0">
-            <h2 className="font-semibold text-stone-800 truncate">{title}</h2>
+            <h2 className="font-semibold text-foreground truncate">{title}</h2>
             {description && (
-              <p className="text-xs text-stone-500 truncate">{description}</p>
+              <p className="text-xs text-muted-foreground truncate">{description}</p>
             )}
           </div>
         </div>
@@ -73,14 +73,14 @@ export default function SetupStepWrapper({
       </div>
 
       {/* Footer with Save Button */}
-      <div className="sticky bottom-0 bg-card/95 backdrop-blur-sm border-t border-stone-200 p-4">
+      <div className="sticky bottom-0 bg-card/95 backdrop-blur-sm border-t border-border p-4">
         <Button
           onClick={handleSave}
           disabled={!isValid || saving}
           className={`w-full justify-center gap-2 ${
             saved 
               ? 'bg-success/100 hover:bg-success' 
-              : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600'
+              : 'bg-warning hover:opacity-90'
           } text-white disabled:opacity-50`}
         >
           {saving ? (

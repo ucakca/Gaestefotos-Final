@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
+import { PageTransition } from '@/components/ui/PageTransition';
 
 interface CacheStats {
   cacheSize: number;
@@ -127,17 +128,17 @@ export default function AiCachePage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
+    <PageTransition className="mx-auto w-full max-w-6xl space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-app-fg flex items-center gap-2">
-            <Database className="w-6 h-6 text-app-accent" />
-            AI Cache Verwaltung
-          </h1>
-          <p className="mt-1 text-sm text-app-muted">
-            Offline-Fähigkeit und Cache-Performance verwalten
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-md shadow-cyan-500/20">
+            <Database className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-app-fg">AI Cache Verwaltung</h1>
+            <p className="text-sm text-app-muted">Offline-Fähigkeit und Cache-Performance verwalten</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           {isOnline ? (
@@ -330,6 +331,6 @@ export default function AiCachePage() {
           </p>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }

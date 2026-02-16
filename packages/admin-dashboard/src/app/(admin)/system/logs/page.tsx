@@ -21,6 +21,7 @@ import {
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { PageTransition } from '@/components/ui/PageTransition';
 
 interface LogEntry {
   id: string;
@@ -192,17 +193,17 @@ export default function LogsPage() {
   const hasActiveFilters = search || levelFilter !== 'all' || typeFilter || methodFilter !== 'all' || eventIdFilter || startDate || endDate;
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-6">
+    <PageTransition className="mx-auto w-full max-w-7xl space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-app-fg flex items-center gap-2">
-            <FileText className="w-6 h-6 text-app-accent" />
-            System Logs
-          </h1>
-          <p className="mt-1 text-sm text-app-muted">
-            {total.toLocaleString('de-DE')} Einträge gesamt
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-500 to-gray-600 flex items-center justify-center shadow-md shadow-slate-500/20">
+            <FileText className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-app-fg">System Logs</h1>
+            <p className="text-sm text-app-muted">{total.toLocaleString('de-DE')} Einträge gesamt</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={() => setShowStats(!showStats)}>
@@ -506,6 +507,6 @@ export default function LogsPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 }

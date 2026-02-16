@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
+import { PageTransition } from '@/components/ui/PageTransition';
 import toast from 'react-hot-toast';
 
 interface AnalysisResult {
@@ -93,17 +94,17 @@ export default function AIAnalysePage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
+    <PageTransition className="mx-auto w-full max-w-4xl space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-app-fg flex items-center gap-2">
-            <Bot className="w-6 h-6 text-app-accent" />
-            AI Log Analyse
-          </h1>
-          <p className="mt-1 text-sm text-app-muted">
-            KI-gestützte Fehleranalyse und Empfehlungen
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-md shadow-pink-500/20">
+            <Bot className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-app-fg">AI Log Analyse</h1>
+            <p className="text-sm text-app-muted">KI-gestützte Fehleranalyse und Empfehlungen</p>
+          </div>
         </div>
       </div>
 
@@ -235,6 +236,6 @@ export default function AIAnalysePage() {
           </p>
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 }

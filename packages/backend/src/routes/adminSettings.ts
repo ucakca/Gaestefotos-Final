@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
+import { auditLog, AuditType } from '../services/auditLogger';
 
 const router = Router();
 
@@ -37,6 +38,8 @@ router.post('/general', authMiddleware, requireRole('ADMIN'), async (req: AuthRe
     create: { key: GENERAL_KEY, value: parsed.data as any },
     update: { value: parsed.data as any },
   });
+
+  auditLog({ type: AuditType.ADMIN_SETTINGS_CHANGED, message: 'Allgemeine Einstellungen geändert', data: parsed.data, req });
 
   res.json({ settings: settings.value });
 });

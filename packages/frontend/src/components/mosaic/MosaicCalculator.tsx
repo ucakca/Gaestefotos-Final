@@ -121,17 +121,17 @@ export default function MosaicCalculator({ onSelectPreset, className = '' }: Mos
       </div>
 
       {/* Results */}
-      <div className="bg-purple-50 rounded-xl p-4 space-y-3">
+      <div className="bg-purple-500/10 rounded-xl p-4 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Erwartete Fotos</span>
-          <span className="font-bold text-purple-700">{result.expectedPhotos}</span>
+          <span className="font-bold text-purple-500">{result.expectedPhotos}</span>
         </div>
 
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Empfohlenes Board</span>
           <button
             onClick={() => onSelectPreset?.(result.recommended.w, result.recommended.h)}
-            className="font-bold text-purple-700 hover:underline flex items-center gap-1"
+            className="font-bold text-purple-500 hover:underline flex items-center gap-1"
           >
             <LayoutGrid className="w-3.5 h-3.5" />
             {result.recommended.label} ({result.recommended.w}x{result.recommended.h} = {result.recommended.tiles} Tiles)
@@ -146,7 +146,7 @@ export default function MosaicCalculator({ onSelectPreset, className = '' }: Mos
         {result.needsAutoFill && (
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Auto-Fill nötig</span>
-            <span className="font-medium text-amber-600">{result.autoFillCount} Tiles ({result.autoFillPercent}%)</span>
+            <span className="font-medium text-warning">{result.autoFillCount} Tiles ({result.autoFillPercent}%)</span>
           </div>
         )}
 
@@ -161,7 +161,7 @@ export default function MosaicCalculator({ onSelectPreset, className = '' }: Mos
         </div>
 
         {/* Recommendation */}
-        <div className="pt-2 border-t border-purple-200">
+        <div className="pt-2 border-t border-purple-500/20">
           <div className="flex items-start gap-2 text-sm">
             <Info className="w-4 h-4 text-purple-500 mt-0.5 shrink-0" />
             <span className="text-muted-foreground">

@@ -15,7 +15,7 @@ import PhotoLightbox from '@/components/e3/PhotoLightbox';
 import StoriesBar from '@/components/guest/StoriesBar';
 import StickyHeader from '@/components/e3/StickyHeader';
 import JumpToTop from '@/components/e3/JumpToTop';
-import UploadModal from '@/components/e3/UploadModal';
+// UploadModal replaced by WorkflowUploadModal (loaded dynamically below)
 import QRCodeShare from '@/components/e3/QRCodeShare';
 import SlideshowMode from '@/components/e3/SlideshowMode';
 import LeaderboardOverlay from '@/components/e3/LeaderboardOverlay';
@@ -33,6 +33,7 @@ import { LoadMoreIndicator } from '@/components/ui/LoadMoreIndicator';
 import { PasswordGate } from '@/components/ui/PasswordGate';
 import { Section } from '@/components/ui/Section';
 import { motion, AnimatePresence } from 'framer-motion';
+import { EventThemeProvider } from '@/components/event-theme/EventThemeProvider';
 import { Trophy, Play, X } from 'lucide-react';
 import { useGuestEventData } from '@/hooks/useGuestEventData';
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
@@ -43,8 +44,10 @@ import { useAuthStore } from '@/store/authStore';
 import { useToastStore } from '@/store/toastStore';
 
 const StoryViewer = dynamic(() => import('@/components/guest/StoryViewer'), { ssr: false });
-const FaceSearch = dynamic(() => import('@/components/FaceSearch'), { ssr: false });
+// FaceSearch replaced by WorkflowFaceSearchModal
 const MosaicPrintUpload = dynamic(() => import('@/components/mosaic/MosaicPrintUpload'), { ssr: false });
+const WorkflowUploadModal = dynamic(() => import('@/components/workflow-runtime/WorkflowUploadModal'), { ssr: false });
+const WorkflowFaceSearchModal = dynamic(() => import('@/components/workflow-runtime/WorkflowFaceSearchModal'), { ssr: false });
 
 export default function PublicEventPageV2() {
   const params = useParams();
@@ -299,7 +302,11 @@ export default function PublicEventPageV2() {
 
   const totalPhotos = filteredPhotos.length;
 
+  const eventTheme = (event as any)?.theme || null;
+  const customThemeData = (event as any)?.customThemeData || null;
+
   return (
+    <EventThemeProvider theme={eventTheme} customOverrides={customThemeData}>
     <main className="relative min-h-screen bg-background">
       <StickyHeader
         hostAvatar={event?.designConfig?.profileImage || '/placeholder.svg'}
@@ -387,11 +394,7 @@ export default function PublicEventPageV2() {
             </Section>
           )}
 
-          {faceSearchOpen && featuresConfig?.faceSearch !== false && (
-            <Section>
-              <FaceSearch eventId={event.id} />
-            </Section>
-          )}
+          {/* Face Search now handled by WorkflowFaceSearchModal below */}
 
           {/* V0 Photo Grid (Masonry) */}
           <div className="px-4 pb-24">
@@ -505,9 +508,13 @@ export default function PublicEventPageV2() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 350 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) setLiveSheetOpen(false); }}
               className="fixed bottom-0 left-0 right-0 z-[61] bg-card rounded-t-3xl shadow-2xl"
             >
-              <div className="flex justify-center pt-3 pb-1">
+              <div className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
                 <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
               </div>
               <div className="px-6 pb-2">
@@ -563,9 +570,13 @@ export default function PublicEventPageV2() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 350 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) setFotospassOpen(false); }}
               className="fixed bottom-0 left-0 right-0 z-[56] bg-card rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto"
             >
-              <div className="flex justify-center pt-3 pb-1">
+              <div className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
                 <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
               </div>
               <div className="px-6 pb-2 flex items-center justify-between">
@@ -631,7 +642,13 @@ export default function PublicEventPageV2() {
 
       {/* UploadFAB hidden — camera is now in center nav button */}
 
-      <UploadModal
+      <WorkflowFaceSearchModal
+        isOpen={faceSearchOpen && featuresConfig?.faceSearch !== false}
+        onClose={() => setFaceSearchOpen(false)}
+        eventId={event?.id || ''}
+      />
+
+      <WorkflowUploadModal
         isOpen={uploadModalOpen}
         onClose={() => {
           setUploadModalOpen(false);
@@ -644,10 +661,10 @@ export default function PublicEventPageV2() {
         challengeTitle={uploadChallengeTitle}
         onUploadSuccess={() => {
           reloadPhotos();
-          setUploadModalOpen(false);
           setUploadChallengeId(null);
           setUploadChallengeTitle(null);
         }}
+        flowType={uploadChallengeTitle === 'KI Foto-Stil' ? 'KI_KUNST' : 'UPLOAD'}
       />
 
       <QRCodeShare
@@ -689,5 +706,6 @@ export default function PublicEventPageV2() {
         )}
       </AnimatePresence>
     </main>
+    </EventThemeProvider>
   );
 }

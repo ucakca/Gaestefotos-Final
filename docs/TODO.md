@@ -179,7 +179,7 @@
 
 | # | Feature | Status | Priorität | Beschreibung |
 |---|---------|--------|-----------|--------------|
-| NF-1 | **Admin Log-System** | ⏳ offen | HIGH | Umfangreiches Logging mit Filter-Funktion. Wichtig für Event-Debugging! Zeigt was passiert wenn Buttons gedrückt werden. Für AI-Analyse und Troubleshooting. |
+| NF-1 | **Admin Log-System** | ✅ erledigt | HIGH | auditLogger Service + Hooks in auth/events/photos/uploads/guestbook/adminUsers. Fire-and-forget Logging in QaLogEvent. Admin UI unter /system/logs. |
 | NF-2 | **Workflow Builder Erweiterung** | ⏳ offen | HIGH | Alle existierenden Workflows über Builder bearbeitbar. Fixe Workflows sperren mit Entsperr-Option. Multi-Session Support für Events mit mehreren Geräten. Auch für `app.gästefotos.com` aktiv. |
 | NF-3 | **SMS Sharing** | ⏳ offen | MEDIUM | Noch zu besprechen: Wie funktioniert SMS-Versand? Gateway? Kosten? |
 | NF-4 | **Face Recognition Erweiterung** | ⏳ offen | MEDIUM | Face-Api/DeepFace erweitern — bessere Genauigkeit, mehr Features |

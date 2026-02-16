@@ -310,6 +310,174 @@ function getDefaultColorSchemes(eventType: string): {
   return defaults[eventType] || defaultSchemes;
 }
 
+// ─── Theme Generation ────────────────────────────────────────
+
+export interface GeneratedThemeColors {
+  primary: string;
+  secondary: string;
+  accent: string;
+  background: string;
+  surface: string;
+  text: string;
+  textMuted: string;
+}
+
+export interface GeneratedThemeAnimation {
+  type: string;
+  duration: number;
+  easing: string;
+}
+
+export interface GeneratedThemeAnimations {
+  entrance: GeneratedThemeAnimation;
+  hover: GeneratedThemeAnimation;
+  ambient: GeneratedThemeAnimation | null;
+}
+
+export interface GeneratedThemeFonts {
+  heading: string;
+  body: string;
+  accent: string;
+}
+
+export interface GeneratedTheme {
+  name: string;
+  colors: GeneratedThemeColors;
+  animations: GeneratedThemeAnimations;
+  fonts: GeneratedThemeFonts;
+  wallLayout: string;
+  tasteScore: number;
+}
+
+/**
+ * Generate event themes based on event type and optional context.
+ * Uses withAiCache for automatic caching (30 day TTL).
+ */
+export const suggestTheme = withAiCache<
+  { eventType: string; season?: string; location?: string },
+  GeneratedTheme[]
+>(
+  'suggest-theme',
+  async ({ eventType, season, location }) => {
+    const systemPrompt = `Du bist ein Event-Theme-Designer für eine Foto-Sharing-App.
+Generiere 3 moderne, geschmackvolle Themes als JSON-Array.
+
+ANTI-KITSCH-REGELN (strikt einhalten!):
+- Max 3 Hauptfarben + 2 Neutraltöne (background, surface)
+- Max 3 Animationstypen (entrance, hover, ambient)
+- Keine Neon-Farben auf hellem Hintergrund
+- Keine Comic-Schriften (Comic Sans, Papyrus, etc.)
+- Ein Statement-Element pro Theme (nicht mehr!)
+- Farben als HEX-Werte
+- tasteScore 0-100 (selbstkritisch bewerten)
+
+Erlaubte Animation-Types:
+entrance: fadeIn, fadeUp, fadeScale, slideUp, bounceIn, popIn, growIn
+hover: lift, scale, glow, neonGlow, shimmer, sparkle, underline, borderHighlight, gradientShift, softBounce, wiggle, warmGlow
+ambient: floatingPetals, confetti, colorShift, fallingLeaves (oder null für keine)
+
+Erlaubte wallLayout: masonry, grid
+
+Antworte NUR mit einem JSON-Array von 3 Theme-Objekten.`;
+
+    let prompt = `Generiere 3 Theme-Varianten für ein "${eventType}" Event`;
+    if (season) prompt += ` im ${season}`;
+    if (location) prompt += `, Location: ${location}`;
+    prompt += `.
+
+Für jedes Theme:
+{
+  "name": "Kurzer Name (2-3 Wörter)",
+  "colors": { "primary": "#hex", "secondary": "#hex", "accent": "#hex", "background": "#hex", "surface": "#hex", "text": "#hex", "textMuted": "#hex" },
+  "animations": { "entrance": { "type": "...", "duration": 300-600, "easing": "easeOut" }, "hover": { "type": "...", "duration": 150-400, "easing": "easeInOut" }, "ambient": null },
+  "fonts": { "heading": "Google Font Name", "body": "Google Font Name", "accent": "Google Font Name" },
+  "wallLayout": "masonry",
+  "tasteScore": 70-95
+}`;
+
+    const response = await generateCompletion(prompt, systemPrompt, {
+      temperature: 0.8,
+      maxTokens: 2000,
+    });
+
+    // Parse response — handle markdown code blocks
+    let content = response.content.trim();
+    if (content.startsWith('```')) {
+      content = content.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+    }
+
+    const themes = JSON.parse(content);
+    if (!Array.isArray(themes)) return [];
+
+    // Validate and sanitize each theme
+    return themes.filter((t: any) =>
+      t.name && t.colors?.primary && t.fonts?.heading && typeof t.tasteScore === 'number'
+    ).map((t: any) => ({
+      name: t.name,
+      colors: {
+        primary: t.colors.primary,
+        secondary: t.colors.secondary || t.colors.primary,
+        accent: t.colors.accent || t.colors.primary,
+        background: t.colors.background || '#FFFFFF',
+        surface: t.colors.surface || '#FAFAFA',
+        text: t.colors.text || '#1A1A1A',
+        textMuted: t.colors.textMuted || '#6B7280',
+      },
+      animations: {
+        entrance: t.animations?.entrance || { type: 'fadeIn', duration: 300, easing: 'easeOut' },
+        hover: t.animations?.hover || { type: 'lift', duration: 200, easing: 'easeInOut' },
+        ambient: t.animations?.ambient || null,
+      },
+      fonts: {
+        heading: t.fonts.heading,
+        body: t.fonts.body || t.fonts.heading,
+        accent: t.fonts.accent || t.fonts.heading,
+      },
+      wallLayout: t.wallLayout || 'masonry',
+      tasteScore: Math.min(100, Math.max(0, t.tasteScore)),
+    }));
+  },
+  { fallback: ({ eventType }) => getDefaultThemes(eventType) }
+);
+
+function getDefaultThemes(eventType: string): GeneratedTheme[] {
+  const base: GeneratedTheme = {
+    name: 'Classic Elegant',
+    colors: {
+      primary: '#374151', secondary: '#9CA3AF', accent: '#6366F1',
+      background: '#F9FAFB', surface: '#FFFFFF', text: '#111827', textMuted: '#6B7280',
+    },
+    animations: {
+      entrance: { type: 'fadeIn', duration: 300, easing: 'easeOut' },
+      hover: { type: 'lift', duration: 200, easing: 'easeInOut' },
+      ambient: null,
+    },
+    fonts: { heading: 'Inter', body: 'Inter', accent: 'Inter' },
+    wallLayout: 'masonry',
+    tasteScore: 75,
+  };
+
+  const themeMap: Record<string, GeneratedTheme[]> = {
+    wedding: [
+      { ...base, name: 'Elegant Ivory', colors: { ...base.colors, primary: '#8B7355', secondary: '#D4C5B2', accent: '#C9A96E', background: '#FDFBF7' }, fonts: { heading: 'Playfair Display', body: 'Lato', accent: 'Cormorant Garamond' } },
+      { ...base, name: 'Romantic Blush', colors: { ...base.colors, primary: '#C48B9F', secondary: '#E8D5DC', accent: '#9B6B7A', background: '#FFF8FA' }, fonts: { heading: 'Cormorant Garamond', body: 'Nunito Sans', accent: 'Dancing Script' } },
+      { ...base, name: 'Modern Minimal', colors: { ...base.colors, primary: '#1A1A1A', secondary: '#F5F5F0', accent: '#D4AF37' }, fonts: { heading: 'Inter', body: 'Inter', accent: 'Space Grotesk' }, wallLayout: 'grid' },
+    ],
+    party: [
+      { ...base, name: 'Vibrant Sunset', colors: { ...base.colors, primary: '#FF6B35', secondary: '#FFD166', accent: '#EF476F', background: '#FFF9F0' }, fonts: { heading: 'Poppins', body: 'Poppins', accent: 'Righteous' } },
+      { ...base, name: 'Confetti Pop', colors: { ...base.colors, primary: '#FF4081', secondary: '#FFD740', accent: '#536DFE' }, fonts: { heading: 'Fredoka One', body: 'Nunito', accent: 'Baloo 2' }, animations: { ...base.animations, ambient: { type: 'confetti', duration: 5000, easing: 'linear' } } },
+      { ...base, name: 'Neon Night', colors: { ...base.colors, primary: '#7B2FF7', secondary: '#1A1A2E', accent: '#00D4FF', background: '#0F0F1A', surface: '#1A1A2E', text: '#E8E8F0', textMuted: '#8888AA' }, fonts: { heading: 'Space Grotesk', body: 'Inter', accent: 'Orbitron' }, wallLayout: 'grid' },
+    ],
+    business: [
+      { ...base, name: 'Professional Slate', colors: { ...base.colors, primary: '#1E293B', secondary: '#475569', accent: '#3B82F6', background: '#F8FAFC' }, wallLayout: 'grid' },
+      { ...base, name: 'Tech Gradient', colors: { ...base.colors, primary: '#6366F1', secondary: '#818CF8', accent: '#06B6D4', background: '#0F172A', surface: '#1E293B', text: '#F1F5F9', textMuted: '#94A3B8' }, fonts: { heading: 'Space Grotesk', body: 'Inter', accent: 'JetBrains Mono' }, wallLayout: 'grid' },
+      { ...base, name: 'Clean White', colors: { ...base.colors, primary: '#111827', accent: '#10B981' }, fonts: { heading: 'Plus Jakarta Sans', body: 'Inter', accent: 'Inter' }, wallLayout: 'grid' },
+    ],
+  };
+
+  return themeMap[eventType] || [base, { ...base, name: 'Warm Classic', colors: { ...base.colors, primary: '#92400E', accent: '#D97706', background: '#FFFBEB' } }, { ...base, name: 'Cool Modern', colors: { ...base.colors, primary: '#1E40AF', accent: '#06B6D4' } }];
+}
+
 export default {
   generateCompletion,
   suggestAlbums,
@@ -318,5 +486,6 @@ export default {
   suggestChallenges,
   suggestGuestbookMessage,
   suggestColorScheme,
+  suggestTheme,
   complete,
 };

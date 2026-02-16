@@ -275,7 +275,7 @@ export default function MosaicWizard({ eventId }: Props) {
                 <Sparkles className="w-5 h-5 text-purple-600 shrink-0" />
                 Mosaic Wall
                 {isDemo && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-warning/15 text-warning font-semibold">
                     DEMO
                   </span>
                 )}
@@ -284,7 +284,7 @@ export default function MosaicWizard({ eventId }: Props) {
             {wall && (
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
                 wall.status === 'ACTIVE' ? 'bg-success/15 text-success' :
-                wall.status === 'COMPLETED' ? 'bg-blue-100 text-blue-700' :
+                wall.status === 'COMPLETED' ? 'bg-blue-500/15 text-blue-500' :
                 'bg-muted text-muted-foreground'
               }`}>
                 {wall.status === 'ACTIVE' ? 'Aktiv' : wall.status === 'COMPLETED' ? 'Fertig' : 'Entwurf'}

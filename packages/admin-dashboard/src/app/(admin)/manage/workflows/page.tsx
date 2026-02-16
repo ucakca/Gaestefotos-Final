@@ -23,13 +23,18 @@ import {
   FileDown, ChevronLeft, List, Workflow,
   Camera, Wand2, Printer, Gamepad2, QrCode,
   Lock, Unlock, Copy, History, Shield, RotateCcw,
+  ShieldCheck, Play, Undo2, Redo2,
 } from 'lucide-react';
 import WorkflowNodeComponent from '@/components/workflow-builder/WorkflowNode';
 import StepPalette from '@/components/workflow-builder/StepPalette';
 import ConfigPanel from '@/components/workflow-builder/ConfigPanel';
+import ValidationPanel from '@/components/workflow-builder/ValidationPanel';
+import SimulationPanel from '@/components/workflow-builder/SimulationPanel';
+import { validateWorkflow, type ValidationResult } from '@/components/workflow-builder/validation';
 import { WORKFLOW_PRESETS } from '@/components/workflow-builder/presets';
 import type { StepTypeDefinition, WorkflowNodeData } from '@/components/workflow-builder/types';
 import api from '@/lib/api';
+import toast from 'react-hot-toast';
 
 const nodeTypes = { workflowStep: WorkflowNodeComponent };
 
@@ -78,6 +83,14 @@ function WorkflowEditorInner() {
   const [showBackups, setShowBackups] = useState<string | null>(null);
   const [backups, setBackups] = useState<any[]>([]);
 
+  // Phase 1: Validation, Simulation, Undo/Redo
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const [showSimulation, setShowSimulation] = useState(false);
+  const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(null);
+  const [undoStack, setUndoStack] = useState<{ nodes: Node[]; edges: Edge[] }[]>([]);
+  const [redoStack, setRedoStack] = useState<{ nodes: Node[]; edges: Edge[] }[]>([]);
+  const lastSnapshotRef = useRef<string>('');
+
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   // ─── Load workflows ───
@@ -94,6 +107,90 @@ function WorkflowEditorInner() {
   }, []);
 
   useEffect(() => { loadWorkflows(); }, [loadWorkflows]);
+
+  // ─── Undo/Redo snapshot tracking ───
+  const pushSnapshot = useCallback(() => {
+    const snap = JSON.stringify({ nodes, edges });
+    if (snap === lastSnapshotRef.current) return;
+    lastSnapshotRef.current = snap;
+    setUndoStack((prev) => [...prev.slice(-29), { nodes: JSON.parse(snap).nodes, edges: JSON.parse(snap).edges }]);
+    setRedoStack([]);
+  }, [nodes, edges]);
+
+  // Track changes with debounce
+  useEffect(() => {
+    if (showList || showPresets) return;
+    const timer = setTimeout(pushSnapshot, 500);
+    return () => clearTimeout(timer);
+  }, [nodes, edges, showList, showPresets, pushSnapshot]);
+
+  const handleUndo = useCallback(() => {
+    if (undoStack.length < 2) return;
+    const prev = undoStack[undoStack.length - 2];
+    const current = undoStack[undoStack.length - 1];
+    setRedoStack((r) => [...r, current]);
+    setUndoStack((u) => u.slice(0, -1));
+    setNodes(prev.nodes);
+    setEdges(prev.edges);
+    lastSnapshotRef.current = JSON.stringify(prev);
+  }, [undoStack, setNodes, setEdges]);
+
+  const handleRedo = useCallback(() => {
+    if (redoStack.length === 0) return;
+    const next = redoStack[redoStack.length - 1];
+    setRedoStack((r) => r.slice(0, -1));
+    setUndoStack((u) => [...u, next]);
+    setNodes(next.nodes);
+    setEdges(next.edges);
+    lastSnapshotRef.current = JSON.stringify(next);
+  }, [redoStack, setNodes, setEdges]);
+
+  // Keyboard shortcuts: Ctrl+Z = Undo, Ctrl+Shift+Z = Redo
+  useEffect(() => {
+    if (showList || showPresets) return;
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) handleRedo();
+        else handleUndo();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [showList, showPresets, handleUndo, handleRedo]);
+
+  // ─── Validation handler ───
+  const handleValidate = useCallback(() => {
+    const result = validateWorkflow(nodes, edges, workflowName);
+    setValidationResult(result);
+    if (result.valid && result.warnings.length === 0) {
+      toast.success('Workflow ist valide');
+    } else if (result.valid) {
+      toast(`${result.warnings.length} Warnung(en)`, { icon: '⚠️' });
+    } else {
+      toast.error(`${result.errors.length} Fehler gefunden`);
+    }
+  }, [nodes, edges, workflowName]);
+
+  // ─── Focus node (from validation/simulation) ───
+  const handleFocusNode = useCallback((nodeId: string) => {
+    setSelectedNodeId(nodeId);
+    setHighlightedNodeId(nodeId);
+    const node = nodes.find((n: Node) => n.id === nodeId);
+    if (node) {
+      fitView({ nodes: [node], padding: 0.5, duration: 300 });
+    }
+    setTimeout(() => setHighlightedNodeId(null), 2000);
+  }, [nodes, fitView]);
+
+  // ─── Simulation highlight ───
+  const handleSimHighlight = useCallback((nodeId: string | null) => {
+    setHighlightedNodeId(nodeId);
+    if (nodeId) {
+      const node = nodes.find((n: Node) => n.id === nodeId);
+      if (node) fitView({ nodes: [node], padding: 0.8, duration: 200 });
+    }
+  }, [nodes, fitView]);
 
   // ─── Edge connect ───
   const onConnect = useCallback((connection: Connection) => {
@@ -249,9 +346,28 @@ function WorkflowEditorInner() {
     setTimeout(() => fitView({ padding: 0.2 }), 100);
   }, [setNodes, setEdges, fitView]);
 
-  // ─── Save ───
+  // ─── Save (with validation) ───
   const handleSave = useCallback(async () => {
-    if (!workflowName.trim() || nodes.length === 0) return;
+    if (!workflowName.trim()) {
+      toast.error('Bitte einen Workflow-Namen eingeben');
+      return;
+    }
+    if (nodes.length === 0) {
+      toast.error('Workflow hat keine Steps');
+      return;
+    }
+
+    // Run validation
+    const vResult = validateWorkflow(nodes, edges, workflowName);
+    if (!vResult.valid) {
+      setValidationResult(vResult);
+      toast.error(`${vResult.errors.length} Validierungsfehler — bitte beheben`);
+      return;
+    }
+    if (vResult.warnings.length > 0) {
+      setValidationResult(vResult);
+    }
+
     try {
       setSaving(true);
       const payload = {
@@ -265,15 +381,16 @@ function WorkflowEditorInner() {
 
       if (editingId) {
         await api.put(`/workflows/${editingId}`, payload);
+        toast.success('Workflow gespeichert');
       } else {
         await api.post('/workflows', payload);
+        toast.success('Workflow erstellt');
       }
 
       await loadWorkflows();
       setShowList(true);
-    } catch (err) {
-      console.error('Save failed', err);
-      alert('Fehler beim Speichern!');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Fehler beim Speichern');
     } finally {
       setSaving(false);
     }
@@ -281,35 +398,39 @@ function WorkflowEditorInner() {
 
   // ─── Delete ───
   const handleDelete = useCallback(async (id: string) => {
-    if (!confirm('Workflow wirklich löschen?')) return;
+    const confirmed = window.confirm('Workflow wirklich löschen?');
+    if (!confirmed) return;
     try {
       await api.delete(`/workflows/${id}`);
+      toast.success('Workflow gelöscht');
       await loadWorkflows();
-    } catch (err) {
-      console.error('Delete failed', err);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Fehler beim Löschen');
     }
   }, [loadWorkflows]);
 
   // ─── Lock / Unlock ───
   const handleLock = useCallback(async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Workflow sperren? Es wird ein Backup erstellt.')) return;
+    if (!window.confirm('Workflow sperren? Es wird ein Backup erstellt.')) return;
     try {
       await api.post(`/workflows/${id}/lock`);
+      toast.success('Workflow gesperrt');
       await loadWorkflows();
-    } catch (err) {
-      console.error('Lock failed', err);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Fehler beim Sperren');
     }
   }, [loadWorkflows]);
 
   const handleUnlock = useCallback(async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Workflow entsperren? Es wird ein Backup erstellt.')) return;
+    if (!window.confirm('Workflow entsperren? Es wird ein Backup erstellt.')) return;
     try {
       await api.post(`/workflows/${id}/unlock`);
+      toast.success('Workflow entsperrt');
       await loadWorkflows();
-    } catch (err) {
-      console.error('Unlock failed', err);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Fehler beim Entsperren');
     }
   }, [loadWorkflows]);
 
@@ -318,9 +439,10 @@ function WorkflowEditorInner() {
     e.stopPropagation();
     try {
       await api.post(`/workflows/${id}/duplicate`);
+      toast.success('Workflow dupliziert');
       await loadWorkflows();
-    } catch (err) {
-      console.error('Duplicate failed', err);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Fehler beim Duplizieren');
     }
   }, [loadWorkflows]);
 
@@ -331,20 +453,60 @@ function WorkflowEditorInner() {
       const { data } = await api.get(`/workflows/${id}/backups`);
       setBackups(data.backups || []);
       setShowBackups(id);
-    } catch (err) {
-      console.error('Load backups failed', err);
+    } catch (err: any) {
+      toast.error('Backups konnten nicht geladen werden');
     }
   }, []);
 
   const handleRestore = useCallback(async (workflowId: string, backupId: string) => {
-    if (!confirm('Workflow auf dieses Backup zurücksetzen?')) return;
+    if (!window.confirm('Workflow auf dieses Backup zurücksetzen?')) return;
     try {
       await api.post(`/workflows/${workflowId}/restore/${backupId}`);
+      toast.success('Backup wiederhergestellt');
       await loadWorkflows();
       setShowBackups(null);
-    } catch (err) {
-      console.error('Restore failed', err);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Fehler beim Wiederherstellen');
     }
+  }, [loadWorkflows]);
+
+  // ─── Export ───
+  const handleExport = useCallback(async (id: string, name: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const { data } = await api.get(`/workflows/${id}/export`);
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${name.replace(/[^a-zA-Z0-9-_]/g, '_')}.workflow.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Workflow exportiert');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Export fehlgeschlagen');
+    }
+  }, []);
+
+  // ─── Import ───
+  const handleImport = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,.workflow.json';
+    input.onchange = async (e: any) => {
+      const file = e.target?.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        await api.post('/workflows/import', data);
+        toast.success('Workflow importiert');
+        await loadWorkflows();
+      } catch (err: any) {
+        toast.error(err?.response?.data?.error || 'Import fehlgeschlagen — ungültiges Format?');
+      }
+    };
+    input.click();
   }, [loadWorkflows]);
 
   // ─── New workflow ───
@@ -371,6 +533,42 @@ function WorkflowEditorInner() {
 
   const selectedNode = selectedNodeId ? nodes.find((n: Node) => n.id === selectedNodeId) : null;
 
+  // ─── Analytics data ───
+  const [analyticsData, setAnalyticsData] = useState<{ totalWorkflows: number; totalEventsUsing: number; totalPhotosViaWorkflows: number; mostUsed: any } | null>(null);
+  const [listTab, setListTab] = useState<'workflows' | 'templates'>('workflows');
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+
+  useEffect(() => {
+    if (!showList) return;
+    api.get('/workflows/meta/analytics').then(({ data }) => setAnalyticsData(data.summary)).catch(() => {});
+  }, [showList]);
+
+  const loadTemplates = useCallback(async () => {
+    setTemplatesLoading(true);
+    try {
+      const { data } = await api.get('/workflows/meta/templates');
+      setTemplates(data.templates || []);
+    } catch { /* ignore */ } finally {
+      setTemplatesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (listTab === 'templates') loadTemplates();
+  }, [listTab, loadTemplates]);
+
+  const handleUseTemplate = useCallback(async (templateId: string) => {
+    try {
+      await api.post(`/workflows/${templateId}/duplicate`);
+      toast.success('Template als Workflow übernommen');
+      setListTab('workflows');
+      await loadWorkflows();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Fehler beim Übernehmen');
+    }
+  }, [loadWorkflows]);
+
   // ──────────────────────────────────────────────────────────────────────────
   // RENDER: Workflow List
   // ──────────────────────────────────────────────────────────────────────────
@@ -386,16 +584,113 @@ function WorkflowEditorInner() {
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">Visuelle Booth-Abläufe erstellen und verwalten</p>
           </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleImport}
+              className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-muted-foreground border border-border rounded-lg hover:bg-muted/50 transition-colors"
+            >
+              <FileDown className="w-4 h-4" />
+              Import
+            </button>
+            <button
+              onClick={handleNew}
+              className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              Neuer Workflow
+            </button>
+          </div>
+        </div>
+
+        {/* Analytics Stats */}
+        {analyticsData && (
+          <div className="flex gap-4 px-6 py-3 bg-card/50 border-b border-border">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Workflow className="w-3.5 h-3.5" />
+              <span className="font-semibold text-foreground">{analyticsData.totalWorkflows}</span> Workflows
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground">{analyticsData.totalEventsUsing}</span> Events nutzen Workflows
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground">{analyticsData.totalPhotosViaWorkflows.toLocaleString()}</span> Fotos
+            </div>
+            {analyticsData.mostUsed && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground ml-auto">
+                Meistgenutzt: <span className="font-semibold text-foreground">{analyticsData.mostUsed.name}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div className="flex gap-1 px-6 pt-3 bg-card/50">
           <button
-            onClick={handleNew}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            onClick={() => setListTab('workflows')}
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${listTab === 'workflows' ? 'border-blue-500 text-blue-600 bg-card' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
           >
-            <Plus className="w-4 h-4" />
-            Neuer Workflow
+            Meine Workflows
+          </button>
+          <button
+            onClick={() => setListTab('templates')}
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors ${listTab === 'templates' ? 'border-blue-500 text-blue-600 bg-card' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+          >
+            Template-Marktplatz
           </button>
         </div>
 
-        {/* List */}
+        {/* Template Marketplace */}
+        {listTab === 'templates' && (
+          <div className="flex-1 overflow-y-auto p-6">
+            {templatesLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground/70" />
+              </div>
+            ) : templates.length === 0 ? (
+              <div className="text-center py-20">
+                <Workflow className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+                <p className="text-muted-foreground mb-2">Noch keine Templates veröffentlicht</p>
+                <p className="text-xs text-muted-foreground/70">Veröffentliche Workflows als Template über die Aktions-Buttons in deiner Workflow-Liste</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl">
+                {templates.map((tmpl) => {
+                  const ft = FLOW_TYPE_OPTIONS.find(f => f.value === tmpl.flowType);
+                  return (
+                    <div key={tmpl.id} className="bg-card rounded-xl border border-border p-5 hover:shadow-md hover:border-blue-300 transition-all">
+                      <div className="flex items-center gap-2 mb-2">
+                        {ft && <span className="text-lg">{ft.icon}</span>}
+                        <h3 className="font-semibold text-foreground truncate">{tmpl.name}</h3>
+                      </div>
+                      {tmpl.description && (
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{tmpl.description}</p>
+                      )}
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {ft && <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{ft.label}</span>}
+                        {tmpl.isSystem && <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700">System</span>}
+                        {(tmpl.tags || []).map((t: string) => (
+                          <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">{t}</span>
+                        ))}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground/70">v{tmpl.version} · {tmpl._count?.events || 0} Events</span>
+                        <button
+                          onClick={() => handleUseTemplate(tmpl.id)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700"
+                        >
+                          <Copy className="w-3 h-3" /> Verwenden
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Workflow List */}
+        {listTab === 'workflows' && (
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="flex items-center justify-center py-20">
@@ -477,6 +772,9 @@ function WorkflowEditorInner() {
                         <button onClick={(e) => handleDuplicate(wf.id, e)} className="p-2 rounded-lg hover:bg-muted text-muted-foreground/70" title="Duplizieren">
                           <Copy className="w-4 h-4" />
                         </button>
+                        <button onClick={(e) => handleExport(wf.id, wf.name, e)} className="p-2 rounded-lg hover:bg-muted text-muted-foreground/70" title="Exportieren">
+                          <FileDown className="w-4 h-4" />
+                        </button>
                         <button onClick={(e) => loadBackups(wf.id, e)} className="p-2 rounded-lg hover:bg-muted text-muted-foreground/70" title="Backups">
                           <History className="w-4 h-4" />
                         </button>
@@ -495,6 +793,7 @@ function WorkflowEditorInner() {
             </div>
           )}
         </div>
+        )}
 
         {/* Backup Panel Overlay */}
         {showBackups && (
@@ -653,6 +952,42 @@ function WorkflowEditorInner() {
             <FolderOpen className="w-3.5 h-3.5" />
             Vorlagen
           </button>
+          <div className="w-px h-6 bg-border" />
+          <button
+            onClick={handleUndo}
+            disabled={undoStack.length < 2}
+            className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 disabled:opacity-30"
+            title="Rückgängig (Ctrl+Z)"
+          >
+            <Undo2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handleRedo}
+            disabled={redoStack.length === 0}
+            className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/50 disabled:opacity-30"
+            title="Wiederholen (Ctrl+Shift+Z)"
+          >
+            <Redo2 className="w-4 h-4" />
+          </button>
+          <div className="w-px h-6 bg-border" />
+          <button
+            onClick={handleValidate}
+            disabled={nodes.length === 0}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-muted-foreground border border-border rounded-lg hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 disabled:opacity-30"
+            title="Workflow validieren"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Validieren
+          </button>
+          <button
+            onClick={() => setShowSimulation(!showSimulation)}
+            disabled={nodes.length === 0}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs border rounded-lg disabled:opacity-30 ${showSimulation ? 'bg-violet-100 text-violet-700 border-violet-300' : 'text-muted-foreground border-border hover:bg-violet-50 hover:text-violet-700 hover:border-violet-300'}`}
+            title="Test-Modus"
+          >
+            <Play className="w-3.5 h-3.5" />
+            Test
+          </button>
           <button
             onClick={handleSave}
             disabled={saving || isLocked || !workflowName.trim() || nodes.length === 0}
@@ -672,7 +1007,7 @@ function WorkflowEditorInner() {
         </div>
 
         {/* Center: React Flow Canvas */}
-        <div className="flex-1" ref={reactFlowWrapper}>
+        <div className="flex-1 relative" ref={reactFlowWrapper}>
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -736,6 +1071,25 @@ function WorkflowEditorInner() {
               </Panel>
             )}
           </ReactFlow>
+
+          {/* Validation Panel Overlay */}
+          {validationResult && (
+            <ValidationPanel
+              result={validationResult}
+              onClose={() => setValidationResult(null)}
+              onFocusNode={handleFocusNode}
+            />
+          )}
+
+          {/* Simulation Panel Overlay */}
+          {showSimulation && (
+            <SimulationPanel
+              nodes={nodes}
+              edges={edges}
+              onClose={() => { setShowSimulation(false); setHighlightedNodeId(null); }}
+              onHighlightNode={handleSimHighlight}
+            />
+          )}
         </div>
 
         {/* Right: Config Panel */}
@@ -748,6 +1102,7 @@ function WorkflowEditorInner() {
               onUpdateLabel={handleUpdateLabel}
               onDelete={handleDeleteNode}
               onClose={() => setSelectedNodeId(null)}
+              allNodes={nodes}
             />
           </div>
         )}

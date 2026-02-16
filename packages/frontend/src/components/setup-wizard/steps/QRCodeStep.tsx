@@ -98,7 +98,7 @@ export default function QRCodeStep({
               onClick={handleDownloadQR}
               variant="ghost"
               size="sm"
-              className="text-amber-600"
+              className="text-warning"
               disabled={downloading}
             >
               {downloading ? (
@@ -126,16 +126,16 @@ export default function QRCodeStep({
         >
           <button
             onClick={handleOpenDesigner}
-            className="w-full flex items-center justify-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 hover:border-purple-300 rounded-xl transition-all group"
+            className="w-full flex items-center justify-center gap-3 p-4 bg-purple-500/10 border-2 border-purple-500/20 hover:border-purple-500/30 rounded-xl transition-all group"
           >
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
               <Palette className="w-5 h-5 text-white" />
             </div>
             <div className="text-left">
-              <span className="font-semibold text-purple-700 block">QR-Code Designer öffnen</span>
-              <span className="text-xs text-purple-500">Logo, Farben & Formate anpassen</span>
+              <span className="font-semibold text-foreground block">QR-Code Designer öffnen</span>
+              <span className="text-xs text-muted-foreground">Logo, Farben & Formate anpassen</span>
             </div>
-            <ExternalLink className="w-5 h-5 text-purple-400 group-hover:text-purple-600 transition-colors" />
+            <ExternalLink className="w-5 h-5 text-purple-500 group-hover:text-purple-400 transition-colors" />
           </button>
         </motion.div>
       )}
@@ -145,9 +145,9 @@ export default function QRCodeStep({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.25 }}
-        className="bg-amber-50 border border-amber-100 rounded-xl p-4"
+        className="bg-warning/10 border border-warning/20 rounded-xl p-4"
       >
-        <p className="text-sm text-amber-700">
+        <p className="text-sm text-foreground">
           💡 <strong>Tipp:</strong> Drucke den QR-Code auf Tischkarten, Plakate oder Einladungen. 
           Im Designer kannst du Farben, Logo und Format individuell anpassen.
         </p>
@@ -167,7 +167,7 @@ export default function QRCodeStep({
           </Button>
           <Button
             onClick={onNext}
-            className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+            className="flex-1 bg-warning hover:opacity-90 text-warning-foreground"
           >
             Weiter
             <ArrowRight className="w-4 h-4 ml-2" />

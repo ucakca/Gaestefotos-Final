@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
+import { PageTransition } from '@/components/ui/PageTransition';
 
 interface HealthCheck {
   name: string;
@@ -141,17 +142,21 @@ export default function HealthPage() {
     : 0;
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
+    <PageTransition className="mx-auto w-full max-w-4xl space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-app-fg flex items-center gap-2">
-            <Server className="w-6 h-6 text-app-accent" />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-md shadow-red-500/20">
+            <Server className="w-5 h-5 text-white" />
+          </div>
+          <div>
+          <h1 className="text-2xl font-bold tracking-tight text-app-fg">
             System Health
           </h1>
-          <p className="mt-1 text-sm text-app-muted">
+          <p className="text-sm text-app-muted">
             Echtzeit-Systemstatus und Diagnostik
           </p>
+          </div>
         </div>
         <Button size="sm" variant="outline" onClick={load} disabled={loading}>
           <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
@@ -280,6 +285,6 @@ export default function HealthPage() {
           </div>
         </>
       ) : null}
-    </div>
+    </PageTransition>
   );
 }

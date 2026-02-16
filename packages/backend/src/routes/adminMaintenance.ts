@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
 import { getMaintenanceMode, setMaintenanceMode } from '../middleware/maintenanceMode';
+import { auditLog, AuditType } from '../services/auditLogger';
 
 const router = Router();
 
@@ -19,6 +20,9 @@ router.put('/', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, r
   const data = updateSchema.parse(req.body);
   await setMaintenanceMode(!!data.enabled, data.message ?? null);
   const { enabled, message } = await getMaintenanceMode();
+
+  auditLog({ type: AuditType.MAINTENANCE_MODE_CHANGED, message: `Wartungsmodus ${enabled ? 'aktiviert' : 'deaktiviert'}`, data: { enabled, message }, req });
+
   res.json({ enabled, message: message || null, success: true });
 });
 

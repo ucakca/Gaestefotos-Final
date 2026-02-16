@@ -29,9 +29,9 @@ export interface Challenge {
 
 const TYPE_CONFIG: Record<string, { icon: any; gradient: string; badge: string; badgeColor: string }> = {
   PHOTOBOMB: { icon: Bomb, gradient: 'from-red-500 to-pink-500', badge: 'Spiel', badgeColor: 'bg-destructive/15 text-destructive' },
-  COVER_SHOOT: { icon: BookOpen, gradient: 'from-emerald-500 to-teal-500', badge: 'Spiel', badgeColor: 'bg-emerald-100 text-emerald-700' },
-  EMOJI_CHALLENGE: { icon: SmilePlus, gradient: 'from-amber-500 to-yellow-500', badge: 'Spiel', badgeColor: 'bg-amber-100 text-amber-700' },
-  FILTER_ROULETTE: { icon: Sparkles, gradient: 'from-purple-500 to-violet-500', badge: 'Spiel', badgeColor: 'bg-purple-100 text-purple-700' },
+  COVER_SHOOT: { icon: BookOpen, gradient: 'from-emerald-500 to-teal-500', badge: 'Spiel', badgeColor: 'bg-emerald-500/15 text-emerald-500' },
+  EMOJI_CHALLENGE: { icon: SmilePlus, gradient: 'from-amber-500 to-yellow-500', badge: 'Spiel', badgeColor: 'bg-warning/15 text-warning' },
+  FILTER_ROULETTE: { icon: Sparkles, gradient: 'from-purple-500 to-violet-500', badge: 'Spiel', badgeColor: 'bg-purple-500/15 text-purple-500' },
   PHOTO: { icon: Camera, gradient: 'from-yellow-500 to-orange-500', badge: '', badgeColor: '' },
 };
 

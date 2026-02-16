@@ -9,6 +9,7 @@ import { randomString, slugify, generateEventSlug, DEFAULT_EVENT_FEATURES_CONFIG
 
 import { logger } from '../utils/logger';
 import { getErrorMessage, getJsonField } from '../utils/typeHelpers';
+import { auditLog, AuditType } from '../services/auditLogger';
 import { DesignConfig, FeaturesConfig } from '../schemas/jsonFields';
 import { getActiveEventEntitlement, getEffectiveEventPackage, getEventUsageBreakdown, bigintToString } from '../services/packageLimits';
 import { getEventFeatures } from '../services/featureGate';
@@ -1208,6 +1209,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
             name: true,
           },
         },
+        theme: true,
         _count: {
           select: {
             photos: true,
@@ -1246,6 +1248,7 @@ router.get('/slug/:slug', async (req: AuthRequest, res: Response) => {
             name: true,
           },
         },
+        theme: true,
         _count: {
           select: {
             photos: true,
@@ -1625,6 +1628,8 @@ router.post(
           }
         }
       }
+
+      auditLog({ type: AuditType.EVENT_CREATED, message: `Event erstellt: ${event.title}`, eventId: event.id, req });
 
       res.status(201).json({ event, id: event.id });
     } catch (error) {
@@ -2097,6 +2102,8 @@ router.delete(
         where: { id: req.params.id },
       });
 
+      auditLog({ type: AuditType.EVENT_DELETED, message: `Event gelöscht: ${existingEvent.title}`, eventId: req.params.id, data: { title: existingEvent.title }, req });
+
       res.json({ message: 'Event deleted' });
     } catch (error) {
       logger.error('Delete event error', { message: getErrorMessage(error), eventId: req.params.id });
@@ -2400,19 +2407,34 @@ router.post('/:id/qr/save-design', authMiddleware, async (req: AuthRequest, res:
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    // TODO: qrDesign table not in schema - return mock
-    const design = {
-      eventId: id,
-      template,
-      format,
-      headline,
-      subline,
-      eventName,
-      callToAction,
-      bgColor,
-      textColor,
-      logoUrl,
-    };
+    const design = await prisma.qrDesign.upsert({
+      where: { eventId: id },
+      create: {
+        eventId: id,
+        templateSlug: template,
+        format,
+        headline,
+        subline,
+        eventName,
+        callToAction,
+        bgColor,
+        textColor,
+        accentColor,
+        logoUrl,
+      },
+      update: {
+        templateSlug: template,
+        format,
+        headline,
+        subline,
+        eventName,
+        callToAction,
+        bgColor,
+        textColor,
+        accentColor,
+        logoUrl,
+      },
+    });
 
     res.json(design);
   } catch (error) {

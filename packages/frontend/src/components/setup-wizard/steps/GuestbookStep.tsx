@@ -64,12 +64,12 @@ export default function GuestbookStep({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className={`p-4 rounded-xl border-2 transition-colors ${
-          enabled ? 'border-amber-200 bg-amber-50' : 'border-border bg-card'
+          enabled ? 'border-warning/30 bg-warning/10' : 'border-border bg-card'
         }`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <BookOpen className={`w-6 h-6 ${enabled ? 'text-amber-600' : 'text-muted-foreground'}`} />
+            <BookOpen className={`w-6 h-6 ${enabled ? 'text-warning' : 'text-muted-foreground'}`} />
             <div>
               <p className="font-medium text-foreground">Gästebuch aktivieren</p>
               <p className="text-sm text-muted-foreground">Gäste können Nachrichten schreiben</p>
@@ -78,7 +78,7 @@ export default function GuestbookStep({
           <button
             onClick={() => onEnabledChange(!enabled)}
             className={`w-12 h-7 rounded-full transition-colors relative ${
-              enabled ? 'bg-amber-500' : 'bg-background'
+              enabled ? 'bg-warning' : 'bg-background'
             }`}
           >
             <motion.div
@@ -124,7 +124,7 @@ export default function GuestbookStep({
                 value={message}
                 onChange={(e) => onMessageChange(e.target.value)}
                 placeholder="z.B. Herzlich willkommen! Schreibt uns eure Glückwünsche..."
-                className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-amber-500 focus:outline-none resize-none"
+                className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-warning focus:outline-none resize-none bg-background text-foreground"
                 rows={3}
               />
               <button
@@ -145,9 +145,9 @@ export default function GuestbookStep({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="bg-blue-50 border border-blue-100 rounded-xl p-4"
+          className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4"
         >
-          <p className="text-sm text-blue-700">
+          <p className="text-sm text-foreground">
             💡 <strong>Tipp:</strong> Gästebuch-Einträge können Text und optional Sprachnachrichten enthalten.
           </p>
         </motion.div>
@@ -167,7 +167,7 @@ export default function GuestbookStep({
           </Button>
           <Button
             onClick={onNext}
-            className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+            className="flex-1 bg-warning hover:opacity-90 text-warning-foreground"
           >
             Weiter
             <ArrowRight className="w-4 h-4 ml-2" />

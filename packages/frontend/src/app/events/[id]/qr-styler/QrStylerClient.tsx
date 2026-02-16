@@ -356,10 +356,29 @@ export default function QrStylerClient({ eventId: initialEventId }: { eventId: s
               qrCornerStyle: cfg.qrCornerStyle || prev.qrCornerStyle,
             }));
           } else {
-            setDesign(prev => ({ ...prev, eventName: ev?.title || '' }));
+            // Apply theme colors as defaults when no saved config exists
+            const themeColors = ev?.theme?.colors;
+            setDesign(prev => ({
+              ...prev,
+              eventName: ev?.title || '',
+              ...(themeColors ? {
+                accentColor: themeColors.accent || prev.accentColor,
+                textColor: themeColors.text || prev.textColor,
+                qrColor: themeColors.primary || prev.qrColor,
+              } : {}),
+            }));
           }
         } catch {
-          setDesign(prev => ({ ...prev, eventName: ev?.title || '' }));
+          const themeColors = ev?.theme?.colors;
+          setDesign(prev => ({
+            ...prev,
+            eventName: ev?.title || '',
+            ...(themeColors ? {
+              accentColor: themeColors.accent || prev.accentColor,
+              textColor: themeColors.text || prev.textColor,
+              qrColor: themeColors.primary || prev.qrColor,
+            } : {}),
+          }));
         }
         
         didLoadRef.current = true;

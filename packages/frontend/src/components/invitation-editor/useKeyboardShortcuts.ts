@@ -9,6 +9,7 @@ interface UseKeyboardShortcutsProps {
   onMove: (id: string, dx: number, dy: number) => void;
   onCopy: () => void;
   onPaste: () => void;
+  onSelectAll?: (ids: string[]) => void;
   disabled?: boolean;
 }
 
@@ -20,6 +21,7 @@ export function useKeyboardShortcuts({
   onMove,
   onCopy,
   onPaste,
+  onSelectAll,
   disabled = false,
 }: UseKeyboardShortcutsProps) {
   useEffect(() => {
@@ -99,10 +101,12 @@ export function useKeyboardShortcuts({
         return;
       }
 
-      // Select all (future feature)
+      // Select all
       if (cmdOrCtrl && e.key === 'a') {
         e.preventDefault();
-        // TODO: Select all elements
+        if (onSelectAll && elements.length > 0) {
+          onSelectAll(elements.map(el => el.id));
+        }
         return;
       }
     };
@@ -112,5 +116,5 @@ export function useKeyboardShortcuts({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedElementId, elements, onDelete, onDuplicate, onMove, onCopy, onPaste, disabled]);
+  }, [selectedElementId, elements, onDelete, onDuplicate, onMove, onCopy, onPaste, onSelectAll, disabled]);
 }

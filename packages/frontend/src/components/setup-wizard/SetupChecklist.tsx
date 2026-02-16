@@ -71,9 +71,9 @@ export default function SetupChecklist({
                     disabled={!canClick}
                     className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors ${
                       status === 'active'
-                        ? 'bg-amber-50'
+                        ? 'bg-warning/10'
                         : status === 'completed'
-                        ? 'bg-success/10/50 hover:bg-success/10'
+                        ? 'bg-success/10 hover:bg-success/15'
                         : 'hover:bg-background'
                     } ${!canClick ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                     whileTap={canClick ? { scale: 0.98 } : {}}
@@ -83,7 +83,7 @@ export default function SetupChecklist({
                       status === 'completed'
                         ? 'bg-success/100'
                         : status === 'active'
-                        ? 'bg-orange-500'
+                        ? 'bg-warning'
                         : 'bg-border'
                     }`}>
                       <AnimatePresence mode="wait">
@@ -117,7 +117,7 @@ export default function SetupChecklist({
                       status === 'completed'
                         ? 'text-success'
                         : status === 'active'
-                        ? 'text-orange-700'
+                        ? 'text-warning font-medium'
                         : 'text-muted-foreground'
                     }`}>
                       {step.title}
@@ -126,7 +126,7 @@ export default function SetupChecklist({
                     {/* Arrow for active/clickable */}
                     {(status === 'active' || status === 'completed') && (
                       <Icons.ChevronRight className={`w-5 h-5 ${
-                        status === 'active' ? 'text-orange-400' : 'text-muted-foreground'
+                        status === 'active' ? 'text-warning' : 'text-muted-foreground'
                       }`} />
                     )}
                   </motion.button>

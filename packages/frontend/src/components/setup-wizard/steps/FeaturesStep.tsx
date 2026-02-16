@@ -70,18 +70,18 @@ export default function FeaturesStep({
                 feature.comingSoon
                   ? 'border-border bg-background/50 opacity-60 cursor-not-allowed'
                   : isEnabled
-                    ? 'border-amber-300 bg-amber-50'
+                    ? 'border-warning/30 bg-warning/10'
                     : 'border-border bg-card hover:border-border/80'
               }`}
             >
               <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                feature.comingSoon ? 'bg-background text-muted-foreground' : isEnabled ? 'bg-amber-500 text-white' : 'bg-background text-muted-foreground'
+                feature.comingSoon ? 'bg-background text-muted-foreground' : isEnabled ? 'bg-warning text-warning-foreground' : 'bg-background text-muted-foreground'
               }`}>
                 <Icon className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className={`font-medium ${feature.comingSoon ? 'text-muted-foreground' : isEnabled ? 'text-amber-800' : 'text-foreground'}`}>
+                  <span className={`font-medium ${feature.comingSoon ? 'text-muted-foreground' : isEnabled ? 'text-warning' : 'text-foreground'}`}>
                     {feature.label}
                   </span>
                   {feature.comingSoon && (
@@ -99,7 +99,7 @@ export default function FeaturesStep({
               </div>
               {!feature.comingSoon && (
                 <div className={`relative w-11 h-6 rounded-full flex-shrink-0 transition-colors ${
-                  isEnabled ? 'bg-amber-500' : 'bg-border'
+                  isEnabled ? 'bg-warning' : 'bg-border'
                 }`}>
                   <div className={`absolute top-1 w-4 h-4 rounded-full bg-card transition-transform ${
                     isEnabled ? 'translate-x-6' : 'translate-x-1'
@@ -116,9 +116,9 @@ export default function FeaturesStep({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="bg-blue-50 border border-blue-100 rounded-xl p-4"
+        className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4"
       >
-        <p className="text-sm text-blue-700">
+        <p className="text-sm text-foreground">
           Du kannst diese Einstellungen jederzeit im Dashboard ändern.
         </p>
       </motion.div>
@@ -137,7 +137,7 @@ export default function FeaturesStep({
           </Button>
           <Button
             onClick={onNext}
-            className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+            className="flex-1 bg-warning hover:opacity-90 text-warning-foreground"
           >
             Weiter
             <ArrowRight className="w-4 h-4 ml-2" />

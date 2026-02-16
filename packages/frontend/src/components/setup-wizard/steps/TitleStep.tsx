@@ -59,7 +59,7 @@ export default function TitleStep({
             value={title}
             onChange={(e) => onTitleChange(e.target.value)}
             placeholder={placeholder}
-            className="w-full px-4 py-4 text-lg border-2 border-border rounded-2xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors"
+            className="w-full px-4 py-4 text-lg border-2 border-border rounded-2xl focus:border-warning focus:ring-0 focus:outline-none bg-background text-foreground transition-colors"
             autoFocus
           />
           {title.length > 0 && (
@@ -102,7 +102,7 @@ export default function TitleStep({
         <Button
           onClick={onNext}
           disabled={!isValid}
-          className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 bg-warning hover:opacity-90 text-warning-foreground disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Weiter
           <ArrowRight className="w-4 h-4 ml-2" />

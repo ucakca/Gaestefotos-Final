@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { type Locale, locales, defaultLocale } from '../../i18n/config';
+import { type Locale, locales, defaultLocale } from '../../i18n/locales';
 
 /**
  * Detects the browser/system language and returns a supported locale

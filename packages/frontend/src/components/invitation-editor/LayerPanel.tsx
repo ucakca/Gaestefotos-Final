@@ -68,7 +68,7 @@ export function LayerPanel({
             key={element.id}
             className={`group relative p-2 rounded-lg border transition-all ${
               selectedId === element.id
-                ? 'bg-blue-50 border-blue-300 shadow-sm'
+                ? 'bg-primary/10 border-primary/30 shadow-sm'
                 : 'bg-card border-border hover:border-border hover:shadow-sm'
             }`}
           >

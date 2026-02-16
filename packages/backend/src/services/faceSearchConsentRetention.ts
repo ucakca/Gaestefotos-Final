@@ -73,6 +73,49 @@ async function retentionOnce(): Promise<void> {
       revokedGraceDays,
     });
   }
+
+  // Scrub face descriptors from photos of soft-deleted or purge-expired events (DSGVO compliance)
+  try {
+    const photosWithStaleDescriptors = await prisma.photo.findMany({
+      where: {
+        NOT: { faceData: { equals: undefined } },
+        OR: [
+          { event: { deletedAt: { not: null } } },
+          { event: { purgeAfter: { lte: now } } },
+        ],
+      },
+      select: { id: true, faceData: true },
+      take: batchSize,
+    });
+
+    if (photosWithStaleDescriptors.length > 0) {
+      for (const photo of photosWithStaleDescriptors) {
+        const fd = photo.faceData as any;
+        if (fd && (fd.descriptors || fd.faces)) {
+          // Keep face count metadata, remove biometric data
+          await prisma.photo.update({
+            where: { id: photo.id },
+            data: {
+              faceData: {
+                faceCount: fd.faceCount || 0,
+                descriptors: [],
+                faces: [],
+                scrubbed: true,
+                scrubbedAt: now.toISOString(),
+              },
+            },
+          });
+        }
+      }
+      logger.info('Face descriptor retention: scrubbed biometric data from expired/deleted event photos', {
+        count: photosWithStaleDescriptors.length,
+      });
+    }
+  } catch (err) {
+    logger.warn('Face descriptor retention: scrub failed (non-critical)', {
+      message: (err as any)?.message || String(err),
+    });
+  }
 }
 
 let timer: NodeJS.Timeout | null = null;

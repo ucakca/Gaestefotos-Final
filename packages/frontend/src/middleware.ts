@@ -56,25 +56,39 @@ export async function middleware(request: NextRequest) {
     return new NextResponse('Bad Request', { status: 400 });
   }
 
+  // Generate CSP nonce for this request
+  const nonce = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64');
+  const cspHeader = [
+    `default-src 'self'`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
+    `img-src 'self' data: https: http: blob:`,
+    `font-src 'self' https://fonts.gstatic.com`,
+    `connect-src 'self' https: wss:`,
+    `media-src 'self' blob:`,
+    `frame-src 'self'`,
+    `object-src 'none'`,
+    `base-uri 'self'`,
+  ].join('; ');
+
+  // Helper: attach CSP headers + nonce to any response
+  function withCsp(response: NextResponse): NextResponse {
+    response.headers.set('Content-Security-Policy', cspHeader);
+    response.headers.set('x-nonce', nonce);
+    return response;
+  }
+
   // Public routes that don't require authentication
-  const publicRoutes = ['/login', '/e', '/e2', '/i', '/s', '/s2'];
+  const publicRoutes = ['/', '/login', '/register', '/e', '/e2', '/e3', '/i', '/s', '/s2'];
   
   const { pathname } = request.nextUrl;
   const host = (request.headers.get('host') || '').toLowerCase();
-
-  // Redirect root path on app.* to /login (landing page is on main WordPress site)
-  if (pathname === '/' && host.includes('app.')) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
-  }
 
   // Hard-disable legacy /admin UI on the public app domain.
   // Admin/host operations live on the dedicated dash domain.
   if (pathname.startsWith('/admin') && host.includes('app.')) {
     const url = new URL(request.url);
     url.hostname = host.replace(/^app\./, 'dash.');
-    // The dash app does not use /admin routes; it uses /dashboard.
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
   }
@@ -90,7 +104,7 @@ export async function middleware(request: NextRequest) {
 
     const secret = process.env.JWT_SECRET;
     if (!secret) {
-      return NextResponse.next();
+      return withCsp(NextResponse.next());
     }
 
     const payload = await verifyJwtHs256(token, secret);
@@ -107,7 +121,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    return NextResponse.next();
+    return withCsp(NextResponse.next());
   }
   
   // Check if route is public
@@ -115,14 +129,11 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  // If public route, allow access
   if (isPublicRoute) {
-    return NextResponse.next();
+    return withCsp(NextResponse.next());
   }
 
-  // Check for auth token in cookie or header (will be implemented with auth store)
-  // For now, just allow access
-  return NextResponse.next();
+  return withCsp(NextResponse.next());
 }
 
 export const config = {

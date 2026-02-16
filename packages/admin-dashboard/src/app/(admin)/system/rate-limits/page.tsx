@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Shield, Clock, AlertTriangle, RefreshCw, Activity } from 'lucide-react';
+import { PageTransition } from '@/components/ui/PageTransition';
 
 interface RateLimit {
   name: string;
@@ -99,16 +100,16 @@ export default function RateLimitsPage() {
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <PageTransition className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Shield className="w-6 h-6 text-blue-600" />
-            Rate Limits
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Übersicht über alle aktiven Rate Limits
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20">
+            <Shield className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Rate Limits</h1>
+            <p className="text-muted-foreground">Übersicht über alle aktiven Rate Limits</p>
+          </div>
         </div>
         <button
           onClick={fetchData}
@@ -177,7 +178,7 @@ export default function RateLimitsPage() {
           </div>
         </section>
       )}
-    </div>
+    </PageTransition>
   );
 }
 

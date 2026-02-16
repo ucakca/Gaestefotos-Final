@@ -94,7 +94,7 @@ export default function DateLocationStep({
             onChange={(e) => handleDateChange(e.target.value)}
             min="2020-01-01T00:00"
             max="2099-12-31T23:59"
-            className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors"
+            className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-warning focus:ring-0 focus:outline-none bg-background text-foreground transition-colors"
           />
         </div>
 
@@ -109,7 +109,7 @@ export default function DateLocationStep({
             value={location}
             onChange={(e) => onLocationChange(e.target.value)}
             placeholder="z.B. Schloss Neuschwanstein"
-            className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-amber-500 focus:ring-0 focus:outline-none transition-colors"
+            className="w-full px-4 py-3 border-2 border-border rounded-xl focus:border-warning focus:ring-0 focus:outline-none bg-background text-foreground transition-colors"
           />
         </div>
 
@@ -133,9 +133,9 @@ export default function DateLocationStep({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="bg-blue-50 border border-blue-100 rounded-xl p-4"
+        className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4"
       >
-        <p className="text-sm text-blue-700">
+        <p className="text-sm text-foreground">
           💡 <strong>Tipp:</strong> Datum und Ort werden auf der Event-Seite angezeigt und helfen Gästen bei der Orientierung.
         </p>
       </motion.div>
@@ -158,7 +158,7 @@ export default function DateLocationStep({
           </Button>
           <Button
             onClick={onNext}
-            className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+            className="flex-1 bg-warning hover:opacity-90 text-warning-foreground"
           >
             Weiter
             <ArrowRight className="w-4 h-4 ml-2" />

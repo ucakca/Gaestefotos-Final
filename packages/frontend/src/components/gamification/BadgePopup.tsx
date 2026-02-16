@@ -30,7 +30,7 @@ export default function BadgePopup({ achievement, onClose }: BadgePopupProps) {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.3, opacity: 0, y: 50 }}
           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-          className="relative bg-gradient-to-b from-amber-50 to-yellow-50 rounded-3xl p-8 max-w-xs w-full shadow-2xl border border-amber-200 text-center"
+          className="relative bg-card rounded-3xl p-8 max-w-xs w-full shadow-2xl border border-warning/30 text-center"
           onClick={e => e.stopPropagation()}
         >
           <button
@@ -55,14 +55,14 @@ export default function BadgePopup({ achievement, onClose }: BadgePopupProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <div className="flex items-center justify-center gap-1 text-amber-600 text-xs font-semibold uppercase tracking-wider mb-2">
+            <div className="flex items-center justify-center gap-1 text-warning text-xs font-semibold uppercase tracking-wider mb-2">
               <Trophy className="w-3.5 h-3.5" />
               Badge freigeschaltet!
             </div>
             <h2 className="text-xl font-bold text-foreground mb-1">{achievement.title}</h2>
             <p className="text-sm text-muted-foreground mb-4">{achievement.description}</p>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-700">
-              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-warning/15 text-warning">
+              <Star className="w-4 h-4 fill-warning text-warning" />
               <span className="font-bold">+{achievement.points} Punkte</span>
             </div>
           </motion.div>

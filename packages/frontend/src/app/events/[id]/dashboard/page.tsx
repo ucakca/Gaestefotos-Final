@@ -61,6 +61,7 @@ import {
   LayoutGrid,
   Gamepad2,
   Activity,
+  Film,
 } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
@@ -403,7 +404,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
 
   if (error || !event) {
     return (
-      <div className="min-h-screen bg-[hsl(30_20%_98%)] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center">
           <div className="w-16 h-16 rounded-full bg-destructive/15 flex items-center justify-center mx-auto mb-4">
             <X className="w-8 h-8 text-destructive" />
@@ -439,7 +440,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
   ];
 
   return (
-    <div className="min-h-screen bg-[hsl(30_20%_98%)] text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card/90 backdrop-blur-xl border-b border-border shadow-sm">
         <div className="flex items-center justify-between px-4 py-3">
@@ -922,41 +923,70 @@ function OverviewTab({
         <StatCard icon={Clock} value={stats.pending} label="AUSSTEHEND" color="yellow" highlight={stats.pending > 0} onClick={() => onStatClick('pending')} />
       </div>
 
+      {/* Theme Preview */}
+      {(event as any)?.theme && (
+        <Link
+          href={`/events/${eventId}/design`}
+          className="group flex items-center gap-4 rounded-2xl bg-card border border-border p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
+        >
+          <div className="flex gap-1 shrink-0">
+            {['primary', 'secondary', 'accent'].map((key) => (
+              <div
+                key={key}
+                className="w-8 h-8 rounded-lg border border-border"
+                style={{ backgroundColor: ((event as any).theme.colors as any)?.[key] || '#ccc' }}
+              />
+            ))}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-medium text-foreground text-sm truncate">{(event as any).theme.name}</div>
+            <div className="text-xs text-muted-foreground">Event Theme · {(event as any).theme.wallLayout}</div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+        </Link>
+      )}
+
       {/* Onboarding Progress */}
       {progressPercent < 100 && (
-        <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-4 shadow-sm">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-              <Rocket className="w-5 h-5 text-amber-600" />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-foreground">Event einrichten</span>
-                <span className="text-xs text-amber-600 font-medium">{progressPercent}%</span>
+        <div className="group relative rounded-2xl overflow-hidden">
+          {/* Gradient glow */}
+          <div className="absolute inset-0 bg-gradient-to-br from-warning/20 via-orange-500/10 to-amber-500/5 rounded-2xl" />
+          <div className="relative border border-warning/20 rounded-2xl p-5 backdrop-blur-sm">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-warning to-orange-500 flex items-center justify-center shadow-md shadow-warning/30">
+                <Rocket className="w-6 h-6 text-white" />
               </div>
-              <div className="h-1.5 bg-amber-200 rounded-full mt-1">
-                <div 
-                  className="h-full bg-amber-500 rounded-full transition-all" 
-                  style={{ width: `${progressPercent}%` }}
-                />
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-semibold text-foreground">Event einrichten</span>
+                  <span className="text-xs font-bold text-warning bg-warning/15 px-2 py-0.5 rounded-full">{progressPercent}%</span>
+                </div>
+                <div className="h-2 bg-card rounded-full overflow-hidden border border-border">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                    className="h-full bg-gradient-to-r from-warning to-orange-500 rounded-full"
+                  />
+                </div>
               </div>
             </div>
+            {currentStep && currentStep.link && (
+              <Link
+                href={currentStep.link}
+                className="flex items-center gap-3 p-3.5 rounded-xl bg-card/80 border border-warning/20 hover:border-warning/40 hover:shadow-md transition-all group/step"
+              >
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-warning to-orange-500 text-white flex items-center justify-center shadow-sm group-hover/step:scale-110 transition-transform">
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="font-semibold text-foreground text-sm">Nächster Schritt</div>
+                  <div className="text-xs text-muted-foreground">{currentStep.label}</div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover/step:translate-x-1 group-hover/step:text-warning transition-all" />
+              </Link>
+            )}
           </div>
-          {currentStep && currentStep.link && (
-            <Link
-              href={currentStep.link}
-              className="flex items-center gap-3 p-3 rounded-xl bg-card border border-amber-200"
-            >
-              <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center">
-                <ChevronRight className="w-4 h-4" />
-              </div>
-              <div className="flex-1 text-left">
-                <div className="font-medium text-foreground">Nächster Schritt</div>
-                <div className="text-sm text-muted-foreground">{currentStep.label}</div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </Link>
-          )}
         </div>
       )}
 
@@ -964,13 +994,18 @@ function OverviewTab({
       <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <button
           onClick={() => setShowAllSteps(!showAllSteps)}
-          className="w-full p-4 border-b border-border flex items-center justify-between hover:bg-background transition-colors"
+          className="w-full p-4 flex items-center justify-between hover:bg-muted/30 transition-colors"
         >
-          <div className="text-left">
-            <h3 className="font-semibold text-foreground">Setup-Checkliste</h3>
-            <p className="text-sm text-muted-foreground">{completedSteps}/{totalSteps} abgeschlossen</p>
+          <div className="flex items-center gap-3 text-left">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
+              <CheckCircle2 className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground text-sm">Setup-Checkliste</h3>
+              <p className="text-xs text-muted-foreground">{completedSteps}/{totalSteps} abgeschlossen</p>
+            </div>
           </div>
-          <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${showAllSteps ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-300 ${showAllSteps ? 'rotate-180' : ''}`} />
         </button>
         <AnimatePresence>
           {showAllSteps && (
@@ -981,30 +1016,37 @@ function OverviewTab({
               transition={{ duration: 0.2 }}
               className="overflow-hidden"
             >
-              <div className="p-4 space-y-1">
+              <div className="px-4 pb-4 space-y-1.5">
                 {onboardingSteps.map((step, index) => {
                   const content = (
                     <>
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                        step.completed ? 'bg-success/100 text-white' : step.current ? 'bg-amber-500 text-white' : 'bg-border text-muted-foreground'
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${
+                        step.completed
+                          ? 'bg-gradient-to-br from-success to-emerald-500 text-white shadow-sm shadow-success/30'
+                          : step.current
+                            ? 'bg-gradient-to-br from-warning to-orange-500 text-white shadow-sm shadow-warning/30'
+                            : 'bg-muted/60 text-muted-foreground'
                       }`}>
                         {step.completed ? <Check className="w-4 h-4" /> : index + 1}
                       </div>
                       <span className={`text-sm flex-1 ${
-                        step.completed ? 'text-success' : step.current ? 'text-amber-700 font-medium' : 'text-muted-foreground'
+                        step.completed ? 'text-success line-through decoration-success/30' : step.current ? 'text-foreground font-medium' : 'text-muted-foreground'
                       }`}>
                         {step.label}
                       </span>
                       {step.current && (
-                        <ChevronRight className="w-4 h-4 text-amber-500" />
+                        <ChevronRight className="w-4 h-4 text-warning" />
+                      )}
+                      {step.completed && (
+                        <span className="text-[10px] text-success/70 font-medium">✓</span>
                       )}
                     </>
                   );
-                  
-                  const className = `flex items-center gap-3 p-3 rounded-xl transition-colors ${
-                    step.completed ? 'bg-success/10' : step.current ? 'bg-amber-50' : 'hover:bg-background'
+
+                  const className = `flex items-center gap-3 p-3 rounded-xl transition-all ${
+                    step.completed ? 'bg-success/5 hover:bg-success/10' : step.current ? 'bg-warning/10 border border-warning/20' : 'hover:bg-muted/30'
                   }`;
-                  
+
                   return (
                     <Link
                       key={step.id}
@@ -1028,89 +1070,90 @@ function OverviewTab({
       <div className="grid grid-cols-2 gap-3">
         <Link
           href={`/events/${eventId}/live-wall`}
-          className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-200 p-4"
+          className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
         >
-          <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-purple-500">
-            <Play className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-sm shadow-purple-500/20 group-hover:scale-110 transition-transform">
+            <Play className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="font-medium text-foreground">Event Wall</div>
+            <div className="font-medium text-foreground text-sm">Event Wall</div>
             <div className="text-xs text-muted-foreground">Slideshow starten</div>
           </div>
         </Link>
         <button
           onClick={onGenerateShareLink}
           disabled={shareLoading}
-          className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-200 p-4 text-left disabled:opacity-50"
+          className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 text-left disabled:opacity-50 hover:shadow-md hover:-translate-y-0.5 transition-all"
         >
-          <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-blue-500">
-            {shareLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Share2 className="w-5 h-5" />}
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-sm shadow-blue-500/20 group-hover:scale-110 transition-transform">
+            {shareLoading ? <Loader2 className="w-5 h-5 text-white animate-spin" /> : <Share2 className="w-5 h-5 text-white" />}
           </div>
           <div>
-            <div className="font-medium text-foreground">Share</div>
+            <div className="font-medium text-foreground text-sm">Share</div>
             <div className="text-xs text-muted-foreground">{shareUrl ? 'Erneut kopieren' : 'Link erzeugen'}</div>
           </div>
         </button>
         <Link
           href={`/events/${eventId}/mosaic`}
-          className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-pink-500/10 to-pink-600/5 border border-pink-200 p-4"
+          className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
         >
-          <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-pink-500">
-            <LayoutGrid className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-sm shadow-pink-500/20 group-hover:scale-110 transition-transform">
+            <LayoutGrid className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="font-medium text-foreground">Mosaic Wall</div>
+            <div className="font-medium text-foreground text-sm">Mosaic Wall</div>
             <div className="text-xs text-muted-foreground">Foto-Mosaik</div>
           </div>
         </Link>
         <Link
           href={`/events/${eventId}/package`}
-          className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-amber-500/10 to-amber-600/5 border border-amber-200 p-4"
+          className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
         >
-          <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-amber-500">
-            <Package className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-sm shadow-amber-500/20 group-hover:scale-110 transition-transform">
+            <Package className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="font-medium text-foreground">Paket</div>
+            <div className="font-medium text-foreground text-sm">Paket</div>
             <div className="text-xs text-muted-foreground">Upgrade & Wechsel</div>
           </div>
         </Link>
         <Link
           href={`/events/${eventId}/ki-booth`}
-          className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-violet-500/10 to-violet-600/5 border border-violet-200 p-4"
+          className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
         >
-          <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-violet-500">
-            <Sparkles className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm shadow-violet-500/20 group-hover:scale-110 transition-transform">
+            <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="font-medium text-foreground">KI-Kunst</div>
+            <div className="font-medium text-foreground text-sm">KI-Kunst</div>
             <div className="text-xs text-muted-foreground">AI Style Transfer</div>
           </div>
         </Link>
         <Link
           href={`/events/${eventId}/booth-games`}
-          className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border border-emerald-200 p-4"
+          className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
         >
-          <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-emerald-500">
-            <Gamepad2 className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-sm shadow-emerald-500/20 group-hover:scale-110 transition-transform">
+            <Gamepad2 className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="font-medium text-foreground">Foto-Spiele</div>
+            <div className="font-medium text-foreground text-sm">Foto-Spiele</div>
             <div className="text-xs text-muted-foreground">Interaktive Games</div>
           </div>
         </Link>
         <Link
           href={`/events/${eventId}/live-analytics`}
-          className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-200 p-4"
+          className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
         >
-          <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-cyan-500">
-            <Activity className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-sm shadow-cyan-500/20 group-hover:scale-110 transition-transform">
+            <Activity className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="font-medium text-foreground">Live-Analytics</div>
+            <div className="font-medium text-foreground text-sm">Live-Analytics</div>
             <div className="text-xs text-muted-foreground">Echtzeit-Statistiken</div>
           </div>
         </Link>
+        <HighlightReelButton eventId={eventId} />
       </div>
 
       {/* Paket & Upsell */}
@@ -1616,6 +1659,8 @@ function GalleryTab({
 function GuestbookTab({ eventId }: { eventId: string }) {
   const [entries, setEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+  const { showToast } = useToastStore();
 
   useEffect(() => {
     api.get(`/events/${eventId}/guestbook`)
@@ -1623,6 +1668,45 @@ function GuestbookTab({ eventId }: { eventId: string }) {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [eventId]);
+
+  const handleExportPdf = async () => {
+    setExporting(true);
+    try {
+      const res = await api.get(`/events/${eventId}/guestbook/export-pdf`, { responseType: 'blob' });
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gaestebuch-${new Date().toISOString().slice(0, 10)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('PDF heruntergeladen', 'success');
+    } catch {
+      showToast('PDF-Export fehlgeschlagen', 'error');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleModerate = async (entryId: string, action: 'approve' | 'reject') => {
+    try {
+      await api.post(`/events/${eventId}/guestbook/${entryId}/${action}`);
+      setEntries(prev => prev.map(e => e.id === entryId ? { ...e, status: action === 'approve' ? 'APPROVED' : 'REJECTED' } : e));
+      showToast(action === 'approve' ? 'Eintrag freigegeben' : 'Eintrag abgelehnt', 'success');
+    } catch {
+      showToast('Aktion fehlgeschlagen', 'error');
+    }
+  };
+
+  const handleDelete = async (entryId: string) => {
+    try {
+      await api.delete(`/events/${eventId}/guestbook/${entryId}`);
+      setEntries(prev => prev.filter(e => e.id !== entryId));
+      showToast('Eintrag gelöscht', 'success');
+    } catch {
+      showToast('Löschen fehlgeschlagen', 'error');
+    }
+  };
 
   return (
     <motion.div
@@ -1644,21 +1728,55 @@ function GuestbookTab({ eventId }: { eventId: string }) {
         </div>
       ) : (
         <div className="space-y-3">
-          <h3 className="font-semibold text-foreground">{entries.length} Einträge</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-foreground">{entries.length} Einträge</h3>
+            <button
+              onClick={handleExportPdf}
+              disabled={exporting}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-card border border-border text-foreground hover:bg-muted/50 transition-colors disabled:opacity-50"
+            >
+              {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              PDF Export
+            </button>
+          </div>
           {entries.map((entry: any) => (
-            <div key={entry.id} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+            <div key={entry.id} className={`rounded-2xl border bg-card p-4 shadow-sm ${entry.status === 'PENDING' ? 'border-warning/50' : entry.status === 'REJECTED' ? 'border-destructive/30 opacity-60' : 'border-border'}`}>
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-8 h-8 rounded-full bg-success/15 flex items-center justify-center text-success text-sm font-bold">
-                  {(entry.name || 'G').charAt(0).toUpperCase()}
+                  {(entry.authorName || entry.name || 'G').charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <div className="font-medium text-sm text-foreground">{entry.name || 'Gast'}</div>
-                  <div className="text-xs text-muted-foreground">{entry.createdAt ? new Date(entry.createdAt).toLocaleDateString('de-DE') : ''}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-sm text-foreground">{entry.authorName || entry.name || 'Gast'}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {entry.createdAt ? new Date(entry.createdAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                    {entry.status === 'PENDING' && <span className="ml-2 text-warning font-medium">Ausstehend</span>}
+                    {entry.status === 'REJECTED' && <span className="ml-2 text-destructive font-medium">Abgelehnt</span>}
+                  </div>
+                </div>
+                <div className="flex gap-1">
+                  {entry.status === 'PENDING' && (
+                    <>
+                      <button onClick={() => handleModerate(entry.id, 'approve')} className="p-1.5 rounded-lg hover:bg-success/15 text-success transition-colors" title="Freigeben">
+                        <Check className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleModerate(entry.id, 'reject')} className="p-1.5 rounded-lg hover:bg-destructive/15 text-destructive transition-colors" title="Ablehnen">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                  <button onClick={() => handleDelete(entry.id)} className="p-1.5 rounded-lg hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-colors" title="Löschen">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
               {entry.message && <p className="text-sm text-foreground">{entry.message}</p>}
-              {entry.imageUrl && (
-                <img src={entry.imageUrl} alt="" className="mt-2 rounded-xl max-h-48 object-cover w-full" />
+              {(entry.photoUrl || entry.imageUrl) && (
+                <img src={entry.photoUrl || entry.imageUrl} alt="" className="mt-2 rounded-xl max-h-48 object-cover w-full" />
+              )}
+              {entry.audioUrl && (
+                <audio controls preload="none" className="mt-2 w-full h-8">
+                  <source src={entry.audioUrl} />
+                </audio>
               )}
             </div>
           ))}
@@ -1765,34 +1883,34 @@ function StatCard({ icon: Icon, value, label, color, highlight, onClick }: {
 }) {
   const colorStyles = {
     blue: {
-      bg: 'bg-gradient-to-br from-blue-100 to-blue-50',
-      border: 'border-blue-200',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/20',
       icon: 'text-blue-500',
-      text: 'text-blue-900',
+      text: 'text-foreground',
     },
     green: {
-      bg: 'bg-gradient-to-br from-green-100 to-green-50',
-      border: 'border-success/30',
-      icon: 'text-success',
-      text: 'text-success',
+      bg: 'bg-emerald-500/10',
+      border: 'border-emerald-500/20',
+      icon: 'text-emerald-500',
+      text: 'text-foreground',
     },
     yellow: {
-      bg: 'bg-gradient-to-br from-yellow-100 to-yellow-50',
-      border: highlight ? 'border-yellow-400 border-2' : 'border-yellow-200',
-      icon: 'text-warning',
-      text: 'text-warning',
+      bg: 'bg-amber-500/10',
+      border: highlight ? 'border-amber-500/50 border-2' : 'border-amber-500/20',
+      icon: 'text-amber-500',
+      text: 'text-foreground',
     },
     purple: {
-      bg: 'bg-gradient-to-br from-purple-100 to-purple-50',
-      border: 'border-purple-200',
+      bg: 'bg-purple-500/10',
+      border: 'border-purple-500/20',
       icon: 'text-purple-500',
-      text: 'text-purple-900',
+      text: 'text-foreground',
     },
     cyan: {
-      bg: 'bg-gradient-to-br from-cyan-100 to-cyan-50',
-      border: 'border-cyan-200',
+      bg: 'bg-cyan-500/10',
+      border: 'border-cyan-500/20',
       icon: 'text-cyan-500',
-      text: 'text-cyan-900',
+      text: 'text-foreground',
     },
   };
   
@@ -1839,6 +1957,91 @@ function SetupRow({ icon: Icon, label, danger, link }: {
   return (
     <button className="flex items-center justify-between w-full px-4 py-4 border-b border-border last:border-0 text-left hover:bg-background transition-colors">
       {content}
+    </button>
+  );
+}
+
+function HighlightReelButton({ eventId }: { eventId: string }) {
+  const [generating, setGenerating] = useState(false);
+  const [reelUrl, setReelUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToastStore();
+
+  const handleGenerate = async () => {
+    setGenerating(true);
+    setError(null);
+    try {
+      const res = await api.post(`/events/${eventId}/generate`, {
+        duration: 3,
+        maxPhotos: 20,
+        resolution: '1080p',
+        transition: 'fade',
+      });
+      showToast('Video-Generierung gestartet! Dies kann einige Minuten dauern.', 'success');
+
+      // Poll for completion
+      const jobId = res.data.jobId;
+      const poll = setInterval(async () => {
+        try {
+          const progress = await api.get(`/events/${eventId}/progress/${jobId}`);
+          if (progress.data.status === 'complete') {
+            clearInterval(poll);
+            // Fetch list to get URL
+            const list = await api.get(`/events/${eventId}`);
+            if (list.data.reels?.length > 0) {
+              setReelUrl(list.data.reels[0]);
+            }
+            setGenerating(false);
+            showToast('Highlight Reel fertig!', 'success');
+          } else if (progress.data.status === 'error') {
+            clearInterval(poll);
+            setGenerating(false);
+            setError(progress.data.message);
+            showToast(progress.data.message || 'Fehler', 'error');
+          }
+        } catch {
+          // Keep polling
+        }
+      }, 3000);
+
+      // Timeout after 5 minutes
+      setTimeout(() => {
+        clearInterval(poll);
+        if (generating) setGenerating(false);
+      }, 300000);
+    } catch (err: any) {
+      setGenerating(false);
+      setError(err.response?.data?.error || 'Fehler beim Starten');
+      showToast('Fehler beim Generieren des Videos', 'error');
+    }
+  };
+
+  // Check for existing reels on mount
+  useEffect(() => {
+    api.get(`/events/${eventId}`)
+      .then(res => {
+        if (res.data.reels?.length > 0) {
+          setReelUrl(res.data.reels[0]);
+        }
+      })
+      .catch(() => {});
+  }, [eventId]);
+
+  return (
+    <button
+      onClick={reelUrl ? () => window.open(reelUrl, '_blank') : handleGenerate}
+      disabled={generating}
+      className="flex items-center gap-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-left disabled:opacity-50"
+    >
+      <div className="w-10 h-10 rounded-xl bg-card flex items-center justify-center shadow-sm text-rose-500">
+        {generating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Film className="w-5 h-5" />}
+      </div>
+      <div>
+        <div className="font-medium text-foreground">Highlight Reel</div>
+        <div className="text-xs text-muted-foreground">
+          {generating ? 'Wird erstellt...' : reelUrl ? 'Video ansehen' : 'Video erstellen'}
+        </div>
+      </div>
     </button>
   );
 }
@@ -1893,20 +2096,20 @@ function EventStatusCard({
               exit={{ opacity: 0, height: 0 }}
               className="mt-3 ml-6 overflow-hidden"
             >
-              <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
+              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
                 <div className="flex items-start gap-2">
                   <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-blue-800">
+                  <div className="text-sm text-foreground">
                     <p className="font-medium mb-1">Was bedeutet das?</p>
-                    <p className="text-blue-700 text-xs">
+                    <p className="text-muted-foreground text-xs">
                       Bei Deaktivierung werden folgende Funktionen gesperrt:
                     </p>
-                    <ul className="text-xs text-blue-600 mt-1 space-y-0.5">
+                    <ul className="text-xs text-muted-foreground mt-1 space-y-0.5">
                       <li>• Upload-Funktion für Gäste</li>
                       <li>• Gäste-Galerie (öffentlich)</li>
                       <li>• Event-Link funktioniert nicht mehr</li>
                     </ul>
-                    <p className="text-xs text-blue-600 mt-2">
+                    <p className="text-xs text-muted-foreground mt-2">
                       ✓ Du als Host kannst die Fotos weiterhin sehen und herunterladen.
                     </p>
                   </div>

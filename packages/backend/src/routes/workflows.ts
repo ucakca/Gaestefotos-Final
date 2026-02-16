@@ -96,15 +96,28 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Nur Admins können Workflows bearbeiten' });
     }
 
-    const { name, description, steps, flowType, isPublic, isDefault } = req.body;
+    const { name, description, steps, flowType, isPublic, isDefault, expectedVersion } = req.body;
 
     // Block editing locked workflows
     const existing = await prisma.boothWorkflow.findUnique({ where: { id: req.params.id } });
-    if (existing?.isLocked) {
+    if (!existing) {
+      return res.status(404).json({ error: 'Workflow nicht gefunden' });
+    }
+    if (existing.isLocked) {
       return res.status(400).json({ error: 'Workflow ist gesperrt. Bitte zuerst entsperren.' });
     }
 
-    const data: any = {};
+    // Optimistic Concurrency Control: reject if version mismatch
+    if (expectedVersion !== undefined && expectedVersion !== existing.version) {
+      return res.status(409).json({
+        error: 'Konflikt: Der Workflow wurde zwischenzeitlich von einem anderen Benutzer geändert.',
+        code: 'VERSION_CONFLICT',
+        currentVersion: existing.version,
+        expectedVersion,
+      });
+    }
+
+    const data: any = { version: { increment: 1 } };
     if (name !== undefined) data.name = name;
     if (description !== undefined) data.description = description;
     if (steps !== undefined) data.steps = steps;
@@ -425,6 +438,305 @@ router.post('/:id/duplicate', authMiddleware, async (req: AuthRequest, res: Resp
   } catch (error) {
     logger.error('Duplicate workflow error', { message: (error as Error).message });
     res.status(500).json({ error: 'Fehler beim Duplizieren' });
+  }
+});
+
+// ─── TEMPLATE MARKETPLACE ──────────────────────────────────────────────────
+
+router.get('/meta/templates', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { flowType, tag, search } = req.query;
+    const where: any = { isTemplate: true };
+
+    if (flowType) where.flowType = flowType;
+    if (tag) where.tags = { has: String(tag) };
+    if (search) {
+      where.OR = [
+        { name: { contains: String(search), mode: 'insensitive' } },
+        { description: { contains: String(search), mode: 'insensitive' } },
+      ];
+    }
+
+    const templates = await prisma.boothWorkflow.findMany({
+      where,
+      orderBy: [{ isSystem: 'desc' }, { createdAt: 'desc' }],
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        flowType: true,
+        isSystem: true,
+        tags: true,
+        ownerType: true,
+        version: true,
+        createdAt: true,
+        _count: { select: { events: true } },
+      },
+    });
+
+    res.json({ templates });
+  } catch (error) {
+    logger.error('List templates error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
+router.post('/:id/publish', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.userRole !== 'ADMIN') {
+      return res.status(403).json({ error: 'Nur Admins' });
+    }
+
+    const { tags } = req.body;
+    const workflow = await prisma.boothWorkflow.update({
+      where: { id: req.params.id },
+      data: {
+        isTemplate: true,
+        isPublic: true,
+        tags: Array.isArray(tags) ? tags : [],
+      },
+    });
+
+    res.json({ workflow });
+  } catch (error) {
+    logger.error('Publish template error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Veröffentlichen' });
+  }
+});
+
+router.post('/:id/unpublish', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.userRole !== 'ADMIN') {
+      return res.status(403).json({ error: 'Nur Admins' });
+    }
+
+    const workflow = await prisma.boothWorkflow.update({
+      where: { id: req.params.id },
+      data: { isTemplate: false },
+    });
+
+    res.json({ workflow });
+  } catch (error) {
+    logger.error('Unpublish template error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Zurückziehen' });
+  }
+});
+
+// ─── EXPORT WORKFLOW (JSON) ─────────────────────────────────────────────────
+
+router.get('/:id/export', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.userRole !== 'ADMIN') {
+      return res.status(403).json({ error: 'Nur Admins können Workflows exportieren' });
+    }
+
+    const workflow = await prisma.boothWorkflow.findUnique({ where: { id: req.params.id } });
+    if (!workflow) return res.status(404).json({ error: 'Workflow nicht gefunden' });
+
+    const exportData = {
+      _format: 'gaestefotos-workflow-v1',
+      _exportedAt: new Date().toISOString(),
+      name: workflow.name,
+      description: workflow.description,
+      flowType: workflow.flowType,
+      steps: workflow.steps,
+      version: workflow.version,
+    };
+
+    res.setHeader('Content-Disposition', `attachment; filename="${workflow.name.replace(/[^a-zA-Z0-9-_]/g, '_')}.workflow.json"`);
+    res.setHeader('Content-Type', 'application/json');
+    res.json(exportData);
+  } catch (error) {
+    logger.error('Export workflow error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Exportieren' });
+  }
+});
+
+// ─── IMPORT WORKFLOW (JSON) ─────────────────────────────────────────────────
+
+router.post('/import', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.userRole !== 'ADMIN') {
+      return res.status(403).json({ error: 'Nur Admins können Workflows importieren' });
+    }
+
+    const data = req.body;
+    if (!data?._format || !data._format.startsWith('gaestefotos-workflow')) {
+      return res.status(400).json({ error: 'Ungültiges Workflow-Format. Bitte eine .workflow.json Datei verwenden.' });
+    }
+
+    if (!data.name || !data.steps) {
+      return res.status(400).json({ error: 'Name und Steps sind erforderlich' });
+    }
+
+    const workflow = await prisma.boothWorkflow.create({
+      data: {
+        name: `${data.name} (Import)`,
+        description: data.description || null,
+        steps: data.steps,
+        flowType: data.flowType || 'BOOTH',
+        isPublic: false,
+        isDefault: false,
+        isSystem: false,
+        createdBy: req.userId,
+      },
+    });
+
+    res.status(201).json({ workflow });
+  } catch (error) {
+    logger.error('Import workflow error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Importieren' });
+  }
+});
+
+// ─── EDITING SESSION (Soft Lock for Multi-User) ──────────────────────────
+
+// In-memory editing sessions (lightweight, no DB needed)
+const editingSessions = new Map<string, { userId: string; userName: string; startedAt: number }>();
+
+// Heartbeat: claim editing session (call every 30s from frontend)
+router.post('/:id/editing', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.userRole !== 'ADMIN') {
+      return res.status(403).json({ error: 'Nur Admins' });
+    }
+
+    const workflowId = req.params.id;
+    const { userName } = req.body;
+    const existing = editingSessions.get(workflowId);
+
+    // If someone else is editing, check if their session is stale (>60s)
+    if (existing && existing.userId !== req.userId) {
+      const staleThreshold = 60_000; // 60 seconds
+      if (Date.now() - existing.startedAt < staleThreshold) {
+        return res.status(423).json({
+          error: `Wird gerade von ${existing.userName} bearbeitet`,
+          code: 'EDITING_LOCKED',
+          editingBy: existing.userName,
+          editingSince: existing.startedAt,
+        });
+      }
+    }
+
+    // Claim or refresh session
+    editingSessions.set(workflowId, {
+      userId: req.userId!,
+      userName: userName || 'Unbekannt',
+      startedAt: Date.now(),
+    });
+
+    res.json({ editing: true, sessionOwner: req.userId });
+  } catch (error) {
+    logger.error('Editing session error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// Release editing session
+router.delete('/:id/editing', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const workflowId = req.params.id;
+    const existing = editingSessions.get(workflowId);
+
+    if (existing?.userId === req.userId) {
+      editingSessions.delete(workflowId);
+    }
+
+    res.json({ editing: false });
+  } catch (error) {
+    logger.error('Release editing session error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// Check who is editing
+router.get('/:id/editing', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const workflowId = req.params.id;
+    const session = editingSessions.get(workflowId);
+
+    if (!session || Date.now() - session.startedAt > 60_000) {
+      editingSessions.delete(workflowId);
+      return res.json({ editing: false, editingBy: null });
+    }
+
+    res.json({
+      editing: true,
+      editingBy: session.userName,
+      editingUserId: session.userId,
+      isMe: session.userId === req.userId,
+      editingSince: session.startedAt,
+    });
+  } catch (error) {
+    logger.error('Check editing session error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// ─── WORKFLOW ANALYTICS ────────────────────────────────────────────────────
+
+router.get('/meta/analytics', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.userRole !== 'ADMIN') {
+      return res.status(403).json({ error: 'Nur Admins' });
+    }
+
+    const workflows = await prisma.boothWorkflow.findMany({
+      select: {
+        id: true,
+        name: true,
+        flowType: true,
+        isSystem: true,
+        isDefault: true,
+        version: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: { select: { events: true, backups: true } },
+        events: {
+          select: {
+            id: true,
+            isActive: true,
+            _count: { select: { photos: true, guests: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const analytics = workflows.map((wf) => {
+      const totalPhotos = wf.events.reduce((sum, ev) => sum + ev._count.photos, 0);
+      const totalGuests = wf.events.reduce((sum, ev) => sum + ev._count.guests, 0);
+      const activeEvents = wf.events.filter((ev) => ev.isActive).length;
+      const nodeCount = (wf as any).steps?.nodes?.length || 0;
+
+      return {
+        id: wf.id,
+        name: wf.name,
+        flowType: wf.flowType,
+        isSystem: wf.isSystem,
+        isDefault: wf.isDefault,
+        version: wf.version,
+        createdAt: wf.createdAt,
+        updatedAt: wf.updatedAt,
+        eventsTotal: wf._count.events,
+        eventsActive: activeEvents,
+        backupsCount: wf._count.backups,
+        totalPhotos,
+        totalGuests,
+      };
+    });
+
+    const summary = {
+      totalWorkflows: workflows.length,
+      totalEventsUsing: workflows.reduce((s, w) => s + w._count.events, 0),
+      totalPhotosViaWorkflows: analytics.reduce((s, a) => s + a.totalPhotos, 0),
+      mostUsed: analytics.sort((a, b) => b.eventsTotal - a.eventsTotal)[0] || null,
+    };
+
+    res.json({ analytics, summary });
+  } catch (error) {
+    logger.error('Workflow analytics error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Laden der Analytics' });
   }
 });
 

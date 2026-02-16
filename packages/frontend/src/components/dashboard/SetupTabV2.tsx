@@ -6,6 +6,7 @@ import Link from 'next/link';
 import {
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   Calendar,
   MapPin,
   Palette,
@@ -46,11 +47,12 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import api from '@/lib/api';
 import { useToastStore } from '@/store/toastStore';
+import type { EventTheme } from '@/types/theme';
 import { TitleContent, isTitleValid } from '@/components/setup-wizard/content';
 import DateLocationContent from '@/components/setup-wizard/content/DateLocationContent';
 import { CoHostsSection } from '@/components/dashboard/CoHostsSection';
 
-type SetupSheet = 'title' | 'date-location' | 'design' | 'qr' | 'advanced' | null;
+type SetupSheet = 'title' | 'date-location' | 'design' | 'qr' | 'advanced' | 'theme' | null;
 
 interface SetupTabV2Props {
   event: EventType;
@@ -59,16 +61,16 @@ interface SetupTabV2Props {
 }
 
 const FEATURE_CARDS: { key: FeatureKey; icon: any; color: string; gradient: string }[] = [
-  { key: 'videoUpload', icon: Video, color: 'text-purple-500', gradient: 'from-purple-50 to-purple-100' },
-  { key: 'guestbook', icon: BookOpen, color: 'text-success', gradient: 'from-green-50 to-green-100' },
-  { key: 'liveWall', icon: Monitor, color: 'text-blue-500', gradient: 'from-blue-50 to-blue-100' },
-  { key: 'faceSearch', icon: ScanFace, color: 'text-cyan-500', gradient: 'from-cyan-50 to-cyan-100' },
-  { key: 'boothGames', icon: Gamepad2, color: 'text-orange-500', gradient: 'from-orange-50 to-orange-100' },
-  { key: 'zipDownload', icon: Download, color: 'text-indigo-500', gradient: 'from-indigo-50 to-indigo-100' },
-  { key: 'mosaicWall', icon: Grid3X3, color: 'text-pink-500', gradient: 'from-pink-50 to-pink-100' },
-  { key: 'coHosts', icon: UserPlus, color: 'text-teal-500', gradient: 'from-teal-50 to-teal-100' },
-  { key: 'passwordProtect', icon: Shield, color: 'text-amber-500', gradient: 'from-amber-50 to-amber-100' },
-  { key: 'adFree', icon: Zap, color: 'text-warning', gradient: 'from-yellow-50 to-yellow-100' },
+  { key: 'videoUpload', icon: Video, color: 'text-purple-500', gradient: 'bg-purple-500/10' },
+  { key: 'guestbook', icon: BookOpen, color: 'text-success', gradient: 'bg-emerald-500/10' },
+  { key: 'liveWall', icon: Monitor, color: 'text-blue-500', gradient: 'bg-blue-500/10' },
+  { key: 'faceSearch', icon: ScanFace, color: 'text-cyan-500', gradient: 'bg-cyan-500/10' },
+  { key: 'boothGames', icon: Gamepad2, color: 'text-orange-500', gradient: 'bg-orange-500/10' },
+  { key: 'zipDownload', icon: Download, color: 'text-indigo-500', gradient: 'bg-indigo-500/10' },
+  { key: 'mosaicWall', icon: Grid3X3, color: 'text-pink-500', gradient: 'bg-pink-500/10' },
+  { key: 'coHosts', icon: UserPlus, color: 'text-teal-500', gradient: 'bg-teal-500/10' },
+  { key: 'passwordProtect', icon: Shield, color: 'text-amber-500', gradient: 'bg-amber-500/10' },
+  { key: 'adFree', icon: Zap, color: 'text-warning', gradient: 'bg-yellow-500/10' },
 ];
 
 export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2Props) {
@@ -85,6 +87,13 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
   const [saving, setSaving] = useState(false);
   const [slug, setSlug] = useState(event.slug || '');
   const [featuresConfig, setFeaturesConfig] = useState<any>((event as any).featuresConfig || {});
+  const [themes, setThemes] = useState<EventTheme[]>([]);
+  const [themesLoading, setThemesLoading] = useState(false);
+  const [selectedThemeId, setSelectedThemeId] = useState<string | null>((event as any).themeId || null);
+  const [customColors, setCustomColors] = useState<Record<string, string>>(
+    ((event as any).customThemeData as any)?.colors || {}
+  );
+  const [showCustomColors, setShowCustomColors] = useState(false);
 
   // Reset state when event changes
   useEffect(() => {
@@ -93,7 +102,38 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
     setLocation((event as any).location || '');
     setSlug(event.slug || '');
     setFeaturesConfig((event as any).featuresConfig || {});
+    setSelectedThemeId((event as any).themeId || null);
+    setCustomColors(((event as any).customThemeData as any)?.colors || {});
   }, [event]);
+
+  const loadThemes = async () => {
+    if (themes.length > 0) return;
+    setThemesLoading(true);
+    try {
+      const { data } = await api.get('/event-themes');
+      setThemes(data.themes || []);
+    } catch { /* ignore */ } finally {
+      setThemesLoading(false);
+    }
+  };
+
+  const handleSaveTheme = async () => {
+    setSaving(true);
+    try {
+      const hasCustom = Object.keys(customColors).length > 0;
+      await api.put(`/events/${eventId}`, {
+        themeId: selectedThemeId,
+        customThemeData: hasCustom ? { colors: customColors } : null,
+      });
+      showToast('Theme gespeichert', 'success');
+      onEventUpdate?.();
+      setActiveSheet(null);
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Fehler beim Speichern', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleSaveTitle = async () => {
     if (!isTitleValid(title)) return;
@@ -167,6 +207,12 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
             Design
           </h3>
         </div>
+        <SetupRow 
+          icon={Palette} 
+          label="Event Theme" 
+          value={(event as any)?.theme?.name || 'Kein Theme'}
+          onClick={() => { setActiveSheet('theme'); loadThemes(); }}
+        />
         <SetupRow icon={Palette} label="Galerie-Design" link={`/events/${eventId}/design?wizard=1`} />
         <SetupRow icon={QrCode} label="QR-Code Designer" link={`/events/${eventId}/qr-styler`} />
         <SetupRow icon={Mail} label="Einladungen" link={`/events/${eventId}/invitations`} />
@@ -179,7 +225,7 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
             <Sparkles className="w-4 h-4" />
             Features
           </h3>
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700">
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-warning/15 text-warning">
             {packageName}
           </span>
         </div>
@@ -192,7 +238,7 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                 key={key}
                 className={`relative rounded-2xl border p-3 transition-all ${
                   enabled
-                    ? `border-border bg-gradient-to-br ${gradient} shadow-sm hover:shadow-md`
+                    ? `border-border ${gradient} shadow-sm hover:shadow-md`
                     : 'border-dashed border-border/60 bg-background/50 opacity-70'
                 }`}
               >
@@ -214,7 +260,7 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                 <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{desc.description}</p>
                 {!enabled && (
                   <div className="mt-2">
-                    <span className="text-[10px] text-amber-600 font-medium flex items-center gap-1">
+                    <span className="text-[10px] text-warning font-medium flex items-center gap-1">
                       <Zap className="w-3 h-3" /> Im nächsten Paket
                     </span>
                   </div>
@@ -419,6 +465,159 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
           </SetupSheet>
         )}
       </AnimatePresence>
+
+      {/* Theme Picker Sheet */}
+      <AnimatePresence>
+        {activeSheet === 'theme' && (
+          <SetupSheet
+            title="Event Theme wählen"
+            onClose={() => setActiveSheet(null)}
+            onSave={handleSaveTheme}
+            saving={saving}
+            isValid={true}
+          >
+            {themesLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {/* No theme option */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedThemeId(null)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                    selectedThemeId === null
+                      ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                      : 'border-border hover:border-border/80 hover:bg-muted/30'
+                  }`}
+                >
+                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                    <X className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-foreground text-sm">Kein Theme</div>
+                    <div className="text-xs text-muted-foreground">Standard-Design verwenden</div>
+                  </div>
+                  {selectedThemeId === null && <Check className="w-4 h-4 text-primary ml-auto" />}
+                </button>
+
+                {/* Live Preview */}
+                {selectedThemeId && (() => {
+                  const preview = themes.find(t => t.id === selectedThemeId);
+                  if (!preview) return null;
+                  const pc = preview.colors;
+                  return (
+                    <div className="rounded-xl overflow-hidden border border-border mb-3">
+                      <div className="p-4 text-center" style={{ background: `linear-gradient(135deg, ${pc.primary}, ${pc.secondary}, ${pc.accent})` }}>
+                        <div className="text-white text-xs font-medium opacity-80 mb-1">Vorschau</div>
+                        <div className="text-white font-bold text-lg" style={{ fontFamily: `"${preview.fonts.heading}", serif` }}>
+                          {event.title || 'Event'}
+                        </div>
+                      </div>
+                      <div className="p-3 flex items-center justify-between text-xs" style={{ backgroundColor: pc.background, color: pc.text }}>
+                        <span style={{ fontFamily: `"${preview.fonts.body}", sans-serif` }}>{preview.name}</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium" style={{ backgroundColor: `${pc.accent}20`, color: pc.accent }}>
+                          {preview.wallLayout}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Custom Color Overrides */}
+                {selectedThemeId && (
+                  <div className="border border-border rounded-xl overflow-hidden mb-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowCustomColors(!showCustomColors)}
+                      className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-muted/30 transition-colors"
+                    >
+                      <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                        <Palette className="w-3.5 h-3.5" />
+                        Farben anpassen
+                      </span>
+                      <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${showCustomColors ? 'rotate-180' : ''}`} />
+                    </button>
+                    {showCustomColors && (
+                      <div className="px-3 pb-3 pt-1 space-y-2 border-t border-border">
+                        {[
+                          { key: 'primary', label: 'Primär' },
+                          { key: 'secondary', label: 'Sekundär' },
+                          { key: 'accent', label: 'Akzent' },
+                          { key: 'background', label: 'Hintergrund' },
+                          { key: 'text', label: 'Text' },
+                        ].map(({ key, label }) => {
+                          const baseTheme = themes.find(t => t.id === selectedThemeId);
+                          const baseColor = (baseTheme?.colors as any)?.[key] || '#888';
+                          const current = customColors[key] || baseColor;
+                          return (
+                            <div key={key} className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={current}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  if (val === baseColor) {
+                                    const next = { ...customColors };
+                                    delete next[key];
+                                    setCustomColors(next);
+                                  } else {
+                                    setCustomColors(prev => ({ ...prev, [key]: val }));
+                                  }
+                                }}
+                                className="w-7 h-7 rounded-md border border-border cursor-pointer"
+                              />
+                              <span className="text-xs text-foreground flex-1">{label}</span>
+                              {customColors[key] && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const next = { ...customColors };
+                                    delete next[key];
+                                    setCustomColors(next);
+                                  }}
+                                  className="text-[10px] text-muted-foreground hover:text-foreground"
+                                >
+                                  Reset
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {themes.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setSelectedThemeId(t.id)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                      selectedThemeId === t.id
+                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                        : 'border-border hover:border-border/80 hover:bg-muted/30'
+                    }`}
+                  >
+                    <div className="flex gap-0.5 shrink-0">
+                      {[t.colors.primary, t.colors.secondary, t.colors.accent].map((c, i) => (
+                        <div key={i} className="w-6 h-6 rounded-md border border-black/10" style={{ backgroundColor: c }} />
+                      ))}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-foreground text-sm truncate">{t.name}</div>
+                      <div className="text-xs text-muted-foreground">{t.eventType} · {t.fonts.heading}</div>
+                    </div>
+                    {selectedThemeId === t.id && <Check className="w-4 h-4 text-primary ml-auto shrink-0" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </SetupSheet>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -537,7 +736,7 @@ function SetupSheet({
           <Button
             onClick={onSave}
             disabled={!isValid || saving}
-            className="w-full justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white disabled:opacity-50"
+            className="w-full justify-center gap-2 bg-warning hover:opacity-90 text-warning-foreground disabled:opacity-50"
           >
             {saving ? (
               <>

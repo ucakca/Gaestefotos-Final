@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '../config/database';
 import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
 import { randomString, generateEventSlug, DEFAULT_EVENT_FEATURES_CONFIG, normalizeEventFeaturesConfig } from '@gaestefotos/shared';
+import { auditLog, AuditType } from '../services/auditLogger';
 
 const router = Router();
 
@@ -90,6 +91,8 @@ router.patch('/:id/status', authMiddleware, requireRole('ADMIN'), async (req: Au
       select: { id: true, title: true, isActive: true },
     });
 
+    auditLog({ type: AuditType.ADMIN_EVENT_STATUS, message: `Event "${event.title}" ${isActive ? 'aktiviert' : 'deaktiviert'}`, eventId: id, data: { isActive }, req });
+
     return res.json({ ok: true, event });
   } catch (error: any) {
     return res.status(500).json({ error: 'Internal server error' });
@@ -109,6 +112,8 @@ router.delete('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequ
         data: { deletedAt: new Date() },
       });
     }
+
+    auditLog({ type: AuditType.ADMIN_EVENT_DELETED, message: `Event ${permanent === 'true' ? 'permanent' : 'soft'} gelöscht`, eventId: id, data: { permanent: permanent === 'true' }, req });
 
     return res.json({ ok: true });
   } catch (error: any) {
@@ -231,6 +236,8 @@ router.put('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest
       },
     });
 
+    auditLog({ type: AuditType.ADMIN_EVENT_UPDATED, message: `Event "${event.title}" bearbeitet`, eventId: id, data: { fields: Object.keys(parsed.data) }, req });
+
     return res.json({ ok: true, event });
   } catch (error: any) {
     if (error.code === 'P2025') {
@@ -348,6 +355,8 @@ router.put('/:id/change-package', authMiddleware, requireRole('ADMIN'), async (r
         },
       });
     }
+
+    auditLog({ type: AuditType.ADMIN_PACKAGE_CHANGED, message: `Paket geändert: ${existing?.wcSku || 'free'} → ${sku}`, eventId: id, data: { previousSku: existing?.wcSku || 'free', newSku: sku, newTier: targetPkg.resultingTier }, req });
 
     return res.json({
       ok: true,
@@ -570,6 +579,8 @@ router.post('/', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, 
         });
       }
     }
+
+    auditLog({ type: AuditType.ADMIN_EVENT_CREATED, message: `Event "${title}" für ${host.email} erstellt`, eventId: event.id, data: { hostId, packageSku }, req });
 
     return res.status(201).json({
       ok: true,

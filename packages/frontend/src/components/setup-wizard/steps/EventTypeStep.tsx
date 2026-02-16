@@ -120,16 +120,16 @@ export default function EventTypeStep({
               }}
               className={`relative p-4 rounded-2xl border-2 transition-all text-left ${
                 isSelected
-                  ? 'border-amber-500 bg-amber-50 shadow-lg shadow-amber-100'
+                  ? 'border-warning bg-warning/10 shadow-lg shadow-warning/10'
                   : 'border-border bg-card hover:border-border hover:bg-background'
               }`}
             >
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-2 ${
-                isSelected ? 'bg-amber-500' : 'bg-background'
+                isSelected ? 'bg-warning' : 'bg-background'
               }`}>
                 <IconComponent className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-muted-foreground'}`} />
               </div>
-              <p className={`font-semibold ${isSelected ? 'text-amber-900' : 'text-foreground'}`}>
+              <p className={`font-semibold ${isSelected ? 'text-foreground' : 'text-foreground'}`}>
                 {config.label}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">{config.description}</p>
@@ -138,7 +138,7 @@ export default function EventTypeStep({
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute top-2 right-2 w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center"
+                  className="absolute top-2 right-2 w-6 h-6 rounded-full bg-warning flex items-center justify-center"
                 >
                   <Icons.Check className="w-4 h-4 text-white" />
                 </motion.div>
@@ -166,11 +166,11 @@ export default function EventTypeStep({
                   onClick={() => onSelectSubtype(subtype.id)}
                   className={`px-4 py-3 rounded-xl border-2 text-left transition-all ${
                     isSelected
-                      ? 'border-amber-500 bg-amber-50'
+                      ? 'border-warning bg-warning/10'
                       : 'border-border hover:border-border'
                   }`}
                 >
-                  <span className={`text-sm font-medium ${isSelected ? 'text-amber-700' : 'text-foreground'}`}>
+                  <span className={`text-sm font-medium ${isSelected ? 'text-warning' : 'text-foreground'}`}>
                     {subtype.label}
                   </span>
                 </motion.button>
@@ -188,7 +188,7 @@ export default function EventTypeStep({
       >
         <Button
           onClick={onNext}
-          className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3"
+          className="w-full bg-warning hover:opacity-90 text-warning-foreground py-3"
         >
           Weiter
           <Icons.ArrowRight className="w-4 h-4 ml-2" />

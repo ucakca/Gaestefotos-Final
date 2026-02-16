@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import api from '@/lib/api';
+import { PageTransition } from '@/components/ui/PageTransition';
+import toast from 'react-hot-toast';
 import {
   Zap,
   Users,
@@ -60,23 +62,6 @@ interface OverviewData {
   balances: CreditBalance[];
 }
 
-// ─── Toast ──────────────────────────────────────────────────────────────────
-
-function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
-  useEffect(() => {
-    const t = setTimeout(onClose, 4000);
-    return () => clearTimeout(t);
-  }, [onClose]);
-
-  return (
-    <div className={`fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-white
-      ${type === 'success' ? 'bg-success' : 'bg-destructive'}`}>
-      {type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-      <span className="text-sm">{message}</span>
-      <button onClick={onClose} className="ml-2 hover:opacity-80"><X className="w-3 h-3" /></button>
-    </div>
-  );
-}
 
 // ─── Main Page ──────────────────────────────────────────────────────────────
 
@@ -91,7 +76,6 @@ export default function CreditsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [addForm, setAddForm] = useState({ amount: 100, type: 'BONUS' as string, description: '' });
   const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const loadOverview = useCallback(async () => {
     try {
@@ -99,7 +83,7 @@ export default function CreditsPage() {
       const res = await api.get('/admin/credits/overview');
       setOverview(res.data);
     } catch (err) {
-      setToast({ message: 'Fehler beim Laden der Übersicht', type: 'error' });
+      toast.error('Fehler beim Laden der Übersicht');
     } finally {
       setLoading(false);
     }
@@ -114,7 +98,7 @@ export default function CreditsPage() {
       setTxTotal(res.data.pagination.total);
       setTxPage(page);
     } catch {
-      setToast({ message: 'Fehler beim Laden der Transaktionen', type: 'error' });
+      toast.error('Fehler beim Laden der Transaktionen');
     }
   }, []);
 
@@ -128,13 +112,13 @@ export default function CreditsPage() {
     setSaving(true);
     try {
       await api.post(`/admin/credits/${selectedUser.userId}/add`, addForm);
-      setToast({ message: `${addForm.amount} Credits hinzugefügt`, type: 'success' });
+      toast.success(`${addForm.amount} Credits hinzugefügt`);
       setShowAddModal(false);
       setAddForm({ amount: 100, type: 'BONUS', description: '' });
       loadOverview();
       loadTransactions(selectedUser.userId, 1);
     } catch {
-      setToast({ message: 'Fehler beim Hinzufügen', type: 'error' });
+      toast.error('Fehler beim Hinzufügen');
     } finally {
       setSaving(false);
     }
@@ -178,17 +162,19 @@ export default function CreditsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-
+    <PageTransition className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-app-foreground flex items-center gap-2">
-            <Zap className="w-7 h-7 text-amber-500" />
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-md shadow-amber-500/20">
+            <Zap className="w-5 h-5 text-white" />
+          </div>
+          <div>
+          <h1 className="text-2xl font-bold text-app-foreground">
             AI Credits
           </h1>
-          <p className="text-sm text-app-muted mt-1">Credit-Verwaltung für AI-Features</p>
+          <p className="text-sm text-app-muted">Credit-Verwaltung für AI-Features</p>
+          </div>
         </div>
         <button onClick={loadOverview} className="flex items-center gap-2 px-3 py-2 text-sm bg-app-card border border-app-border rounded-lg hover:bg-app-muted/10">
           <RefreshCw className="w-4 h-4" /> Aktualisieren
@@ -461,6 +447,6 @@ export default function CreditsPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 }

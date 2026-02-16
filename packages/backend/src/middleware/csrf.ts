@@ -1,16 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import { logger } from '../utils/logger';
+import { getRedis } from '../services/cache/redis';
 
-/**
- * CSRF Token Storage
- * In production, use Redis or similar distributed cache
- */
-const tokenStore = new Map<string, { token: string; expiresAt: number }>();
-
-const CSRF_TOKEN_EXPIRY = 60 * 60 * 1000; // 1 hour
+const CSRF_TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
+const CSRF_TOKEN_EXPIRY_SEC = 3600; // 1 hour in seconds
 const CSRF_HEADER = 'x-csrf-token';
 const CSRF_COOKIE = 'csrf-token';
+const CSRF_PREFIX = 'csrf:';
 
 /**
  * Generate CSRF token
@@ -20,54 +17,42 @@ export function generateCsrfToken(): string {
 }
 
 /**
- * Store CSRF token for session
+ * Store CSRF token for session (Redis-backed for multi-instance support)
  */
-function storeCsrfToken(sessionId: string, token: string): void {
-  tokenStore.set(sessionId, {
-    token,
-    expiresAt: Date.now() + CSRF_TOKEN_EXPIRY,
-  });
-
-  // Cleanup expired tokens periodically
-  if (Math.random() < 0.01) {
-    cleanupExpiredTokens();
+async function storeCsrfToken(sessionId: string, token: string): Promise<void> {
+  try {
+    const redis = getRedis();
+    await redis.setex(`${CSRF_PREFIX}${sessionId}`, CSRF_TOKEN_EXPIRY_SEC, token);
+  } catch (error) {
+    logger.warn('[csrf] Redis store failed, CSRF token not persisted', { error });
   }
 }
 
 /**
- * Verify CSRF token
+ * Verify CSRF token (Redis-backed)
  */
-function verifyCsrfToken(sessionId: string, token: string): boolean {
-  const stored = tokenStore.get(sessionId);
-  
-  if (!stored) {
+async function verifyCsrfToken(sessionId: string, token: string): Promise<boolean> {
+  try {
+    const redis = getRedis();
+    const stored = await redis.get(`${CSRF_PREFIX}${sessionId}`);
+    if (!stored) return false;
+    return stored === token;
+  } catch (error) {
+    logger.warn('[csrf] Redis verify failed, rejecting CSRF token', { error });
     return false;
   }
-
-  if (stored.expiresAt < Date.now()) {
-    tokenStore.delete(sessionId);
-    return false;
-  }
-
-  return stored.token === token;
 }
 
 /**
- * Cleanup expired tokens
+ * Get existing CSRF token from Redis
  */
-function cleanupExpiredTokens(): void {
-  const now = Date.now();
-  let cleanedCount = 0;
-
-  tokenStore.forEach((value, key) => {
-    if (value.expiresAt < now) {
-      tokenStore.delete(key);
-      cleanedCount++;
-    }
-  });
-
-  if (cleanedCount > 0) {
-    logger.debug('[csrf] Cleaned up expired tokens', { count: cleanedCount });
+async function getStoredCsrfToken(sessionId: string): Promise<string | null> {
+  try {
+    const redis = getRedis();
+    return await redis.get(`${CSRF_PREFIX}${sessionId}`);
+  } catch (error) {
+    logger.warn('[csrf] Redis get failed', { error });
+    return null;
   }
 }
 
@@ -75,7 +60,7 @@ function cleanupExpiredTokens(): void {
  * CSRF Protection Middleware
  * Validates CSRF token for state-changing requests (POST, PUT, DELETE, PATCH)
  */
-export function csrfProtection(req: Request, res: Response, next: NextFunction): void | Response {
+export function csrfProtection(req: Request, res: Response, next: NextFunction): void {
   const method = req.method.toUpperCase();
 
   // Skip CSRF for safe methods
@@ -92,7 +77,8 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction):
       path: req.path,
       ip: req.ip,
     });
-    return res.status(403).json({ error: 'CSRF-Token fehlt (keine Session)' });
+    res.status(403).json({ error: 'CSRF-Token fehlt (keine Session)' });
+    return;
   }
 
   // Extract CSRF token from header or body
@@ -105,22 +91,27 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction):
       sessionId,
       ip: req.ip,
     });
-    return res.status(403).json({ error: 'CSRF-Token fehlt' });
+    res.status(403).json({ error: 'CSRF-Token fehlt' });
+    return;
   }
 
-  // Verify token
-  if (!verifyCsrfToken(sessionId, csrfToken)) {
-    logger.warn('[csrf] CSRF token validation failed', {
-      method,
-      path: req.path,
-      sessionId,
-      ip: req.ip,
-    });
-    return res.status(403).json({ error: 'CSRF-Token ungültig' });
-  }
-
-  // Token valid, proceed
-  next();
+  // Verify token via Redis
+  verifyCsrfToken(sessionId, csrfToken).then((valid) => {
+    if (!valid) {
+      logger.warn('[csrf] CSRF token validation failed', {
+        method,
+        path: req.path,
+        sessionId,
+        ip: req.ip,
+      });
+      res.status(403).json({ error: 'CSRF-Token ungültig' });
+      return;
+    }
+    next();
+  }).catch((err) => {
+    logger.error('[csrf] CSRF verification error', { error: err });
+    res.status(500).json({ error: 'Internal server error' });
+  });
 }
 
 /**
@@ -134,31 +125,35 @@ export function csrfTokenGenerator(req: Request, res: Response, next: NextFuncti
     return next();
   }
 
-  // Check if token already exists and is valid
-  const existing = tokenStore.get(sessionId);
-  
-  if (existing && existing.expiresAt > Date.now()) {
-    // Attach existing token to response
-    res.locals.csrfToken = existing.token;
-    return next();
-  }
+  // Check if token already exists in Redis
+  getStoredCsrfToken(sessionId).then((existing) => {
+    if (existing) {
+      res.locals.csrfToken = existing;
+      return next();
+    }
 
-  // Generate new token
-  const token = generateCsrfToken();
-  storeCsrfToken(sessionId, token);
+    // Generate new token
+    const token = generateCsrfToken();
+    storeCsrfToken(sessionId, token).then(() => {
+      res.locals.csrfToken = token;
 
-  // Attach to response locals for access in routes
-  res.locals.csrfToken = token;
+      // Set cookie for client-side access
+      res.cookie(CSRF_COOKIE, token, {
+        httpOnly: false, // Allow JS access for sending in headers
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: CSRF_TOKEN_EXPIRY_MS,
+      });
 
-  // Set cookie for client-side access (HttpOnly for security)
-  res.cookie(CSRF_COOKIE, token, {
-    httpOnly: false, // Allow JS access for sending in headers
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: CSRF_TOKEN_EXPIRY,
+      next();
+    }).catch((err) => {
+      logger.error('[csrf] Failed to store CSRF token', { error: err });
+      next();
+    });
+  }).catch((err) => {
+    logger.error('[csrf] Failed to check existing CSRF token', { error: err });
+    next();
   });
-
-  next();
 }
 
 /**

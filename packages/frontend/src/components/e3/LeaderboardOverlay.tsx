@@ -62,10 +62,14 @@ export default function LeaderboardOverlay({ isOpen, onClose, eventId }: Leaderb
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) onClose(); }}
             className="fixed bottom-0 left-0 right-0 z-[71] bg-card rounded-t-3xl shadow-2xl max-h-[85vh] overflow-hidden flex flex-col"
           >
             {/* Handle */}
-            <div className="flex justify-center pt-3 pb-1 shrink-0">
+            <div className="flex justify-center pt-3 pb-1 shrink-0 cursor-grab active:cursor-grabbing">
               <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
             </div>
 

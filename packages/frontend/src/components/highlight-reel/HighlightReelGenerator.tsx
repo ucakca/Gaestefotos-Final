@@ -131,26 +131,26 @@ export default function HighlightReelGenerator({ eventId, eventSlug }: Highlight
     switch (status) {
       case 'complete': return 'bg-success/100';
       case 'error': return 'bg-destructive/100';
-      default: return 'bg-amber-500';
+      default: return 'bg-warning';
     }
   };
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-card shadow-sm overflow-hidden">
+    <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-stone-100 flex items-center justify-between">
+      <div className="p-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
             <Film className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-stone-800">Highlight Reel</h3>
-            <p className="text-sm text-stone-500">Automatisches Video aus deinen besten Fotos</p>
+            <h3 className="font-semibold text-foreground">Highlight Reel</h3>
+            <p className="text-sm text-muted-foreground">Automatisches Video aus deinen besten Fotos</p>
           </div>
         </div>
         <button
           onClick={() => setShowSettings(!showSettings)}
-          className="p-2 rounded-lg hover:bg-stone-100 text-stone-500"
+          className="p-2 rounded-lg hover:bg-muted text-muted-foreground"
         >
           <Settings className="w-5 h-5" />
         </button>
@@ -163,15 +163,15 @@ export default function HighlightReelGenerator({ eventId, eventSlug }: Highlight
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="border-b border-stone-100 overflow-hidden"
+            className="border-b border-border overflow-hidden"
           >
             <div className="p-4 grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-medium text-stone-600 mb-1 block">Sekunden pro Foto</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Sekunden pro Foto</label>
                 <select
                   value={settings.duration}
                   onChange={(e) => setSettings({ ...settings, duration: Number(e.target.value) })}
-                  className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
                 >
                   <option value={2}>2 Sekunden</option>
                   <option value={3}>3 Sekunden</option>
@@ -180,11 +180,11 @@ export default function HighlightReelGenerator({ eventId, eventSlug }: Highlight
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-stone-600 mb-1 block">Max. Fotos</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Max. Fotos</label>
                 <select
                   value={settings.maxPhotos}
                   onChange={(e) => setSettings({ ...settings, maxPhotos: Number(e.target.value) })}
-                  className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
                 >
                   <option value={10}>10 Fotos</option>
                   <option value={20}>20 Fotos</option>
@@ -193,11 +193,11 @@ export default function HighlightReelGenerator({ eventId, eventSlug }: Highlight
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-stone-600 mb-1 block">Auflösung</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Auflösung</label>
                 <select
                   value={settings.resolution}
                   onChange={(e) => setSettings({ ...settings, resolution: e.target.value as '720p' | '1080p' | '4k' })}
-                  className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
                 >
                   <option value="720p">720p (HD)</option>
                   <option value="1080p">1080p (Full HD)</option>
@@ -205,11 +205,11 @@ export default function HighlightReelGenerator({ eventId, eventSlug }: Highlight
                 </select>
               </div>
               <div>
-                <label className="text-xs font-medium text-stone-600 mb-1 block">Übergang</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">Übergang</label>
                 <select
                   value={settings.transition}
                   onChange={(e) => setSettings({ ...settings, transition: e.target.value as 'fade' | 'slide' | 'zoom' })}
-                  className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
                 >
                   <option value="fade">Überblenden</option>
                   <option value="zoom">Ken Burns (Zoom)</option>
@@ -222,12 +222,12 @@ export default function HighlightReelGenerator({ eventId, eventSlug }: Highlight
 
       {/* Progress */}
       {isGenerating && progress && (
-        <div className="p-4 border-b border-stone-100 bg-stone-50">
+        <div className="p-4 border-b border-border bg-muted/50">
           <div className="flex items-center gap-3 mb-2">
-            <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
-            <span className="text-sm font-medium text-stone-700">{progress.message}</span>
+            <Loader2 className="w-4 h-4 animate-spin text-warning" />
+            <span className="text-sm font-medium text-foreground">{progress.message}</span>
           </div>
-          <div className="h-2 bg-stone-200 rounded-full overflow-hidden">
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
             <motion.div
               className={`h-full ${getProgressColor(progress.status)}`}
               initial={{ width: 0 }}
@@ -240,19 +240,19 @@ export default function HighlightReelGenerator({ eventId, eventSlug }: Highlight
 
       {/* Existing Reels */}
       {reels.length > 0 && (
-        <div className="p-4 border-b border-stone-100">
-          <h4 className="text-sm font-medium text-stone-600 mb-3">Deine Videos</h4>
+        <div className="p-4 border-b border-border">
+          <h4 className="text-sm font-medium text-muted-foreground mb-3">Deine Videos</h4>
           <div className="space-y-2">
             {reels.map((url, index) => (
               <div
                 key={url}
-                className="flex items-center justify-between p-3 rounded-xl bg-stone-50"
+                className="flex items-center justify-between p-3 rounded-xl bg-muted/50"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-purple-500/15 flex items-center justify-center">
                     <Play className="w-4 h-4 text-purple-600" />
                   </div>
-                  <span className="text-sm font-medium text-stone-700">
+                  <span className="text-sm font-medium text-foreground">
                     Highlight Reel {index + 1}
                   </span>
                 </div>
@@ -261,20 +261,20 @@ export default function HighlightReelGenerator({ eventId, eventSlug }: Highlight
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 rounded-lg hover:bg-stone-200 text-stone-500"
+                    className="p-2 rounded-lg hover:bg-muted text-muted-foreground"
                   >
                     <Play className="w-4 h-4" />
                   </a>
                   <a
                     href={url}
                     download
-                    className="p-2 rounded-lg hover:bg-stone-200 text-stone-500"
+                    className="p-2 rounded-lg hover:bg-muted text-muted-foreground"
                   >
                     <Download className="w-4 h-4" />
                   </a>
                   <button
                     onClick={() => handleDelete(url)}
-                    className="p-2 rounded-lg hover:bg-destructive/15 text-stone-500 hover:text-destructive"
+                    className="p-2 rounded-lg hover:bg-destructive/15 text-muted-foreground hover:text-destructive"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -304,7 +304,7 @@ export default function HighlightReelGenerator({ eventId, eventSlug }: Highlight
             </>
           )}
         </Button>
-        <p className="text-xs text-stone-500 text-center mt-2">
+        <p className="text-xs text-muted-foreground text-center mt-2">
           Die beliebtesten Fotos werden automatisch ausgewählt
         </p>
       </div>

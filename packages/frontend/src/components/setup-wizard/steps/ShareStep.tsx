@@ -132,11 +132,11 @@ export default function ShareStep({
         >
           <button
             onClick={handlePreview}
-            className="w-full flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 hover:border-amber-300 rounded-xl transition-colors"
+            className="w-full flex items-center justify-center gap-2 p-3 bg-warning/10 border border-warning/30 hover:border-warning/50 rounded-xl transition-colors"
           >
-            <Eye className="w-5 h-5 text-amber-600" />
-            <span className="font-medium text-amber-700">Event-Seite Vorschau</span>
-            <ExternalLink className="w-4 h-4 text-amber-500" />
+            <Eye className="w-5 h-5 text-warning" />
+            <span className="font-medium text-warning">Event-Seite Vorschau</span>
+            <ExternalLink className="w-4 h-4 text-warning" />
           </button>
         </motion.div>
       )}
@@ -167,27 +167,27 @@ export default function ShareStep({
           {/* Facebook */}
           <button
             onClick={handleFacebook}
-            className="flex items-center gap-3 p-4 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"
+            className="flex items-center gap-3 p-4 bg-blue-500/10 hover:bg-blue-500/15 rounded-xl transition-colors"
           >
             <div className="w-10 h-10 flex-shrink-0 rounded-full bg-[#1877F2] flex items-center justify-center">
               <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
             </div>
-            <span className="font-medium text-blue-700">Facebook</span>
+            <span className="font-medium text-foreground">Facebook</span>
           </button>
 
           {/* Instagram */}
           <button
             onClick={handleInstagram}
-            className="flex items-center gap-3 p-4 bg-pink-50 hover:bg-pink-100 rounded-xl transition-colors"
+            className="flex items-center gap-3 p-4 bg-pink-500/10 hover:bg-pink-500/15 rounded-xl transition-colors"
           >
             <div className="w-10 h-10 flex-shrink-0 rounded-full bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#FCAF45] flex items-center justify-center">
               <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
               </svg>
             </div>
-            <span className="font-medium text-pink-700">Instagram</span>
+            <span className="font-medium text-foreground">Instagram</span>
           </button>
 
           {/* Email */}
@@ -224,27 +224,27 @@ export default function ShareStep({
                 {/* Telegram */}
                 <button
                   onClick={handleTelegram}
-                  className="flex items-center gap-3 p-3 bg-sky-50 hover:bg-sky-100 rounded-xl transition-colors"
+                  className="flex items-center gap-3 p-3 bg-sky-500/10 hover:bg-sky-500/15 rounded-xl transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-[#0088cc] flex items-center justify-center">
                     <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
                     </svg>
                   </div>
-                  <span className="text-sm font-medium text-sky-700">Telegram</span>
+                  <span className="text-sm font-medium text-foreground">Telegram</span>
                 </button>
 
                 {/* Messenger */}
                 <button
                   onClick={handleMessenger}
-                  className="flex items-center gap-3 p-3 bg-purple-50 hover:bg-purple-100 rounded-xl transition-colors"
+                  className="flex items-center gap-3 p-3 bg-purple-500/10 hover:bg-purple-500/15 rounded-xl transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00B2FF] to-[#006AFF] flex items-center justify-center">
                     <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 0C5.373 0 0 4.974 0 11.111c0 3.498 1.744 6.614 4.469 8.654V24l4.088-2.242c1.092.301 2.246.464 3.443.464 6.627 0 12-4.975 12-11.111S18.627 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26L10.732 8l3.131 3.259L19.752 8l-6.561 6.963z"/>
                     </svg>
                   </div>
-                  <span className="text-sm font-medium text-purple-700">Messenger</span>
+                  <span className="text-sm font-medium text-foreground">Messenger</span>
                 </button>
 
                 {/* SMS */}
@@ -284,9 +284,9 @@ export default function ShareStep({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="bg-amber-50 border border-amber-100 rounded-xl p-4"
+        className="bg-warning/10 border border-warning/20 rounded-xl p-4"
       >
-        <p className="text-sm text-amber-700">
+        <p className="text-sm text-foreground">
           💡 <strong>Tipp:</strong> Teile den Link in der Einladung oder drucke den QR-Code auf Tischkarten!
         </p>
       </motion.div>
@@ -304,7 +304,7 @@ export default function ShareStep({
         </Button>
         <Button
           onClick={onNext}
-          className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+          className="flex-1 bg-warning hover:opacity-90 text-warning-foreground"
         >
           Weiter
           <ArrowRight className="w-4 h-4 ml-2" />

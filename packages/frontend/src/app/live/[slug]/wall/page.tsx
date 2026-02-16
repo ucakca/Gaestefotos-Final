@@ -8,6 +8,8 @@ import { Event as EventType, Photo } from '@gaestefotos/shared';
 import { useEventRealtime } from '@/hooks/useEventRealtime';
 import { wsManager } from '@/lib/websocket';
 import QRCode from '@/components/QRCode';
+import { EventThemeProvider, useEventTheme } from '@/components/event-theme/EventThemeProvider';
+import { WallThemeOverlay } from '@/components/event-theme/WallThemeOverlay';
 import { Button } from '@/components/ui/Button';
 import MosaicGrid, { MosaicTileData } from '@/components/mosaic/MosaicGrid';
 import MosaicTicker from '@/components/mosaic/MosaicTicker';
@@ -350,7 +352,12 @@ export default function LiveWallPage() {
     ? `${window.location.origin}/e3/${slug}?source=qr`
     : '';
 
+  const eventTheme = (event as any)?.theme || null;
+  const customThemeData = (event as any)?.customThemeData || null;
+
   return (
+    <EventThemeProvider theme={eventTheme} customOverrides={customThemeData}>
+    <WallThemeOverlay />
     <div className={`min-h-screen bg-foreground text-background ${cursorHidden ? 'cursor-none' : ''}`}>
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-10 bg-foreground/50 p-4 flex justify-between items-center">
@@ -860,6 +867,7 @@ export default function LiveWallPage() {
         </Suspense>
       )}
     </div>
+    </EventThemeProvider>
   );
 }
 

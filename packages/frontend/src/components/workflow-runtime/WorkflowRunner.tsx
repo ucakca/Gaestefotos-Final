@@ -15,6 +15,7 @@ import { StepAfterShare } from './steps/StepAfterShare';
 import { StepDelay } from './steps/StepDelay';
 import { StepCountdown } from './steps/StepCountdown';
 import { StepPrint } from './steps/StepPrint';
+import { StepSubWorkflow } from './steps/StepSubWorkflow';
 import { StepGeneric } from './steps/StepGeneric';
 
 export interface WorkflowRunnerProps {
@@ -42,6 +43,7 @@ const STEP_COMPONENTS: Record<string, React.FC<StepRendererProps>> = {
   DELAY: StepDelay,
   COUNTDOWN: StepCountdown,
   PRINT: StepPrint,
+  SUB_WORKFLOW: StepSubWorkflow,
 };
 
 export interface StepRendererProps {

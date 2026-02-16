@@ -231,26 +231,41 @@ export default function DashboardPage() {
 
               {/* Quick Stats Row */}
               <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-3">
-                  <div className="flex items-center gap-2 text-blue-600 mb-1">
-                    <Camera className="w-4 h-4" />
-                    <span className="text-xs font-medium">MEDIEN</span>
+                <div className="group relative bg-card border border-border rounded-xl p-3 hover:shadow-md transition-all">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/5 rounded-xl opacity-60 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                        <Camera className="w-3.5 h-3.5 text-white" />
+                      </div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Medien</span>
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">{totalMedia}</p>
                   </div>
-                  <p className="text-2xl font-bold text-blue-900">{totalMedia}</p>
                 </div>
-                <div className="bg-gradient-to-br from-green-50 to-green-100 border border-success/30 rounded-xl p-3">
-                  <div className="flex items-center gap-2 text-success mb-1">
-                    <Users className="w-4 h-4" />
-                    <span className="text-xs font-medium">BESUCHER</span>
+                <div className="group relative bg-card border border-border rounded-xl p-3 hover:shadow-md transition-all">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 rounded-xl opacity-60 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                        <Users className="w-3.5 h-3.5 text-white" />
+                      </div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Besucher</span>
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">{totalVisitors}</p>
                   </div>
-                  <p className="text-2xl font-bold text-success">{totalVisitors}</p>
                 </div>
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-3">
-                  <div className="flex items-center gap-2 text-purple-600 mb-1">
-                    <Sparkles className="w-4 h-4" />
-                    <span className="text-xs font-medium">EVENTS</span>
+                <div className="group relative bg-card border border-border rounded-xl p-3 hover:shadow-md transition-all">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/5 rounded-xl opacity-60 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                        <Sparkles className="w-3.5 h-3.5 text-white" />
+                      </div>
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Events</span>
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">{events.length}</p>
                   </div>
-                  <p className="text-2xl font-bold text-purple-900">{events.length}</p>
                 </div>
               </div>
             </motion.div>
@@ -271,7 +286,7 @@ export default function DashboardPage() {
                   <div className="relative">
                     <button
                       onClick={() => setShowStatusInfo(!showStatusInfo)}
-                      className="p-1 rounded-full hover:bg-stone-100 transition-colors"
+                      className="p-1 rounded-full hover:bg-muted transition-colors"
                     >
                       <Info className="w-4 h-4 text-muted-foreground" />
                     </button>
@@ -326,8 +341,8 @@ export default function DashboardPage() {
                       onClick={() => setStatusFilter(tab.id as any)}
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                         statusFilter === tab.id
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-card text-muted-foreground hover:bg-border'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-card text-muted-foreground hover:bg-muted'
                       }`}
                     >
                       {tab.label} ({tab.count})
@@ -350,13 +365,13 @@ export default function DashboardPage() {
                 <div className="hidden sm:flex bg-card border border-border rounded-lg p-1">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-500 text-white' : 'text-muted-foreground hover:text-foreground'}`}
+                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                   >
                     <Grid3X3 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'text-muted-foreground hover:text-foreground'}`}
+                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                   >
                     <List className="w-4 h-4" />
                   </button>
@@ -382,8 +397,8 @@ export default function DashboardPage() {
               animate={{ opacity: 1, scale: 1 }}
               className="text-center py-16"
             >
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 border border-amber-200 mx-auto mb-6 flex items-center justify-center">
-                <Camera className="w-12 h-12 text-amber-600" />
+              <div className="w-24 h-24 rounded-full bg-primary/10 border border-primary/20 mx-auto mb-6 flex items-center justify-center">
+                <Camera className="w-12 h-12 text-primary" />
               </div>
               {searchQuery ? (
                 <>
@@ -397,7 +412,7 @@ export default function DashboardPage() {
                 <>
                   <h3 className="text-xl font-semibold text-foreground mb-2">Willkommen bei Gästefotos! 🎉</h3>
                   <p className="text-muted-foreground mb-6 max-w-md mx-auto">Erstelle dein erstes Event und sammle unvergessliche Momente mit deinen Gästen.</p>
-                  <Button variant="primary" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0" onClick={handleCreateEvent}>
+                  <Button variant="primary" onClick={handleCreateEvent}>
                     <Plus className="w-4 h-4 mr-2" />
                     Erstes Event erstellen
                   </Button>
@@ -406,8 +421,8 @@ export default function DashboardPage() {
             </motion.div>
           ) : (
             <div className={viewMode === 'grid' 
-              ? 'space-y-3 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-4 sm:space-y-0' 
-              : 'space-y-3'
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5' 
+              : 'space-y-4'
             }>
               <AnimatePresence>
                 {filteredEvents.map((event, index) => (
@@ -432,15 +447,15 @@ export default function DashboardPage() {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="fixed top-16 left-4 right-4 z-50 bg-amber-50 border border-amber-300 rounded-xl p-4 shadow-lg"
+              className="fixed top-16 left-4 right-4 z-50 bg-warning/10 border border-warning/30 rounded-xl p-4 shadow-lg"
             >
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-amber-800">{limitMessage}</p>
+                  <p className="text-sm font-medium text-foreground">{limitMessage}</p>
                   <div className="flex gap-2 mt-2">
-                    <a href="https://gästefotos.com/pakete" className="text-xs font-medium text-amber-600 hover:text-amber-700 underline">Pakete ansehen →</a>
-                    <button onClick={() => setLimitMessage(null)} className="text-xs text-amber-500 hover:text-amber-700 ml-auto">Schließen</button>
+                    <a href="https://gästefotos.com/pakete" className="text-xs font-medium text-warning hover:underline">Pakete ansehen →</a>
+                    <button onClick={() => setLimitMessage(null)} className="text-xs text-muted-foreground hover:text-foreground ml-auto">Schließen</button>
                   </div>
                 </div>
               </div>
@@ -451,7 +466,7 @@ export default function DashboardPage() {
         {/* Floating "+ Event" Button - above bottom nav */}
         <button 
           onClick={handleCreateEvent}
-          className="fixed bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-full font-semibold text-sm shadow-lg hover:from-pink-600 hover:to-rose-600 transition-all z-50"
+          className="fixed bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-2 px-6 py-3 btn-primary rounded-full font-semibold text-sm shadow-lg transition-all z-50"
         >
           <Plus className="w-5 h-5" />
           Event
@@ -460,7 +475,7 @@ export default function DashboardPage() {
         {/* Bottom Nav */}
         <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border z-50 shadow-lg">
           <div className="flex items-center justify-around py-3">
-            <Link href="/dashboard" className="flex flex-col items-center gap-1 text-blue-600">
+            <Link href="/dashboard" className="flex flex-col items-center gap-1 text-primary">
               <Grid3X3 className="w-5 h-5" />
               <span className="text-xs font-medium">Events</span>
             </Link>

@@ -16,7 +16,7 @@ import {
 } from '@tanstack/react-table';
 import api from '@/lib/api';
 import { Guest, Event as EventType } from '@gaestefotos/shared';
-import { Trash2, Mail, UserPlus, Upload, FileText, ArrowUpDown, ChevronLeft, ChevronRight, User } from 'lucide-react';
+import { Trash2, Mail, UserPlus, Upload, FileText, ArrowUpDown, ChevronLeft, ChevronRight, User, X } from 'lucide-react';
 import GuestStatusBadge, { type GuestStatus } from '@/components/dashboard/GuestStatusBadge';
 import GuestActionMenu from '@/components/dashboard/GuestActionMenu';
 import BulkActionsToolbar from '@/components/dashboard/BulkActionsToolbar';
@@ -100,6 +100,7 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
     dietaryRequirements: '',
     plusOneCount: 0,
   });
+  const [detailGuest, setDetailGuest] = useState<Guest | null>(null);
 
   useEffect(() => {
     if (eventId) loadData();
@@ -292,8 +293,14 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
       cell: ({ row }) => (
         <GuestActionMenu
           onDelete={() => handleDelete(row.original.id)}
-          onSendEmail={() => {/* TODO: Implement email */}}
-          onViewDetails={() => {/* TODO: Implement details */}}
+          onSendEmail={() => {
+            const g = row.original;
+            const email = g.email;
+            if (!email) { showToast('Keine E-Mail-Adresse hinterlegt', 'error'); return; }
+            const subject = encodeURIComponent(`Einladung: ${event?.title || ''}`);
+            window.location.href = `mailto:${email}?subject=${subject}`;
+          }}
+          onViewDetails={() => setDetailGuest(row.original)}
         />
       ),
     },
@@ -326,6 +333,7 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
   }
 
   return (
+    <>
     <AlertDialog open={confirmOpen} onOpenChange={(open) => (open ? null : closeConfirm(false))}>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -608,5 +616,65 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
       </div>
     </div>
     </AlertDialog>
+
+      {/* Guest Detail Dialog */}
+      {detailGuest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setDetailGuest(null)} />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative bg-card rounded-2xl shadow-xl border border-border p-6 w-full max-w-md mx-4 z-10"
+          >
+            <button onClick={() => setDetailGuest(null)} className="absolute top-4 right-4 p-1 rounded-lg hover:bg-muted">
+              <X className="w-5 h-5 text-muted-foreground" />
+            </button>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <User className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">{detailGuest.firstName} {detailGuest.lastName}</h3>
+                {detailGuest.email && <p className="text-sm text-muted-foreground">{detailGuest.email}</p>}
+              </div>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between py-2 border-b border-border">
+                <span className="text-muted-foreground">Begleitung</span>
+                <span className="font-medium text-foreground">{(detailGuest as any).plusOneCount > 0 ? `+${(detailGuest as any).plusOneCount}` : 'Keine'}</span>
+              </div>
+              {(detailGuest as any).dietaryRequirements && (
+                <div className="flex justify-between py-2 border-b border-border">
+                  <span className="text-muted-foreground">Essenswünsche</span>
+                  <span className="font-medium text-foreground">{(detailGuest as any).dietaryRequirements}</span>
+                </div>
+              )}
+              <div className="flex justify-between py-2 border-b border-border">
+                <span className="text-muted-foreground">Erstellt</span>
+                <span className="font-medium text-foreground">{new Date((detailGuest as any).createdAt).toLocaleDateString('de-DE')}</span>
+              </div>
+            </div>
+            <div className="mt-5 flex gap-2">
+              {detailGuest.email && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    const subject = encodeURIComponent(`Einladung: ${event?.title || ''}`);
+                    window.location.href = `mailto:${detailGuest.email}?subject=${subject}`;
+                  }}
+                  className="flex-1"
+                >
+                  <Mail className="w-4 h-4 mr-1" /> E-Mail
+                </Button>
+              )}
+              <Button variant="danger" size="sm" onClick={() => { handleDelete(detailGuest.id); setDetailGuest(null); }} className="flex-1">
+                <Trash2 className="w-4 h-4 mr-1" /> Löschen
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </>
   );
 }

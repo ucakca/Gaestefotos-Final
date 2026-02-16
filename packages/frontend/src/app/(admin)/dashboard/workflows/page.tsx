@@ -18,11 +18,17 @@ import {
   ArrowDown,
   ArrowUp,
   CheckCircle2,
+  GitBranch,
+  AlertTriangle,
+  Eye,
 } from 'lucide-react';
 import api from '@/lib/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/Button';
+import { WorkflowGraphVisualizer } from '@/components/workflow-builder/WorkflowGraphVisualizer';
+import { SubWorkflowPicker } from '@/components/workflow-builder/SubWorkflowPicker';
+import { EditingSessionBanner } from '@/components/workflow-builder/EditingSessionBanner';
 
 interface BoothWorkflow {
   id: string;
@@ -31,6 +37,9 @@ interface BoothWorkflow {
   steps: WorkflowStep[];
   isPublic: boolean;
   isDefault: boolean;
+  isLocked: boolean;
+  version: number;
+  lockedBy: string | null;
   createdAt: string;
 }
 
@@ -51,6 +60,7 @@ const STEP_TYPES = [
   { value: 'GRAFFITI', label: 'Digital Graffiti', icon: Edit3, color: 'text-destructive' },
   { value: 'SHARE', label: 'Teilen/Drucken', icon: Star, color: 'text-indigo-500' },
   { value: 'THANK_YOU', label: 'Danke-Screen', icon: CheckCircle2, color: 'text-teal-500' },
+  { value: 'SUB_WORKFLOW', label: 'Sub-Workflow', icon: GitBranch, color: 'text-violet-500' },
 ];
 
 let stepIdCounter = 0;
@@ -69,6 +79,9 @@ export default function WorkflowsAdminPage() {
   const [formPublic, setFormPublic] = useState(false);
   const [formDefault, setFormDefault] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [formVersion, setFormVersion] = useState<number>(1);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [showGraph, setShowGraph] = useState(true);
 
   const loadWorkflows = useCallback(async () => {
     try {
@@ -95,22 +108,38 @@ export default function WorkflowsAdminPage() {
   };
 
   const startEdit = (w: BoothWorkflow) => {
+    if (w.isLocked) {
+      alert(`Workflow ist gesperrt${w.lockedBy ? ` von ${w.lockedBy}` : ''}. Bitte zuerst entsperren.`);
+      return;
+    }
     setFormName(w.name);
     setFormDesc(w.description || '');
     setFormSteps(w.steps || []);
     setFormPublic(w.isPublic);
     setFormDefault(w.isDefault);
+    setFormVersion(w.version || 1);
+    setSaveError(null);
     setEditingId(w.id);
     setShowEditor(true);
   };
 
-  const addStep = (type: string) => {
+  const addStep = (type: string, config?: Record<string, any>) => {
     const info = STEP_TYPES.find(s => s.value === type);
     setFormSteps(prev => [...prev, {
       id: newStepId(),
       type,
       label: info?.label || type,
       duration: type === 'COUNTDOWN' ? 3 : undefined,
+      config: config || undefined,
+    }]);
+  };
+
+  const addSubWorkflow = (wf: { id: string; name: string; flowType: string }) => {
+    setFormSteps(prev => [...prev, {
+      id: newStepId(),
+      type: 'SUB_WORKFLOW',
+      label: `Sub: ${wf.name}`,
+      config: { workflowId: wf.id, workflowType: wf.flowType, label: wf.name, passData: true },
     }]);
   };
 
@@ -140,7 +169,8 @@ export default function WorkflowsAdminPage() {
     if (!formName || formSteps.length === 0) return;
     try {
       setSaving(true);
-      const payload = {
+      setSaveError(null);
+      const payload: any = {
         name: formName,
         description: formDesc || null,
         steps: formSteps,
@@ -149,14 +179,21 @@ export default function WorkflowsAdminPage() {
       };
 
       if (editingId) {
-        await api.put(`/workflows/${editingId}`, payload);
+        payload.expectedVersion = formVersion;
+        const { data } = await api.put(`/workflows/${editingId}`, payload);
+        setFormVersion(data.workflow?.version || formVersion + 1);
       } else {
         await api.post('/workflows', payload);
       }
       resetForm();
       loadWorkflows();
-    } catch (err) {
-      console.error('Save failed', err);
+    } catch (err: any) {
+      if (err?.response?.status === 409) {
+        setSaveError('Konflikt: Jemand hat diesen Workflow zwischenzeitlich geändert. Bitte neu laden und erneut versuchen.');
+      } else {
+        console.error('Save failed', err);
+        setSaveError('Speichern fehlgeschlagen');
+      }
     } finally {
       setSaving(false);
     }
@@ -193,8 +230,20 @@ export default function WorkflowsAdminPage() {
             <div className="bg-card rounded-xl border border-border p-6 space-y-5">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-foreground">{editingId ? 'Workflow bearbeiten' : 'Neuer Workflow'}</h3>
-                <button onClick={resetForm} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
+                <div className="flex items-center gap-2">
+                  {editingId && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-mono">v{formVersion}</span>
+                  )}
+                  <button onClick={resetForm} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></button>
+                </div>
               </div>
+
+              {/* Editing Session Banner */}
+              <EditingSessionBanner
+                workflowId={editingId}
+                userName="Admin"
+                isEditing={!!editingId}
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -213,15 +262,40 @@ export default function WorkflowsAdminPage() {
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Step hinzufügen</label>
                 <div className="flex flex-wrap gap-2">
-                  {STEP_TYPES.map(st => (
+                  {STEP_TYPES.filter(st => st.value !== 'SUB_WORKFLOW').map(st => (
                     <button key={st.value} onClick={() => addStep(st.value)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-background text-sm text-foreground hover:bg-muted/50 transition-colors">
                       <st.icon className={`w-3.5 h-3.5 ${st.color}`} />
                       {st.label}
                     </button>
                   ))}
+                  <SubWorkflowPicker
+                    excludeWorkflowId={editingId || undefined}
+                    onSelect={(wf) => addSubWorkflow({ id: wf.id, name: wf.name, flowType: wf.flowType })}
+                  />
                 </div>
               </div>
+
+              {/* Graph Visualizer */}
+              {formSteps.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-foreground">Workflow-Graph</label>
+                    <button
+                      onClick={() => setShowGraph(!showGraph)}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <Eye className="w-3 h-3" />
+                      {showGraph ? 'Ausblenden' : 'Einblenden'}
+                    </button>
+                  </div>
+                  {showGraph && (
+                    <div className="bg-muted/30 rounded-xl border border-border p-3">
+                      <WorkflowGraphVisualizer steps={formSteps} />
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Steps list */}
               <div>
@@ -280,6 +354,14 @@ export default function WorkflowsAdminPage() {
                 )}
               </div>
 
+              {/* Save error */}
+              {saveError && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                  {saveError}
+                </div>
+              )}
+
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2 text-sm text-foreground">
                   <input type="checkbox" checked={formPublic} onChange={(e) => setFormPublic(e.target.checked)} className="rounded" />
@@ -309,43 +391,30 @@ export default function WorkflowsAdminPage() {
           ) : (
             <div className="space-y-4">
               {workflows.map((w) => (
-                <div key={w.id} className="bg-card rounded-xl border border-border p-4">
+                <div key={w.id} className={`bg-card rounded-xl border p-4 ${w.isLocked ? 'border-amber-300 dark:border-amber-700' : 'border-border'}`}>
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-foreground">{w.name}</span>
-                        {w.isDefault && <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Standard</span>}
-                        {w.isPublic && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Öffentlich</span>}
+                        {w.isDefault && <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">Standard</span>}
+                        {w.isPublic && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300">Öffentlich</span>}
+                        {w.isLocked && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">Gesperrt</span>}
+                        <span className="text-[10px] text-muted-foreground font-mono">v{w.version}</span>
                       </div>
                       {w.description && <p className="text-xs text-muted-foreground mt-0.5">{w.description}</p>}
                     </div>
                     <div className="flex gap-1">
-                      <button onClick={() => startEdit(w)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground">
+                      <button onClick={() => startEdit(w)} className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground" title="Bearbeiten">
                         <Edit3 className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDelete(w.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive/80">
+                      <button onClick={() => handleDelete(w.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 text-destructive/80" title="Löschen">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
 
-                  {/* Step flow visualization */}
-                  <div className="flex items-center gap-1 overflow-x-auto pb-1">
-                    {(w.steps || []).map((step, idx) => {
-                      const info = STEP_TYPES.find(s => s.value === step.type);
-                      const StepIcon = info?.icon || Workflow;
-                      return (
-                        <div key={idx} className="flex items-center gap-1 flex-shrink-0">
-                          {idx > 0 && <div className="w-4 h-px bg-border" />}
-                          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-muted/50 text-xs">
-                            <StepIcon className={`w-3 h-3 ${info?.color || ''}`} />
-                            <span className="text-foreground">{step.label}</span>
-                            {step.duration && <span className="text-muted-foreground">{step.duration}s</span>}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  {/* Graph Visualizer in list */}
+                  <WorkflowGraphVisualizer steps={w.steps || []} className="bg-muted/20 rounded-lg" />
                 </div>
               ))}
             </div>

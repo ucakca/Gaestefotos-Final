@@ -47,7 +47,7 @@ export default function AchievementList({ eventId, visitorId }: AchievementListP
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-warning" />
       </div>
     );
   }
@@ -70,11 +70,11 @@ export default function AchievementList({ eventId, visitorId }: AchievementListP
     <div className="space-y-6">
       {/* Summary */}
       <div className="text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-warning/15 text-warning">
           <Trophy className="w-5 h-5" />
           <span className="font-bold text-lg">{totalPoints}</span>
           <span className="text-sm">Punkte</span>
-          <span className="text-amber-500 mx-1">•</span>
+          <span className="text-warning mx-1">•</span>
           <span className="text-sm">{unlocked.length}/{achievements.length} Badges</span>
         </div>
       </div>
@@ -93,7 +93,7 @@ export default function AchievementList({ eventId, visitorId }: AchievementListP
                 animate={{ opacity: 1, scale: 1 }}
                 className={`relative flex flex-col items-center text-center p-3 rounded-2xl border transition-all ${
                   achievement.unlocked
-                    ? 'bg-gradient-to-b from-amber-50 to-yellow-50 border-amber-200 shadow-sm'
+                    ? 'bg-warning/10 border-warning/30 shadow-sm'
                     : 'bg-background/50 border-dashed border-border/60 opacity-60'
                 }`}
               >
@@ -109,7 +109,7 @@ export default function AchievementList({ eventId, visitorId }: AchievementListP
                   {achievement.description}
                 </p>
                 <div className="mt-1 flex items-center gap-1">
-                  <Star className={`w-3 h-3 ${achievement.unlocked ? 'text-amber-500' : 'text-muted-foreground'}`} />
+                  <Star className={`w-3 h-3 ${achievement.unlocked ? 'text-warning' : 'text-muted-foreground'}`} />
                   <span className="text-[10px] font-medium text-muted-foreground">{achievement.points}P</span>
                 </div>
                 {!achievement.unlocked && (

@@ -15,6 +15,9 @@ import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
 import { getWordPressUserById, verifyWordPressUser, WordPressAuthUnavailableError } from '../config/wordpress';
 import { logger } from '../utils/logger';
 import { getErrorMessage } from '../utils/typeHelpers';
+import { auditLog, AuditType } from '../services/auditLogger';
+import { isAccountLocked, recordFailedAttempt, clearFailedAttempts } from '../services/accountLockout';
+import { createRefreshToken, consumeRefreshToken, revokeAllRefreshTokens, setRefreshCookie, clearRefreshCookie } from '../services/refreshToken';
 import { addCredits } from '../services/aiExecution';
 import {
   buildOtpAuthUrl,
@@ -196,10 +199,14 @@ router.post('/2fa/verify', passwordLimiter, twoFactorVerifyLimiter, async (req: 
       usedRecoveryCode: !!recoveryCode,
     });
 
-    const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as any;
+    const expiresIn = (process.env.JWT_EXPIRES_IN || '1h') as any;
     const token = jwt.sign({ userId: user.id, role: user.role }, jwtSecret, { expiresIn });
 
     setAuthCookie(res, token, parseJwtExpiresInSeconds(expiresIn));
+
+    // Issue refresh token
+    const refreshToken = await createRefreshToken(user.id);
+    setRefreshCookie(res, refreshToken);
 
     res.json({
       user: {
@@ -357,7 +364,7 @@ function getEmailAuthCandidates(email: string): string[] {
 const registerSchema = z.object({
   email: emailSchema,
   name: z.string().min(1),
-  password: z.string().min(6),
+  password: z.string().min(8, 'Passwort muss mindestens 8 Zeichen lang sein'),
 });
 
 const loginSchema = z.object({
@@ -526,9 +533,13 @@ router.post('/2fa/setup/confirm-challenge', passwordLimiter, twoFactorSetupLimit
       },
     });
 
-    const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as any;
+    const expiresIn = (process.env.JWT_EXPIRES_IN || '1h') as any;
     const token = jwt.sign({ userId: user.id, role: user.role }, jwtSecret, { expiresIn });
     setAuthCookie(res, token, parseJwtExpiresInSeconds(expiresIn));
+
+    // Issue refresh token
+    const refreshToken2fa = await createRefreshToken(user.id);
+    setRefreshCookie(res, refreshToken2fa);
 
     logger.info('[auth] 2fa setup confirm ok (challenge)', { userId: user.id, ip: req.ip });
 
@@ -660,7 +671,7 @@ router.post('/register', passwordLimiter, async (req: Request, res: Response) =>
         email: data.email,
         name: data.name,
         password: hashedPassword,
-        role: 'ADMIN',
+        role: 'HOST',
       },
       select: {
         id: true,
@@ -688,7 +699,7 @@ router.post('/register', passwordLimiter, async (req: Request, res: Response) =>
     }
 
     // Generate token
-    const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as any;
+    const expiresIn = (process.env.JWT_EXPIRES_IN || '1h') as any;
     const token = jwt.sign(
       { userId: user.id, role: user.role },
       jwtSecret,
@@ -696,6 +707,12 @@ router.post('/register', passwordLimiter, async (req: Request, res: Response) =>
     );
 
     setAuthCookie(res, token, parseJwtExpiresInSeconds(expiresIn));
+
+    // Issue refresh token
+    const refreshToken = await createRefreshToken(user.id);
+    setRefreshCookie(res, refreshToken);
+
+    auditLog({ type: AuditType.AUTH_REGISTER, message: `Neuer User registriert: ${user.email}`, userId: user.id, userRole: user.role, req });
 
     res.json({
       user,
@@ -719,6 +736,13 @@ router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
     }
 
     const data = loginSchema.parse(req.body);
+
+    // Account lockout check
+    const lockout = await isAccountLocked(data.email);
+    if (lockout.locked) {
+      auditLog({ type: AuditType.AUTH_LOGIN_FAILED, message: `Login blockiert (Account gesperrt): ${data.email}`, data: { email: data.email, remainingSeconds: lockout.remainingSeconds }, req });
+      return res.status(429).json({ error: `Zu viele Fehlversuche. Bitte warte ${Math.ceil(lockout.remainingSeconds / 60)} Minuten.`, lockedUntilSeconds: lockout.remainingSeconds });
+    }
 
     const emailCandidates = getEmailAuthCandidates(data.email);
 
@@ -797,6 +821,11 @@ router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
 
     if (!effectiveUser) {
       logger.info('[auth] login failed (no effective user)', { email: data.email });
+      const attempt = await recordFailedAttempt(data.email);
+      auditLog({ type: AuditType.AUTH_LOGIN_FAILED, message: `Login fehlgeschlagen: ${data.email} (Versuch ${attempt.attempts})`, data: { email: data.email, attempts: attempt.attempts, locked: attempt.locked }, req });
+      if (attempt.locked) {
+        return res.status(429).json({ error: `Zu viele Fehlversuche. Account für ${Math.ceil(attempt.lockoutSeconds / 60)} Minuten gesperrt.`, lockedUntilSeconds: attempt.lockoutSeconds });
+      }
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -884,7 +913,7 @@ router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
     }
 
     // Generate token
-    const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as any;
+    const expiresIn = (process.env.JWT_EXPIRES_IN || '1h') as any;
     const token = jwt.sign(
       { userId: effectiveUser.id, role: effectiveUser.role },
       jwtSecret,
@@ -892,6 +921,13 @@ router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
     );
 
     setAuthCookie(res, token, parseJwtExpiresInSeconds(expiresIn));
+
+    // Issue refresh token
+    const refreshToken = await createRefreshToken(effectiveUser.id);
+    setRefreshCookie(res, refreshToken);
+
+    await clearFailedAttempts(data.email);
+    auditLog({ type: AuditType.AUTH_LOGIN, message: `Login erfolgreich: ${effectiveUser.email}`, userId: effectiveUser.id, userRole: effectiveUser.role, req });
 
     res.json({
       user: {
@@ -988,7 +1024,7 @@ router.post('/wordpress-sso', wordpressSsoLimiter, async (req: Request, res: Res
       }
     }
 
-    const expiresIn = (process.env.JWT_EXPIRES_IN || '7d') as any;
+    const expiresIn = (process.env.JWT_EXPIRES_IN || '1h') as any;
     const token = jwt.sign(
       { userId: user.id, role: user.role },
       jwtSecret,
@@ -997,17 +1033,17 @@ router.post('/wordpress-sso', wordpressSsoLimiter, async (req: Request, res: Res
 
     setAuthCookie(res, token, parseJwtExpiresInSeconds(expiresIn));
 
+    // Issue refresh token for WP-SSO
+    const refreshToken = await createRefreshToken(user.id);
+    setRefreshCookie(res, refreshToken);
+
     const appUrl = getAppBaseUrl();
     const returnUrlRaw = String(parsed.data.returnUrl || '').trim();
     const returnUrl = returnUrlRaw.startsWith('/') ? returnUrlRaw : '';
-    const redirectUrl =
-      returnUrl
-        ? `${appUrl}${returnUrl}${returnUrl.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`
-        : `${appUrl}/dashboard?token=${encodeURIComponent(token)}`;
+    const redirectUrl = returnUrl ? `${appUrl}${returnUrl}` : `${appUrl}/dashboard`;
     res.json({
       success: true,
       redirectUrl,
-      token,
     });
   } catch (error: any) {
     logger.error('wordpress-sso error', { message: error?.message || String(error) });
@@ -1015,9 +1051,80 @@ router.post('/wordpress-sso', wordpressSsoLimiter, async (req: Request, res: Res
   }
 });
 
+// Refresh access token using refresh token cookie
+router.post('/refresh', async (req: Request, res: Response) => {
+  try {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      return res.status(500).json({ error: 'Server misconfigured' });
+    }
+
+    const refreshTokenValue = req.cookies?.refresh_token;
+    if (!refreshTokenValue) {
+      return res.status(401).json({ error: 'No refresh token' });
+    }
+
+    const userId = await consumeRefreshToken(refreshTokenValue);
+    if (!userId) {
+      clearRefreshCookie(res);
+      clearAuthCookie(res);
+      return res.status(401).json({ error: 'Invalid or expired refresh token' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, name: true, role: true, createdAt: true },
+    });
+
+    if (!user) {
+      clearRefreshCookie(res);
+      clearAuthCookie(res);
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    // Issue new access token
+    const expiresIn = (process.env.JWT_EXPIRES_IN || '1h') as any;
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      jwtSecret,
+      { expiresIn }
+    );
+    setAuthCookie(res, token, parseJwtExpiresInSeconds(expiresIn));
+
+    // Rotate: issue new refresh token
+    const newRefreshToken = await createRefreshToken(user.id);
+    setRefreshCookie(res, newRefreshToken);
+
+    logger.debug('[auth] token refreshed', { userId: user.id });
+
+    res.json({ user, token });
+  } catch (error: any) {
+    logger.error('[auth] refresh error', { error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Logout
-router.post('/logout', async (_req: Request, res: Response) => {
+router.post('/logout', async (req: Request, res: Response) => {
+  // Revoke all refresh tokens for this user if we can identify them
+  try {
+    const token = req.cookies?.auth_token;
+    if (token) {
+      const jwtSecret = process.env.JWT_SECRET;
+      if (jwtSecret) {
+        const payload = jwt.verify(token, jwtSecret) as any;
+        if (payload?.userId) {
+          await revokeAllRefreshTokens(payload.userId);
+        }
+      }
+    }
+  } catch {
+    // Best-effort revocation
+  }
+
+  auditLog({ type: AuditType.AUTH_LOGOUT, message: 'User ausgeloggt', req });
   clearAuthCookie(res);
+  clearRefreshCookie(res);
   res.json({ ok: true });
 });
 
