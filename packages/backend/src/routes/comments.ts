@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '../config/database';
 import { AuthRequest, authMiddleware, hasEventAccess, optionalAuthMiddleware } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { sanitizeText } from '../utils/sanitize';
 
 const router = Router();
 
@@ -126,8 +127,8 @@ router.post(
       data: {
         photoId,
         guestId: req.userId || null,
-        authorName: data.authorName,
-        comment: data.comment,
+        authorName: sanitizeText(data.authorName),
+        comment: sanitizeText(data.comment),
         status: initialStatus,
       },
     });

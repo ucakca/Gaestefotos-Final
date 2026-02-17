@@ -16,6 +16,7 @@ import { selectSmartCategoryId } from '../services/smartAlbum';
 import { resolveSmartCategoryId } from '../services/photoCategories';
 import { io } from '../index';
 import rateLimit from 'express-rate-limit';
+import { sanitizeText } from '../utils/sanitize';
 
 const router = Router();
 
@@ -163,7 +164,7 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
   const eventId = metadata.eventId;
   const filename = metadata.filename || 'upload.jpg';
   const filetype = metadata.filetype || 'image/jpeg';
-  const uploadedBy = metadata.uploadedBy || '';
+  const uploadedBy = sanitizeText(metadata.uploadedBy || '');
   const categoryId = metadata.categoryId || null;
   const progressivePhotoId = metadata.photoId || null; // Progressive upload: update existing record
 

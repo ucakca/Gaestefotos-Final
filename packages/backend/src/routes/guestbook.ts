@@ -17,6 +17,7 @@ import { checkAchievements } from '../services/achievementTracker';
 import { sendPushToEvent, notifyEventHost, pushTemplates } from '../services/pushNotification';
 import { extractCapturedAtFromImage, isWithinDateWindowPlusMinusDays } from '../services/uploadDatePolicy';
 import { serializeBigInt } from '../utils/serializers';
+import { sanitizeText } from '../utils/sanitize';
 
 const router = Router();
 
@@ -502,8 +503,8 @@ router.post(
         data: {
           eventId,
           guestId: req.userId || null,
-          authorName: data.authorName,
-          message: data.message,
+          authorName: sanitizeText(data.authorName),
+          message: sanitizeText(data.message),
           photoUrl: photoUrl, // Use generated URL, not the one from request
           photoStoragePath,
           photoSizeBytes,
