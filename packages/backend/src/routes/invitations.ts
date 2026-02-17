@@ -9,6 +9,7 @@ import { passwordLimiter } from '../middleware/rateLimit';
 import { logger } from '../utils/logger';
 import { getErrorMessage } from '../utils/typeHelpers';
 import { randomString, slugify } from '@gaestefotos/shared';
+import { sanitizeText } from '../utils/sanitize';
 
 const router = Router();
 
@@ -632,7 +633,7 @@ router.post('/invitations/slug/:slug/rsvp', passwordLimiter, async (req: AuthReq
       data: {
         invitationId: invitation.id,
         status: data.status,
-        name: typeof data.name === 'string' && data.name.trim().length > 0 ? data.name.trim() : null,
+        name: typeof data.name === 'string' && data.name.trim().length > 0 ? sanitizeText(data.name) : null,
         ipHash,
         userAgent: ua,
       },

@@ -3,6 +3,7 @@ import prisma from '../config/database';
 import { AuthRequest, authMiddleware, optionalAuthMiddleware } from '../middleware/auth';
 import { hasEventManageAccess, hasEventAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
+import { sanitizeText } from '../utils/sanitize';
 
 const router = Router();
 
@@ -39,8 +40,8 @@ router.post('/', optionalAuthMiddleware, async (req: AuthRequest, res: Response)
         const updated = await prisma.lead.update({
           where: { id: existing.id },
           data: {
-            name: name || existing.name,
-            phone: phone || existing.phone,
+            name: name ? sanitizeText(name) : existing.name,
+            phone: phone ? sanitizeText(phone) : existing.phone,
             consentGiven: consentGiven ?? existing.consentGiven,
             metadata: metadata ? { ...(existing.metadata as any || {}), ...metadata } : existing.metadata,
           },
@@ -53,10 +54,10 @@ router.post('/', optionalAuthMiddleware, async (req: AuthRequest, res: Response)
       data: {
         eventId,
         partnerId: event.partnerId,
-        name,
-        email,
-        phone,
-        source,
+        name: name ? sanitizeText(name) : null,
+        email: email ? sanitizeText(email) : null,
+        phone: phone ? sanitizeText(phone) : null,
+        source: sanitizeText(source),
         consentGiven: consentGiven ?? false,
         metadata,
       },

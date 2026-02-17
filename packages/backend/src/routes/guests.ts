@@ -5,6 +5,7 @@ import prisma from '../config/database';
 import { authMiddleware, AuthRequest, hasEventManageAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
 import { getErrorMessage } from '../utils/typeHelpers';
+import { sanitizeText } from '../utils/sanitize';
 
 const router = Router();
 
@@ -66,8 +67,8 @@ router.post('/:eventId/guests', async (req: AuthRequest, res: Response) => {
     const guest = await prisma.guest.create({
       data: {
         eventId,
-        firstName: data.firstName,
-        lastName: data.lastName,
+        firstName: sanitizeText(data.firstName),
+        lastName: sanitizeText(data.lastName),
         email: data.email,
         dietaryRequirements: data.dietaryRequirements,
         plusOneCount: data.plusOneCount,
