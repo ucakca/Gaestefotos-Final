@@ -1,4 +1,4 @@
-import { EventCategory } from './eventTypes';
+import { EventCategory } from '../../setup-wizard/types';
 
 export interface AlbumPreset {
   id: string;
