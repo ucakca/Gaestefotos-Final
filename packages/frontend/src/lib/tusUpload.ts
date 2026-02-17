@@ -4,6 +4,7 @@ export interface TusUploadOptions {
   eventId: string;
   uploadedBy?: string;
   categoryId?: string;
+  photoId?: string; // Progressive upload: link to existing photo record
   onProgress?: (percent: number) => void;
   onError?: (error: Error) => void;
 }
@@ -16,20 +17,24 @@ export async function uploadWithTus(
   file: File,
   options: TusUploadOptions
 ): Promise<string> {
-  const { eventId, uploadedBy, categoryId, onProgress, onError } = options;
+  const { eventId, uploadedBy, categoryId, photoId, onProgress, onError } = options;
 
   return new Promise((resolve, reject) => {
+    const metadata: Record<string, string> = {
+      filename: file.name,
+      filetype: file.type,
+      eventId: eventId,
+      uploadedBy: uploadedBy || '',
+      categoryId: categoryId || '',
+    };
+    // Progressive upload: pass photoId so backend updates existing record
+    if (photoId) metadata.photoId = photoId;
+
     const upload = new tus.Upload(file, {
       endpoint: '/api/uploads',
       retryDelays: [0, 1000, 3000, 5000, 10000],
       chunkSize: 5 * 1024 * 1024, // 5MB chunks
-      metadata: {
-        filename: file.name,
-        filetype: file.type,
-        eventId: eventId,
-        uploadedBy: uploadedBy || '',
-        categoryId: categoryId || '',
-      },
+      metadata,
       onError: (error) => {
         onError?.(error);
         reject(error);

@@ -195,4 +195,82 @@ _(Wird während des Audits gefüllt)_
 
 ---
 
-**Letzte Aktualisierung:** 16. Februar 2026, Dark Mode Bug behoben
+---
+
+## 🚨 KRITISCHES UX-PROBLEM: Upload-Flow
+
+**User-Feedback:** "viel zu viele schritte", "funktioniert nicht"
+
+### Analyse-Ergebnisse:
+
+**Problem:**
+- ❌ **8 Schritte** für einen Foto-Upload (Benchmark: Instagram = 2-3 Schritte)
+- ❌ Pflichtfelder VOR Upload (Name, Album)
+- ❌ Workflow-System zu komplex für Mobile-Web
+- ❌ Geschätzte **55% Abbruch-Rate**
+
+**Impact:**
+- 🔴 Nur **45% Upload-Completion-Rate**
+- 🔴 User-Frustration sehr hoch
+- 🔴 Weniger Event-Fotos = Unzufriedene Hosts
+
+### Empfohlene Lösungen:
+
+1. **🔥 Quick-Win (P0):** Express-Upload-Button (4h Aufwand)
+   - Foto wählen → Upload startet SOFORT
+   - Name/Album nachträglich
+   - +100% Upload-Rate erwartet
+
+2. **⭐ Instagram-Stil (P1):** 2-Schritt-Flow (1-2 Tage)
+   - Native File-Picker
+   - Smart Defaults (LocalStorage)
+   - AI-Auto-Kategorisierung nutzen
+
+3. **🏗️ Langfristig (P2):** Workflow-System NUR für Hardware-Booth
+   - Mobile-Web: Eigene optimierte Komponente
+   - Separation of Concerns
+
+### Nächste Schritte:
+- [ ] Team-Meeting: Strategie festlegen
+- [ ] Debug "funktioniert nicht" (Browser-Console prüfen)
+- [ ] A/B-Test-Setup vorbereiten
+- [ ] Quick-Win implementieren?
+
+**Details:** Siehe `claude/UX_ANALYSE_UPLOAD_FLOW.md` + `claude/UPLOAD_FLOW_EMPFEHLUNGEN.md`
+
+---
+
+---
+
+## 📋 TODO FÜR OPUS/WINDSURF - Upload-Flow Implementation
+
+**Erstellt:** 16. Februar 2026  
+**Assignee:** Opus/Windsurf  
+**Geschätzter Aufwand:** 10 Stunden  
+**Branch:** `feature/quick-upload-modal`
+
+### Haupt-Tasks:
+- [ ] TASK 1: QuickUploadModal.tsx erstellen (4h)
+- [ ] TASK 2: Foto-Auswahl Screen (1h)
+- [ ] TASK 3: Parallel-Upload Logic (3h)
+- [ ] TASK 4: Success-Screen (1h)
+- [ ] TASK 5: Integration in e3/page.tsx (0.5h)
+- [ ] TASK 6: Backend Rate-Limit erhöhen (0.25h)
+- [ ] TASK 7: Workflow maxFiles: 10 → 100 (0.25h)
+- [ ] TASK 8: Error-Handling & Retry (2h)
+- [ ] TASK 9: Progress-Anzeige optimieren (1.5h)
+- [ ] TASK 10: LocalStorage Name-Persistierung (0.5h)
+- [ ] TASK 11: Auto-Kategorisierung aktivieren (0.25h)
+
+**Spezifikationen:**
+- Instagram-Stil (2-3 Schritte statt 8)
+- Max 100 Fotos (statt 10)
+- Paralleler Upload (5 gleichzeitig)
+- Native File-Picker
+- Bestehende Design-Language beibehalten!
+
+**Details:** Siehe `claude/TODO_OPUS_WINDSURF_UPLOAD_FLOW.md`
+
+---
+
+**Letzte Aktualisierung:** 16. Februar 2026, TODO für Windsurf erstellt

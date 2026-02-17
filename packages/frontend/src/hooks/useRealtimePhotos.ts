@@ -6,6 +6,7 @@ import { wsManager } from '@/lib/websocket';
 interface UseRealtimePhotosOptions {
   eventId: string;
   onPhotoUploaded?: (photo: any) => void;
+  onPhotoUpdated?: (photo: any) => void;
   onPhotoApproved?: (photo: any) => void;
   onPhotoRejected?: (photo: any) => void;
   onRefreshNeeded?: () => void;
@@ -18,6 +19,7 @@ interface UseRealtimePhotosOptions {
 export function useRealtimePhotos({
   eventId,
   onPhotoUploaded,
+  onPhotoUpdated,
   onPhotoApproved,
   onPhotoRejected,
   onRefreshNeeded,
@@ -30,6 +32,16 @@ export function useRealtimePhotos({
       onRefreshNeeded?.();
     },
     [onPhotoUploaded, onRefreshNeeded]
+  );
+
+  const handlePhotoUpdated = useCallback(
+    (data: any) => {
+      if (onPhotoUpdated && data?.photo) {
+        onPhotoUpdated(data.photo);
+      }
+      onRefreshNeeded?.();
+    },
+    [onPhotoUpdated, onRefreshNeeded]
   );
 
   const handlePhotoApproved = useCallback(
@@ -61,15 +73,17 @@ export function useRealtimePhotos({
 
     // Register event listeners
     const unsubUploaded = wsManager.on('photo_uploaded', handlePhotoUploaded);
+    const unsubUpdated = wsManager.on('photo_updated', handlePhotoUpdated);
     const unsubApproved = wsManager.on('photo_approved', handlePhotoApproved);
     const unsubRejected = wsManager.on('photo_rejected', handlePhotoRejected);
 
     return () => {
       // Cleanup listeners
       unsubUploaded();
+      unsubUpdated();
       unsubApproved();
       unsubRejected();
       wsManager.leaveEvent(eventId);
     };
-  }, [eventId, handlePhotoUploaded, handlePhotoApproved, handlePhotoRejected]);
+  }, [eventId, handlePhotoUploaded, handlePhotoUpdated, handlePhotoApproved, handlePhotoRejected]);
 }

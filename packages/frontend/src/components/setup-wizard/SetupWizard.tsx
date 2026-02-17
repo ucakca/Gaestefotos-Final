@@ -237,6 +237,41 @@ export default function SetupWizard() {
         await api.put(`/events/${state.eventId}`, {
           featuresConfig: state.featuresConfig,
         });
+
+        // Create categories from enabled albums (skip duplicates)
+        const enabledAlbums = state.albums.filter(a => a.enabled);
+        if (enabledAlbums.length > 0) {
+          // Fetch existing categories to avoid duplicates on re-sync
+          let existingNames: Set<string> = new Set();
+          try {
+            const catRes = await api.get(`/events/${state.eventId}/categories`);
+            existingNames = new Set((catRes.data.categories || []).map((c: any) => c.name?.toLowerCase()));
+          } catch { /* ignore — proceed without dedup */ }
+
+          for (let i = 0; i < enabledAlbums.length; i++) {
+            const album = enabledAlbums[i];
+            if (existingNames.has(album.name.toLowerCase())) continue;
+
+            let startAt = album.startAt || null;
+            let endAt = album.endAt || null;
+            if (!startAt && album.dateOffsetHours !== undefined && state.dateTime) {
+              const base = new Date(state.dateTime).getTime();
+              startAt = new Date(base + (album.dateOffsetHours || 0) * 3600000).toISOString();
+              endAt = new Date(base + ((album.dateOffsetHours || 0) + (album.durationHours || 4)) * 3600000).toISOString();
+            }
+            try {
+              await api.post(`/events/${state.eventId}/categories`, {
+                name: album.name,
+                iconKey: album.icon || null,
+                order: i,
+                startAt,
+                endAt,
+              });
+            } catch (catError) {
+              logger.warn('Failed to create category from wizard album', { album: album.name, error: catError });
+            }
+          }
+        }
       }
       // Phase 4 (Co-Hosts) is handled directly in CoHostsStep via API
       // Phase 5 (QR & Share) doesn't need backend sync
@@ -449,6 +484,7 @@ export default function SetupWizard() {
             albums={state.albums}
             eventType={state.eventType}
             eventTitle={state.title}
+            eventDateTime={state.dateTime}
             onAlbumsChange={(albums) => updateState({ albums })}
             onNext={() => handleCompleteStep('albums')}
             onBack={() => goToStep('color-scheme')}

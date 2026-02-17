@@ -7,6 +7,10 @@ export interface AlbumPreset {
   hostOnly: boolean;
   default: boolean;
   hint?: string;
+  /** Offset in hours relative to event.dateTime for startAt (e.g., -24 = 1 day before) */
+  dateOffsetHours?: number;
+  /** Duration in hours for endAt calculation (startAt + duration) */
+  durationHours?: number;
 }
 
 export const ALBUM_PRESETS: Record<EventCategory, AlbumPreset[]> = {
@@ -19,15 +23,15 @@ export const ALBUM_PRESETS: Record<EventCategory, AlbumPreset[]> = {
       default: false,
       hint: '💡 Für Erinnerungen aus der Vergangenheit – Kindheitsfotos, besondere Momente, oder die Geschichte hinter dem Event',
     },
-    { id: 'getting-ready', icon: 'Sparkles', label: 'Getting Ready', hostOnly: false, default: false },
-    { id: 'ceremony', icon: 'Church', label: 'Zeremonie', hostOnly: false, default: false },
+    { id: 'getting-ready', icon: 'Sparkles', label: 'Getting Ready', hostOnly: false, default: false, dateOffsetHours: -4, durationHours: 3 },
+    { id: 'ceremony', icon: 'Church', label: 'Zeremonie', hostOnly: false, default: false, dateOffsetHours: 0, durationHours: 2 },
     { id: 'couple', icon: 'Heart', label: 'Brautpaar', hostOnly: false, default: false },
-    { id: 'party', icon: 'PartyPopper', label: 'Feier & Tanz', hostOnly: false, default: false },
+    { id: 'party', icon: 'PartyPopper', label: 'Feier & Tanz', hostOnly: false, default: false, dateOffsetHours: 4, durationHours: 8 },
     { id: 'group', icon: 'Users', label: 'Gruppenfotos', hostOnly: false, default: false },
     { id: 'cake', icon: 'Cake', label: 'Torte & Essen', hostOnly: false, default: false },
     { id: 'location', icon: 'MapPin', label: 'Location', hostOnly: false, default: false },
-    { id: 'henna', icon: 'Hand', label: 'Henna-Nacht', hostOnly: false, default: false },
-    { id: 'polterabend', icon: 'Wine', label: 'Polterabend', hostOnly: false, default: false },
+    { id: 'henna', icon: 'Hand', label: 'Henna-Nacht', hostOnly: false, default: false, dateOffsetHours: -24, durationHours: 6 },
+    { id: 'polterabend', icon: 'Wine', label: 'Polterabend', hostOnly: false, default: false, dateOffsetHours: -48, durationHours: 6 },
   ],
 
   family: [

@@ -27,6 +27,13 @@ export function useEventRealtime(
       setPhotos(prev => [data.photo, ...prev]);
     });
 
+    // Listen for photo update (progressive upload: thumbnail → full quality)
+    const unsubscribePhotoUpdated = wsManager.on('photo_updated', (data: { photo: Photo }) => {
+      setPhotos(prev => prev.map(p => 
+        p.id === data.photo.id ? data.photo : p
+      ));
+    });
+
     // Listen for photo approval
     const unsubscribePhotoApproved = wsManager.on('photo_approved', (data: { photo: Photo }) => {
       setPhotos(prev => prev.map(p => 
@@ -52,6 +59,7 @@ export function useEventRealtime(
     // Cleanup
     return () => {
       unsubscribePhotoUploaded();
+      unsubscribePhotoUpdated();
       unsubscribePhotoApproved();
       unsubscribeGuestbook();
       wsManager.leaveEvent(eventId);

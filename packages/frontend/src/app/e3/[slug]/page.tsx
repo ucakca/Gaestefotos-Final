@@ -42,12 +42,14 @@ import { useStoriesViewer } from '@/hooks/useStoriesViewer';
 import api, { formatApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { useToastStore } from '@/store/toastStore';
+import { useTranslations } from '@/components/I18nProvider';
 
 const StoryViewer = dynamic(() => import('@/components/guest/StoryViewer'), { ssr: false });
 // FaceSearch replaced by WorkflowFaceSearchModal
 const MosaicPrintUpload = dynamic(() => import('@/components/mosaic/MosaicPrintUpload'), { ssr: false });
 const WorkflowUploadModal = dynamic(() => import('@/components/workflow-runtime/WorkflowUploadModal'), { ssr: false });
 const WorkflowFaceSearchModal = dynamic(() => import('@/components/workflow-runtime/WorkflowFaceSearchModal'), { ssr: false });
+const QuickUploadModal = dynamic(() => import('@/components/upload/QuickUploadModal'), { ssr: false });
 
 export default function PublicEventPageV2() {
   const params = useParams();
@@ -71,9 +73,12 @@ export default function PublicEventPageV2() {
   const [likeUpdates, setLikeUpdates] = useState<Record<string, { liked: boolean; count: number }>>({});
   const [forceShowWifi, setForceShowWifi] = useState(false);
   const [mosaicPrintEnabled, setMosaicPrintEnabled] = useState(false);
+  const [quickUploadOpen, setQuickUploadOpen] = useState(false);
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const { isHeaderVisible, showJumpToTop, scrollToTop } = useScrollHeader(300);
+  const tNav = useTranslations('nav');
+  const tGuest = useTranslations('guest');
 
   const didInitAuthRef = useRef(false);
   const didInitAuthFromUrlRef = useRef(false);
@@ -387,7 +392,7 @@ export default function PublicEventPageV2() {
                 <div className="flex items-center gap-2">
                   <Trophy className="w-5 h-5 text-status-warning" />
                   <p className="text-sm text-foreground">
-                    <strong>Foto-Spaß verfügbar!</strong> Challenges und Spiele warten auf dich — tippe auf &quot;Foto-Spaß&quot; im Menü.
+                    <strong>{tGuest('challengesAvailable')}</strong> {tGuest('challengesHint')}
                   </p>
                 </div>
               </Alert>
@@ -402,8 +407,8 @@ export default function PublicEventPageV2() {
               <Container>
                 <EmptyState
                   icon="🎭"
-                  title="Mystery Mode aktiviert"
-                  description="Die Fotos werden später veröffentlicht..."
+                  title={tGuest('mysteryMode')}
+                  description={tGuest('mysteryModeDesc')}
                 />
               </Container>
             ) : (
@@ -462,9 +467,7 @@ export default function PublicEventPageV2() {
         onCameraAction={(action) => {
           switch (action) {
             case 'photo':
-              setUploadChallengeId(null);
-              setUploadChallengeTitle(null);
-              setUploadModalOpen(true);
+              setQuickUploadOpen(true);
               break;
             case 'game':
               setFotospassOpen(true);
@@ -518,7 +521,7 @@ export default function PublicEventPageV2() {
                 <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
               </div>
               <div className="px-6 pb-2">
-                <h3 className="text-lg font-bold">Live ansehen</h3>
+                <h3 className="text-lg font-bold">{tNav('liveView')}</h3>
               </div>
               <div className="px-4 pb-8 space-y-1">
                 <button
@@ -529,8 +532,8 @@ export default function PublicEventPageV2() {
                     <Play className="w-6 h-6 text-blue-500" />
                   </div>
                   <div className="text-left">
-                    <div className="text-sm font-semibold">Diashow</div>
-                    <div className="text-xs text-muted-foreground">Live-Slideshow der Gästefotos</div>
+                    <div className="text-sm font-semibold">{tNav('slideshow')}</div>
+                    <div className="text-xs text-muted-foreground">{tNav('slideshowDesc')}</div>
                   </div>
                 </button>
                 <button
@@ -544,8 +547,8 @@ export default function PublicEventPageV2() {
                     <span className="text-xl">🧩</span>
                   </div>
                   <div className="text-left">
-                    <div className="text-sm font-semibold">Mosaic Wall</div>
-                    <div className="text-xs text-muted-foreground">Live-Mosaik — sieh zu wie es wächst</div>
+                    <div className="text-sm font-semibold">{tNav('mosaicWall')}</div>
+                    <div className="text-xs text-muted-foreground">{tNav('mosaicWallDesc')}</div>
                   </div>
                 </button>
               </div>
@@ -580,7 +583,7 @@ export default function PublicEventPageV2() {
                 <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
               </div>
               <div className="px-6 pb-2 flex items-center justify-between">
-                <h3 className="text-lg font-bold">Foto-Spiele</h3>
+                <h3 className="text-lg font-bold">{tGuest('fotoGames')}</h3>
                 <button
                   onClick={() => setFotospassOpen(false)}
                   className="p-2 rounded-full hover:bg-muted/50 transition-colors"
@@ -630,8 +633,6 @@ export default function PublicEventPageV2() {
         onNext={onStoryNext}
         onPause={onStoryPause}
         onResume={onStoryResume}
-        onDragPrev={onStoryPrev}
-        onDragNext={onStoryNext}
       />
       </div>
 
@@ -646,6 +647,13 @@ export default function PublicEventPageV2() {
         isOpen={faceSearchOpen && featuresConfig?.faceSearch !== false}
         onClose={() => setFaceSearchOpen(false)}
         eventId={event?.id || ''}
+      />
+
+      <QuickUploadModal
+        open={quickUploadOpen}
+        onClose={() => setQuickUploadOpen(false)}
+        eventId={event?.id || ''}
+        onComplete={() => reloadPhotos()}
       />
 
       <WorkflowUploadModal

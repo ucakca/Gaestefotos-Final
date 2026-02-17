@@ -11,7 +11,7 @@ import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Button } from '@/components/ui/Button';
 import { useToastStore } from '@/store/toastStore';
 import {
-  Gamepad2, ArrowLeft, RotateCw, Trophy, Star, Send, Sparkles, Loader2, Pen,
+  Gamepad2, ArrowLeft, RotateCw, Trophy, Star, Send, Sparkles, Loader2, Pen, Camera, Video, FlipHorizontal2,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -30,7 +30,7 @@ interface GameInfo {
 type ActiveGame =
   | null
   | { type: 'slot_machine'; prop: string; accessory: string; challenge: string }
-  | { type: 'compliment_mirror'; compliment: string; verdict: string }
+  | { type: 'compliment_mirror'; phase: 'selfie' | 'loading' | 'result'; compliment?: string; verdict?: string; source?: string; selfieUrl?: string }
   | { type: 'mimik_duell'; phase: 'challenge' | 'result'; challenge: any; sessionId?: string; score?: number; rank?: string }
   | { type: 'mystery_overlay'; overlay: any }
   | { type: 'vows_and_views' }
@@ -77,11 +77,27 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
     finally { setSpinning(false); }
   };
 
-  const handleCompliment = async () => {
+  const handleCompliment = async (selfieUrl?: string) => {
+    setActiveGame({ type: 'compliment_mirror', phase: 'loading', selfieUrl });
     try {
-      const { data } = await api.post('/booth-games/compliment-mirror', { eventId });
-      setActiveGame({ type: 'compliment_mirror', compliment: data.compliment, verdict: data.verdict });
-    } catch { showToast('Fehler', 'error'); }
+      const { data } = await api.post('/booth-games/compliment-mirror', {
+        eventId,
+        eventType: (event as any)?.eventType || undefined,
+        eventTitle: event?.title || undefined,
+        useAI: true,
+      });
+      setActiveGame({
+        type: 'compliment_mirror',
+        phase: 'result',
+        compliment: data.compliment,
+        verdict: data.verdict,
+        source: data.source || 'ai',
+        selfieUrl,
+      });
+    } catch {
+      showToast('Fehler', 'error');
+      setActiveGame(null);
+    }
   };
 
   const handleMimikChallenge = async () => {
@@ -122,7 +138,7 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
   const startGame = (type: string) => {
     switch (type) {
       case 'slot_machine': handleSlotSpin(); break;
-      case 'compliment_mirror': handleCompliment(); break;
+      case 'compliment_mirror': setActiveGame({ type: 'compliment_mirror', phase: 'selfie' }); break;
       case 'mimik_duell': handleMimikChallenge(); break;
       case 'mystery_overlay': handleMysteryOverlay(); break;
       case 'vows_and_views': setActiveGame({ type: 'vows_and_views' }); break;
@@ -133,6 +149,25 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
   };
 
   if (loading || !eventId) return <FullPageLoader />;
+
+  const boothGamesEnabled = (event as any)?.packageInfo?.features?.boothGames === true;
+
+  if (!boothGamesEnabled) {
+    return (
+      <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
+        <div className="max-w-md mx-auto px-4 py-20 text-center">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center">
+            <Gamepad2 className="w-10 h-10 text-emerald-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Foto-Spiele</h1>
+          <p className="text-muted-foreground mb-6">Interaktive Foto-Spiele sind in deinem aktuellen Paket nicht enthalten. Upgrade für Zugang.</p>
+          <Button variant="primary" size="md" onClick={() => window.location.href = `/events/${eventId}/package`}>
+            Paket upgraden
+          </Button>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
@@ -236,22 +271,17 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
           </motion.div>
         )}
 
-        {/* Compliment Mirror Result */}
+        {/* Compliment Mirror */}
         {activeGame?.type === 'compliment_mirror' && (
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-8">
-            <div className="text-5xl mb-6">🪞</div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-              className="max-w-md mx-auto bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-2xl p-8 mb-6">
-              <p className="text-lg font-medium text-foreground mb-4">{activeGame.compliment}</p>
-              <div className="inline-block px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-sm font-bold">
-                {activeGame.verdict}
-              </div>
-            </motion.div>
-            <Button onClick={handleCompliment} className="gap-2">
-              <RotateCw className="w-4 h-4" /> Nochmal
-            </Button>
-          </motion.div>
+          <ComplimentMirrorView
+            phase={activeGame.phase}
+            compliment={activeGame.compliment}
+            verdict={activeGame.verdict}
+            source={activeGame.source}
+            selfieUrl={activeGame.selfieUrl}
+            onCapture={(selfieUrl) => handleCompliment(selfieUrl)}
+            onRetry={() => setActiveGame({ type: 'compliment_mirror', phase: 'selfie' })}
+          />
         )}
 
         {/* Mimik-Duell */}
@@ -475,5 +505,248 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
       </div>
       <DashboardFooter eventId={eventId} />
     </AppLayout>
+  );
+}
+
+// ─── Compliment Mirror Component ────────────────────────────
+
+function ComplimentMirrorView({
+  phase,
+  compliment,
+  verdict,
+  source,
+  selfieUrl,
+  onCapture,
+  onRetry,
+}: {
+  phase: 'selfie' | 'loading' | 'result';
+  compliment?: string;
+  verdict?: string;
+  source?: string;
+  selfieUrl?: string;
+  onCapture: (selfieUrl: string) => void;
+  onRetry: () => void;
+}) {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const [cameraReady, setCameraReady] = React.useState(false);
+  const [facingMode, setFacingMode] = React.useState<'user' | 'environment'>('user');
+  const [countdown, setCountdown] = React.useState<number | null>(null);
+
+  // Start camera
+  React.useEffect(() => {
+    if (phase !== 'selfie') return;
+    let stream: MediaStream | null = null;
+
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode, width: { ideal: 640 }, height: { ideal: 480 } },
+          audio: false,
+        });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          setCameraReady(true);
+        }
+      } catch (err) {
+        console.error('Camera access denied:', err);
+      }
+    }
+
+    startCamera();
+    return () => {
+      if (stream) stream.getTracks().forEach(t => t.stop());
+    };
+  }, [phase, facingMode]);
+
+  const capturePhoto = React.useCallback(() => {
+    if (!videoRef.current || !canvasRef.current) return;
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Mirror for selfie camera
+    if (facingMode === 'user') {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(video, 0, 0);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+    // Stop camera
+    const stream = video.srcObject as MediaStream;
+    if (stream) stream.getTracks().forEach(t => t.stop());
+
+    onCapture(dataUrl);
+  }, [facingMode, onCapture]);
+
+  const startCountdown = React.useCallback(() => {
+    setCountdown(3);
+    let count = 3;
+    const interval = setInterval(() => {
+      count--;
+      if (count <= 0) {
+        clearInterval(interval);
+        setCountdown(null);
+        capturePhoto();
+      } else {
+        setCountdown(count);
+      }
+    }, 1000);
+  }, [capturePhoto]);
+
+  // ─── Selfie Phase ─────────────────────────────────────────
+
+  if (phase === 'selfie') {
+    return (
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        className="max-w-md mx-auto py-6 text-center">
+        <div className="text-4xl mb-3">🪞</div>
+        <h2 className="text-xl font-bold text-foreground mb-1">Compliment Mirror</h2>
+        <p className="text-sm text-muted-foreground mb-4">Mach ein Selfie und erhalte ein KI-Kompliment!</p>
+
+        {/* Camera Preview */}
+        <div className="relative rounded-2xl overflow-hidden bg-black mb-4 aspect-[4/3]">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className={`w-full h-full object-cover ${facingMode === 'user' ? 'scale-x-[-1]' : ''}`}
+          />
+          {!cameraReady && (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted">
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+          )}
+          {/* Countdown overlay */}
+          <AnimatePresence>
+            {countdown !== null && (
+              <motion.div
+                key={countdown}
+                initial={{ scale: 2, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.5, opacity: 0 }}
+                className="absolute inset-0 flex items-center justify-center bg-black/40"
+              >
+                <span className="text-7xl font-black text-white drop-shadow-lg">{countdown}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        <canvas ref={canvasRef} className="hidden" />
+
+        {/* Controls */}
+        <div className="flex gap-3 justify-center">
+          <Button
+            onClick={() => setFacingMode(f => f === 'user' ? 'environment' : 'user')}
+            variant="secondary"
+            className="gap-2"
+          >
+            <FlipHorizontal2 className="w-4 h-4" />
+          </Button>
+          <Button
+            onClick={startCountdown}
+            disabled={!cameraReady || countdown !== null}
+            className="gap-2 px-8"
+            size="lg"
+          >
+            <Camera className="w-5 h-5" />
+            {countdown !== null ? `${countdown}...` : 'Selfie!'}
+          </Button>
+          <Button
+            onClick={capturePhoto}
+            disabled={!cameraReady}
+            variant="secondary"
+            className="gap-2"
+            title="Sofort auslösen"
+          >
+            <Sparkles className="w-4 h-4" />
+          </Button>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // ─── Loading Phase ────────────────────────────────────────
+
+  if (phase === 'loading') {
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+        className="max-w-md mx-auto py-12 text-center">
+        <div className="text-5xl mb-6">🪞</div>
+        {selfieUrl && (
+          <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-purple-500/30">
+            <img src={selfieUrl} alt="Selfie" className="w-full h-full object-cover" />
+          </div>
+        )}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          className="w-12 h-12 mx-auto mb-4"
+        >
+          <Sparkles className="w-12 h-12 text-purple-500" />
+        </motion.div>
+        <p className="text-lg font-medium text-foreground">KI analysiert dein Foto...</p>
+        <p className="text-sm text-muted-foreground mt-1">Einen Moment, dein Kompliment wird generiert ✨</p>
+      </motion.div>
+    );
+  }
+
+  // ─── Result Phase ─────────────────────────────────────────
+
+  return (
+    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+      className="max-w-md mx-auto py-8 text-center">
+      {/* Selfie + Mirror frame */}
+      {selfieUrl && (
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="relative w-40 h-40 mx-auto mb-6"
+        >
+          <div className="w-full h-full rounded-full overflow-hidden border-4 border-purple-500 shadow-lg shadow-purple-500/20">
+            <img src={selfieUrl} alt="Selfie" className="w-full h-full object-cover" />
+          </div>
+          <div className="absolute -top-2 -right-2 text-3xl">🪞</div>
+        </motion.div>
+      )}
+      {!selfieUrl && <div className="text-5xl mb-6">🪞</div>}
+
+      {/* Compliment Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-2xl p-8 mb-6"
+      >
+        <p className="text-lg font-medium text-foreground mb-4">{compliment}</p>
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.6, type: 'spring' }}
+          className="inline-block px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-sm font-bold"
+        >
+          {verdict}
+        </motion.div>
+      </motion.div>
+
+      {/* Source indicator */}
+      {source && (
+        <p className="text-xs text-muted-foreground mb-4">
+          {source === 'ai' ? '✨ KI-generiert' : source === 'cache' ? '⚡ Aus Cache' : '🎲 Zufällig'}
+        </p>
+      )}
+
+      {/* Actions */}
+      <div className="flex gap-3 justify-center">
+        <Button onClick={onRetry} className="gap-2">
+          <Camera className="w-4 h-4" /> Neues Selfie
+        </Button>
+      </div>
+    </motion.div>
   );
 }

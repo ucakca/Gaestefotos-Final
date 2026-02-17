@@ -11,12 +11,13 @@ import { FormInput } from '@/components/ui/FormInput';
 import { FormTextarea } from '@/components/ui/FormTextarea';
 import api from '@/lib/api';
 import { useEventTheme } from '@/components/event-theme/EventThemeProvider';
+import { useTranslations, useLocale } from '@/components/I18nProvider';
 import dynamic from 'next/dynamic';
 import { useWorkflow } from '@/hooks/useWorkflow';
 
 const guestbookSchema = z.object({
-  name: z.string().min(1, 'Bitte gib deinen Namen ein').max(100),
-  message: z.string().min(1, 'Bitte schreibe eine Nachricht').max(2000),
+  name: z.string().min(1, 'Name required').max(100),
+  message: z.string().min(1, 'Message required').max(2000),
 });
 type GuestbookFormData = z.infer<typeof guestbookSchema>;
 
@@ -67,6 +68,9 @@ export default function GuestbookTab({
   const { definition: workflowDef, loading: wfLoading } = useWorkflow('GUESTBOOK');
 
   const { colors, isThemed } = useEventTheme();
+  const t = useTranslations('guestbook');
+  const locale = useLocale();
+  const dateLocaleMap: Record<string, string> = { de: 'de-DE', en: 'en-US', fr: 'fr-FR', es: 'es-ES', it: 'it-IT' };
 
   const { register, handleSubmit: rhfHandleSubmit, reset, formState: { errors, isSubmitting } } = useForm<GuestbookFormData>({
     resolver: zodResolver(guestbookSchema),
@@ -141,7 +145,7 @@ export default function GuestbookTab({
       setPhoto(prev => prev ? {
         ...prev,
         uploading: false,
-        error: err?.response?.data?.error || 'Upload fehlgeschlagen',
+        error: err?.response?.data?.error || t('uploadFailed'),
       } : null);
     }
 
@@ -193,16 +197,16 @@ export default function GuestbookTab({
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Gästebuch</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">{t('title')}</h2>
             <p className="text-muted-foreground">
-              Hinterlasse eine Nachricht für das Brautpaar!
+              {t('subtitle')}
             </p>
           </div>
           {workflowDef && (
             <button
               onClick={() => setUseWorkflowMode(!useWorkflowMode)}
               className="p-2 rounded-lg hover:bg-background transition-colors text-muted-foreground hover:text-foreground"
-              title={useWorkflowMode ? 'Klassisches Formular' : 'Geführter Modus'}
+              title={useWorkflowMode ? t('classicForm') : t('guidedMode')}
             >
               <Workflow className="w-5 h-5" />
             </button>
@@ -234,16 +238,16 @@ export default function GuestbookTab({
       >
         <form onSubmit={rhfHandleSubmit(onClassicSubmit)} className="space-y-4">
           <FormInput
-            label="Dein Name"
-            placeholder="Max Mustermann"
+            label={t('yourName')}
+            placeholder={t('namePlaceholder')}
             required
             error={errors.name?.message}
             {...register('name')}
           />
 
           <FormTextarea
-            label="Deine Nachricht"
-            placeholder="Schreibe deine Glückwünsche..."
+            label={t('yourMessage')}
+            placeholder={t('messagePlaceholder')}
             rows={4}
             required
             error={errors.message?.message}
@@ -253,7 +257,7 @@ export default function GuestbookTab({
           {/* Photo Upload Section */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Foto hinzufügen (optional)
+              {t('addPhoto')}
             </label>
             
             {!photo ? (
@@ -271,7 +275,7 @@ export default function GuestbookTab({
                   className="flex-1 flex items-center justify-center gap-2 p-4 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
                 >
                   <ImagePlus className="w-5 h-5 text-muted-foreground" />
-                  <span className="text-muted-foreground">Foto auswählen</span>
+                  <span className="text-muted-foreground">{t('selectPhoto')}</span>
                 </label>
                 <label
                   htmlFor="guestbook-photo"
@@ -307,7 +311,7 @@ export default function GuestbookTab({
                   )}
                   {photo.uploadId && !photo.error && (
                     <div className="absolute top-2 left-2 bg-success/100 text-white text-xs px-2 py-1 rounded-full">
-                      ✓ Hochgeladen
+                      ✓ {t('uploaded')}
                     </div>
                   )}
                 </div>
@@ -329,7 +333,7 @@ export default function GuestbookTab({
             className="w-full"
             leftIcon={<Send className="w-4 h-4" />}
           >
-            Nachricht senden
+            {t('sendMessage')}
           </Button>
         </form>
       </motion.div>
@@ -342,7 +346,7 @@ export default function GuestbookTab({
             <MessageSquare className="w-10 h-10 text-muted-foreground" />
           </div>
           <p className="text-muted-foreground">
-            Noch keine Einträge. Sei der Erste!
+            {t('noEntries')}
           </p>
         </div>
       ) : (
@@ -368,7 +372,7 @@ export default function GuestbookTab({
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground">{entry.authorName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(entry.createdAt).toLocaleDateString('de-DE', {
+                      {new Date(entry.createdAt).toLocaleDateString(dateLocaleMap[locale] || 'de-DE', {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric',
@@ -382,7 +386,7 @@ export default function GuestbookTab({
                   <div className="mb-3 rounded-xl overflow-hidden">
                     <img
                       src={entry.photoUrl}
-                      alt="Gästebuch Foto"
+                      alt={t('guestbookPhoto')}
                       className="w-full max-h-64 object-cover"
                     />
                   </div>
@@ -397,7 +401,7 @@ export default function GuestbookTab({
                 <div className="mt-4 pt-4 border-t border-border">
                   <button className="flex items-center gap-2 text-muted-foreground hover:text-destructive transition-colors">
                     <Heart className="w-4 h-4" />
-                    <span className="text-sm">Gefällt mir</span>
+                    <span className="text-sm">{t('like')}</span>
                   </button>
                 </div>
               </motion.div>

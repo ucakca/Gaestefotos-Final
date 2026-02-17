@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import StarRating from '@/components/ui/StarRating';
 import { Photo } from '@gaestefotos/shared';
+import { useTranslations } from '@/components/I18nProvider';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -117,6 +118,7 @@ export default function PhotoLightbox({
   onPrev,
   onLikeChange,
 }: PhotoLightboxProps) {
+  const t = useTranslations('photos');
   const [likedPhotos, setLikedPhotos] = useState<Set<string>>(new Set());
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
@@ -306,7 +308,7 @@ export default function PhotoLightbox({
     const shareUrl = eventSlug
       ? `${window.location.origin}/e3/${eventSlug}?photo=${currentPhoto.id}`
       : currentPhoto.url || '';
-    const shareText = `Schau dir dieses Foto an! 📸 #gästefotos ${eventTitle ? `#${eventTitle.replace(/\s+/g, '')}` : ''}`;
+    const shareText = `${t('shareText')} #gästefotos ${eventTitle ? `#${eventTitle.replace(/\s+/g, '')}` : ''}`;
 
     // Try to share image with branding via Web Share API (for Instagram, etc.)
     if (navigator.share && navigator.canShare) {
@@ -323,7 +325,7 @@ export default function PhotoLightbox({
           if (navigator.canShare({ files: [file] })) {
             await navigator.share({
               files: [file],
-              title: eventTitle || 'Event Foto',
+              title: eventTitle || t('eventPhoto'),
               text: shareText,
             });
             return;
@@ -332,7 +334,7 @@ export default function PhotoLightbox({
         
         // Fallback: share URL only
         await navigator.share({
-          title: eventTitle || 'Event Foto',
+          title: eventTitle || t('eventPhoto'),
           text: shareText,
           url: shareUrl,
         });
@@ -374,8 +376,8 @@ export default function PhotoLightbox({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-full h-full p-0 bg-black/95 border-none overflow-hidden">
-        <DialogTitle className="sr-only">Foto ansehen</DialogTitle>
-        <DialogDescription className="sr-only">Vollbild-Ansicht des Fotos mit Navigations- und Aktionsmöglichkeiten</DialogDescription>
+        <DialogTitle className="sr-only">{t('viewPhoto')}</DialogTitle>
+        <DialogDescription className="sr-only">{t('viewPhotoDesc')}</DialogDescription>
         <div className="relative w-full h-full flex flex-col">
           {/* Top Bar - Event Title + Close */}
           <div className="flex-shrink-0 bg-black/80 backdrop-blur-sm border-b border-white/10">
@@ -386,7 +388,7 @@ export default function PhotoLightbox({
                   {eventTitle || 'Event'}
                 </p>
                 <p className="text-white/60 text-xs">
-                  {(selectedIndex ?? 0) + 1} von {photos.length}
+                  {t('nOfTotal', { n: String((selectedIndex ?? 0) + 1), total: String(photos.length) })}
                 </p>
               </div>
 
@@ -444,7 +446,7 @@ export default function PhotoLightbox({
               >
                 <img
                   src={currentPhoto.url}
-                  alt={`Foto ${(selectedIndex ?? 0) + 1}`}
+                  alt={t('photoN', { n: String((selectedIndex ?? 0) + 1) })}
                   className="max-w-full max-h-full object-contain rounded-sm"
                   style={{ maxHeight: 'calc(100vh - 280px)' }}
                 />
@@ -533,14 +535,14 @@ export default function PhotoLightbox({
               {/* Like Count - always show line, changes based on count */}
               <p className="text-white font-semibold text-sm">
                 {likeCount > 0 
-                  ? `Gefällt ${likeCount} ${likeCount === 1 ? 'Person' : 'Personen'}`
-                  : 'Sei der Erste, dem das gefällt'
+                  ? (likeCount === 1 ? t('likedByOne', { count: String(likeCount) }) : t('likedByMany', { count: String(likeCount) }))
+                  : t('beFirstLike')
                 }
               </p>
 
               {/* Star Rating */}
               <div className="flex items-center gap-2 py-1">
-                <span className="text-white/60 text-sm">Bewerten:</span>
+                <span className="text-white/60 text-sm">{t('rate')}</span>
                 <StarRating
                   rating={currentRating.average}
                   userRating={currentRating.userRating}
@@ -552,14 +554,14 @@ export default function PhotoLightbox({
 
               {/* Uploader attribution - always visible */}
               <p className="text-white/80 text-sm">
-                <span className="text-white/60">Geteilt von </span>
+                <span className="text-white/60">{t('sharedBy')} </span>
                 <span className="font-medium">
                   {(currentPhoto as any)?.uploader?.firstName 
                     ? `${(currentPhoto as any).uploader.firstName}${(currentPhoto as any).uploader.lastName ? ` ${(currentPhoto as any).uploader.lastName}` : ''}`
                     : (currentPhoto as any)?.completion?.uploaderName 
                       || (currentPhoto as any)?.uploadedBy 
                       || (currentPhoto as any)?.uploaderName 
-                      || 'Anonymer Teilnehmer'}
+                      || t('anonymousUser')}
                 </span>
               </p>
 
@@ -587,7 +589,7 @@ export default function PhotoLightbox({
                           onClick={() => setShowAllComments(true)}
                           className="text-white/50 text-sm hover:text-white/70 transition-colors"
                         >
-                          Alle {photoComments.length} Kommentare anzeigen
+                          {t('showAllComments', { count: String(photoComments.length) })}
                         </button>
                       )}
                     </div>
@@ -596,7 +598,7 @@ export default function PhotoLightbox({
                   {/* Comment Form - Compact */}
                   <div className="flex gap-2 pt-2 border-t border-white/10">
                     <Input
-                      placeholder="Kommentar hinzufügen..."
+                      placeholder={t('addComment')}
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
                       onKeyDown={(e) => {
@@ -615,13 +617,13 @@ export default function PhotoLightbox({
                         size="sm"
                         className="text-primary hover:text-primary/80 p-0"
                       >
-                        Posten
+                        {t('post')}
                       </Button>
                     )}
                   </div>
                   {commentText.trim() && !authorName.trim() && (
                     <Input
-                      placeholder="Dein Name"
+                      placeholder={t('yourName')}
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
                       className="bg-card/10 border-white/20 text-white placeholder:text-white/50 text-sm"

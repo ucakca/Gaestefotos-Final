@@ -156,12 +156,24 @@ export default function EventCard({ event, index = 0, photoCount = 0, guestCount
 
           {/* Hover Quick Actions Overlay */}
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
-            <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl hover:bg-white/30 transition-colors" title="Dashboard">
+            <a
+              href={`/e3/${event.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl hover:bg-white/30 transition-colors"
+              title="Gästevorschau"
+            >
               <Eye className="w-5 h-5 text-white" />
-            </div>
-            <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl hover:bg-white/30 transition-colors" title="Einstellungen">
+            </a>
+            <a
+              href={`/events/${event.id}/dashboard`}
+              onClick={(e) => e.stopPropagation()}
+              className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl hover:bg-white/30 transition-colors"
+              title="Dashboard"
+            >
               <Settings className="w-5 h-5 text-white" />
-            </div>
+            </a>
           </div>
 
           {/* Locked Overlay */}

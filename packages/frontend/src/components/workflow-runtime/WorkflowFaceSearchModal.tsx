@@ -2,10 +2,11 @@
 
 import { useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader2, AlertTriangle } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import dynamic from 'next/dynamic';
 import { useWorkflow } from '@/hooks/useWorkflow';
+import FaceSearch from '@/components/FaceSearch';
 
 const WorkflowRunner = dynamic(
   () => import('@/components/workflow-runtime/WorkflowRunner'),
@@ -26,17 +27,26 @@ export default function WorkflowFaceSearchModal({
   const { definition, loading: wfLoading, error: wfError } = useWorkflow(isOpen ? 'FACE_SEARCH' : null);
 
   const handleComplete = useCallback((_collectedData: Record<string, any>) => {
-    // Face search results are already shown in the StepFaceSearch step
-    // Just close the modal when the workflow completes
     onClose();
   }, [onClose]);
+
+  // Fallback: If no workflow definition found, use standalone FaceSearch component
+  if (wfError || (!wfLoading && !definition && isOpen)) {
+    return (
+      <FaceSearch
+        eventId={eventId}
+        open={isOpen}
+        onClose={onClose}
+      />
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-card border border-border rounded-2xl max-w-md w-full p-0 overflow-hidden max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <h2 className="text-lg font-bold text-foreground">Finde mein Foto</h2>
+          <h2 className="text-lg font-bold text-foreground">Finde meine Fotos</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-full hover:bg-muted/50 transition-colors"
@@ -50,13 +60,6 @@ export default function WorkflowFaceSearchModal({
           {wfLoading && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-            </div>
-          )}
-
-          {wfError && (
-            <div className="flex flex-col items-center justify-center py-12 gap-3">
-              <AlertTriangle className="w-10 h-10 text-destructive" />
-              <p className="text-muted-foreground text-sm">{wfError}</p>
             </div>
           )}
 

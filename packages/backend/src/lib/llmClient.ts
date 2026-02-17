@@ -43,8 +43,8 @@ export interface LLMResponse {
 // ─── Provider Defaults ──────────────────────────────────────────────────────
 
 const PROVIDER_DEFAULTS: Record<LLMProviderType, { baseUrl: string; model: string }> = {
-  groq:    { baseUrl: 'https://api.groq.com/openai/v1', model: 'llama-3.1-70b-versatile' },
-  grok:    { baseUrl: 'https://api.x.ai/v1',            model: 'grok-2-latest' },
+  groq:    { baseUrl: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile' },
+  grok:    { baseUrl: 'https://api.x.ai/v1',            model: 'grok-3-mini' },
   openai:  { baseUrl: 'https://api.openai.com/v1',      model: 'gpt-4o-mini' },
   generic: { baseUrl: '',                                model: '' },
 };

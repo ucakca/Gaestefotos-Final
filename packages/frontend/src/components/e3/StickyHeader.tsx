@@ -2,6 +2,7 @@
 
 import { ChevronUp, Trophy, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { useTranslations } from '@/components/I18nProvider';
 
 interface StickyHeaderProps {
   hostAvatar: string;
@@ -21,6 +22,8 @@ export default function StickyHeader({  hostAvatar,
   onLeaderboard,
   onShare,
 }: StickyHeaderProps) {
+  const t = useTranslations('header');
+
   return (
     <div
       className={`fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-lg border-b transition-all duration-300 ${
@@ -54,10 +57,10 @@ export default function StickyHeader({  hostAvatar,
               size="sm"
               onClick={onLeaderboard}
               className="h-9 px-3 bg-transparent flex items-center gap-1.5"
-              title="Leaderboard"
+              title={t('leaderboard')}
             >
               <Trophy className="h-5 w-5" />
-              <span className="text-xs font-medium">Ranking</span>
+              <span className="text-xs font-medium">{t('ranking')}</span>
             </Button>
           )}
           {onShare && (
@@ -66,10 +69,10 @@ export default function StickyHeader({  hostAvatar,
               size="sm"
               onClick={onShare}
               className="h-9 w-9 bg-transparent"
-              title="Event teilen"
+              title={t('shareEvent')}
             >
               <Share2 className="h-5 w-5" />
-              <span className="sr-only">Teilen</span>
+              <span className="sr-only">{t('share')}</span>
             </Button>
           )}
           <Button
@@ -79,7 +82,7 @@ export default function StickyHeader({  hostAvatar,
             className="h-9 w-9 bg-transparent"
           >
             <ChevronUp className="h-5 w-5" />
-            <span className="sr-only">Nach oben</span>
+            <span className="sr-only">{t('scrollToTop')}</span>
           </Button>
         </div>
       </div>

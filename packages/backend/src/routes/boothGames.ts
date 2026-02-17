@@ -5,6 +5,7 @@ import {
   GAME_CATALOG,
   spinSlotMachine,
   generateCompliment,
+  generateComplimentAI,
   getRandomMimikChallenge,
   scoreMimik,
   getRandomOverlay,
@@ -34,17 +35,32 @@ router.post('/slot-machine/spin', authMiddleware, async (req: AuthRequest, res: 
   }
 });
 
-// POST /api/booth-games/compliment-mirror — Get a random compliment
+// POST /api/booth-games/compliment-mirror — Get an AI-generated compliment (with fallback)
 router.post('/compliment-mirror', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { eventId } = req.body;
-    const result = generateCompliment();
+    const { eventId, eventType, eventTitle, guestName, useAI } = req.body;
+
+    let result: { compliment: string; verdict: string; source?: string };
+
+    // Use AI if requested (default: true), fall back to random on failure
+    if (useAI !== false) {
+      result = await generateComplimentAI({
+        eventType: eventType || undefined,
+        eventTitle: eventTitle || undefined,
+        guestName: guestName || undefined,
+      });
+    } else {
+      result = { ...generateCompliment(), source: 'random' };
+    }
+
     const session = createGameSession(eventId, 'compliment_mirror', result);
 
     res.json({ sessionId: session.id, ...result });
   } catch (error) {
     logger.error('Compliment mirror error', { message: (error as Error).message });
-    res.status(500).json({ error: 'Compliment Mirror Fehler' });
+    // Ultimate fallback: random compliment
+    const fallback = generateCompliment();
+    res.json({ ...fallback, source: 'fallback' });
   }
 });
 

@@ -60,11 +60,13 @@ import adminEventsRoutes from './routes/adminEvents';
 import adminUsersRoutes from './routes/adminUsers';
 import adminDashboardRoutes from './routes/adminDashboard';
 import adminSettingsRoutes from './routes/adminSettings';
+import adminBackupsRoutes from './routes/adminBackups';
 import cohostInvitesRoutes from './routes/cohostInvites';
 import uploadsRoutes from './routes/uploads';
 import aiRoutes from './routes/ai';
 import adminAiAnalysisRoutes from './routes/adminAiAnalysis';
 import adminAiProvidersRoutes from './routes/adminAiProviders';
+import adminPromptTemplatesRoutes from './routes/adminPromptTemplates';
 import adminCreditsRoutes from './routes/adminCredits';
 import smsShareRoutes from './routes/smsShare';
 import galleryEmbedRoutes from './routes/galleryEmbed';
@@ -611,12 +613,14 @@ app.use('/api/admin/events', adminEventsRoutes);
 app.use('/api/admin/users', adminUsersRoutes);
 app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/admin/settings', adminSettingsRoutes);
+app.use('/api/admin/backups', adminBackupsRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
 
 // AI Routes (KI-Assistent)
 app.use('/api/ai', aiRoutes);
 app.use('/api/admin/ai', adminAiAnalysisRoutes);
 app.use('/api/admin/ai-providers', adminAiProvidersRoutes);
+app.use('/api/admin/prompt-templates', adminPromptTemplatesRoutes);
 app.use('/api/admin/credits', adminCreditsRoutes);
 app.use('/api/sms', smsLimiter, smsShareRoutes);
 app.use('/api', galleryEmbedRoutes);

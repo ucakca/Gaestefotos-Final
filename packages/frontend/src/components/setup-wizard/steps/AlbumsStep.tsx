@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, ArrowLeft, FolderOpen, Plus, X, Sparkles, SkipForward, GripVertical } from 'lucide-react';
+import { ArrowRight, ArrowLeft, FolderOpen, Plus, X, Sparkles, SkipForward, GripVertical, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { AlbumConfig } from '../types';
 import AIAssistantCard from '../AIAssistantCard';
@@ -12,6 +12,7 @@ interface AlbumsStepProps {
   albums: AlbumConfig[];
   eventType: string;
   eventTitle: string;
+  eventDateTime?: Date | null;
   onAlbumsChange: (albums: AlbumConfig[]) => void;
   onNext: () => void;
   onBack: () => void;
@@ -22,11 +23,17 @@ export default function AlbumsStep({
   albums,
   eventType,
   eventTitle,
+  eventDateTime,
   onAlbumsChange,
   onNext,
   onBack,
   onSkip,
 }: AlbumsStepProps) {
+  const computeDefaultDate = (base: Date, offsetHours: number): string => {
+    const d = new Date(base.getTime() + offsetHours * 60 * 60 * 1000);
+    return d.toISOString().slice(0, 16); // format: YYYY-MM-DDTHH:mm
+  };
+
   const [showAI, setShowAI] = useState(false);
   const [newAlbumName, setNewAlbumName] = useState('');
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
@@ -178,9 +185,33 @@ export default function AlbumsStep({
             
             <FolderOpen className={`w-5 h-5 ${album.enabled ? 'text-warning' : 'text-muted-foreground'}`} />
             
-            <span className={`flex-1 font-medium ${album.enabled ? 'text-foreground' : 'text-muted-foreground'}`}>
-              {album.name}
-            </span>
+            <div className="flex-1 min-w-0">
+              <span className={`font-medium ${album.enabled ? 'text-foreground' : 'text-muted-foreground'}`}>
+                {album.name}
+              </span>
+              {album.enabled && album.dateOffsetHours !== undefined && eventDateTime && (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <input
+                    type="datetime-local"
+                    value={album.startAt || computeDefaultDate(eventDateTime, album.dateOffsetHours || 0)}
+                    onChange={(e) => {
+                      onAlbumsChange(albums.map(a => a.id === album.id ? { ...a, startAt: e.target.value } : a));
+                    }}
+                    className="text-[11px] text-muted-foreground bg-transparent border-none p-0 focus:outline-none w-[140px]"
+                  />
+                  <span className="text-[11px] text-muted-foreground">–</span>
+                  <input
+                    type="datetime-local"
+                    value={album.endAt || computeDefaultDate(eventDateTime, (album.dateOffsetHours || 0) + (album.durationHours || 4))}
+                    onChange={(e) => {
+                      onAlbumsChange(albums.map(a => a.id === album.id ? { ...a, endAt: e.target.value } : a));
+                    }}
+                    className="text-[11px] text-muted-foreground bg-transparent border-none p-0 focus:outline-none w-[140px]"
+                  />
+                </div>
+              )}
+            </div>
             
             {album.isCustom && (
               <button

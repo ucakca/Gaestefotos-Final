@@ -1,6 +1,6 @@
 import { logger } from '../utils/logger';
 import { getDefaultConfig, chatCompletion, getActiveProviderInfo, type ChatMessage, type LLMResponse } from './llmClient';
-import { withAiCache, type AiCacheFeature } from '../services/cache/aiCache';
+import { withKnowledge, type KnowledgeFeature } from '../services/cache/knowledgeStore';
 
 interface AIResponse {
   content: string;
@@ -45,7 +45,7 @@ export async function generateCompletion(
 /**
  * Generate album suggestions based on event type
  */
-export const suggestAlbums = withAiCache<
+export const suggestAlbums = withKnowledge<
   { eventType: string; eventTitle?: string },
   string[]
 >(
@@ -69,7 +69,7 @@ Die Namen sollten kurz und prägnant sein (max 3 Wörter).`;
 /**
  * Generate event description
  */
-export const suggestDescription = withAiCache<
+export const suggestDescription = withKnowledge<
   { eventType: string; eventTitle: string; eventDate?: string },
   string
 >(
@@ -90,7 +90,7 @@ Max 2 Sätze, freundlicher Ton, mit Emoji.`;
 /**
  * Generate invitation text
  */
-export const suggestInvitationText = withAiCache<
+export const suggestInvitationText = withKnowledge<
   { eventType: string; eventTitle: string; hostName?: string },
   string
 >(
@@ -112,7 +112,7 @@ Die Gäste sollen motiviert werden, Fotos hochzuladen.`;
 /**
  * Generate challenge ideas
  */
-export const suggestChallenges = withAiCache<
+export const suggestChallenges = withKnowledge<
   { eventType: string },
   { title: string; description: string }[]
 >(
@@ -136,7 +136,7 @@ Jede Challenge sollte einen kurzen Titel und eine einladende Beschreibung haben.
 /**
  * Generate guestbook welcome message
  */
-export const suggestGuestbookMessage = withAiCache<
+export const suggestGuestbookMessage = withKnowledge<
   { eventType: string; eventTitle: string },
   string
 >(
@@ -237,7 +237,7 @@ type ColorScheme = {
 /**
  * Suggest color scheme based on event type and optional keywords
  */
-export const suggestColorScheme = withAiCache<
+export const suggestColorScheme = withKnowledge<
   { eventType: string; keywords?: string[]; mood?: string },
   ColorScheme[]
 >(
@@ -351,9 +351,9 @@ export interface GeneratedTheme {
 
 /**
  * Generate event themes based on event type and optional context.
- * Uses withAiCache for automatic caching (30 day TTL).
+ * Uses Knowledge Store for permanent caching (selbstlernendes System).
  */
-export const suggestTheme = withAiCache<
+export const suggestTheme = withKnowledge<
   { eventType: string; season?: string; location?: string },
   GeneratedTheme[]
 >(

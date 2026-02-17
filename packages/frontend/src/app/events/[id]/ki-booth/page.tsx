@@ -126,6 +126,25 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
 
   if (loading || !eventId) return <FullPageLoader />;
 
+  const aiEnabled = (event as any)?.packageInfo?.features?.aiEffects === true;
+
+  if (!aiEnabled) {
+    return (
+      <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
+        <div className="max-w-md mx-auto px-4 py-20 text-center">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center">
+            <Sparkles className="w-10 h-10 text-violet-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">KI Booth</h1>
+          <p className="text-muted-foreground mb-6">AI Style Transfer ist in deinem aktuellen Paket nicht enthalten. Upgrade für Zugang zu KI-Effekten.</p>
+          <Button variant="primary" size="md" onClick={() => window.location.href = `/events/${eventId}/package`}>
+            Paket upgraden
+          </Button>
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout showBackButton backUrl={`/events/${eventId}/dashboard`}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">

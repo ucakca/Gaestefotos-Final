@@ -11,6 +11,9 @@ import { assertUploadWithinLimit } from '../services/packageLimits';
 import { hasEventAccess } from '../middleware/auth';
 import { logger } from '../utils/logger';
 import { auditLog, AuditType } from '../services/auditLogger';
+import { extractCapturedAtFromImage } from '../services/uploadDatePolicy';
+import { selectSmartCategoryId } from '../services/smartAlbum';
+import { resolveSmartCategoryId } from '../services/photoCategories';
 import { io } from '../index';
 import rateLimit from 'express-rate-limit';
 
@@ -162,8 +165,9 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
   const filetype = metadata.filetype || 'image/jpeg';
   const uploadedBy = metadata.uploadedBy || '';
   const categoryId = metadata.categoryId || null;
+  const progressivePhotoId = metadata.photoId || null; // Progressive upload: update existing record
 
-  logger.info('TUS upload parsed values', { eventId, filename, uploadedBy, categoryId });
+  logger.info('TUS upload parsed values', { eventId, filename, uploadedBy, categoryId, progressivePhotoId });
 
   if (!eventId) {
     logger.error('No eventId in upload metadata', { uploadId: upload.id, metadata });
@@ -211,6 +215,25 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
       );
       await assertUploadWithinLimit(eventId, uploadBytes);
       
+      // Extract EXIF capturedAt for smart categorization
+      const uploadTime = new Date();
+      const capturedAtResult = await extractCapturedAtFromImage(buffer, uploadTime);
+
+      // Smart Album Chain: 1) manual categoryId from metadata, 2) time-window, 3) EXIF fallback
+      let resolvedCategoryId = categoryId || null;
+      if (!resolvedCategoryId) {
+        resolvedCategoryId = await selectSmartCategoryId({
+          eventId,
+          capturedAt: capturedAtResult.capturedAt,
+          isGuest: true, // TUS uploads are typically from guests
+        });
+      }
+      if (!resolvedCategoryId && !categoryId) {
+        resolvedCategoryId = await resolveSmartCategoryId(eventId, {
+          dateTime: capturedAtResult.capturedAt,
+        });
+      }
+
       const baseFilename = filename.replace(/\.[^/.]+$/, '');
       const ext = filename.match(/\.[^/.]+$/)?.[0] || '.jpg';
       
@@ -219,41 +242,74 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
         storageService.uploadFile(eventId, `${baseFilename}_orig${ext}`, processed.original, filetype),
         storageService.uploadFile(eventId, `${baseFilename}_thumb${ext}`, processed.thumbnail, 'image/jpeg'),
       ]);
-      
-      const photo = await prisma.photo.create({
-        data: {
-          eventId,
-          storagePath,
-          storagePathOriginal,
-          storagePathThumb,
-          categoryId: categoryId || null,
-          url: '',
-          status: 'PENDING',
-          sizeBytes: uploadBytes,
-          uploadedBy: uploadedBy || null,
-        },
-      });
-      
-      // Update URL
-      const updatedPhoto = await prisma.photo.update({
-        where: { id: photo.id },
-        data: { url: `/api/photos/${photo.id}/file` },
-      });
-      
-      // Emit WebSocket event for real-time updates
-      try {
-        io.to(`event:${eventId}`).emit('photo_uploaded', {
-          photo: {
-            ...updatedPhoto,
-            sizeBytes: updatedPhoto.sizeBytes?.toString(),
+
+      let photoId: string;
+
+      if (progressivePhotoId) {
+        // Progressive Upload Phase 2: Update existing photo record (created by quick-preview)
+        const updatedPhoto = await prisma.photo.update({
+          where: { id: progressivePhotoId },
+          data: {
+            storagePath,
+            storagePathOriginal,
+            storagePathThumb,
+            categoryId: resolvedCategoryId,
+            sizeBytes: uploadBytes,
+            tags: [], // Remove progressive-upload tag
           },
         });
-        logger.info('TUS upload WebSocket event emitted', { eventId, photoId: photo.id });
-      } catch (wsError: any) {
-        logger.warn('Failed to emit WebSocket event for TUS upload', { error: wsError.message });
+        photoId = updatedPhoto.id;
+
+        // Emit photo_updated so gallery swaps thumbnail with full-quality
+        try {
+          io.to(`event:${eventId}`).emit('photo_updated', {
+            photo: {
+              ...updatedPhoto,
+              sizeBytes: updatedPhoto.sizeBytes?.toString(),
+            },
+          });
+          logger.info('[ProgressiveUpload] Full quality uploaded, photo updated', { eventId, photoId });
+        } catch (wsError: any) {
+          logger.warn('Failed to emit WebSocket event', { error: wsError.message });
+        }
+      } else {
+        // Standard TUS upload: create new photo record
+        const photo = await prisma.photo.create({
+          data: {
+            eventId,
+            storagePath,
+            storagePathOriginal,
+            storagePathThumb,
+            categoryId: resolvedCategoryId,
+            url: '',
+            status: 'PENDING',
+            sizeBytes: uploadBytes,
+            uploadedBy: uploadedBy || null,
+          },
+        });
+        photoId = photo.id;
+
+        // Update URL
+        const updatedPhoto = await prisma.photo.update({
+          where: { id: photo.id },
+          data: { url: `/api/photos/${photo.id}/file` },
+        });
+
+        // Emit WebSocket event for real-time updates
+        try {
+          io.to(`event:${eventId}`).emit('photo_uploaded', {
+            photo: {
+              ...updatedPhoto,
+              sizeBytes: updatedPhoto.sizeBytes?.toString(),
+            },
+          });
+          logger.info('TUS upload WebSocket event emitted', { eventId, photoId: photo.id });
+        } catch (wsError: any) {
+          logger.warn('Failed to emit WebSocket event for TUS upload', { error: wsError.message });
+        }
       }
 
-      auditLog({ type: AuditType.TUS_UPLOAD_FINISHED, message: `TUS Upload abgeschlossen: ${filename}`, eventId, data: { uploadId: upload.id, filename, isVideo: false }, level: 'DEBUG' });
+      auditLog({ type: AuditType.TUS_UPLOAD_FINISHED, message: `TUS Upload abgeschlossen: ${filename}`, eventId, data: { uploadId: upload.id, filename, isVideo: false, progressive: !!progressivePhotoId }, level: 'DEBUG' });
     }
     
     // Clean up temp file
@@ -277,6 +333,31 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
     throw error;
   }
 }
+
+// Periodic cleanup of stale TUS temp files (abandoned uploads)
+const STALE_FILE_MAX_AGE_MS = 2 * 60 * 60 * 1000; // 2 hours
+setInterval(async () => {
+  try {
+    const files = await fs.readdir(TUS_UPLOAD_DIR);
+    const now = Date.now();
+    let cleaned = 0;
+    for (const file of files) {
+      const fp = path.join(TUS_UPLOAD_DIR, file);
+      try {
+        const stat = await fs.stat(fp);
+        if (now - stat.mtimeMs > STALE_FILE_MAX_AGE_MS) {
+          await fs.unlink(fp);
+          cleaned++;
+        }
+      } catch { /* file may have been cleaned by another process */ }
+    }
+    if (cleaned > 0) {
+      logger.info(`[TUS Cleanup] Removed ${cleaned} stale temp files`);
+    }
+  } catch (error: any) {
+    logger.warn('[TUS Cleanup] Failed', { error: error.message });
+  }
+}, 30 * 60 * 1000); // Run every 30 minutes
 
 // Status endpoint to check if Tus is enabled (must be before Tus handlers)
 router.get('/status', (_req: Request, res: Response) => {

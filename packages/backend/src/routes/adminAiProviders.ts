@@ -159,6 +159,19 @@ router.get('/usage/stats', authMiddleware, async (req: AuthRequest, res: Respons
   }
 });
 
+// Feature Status Overview — all AI features with provider, cost, enabled status
+router.get('/features/status', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!(await requireAdmin(req, res))) return;
+    const { getAiFeatureStatus } = await import('../services/aiExecution');
+    const features = await getAiFeatureStatus();
+    res.json({ features });
+  } catch (error) {
+    logger.error('Error getting AI feature status:', error);
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 // Feature Mappings — static routes
 router.get('/features/mappings', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
@@ -468,7 +481,7 @@ router.post('/:id/test', authMiddleware, async (req: AuthRequest, res: Response)
         const { default: Groq } = await import('groq-sdk');
         const client = new Groq({ apiKey });
         const completion = await client.chat.completions.create({
-          model: model || 'llama-3.1-70b-versatile',
+          model: model || 'llama-3.3-70b-versatile',
           messages: [{ role: 'user', content: 'Say "OK" in one word.' }],
           max_tokens: 5,
         });
@@ -484,7 +497,7 @@ router.post('/:id/test', authMiddleware, async (req: AuthRequest, res: Response)
             'Authorization': `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            model: model || 'grok-2-latest',
+            model: model || 'grok-3-mini',
             messages: [{ role: 'user', content: 'Say "OK" in one word.' }],
             max_tokens: 5,
           }),
@@ -530,6 +543,18 @@ router.post('/:id/test', authMiddleware, async (req: AuthRequest, res: Response)
         });
         success = resp.ok;
         message = success ? 'Stability API erreichbar' : `${resp.status} ${resp.statusText}`;
+      } else if (provider.slug.includes('remove') || provider.slug.includes('removebg') || provider.slug.includes('remove-bg')) {
+        const resp = await fetch('https://api.remove.bg/v1.0/account', {
+          headers: { 'X-Api-Key': apiKey },
+        });
+        if (resp.ok) {
+          const data = await resp.json() as any;
+          success = true;
+          const credits = data.data?.attributes?.credits?.total ?? 'unbekannt';
+          message = `remove.bg API erreichbar (Credits: ${credits})`;
+        } else {
+          message = `remove.bg ${resp.status} ${resp.statusText}`;
+        }
       } else {
         message = 'Test für diesen Provider-Typ nicht implementiert';
       }

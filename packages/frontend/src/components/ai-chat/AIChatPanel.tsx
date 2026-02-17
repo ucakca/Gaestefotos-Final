@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Loader2 } from 'lucide-react';
 import AIBotIcon from '../icons/AIBotIcon';
+import api from '@/lib/api';
 
 interface Message {
   id: string;
@@ -60,13 +61,7 @@ export default function AIChatPanel({ isOpen, onClose }: AIChatPanelProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage.content }),
-      });
-
-      const data = await response.json();
+      const { data } = await api.post('/ai/chat', { message: userMessage.content });
 
       const assistantMessage: Message = {
         id: `assistant-${Date.now()}`,

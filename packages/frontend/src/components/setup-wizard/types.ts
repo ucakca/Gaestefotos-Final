@@ -22,6 +22,10 @@ export interface AlbumConfig {
   icon?: string;
   enabled: boolean;
   isCustom?: boolean;
+  startAt?: string | null;
+  endAt?: string | null;
+  dateOffsetHours?: number;
+  durationHours?: number;
 }
 
 export interface ChallengeConfig {
@@ -38,6 +42,7 @@ export interface FeaturesConfig {
   moderationRequired: boolean;
   mysteryMode: boolean;
   showGuestlist: boolean;
+  uploadToleranceDays?: number;
 }
 
 export interface SetupState {

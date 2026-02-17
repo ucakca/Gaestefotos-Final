@@ -39,6 +39,9 @@ import {
   Shield,
   UserPlus,
   LayoutGrid,
+  BarChart3,
+  Layers,
+  Contact,
 } from 'lucide-react';
 import { usePackageFeatures, FeatureKey, FEATURE_DESCRIPTIONS } from '@/hooks/usePackageFeatures';
 import { Event as EventType } from '@gaestefotos/shared';
@@ -290,6 +293,10 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
         }} />
         <SetupRow icon={Users} label="Gästeliste" link={`/events/${eventId}/guests`} />
         <SetupRow icon={BookOpen} label="Kategorien" link={`/events/${eventId}/categories`} />
+        <SetupRow icon={Layers} label="Duplikate erkennen" link={`/events/${eventId}/duplicates`} />
+        <SetupRow icon={BarChart3} label="Statistiken" link={`/events/${eventId}/statistics`} />
+        <SetupRow icon={Video} label="Videos verwalten" link={`/events/${eventId}/videos`} />
+        <SetupRow icon={Contact} label="Leads & Kontakte" link={`/events/${eventId}/leads`} />
       </div>
 
       {/* Settings Section */}
@@ -433,6 +440,23 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                     </button>
                   </label>
                 ))}
+              </div>
+
+              <div className="border-t border-border pt-4 space-y-3">
+                <h4 className="text-sm font-semibold text-foreground">Upload-Zeitfenster</h4>
+                <p className="text-xs text-muted-foreground">Wie viele Tage vor und nach dem Event dürfen Gäste Fotos hochladen?</p>
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="number"
+                    min={0}
+                    max={30}
+                    value={featuresConfig.uploadToleranceDays ?? 1}
+                    onChange={(e) => setFeaturesConfig((prev: any) => ({ ...prev, uploadToleranceDays: parseInt(e.target.value) || 1 }))}
+                    className="w-20 px-3 py-2 text-center"
+                  />
+                  <span className="text-sm text-muted-foreground">Tag(e) Toleranz (±)</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Hosts & Co-Hosts können immer hochladen. 0 = nur am Event-Tag.</p>
               </div>
 
               <div className="border-t border-border pt-4 space-y-3">

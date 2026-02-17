@@ -37,6 +37,8 @@ import {
   ToggleLeft,
   Globe,
   Sparkles,
+  ScrollText,
+  HardDrive,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -73,18 +75,38 @@ const navigation: NavGroup[] = [
       { name: 'Event erstellen', href: '/manage/events/create', icon: UserPlus },
       { name: 'Pakete & Features', href: '/manage/packages', icon: Package },
       { name: 'Impersonation', href: '/manage/impersonation', icon: UserCog },
+      { name: 'Partner', href: '/manage/partners', icon: Building2 },
+    ],
+  },
+  {
+    name: 'Templates',
+    icon: FileText,
+    items: [
       { name: 'QR-Templates', href: '/manage/qr-templates', icon: QrCode },
       { name: 'Event Themes', href: '/manage/event-themes', icon: Palette },
       { name: 'E-Mail Templates', href: '/manage/email-templates', icon: Mail },
       { name: 'Einladungs-Templates', href: '/invitation-templates', icon: FileText },
-      { name: 'Partner', href: '/manage/partners', icon: Building2 },
+      { name: 'Landing Page', href: '/manage/landing', icon: Globe },
+    ],
+  },
+  {
+    name: 'KI & Automation',
+    icon: Brain,
+    items: [
       { name: 'AI Provider', href: '/manage/ai-providers', icon: Brain },
-      { name: 'Workflow Builder', href: '/manage/workflows', icon: Workflow },
+      { name: 'AI Features', href: '/manage/ai-features', icon: Sparkles },
+      { name: 'Prompt Templates', href: '/manage/prompt-templates', icon: ScrollText },
       { name: 'AI Credits', href: '/manage/credits', icon: Zap },
+      { name: 'Workflow Builder', href: '/manage/workflows', icon: Workflow },
+    ],
+  },
+  {
+    name: 'Integrationen',
+    icon: Code2,
+    items: [
       { name: 'Embed Code', href: '/manage/embed', icon: Code2 },
       { name: 'Slideshow', href: '/manage/slideshow', icon: Presentation },
       { name: 'SMS Sharing', href: '/manage/sms', icon: MessageSquare },
-      { name: 'Landing Page', href: '/manage/landing', icon: Globe },
       { name: 'Feature Flags', href: '/feature-flags', icon: ToggleLeft },
     ],
   },
@@ -97,6 +119,7 @@ const navigation: NavGroup[] = [
       { name: 'AI Analyse', href: '/system/ai-analyse', icon: Bot },
       { name: 'AI Logs', href: '/system/ai-logs', icon: Sparkles },
       { name: 'Rate Limits', href: '/system/rate-limits', icon: Shield },
+      { name: 'Backups', href: '/system/backups', icon: HardDrive },
     ],
   },
   {

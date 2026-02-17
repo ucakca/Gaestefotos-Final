@@ -370,6 +370,7 @@ model Photo {
   deletedAt            DateTime?
   purgeAfter           DateTime?
   sizeBytes            BigInt?
+  isFavorite           Boolean              @default(false)
   isStoryOnly          Boolean              @default(false)
   storagePathOriginal  String?
   storagePathThumb     String?
@@ -2250,6 +2251,53 @@ enum VideoJobStatus {
   COMPLETED
   FAILED
   CANCELLED
+}
+
+// ─── AI PROMPT TEMPLATES ─────────────────────────────────────────────────────
+// Editierbare Prompt-Vorlagen für alle AI-Features.
+// Ermöglicht Admin-Verwaltung, Versionierung & Event-spezifische Overrides.
+
+model AiPromptTemplate {
+  id              String    @id @default(uuid())
+  feature         String                            // z.B. "chat", "compliment_mirror", "album_suggest", "style_transfer:oil-painting"
+  name            String                            // Anzeigename z.B. "Chat System-Prompt"
+  description     String?                           // Beschreibung wofür der Prompt ist
+  category        PromptCategory                    // SYSTEM, STYLE, GAME, SUGGEST, CUSTOM
+  // Prompt Content
+  systemPrompt    String?                           // System-Prompt (für LLM)
+  userPromptTpl   String?                           // User-Prompt-Template mit {{variables}}
+  negativePrompt  String?                           // Negative Prompt (für Image-Gen)
+  // Parameters
+  temperature     Float?
+  maxTokens       Int?
+  strength        Float?                            // Für Image-Gen (0.0-1.0)
+  // Versioning
+  version         Int       @default(1)
+  isActive        Boolean   @default(true)          // Aktive Version (nur 1 pro feature+scope)
+  isDefault       Boolean   @default(true)          // System-Default (nicht löschbar)
+  // Scope: null = global, eventId = event-spezifisch
+  eventId         String?
+  // Metadata
+  variables       Json?                             // Verfügbare Variablen [{name, description, example}]
+  tags            Json?                             // Tags für Filterung ["booth", "fun", "formal"]
+  createdBy       String?                           // Admin-User-ID
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([feature, version, eventId])
+  @@index([feature, isActive])
+  @@index([category])
+  @@index([eventId])
+  @@map("ai_prompt_templates")
+}
+
+enum PromptCategory {
+  SYSTEM          // System-Prompts (Chat, Suggestions)
+  STYLE           // Style Transfer Prompts
+  GAME            // Booth-Game Prompts (Compliment Mirror, etc.)
+  SUGGEST         // Vorschlag-Prompts (Albums, Descriptions, etc.)
+  CUSTOM          // Benutzerdefiniert
 }
 
 // EventLead model removed — merged into Lead model above

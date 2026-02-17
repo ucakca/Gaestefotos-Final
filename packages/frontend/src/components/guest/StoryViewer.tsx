@@ -22,8 +22,6 @@ type Props = {
   onNext: () => void;
   onPause: () => void;
   onResume: () => void;
-  onDragPrev: () => void;
-  onDragNext: () => void;
 };
 
 export default function StoryViewer({
@@ -35,8 +33,6 @@ export default function StoryViewer({
   onNext,
   onPause,
   onResume,
-  onDragPrev,
-  onDragNext,
 }: Props) {
   const hasSelection = selectedStoryIndex !== null && !!stories[selectedStoryIndex];
   const selectedStory = hasSelection ? stories[selectedStoryIndex as number] : null;
@@ -117,24 +113,12 @@ export default function StoryViewer({
           )}
 
           <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            drag={stories.length > 1 ? 'x' : false}
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.2}
-            onDragEnd={(_, info) => {
-              if (stories.length <= 1) return;
-              const threshold = 60;
-              if (info.offset.x > threshold) {
-                onDragPrev();
-                return;
-              }
-              if (info.offset.x < -threshold) {
-                onDragNext();
-              }
-            }}
-            className="w-full max-w-md relative select-none touch-pan-y px-4"
+            key={selectedStoryIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="w-full max-w-md relative select-none px-4"
           >
             <div
               className="absolute inset-0 z-10"

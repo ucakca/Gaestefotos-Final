@@ -100,16 +100,16 @@ export default function MosaicPrintUpload({ eventId, eventSlug }: MosaicPrintUpl
           >
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/30 rounded-2xl text-white hover:border-emerald-400/50 transition-all active:scale-[0.98]"
+              className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-2xl hover:border-emerald-500/50 transition-all active:scale-[0.98]"
             >
               <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0">
-                <Printer className="w-5 h-5 text-emerald-300" />
+                <Printer className="w-5 h-5 text-emerald-600 dark:text-emerald-300" />
               </div>
               <div className="text-left flex-1">
-                <div className="font-semibold text-sm">Foto für Mosaic Wall</div>
-                <div className="text-xs text-muted-foreground/70">Hochladen & am Terminal drucken</div>
+                <div className="font-semibold text-sm text-foreground">Foto für Mosaic Wall</div>
+                <div className="text-xs text-muted-foreground">Hochladen & am Terminal drucken</div>
               </div>
-              <Camera className="w-5 h-5 text-muted-foreground/70" />
+              <Camera className="w-5 h-5 text-muted-foreground" />
             </button>
           </motion.div>
         )}
@@ -121,13 +121,13 @@ export default function MosaicPrintUpload({ eventId, eventSlug }: MosaicPrintUpl
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="w-full px-4 py-4 bg-foreground/90/50 border border-foreground/80 rounded-2xl"
+            className="w-full px-4 py-4 bg-card border border-border rounded-2xl"
           >
             <div className="flex items-center gap-3">
-              <Loader2 className="w-5 h-5 animate-spin text-emerald-300" />
+              <Loader2 className="w-5 h-5 animate-spin text-emerald-600 dark:text-emerald-300" />
               <div className="flex-1">
-                <div className="text-sm font-medium">Wird hochgeladen...</div>
-                <div className="mt-1 h-1.5 bg-foreground/80 rounded-full overflow-hidden">
+                <div className="text-sm font-medium text-foreground">Wird hochgeladen...</div>
+                <div className="mt-1 h-1.5 bg-muted rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-emerald-500 rounded-full"
                     initial={{ width: 0 }}
@@ -135,7 +135,7 @@ export default function MosaicPrintUpload({ eventId, eventSlug }: MosaicPrintUpl
                   />
                 </div>
               </div>
-              <span className="text-xs text-muted-foreground/70">{progress}%</span>
+              <span className="text-xs text-muted-foreground">{progress}%</span>
             </div>
           </motion.div>
         )}
@@ -147,45 +147,45 @@ export default function MosaicPrintUpload({ eventId, eventSlug }: MosaicPrintUpl
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="w-full px-4 py-4 bg-gradient-to-r from-emerald-900/40 to-teal-900/40 border border-emerald-500/40 rounded-2xl"
+            className="w-full px-4 py-4 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-2xl"
           >
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Check className="w-5 h-5 text-emerald-400" />
-                <span className="text-sm font-medium text-emerald-300">Foto hochgeladen!</span>
+                <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Foto hochgeladen!</span>
               </div>
-              <button onClick={reset} className="p-1 rounded-lg hover:bg-foreground/80/50">
-                <X className="w-4 h-4 text-muted-foreground/70" />
+              <button onClick={reset} className="p-1 rounded-lg hover:bg-muted">
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
 
             <div className="text-center mb-3">
-              <div className="text-xs text-muted-foreground/70 mb-1">Dein Mosaic-Code:</div>
+              <div className="text-xs text-muted-foreground mb-1">Dein Mosaic-Code:</div>
               <div className="flex items-center justify-center gap-2">
-                <span className="text-3xl font-mono font-bold tracking-[0.3em] text-white">
+                <span className="text-3xl font-mono font-bold tracking-[0.3em] text-foreground">
                   {printCode.pinCode}
                 </span>
                 <button
                   onClick={copyCode}
-                  className="p-2 rounded-lg hover:bg-foreground/80/50 transition-colors"
+                  className="p-2 rounded-lg hover:bg-muted transition-colors"
                   title="Code kopieren"
                 >
                   {copied ? (
-                    <Check className="w-4 h-4 text-emerald-400" />
+                    <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   ) : (
-                    <Copy className="w-4 h-4 text-muted-foreground/70" />
+                    <Copy className="w-4 h-4 text-muted-foreground" />
                   )}
                 </button>
               </div>
             </div>
 
-            <div className="text-center text-xs text-muted-foreground/70 mb-3">
-              Gehe zum <strong className="text-emerald-300">Print-Terminal</strong> und gib diesen Code ein, um deinen Sticker zu drucken.
+            <div className="text-center text-xs text-muted-foreground mb-3">
+              Gehe zum <strong className="text-emerald-700 dark:text-emerald-300">Print-Terminal</strong> und gib diesen Code ein, um deinen Sticker zu drucken.
             </div>
 
             <button
               onClick={reset}
-              className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 rounded-xl text-sm font-medium text-emerald-300 transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-sm font-medium text-emerald-700 dark:text-emerald-300 transition-colors"
             >
               <RotateCcw className="w-4 h-4" />
               Noch ein Foto hochladen
@@ -203,11 +203,11 @@ export default function MosaicPrintUpload({ eventId, eventSlug }: MosaicPrintUpl
             className="w-full px-4 py-3 bg-destructive/20 border border-destructive/30 rounded-2xl"
           >
             <div className="flex items-center gap-3">
-              <X className="w-5 h-5 text-destructive/80 shrink-0" />
-              <div className="flex-1 text-sm text-destructive/60">{error}</div>
+              <X className="w-5 h-5 text-destructive shrink-0" />
+              <div className="flex-1 text-sm text-destructive">{error}</div>
               <button
                 onClick={reset}
-                className="px-3 py-1.5 text-xs font-medium bg-destructive/100/20 hover:bg-destructive/100/30 rounded-lg text-destructive/60 transition-colors"
+                className="px-3 py-1.5 text-xs font-medium bg-destructive/10 hover:bg-destructive/20 rounded-lg text-destructive transition-colors"
               >
                 Nochmal
               </button>

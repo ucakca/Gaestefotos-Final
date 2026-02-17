@@ -1230,7 +1230,8 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     const storageEndsAt = await getEventStorageEndsAt(event.id);
     const isStorageLocked = storageEndsAt ? Date.now() > storageEndsAt.getTime() : false;
     const effectivePackage = await getEffectiveEventPackage(event.id);
-    res.json({ event: { ...event, storageEndsAt, isStorageLocked, effectivePackage } });
+    const packageInfo = await getEventFeatures(event.id);
+    res.json({ event: { ...event, storageEndsAt, isStorageLocked, effectivePackage, packageInfo } });
   } catch (error) {
     logger.error('Get event error', { message: getErrorMessage(error), eventId: req.params.id });
     res.status(500).json({ error: 'Internal server error' });
@@ -1278,6 +1279,7 @@ router.get('/slug/:slug', async (req: AuthRequest, res: Response) => {
     const storageEndsAt = await getEventStorageEndsAt(event.id);
     const isStorageLocked = storageEndsAt ? Date.now() > storageEndsAt.getTime() : false;
     const effectivePackage = await getEffectiveEventPackage(event.id);
+    const packageInfo = await getEventFeatures(event.id);
 
     // Issue access cookie for guests so follow-up public endpoints work in a fresh browser.
     issueEventAccessCookie(res, event.id);
@@ -1287,6 +1289,7 @@ router.get('/slug/:slug', async (req: AuthRequest, res: Response) => {
         storageEndsAt, 
         isStorageLocked, 
         effectivePackage,
+        packageInfo,
         visitCount: (event as any).visitCount || 0,
       } 
     });

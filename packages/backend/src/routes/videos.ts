@@ -12,7 +12,7 @@ import { attachEventUploadRateLimits, videoUploadEventLimiter, videoUploadIpLimi
 import { assertUploadWithinLimit } from '../services/packageLimits';
 import { assertFeatureEnabled } from '../services/featureGate';
 import { isWithinDateWindowPlusMinusDays } from '../services/uploadDatePolicy';
-import { denyByVisibility, isWithinEventDateWindow } from '../services/eventPolicy';
+import { denyByVisibility, isWithinUploadWindow } from '../services/eventPolicy';
 import { getEventStorageEndsAt } from '../services/storagePolicy';
 import { serializeBigInt } from '../utils/serializers';
 import { selectSmartCategoryId } from '../services/smartAlbum';
@@ -397,18 +397,22 @@ router.post(
         });
       }
 
-      // Upload time restriction: eventDate ±1 day
-      if (!event.dateTime) {
-        return denyByVisibility(res, denyVisibility, {
-          code: 'EVENT_DATE_MISSING',
-          error: 'Event-Datum fehlt',
+      // Upload time restriction: Host/Co-Host bypass, guests use dynamic window
+      if (isGuest) {
+        const toleranceDays = typeof featuresConfig?.uploadToleranceDays === 'number'
+          ? featuresConfig.uploadToleranceDays
+          : 1;
+        const withinWindow = await isWithinUploadWindow({
+          eventId,
+          eventDateTime: event.dateTime,
+          toleranceDays,
         });
-      }
-      if (!isWithinEventDateWindow(new Date(), event.dateTime, 1)) {
-        return denyByVisibility(res, denyVisibility, {
-          code: 'UPLOAD_WINDOW_CLOSED',
-          error: 'Uploads sind nur rund um das Event-Datum möglich (±1 Tag)',
-        });
+        if (!withinWindow) {
+          return denyByVisibility(res, denyVisibility, {
+            code: 'UPLOAD_WINDOW_CLOSED',
+            error: `Uploads sind nur rund um das Event-Datum möglich (±${toleranceDays} Tag${toleranceDays !== 1 ? 'e' : ''})`,
+          });
+        }
       }
 
       // Check category upload lock if categoryId is provided

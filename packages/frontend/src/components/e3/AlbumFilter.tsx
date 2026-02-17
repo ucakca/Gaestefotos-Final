@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Camera } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
+import { useTranslations } from '@/components/I18nProvider';
 
 /**
  * AlbumFilter - v0-Style Album/Category Filter
@@ -35,6 +36,8 @@ export default function AlbumFilter({
   onAlbumSelect,
   totalPhotos = 0,
 }: AlbumFilterProps) {
+  const t = useTranslations('filter');
+
   // Get Lucide icon component
   const getIcon = (iconName?: string) => {
     if (!iconName) return Camera;
@@ -68,7 +71,7 @@ export default function AlbumFilter({
             whileTap={{ scale: 0.95 }}
           >
             <Camera className="w-4 h-4" />
-            <span>Alle</span>
+            <span>{t('all')}</span>
             {totalPhotos > 0 && (
               <span className={`text-xs px-2 py-0.5 rounded-full ${
                 selectedAlbum === null

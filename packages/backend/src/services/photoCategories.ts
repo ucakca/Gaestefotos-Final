@@ -61,15 +61,15 @@ export async function extractExifData(filePath: string): Promise<ExifData | null
 }
 
 /**
- * Smart category assignment based on EXIF data
+ * Resolve a smart category ID based on EXIF data WITHOUT updating the photo.
+ * Used as a fallback when selectSmartCategoryId (time-window match) returns null.
+ * Requires featuresConfig.autoCategories to be enabled on the event.
  */
-export async function assignSmartCategory(
+export async function resolveSmartCategoryId(
   eventId: string,
-  photoId: string,
   exifData: ExifData
 ): Promise<string | null> {
   try {
-    // Check if event has auto-categorization enabled
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       select: {
@@ -83,7 +83,6 @@ export async function assignSmartCategory(
     const featuresConfig = event.featuresConfig as any;
     if (!featuresConfig?.autoCategories) return null;
 
-    // Get or create categories based on EXIF data
     let categoryId: string | null = null;
 
     // 1. Time-based categorization
@@ -117,19 +116,31 @@ export async function assignSmartCategory(
 
       if (isProfessional && exifData.model?.match(/EOS|Z\d+|Alpha|X-T/)) {
         categoryId = await getOrCreateCategory(eventId, 'Professionelle Fotos', 'camera');
-      } else {
-        categoryId = await getOrCreateCategory(eventId, 'Gäste-Fotos', 'camera');
       }
     }
 
-    // 3. Flash usage (indoor vs. outdoor)
-    if (!categoryId && exifData.flash !== undefined) {
-      const flashUsed = exifData.flash > 0;
-      const categoryName = flashUsed ? 'Indoor-Fotos' : 'Outdoor-Fotos';
-      categoryId = await getOrCreateCategory(eventId, categoryName, 'lighting');
-    }
+    return categoryId;
+  } catch (error) {
+    logger.error('[photoCategories] resolveSmartCategoryId failed', {
+      error: (error as Error).message,
+      eventId,
+    });
+    return null;
+  }
+}
 
-    // Update photo with assigned category
+/**
+ * Smart category assignment based on EXIF data (legacy — updates photo record directly).
+ * Delegates to resolveSmartCategoryId for category resolution.
+ */
+export async function assignSmartCategory(
+  eventId: string,
+  photoId: string,
+  exifData: ExifData
+): Promise<string | null> {
+  try {
+    const categoryId = await resolveSmartCategoryId(eventId, exifData);
+
     if (categoryId) {
       await prisma.photo.update({
         where: { id: photoId },

@@ -8,12 +8,13 @@ import { imageProcessor } from '../services/imageProcessor';
 import { attachEventUploadRateLimits, photoUploadEventLimiter, photoUploadIpLimiter } from '../middleware/rateLimit';
 import { validateUploadedFile } from '../middleware/uploadSecurity';
 import { assertUploadWithinLimit } from '../services/packageLimits';
-import { denyByVisibility, isWithinEventDateWindow } from '../services/eventPolicy';
+import { denyByVisibility, isWithinUploadWindow } from '../services/eventPolicy';
 import { getEventStorageEndsAt } from '../services/storagePolicy';
 import { extractCapturedAtFromImage } from '../services/uploadDatePolicy';
 import { emailService } from '../services/email';
 import { serializeBigInt } from '../utils/serializers';
 import { selectSmartCategoryId } from '../services/smartAlbum';
+import { resolveSmartCategoryId, extractExifData } from '../services/photoCategories';
 import { mosaicEngine } from '../services/mosaicEngine';
 import { getFaceDetectionMetadata } from '../services/faceRecognition';
 import { addBrandingOverlay } from '../services/logoOverlay';
@@ -85,18 +86,22 @@ const enforceEventUploadAllowed = async (req: AuthRequest, res: Response, next: 
       }
     }
 
-    if (!event.dateTime) {
-      return denyByVisibility(res, denyVisibility, {
-        code: 'EVENT_DATE_MISSING',
-        error: 'Event-Datum fehlt',
+    // Host/Co-Host bypass upload window entirely
+    if (!isManager) {
+      const toleranceDays = typeof featuresConfig?.uploadToleranceDays === 'number'
+        ? featuresConfig.uploadToleranceDays
+        : 1;
+      const withinWindow = await isWithinUploadWindow({
+        eventId,
+        eventDateTime: event.dateTime,
+        toleranceDays,
       });
-    }
-
-    if (!isWithinEventDateWindow(new Date(), event.dateTime, 1)) {
-      return denyByVisibility(res, denyVisibility, {
-        code: 'UPLOAD_WINDOW_CLOSED',
-        error: 'Uploads sind nur rund um das Event-Datum möglich (±1 Tag)',
-      });
+      if (!withinWindow) {
+        return denyByVisibility(res, denyVisibility, {
+          code: 'UPLOAD_WINDOW_CLOSED',
+          error: `Uploads sind nur rund um das Event-Datum möglich (±${toleranceDays} Tag${toleranceDays !== 1 ? 'e' : ''})`,
+        });
+      }
     }
 
     const storageEndsAt = await getEventStorageEndsAt(eventId);
@@ -211,6 +216,135 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
   }
 });
 
+// Get all media (photos + videos) for an event — unified for Host Gallery
+router.get('/:eventId/media', async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const { status, limit, skip } = req.query;
+
+    const statusFilter: any = {};
+    const statusValue = Array.isArray(status) ? status[0] : status;
+    if (typeof statusValue === 'string') {
+      const normalized = statusValue.trim().toUpperCase();
+      if (normalized && normalized !== 'ALL') {
+        const allowed = new Set(['PENDING', 'APPROVED', 'REJECTED', 'DELETED']);
+        if (allowed.has(normalized)) {
+          statusFilter.status = normalized;
+        }
+      }
+    }
+
+    const limitNum = limit ? Math.min(parseInt(limit as string, 10) || 100, 500) : undefined;
+    const skipNum = skip ? parseInt(skip as string, 10) || 0 : 0;
+
+    // Fetch photos and videos in parallel
+    const [photosRaw, videosRaw] = await Promise.all([
+      prisma.photo.findMany({
+        where: { eventId, isStoryOnly: false, deletedAt: null, ...statusFilter },
+        include: {
+          guest: { select: { id: true, firstName: true, lastName: true } },
+          category: { select: { id: true, name: true } },
+          challengeCompletions: {
+            select: { challengeId: true, challenge: { select: { id: true, title: true } } },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.video.findMany({
+        where: { eventId, isStoryOnly: false, deletedAt: null, ...statusFilter },
+        include: {
+          guest: { select: { id: true, firstName: true, lastName: true } },
+          category: { select: { id: true, name: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
+
+    // Normalize photos
+    const photos = photosRaw.map((p: any) => {
+      const cc = p.challengeCompletions;
+      return {
+        id: p.id,
+        type: 'PHOTO' as const,
+        eventId: p.eventId,
+        url: p.url?.startsWith('http') ? p.url : `/api/photos/${p.id}/file`,
+        thumbnailUrl: p.storagePathThumb ? `/api/photos/${p.id}/file?variant=thumb` : undefined,
+        status: p.status,
+        uploadedBy: p.uploadedBy,
+        categoryId: p.categoryId,
+        category: p.category,
+        guest: p.guest,
+        challengeId: cc?.challengeId || null,
+        challengeTitle: cc?.challenge?.title || null,
+        likes: (p as any)._count?.likes || 0,
+        views: p.views || 0,
+        isFavorite: p.isFavorite || false,
+        sizeBytes: p.sizeBytes?.toString(),
+        createdAt: p.createdAt,
+        tags: p.tags || [],
+      };
+    });
+
+    // Normalize videos
+    const videos = videosRaw.map((v: any) => ({
+      id: v.id,
+      type: 'VIDEO' as const,
+      eventId: v.eventId,
+      url: v.url || `/api/videos/${v.id}/file`,
+      thumbnailUrl: v.thumbnailPath ? `/api/videos/${v.id}/thumbnail` : undefined,
+      status: v.status,
+      uploadedBy: v.uploadedBy,
+      categoryId: v.categoryId,
+      category: v.category,
+      guest: v.guest,
+      challengeId: null,
+      challengeTitle: null,
+      likes: 0,
+      views: v.views || 0,
+      isFavorite: false, // Videos don't have favorites yet
+      duration: v.duration,
+      sizeBytes: v.sizeBytes?.toString(),
+      createdAt: v.createdAt,
+      tags: v.tags || [],
+    }));
+
+    // Merge and sort by createdAt desc
+    const allMedia = [...photos, ...videos].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    // Paginate
+    const total = allMedia.length;
+    const paginatedMedia = limitNum
+      ? allMedia.slice(skipNum, skipNum + limitNum)
+      : allMedia;
+
+    // Stats
+    const stats = {
+      total,
+      photos: photos.length,
+      videos: videos.length,
+      approved: allMedia.filter(m => m.status === 'APPROVED').length,
+      pending: allMedia.filter(m => m.status === 'PENDING').length,
+      rejected: allMedia.filter(m => m.status === 'REJECTED').length,
+    };
+
+    res.json({
+      media: paginatedMedia,
+      stats,
+      pagination: {
+        total,
+        hasMore: limitNum ? (skipNum + limitNum) < total : false,
+        skip: skipNum,
+        limit: limitNum || total,
+      },
+    });
+  } catch (error: any) {
+    logger.error('Get media error', { error: error.message, stack: error.stack });
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Upload photo (public endpoint for guests)
 router.post(
   '/:eventId/photos/upload',
@@ -255,13 +389,20 @@ router.post(
       const uploadTime = new Date();
       const capturedAtResult = await extractCapturedAtFromImage(file.buffer, uploadTime);
 
-      const resolvedCategoryId = categoryId
+      // Smart Album Chain: 1) manual, 2) time-window match, 3) EXIF-based fallback
+      let resolvedCategoryId = categoryId
         ? categoryId
         : await selectSmartCategoryId({
             eventId,
             capturedAt: capturedAtResult.capturedAt,
             isGuest: !isManager,
           });
+
+      if (!resolvedCategoryId && !categoryId) {
+        resolvedCategoryId = await resolveSmartCategoryId(eventId, {
+          dateTime: capturedAtResult.capturedAt,
+        });
+      }
 
       // Calculate total upload size (all variants)
       const uploadBytes = BigInt(processed.original.length + processed.optimized.length + processed.thumbnail.length);
@@ -466,6 +607,88 @@ router.post(
       res.status(201).json({ photo: serializeBigInt(photoWithProxyUrl) });
     } catch (error: any) {
       logger.error('Upload photo error', { error: error.message, stack: error.stack });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+// Quick Preview Upload for Progressive Upload
+// 1. Guest selects photo → client generates tiny thumbnail (~30KB)
+// 2. This endpoint creates DB record immediately + stores thumbnail
+// 3. Gallery shows photo via WebSocket within ~1 second
+// 4. Full TUS upload continues in background, updates this record
+router.post(
+  '/:eventId/photos/quick-preview',
+  optionalAuthMiddleware,
+  requireEventAccess((req) => (req as any).params.eventId),
+  enforceEventUploadAllowed,
+  uploadSinglePhoto,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ error: 'No preview file provided' });
+      }
+
+      // Quick preview should be small (max 200KB)
+      if (file.size > 200 * 1024) {
+        return res.status(400).json({ error: 'Preview too large. Max 200KB.' });
+      }
+
+      const uploaderName = (req.body?.uploaderName || '').trim() || null;
+      const originalFilename = (req.body?.originalFilename || 'photo.jpg').trim();
+
+      // Store thumbnail directly (no processing needed — already small)
+      const baseFilename = originalFilename.replace(/\.[^/.]+$/, '');
+      const storagePathThumb = await storageService.uploadFile(
+        eventId,
+        `${baseFilename}_preview.jpg`,
+        file.buffer,
+        'image/jpeg'
+      );
+
+      // Create photo record with thumbnail only — original + optimized come later via TUS
+      const photo = await prisma.photo.create({
+        data: {
+          eventId,
+          storagePath: storagePathThumb,    // Temporary: use thumb as main until TUS completes
+          storagePathThumb,
+          storagePathOriginal: null,
+          url: '',
+          status: 'PENDING',
+          sizeBytes: BigInt(file.size),
+          uploadedBy: uploaderName,
+          tags: ['progressive-upload'],     // Tag to identify progressive uploads
+        },
+      });
+
+      const photoUrl = `/api/photos/${photo.id}/file`;
+      await prisma.photo.update({
+        where: { id: photo.id },
+        data: { url: photoUrl },
+      });
+
+      const photoWithUrl = {
+        ...photo,
+        url: photoUrl,
+        sizeBytes: photo.sizeBytes?.toString(),
+      };
+
+      // Emit WebSocket immediately — gallery shows thumbnail within ~1 second
+      io.to(`event:${eventId}`).emit('photo_uploaded', { photo: photoWithUrl });
+
+      logger.info('[ProgressiveUpload] Quick preview stored', {
+        eventId,
+        photoId: photo.id,
+        previewSize: file.size,
+        originalFilename,
+      });
+
+      res.status(201).json({ photoId: photo.id });
+    } catch (error: any) {
+      logger.error('Quick preview error', { error: error.message, stack: error.stack });
       res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -807,6 +1030,95 @@ router.post(
       if (!res.headersSent) {
         res.status(500).json({ error: 'Interner Serverfehler' });
       }
+    }
+  }
+);
+
+// Toggle favorite (host/admin only)
+router.post(
+  '/:photoId/favorite',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoId } = req.params;
+      const photo = await prisma.photo.findUnique({
+        where: { id: photoId },
+        select: { id: true, eventId: true, isFavorite: true, event: { select: { hostId: true } } },
+      });
+      if (!photo) return res.status(404).json({ error: 'Photo not found' });
+      if (!(await hasEventManageAccess(req, photo.eventId))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      const updated = await prisma.photo.update({
+        where: { id: photoId },
+        data: { isFavorite: !photo.isFavorite },
+      });
+      io.to(`event:${photo.eventId}`).emit('photo_updated', { photo: updated });
+      res.json({ photo: updated });
+    } catch (error: any) {
+      logger.error('Toggle favorite error', { error: error.message, photoId: req.params.photoId });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+// Download ALL event photos as ZIP (host/admin only)
+router.post(
+  '/bulk/download-all',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId, filter } = req.body;
+      if (!eventId) return res.status(400).json({ error: 'eventId required' });
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      const event = await prisma.event.findUnique({ where: { id: eventId } });
+      if (!event) return res.status(404).json({ error: 'Event not found' });
+
+      const where: any = { eventId, deletedAt: null };
+      if (filter === 'favorites') where.isFavorite = true;
+      else if (filter !== 'all') where.status = 'APPROVED';
+      else where.status = 'APPROVED';
+
+      const photos = await prisma.photo.findMany({
+        where,
+        include: { category: { select: { name: true } } },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      if (photos.length === 0) return res.status(404).json({ error: 'Keine Fotos gefunden' });
+
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename="${event.slug}-gallery-${Date.now()}.zip"`);
+
+      const archive = archiver('zip', { zlib: { level: 6 } });
+      archive.on('error', (err: any) => {
+        logger.error('ZIP error', { error: err.message, eventId });
+        if (!res.headersSent) res.status(500).json({ error: 'ZIP error' });
+      });
+      archive.pipe(res);
+
+      const categoryCounters: Record<string, number> = {};
+      for (const photo of photos) {
+        if (!photo.storagePath) continue;
+        try {
+          const downloadPath = photo.storagePathOriginal || photo.storagePath;
+          const fileBuffer = await storageService.getFile(downloadPath);
+          const extension = downloadPath.split('.').pop() || 'jpg';
+          const categoryName = (photo as any).category?.name || 'Allgemein';
+          const safeName = categoryName.replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '').trim() || 'Allgemein';
+          categoryCounters[safeName] = (categoryCounters[safeName] || 0) + 1;
+          const idx = categoryCounters[safeName].toString().padStart(3, '0');
+          archive.append(fileBuffer, { name: `${safeName}/IMG_${idx}.${extension}` });
+        } catch (err: any) {
+          logger.warn('Skip photo in ZIP', { error: err.message, photoId: photo.id });
+        }
+      }
+      archive.finalize();
+    } catch (error: any) {
+      logger.error('Download all error', { error: error.message });
+      if (!res.headersSent) res.status(500).json({ error: 'Internal server error' });
     }
   }
 );

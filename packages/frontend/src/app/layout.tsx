@@ -9,6 +9,7 @@ import MaintenanceBanner from '@/components/MaintenanceBanner'
 import ThemeLoader from '@/components/ThemeLoader'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { ServiceWorkerProvider } from '@/components/pwa/ServiceWorkerProvider'
+import AutoLocaleDetect from '@/components/AutoLocaleDetect'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -95,6 +96,7 @@ export default async function RootLayout({
           >
             <ServiceWorkerProvider>
               <ThemeLoader />
+              <AutoLocaleDetect />
               <MaintenanceBanner />
               {children}
               <ToastProvider />

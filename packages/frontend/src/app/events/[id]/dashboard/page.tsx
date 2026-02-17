@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
+import { QRCodeSVG } from 'qrcode.react';
 import { Event as EventType } from '@gaestefotos/shared';
 import {
   Camera,
@@ -31,32 +32,21 @@ import {
   MapPin,
   CheckCircle2,
   Video,
-  Target,
   Star,
-  Trash2,
-  Download,
-  FileText,
   Palette,
   Info,
   ScanFace,
-  Filter,
   Rocket,
   Trophy,
   Mail,
-  PartyPopper,
-  ExternalLink,
   Copy,
   Loader2,
   UserPlus,
-  Globe,
   Lock,
   Package,
   Zap,
-  HardDrive,
   Plus,
-  MoreVertical,
   Upload,
-  RefreshCw,
   Wifi,
   LayoutGrid,
   Gamepad2,
@@ -65,11 +55,13 @@ import {
 } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
-import { ErrorState } from '@/components/ui/ErrorState';
 import { useRealtimePhotos } from '@/hooks/useRealtimePhotos';
 import { AIFloatingButton } from '@/components/ai-chat';
 import { CoHostsSection } from '@/components/dashboard/CoHostsSection';
 import SetupTabV2 from '@/components/dashboard/SetupTabV2';
+import GalleryTabV2 from '@/components/dashboard/GalleryTabV2';
+import GuestbookTabV2 from '@/components/dashboard/GuestbookTabV2';
+import HashtagWidget from '@/components/host-dashboard/HashtagWidget';
 
 type TabType = 'overview' | 'gallery' | 'guestbook' | 'setup';
 type GalleryFilter = 'all' | 'photos' | 'videos' | 'albums' | 'guests' | 'challenges' | 'top' | 'pending' | 'trash';
@@ -177,25 +169,23 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
 
   const loadStats = async () => {
     try {
-      // Load photos
-      const { data } = await api.get(`/events/${eventId}/photos?status=all`);
-      const loadedPhotos = data.photos || [];
-      setPhotos(loadedPhotos);
+      // Load unified media (photos + videos)
+      const { data } = await api.get(`/events/${eventId}/media?status=all`);
+      const loadedMedia = data.media || [];
+      setPhotos(loadedMedia);
       
-      const photosOnly = loadedPhotos.filter((p: any) => p.type !== 'VIDEO');
-      const videosOnly = loadedPhotos.filter((p: any) => p.type === 'VIDEO');
-      
+      const stats = data.stats || {};
       setPhotoStats({
-        total: loadedPhotos.length,
-        photos: photosOnly.length,
-        videos: videosOnly.length,
-        approved: loadedPhotos.filter((p: any) => p.status === 'APPROVED').length,
-        pending: loadedPhotos.filter((p: any) => p.status === 'PENDING').length,
-        rejected: loadedPhotos.filter((p: any) => p.status === 'REJECTED').length,
+        total: stats.total || loadedMedia.length,
+        photos: stats.photos || loadedMedia.filter((m: any) => m.type === 'PHOTO').length,
+        videos: stats.videos || loadedMedia.filter((m: any) => m.type === 'VIDEO').length,
+        approved: stats.approved || 0,
+        pending: stats.pending || 0,
+        rejected: stats.rejected || 0,
       });
       
       // Count unique guests
-      const uniqueGuests = new Set(loadedPhotos.map((p: any) => p.guestId || p.deviceFingerprint).filter(Boolean));
+      const uniqueGuests = new Set(loadedMedia.map((m: any) => m.uploadedBy || m.guestId).filter(Boolean));
       setGuestCount(uniqueGuests.size);
       
       // Load guestbook entries
@@ -461,12 +451,15 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
           </div>
           
           <div className="flex items-center gap-2">
-            <button 
+            <a
+              href={event?.slug ? `/e3/${event.slug}` : '#'}
+              target="_blank"
+              rel="noopener noreferrer"
               className="p-2 rounded-lg hover:bg-background transition-colors"
-              title="Gesichtserkennung"
+              title="Gästevorschau öffnen"
             >
-              <ScanFace className="w-5 h-5 text-muted-foreground" />
-            </button>
+              <Eye className="w-5 h-5 text-muted-foreground" />
+            </a>
             <button 
               onClick={() => setShowQRModal(true)}
               className="p-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
@@ -529,17 +522,22 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
             />
           )}
           {activeTab === 'gallery' && (
-            <GalleryTab
+            <GalleryTabV2
               key="gallery"
               photos={photos}
               filter={galleryFilter}
               onFilterChange={setGalleryFilter}
               pendingCount={photoStats.pending}
               eventId={eventId || ''}
+              onPhotosChanged={loadStats}
             />
           )}
           {activeTab === 'guestbook' && (
-            <GuestbookTab key="guestbook" eventId={eventId || ''} />
+            <GuestbookTabV2
+              key="guestbook"
+              eventId={eventId || ''}
+              hostMessage={(event as any)?.guestbookHostMessage}
+            />
           )}
           {activeTab === 'setup' && (
             <SetupTabV2 key="setup" event={event} eventId={eventId || ''} onEventUpdate={loadEvent} />
@@ -589,11 +587,17 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
             >
               <div className="text-center">
                 <h3 className="text-lg font-semibold text-foreground mb-4">QR-Code</h3>
-                <div className="bg-background rounded-xl p-8 mb-4">
-                  <div className="w-48 h-48 mx-auto bg-card rounded-lg flex items-center justify-center">
-                    <QrCode className="w-32 h-32 text-foreground" />
-                  </div>
+                <div className="bg-white rounded-xl p-6 mb-4">
+                  <QRCodeSVG
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/e3/${event?.slug || ''}`}
+                    size={192}
+                    level="M"
+                    className="mx-auto"
+                  />
                 </div>
+                <p className="text-xs text-muted-foreground mb-1 font-mono break-all select-all">
+                  {typeof window !== 'undefined' ? window.location.origin : ''}/e3/{event?.slug}
+                </p>
                 <p className="text-sm text-muted-foreground mb-4">
                   Scanne diesen Code um Fotos hochzuladen
                 </p>
@@ -1067,94 +1071,78 @@ function OverviewTab({
       <EventStatusCard event={event} onToggleActive={onToggleActive} showInfo={showStatusInfo} setShowInfo={setShowStatusInfo} />
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-3">
-        <Link
-          href={`/events/${eventId}/live-wall`}
-          className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
-        >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-sm shadow-purple-500/20 group-hover:scale-110 transition-transform">
-            <Play className="w-5 h-5 text-white" />
+      {(() => {
+        const pf = (event as any).packageInfo?.features || {};
+        const tier = (event as any).packageInfo?.tier || 'FREE';
+        const quickActions = [
+          { label: 'Event Wall', sub: 'Slideshow starten', icon: Play, href: `/events/${eventId}/live-wall`, gradient: 'from-purple-500 to-violet-600', shadow: 'shadow-purple-500/20', featureKey: 'liveWall' as const },
+          { label: 'Mosaic Wall', sub: 'Foto-Mosaik', icon: LayoutGrid, href: `/events/${eventId}/mosaic`, gradient: 'from-pink-500 to-rose-600', shadow: 'shadow-pink-500/20', featureKey: 'mosaicWall' as const },
+          { label: 'KI-Kunst', sub: 'AI Style Transfer', icon: Sparkles, href: `/events/${eventId}/ki-booth`, gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20', featureKey: 'aiEffects' as const },
+          { label: 'Foto-Spiele', sub: 'Face Switch & mehr', icon: Gamepad2, href: `/events/${eventId}/booth-games`, gradient: 'from-emerald-500 to-teal-500', shadow: 'shadow-emerald-500/20', featureKey: 'boothGames' as const },
+          { label: 'Live-Analytics', sub: 'Echtzeit-Statistiken', icon: Activity, href: `/events/${eventId}/live-analytics`, gradient: 'from-cyan-500 to-blue-500', shadow: 'shadow-cyan-500/20', featureKey: null },
+          { label: 'Paket', sub: 'Upgrade & Wechsel', icon: Package, href: `/events/${eventId}/package`, gradient: 'from-amber-500 to-orange-500', shadow: 'shadow-amber-500/20', featureKey: null },
+        ];
+        return (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={onGenerateShareLink}
+              disabled={shareLoading}
+              className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 text-left disabled:opacity-50 hover:shadow-md hover:-translate-y-0.5 transition-all"
+            >
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-sm shadow-blue-500/20 group-hover:scale-110 transition-transform">
+                {shareLoading ? <Loader2 className="w-5 h-5 text-white animate-spin" /> : <Share2 className="w-5 h-5 text-white" />}
+              </div>
+              <div>
+                <div className="font-medium text-foreground text-sm">Share</div>
+                <div className="text-xs text-muted-foreground">{shareUrl ? 'Erneut kopieren' : 'Link erzeugen'}</div>
+              </div>
+            </button>
+            {quickActions.map(qa => {
+              const isLocked = qa.featureKey ? !pf[qa.featureKey] : false;
+              const Icon = qa.icon;
+              if (isLocked) {
+                return (
+                  <Link
+                    key={qa.label}
+                    href={`/events/${eventId}/package`}
+                    className="group relative flex items-center gap-3 rounded-2xl bg-card border border-border p-4 opacity-60 hover:opacity-80 transition-all"
+                  >
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${qa.gradient} flex items-center justify-center shadow-sm ${qa.shadow} grayscale`}>
+                      <Icon className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-foreground text-sm flex items-center gap-1.5">
+                        {qa.label}
+                        <Lock className="w-3 h-3 text-muted-foreground" />
+                      </div>
+                      <div className="text-xs text-muted-foreground">Upgrade erforderlich</div>
+                    </div>
+                    <span className="absolute top-2 right-2 text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold">
+                      UPGRADE
+                    </span>
+                  </Link>
+                );
+              }
+              return (
+                <Link
+                  key={qa.label}
+                  href={qa.href}
+                  className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
+                >
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${qa.gradient} flex items-center justify-center shadow-sm ${qa.shadow} group-hover:scale-110 transition-transform`}>
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-foreground text-sm">{qa.label}</div>
+                    <div className="text-xs text-muted-foreground">{qa.sub}</div>
+                  </div>
+                </Link>
+              );
+            })}
+            <HighlightReelButton eventId={eventId} />
           </div>
-          <div>
-            <div className="font-medium text-foreground text-sm">Event Wall</div>
-            <div className="text-xs text-muted-foreground">Slideshow starten</div>
-          </div>
-        </Link>
-        <button
-          onClick={onGenerateShareLink}
-          disabled={shareLoading}
-          className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 text-left disabled:opacity-50 hover:shadow-md hover:-translate-y-0.5 transition-all"
-        >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-sm shadow-blue-500/20 group-hover:scale-110 transition-transform">
-            {shareLoading ? <Loader2 className="w-5 h-5 text-white animate-spin" /> : <Share2 className="w-5 h-5 text-white" />}
-          </div>
-          <div>
-            <div className="font-medium text-foreground text-sm">Share</div>
-            <div className="text-xs text-muted-foreground">{shareUrl ? 'Erneut kopieren' : 'Link erzeugen'}</div>
-          </div>
-        </button>
-        <Link
-          href={`/events/${eventId}/mosaic`}
-          className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
-        >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-sm shadow-pink-500/20 group-hover:scale-110 transition-transform">
-            <LayoutGrid className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <div className="font-medium text-foreground text-sm">Mosaic Wall</div>
-            <div className="text-xs text-muted-foreground">Foto-Mosaik</div>
-          </div>
-        </Link>
-        <Link
-          href={`/events/${eventId}/package`}
-          className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
-        >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-sm shadow-amber-500/20 group-hover:scale-110 transition-transform">
-            <Package className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <div className="font-medium text-foreground text-sm">Paket</div>
-            <div className="text-xs text-muted-foreground">Upgrade & Wechsel</div>
-          </div>
-        </Link>
-        <Link
-          href={`/events/${eventId}/ki-booth`}
-          className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
-        >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm shadow-violet-500/20 group-hover:scale-110 transition-transform">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <div className="font-medium text-foreground text-sm">KI-Kunst</div>
-            <div className="text-xs text-muted-foreground">AI Style Transfer</div>
-          </div>
-        </Link>
-        <Link
-          href={`/events/${eventId}/booth-games`}
-          className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
-        >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-sm shadow-emerald-500/20 group-hover:scale-110 transition-transform">
-            <Gamepad2 className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <div className="font-medium text-foreground text-sm">Foto-Spiele</div>
-            <div className="text-xs text-muted-foreground">Interaktive Games</div>
-          </div>
-        </Link>
-        <Link
-          href={`/events/${eventId}/live-analytics`}
-          className="group flex items-center gap-3 rounded-2xl bg-card border border-border p-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
-        >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-sm shadow-cyan-500/20 group-hover:scale-110 transition-transform">
-            <Activity className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <div className="font-medium text-foreground text-sm">Live-Analytics</div>
-            <div className="text-xs text-muted-foreground">Echtzeit-Statistiken</div>
-          </div>
-        </Link>
-        <HighlightReelButton eventId={eventId} />
-      </div>
+        );
+      })()}
 
       {/* Paket & Upsell */}
       <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
@@ -1165,7 +1153,7 @@ function OverviewTab({
             </div>
             <div>
               <div className="font-semibold text-foreground">
-                {(event as any).tier === 'premium' ? 'Premium' : (event as any).tier === 'smart' ? 'Smart' : (event as any).tier === 'basic' ? 'Basic' : 'Free'}
+                {(event as any).packageInfo?.packageName || 'Free'}
               </div>
               <div className="text-xs text-muted-foreground">Aktuelles Paket</div>
             </div>
@@ -1179,56 +1167,33 @@ function OverviewTab({
           </Link>
         </div>
         <div className="p-4 grid grid-cols-3 gap-2">
-          {[
-            { label: 'Event Wall', icon: Play, enabled: (event as any).tier === 'smart' || (event as any).tier === 'premium' },
-            { label: 'Video', icon: Video, enabled: (event as any).tier === 'smart' || (event as any).tier === 'premium' },
-            { label: 'Mosaic', icon: LayoutGrid, enabled: Boolean((event as any).allowMosaicWall) },
-            { label: 'KI-Kunst', icon: Sparkles, enabled: Boolean((event as any).allowKiBooth) },
-            { label: 'Werbefrei', icon: Star, enabled: (event as any).tier === 'premium' },
-            { label: 'Co-Hosts', icon: Users, enabled: (event as any).tier === 'smart' || (event as any).tier === 'premium' },
-          ].map(f => (
-            <div key={f.label} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium ${
-              f.enabled ? 'bg-success/10 text-success border border-success/30' : 'bg-muted/50 text-muted-foreground/70 border border-border'
-            }`}>
-              <f.icon className="w-3.5 h-3.5" />
-              {f.label}
-              {!f.enabled && <Lock className="w-3 h-3 ml-auto" />}
-            </div>
-          ))}
+          {(() => {
+            const pf = (event as any).packageInfo?.features || {};
+            return [
+              { label: 'Live Wall', icon: Play, enabled: Boolean(pf.liveWall) },
+              { label: 'Video', icon: Video, enabled: Boolean(pf.videoUpload) },
+              { label: 'Mosaic', icon: LayoutGrid, enabled: Boolean(pf.mosaicWall) },
+              { label: 'KI-Effekte', icon: Sparkles, enabled: Boolean(pf.aiEffects) },
+              { label: 'Werbefrei', icon: Star, enabled: Boolean(pf.adFree) },
+              { label: 'Co-Hosts', icon: Users, enabled: Boolean(pf.coHosts) },
+              { label: 'Gästebuch', icon: BookOpen, enabled: Boolean(pf.guestbook) },
+              { label: 'Face Search', icon: ScanFace, enabled: Boolean(pf.faceSearch) },
+              { label: 'Slideshow', icon: Play, enabled: Boolean(pf.slideshow) },
+            ].map(f => (
+              <div key={f.label} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium ${
+                f.enabled ? 'bg-success/10 text-success border border-success/30' : 'bg-muted/50 text-muted-foreground/70 border border-border'
+              }`}>
+                <f.icon className="w-3.5 h-3.5" />
+                {f.label}
+                {!f.enabled && <Lock className="w-3 h-3 ml-auto" />}
+              </div>
+            ));
+          })()}
         </div>
       </div>
 
       {/* Hashtag — Always FREE */}
-      <div className="rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-50 to-emerald-50 p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center text-teal-600">
-              <Globe className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="font-semibold text-sm text-teal-900 flex items-center gap-1.5">
-                Hashtag-Import
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-teal-100 text-teal-700 font-bold">FREE</span>
-              </div>
-              <p className="text-[11px] text-teal-700">Fotos automatisch in die Galerie importieren</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 mt-2">
-          <div className="flex-1 bg-card border border-teal-200 rounded-lg px-3 py-2 font-mono text-sm font-bold text-teal-800">
-            #gästefotos
-          </div>
-          <button
-            onClick={() => onCopy('#gästefotos', 'Hashtag kopiert!')}
-            className="p-2 rounded-lg bg-teal-100 hover:bg-teal-200 transition-colors text-teal-700"
-          >
-            <Copy className="w-4 h-4" />
-          </button>
-        </div>
-        <p className="text-[10px] text-teal-600 mt-2">
-          Gäste posten Fotos mit diesem Hashtag → automatischer Import in eure Galerie. Inkl. gästefotos.com Logo-Overlay.
-        </p>
-      </div>
+      <HashtagWidget eventId={eventId} onCopy={onCopy} />
 
       {/* Share URL Display */}
       {shareUrl && (
@@ -1253,7 +1218,10 @@ function OverviewTab({
               <Mail className="w-4 h-4 text-success" />
             </div>
             <div>
-              <h3 className="font-medium text-foreground">Einladungen</h3>
+              <h3 className="font-medium text-foreground flex items-center gap-1.5">
+                Einladungen
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold">COMING SOON</span>
+              </h3>
               <p className="text-xs text-muted-foreground">{invitations.length} erstellt</p>
             </div>
           </div>
@@ -1330,546 +1298,11 @@ function OverviewTab({
   );
 }
 
-// ============ GALLERY TAB ============
-function GalleryTab({
-  photos,
-  filter,
-  onFilterChange,
-  pendingCount,
-  eventId,
-}: {
-  photos: any[];
-  filter: GalleryFilter;
-  onFilterChange: (f: GalleryFilter) => void;
-  pendingCount: number;
-  eventId: string;
-}) {
-  const [selectedAlbum, setSelectedAlbum] = useState<string | null>(null);
-  const [selectedGuest, setSelectedGuest] = useState<string | null>(null);
-  const [lightboxPhoto, setLightboxPhoto] = useState<any | null>(null);
-  const [showAll, setShowAll] = useState(false);
-  
-  // Count for filters
-  const challengePhotos = photos.filter(p => p.challengeId && p.status === 'APPROVED');
-  const topPhotos = photos.filter(p => p.isFavorite || p.likes > 0);
-  const trashedPhotos = photos.filter(p => p.status === 'REJECTED');
-  
-  // Get unique categories (albums) with names - categoryId is used for albums
-  const categoriesMap = new Map<string, { id: string; name: string; count: number }>();
-  photos.filter(p => p.categoryId && p.status === 'APPROVED').forEach(p => {
-    const existing = categoriesMap.get(p.categoryId);
-    if (existing) {
-      existing.count++;
-    } else {
-      categoriesMap.set(p.categoryId, { 
-        id: p.categoryId, 
-        name: p.category?.name || `Album ${p.categoryId.slice(0, 6)}`, 
-        count: 1 
-      });
-    }
-  });
-  const albums = Array.from(categoriesMap.values());
-  
-  // Get unique uploaders (guests) with names and counts - use uploadedBy as primary
-  const guestsMap = new Map<string, { id: string; name: string; count: number }>();
-  photos.filter(p => p.status === 'APPROVED').forEach(p => {
-    // Use uploadedBy as primary identifier, fallback to other identifiers
-    const guestKey = p.uploadedBy || p.visitorId || p.guestId || p.deviceFingerprint || '__anonymous__';
-    const existing = guestsMap.get(guestKey);
-    if (existing) {
-      existing.count++;
-    } else {
-      let guestName: string;
-      if (p.uploadedBy) {
-        guestName = p.uploadedBy;
-      } else if (p.guest?.firstName) {
-        guestName = `${p.guest.firstName} ${p.guest.lastName || ''}`.trim();
-      } else if (p.visitor?.name) {
-        guestName = p.visitor.name;
-      } else if (guestKey === '__anonymous__') {
-        guestName = 'Anonymer Teilnehmer';
-      } else {
-        guestName = `Gast ${guestKey.slice(0, 6)}`;
-      }
-      guestsMap.set(guestKey, { id: guestKey, name: guestName, count: 1 });
-    }
-  });
-  const guests = Array.from(guestsMap.values()).sort((a, b) => b.count - a.count);
-  
-  const filters: { id: GalleryFilter; label: string; icon: any; count?: number }[] = [
-    { id: 'all', label: 'Alle', icon: Filter },
-    { id: 'photos', label: 'Fotos', icon: Camera },
-    { id: 'videos', label: 'Videos', icon: Video },
-    { id: 'albums', label: 'Alben', icon: ImageIcon, count: albums.length },
-    { id: 'guests', label: 'Gäste', icon: Users, count: guests.length },
-    { id: 'challenges', label: 'Challenges', icon: Trophy, count: challengePhotos.length },
-    { id: 'top', label: 'Top', icon: Star, count: topPhotos.length },
-    { id: 'pending', label: 'Freigabe', icon: Clock, count: pendingCount },
-    { id: 'trash', label: 'Papierkorb', icon: Trash2, count: trashedPhotos.length },
-  ];
+// GalleryTab removed — now using GalleryTabV2 component
 
-  // Reset sub-filters when main filter changes
-  useEffect(() => {
-    if (filter !== 'albums') setSelectedAlbum(null);
-    if (filter !== 'guests') setSelectedGuest(null);
-  }, [filter]);
+// GuestbookTab removed — now using GuestbookTabV2 component
 
-  const filteredPhotos = photos.filter(p => {
-    if (filter === 'all') return p.status === 'APPROVED';
-    if (filter === 'photos') return p.status === 'APPROVED' && p.type !== 'VIDEO';
-    if (filter === 'videos') return p.status === 'APPROVED' && p.type === 'VIDEO';
-    if (filter === 'albums') {
-      if (!p.categoryId || p.status !== 'APPROVED') return false;
-      if (selectedAlbum) return p.categoryId === selectedAlbum;
-      return true;
-    }
-    if (filter === 'guests') {
-      if (p.status !== 'APPROVED') return false;
-      const guestKey = p.uploadedBy || p.visitorId || p.guestId || p.deviceFingerprint || '__anonymous__';
-      if (selectedGuest) return guestKey === selectedGuest;
-      return true; // Show all approved photos in guests view
-    }
-    if (filter === 'challenges') return p.challengeId && p.status === 'APPROVED';
-    if (filter === 'top') return (p.isFavorite || p.likes > 0) && p.status === 'APPROVED';
-    if (filter === 'pending') return p.status === 'PENDING';
-    if (filter === 'trash') return p.status === 'REJECTED';
-    return true;
-  });
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      className="p-4"
-    >
-      {/* Filter Chips */}
-      <div className="flex gap-2 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-        {filters.map(f => (
-          <button
-            key={f.id}
-            onClick={() => onFilterChange(f.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-              filter === f.id
-                ? 'bg-blue-500 text-white'
-                : 'bg-card border border-border text-muted-foreground hover:border-blue-300'
-            }`}
-          >
-            <f.icon className="w-4 h-4" />
-            {f.label}
-            {f.count !== undefined && f.count > 0 && (
-              <span className={`px-1.5 py-0.5 rounded-full text-xs ${
-                filter === f.id ? 'bg-card/30 text-white' : 'bg-orange-100 text-orange-600'
-              }`}>
-                {f.count}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Sub-Filter for Albums */}
-      {filter === 'albums' && albums.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-          <button
-            onClick={() => setSelectedAlbum(null)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-              !selectedAlbum
-                ? 'bg-purple-500 text-white'
-                : 'bg-purple-50 border border-purple-200 text-purple-600 hover:border-purple-300'
-            }`}
-          >
-            Alle Alben
-          </button>
-          {albums.map(album => (
-            <button
-              key={album.id}
-              onClick={() => setSelectedAlbum(album.id)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-                selectedAlbum === album.id
-                  ? 'bg-purple-500 text-white'
-                  : 'bg-purple-50 border border-purple-200 text-purple-600 hover:border-purple-300'
-              }`}
-            >
-              {album.name}
-              <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
-                selectedAlbum === album.id ? 'bg-card/20' : 'bg-purple-100'
-              }`}>
-                {album.count}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Sub-Filter for Guests */}
-      {filter === 'guests' && guests.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-          <button
-            onClick={() => setSelectedGuest(null)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-              !selectedGuest
-                ? 'bg-success/100 text-white'
-                : 'bg-success/10 border border-success/30 text-success hover:border-success/40'
-            }`}
-          >
-            Alle Gäste
-          </button>
-          {guests.map(guest => (
-            <button
-              key={guest.id}
-              onClick={() => setSelectedGuest(guest.id)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-                selectedGuest === guest.id
-                  ? 'bg-success/100 text-white'
-                  : 'bg-success/10 border border-success/30 text-success hover:border-success/40'
-              }`}
-            >
-              {guest.name}
-              <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
-                selectedGuest === guest.id ? 'bg-card/20' : 'bg-success/15'
-              }`}>
-                {guest.count}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Gallery Grid */}
-      {filteredPhotos.length === 0 ? (
-        <div className="text-center py-16">
-          <Camera className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">Keine Medien gefunden</p>
-          {filter === 'pending' && (
-            <p className="text-sm text-muted-foreground mt-1">Alle Fotos wurden bereits freigegeben</p>
-          )}
-        </div>
-      ) : (
-        <div className="grid grid-cols-3 gap-1 rounded-2xl overflow-hidden">
-          {(showAll ? filteredPhotos : filteredPhotos.slice(0, 12)).map((photo, i) => (
-            <button 
-              key={photo.id || i}
-              onClick={() => setLightboxPhoto(photo)}
-              className="aspect-square relative bg-border group cursor-pointer overflow-hidden"
-            >
-              <img
-                src={photo.thumbnailUrl || photo.url || '/placeholder.jpg'}
-                alt=""
-                className="w-full h-full object-cover transition-transform group-hover:scale-105"
-              />
-              {/* Pending Overlay */}
-              {photo.status === 'PENDING' && (
-                <div className="absolute inset-0 bg-orange-500/30 flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-orange-600" />
-                </div>
-              )}
-              {/* Challenge Overlay */}
-              {photo.challengeId && photo.status === 'APPROVED' && (
-                <div className="absolute top-1 left-1">
-                  <div className="bg-purple-500 text-white text-[10px] px-1.5 py-0.5 rounded-full flex items-center gap-1">
-                    <Trophy className="w-3 h-3" />
-                  </div>
-                </div>
-              )}
-              {/* Video Overlay */}
-              {photo.type === 'VIDEO' && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-10 h-10 rounded-full bg-black/50 flex items-center justify-center">
-                    <Play className="w-5 h-5 text-white ml-0.5" />
-                  </div>
-                </div>
-              )}
-              {/* Top/Favorite Overlay */}
-              {(photo.isFavorite || photo.likes > 0) && photo.status === 'APPROVED' && (
-                <div className="absolute top-1 right-1">
-                  <Star className="w-4 h-4 text-warning fill-yellow-400" />
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Show All Button (inline, no navigation) */}
-      {filteredPhotos.length > 12 && !showAll && (
-        <button
-          onClick={() => setShowAll(true)}
-          className="flex items-center justify-center gap-2 mt-4 py-3 text-blue-600 font-medium w-full"
-        >
-          Alle {filteredPhotos.length} Medien anzeigen
-          <ChevronDown className="w-4 h-4" />
-        </button>
-      )}
-      {showAll && filteredPhotos.length > 12 && (
-        <button
-          onClick={() => setShowAll(false)}
-          className="flex items-center justify-center gap-2 mt-4 py-3 text-muted-foreground font-medium w-full"
-        >
-          Weniger anzeigen
-          <ChevronDown className="w-4 h-4 rotate-180" />
-        </button>
-      )}
-
-      {/* Photo Lightbox */}
-      <AnimatePresence>
-        {lightboxPhoto && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-            onClick={() => setLightboxPhoto(null)}
-          >
-            <button
-              onClick={() => setLightboxPhoto(null)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-card/20 text-white hover:bg-card/30 z-10"
-            >
-              <X className="w-6 h-6" />
-            </button>
-            <motion.img
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              src={lightboxPhoto.url || lightboxPhoto.thumbnailUrl}
-              alt=""
-              className="max-w-full max-h-[85vh] object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
-              <span className="text-white/70 text-sm">
-                {lightboxPhoto.uploadedBy || 'Unbekannt'} • {new Date(lightboxPhoto.createdAt).toLocaleDateString('de-DE')}
-              </span>
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                lightboxPhoto.status === 'APPROVED' ? 'bg-success/100/20 text-success/70' :
-                lightboxPhoto.status === 'REJECTED' ? 'bg-destructive/100/20 text-destructive/60' :
-                'bg-orange-500/20 text-orange-300'
-              }`}>
-                {lightboxPhoto.status === 'APPROVED' ? 'Freigegeben' : lightboxPhoto.status === 'REJECTED' ? 'Abgelehnt' : 'Ausstehend'}
-              </span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-}
-
-// ============ GUESTBOOK TAB ============
-function GuestbookTab({ eventId }: { eventId: string }) {
-  const [entries, setEntries] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [exporting, setExporting] = useState(false);
-  const { showToast } = useToastStore();
-
-  useEffect(() => {
-    api.get(`/events/${eventId}/guestbook`)
-      .then(res => setEntries(res.data?.entries || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [eventId]);
-
-  const handleExportPdf = async () => {
-    setExporting(true);
-    try {
-      const res = await api.get(`/events/${eventId}/guestbook/export-pdf`, { responseType: 'blob' });
-      const blob = new Blob([res.data], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `gaestebuch-${new Date().toISOString().slice(0, 10)}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('PDF heruntergeladen', 'success');
-    } catch {
-      showToast('PDF-Export fehlgeschlagen', 'error');
-    } finally {
-      setExporting(false);
-    }
-  };
-
-  const handleModerate = async (entryId: string, action: 'approve' | 'reject') => {
-    try {
-      await api.post(`/events/${eventId}/guestbook/${entryId}/${action}`);
-      setEntries(prev => prev.map(e => e.id === entryId ? { ...e, status: action === 'approve' ? 'APPROVED' : 'REJECTED' } : e));
-      showToast(action === 'approve' ? 'Eintrag freigegeben' : 'Eintrag abgelehnt', 'success');
-    } catch {
-      showToast('Aktion fehlgeschlagen', 'error');
-    }
-  };
-
-  const handleDelete = async (entryId: string) => {
-    try {
-      await api.delete(`/events/${eventId}/guestbook/${entryId}`);
-      setEntries(prev => prev.filter(e => e.id !== entryId));
-      showToast('Eintrag gelöscht', 'success');
-    } catch {
-      showToast('Löschen fehlgeschlagen', 'error');
-    }
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      className="p-4"
-    >
-      {loading ? (
-        <div className="text-center py-16">
-          <Loader2 className="w-8 h-8 text-muted-foreground mx-auto mb-3 animate-spin" />
-          <p className="text-muted-foreground text-sm">Lade Gästebuch...</p>
-        </div>
-      ) : entries.length === 0 ? (
-        <div className="text-center py-16">
-          <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-          <h3 className="font-medium text-foreground mb-1">Gästebuch</h3>
-          <p className="text-muted-foreground text-sm">Noch keine Einträge vorhanden</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-foreground">{entries.length} Einträge</h3>
-            <button
-              onClick={handleExportPdf}
-              disabled={exporting}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-card border border-border text-foreground hover:bg-muted/50 transition-colors disabled:opacity-50"
-            >
-              {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-              PDF Export
-            </button>
-          </div>
-          {entries.map((entry: any) => (
-            <div key={entry.id} className={`rounded-2xl border bg-card p-4 shadow-sm ${entry.status === 'PENDING' ? 'border-warning/50' : entry.status === 'REJECTED' ? 'border-destructive/30 opacity-60' : 'border-border'}`}>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 rounded-full bg-success/15 flex items-center justify-center text-success text-sm font-bold">
-                  {(entry.authorName || entry.name || 'G').charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm text-foreground">{entry.authorName || entry.name || 'Gast'}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {entry.createdAt ? new Date(entry.createdAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
-                    {entry.status === 'PENDING' && <span className="ml-2 text-warning font-medium">Ausstehend</span>}
-                    {entry.status === 'REJECTED' && <span className="ml-2 text-destructive font-medium">Abgelehnt</span>}
-                  </div>
-                </div>
-                <div className="flex gap-1">
-                  {entry.status === 'PENDING' && (
-                    <>
-                      <button onClick={() => handleModerate(entry.id, 'approve')} className="p-1.5 rounded-lg hover:bg-success/15 text-success transition-colors" title="Freigeben">
-                        <Check className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => handleModerate(entry.id, 'reject')} className="p-1.5 rounded-lg hover:bg-destructive/15 text-destructive transition-colors" title="Ablehnen">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </>
-                  )}
-                  <button onClick={() => handleDelete(entry.id)} className="p-1.5 rounded-lg hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-colors" title="Löschen">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-              {entry.message && <p className="text-sm text-foreground">{entry.message}</p>}
-              {(entry.photoUrl || entry.imageUrl) && (
-                <img src={entry.photoUrl || entry.imageUrl} alt="" className="mt-2 rounded-xl max-h-48 object-cover w-full" />
-              )}
-              {entry.audioUrl && (
-                <audio controls preload="none" className="mt-2 w-full h-8">
-                  <source src={entry.audioUrl} />
-                </audio>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </motion.div>
-  );
-}
-
-// ============ SETUP TAB ============
-function SetupTab({ event, eventId }: { event: EventType; eventId: string }) {
-  const { showToast } = useToastStore();
-  
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      className="p-4 space-y-4"
-    >
-      {/* Design Section */}
-      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-border bg-background">
-          <h3 className="font-semibold text-foreground flex items-center gap-2">
-            <Palette className="w-4 h-4" />
-            Design
-          </h3>
-        </div>
-        <SetupRow icon={Palette} label="Galerie-Design" link={`/events/${eventId}/design?wizard=1`} />
-        <SetupRow icon={QrCode} label="QR-Code Designer" link={`/events/${eventId}/qr-styler`} />
-        <SetupRow icon={Mail} label="Einladungen" link={`/events/${eventId}/invitations`} />
-      </div>
-
-      {/* Event Info Section */}
-      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-border bg-background">
-          <h3 className="font-semibold text-foreground flex items-center gap-2">
-            <Info className="w-4 h-4" />
-            Event-Info
-          </h3>
-        </div>
-        <SetupRow icon={Calendar} label="Datum & Ort" link={`/events/${eventId}/edit`} />
-        <SetupRow icon={LinkIcon} label="Event-Link" link={`/events/${eventId}/edit`} />
-      </div>
-
-      {/* Features Section */}
-      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-border bg-background">
-          <h3 className="font-semibold text-foreground flex items-center gap-2">
-            <Sparkles className="w-4 h-4" />
-            Features
-          </h3>
-        </div>
-        <SetupRow icon={Trophy} label="Foto-Spiele" link={`/events/${eventId}/challenges`} />
-        <SetupRow icon={Users} label="Gästeliste" link={`/events/${eventId}/guests`} />
-        <SetupRow icon={BookOpen} label="Kategorien" link={`/events/${eventId}/categories`} />
-        <SetupRow icon={BarChart3} label="Statistiken" link={`/events/${eventId}/statistics`} />
-      </div>
-
-      {/* Settings Section */}
-      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-border bg-background">
-          <h3 className="font-semibold text-foreground flex items-center gap-2">
-            <Settings className="w-4 h-4" />
-            Einstellungen
-          </h3>
-        </div>
-        <SetupRow icon={Wifi} label="WLAN für Gäste" link={`/events/${eventId}/wifi`} />
-        <SetupRow icon={Eye} label="Sichtbarkeit" link={`/events/${eventId}/edit`} />
-        <SetupRow icon={Settings} label="Erweiterte Optionen" link={`/events/${eventId}/edit`} danger />
-      </div>
-
-      {/* Co-Hosts Section */}
-      <CoHostsSection
-        eventId={eventId}
-        onCopy={async (text, msg) => {
-          await navigator.clipboard.writeText(text);
-          showToast(msg || 'Kopiert', 'success');
-        }}
-        onShare={async (url, title) => {
-          if (navigator.share) {
-            await navigator.share({ url, title });
-          } else {
-            await navigator.clipboard.writeText(url);
-            showToast('Link kopiert', 'success');
-          }
-        }}
-        onToast={showToast}
-      />
-
-    </motion.div>
-  );
-}
+// SetupTab removed — now using SetupTabV2 component
 
 // ============ HELPER COMPONENTS ============
 

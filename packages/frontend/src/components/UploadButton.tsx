@@ -76,6 +76,51 @@ function sleep(ms: number): Promise<void> {
  * Resizes images to max 2500px before upload.
  * Backend will then create: Original (full quality) + Optimized (1920px) + Thumbnail (300px)
  */
+/**
+ * Generate a tiny preview thumbnail for progressive upload.
+ * This gets sent to the server immediately (~30KB) so the photo
+ * appears in the gallery within 1 second, even on bad connections.
+ */
+async function generateQuickPreview(file: File): Promise<Blob | null> {
+  if (!file.type.startsWith('image/')) return null;
+
+  const PREVIEW_SIZE = 400;
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const { width, height } = img;
+      const scale = PREVIEW_SIZE / Math.max(width, height);
+      const newWidth = Math.round(width * scale);
+      const newHeight = Math.round(height * scale);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) { resolve(null); return; }
+
+      ctx.drawImage(img, 0, 0, newWidth, newHeight);
+      canvas.toBlob(
+        (blob) => resolve(blob),
+        'image/jpeg',
+        0.6
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(null);
+    };
+
+    img.src = url;
+  });
+}
+
 async function resizeImageIfNeeded(file: File): Promise<File> {
   if (!file.type.startsWith('image/')) {
     return file;
@@ -337,11 +382,36 @@ export default function UploadButton({
       return;
     }
 
-    // Use Tus.io for resumable uploads (supports auto-resume on connection failure)
+    // Progressive Upload Phase 1: Send tiny thumbnail first (~30KB)
+    // so the photo appears in the gallery within ~1 second
+    let progressivePhotoId: string | null = null;
+    if (!isVideo) {
+      try {
+        const preview = await generateQuickPreview(originalFile);
+        if (preview) {
+          const previewForm = new FormData();
+          previewForm.append('file', preview, 'preview.jpg');
+          if (name) previewForm.append('uploaderName', name);
+          previewForm.append('originalFilename', originalFile.name);
+
+          const previewRes = await api.post(
+            `/events/${eventId}/photos/quick-preview`,
+            previewForm,
+            { headers: { 'Content-Type': 'multipart/form-data' } }
+          );
+          progressivePhotoId = previewRes.data?.photoId || null;
+        }
+      } catch {
+        // Quick preview failed — continue with normal upload
+      }
+    }
+
+    // Progressive Upload Phase 2: Full quality via TUS (resumable)
     try {
       await uploadWithTus(file, {
         eventId,
         uploadedBy: name,
+        photoId: progressivePhotoId || undefined,
         onProgress: (percent) => {
           const elapsed = (Date.now() - uploadStartTime) / 1000;
           const etaSeconds = percent > 0 ? (elapsed / percent) * (100 - percent) : 0;

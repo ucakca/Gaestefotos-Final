@@ -1,8 +1,23 @@
 import { Router, Request, Response } from 'express';
 import { PrismaClient, DrawbotStatus, DrawbotStyle } from '@prisma/client';
+import { createDrawing, getDrawbotStyles, type DrawbotStyle as ServiceStyle } from '../services/drawbot';
+import { logger } from '../utils/logger';
+import axios from 'axios';
+import fs from 'fs/promises';
+import path from 'path';
 
 const router = Router();
 const prisma = new PrismaClient();
+
+// Map Prisma DrawbotStyle enum to service style keys
+const STYLE_MAP: Record<string, ServiceStyle> = {
+  LINE_ART: 'monet',
+  CONTOUR: 'monet',
+  STIPPLE: 'minimal',
+  CROSS_HATCH: 'davinci',
+  PORTRAIT: 'monet',
+  ABSTRACT: 'davinci',
+};
 
 // GET /api/events/:eventId/drawbot — list drawbot jobs
 router.get('/events/:eventId/drawbot', async (req: Request, res: Response) => {
@@ -190,17 +205,118 @@ router.get('/events/:eventId/drawbot/stats', async (req: Request, res: Response)
   }
 });
 
+// POST /api/events/:eventId/drawbot/:id/convert — run the actual image→line-art→gcode conversion
+router.post('/events/:eventId/drawbot/:id/convert', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const job = await prisma.drawbotJob.findUnique({ where: { id } });
+    if (!job) return res.status(404).json({ error: 'Job nicht gefunden' });
+    if (job.status !== 'QUEUED' && job.status !== 'CONVERTING') {
+      return res.status(400).json({ error: `Job ist im Status ${job.status}, kann nicht konvertiert werden` });
+    }
+
+    // Update status to CONVERTING
+    await prisma.drawbotJob.update({
+      where: { id },
+      data: { status: 'CONVERTING', processingStartedAt: new Date() },
+    });
+
+    // Load source image
+    let imageBuffer: Buffer;
+    if (job.sourceImageUrl.startsWith('http')) {
+      const response = await axios.get(job.sourceImageUrl, { responseType: 'arraybuffer', timeout: 30000 });
+      imageBuffer = Buffer.from(response.data);
+    } else {
+      const sourcePath = job.sourceImageUrl.startsWith('/')
+        ? path.join(process.cwd(), job.sourceImageUrl)
+        : path.join(process.cwd(), 'uploads', job.sourceImageUrl);
+      imageBuffer = await fs.readFile(sourcePath);
+    }
+
+    // Map DB style to service style
+    const serviceStyle = STYLE_MAP[job.style] || 'monet';
+
+    // Detail level from complexity (1-100 → 1-10)
+    const detail = Math.max(1, Math.min(10, Math.round(job.complexity / 10)));
+
+    // Paper size parsing
+    const paperSizes: Record<string, { w: number; h: number }> = {
+      A4: { w: 210, h: 297 },
+      A3: { w: 297, h: 420 },
+      A5: { w: 148, h: 210 },
+      Letter: { w: 216, h: 279 },
+    };
+    const paper = paperSizes[job.paperSize] || paperSizes.A4;
+
+    // Run conversion pipeline
+    const result = await createDrawing(imageBuffer, serviceStyle, {
+      paperWidth: paper.w,
+      paperHeight: paper.h,
+      detail,
+    });
+
+    // Update job with results
+    const updated = await prisma.drawbotJob.update({
+      where: { id },
+      data: {
+        status: 'DONE',
+        outputImageUrl: result.previewPath,
+        pathData: {
+          svgPath: result.svgPath,
+          gcodePath: result.gcodePath,
+          previewPath: result.previewPath,
+          lineCount: result.lineCount,
+          estimatedDrawTime: result.estimatedDrawTime,
+        },
+        actualTimeMs: result.processingMs,
+        processingEndedAt: new Date(),
+      },
+    });
+
+    logger.info('[Drawbot] Job converted', {
+      jobId: id,
+      style: serviceStyle,
+      lineCount: result.lineCount,
+      processingMs: result.processingMs,
+    });
+
+    res.json({
+      job: updated,
+      svg: result.svgPath,
+      gcode: result.gcodePath,
+      preview: result.previewPath,
+      lineCount: result.lineCount,
+      estimatedDrawTime: result.estimatedDrawTime,
+    });
+  } catch (err: any) {
+    logger.error('[Drawbot] Conversion failed', { error: err.message });
+
+    // Mark job as failed
+    try {
+      await prisma.drawbotJob.update({
+        where: { id: req.params.id },
+        data: { status: 'FAILED', processingEndedAt: new Date() },
+      });
+    } catch {}
+
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/drawbot/styles — available drawing styles
 router.get('/drawbot/styles', async (_req: Request, res: Response) => {
+  const serviceStyles = getDrawbotStyles();
   res.json({
     styles: [
-      { key: 'LINE_ART', name: 'Linienzeichnung', description: 'Klare Konturen und Linien', icon: '✏️' },
-      { key: 'CONTOUR', name: 'Kontur', description: 'Weiche Umrisse des Motivs', icon: '🖊️' },
-      { key: 'STIPPLE', name: 'Punktierung', description: 'Bild aus tausenden Punkten', icon: '⚬' },
-      { key: 'CROSS_HATCH', name: 'Kreuzschraffur', description: 'Klassische Schraffur-Technik', icon: '▦' },
-      { key: 'PORTRAIT', name: 'Portrait', description: 'Optimiert für Gesichter', icon: '🎨' },
-      { key: 'ABSTRACT', name: 'Abstrakt', description: 'Kreative Interpretation', icon: '🌀' },
+      { key: 'LINE_ART', name: 'Linienzeichnung', description: 'Klare Konturen und Linien (Monet-Stil)', icon: '✏️', engine: 'monet' },
+      { key: 'CONTOUR', name: 'Kontur', description: 'Weiche Umrisse des Motivs', icon: '🖊️', engine: 'monet' },
+      { key: 'STIPPLE', name: 'Punktierung', description: 'Reduzierte Linien — schnell zu zeichnen', icon: '⚬', engine: 'minimal' },
+      { key: 'CROSS_HATCH', name: 'Kreuzschraffur', description: 'Spielerische, ausdrucksstarke Skizze (Da Vinci-Stil)', icon: '▦', engine: 'davinci' },
+      { key: 'PORTRAIT', name: 'Portrait', description: 'Optimiert für Gesichter', icon: '🎨', engine: 'monet' },
+      { key: 'ABSTRACT', name: 'Abstrakt', description: 'Kreative Interpretation', icon: '🌀', engine: 'davinci' },
     ],
+    serviceStyles,
   });
 });
 

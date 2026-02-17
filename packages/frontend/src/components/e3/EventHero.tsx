@@ -7,6 +7,7 @@ import { useTheme } from 'next-themes';
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useTranslations, useLocale } from '@/components/I18nProvider';
 
 interface ScheduleItem {
   time: string;
@@ -65,13 +66,15 @@ export default function EventHero({
   const [mounted, setMounted] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { theme, setTheme } = useTheme();
+  const t = useTranslations('hero');
+  const locale = useLocale();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const designConfig = event.designConfig as any || {};
-  const welcomeMessage = designConfig.welcomeMessage || 'Schön, dass ihr alle hier seid! Lasst uns gemeinsam unvergessliche Erinnerungen schaffen ❤️';
+  const welcomeMessage = designConfig.welcomeMessage || t('defaultWelcome');
   const actualCoverImage = coverImage || (() => {
     const coverImageStoragePath = designConfig.coverImageStoragePath;
     return coverImageStoragePath ? `/api/events/${event.id}/design-image/cover/${encodeURIComponent(coverImageStoragePath)}` : (designConfig.coverImage && !designConfig.coverImage.startsWith('http://localhost:8001') ? designConfig.coverImage : null);
@@ -81,7 +84,8 @@ export default function EventHero({
     return profileImageStoragePath ? `/api/events/${event.id}/design-image/profile/${encodeURIComponent(profileImageStoragePath)}` : (designConfig.profileImage && !designConfig.profileImage.startsWith('http://localhost:8001') ? designConfig.profileImage : null);
   })();
   const eventDetails = event as any;
-  const eventDate = eventDetails.date ? new Date(eventDetails.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+  const dateLocaleMap: Record<string, string> = { de: 'de-DE', en: 'en-US', fr: 'fr-FR', es: 'es-ES', it: 'it-IT' };
+  const eventDate = eventDetails.date ? new Date(eventDetails.date).toLocaleDateString(dateLocaleMap[locale] || 'de-DE', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
   const location = eventDetails.location || eventDetails.venue?.name || null;
   const eventTitle = event.title;
   const hostAvatar = actualProfileImage;
@@ -104,7 +108,7 @@ export default function EventHero({
         <button
           onClick={() => actualCoverImage && setShowCoverLightbox(true)}
           className="absolute inset-0 w-full h-full"
-          aria-label="Titelbild ansehen"
+          aria-label={t('viewCover')}
         >
           {actualCoverImage ? (
             <>
@@ -158,7 +162,7 @@ export default function EventHero({
               onShare();
             }}
             className="absolute top-4 right-4 z-10 rounded-full bg-black/40 p-2.5 text-white backdrop-blur-sm transition-colors hover:bg-black/60"
-            aria-label="Event teilen"
+            aria-label={t('shareEvent')}
           >
             <Share2 className="h-5 w-5" />
           </button>
@@ -172,7 +176,7 @@ export default function EventHero({
               onWifiClick();
             }}
             className="absolute top-4 right-16 z-10 rounded-full bg-blue-500/80 p-2.5 text-white backdrop-blur-sm transition-colors hover:bg-blue-600/80"
-            aria-label="WLAN anzeigen"
+            aria-label={t('showWifi')}
           >
             <Wifi className="h-5 w-5" />
           </button>
@@ -186,7 +190,7 @@ export default function EventHero({
               setTheme(theme === 'dark' ? 'light' : 'dark');
             }}
             className={`absolute top-4 z-10 rounded-full bg-black/40 p-2.5 text-white backdrop-blur-sm transition-colors hover:bg-black/60 ${hasWifi && onWifiClick ? 'right-28' : 'right-16'}`}
-            aria-label={theme === 'dark' ? 'Heller Modus' : 'Dunkler Modus'}
+            aria-label={theme === 'dark' ? t('lightMode') : t('darkMode')}
           >
             {theme === 'dark' ? (
               <Sun className="h-5 w-5" />
@@ -202,7 +206,7 @@ export default function EventHero({
           <button
             onClick={() => setShowCoverLightbox(false)}
             className="absolute top-4 right-4 z-50 rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
-            aria-label="Schließen"
+            aria-label={t('close')}
           >
             <X className="h-6 w-6" />
           </button>
@@ -221,7 +225,7 @@ export default function EventHero({
           <button
             onClick={() => setShowAvatarMenu(!showAvatarMenu)}
             className="group relative"
-            aria-label={hasStories ? "Stories ansehen" : "Profil"}
+            aria-label={hasStories ? t('viewStories') : 'Profil'}
           >
             <div
               className={`absolute -inset-1 rounded-full ${
@@ -256,7 +260,7 @@ export default function EventHero({
                 className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full shadow-lg"
               >
                 <Plus className="h-4 w-4" />
-                <span className="sr-only">Story hinzufügen</span>
+                <span className="sr-only">{t('addStory')}</span>
               </Button>
             )}
           </button>
@@ -274,7 +278,7 @@ export default function EventHero({
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
                     <Play className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <span>Stories ansehen</span>
+                  <span>{t('viewStories')}</span>
                 </button>
               )}
               <button
@@ -287,7 +291,7 @@ export default function EventHero({
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
                   <ImageIcon className="h-4 w-4 text-muted-foreground" />
                 </div>
-                <span>Profilbild ansehen</span>
+                <span>{t('viewProfile')}</span>
               </button>
             </div>
           )}
@@ -298,7 +302,7 @@ export default function EventHero({
             <button
               onClick={() => setShowAvatarLightbox(false)}
               className="absolute top-4 right-4 z-50 rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition-colors hover:bg-black/70"
-              aria-label="Schließen"
+              aria-label={t('close')}
             >
               <X className="h-6 w-6" />
             </button>
@@ -359,7 +363,7 @@ export default function EventHero({
             {isStorageLocked && (
               <div className="px-3 py-2 bg-warning/10 border border-warning/30 rounded-lg">
                 <p className="text-warning text-sm">
-                  ⚠️ Speicherplatz voll - Upload aktuell nicht möglich
+                  ⚠️ {t('storageFull')}
                 </p>
               </div>
             )}
@@ -377,7 +381,7 @@ export default function EventHero({
           <AccordionItem value="details" className="border-0">
             <AccordionTrigger className="px-4 py-3 border-t hover:no-underline text-sm font-medium text-muted-foreground">
               <span className="flex items-center gap-2">
-                Details anzeigen
+                {t('showDetails')}
               </span>
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4 pt-2 space-y-4">
@@ -400,7 +404,7 @@ export default function EventHero({
                 <div className="border-t pt-4">
                   <h3 className="flex items-center gap-2 text-sm font-medium mb-3">
                     <Clock className="h-4 w-4 text-primary" />
-                    Tagesablauf
+                    {t('schedule')}
                   </h3>
                   <div className="space-y-2 ml-6">
                     {schedule.map((item, index) => (
@@ -419,7 +423,7 @@ export default function EventHero({
                 <div className="border-t pt-4">
                   <h3 className="flex items-center gap-2 text-sm font-medium mb-2">
                     <Shirt className="h-4 w-4 text-primary" />
-                    Dresscode
+                    {t('dressCode')}
                   </h3>
                   <p className="text-sm text-muted-foreground ml-6">{dressCode}</p>
                 </div>
@@ -429,7 +433,7 @@ export default function EventHero({
                 <div className="border-t pt-4">
                   <h3 className="flex items-center gap-2 text-sm font-medium mb-2">
                     <Gift className="h-4 w-4 text-primary" />
-                    Wunschliste
+                    {t('wishlist')}
                   </h3>
                   <a
                     href={wishlistUrl}
@@ -437,7 +441,7 @@ export default function EventHero({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-sm text-primary hover:underline ml-6"
                   >
-                    Zur Wunschliste
+                    {t('toWishlist')}
                   </a>
                 </div>
               )}

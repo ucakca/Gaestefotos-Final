@@ -62,7 +62,7 @@ export default function PushNotificationBanner({ eventId, visitorId }: PushNotif
                 <Bell className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold">Benachrichtigungen aktivieren?</p>
+                <p className="text-sm font-semibold text-foreground">Benachrichtigungen aktivieren?</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Erhalte Updates wenn neue Fotos hochgeladen werden
                 </p>

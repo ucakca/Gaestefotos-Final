@@ -1,5 +1,8 @@
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
+import { resolvePrompt, renderPrompt } from './promptTemplates';
+import { withKnowledge } from './cache/knowledgeStore';
+import { generateCompletion } from '../lib/groq';
 
 // ─── GAME TYPES ─────────────────────────────────────────────────────────────
 
@@ -25,10 +28,10 @@ export const GAME_CATALOG: GameConfig[] = [
   {
     type: 'compliment_mirror',
     name: 'Compliment Mirror',
-    description: 'Der Booth gibt ein Kompliment und ein witziges "Urteil" als Text auf das Foto.',
+    description: 'Mach ein Selfie und erhalte ein KI-generiertes Kompliment!',
     icon: '🪞',
-    category: 'booth',
-    requiresBooth: true,
+    category: 'app',
+    requiresBooth: false,
     requiresAI: true,
   },
   {
@@ -142,6 +145,89 @@ export function generateCompliment(): { compliment: string; verdict: string } {
     verdict: VERDICTS[Math.floor(Math.random() * VERDICTS.length)],
   };
 }
+
+/**
+ * LLM-powered Compliment Mirror — generates unique, personalized compliments.
+ * Falls back to random hardcoded compliment if LLM fails.
+ * Uses AI cache to avoid duplicate API calls for similar contexts.
+ */
+export const generateComplimentAI = withKnowledge<
+  { eventType?: string; eventTitle?: string; guestName?: string; locale?: string },
+  { compliment: string; verdict: string; source: 'ai' | 'fallback' }
+>(
+  'compliment-mirror',
+  async ({ eventType, eventTitle, guestName, locale }) => {
+    try {
+      const prompt = await resolvePrompt('compliment_mirror');
+
+      // Build context variables
+      const eventContext = eventType
+        ? ` Event-Typ: ${eventType}${eventTitle ? `, Titel: "${eventTitle}"` : ''}.`
+        : '';
+      const guestContext = guestName ? ` Gastname: ${guestName}.` : '';
+
+      const systemPrompt = prompt.systemPrompt || FALLBACK_PROMPTS_CM.systemPrompt;
+      const userPromptTpl = prompt.userPromptTpl || FALLBACK_PROMPTS_CM.userPromptTpl;
+
+      const userPrompt = renderPrompt(userPromptTpl, {
+        eventContext,
+        guestContext,
+      });
+
+      const response = await generateCompletion(userPrompt, systemPrompt, {
+        maxTokens: prompt.maxTokens || 150,
+        temperature: prompt.temperature || 0.95,
+      });
+
+      // Parse JSON response
+      const content = response.content.trim();
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.compliment && parsed.verdict) {
+          return { compliment: parsed.compliment, verdict: parsed.verdict, source: 'ai' as const };
+        }
+      }
+
+      // If parsing fails, use the whole response as compliment
+      return {
+        compliment: content.length > 200 ? content.substring(0, 200) + '...' : content,
+        verdict: '🪞 KI-Kompliment',
+        source: 'ai' as const,
+      };
+    } catch (error) {
+      logger.warn('[ComplimentMirror] LLM failed, using fallback', {
+        error: (error as Error).message,
+      });
+      const fallback = generateCompliment();
+      return { ...fallback, source: 'fallback' as const };
+    }
+  },
+  {
+    fallback: () => {
+      const result = generateCompliment();
+      return { ...result, source: 'fallback' as const };
+    },
+  }
+);
+
+// Local constant for inline fallback prompt (avoids circular dependency)
+const FALLBACK_PROMPTS_CM = {
+  systemPrompt: `Du bist der "Compliment Mirror" — ein witziger, charmanter KI-Spiegel auf einer Party.
+Ein Gast steht vor dir und hat gerade ein Selfie gemacht.
+Deine Aufgabe: Gib dem Gast ein kreatives, lustiges Kompliment und ein witziges "Urteil" (Titel/Badge).
+
+REGELN:
+- Antworte NUR auf Deutsch
+- Sei lustig, charmant und übertrieben positiv
+- Nutze 1-2 passende Emojis
+- Das Kompliment soll max 2 Sätze sein
+- Das Urteil soll ein kurzer, lustiger Titel sein (z.B. "Party-MVP 🏅" oder "Selfie-Königin 👑")
+- Variiere stark — nie das gleiche Kompliment zweimal
+- Antworte NUR als JSON: {"compliment": "...", "verdict": "..."}
+- Wenn ein Event-Typ gegeben ist, passe das Kompliment an den Kontext an`,
+  userPromptTpl: 'Gib dem Gast ein kreatives Kompliment.{{eventContext}}{{guestContext}}',
+};
 
 // ─── MIMIK-DUELL ────────────────────────────────────────────────────────────
 

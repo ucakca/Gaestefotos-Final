@@ -6,6 +6,7 @@ import { Heart, MessageCircle, Share2, Download, MoreHorizontal } from 'lucide-r
 import { Photo } from '@gaestefotos/shared';
 import { buildApiUrl } from '@/lib/api';
 import api from '@/lib/api';
+import { useTranslations } from '@/components/I18nProvider';
 
 /**
  * PhotoGrid - v0-Style Photo Grid
@@ -75,6 +76,8 @@ export default function PhotoGrid({
   uploadDisabled = false,
   externalLikeUpdates,
 }: PhotoGridProps) {
+  const t = useTranslations('photos');
+
   // Like state
   const [likedPhotos, setLikedPhotos] = useState<Set<string>>(new Set());
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
@@ -187,8 +190,8 @@ export default function PhotoGrid({
     if (navigator.share && photo.url) {
       try {
         await navigator.share({
-          title: 'Event Foto',
-          text: 'Schau dir dieses Foto an!',
+          title: t('eventPhoto'),
+          text: t('shareText'),
           url: shareUrl,
         });
       } catch (err) {
@@ -240,8 +243,8 @@ export default function PhotoGrid({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </motion.div>
-        <p className="text-muted-foreground text-lg font-medium mb-2">Noch keine Fotos</p>
-        <p className="text-muted-foreground text-sm">Lade als Erster ein Foto hoch!</p>
+        <p className="text-muted-foreground text-lg font-medium mb-2">{t('noPhotosYet')}</p>
+        <p className="text-muted-foreground text-sm">{t('beFirstUpload')}</p>
       </div>
     );
   }
@@ -267,7 +270,7 @@ export default function PhotoGrid({
                 {/* Image */}
                 <img
                   src={photo.url}
-                  alt={`Foto ${index + 1}`}
+                  alt={t('photoN', { n: String(index + 1) })}
                   loading="lazy"
                   className="w-full h-auto object-cover"
                 />
@@ -396,7 +399,7 @@ export default function PhotoGrid({
               className="inline-block w-8 h-8 border-4 border-muted-foreground border-t-primary rounded-full"
             />
           ) : (
-            <p className="text-muted-foreground text-sm">Scroll für mehr...</p>
+            <p className="text-muted-foreground text-sm">{t('scrollMore')}</p>
           )}
         </div>
       )}

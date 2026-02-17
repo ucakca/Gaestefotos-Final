@@ -1,7 +1,7 @@
-import logger from '@/lib/logger';
 'use client';
 
 import { useState, useEffect } from 'react';
+import logger from '@/lib/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Film, Play, Download, Trash2, RefreshCw, Settings, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';

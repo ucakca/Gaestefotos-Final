@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Home, Play, BookOpen, Info, X, Gamepad2, ScanFace, Sparkles, Shuffle, Camera, Puzzle } from 'lucide-react';
+import { useTranslations } from '@/components/I18nProvider';
 import { DualFAB } from '@/components/ui/DualFAB';
 
 /**
@@ -41,14 +42,16 @@ export default function BottomNav({
   hasMosaicWall = false,
 }: BottomNavProps) {
   const [aiSheetOpen, setAiSheetOpen] = useState(false);
+  const tNav = useTranslations('nav');
+  const tAi = useTranslations('ai');
 
   const leftTabs = [
-    { id: 'feed' as const, label: 'Feed', icon: Home },
+    { id: 'feed' as const, label: tNav('feed'), icon: Home },
   ];
 
   const rightTabs = [
-    { id: 'guestbook' as const, label: 'Gästebuch', icon: BookOpen },
-    { id: 'info' as const, label: 'Info', icon: Info },
+    { id: 'guestbook' as const, label: tNav('guestbook'), icon: BookOpen },
+    { id: 'info' as const, label: tNav('info'), icon: Info },
   ];
 
   const handleAiAction = (id: string) => {
@@ -125,7 +128,7 @@ export default function BottomNav({
                 )}
               </div>
               <span className="text-xs text-muted-foreground">
-                Live
+                {tNav('live')}
               </span>
             </motion.button>
 
@@ -172,8 +175,8 @@ export default function BottomNav({
 
               <div className="px-5 pb-2 flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-bold">Foto-Spaß & KI</h3>
-                  <p className="text-xs text-muted-foreground">Entdecke was AI alles kann ✨</p>
+                  <h3 className="text-lg font-bold">{tAi('title')}</h3>
+                  <p className="text-xs text-muted-foreground">{tAi('subtitle')}</p>
                 </div>
                 <button
                   onClick={() => setAiSheetOpen(false)}
@@ -199,8 +202,8 @@ export default function BottomNav({
                     </div>
                     <div className="relative">
                       <span className="text-2xl mb-1 block">🧩</span>
-                      <div className="text-base font-bold text-white">Mosaic Wall</div>
-                      <div className="text-xs text-white/80 mt-0.5">Ich will auch drauf! Foto hochladen</div>
+                      <div className="text-base font-bold text-white">{tNav('mosaicWall')}</div>
+                      <div className="text-xs text-white/80 mt-0.5">{tNav('mosaicUploadDesc')}</div>
                     </div>
                   </motion.button>
                 )}
@@ -220,8 +223,8 @@ export default function BottomNav({
                         <Gamepad2 className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <div className="text-sm font-semibold">Foto-Spiele</div>
-                        <div className="text-[10px] text-muted-foreground">Challenges & Fun</div>
+                        <div className="text-sm font-semibold">{tAi('photoGames')}</div>
+                        <div className="text-[10px] text-muted-foreground">{tAi('photoGamesDesc')}</div>
                       </div>
                     </motion.button>
                   )}
@@ -239,8 +242,8 @@ export default function BottomNav({
                         <ScanFace className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <div className="text-sm font-semibold">Finde mich</div>
-                        <div className="text-[10px] text-muted-foreground">AI Gesichtserkennung</div>
+                        <div className="text-sm font-semibold">{tAi('findMe')}</div>
+                        <div className="text-[10px] text-muted-foreground">{tAi('findMeDesc')}</div>
                       </div>
                     </motion.button>
                   )}
@@ -257,8 +260,8 @@ export default function BottomNav({
                       <Sparkles className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <div className="text-sm font-semibold">KI Foto-Stil</div>
-                      <div className="text-[10px] text-muted-foreground">AI Style Transfer</div>
+                      <div className="text-sm font-semibold">{tAi('kiStyle')}</div>
+                      <div className="text-[10px] text-muted-foreground">{tAi('kiStyleDesc')}</div>
                     </div>
                   </motion.button>
 
@@ -275,8 +278,8 @@ export default function BottomNav({
                         <Shuffle className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <div className="text-sm font-semibold">Filter Roulette</div>
-                        <div className="text-[10px] text-muted-foreground">Zufalls-KI-Effekt 🎰</div>
+                        <div className="text-sm font-semibold">{tAi('filterRoulette')}</div>
+                        <div className="text-[10px] text-muted-foreground">{tAi('filterRouletteDesc')}</div>
                       </div>
                     </motion.button>
                   )}
@@ -294,8 +297,8 @@ export default function BottomNav({
                         <Camera className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <div className="text-sm font-semibold">Emoji Challenge</div>
-                        <div className="text-[10px] text-muted-foreground">Kannst du das? 😜</div>
+                        <div className="text-sm font-semibold">{tAi('emojiChallenge')}</div>
+                        <div className="text-[10px] text-muted-foreground">{tAi('emojiChallengeDesc')}</div>
                       </div>
                     </motion.button>
                   )}
