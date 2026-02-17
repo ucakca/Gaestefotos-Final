@@ -118,7 +118,7 @@ export function BottomSheet({
             dragElastic={0.2}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={handleDragEnd}
-            style={{ height: getHeightFromSnap(currentSnap) }}
+            style={{ height: getHeightFromSnap(currentSnap), touchAction: 'none', overscrollBehavior: 'contain' }}
             className={`fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-2xl shadow-2xl flex flex-col lg:hidden ${className}`}
           >
             {/* Handle */}
@@ -144,7 +144,7 @@ export function BottomSheet({
             )}
 
             {/* Content */}
-            <div className={`flex-1 overflow-y-auto overscroll-contain ${isDragging ? 'pointer-events-none' : ''}`}>
+            <div className={`flex-1 overflow-y-auto overscroll-contain ${isDragging ? 'pointer-events-none' : ''}`} style={{ overscrollBehavior: 'contain' }}>
               {children}
             </div>
           </motion.div>
