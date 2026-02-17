@@ -181,7 +181,7 @@ export default function DrawbotFlow({ eventId, visitorId, visitorName, photos = 
                     onClick={() => { setSelectedPhoto(photo); setStep('style'); }}
                     className="aspect-square rounded-xl overflow-hidden border-2 border-transparent hover:border-amber-400 transition group relative"
                   >
-                    <img src={photo.url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    <img src={photo.url} alt="Foto zur Auswahl" className="w-full h-full object-cover" loading="lazy" />
                   </button>
                 ))}
               </div>
@@ -194,7 +194,7 @@ export default function DrawbotFlow({ eventId, visitorId, visitorName, photos = 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm space-y-5">
             {/* Preview */}
             <div className="aspect-square max-w-[200px] mx-auto rounded-2xl overflow-hidden border-2 border-white/10">
-              <img src={selectedPhoto.url} alt="" className="w-full h-full object-cover" />
+              <img src={selectedPhoto.url} alt="Ausgewähltes Foto" className="w-full h-full object-cover" />
             </div>
 
             {/* Style Grid */}

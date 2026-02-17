@@ -44,7 +44,7 @@ function issueInvitationAccessCookie(res: Response, invitationId: string) {
   const domain = process.env.COOKIE_DOMAIN || undefined;
   res.cookie(getInvitationAccessCookieName(invitationId), token, {
     httpOnly: true,
-    secure: isProd,
+    secure: true,
     sameSite: 'lax',
     domain,
     maxAge: ttlSeconds * 1000,

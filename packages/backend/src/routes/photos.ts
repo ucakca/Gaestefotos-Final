@@ -17,6 +17,7 @@ import { selectSmartCategoryId } from '../services/smartAlbum';
 import { resolveSmartCategoryId, extractExifData } from '../services/photoCategories';
 import { mosaicEngine } from '../services/mosaicEngine';
 import { getFaceDetectionMetadata } from '../services/faceRecognition';
+import { storeFaceEmbedding } from '../services/faceSearchPgvector';
 import { addBrandingOverlay } from '../services/logoOverlay';
 import { processDuplicateDetection } from '../services/duplicateDetection';
 import { isFeatureEnabled } from '../services/featureGate';
@@ -90,7 +91,7 @@ const enforceEventUploadAllowed = async (req: AuthRequest, res: Response, next: 
     if (!isManager) {
       const toleranceDays = typeof featuresConfig?.uploadToleranceDays === 'number'
         ? featuresConfig.uploadToleranceDays
-        : 1;
+        : 3;
       const withinWindow = await isWithinUploadWindow({
         eventId,
         eventDateTime: event.dateTime,
@@ -405,7 +406,7 @@ router.post(
       }
 
       // Calculate total upload size (all variants)
-      const uploadBytes = BigInt(processed.original.length + processed.optimized.length + processed.thumbnail.length);
+      const uploadBytes = BigInt(processed.original.length + processed.optimized.length + processed.thumbnail.length + processed.webp.length);
       try {
         await assertUploadWithinLimit(eventId, uploadBytes);
       } catch (e: any) {
@@ -419,10 +420,11 @@ router.post(
       const baseFilename = file.originalname.replace(/\.[^/.]+$/, '');
       const ext = file.originalname.match(/\.[^/.]+$/)?.[0] || '.jpg';
       
-      const [storagePath, storagePathOriginal, storagePathThumb] = await Promise.all([
+      const [storagePath, storagePathOriginal, storagePathThumb, storagePathWebp] = await Promise.all([
         storageService.uploadFile(eventId, `${baseFilename}_opt${ext}`, processed.optimized, 'image/jpeg'),
         storageService.uploadFile(eventId, `${baseFilename}_orig${ext}`, processed.original, file.mimetype),
         storageService.uploadFile(eventId, `${baseFilename}_thumb${ext}`, processed.thumbnail, 'image/jpeg'),
+        storageService.uploadFile(eventId, `${baseFilename}_webp.webp`, processed.webp, 'image/webp'),
       ]);
 
       const moderationRequired = featuresConfig?.moderationRequired === true;
@@ -436,6 +438,7 @@ router.post(
           storagePath,           // Optimized for gallery view
           storagePathOriginal,   // Original quality for Host download
           storagePathThumb,      // Thumbnail for previews
+          storagePathWebp,       // WebP for modern browsers
           categoryId: resolvedCategoryId,
           url: '',
           status,
@@ -549,6 +552,19 @@ router.post(
                 },
               },
             });
+
+            // Store embeddings in pgvector table for fast similarity search
+            const descriptors = faceResult.descriptors || [];
+            for (let i = 0; i < descriptors.length; i++) {
+              storeFaceEmbedding({
+                photoId: photo.id,
+                eventId,
+                descriptor: descriptors[i],
+                faceIndex: i,
+                box: faceResult.faces[i],
+              }).catch(() => {}); // non-critical
+            }
+
             logger.info('Face detection completed', { photoId: photo.id, faceCount: faceResult.faceCount });
           }
         } catch (err: any) {

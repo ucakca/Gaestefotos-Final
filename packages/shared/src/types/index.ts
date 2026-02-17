@@ -239,3 +239,6 @@ export interface PhotoUploadMessage extends WebSocketMessage {
 export * from './invitation';
 export * from './qr-design';
 export { QR_TEMPLATES } from './qr-design';
+
+// Extended API response types
+export * from './api';

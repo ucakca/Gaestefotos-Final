@@ -140,7 +140,7 @@ export function csrfTokenGenerator(req: Request, res: Response, next: NextFuncti
       // Set cookie for client-side access
       res.cookie(CSRF_COOKIE, token, {
         httpOnly: false, // Allow JS access for sending in headers
-        secure: process.env.NODE_ENV === 'production',
+        secure: true,
         sameSite: 'strict',
         maxAge: CSRF_TOKEN_EXPIRY_MS,
       });

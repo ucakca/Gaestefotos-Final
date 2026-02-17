@@ -8,7 +8,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.490.0",
@@ -27,6 +29,7 @@
     "@vladmandic/face-api": "^1.7.15",
     "archiver": "^7.0.1",
     "bcryptjs": "^2.4.3",
+    "bullmq": "^5.69.3",
     "canvas": "^3.2.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -81,6 +84,7 @@
     "nodemon": "^3.0.2",
     "prisma": "^5.7.0",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^1.6.1"
   }
 }

@@ -29,6 +29,7 @@ const isDev = () => process.env.NODE_ENV === 'development';
 const devMultiplier = (base: number) => isDev() ? base * 10 : base;
 
 // General API rate limiter - sehr großzügig für normale Nutzung
+// Uses IP + user/guest identity to prevent shared WiFi collisions at events
 export const apiLimiter: any = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 Minuten
   max: devMultiplier(2000), // 2000 in prod, 20000 in dev
@@ -36,6 +37,14 @@ export const apiLimiter: any = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   store: createRedisStore('api'),
+  keyGenerator: (req: Request) => {
+    // Prefer user identity over IP for shared WiFi scenarios
+    const userId = (req as any).user?.id;
+    const guestId = (req as any).guestId;
+    const identity = userId || guestId;
+    if (identity) return `user:${identity}`;
+    return req.ip || 'unknown';
+  },
   // Skip rate limiting for file requests (they are served via proxy)
   skip: (req: Request) => {
     if (req.path.includes('/file') || req.path.includes('/photo/')) return true;

@@ -13,6 +13,7 @@ import { domainToASCII } from 'node:url';
 
 import authRoutes from './routes/auth';
 import eventRoutes from './routes/events';
+import eventQrRoutes from './routes/eventQr';
 import guestRoutes from './routes/guests';
 import photoRoutes from './routes/photos';
 import categoryRoutes from './routes/categories';
@@ -70,6 +71,9 @@ import adminPromptTemplatesRoutes from './routes/adminPromptTemplates';
 import adminCreditsRoutes from './routes/adminCredits';
 import smsShareRoutes from './routes/smsShare';
 import galleryEmbedRoutes from './routes/galleryEmbed';
+import { startEventPurgeWorker } from './services/eventPurgeWorker';
+import { registerAllWorkers } from './services/jobWorkers';
+import { shutdownQueues, getQueueStats } from './services/jobQueue';
 import slideshowRoutes from './routes/slideshow';
 import styleTransferRoutes from './routes/styleTransfer';
 import boothGamesRoutes from './routes/boothGames';
@@ -98,6 +102,7 @@ import adminLandingRoutes from './routes/adminLanding';
 import landingPublicRoutes from './routes/landingPublic';
 import adminAiLogsRoutes from './routes/adminAiLogs';
 import eventThemesRoutes from './routes/themes';
+import imageCdnRoutes from './routes/imageCdn';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter, smsLimiter, paymentLimiter, leadLimiter, aiFeatureLimiter, pushSubscribeLimiter, analyticsLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -558,7 +563,8 @@ app.use('/api', maintenanceRoutes);
  app.use('/api/theme', themeRoutes);
  app.use('/api/face-search-consent', faceSearchConsentRoutes);
  app.use('/api/events', eventRoutes);
- app.use('/api/events', guestRoutes);
+app.use('/api/events', eventQrRoutes); // QR code routes: /api/events/:id/qr/*
+app.use('/api/events', guestRoutes);
 app.use('/api/events', photoRoutes); // Photo routes: /api/events/:eventId/photos/*
 app.use('/api/events', categoryRoutes); // Category routes: /api/events/:eventId/categories/*
 app.use('/api/events', challengeRoutes); // Challenge routes: /api/events/:eventId/challenges/*
@@ -649,6 +655,9 @@ app.use('/api', videoJobsRoutes); // Video/GIF/Boomerang: /api/events/:eventId/v
 // Event Themes (AI generation + CRUD)
 app.use('/api/event-themes', eventThemesRoutes);
 
+// Image CDN: optimized image serving with resize/format params
+app.use('/cdn', imageCdnRoutes);
+
 // Tus.io resumable uploads
 app.use('/api/uploads', uploadsRoutes);
 
@@ -733,6 +742,9 @@ let server: any = null;
 const gracefulShutdown = async (signal: string) => {
   logger.info(`Received ${signal}, shutting down gracefully...`);
   
+  // Shut down BullMQ workers/queues first (non-blocking)
+  shutdownQueues().catch(() => {});
+
   if (server) {
     // Close server immediately - don't wait for connections
     server.close(() => {
@@ -773,6 +785,17 @@ process.on('unhandledRejection', (reason, promise) => {
   }
   gracefulShutdown('unhandledRejection');
 });
+
+// Start background workers
+startEventPurgeWorker();
+
+// Register BullMQ job workers (face detection, duplicate detection, cleanup)
+try {
+  registerAllWorkers();
+  logger.info('BullMQ job workers registered');
+} catch (err: any) {
+  logger.warn('BullMQ workers not started (Redis may not be available)', { error: err.message });
+}
 
 // Start server - listen on all interfaces for external access
 server = httpServer.listen(Number(PORT), '::', () => {

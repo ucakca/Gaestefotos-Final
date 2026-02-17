@@ -1,0 +1,38 @@
+[Unit]
+Description=Gästefotos Admin Dashboard (Next.js)
+After=network.target gaestefotos-backend.service
+Wants=gaestefotos-backend.service
+
+[Service]
+Type=simple
+User=gaestefotos
+Group=gaestefotos
+WorkingDirectory=/opt/gaestefotos/app/packages/admin-dashboard
+EnvironmentFile=/opt/gaestefotos/app/packages/admin-dashboard/.env.local
+
+ExecStart=/usr/bin/node node_modules/next/dist/bin/next start -p 3001
+Restart=always
+RestartSec=5
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/gaestefotos/app/packages/admin-dashboard/.next
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+
+# Resource limits
+LimitNOFILE=65535
+MemoryMax=1G
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=gaestefotos-admin-dashboard
+
+[Install]
+WantedBy=multi-user.target

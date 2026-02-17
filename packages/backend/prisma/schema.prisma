@@ -30,8 +30,20 @@ model User {
   impersonationAuditsAsTarget  ImpersonationAuditLog[] @relation("ImpersonationAuditTarget")
   partnerMemberships           PartnerMember[]
   pushSubscriptions            PushSubscription[]
+  passwordHistory              PasswordHistory[]
 
   @@map("users")
+}
+
+model PasswordHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  hash      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("password_history")
 }
 
 model EventTheme {
@@ -374,6 +386,7 @@ model Photo {
   isStoryOnly          Boolean              @default(false)
   storagePathOriginal  String?
   storagePathThumb     String?
+  storagePathWebp      String?
   challengeCompletions ChallengeCompletion?
   comments             PhotoComment[]
   likes                PhotoLike[]
@@ -396,6 +409,9 @@ model Photo {
   @@index([md5Hash])
   @@index([deletedAt])
   @@index([purgeAfter])
+  @@index([eventId, status, createdAt])
+  @@index([eventId, isStoryOnly, createdAt])
+  @@index([eventId, uploadedBy])
   @@map("photos")
 }
 

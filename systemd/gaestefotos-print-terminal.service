@@ -1,0 +1,39 @@
+[Unit]
+Description=Gästefotos Print Terminal (Next.js)
+After=network.target gaestefotos-backend.service
+Wants=gaestefotos-backend.service
+
+[Service]
+Type=simple
+User=gaestefotos
+Group=gaestefotos
+WorkingDirectory=/opt/gaestefotos/app/packages/print-terminal
+Environment=NODE_ENV=production
+Environment=PORT=3002
+
+ExecStart=/usr/bin/node node_modules/next/dist/bin/next start -p 3002
+Restart=always
+RestartSec=5
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/gaestefotos/app/packages/print-terminal/.next
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+
+# Resource limits
+LimitNOFILE=65535
+MemoryMax=512M
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=gaestefotos-print-terminal
+
+[Install]
+WantedBy=multi-user.target

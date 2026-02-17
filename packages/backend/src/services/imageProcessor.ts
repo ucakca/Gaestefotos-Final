@@ -10,6 +10,7 @@ export interface ProcessedImage {
   original: Buffer;    // Volle Qualität (nur EXIF stripped, keine Komprimierung)
   thumbnail: Buffer;   // 300x300 für Previews
   optimized: Buffer;   // 1920px für Galerie-Ansicht
+  webp: Buffer;        // 1920px WebP für moderne Browser (30-50% kleiner)
 }
 
 export class ImageProcessor {
@@ -38,7 +39,7 @@ export class ImageProcessor {
         fit: 'inside',
         withoutEnlargement: true,
       })
-      .jpeg({ quality: 85 })
+      .jpeg({ quality: 85, progressive: true })
       .withMetadata({ orientation: undefined })
       .toBuffer();
 
@@ -48,7 +49,18 @@ export class ImageProcessor {
       .resize(300, 300, {
         fit: 'cover',
       })
-      .jpeg({ quality: 75 })
+      .jpeg({ quality: 75, progressive: true })
+      .withMetadata({ orientation: undefined })
+      .toBuffer();
+
+    // WebP: Same as optimized but WebP format (30-50% smaller)
+    const webp = await sharp(buffer)
+      .rotate()
+      .resize(1920, 1920, {
+        fit: 'inside',
+        withoutEnlargement: true,
+      })
+      .webp({ quality: 82 })
       .withMetadata({ orientation: undefined })
       .toBuffer();
 
@@ -56,6 +68,7 @@ export class ImageProcessor {
       original,
       thumbnail,
       optimized,
+      webp,
     };
   }
 

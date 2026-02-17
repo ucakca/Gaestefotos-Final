@@ -58,6 +58,7 @@ packages/shared/src/**/*.d.ts.map
 # IDE
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
 *~

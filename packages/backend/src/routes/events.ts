@@ -2101,16 +2101,65 @@ router.delete(
         return res.status(403).json({ error: 'Forbidden' });
       }
 
-      await prisma.event.delete({
+      // Soft-delete with 7-day grace period instead of hard delete
+      const purgeAfter = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      await prisma.event.update({
         where: { id: req.params.id },
+        data: {
+          deletedAt: new Date(),
+          isActive: false,
+          purgeAfter,
+        },
       });
 
-      auditLog({ type: AuditType.EVENT_DELETED, message: `Event gelöscht: ${existingEvent.title}`, eventId: req.params.id, data: { title: existingEvent.title }, req });
+      auditLog({ type: AuditType.EVENT_DELETED, message: `Event soft-gelöscht (Wiederherstellung bis ${purgeAfter.toISOString()}): ${existingEvent.title}`, eventId: req.params.id, data: { title: existingEvent.title, purgeAfter }, req });
 
-      res.json({ message: 'Event deleted' });
+      res.json({ message: 'Event deleted', purgeAfter: purgeAfter.toISOString() });
     } catch (error) {
       logger.error('Delete event error', { message: getErrorMessage(error), eventId: req.params.id });
       res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+// Restore a soft-deleted event (within grace period)
+router.post(
+  '/:id/restore',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const event = await prisma.event.findUnique({
+        where: { id: req.params.id },
+        select: { id: true, hostId: true, deletedAt: true, purgeAfter: true, title: true },
+      });
+
+      if (!event || !event.deletedAt) {
+        return res.status(404).json({ error: 'Event nicht gefunden oder nicht gelöscht' });
+      }
+
+      // Cannot use hasEventManageAccess — it rejects soft-deleted events.
+      // Check ownership directly: host or admin only.
+      const isOwner = req.userId === event.hostId;
+      const isAdmin = isPrivilegedRole(req.userRole);
+      if (!isOwner && !isAdmin) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      if (event.purgeAfter && new Date() > event.purgeAfter) {
+        return res.status(410).json({ error: 'Grace Period abgelaufen — Event kann nicht wiederhergestellt werden' });
+      }
+
+      await prisma.event.update({
+        where: { id: req.params.id },
+        data: { deletedAt: null, isActive: true, purgeAfter: null },
+      });
+
+      auditLog({ type: AuditType.EVENT_RESTORED, message: `Event wiederhergestellt: ${event.title}`, eventId: req.params.id, data: { title: event.title }, req });
+
+      return res.json({ ok: true, message: 'Event wiederhergestellt' });
+    } catch (error) {
+      logger.error('Restore event error', { message: getErrorMessage(error), eventId: req.params.id });
+      return res.status(500).json({ error: 'Internal server error' });
     }
   }
 );

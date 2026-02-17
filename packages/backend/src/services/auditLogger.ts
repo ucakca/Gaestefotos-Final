@@ -22,6 +22,7 @@ export const AuditType = {
   EVENT_CREATED: 'event.created',
   EVENT_UPDATED: 'event.updated',
   EVENT_DELETED: 'event.deleted',
+  EVENT_RESTORED: 'event.restored',
   EVENT_ACTIVATED: 'event.activated',
   EVENT_DEACTIVATED: 'event.deactivated',
 

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
+import { verifyJwt } from '../services/jwtKeys';
 
 export interface AuthRequest extends Request {
   userId?: string;
@@ -141,7 +142,7 @@ export function issueEventAccessCookie(res: Response, eventId: string) {
   const domain = process.env.COOKIE_DOMAIN || undefined;
   res.cookie(getEventAccessCookieName(eventId), token, {
     httpOnly: true,
-    secure: isProd,
+    secure: true,
     sameSite: 'lax',
     domain,
     maxAge: ttlSeconds * 1000,
@@ -158,7 +159,7 @@ export function hasEventAccess(req: Request, eventId: string): boolean {
   if (!token) return false;
 
   try {
-    const decoded = jwt.verify(token, jwtSecret) as any;
+    const decoded = verifyJwt<any>(token);
     return decoded?.type === 'event_access' && decoded?.eventId === eventId;
   } catch {
     return false;
@@ -194,15 +195,7 @@ export const authMiddleware = async (
       return res.status(401).json({ error: 'Unauthorized: No token provided' });
     }
 
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      return res.status(500).json({ error: 'Server misconfigured: JWT_SECRET is missing' });
-    }
-
-    const decoded = jwt.verify(token, jwtSecret) as {
-      userId: string;
-      role: string;
-    };
+    const decoded = verifyJwt<{ userId: string; role: string }>(token);
 
     req.userId = decoded.userId;
 
@@ -250,13 +243,7 @@ export const optionalAuthMiddleware = async (
     const token = getAuthTokenFromRequest(req);
     if (!token) return next();
 
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) return next();
-
-    const decoded = jwt.verify(token, jwtSecret) as {
-      userId: string;
-      role: string;
-    };
+    const decoded = verifyJwt<{ userId: string; role: string }>(token);
 
     req.userId = decoded.userId;
 

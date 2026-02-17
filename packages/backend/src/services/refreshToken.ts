@@ -88,7 +88,7 @@ export function setRefreshCookie(res: any, token: string): void {
   const domain = process.env.COOKIE_DOMAIN || undefined;
   res.cookie('refresh_token', token, {
     httpOnly: true,
-    secure: isProd,
+    secure: true,
     sameSite: 'lax',
     domain,
     maxAge: getTtl() * 1000,
@@ -104,7 +104,7 @@ export function clearRefreshCookie(res: any): void {
   const domain = process.env.COOKIE_DOMAIN || undefined;
   res.clearCookie('refresh_token', {
     httpOnly: true,
-    secure: isProd,
+    secure: true,
     sameSite: 'lax',
     domain,
     path: '/api/auth',

@@ -334,27 +334,23 @@ router.put('/:id/change-package', authMiddleware, requireRole('ADMIN'), async (r
       orderBy: { createdAt: 'desc' },
     });
 
-    if (existing) {
-      await prisma.eventEntitlement.update({
-        where: { id: existing.id },
-        data: {
-          wcSku: sku,
-          storageLimitBytes: targetPkg.storageLimitBytes,
-          source: `admin_switch_from_${existing.wcSku || 'free'}`,
-        },
-      });
-    } else {
-      await prisma.eventEntitlement.create({
-        data: {
-          eventId: id,
-          wpUserId,
-          status: 'ACTIVE',
-          source: 'admin_switch_from_free',
-          wcSku: sku,
-          storageLimitBytes: targetPkg.storageLimitBytes,
-        },
-      });
-    }
+    // Deactivate ALL existing active entitlements (consistent with WooCommerce upgrade flow)
+    await prisma.eventEntitlement.updateMany({
+      where: { eventId: id, status: 'ACTIVE' },
+      data: { status: 'REPLACED' },
+    });
+
+    // Create fresh entitlement for the new package
+    await prisma.eventEntitlement.create({
+      data: {
+        eventId: id,
+        wpUserId,
+        status: 'ACTIVE',
+        source: `admin_switch_from_${existing?.wcSku || 'free'}`,
+        wcSku: sku,
+        storageLimitBytes: targetPkg.storageLimitBytes,
+      },
+    });
 
     auditLog({ type: AuditType.ADMIN_PACKAGE_CHANGED, message: `Paket geändert: ${existing?.wcSku || 'free'} → ${sku}`, eventId: id, data: { previousSku: existing?.wcSku || 'free', newSku: sku, newTier: targetPkg.resultingTier }, req });
 

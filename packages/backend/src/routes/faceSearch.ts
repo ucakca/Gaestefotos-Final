@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { AuthRequest, hasEventAccess, optionalAuthMiddleware } from '../middleware/auth';
 import { extractFaceDescriptorFromImage, searchPhotosByFace } from '../services/faceSearch';
+import { searchByVector } from '../services/faceSearchPgvector';
 import { logger } from '../utils/logger';
 import { getErrorMessage } from '../utils/typeHelpers';
 import prisma from '../config/database';
@@ -36,7 +37,7 @@ function issueConsentCookie(res: Response, eventId: string, consentId: string) {
   const domain = process.env.COOKIE_DOMAIN || undefined;
   res.cookie(getConsentCookieName(eventId), token, {
     httpOnly: true,
-    secure: isProd,
+    secure: true,
     sameSite: 'lax',
     domain,
     maxAge: ttlSeconds * 1000,
@@ -49,7 +50,7 @@ function clearConsentCookie(res: Response, eventId: string) {
   const domain = process.env.COOKIE_DOMAIN || undefined;
   res.cookie(getConsentCookieName(eventId), '', {
     httpOnly: true,
-    secure: isProd,
+    secure: true,
     sameSite: 'lax',
     domain,
     maxAge: 0,
@@ -400,13 +401,21 @@ router.post(
         });
       }
 
-      // Search for matching photos
-      const results = await searchPhotosByFace(eventId, descriptor, minSimilarity);
+      // Search for matching photos — try pgvector first, fall back to JS-based
+      let results = await searchByVector(eventId, descriptor.descriptor, minSimilarity);
+      let searchMethod = 'pgvector';
+
+      if (results.length === 0) {
+        // Fallback to JS-based brute-force search (works without pgvector extension)
+        results = await searchPhotosByFace(eventId, descriptor, minSimilarity);
+        searchMethod = 'js-fallback';
+      }
 
       logger.info('Face search completed', {
         eventId,
         resultsCount: results.length,
         minSimilarity,
+        searchMethod,
         ipHash: hashIp(req.ip),
       });
 

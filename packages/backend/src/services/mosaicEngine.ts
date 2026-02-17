@@ -443,35 +443,78 @@ export class MosaicEngine {
       'image/jpeg'
     );
 
-    // 4. Assign print number atomically
-    const updatedWall = await prisma.mosaicWall.update({
-      where: { id: mosaicWallId },
-      data: { nextPrintNumber: { increment: 1 } },
-    });
-    const printNumber = updatedWall.nextPrintNumber - 1;
+    // 4-5. Place tile with retry loop to handle race conditions
+    // If two guests claim the same position simultaneously, retry with refreshed occupied set
+    const MAX_RETRIES = 3;
+    let tile: any = null;
+    let printNumber = 0;
+    let finalPosition = position;
+    let newTileCount = occupied.size + 1;
 
-    // 5. Create tile record
-    const label = gridToLabel(position.x, position.y);
-    const targetColor = gridColors[position.y][position.x];
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        // Assign print number atomically
+        const updatedWall = await prisma.mosaicWall.update({
+          where: { id: mosaicWallId },
+          data: { nextPrintNumber: { increment: 1 } },
+        });
+        printNumber = updatedWall.nextPrintNumber - 1;
 
-    const tile = await prisma.mosaicTile.create({
-      data: {
-        mosaicWallId,
-        photoId,
-        gridX: position.x,
-        gridY: position.y,
-        positionLabel: label,
-        croppedImagePath: croppedPath,
-        dominantColor: dominantColor as any,
-        targetColor: targetColor as any,
-        colorDistance: position.distance,
-        printNumber,
-        source,
-      },
-    });
+        const label = gridToLabel(finalPosition.x, finalPosition.y);
+        const targetColor = gridColors[finalPosition.y][finalPosition.x];
+
+        tile = await prisma.mosaicTile.create({
+          data: {
+            mosaicWallId,
+            photoId,
+            gridX: finalPosition.x,
+            gridY: finalPosition.y,
+            positionLabel: label,
+            croppedImagePath: croppedPath,
+            dominantColor: dominantColor as any,
+            targetColor: targetColor as any,
+            colorDistance: finalPosition.distance,
+            printNumber,
+            source,
+          },
+        });
+        break; // Success
+      } catch (err: any) {
+        // Prisma unique constraint violation — another request claimed this position
+        if (err?.code === 'P2002' && attempt < MAX_RETRIES - 1) {
+          logger.warn('MosaicEngine: Position conflict, retrying with fresh data', {
+            mosaicWallId, attempt: attempt + 1, position: `${finalPosition.x},${finalPosition.y}`,
+          });
+          // Refresh occupied set from DB
+          const freshTiles = await prisma.mosaicTile.findMany({
+            where: { mosaicWallId },
+            select: { gridX: true, gridY: true },
+          });
+          const freshOccupied = new Set(freshTiles.map(t => `${t.gridX},${t.gridY}`));
+          newTileCount = freshOccupied.size + 1;
+          if (freshOccupied.size >= totalCells) {
+            logger.info('MosaicEngine: Mosaic became full during retry', { mosaicWallId });
+            return null;
+          }
+          // Find a new position
+          const newPos = this.findBestPosition(dominantColor, gridColors, freshOccupied, wall.scatterValue ?? 0);
+          if (!newPos) {
+            logger.warn('MosaicEngine: No free position after retry', { mosaicWallId });
+            return null;
+          }
+          finalPosition = newPos;
+          continue;
+        }
+        throw err; // Non-retryable error
+      }
+    }
+
+    if (!tile) {
+      logger.warn('MosaicEngine: All retry attempts exhausted', { mosaicWallId });
+      return null;
+    }
 
     // Check if mosaic should be marked as completed
-    const newTileCount = occupied.size + 1;
     if (newTileCount >= totalCells) {
       await prisma.mosaicWall.update({
         where: { id: mosaicWallId },
@@ -479,16 +522,17 @@ export class MosaicEngine {
       });
     }
 
+    const finalLabel = gridToLabel(finalPosition.x, finalPosition.y);
     logger.info('MosaicEngine: Tile placed', {
       mosaicWallId,
       tileId: tile.id,
-      position: label,
+      position: finalLabel,
       printNumber,
-      colorDistance: position.distance.toFixed(2),
+      colorDistance: finalPosition.distance.toFixed(2),
       progress: `${newTileCount}/${totalCells}`,
     });
 
-    return { tileId: tile.id, position: label, printNumber };
+    return { tileId: tile.id, position: finalLabel, printNumber };
   }
 
   /**

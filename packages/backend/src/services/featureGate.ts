@@ -78,7 +78,7 @@ const featureToFieldMap: Record<FeatureKey, string> = {
 const FREE_TIER_FEATURES: FeatureKey[] = [];
 
 // Features die in ALLEN Tiers aktiviert sind (Screenshot: alle ✅)
-const ALWAYS_ENABLED_FEATURES: FeatureKey[] = [];
+const ALWAYS_ENABLED_FEATURES: FeatureKey[] = ['faceSearch'];
 
 /**
  * Holt das vollständige PackageDefinition für ein Event

@@ -1,0 +1,39 @@
+[Unit]
+Description=Gästefotos Backend API (Express + Prisma)
+After=network.target postgresql.service redis.service
+Wants=postgresql.service redis.service
+
+[Service]
+Type=simple
+User=gaestefotos
+Group=gaestefotos
+WorkingDirectory=/opt/gaestefotos/app/packages/backend
+EnvironmentFile=/opt/gaestefotos/app/packages/backend/.env
+
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=5
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/gaestefotos/app/packages/backend/uploads /opt/gaestefotos/app/packages/backend/tmp /opt/gaestefotos/storage
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+
+# Resource limits
+LimitNOFILE=65535
+MemoryMax=2G
+CPUQuota=200%
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=gaestefotos-backend
+
+[Install]
+WantedBy=multi-user.target

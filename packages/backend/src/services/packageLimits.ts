@@ -1,5 +1,7 @@
 import prisma from '../config/database';
 import { tierToDefaultDurationDays, DEFAULT_FREE_STORAGE_DAYS } from './storagePolicy';
+import { getRedis } from './cache/redis';
+import { logger } from '../utils/logger';
 
 function toBigInt(v: any): bigint {
   if (v === null || v === undefined) return 0n;
@@ -232,16 +234,78 @@ export async function assertUploadWithinLimit(eventId: string, uploadBytes: bigi
   // Permissive mode: no active entitlement or no limit set => allow.
   if (!entitlement || limit <= 0n) return;
 
-  const used = await getEventUsageBytes(eventId);
-  if (used + uploadBytes > limit) {
-    const err: any = new Error('Storage limit exceeded');
-    err.code = 'STORAGE_LIMIT_EXCEEDED';
-    err.httpStatus = 403;
-    err.details = {
-      usedBytes: used.toString(),
-      limitBytes: limit.toString(),
-      uploadBytes: uploadBytes.toString(),
-    };
-    throw err;
+  // Use Redis lock to prevent race condition on concurrent uploads
+  const redis = getRedis();
+  const lockKey = `upload_lock:${eventId}`;
+  const reserveKey = `upload_reserve:${eventId}`;
+  const lockValue = `${Date.now()}_${Math.random()}`;
+  const LOCK_TTL = 30; // seconds
+
+  let acquired = false;
+  for (let i = 0; i < 10; i++) {
+    const result = await redis.set(lockKey, lockValue, 'EX', LOCK_TTL, 'NX');
+    if (result === 'OK') {
+      acquired = true;
+      break;
+    }
+    await new Promise(r => setTimeout(r, 100 + Math.random() * 100));
+  }
+
+  if (!acquired) {
+    logger.warn('[StorageLimit] Could not acquire lock, falling back to unlocked check', { eventId });
+    // Fallback: do the check without lock (better than blocking forever)
+  }
+
+  try {
+    // Get current DB usage + any pending reservations from other concurrent uploads
+    const used = await getEventUsageBytes(eventId);
+    const pendingReserve = toBigInt(await redis.get(reserveKey));
+    const totalUsed = used + pendingReserve;
+
+    if (totalUsed + uploadBytes > limit) {
+      const err: any = new Error('Storage limit exceeded');
+      err.code = 'STORAGE_LIMIT_EXCEEDED';
+      err.httpStatus = 403;
+      err.details = {
+        usedBytes: used.toString(),
+        pendingBytes: pendingReserve.toString(),
+        limitBytes: limit.toString(),
+        uploadBytes: uploadBytes.toString(),
+      };
+      throw err;
+    }
+
+    // Reserve the space atomically — add uploadBytes to the pending reserve counter
+    // TTL of 5 minutes: if the upload fails/crashes, the reservation expires
+    const newReserve = (pendingReserve + uploadBytes).toString();
+    await redis.set(reserveKey, newReserve, 'EX', 300);
+  } finally {
+    // Release lock only if we own it
+    if (acquired) {
+      const current = await redis.get(lockKey);
+      if (current === lockValue) {
+        await redis.del(lockKey);
+      }
+    }
+  }
+}
+
+/**
+ * Release storage reservation after successful DB write.
+ * Call this after prisma.photo.create() succeeds.
+ */
+export async function releaseStorageReservation(eventId: string, uploadBytes: bigint): Promise<void> {
+  try {
+    const redis = getRedis();
+    const reserveKey = `upload_reserve:${eventId}`;
+    const current = toBigInt(await redis.get(reserveKey));
+    const newReserve = current - uploadBytes;
+    if (newReserve <= 0n) {
+      await redis.del(reserveKey);
+    } else {
+      await redis.set(reserveKey, newReserve.toString(), 'EX', 300);
+    }
+  } catch (err) {
+    logger.warn('[StorageLimit] Failed to release reservation', { eventId, error: err });
   }
 }

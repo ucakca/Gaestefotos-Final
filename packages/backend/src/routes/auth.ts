@@ -12,6 +12,7 @@ import {
   wordpressSsoLimiter,
 } from '../middleware/rateLimit';
 import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
+import { isPasswordReused, recordPasswordHash } from '../services/passwordHistory';
 import { getWordPressUserById, verifyWordPressUser, WordPressAuthUnavailableError } from '../config/wordpress';
 import { logger } from '../utils/logger';
 import { getErrorMessage } from '../utils/typeHelpers';
@@ -364,7 +365,12 @@ function getEmailAuthCandidates(email: string): string[] {
 const registerSchema = z.object({
   email: emailSchema,
   name: z.string().min(1),
-  password: z.string().min(8, 'Passwort muss mindestens 8 Zeichen lang sein'),
+  password: z.string()
+    .min(10, 'Passwort muss mindestens 10 Zeichen lang sein')
+    .regex(/[A-Z]/, 'Passwort muss mindestens einen Großbuchstaben enthalten')
+    .regex(/[a-z]/, 'Passwort muss mindestens einen Kleinbuchstaben enthalten')
+    .regex(/[0-9]/, 'Passwort muss mindestens eine Zahl enthalten')
+    .regex(/[^A-Za-z0-9]/, 'Passwort muss mindestens ein Sonderzeichen enthalten'),
 });
 
 const loginSchema = z.object({
@@ -587,7 +593,7 @@ function setAuthCookie(res: Response, token: string, ttlSeconds: number) {
   const domain = process.env.COOKIE_DOMAIN || undefined;
   res.cookie('auth_token', token, {
     httpOnly: true,
-    secure: isProd,
+    secure: true,
     sameSite: 'lax',
     domain,
     maxAge: ttlSeconds * 1000,
@@ -632,7 +638,7 @@ function clearAuthCookie(res: Response) {
   const domain = process.env.COOKIE_DOMAIN || undefined;
   res.clearCookie('auth_token', {
     httpOnly: true,
-    secure: isProd,
+    secure: true,
     sameSite: 'lax',
     domain,
     path: '/',
@@ -682,6 +688,9 @@ router.post('/register', passwordLimiter, async (req: Request, res: Response) =>
       },
     });
 
+    // Record initial password in history
+    await recordPasswordHash(user.id, hashedPassword);
+
     // Sign-Up Credit Bonus
     const signupBonus = parseInt(process.env.SIGNUP_CREDIT_BONUS || '50', 10);
     if (signupBonus > 0) {
@@ -727,6 +736,60 @@ router.post('/register', passwordLimiter, async (req: Request, res: Response) =>
   }
 });
 
+// Change password (authenticated)
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(10).regex(/[A-Z]/).regex(/[0-9]/).regex(/[^a-zA-Z0-9]/),
+});
+
+router.post('/change-password', passwordLimiter, authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const data = changePasswordSchema.parse(req.body);
+
+    if (!req.userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { id: true, password: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const currentOk = await bcrypt.compare(data.currentPassword, user.password);
+    if (!currentOk) {
+      return res.status(401).json({ error: 'Aktuelles Passwort ist falsch' });
+    }
+
+    // Check password history (last 5)
+    const reused = await isPasswordReused(user.id, data.newPassword);
+    if (reused) {
+      return res.status(400).json({ error: 'Dieses Passwort wurde bereits verwendet. Bitte wähle ein neues.' });
+    }
+
+    const hashedNew = await bcrypt.hash(data.newPassword, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedNew },
+    });
+
+    await recordPasswordHash(user.id, hashedNew);
+
+    auditLog({ type: AuditType.AUTH_PASSWORD_CHANGE, message: 'Passwort geändert', data: { userId: user.id }, req });
+
+    return res.json({ ok: true });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Passwort muss min. 10 Zeichen, Großbuchstabe, Zahl und Sonderzeichen enthalten.' });
+    }
+    logger.error('Change password error', { error: error.message });
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Login
 router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
   try {
@@ -753,7 +816,9 @@ router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
       where: { email: { in: emailCandidates } },
     });
 
-    const localPasswordOk = user ? await bcrypt.compare(data.password, user.password) : false;
+    // Always run bcrypt.compare to prevent timing-based user enumeration
+    const DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012';
+    const localPasswordOk = await bcrypt.compare(data.password, user?.password || DUMMY_HASH) && !!user;
 
     logger.info('[auth] login local check', {
       email: data.email,

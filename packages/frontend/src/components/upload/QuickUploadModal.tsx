@@ -114,6 +114,9 @@ export default function QuickUploadModal({ open, onClose, eventId, onComplete }:
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  // Auto-start: skip confirmation step when user has a saved name
+  const autoStartPendingRef = useRef(false);
+
   // File selection
   const handleFilesSelected = useCallback((selectedFiles: FileList | File[]) => {
     const fileArray = Array.from(selectedFiles);
@@ -150,7 +153,12 @@ export default function QuickUploadModal({ open, onClose, eventId, onComplete }:
 
     setValidationErrors(errors);
     setFiles(prev => [...prev, ...validFiles]);
-  }, [files.length]);
+
+    // Auto-start: if user already has a saved name and files are valid, skip the confirm step
+    if (validFiles.length > 0 && uploaderName.trim() && files.length === 0) {
+      autoStartPendingRef.current = true;
+    }
+  }, [files.length, uploaderName]);
 
   const removeFile = useCallback((id: string) => {
     setFiles(prev => {
@@ -251,6 +259,20 @@ export default function QuickUploadModal({ open, onClose, eventId, onComplete }:
     // Check final state
     setPhase('success');
   }, [files, uploadFile]);
+
+  // Auto-start effect: when files change and auto-start was flagged, trigger upload
+  useEffect(() => {
+    if (autoStartPendingRef.current && files.length > 0 && phase === 'select') {
+      autoStartPendingRef.current = false;
+      const timer = setTimeout(() => {
+        if (!uploadStartedRef.current) {
+          startUpload();
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [files.length, phase, startUpload]);
 
   // Retry failed files
   const retryFailed = useCallback(() => {

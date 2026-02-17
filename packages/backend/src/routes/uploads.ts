@@ -211,7 +211,8 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
       const uploadBytes = BigInt(
         processed.original.length + 
         processed.optimized.length + 
-        processed.thumbnail.length
+        processed.thumbnail.length +
+        processed.webp.length
       );
       await assertUploadWithinLimit(eventId, uploadBytes);
       
@@ -237,15 +238,24 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
       const baseFilename = filename.replace(/\.[^/.]+$/, '');
       const ext = filename.match(/\.[^/.]+$/)?.[0] || '.jpg';
       
-      const [storagePath, storagePathOriginal, storagePathThumb] = await Promise.all([
+      const [storagePath, storagePathOriginal, storagePathThumb, storagePathWebp] = await Promise.all([
         storageService.uploadFile(eventId, `${baseFilename}_opt${ext}`, processed.optimized, 'image/jpeg'),
         storageService.uploadFile(eventId, `${baseFilename}_orig${ext}`, processed.original, filetype),
         storageService.uploadFile(eventId, `${baseFilename}_thumb${ext}`, processed.thumbnail, 'image/jpeg'),
+        storageService.uploadFile(eventId, `${baseFilename}_webp.webp`, processed.webp, 'image/webp'),
       ]);
 
       let photoId: string;
 
-      if (progressivePhotoId) {
+      // Check progressive upload record existence before updating
+      const progressiveExists = progressivePhotoId
+        ? await prisma.photo.findUnique({ where: { id: progressivePhotoId } })
+        : null;
+      if (progressivePhotoId && !progressiveExists) {
+        logger.warn('[ProgressiveUpload] Phase 1 record not found, falling back to standard upload', { progressivePhotoId, eventId });
+      }
+
+      if (progressivePhotoId && progressiveExists) {
         // Progressive Upload Phase 2: Update existing photo record (created by quick-preview)
         const updatedPhoto = await prisma.photo.update({
           where: { id: progressivePhotoId },
@@ -253,6 +263,7 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
             storagePath,
             storagePathOriginal,
             storagePathThumb,
+            storagePathWebp,
             categoryId: resolvedCategoryId,
             sizeBytes: uploadBytes,
             tags: [], // Remove progressive-upload tag
@@ -280,6 +291,7 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
             storagePath,
             storagePathOriginal,
             storagePathThumb,
+            storagePathWebp,
             categoryId: resolvedCategoryId,
             url: '',
             status: 'PENDING',
@@ -322,7 +334,19 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
     });
     
   } catch (error: any) {
-    logger.error('Error processing upload', { error: error.message, stack: error.stack, uploadId: upload.id, eventId });
+    // Differentiated error handling (matching multipart upload error granularity)
+    const errorCode = error?.code || 'UNKNOWN';
+    const isStorageLimit = errorCode === 'STORAGE_LIMIT_EXCEEDED' || errorCode === 'STORAGE_LIMIT_ENTITLEMENT_MISSING';
+    const isValidation = errorCode === 'VALIDATION_ERROR' || error?.httpStatus === 400;
+
+    if (isStorageLimit) {
+      logger.warn('[TUS] Upload rejected: storage limit', { eventId, uploadId: upload.id, details: error.details });
+    } else if (isValidation) {
+      logger.warn('[TUS] Upload rejected: validation', { eventId, uploadId: upload.id, message: error.message });
+    } else {
+      logger.error('[TUS] Upload processing failed', { error: error.message, stack: error.stack, uploadId: upload.id, eventId, code: errorCode });
+    }
+
     // Clean up on error
     await fs.unlink(filePath).catch((cleanupError: any) => {
       logger.warn('Failed to cleanup temp file after error', { error: cleanupError.message, filePath });
@@ -359,12 +383,35 @@ setInterval(async () => {
   }
 }, 30 * 60 * 1000); // Run every 30 minutes
 
+// Periodic cleanup of orphaned progressive-upload photo records
+// (quick-preview created but full TUS upload never completed)
+const PROGRESSIVE_ZOMBIE_AGE_MS = 60 * 60 * 1000; // 1 hour
+setInterval(async () => {
+  try {
+    const cutoff = new Date(Date.now() - PROGRESSIVE_ZOMBIE_AGE_MS);
+    const zombies = await prisma.photo.findMany({
+      where: {
+        tags: { has: 'progressive-upload' },
+        createdAt: { lt: cutoff },
+      },
+      select: { id: true, eventId: true },
+    });
+    if (zombies.length > 0) {
+      await prisma.photo.deleteMany({
+        where: { id: { in: zombies.map(z => z.id) } },
+      });
+      logger.info(`[Progressive Cleanup] Removed ${zombies.length} orphaned quick-preview records`);
+    }
+  } catch (error: any) {
+    logger.warn('[Progressive Cleanup] Failed', { error: error.message });
+  }
+}, 15 * 60 * 1000); // Run every 15 minutes
+
 // Status endpoint to check if Tus is enabled (must be before Tus handlers)
 router.get('/status', (_req: Request, res: Response) => {
   res.json({
     enabled: true,
     maxSize: TUS_MAX_SIZE,
-    uploadDir: TUS_UPLOAD_DIR,
   });
 });
 
