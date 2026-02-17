@@ -2,9 +2,13 @@ import { Router, Request, Response } from 'express';
 import { execSync, exec } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth';
 import { logger } from '../utils/logger';
 
 const router = Router();
+
+// All backup routes require ADMIN role
+router.use(authMiddleware, requireRole('ADMIN'));
 
 const BACKUP_DIR = '/opt/backups/gaestefotos';
 const BACKUP_DB_DIR = '/opt/backups/gaestefotos/db';
@@ -73,7 +77,7 @@ function scanBackupDir(dir: string, type: 'full' | 'incremental' | 'db', categor
 
 // ─── GET /api/admin/backups — List all backups ───────────
 
-router.get('/', async (_req: Request, res: Response) => {
+router.get('/', async (_req: AuthRequest, res: Response) => {
   try {
     const allEntries: BackupEntry[] = [];
 
@@ -131,7 +135,7 @@ router.get('/', async (_req: Request, res: Response) => {
 
 // ─── GET /api/admin/backups/schedule — Get cron schedule ─
 
-router.get('/schedule', async (_req: Request, res: Response) => {
+router.get('/schedule', async (_req: AuthRequest, res: Response) => {
   try {
     let crontab = '';
     try {
@@ -180,7 +184,7 @@ router.get('/schedule', async (_req: Request, res: Response) => {
 
 // ─── POST /api/admin/backups/run — Trigger a backup ──────
 
-router.post('/run', async (req: Request, res: Response) => {
+router.post('/run', async (req: AuthRequest, res: Response) => {
   try {
     const { type = 'full', includeDb = true } = req.body;
 
@@ -248,11 +252,12 @@ router.post('/run', async (req: Request, res: Response) => {
 
 // ─── GET /api/admin/backups/:id/download — Download ──────
 
-router.get('/:id/download', async (req: Request, res: Response) => {
+router.get('/:id/download', async (req: AuthRequest, res: Response) => {
   try {
-    const filePath = Buffer.from(req.params.id, 'base64url').toString('utf-8');
+    const rawPath = Buffer.from(req.params.id, 'base64url').toString('utf-8');
+    const filePath = path.resolve(rawPath);
 
-    // Security: only allow files from backup directory
+    // Security: only allow files from backup directory (resolve prevents ../traversal)
     if (!filePath.startsWith(BACKUP_DIR) && !filePath.startsWith(BACKUP_DB_DIR)) {
       return res.status(403).json({ error: 'Zugriff verweigert' });
     }
@@ -278,11 +283,12 @@ router.get('/:id/download', async (req: Request, res: Response) => {
 
 // ─── DELETE /api/admin/backups/:id — Delete a backup ─────
 
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', async (req: AuthRequest, res: Response) => {
   try {
-    const filePath = Buffer.from(req.params.id, 'base64url').toString('utf-8');
+    const rawPath = Buffer.from(req.params.id, 'base64url').toString('utf-8');
+    const filePath = path.resolve(rawPath);
 
-    // Security: only allow files from backup directory
+    // Security: only allow files from backup directory (resolve prevents ../traversal)
     if (!filePath.startsWith(BACKUP_DIR) && !filePath.startsWith(BACKUP_DB_DIR)) {
       return res.status(403).json({ error: 'Zugriff verweigert' });
     }
@@ -303,10 +309,11 @@ router.delete('/:id', async (req: Request, res: Response) => {
 
 // ─── POST /api/admin/backups/verify — Verify backup integrity
 
-router.post('/verify', async (req: Request, res: Response) => {
+router.post('/verify', async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.body;
-    const filePath = Buffer.from(id, 'base64url').toString('utf-8');
+    const rawPath = Buffer.from(id, 'base64url').toString('utf-8');
+    const filePath = path.resolve(rawPath);
 
     if (!filePath.startsWith(BACKUP_DIR) && !filePath.startsWith(BACKUP_DB_DIR)) {
       return res.status(403).json({ error: 'Zugriff verweigert' });

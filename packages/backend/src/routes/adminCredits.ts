@@ -12,11 +12,14 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import prisma from '../config/database';
-import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth';
 import { logger } from '../utils/logger';
 import { addCredits, getOrCreateCreditBalance } from '../services/aiExecution';
 
 const router = Router();
+
+// All credit routes require ADMIN role
+router.use(authMiddleware, requireRole('ADMIN'));
 
 // ─── GET /admin/credits/overview ────────────────────────────────────────────
 router.get('/overview', authMiddleware, async (req: AuthRequest, res: Response) => {

@@ -1,10 +1,12 @@
 import { Router, Response } from 'express';
-import { AuthRequest, authMiddleware } from '../middleware/auth';
+import { AuthRequest, authMiddleware, requireRole } from '../middleware/auth';
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { encryptValue, decryptValue } from '../utils/encryption';
 import { z } from 'zod';
 
+// All AI provider routes require ADMIN role
+// (legacy requireAdmin function kept for backwards compat but router.use enforces it)
 async function requireAdmin(req: AuthRequest, res: Response): Promise<boolean> {
   if (!req.userId) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -19,6 +21,9 @@ async function requireAdmin(req: AuthRequest, res: Response): Promise<boolean> {
 }
 
 const router = Router();
+
+// Enforce ADMIN role at router level (defense-in-depth alongside per-handler requireAdmin)
+router.use(authMiddleware, requireRole('ADMIN'));
 
 // ─────────────────────────────────────────────────────────────
 // Validation Schemas

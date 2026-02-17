@@ -1,5 +1,5 @@
 import { Router, Response } from 'express';
-import { AuthRequest, authMiddleware } from '../middleware/auth';
+import { AuthRequest, authMiddleware, requireRole } from '../middleware/auth';
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { z } from 'zod';
@@ -27,6 +27,9 @@ async function requireAdmin(req: AuthRequest, res: Response): Promise<boolean> {
 }
 
 const router = Router();
+
+// Enforce ADMIN role at router level
+router.use(authMiddleware, requireRole('ADMIN'));
 
 // ─── Validation ─────────────────────────────────────────────
 
