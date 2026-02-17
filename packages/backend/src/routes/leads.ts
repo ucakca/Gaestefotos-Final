@@ -57,7 +57,7 @@ router.post('/', optionalAuthMiddleware, async (req: AuthRequest, res: Response)
         name: name ? sanitizeText(name) : null,
         email: email ? sanitizeText(email) : null,
         phone: phone ? sanitizeText(phone) : null,
-        source: sanitizeText(source),
+        source,
         consentGiven: consentGiven ?? false,
         metadata,
       },

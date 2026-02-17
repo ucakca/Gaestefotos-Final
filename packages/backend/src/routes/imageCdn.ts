@@ -68,14 +68,7 @@ router.get('/:photoId', optionalAuthMiddleware, async (req: AuthRequest, res: Re
 
     const photo = await prisma.photo.findUnique({
       where: { id: photoId },
-      select: {
-        id: true,
-        storagePath: true,
-        storagePathWebP: true,
-        status: true,
-        deletedAt: true,
-        eventId: true,
-        updatedAt: true,
+      include: {
         event: {
           select: { deletedAt: true, isActive: true },
         },
@@ -107,8 +100,8 @@ router.get('/:photoId', optionalAuthMiddleware, async (req: AuthRequest, res: Re
 
     // Choose source: prefer WebP storage if format=webp and it exists
     let sourcePath = photo.storagePath;
-    if (params.format === 'webp' && photo.storagePathWebP) {
-      sourcePath = photo.storagePathWebP;
+    if (params.format === 'webp' && photo.storagePathWebp) {
+      sourcePath = photo.storagePathWebp;
     }
 
     if (!sourcePath) {

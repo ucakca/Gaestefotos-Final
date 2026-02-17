@@ -32,7 +32,7 @@ export function registerAllWorkers(): void {
     const { storageService } = await import('./storage');
 
     // Download the photo from storage
-    const buffer = await storageService.getFileBuffer(storagePath);
+    const buffer = await storageService.getFile(storagePath);
     if (!buffer) {
       throw new Error(`Photo file not found: ${storagePath}`);
     }
@@ -74,7 +74,12 @@ export function registerAllWorkers(): void {
     logger.debug(`[Worker:DuplicateDetection] Checking photo ${photoId}`);
 
     const { processDuplicateDetection } = await import('./duplicateDetection');
-    await processDuplicateDetection(photoId, eventId);
+    const { storageService: storage } = await import('./storage');
+    const prisma = (await import('../config/database')).default;
+    const photo = await prisma.photo.findUnique({ where: { id: photoId }, select: { storagePath: true } });
+    if (!photo?.storagePath) throw new Error(`Photo not found: ${photoId}`);
+    const photoBuffer = await storage.getFile(photo.storagePath);
+    await processDuplicateDetection(eventId, photoId, photoBuffer);
 
     return { checked: true };
   }, { concurrency: 2 });
@@ -86,9 +91,13 @@ export function registerAllWorkers(): void {
 
     switch (type) {
       case 'zombie-uploads': {
-        const { cleanupZombieUploads } = await import('./zombieUploadCleanup');
-        if (typeof cleanupZombieUploads === 'function') {
-          await cleanupZombieUploads();
+        try {
+          const mod = await import('./zombieUploadCleanup');
+          if (typeof mod.cleanupZombieUploads === 'function') {
+            await mod.cleanupZombieUploads();
+          }
+        } catch {
+          logger.warn('[Worker:Cleanup] zombieUploadCleanup module not available, skipping');
         }
         break;
       }

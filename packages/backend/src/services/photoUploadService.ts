@@ -13,7 +13,8 @@ import { imageProcessor } from './imageProcessor';
 import { storageService } from './storage';
 import { assertUploadWithinLimit, releaseStorageReservation } from './packageLimits';
 import { extractCapturedAtFromImage } from './uploadDatePolicy';
-import { selectSmartCategoryId, resolveSmartCategoryId } from './smartAlbumService';
+import { selectSmartCategoryId } from './smartAlbum';
+import { resolveSmartCategoryId } from './photoCategories';
 import { logger } from '../utils/logger';
 
 export interface PhotoUploadInput {
