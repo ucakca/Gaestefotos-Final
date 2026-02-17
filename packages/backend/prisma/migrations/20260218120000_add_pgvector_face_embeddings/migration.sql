@@ -5,8 +5,8 @@ CREATE EXTENSION IF NOT EXISTS vector;
 -- Separate from photos table to keep Prisma schema clean (pgvector not natively supported)
 CREATE TABLE IF NOT EXISTS "face_embedding" (
   "id"          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  "photo_id"    UUID NOT NULL REFERENCES "Photo"("id") ON DELETE CASCADE,
-  "event_id"    UUID NOT NULL REFERENCES "Event"("id") ON DELETE CASCADE,
+  "photo_id"    TEXT NOT NULL REFERENCES "photos"("id") ON DELETE CASCADE,
+  "event_id"    TEXT NOT NULL REFERENCES "events"("id") ON DELETE CASCADE,
   "embedding"   vector(128) NOT NULL,
   "face_index"  INTEGER NOT NULL DEFAULT 0,
   "box_x"       REAL,
