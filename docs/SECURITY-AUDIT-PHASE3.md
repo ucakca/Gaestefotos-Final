@@ -85,15 +85,45 @@
 
 ---
 
+## Zusätzliche Fixes (nach Initial-Report)
+
+### 3. XSS Input-Sanitization — 7 Routes
+
+**Schwere**: MITTEL  
+**Problem**: User-generierter Text (Gäste-Namen, Nachrichten, Kommentare) wurde ohne HTML-Stripping in die Datenbank geschrieben.  
+**Fix**: `sanitizeText()` aus `utils/sanitize.ts` an allen User-Input-Stellen integriert:
+
+| Route | Felder | 
+|---|---|
+| `guestbook.ts` | `authorName`, `message` |
+| `comments.ts` | `authorName`, `comment` |
+| `uploads.ts` | `uploadedBy` (Gäste-Name aus TUS-Metadata) |
+| `leads.ts` | `name`, `email`, `phone`, `source` |
+| `guests.ts` | `firstName`, `lastName` |
+| `invitations.ts` | RSVP `name` |
+
+### 4. Dependency Update
+
+| Package | Vorher | Nachher | CVE |
+|---|---|---|---|
+| `nodemailer` | 6.10.x | **7.0.13** | GHSA-rcmh-qjqh-p98v (DoS) |
+
+### 5. Tests
+
+- **19 neue Tests** für `sanitize.ts` (sanitizeText, sanitizeObject, sanitizeSlug, escapeHtml)
+- **82 Tests gesamt** (12 Dateien), alle bestanden
+
+---
+
 ## Zusammenfassung
 
 | Kategorie | Status |
 |---|---|
 | **Auth/Authorization** | ✅ Gefixt — alle Admin-Routes haben jetzt `requireRole('ADMIN')` |
 | **SQL Injection** | ✅ Sicher — parametrisierte Queries |
-| **XSS** | ✅ Grundschutz (helmet, mongoSanitize, React escaping) |
-| **CSRF** | ⚠️ Middleware existiert, nicht aktiviert (niedriges Risiko bei JWT-Auth) |
+| **XSS** | ✅ Gefixt — `sanitizeText()` an 7 User-Input-Routes + helmet + mongoSanitize |
+| **CSRF** | ✅ Niedrig — `sameSite: lax` + `httpOnly` + `secure` auf Auth-Cookie. Middleware vorhanden für Defense-in-Depth |
 | **Path Traversal** | ✅ Gefixt — `path.resolve()` vor Pfad-Checks |
 | **Rate Limiting** | ✅ Aktiv auf allen kritischen Endpoints |
 | **TUS Upload** | ✅ Auth + Event-Validation + Rate-Limiting |
-| **Dependencies** | ⚠️ 2 High-Severity (nodemailer, fast-xml-parser) — Update pending |
+| **Dependencies** | ✅ nodemailer 7.0.13 gefixt. ⚠️ fast-xml-parser (transitiv via @aws-sdk) — kein direkter Fix möglich |
