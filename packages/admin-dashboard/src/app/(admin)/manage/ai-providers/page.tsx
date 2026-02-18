@@ -478,6 +478,34 @@ export default function AiProvidersPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={async () => {
+              try {
+                const res = await api.post('/admin/ai-providers/auto-setup');
+                const s = res.data.summary;
+                const parts = [];
+                if (s.mappingsCreated.length > 0) parts.push(`${s.mappingsCreated.length} Features zugeordnet`);
+                if (s.promptsSeeded > 0) parts.push(`${s.promptsSeeded} Prompts geseeded`);
+                if (s.errors.length > 0) parts.push(`${s.errors.length} Fehler`);
+                toast.success(parts.length > 0 ? parts.join(', ') : 'Alles bereits konfiguriert!');
+                // Reload data
+                const [pRes, mRes, sRes] = await Promise.all([
+                  api.get('/admin/ai-providers'),
+                  api.get('/admin/ai-providers/features/mappings'),
+                  api.get('/admin/ai-providers/usage'),
+                ]);
+                setProviders(pRes.data.providers || []);
+                setMappings(mRes.data.mappings || []);
+                setStats(sRes.data);
+              } catch (err: any) {
+                toast.error(err?.response?.data?.error || 'Auto-Setup fehlgeschlagen');
+              }
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 border border-emerald-500/30 text-emerald-400 rounded-xl hover:bg-emerald-500/10 hover:shadow-soft transition-all text-sm font-medium"
+          >
+            <Zap className="w-4 h-4" />
+            Auto-Setup
+          </button>
           {providers.filter(p => p.isActive && p.hasApiKey).length > 0 && (
             <button
               onClick={handleTestAll}

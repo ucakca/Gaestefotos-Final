@@ -257,6 +257,94 @@ router.delete('/features/mappings/:feature', authMiddleware, async (req: AuthReq
 });
 
 // ─────────────────────────────────────────────────────────────
+// Auto-Setup: one-click maps all features + seeds prompts
+// ─────────────────────────────────────────────────────────────
+
+router.post('/auto-setup', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!(await requireAdmin(req, res))) return;
+
+    const { AI_FEATURE_REGISTRY } = await import('../services/aiFeatureRegistry');
+    const { seedDefaultPrompts } = await import('../services/promptTemplates');
+
+    const results: { mappingsCreated: string[]; mappingsSkipped: string[]; promptsSeeded: number; errors: string[] } = {
+      mappingsCreated: [],
+      mappingsSkipped: [],
+      promptsSeeded: 0,
+      errors: [],
+    };
+
+    // 1. Get all active providers grouped by type
+    const providers = await prisma.aiProvider.findMany({
+      where: { isActive: true },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
+    });
+
+    const providersByType: Record<string, typeof providers> = {};
+    for (const p of providers) {
+      if (!providersByType[p.type]) providersByType[p.type] = [];
+      providersByType[p.type].push(p);
+    }
+
+    // 2. Get existing mappings
+    const existingMappings = await prisma.aiFeatureMapping.findMany();
+    const mappedFeatures = new Set(existingMappings.map(m => m.feature));
+
+    // 3. Auto-map unmapped features
+    for (const feature of AI_FEATURE_REGISTRY) {
+      if (mappedFeatures.has(feature.key)) {
+        results.mappingsSkipped.push(feature.key);
+        continue;
+      }
+
+      const candidates = providersByType[feature.providerType] || [];
+      if (candidates.length === 0) {
+        results.errors.push(`${feature.key}: Kein aktiver ${feature.providerType} Provider`);
+        continue;
+      }
+
+      // Pick the first (default/oldest) provider of matching type
+      const provider = candidates[0];
+      try {
+        await prisma.aiFeatureMapping.create({
+          data: {
+            feature: feature.key,
+            providerId: provider.id,
+            isEnabled: true,
+          },
+        });
+        results.mappingsCreated.push(`${feature.key} → ${provider.slug}`);
+      } catch (err: any) {
+        results.errors.push(`${feature.key}: ${err.message}`);
+      }
+    }
+
+    // 4. Seed missing prompts
+    try {
+      const seeded = await seedDefaultPrompts();
+      results.promptsSeeded = seeded.created;
+    } catch (err: any) {
+      results.errors.push(`Prompt-Seeding: ${err.message}`);
+    }
+
+    logger.info('[Auto-Setup] Complete', results);
+
+    res.json({
+      success: true,
+      summary: {
+        ...results,
+        totalFeatures: AI_FEATURE_REGISTRY.length,
+        totalMapped: mappedFeatures.size + results.mappingsCreated.length,
+        totalProviders: providers.length,
+      },
+    });
+  } catch (error) {
+    logger.error('Error in auto-setup:', error);
+    res.status(500).json({ error: 'Auto-Setup fehlgeschlagen' });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
 // CRUD routes: list, create, get, update, delete
 // ─────────────────────────────────────────────────────────────
 
