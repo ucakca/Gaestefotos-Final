@@ -150,7 +150,7 @@ export async function searchPhotosByFace(
         if (similarity >= minSimilarity) {
           results.push({
             photoId: photo.id,
-            photoUrl: photo.url || `/api/photos/${photo.id}/file`,
+            photoUrl: `/cdn/${photo.id}`,
             similarity,
             facePosition: {
               x: face.x,

@@ -127,7 +127,7 @@ export async function searchByVector(
 
     return results.map(r => ({
       photoId: r.photo_id,
-      photoUrl: r.url || `/api/photos/${r.photo_id}/file`,
+      photoUrl: `/cdn/${r.photo_id}`,
       similarity: Number(r.similarity),
       facePosition: r.box_x != null ? {
         x: r.box_x,

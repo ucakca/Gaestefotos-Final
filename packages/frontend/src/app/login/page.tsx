@@ -170,9 +170,7 @@ export default function LoginPage() {
             </label>
             <a
               className="text-sm text-foreground hover:underline"
-              href="https://gästefotos.com/wp-login.php?action=lostpassword"
-              target="_blank"
-              rel="noreferrer"
+              href="/forgot-password"
             >
               Passwort vergessen?
             </a>

@@ -622,7 +622,7 @@ export default function SetupWizard() {
               Bitte upgrade dein Paket, um weitere Events zu erstellen.
             </p>
             <a
-              href="https://gästefotos.com/preise"
+              href="/pricing"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block mt-2 text-sm font-medium text-warning hover:underline"
@@ -690,7 +690,7 @@ export default function SetupWizard() {
             <p className="text-sm text-destructive font-medium">{state.error}</p>
             {state.error.includes('Limit') && (
               <a
-                href="https://gästefotos.com/pakete"
+                href="/pricing"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block mt-2 text-sm font-medium text-destructive hover:text-destructive underline"

@@ -305,7 +305,7 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
         // Update URL
         const updatedPhoto = await prisma.photo.update({
           where: { id: photo.id },
-          data: { url: `/api/photos/${photo.id}/file` },
+          data: { url: `/cdn/${photo.id}` },
         });
 
         // Emit WebSocket event for real-time updates
@@ -320,6 +320,9 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
         } catch (wsError: any) {
           logger.warn('Failed to emit WebSocket event for TUS upload', { error: wsError.message });
         }
+
+        // Trigger workflow (non-blocking)
+        import('../services/workflowExecutor').then(m => m.onPhotoUploaded(eventId, photo.id)).catch(() => {});
       }
 
       auditLog({ type: AuditType.TUS_UPLOAD_FINISHED, message: `TUS Upload abgeschlossen: ${filename}`, eventId, data: { uploadId: upload.id, filename, isVideo: false, progressive: !!progressivePhotoId }, level: 'DEBUG' });

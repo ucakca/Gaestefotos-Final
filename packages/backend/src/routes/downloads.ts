@@ -245,4 +245,141 @@ router.get('/events/:eventId/download/stats', authMiddleware, async (req: AuthRe
   }
 });
 
+/**
+ * USB-Export: Structured ZIP with folders by album + guest + originals
+ * Structure:
+ *   /Alben/{AlbumName}/001_photo.jpg
+ *   /Gaeste/{GastName}/001_photo.jpg
+ *   /Alle_Fotos/001_photo.jpg
+ *   /Originale/001_photo_original.jpg  (if available)
+ *   README.txt
+ */
+router.post('/events/:eventId/download/usb-export', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const includeOriginals = req.body?.includeOriginals !== false;
+
+    const hasAccess = await hasEventManageAccess(req, eventId);
+    if (!hasAccess) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, title: true, slug: true, deletedAt: true, dateTime: true },
+    });
+
+    if (!event || event.deletedAt) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, status: 'APPROVED', deletedAt: null },
+      include: {
+        category: { select: { id: true, name: true } },
+        guest: { select: { id: true, firstName: true, lastName: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    if (photos.length === 0) {
+      return res.status(404).json({ error: 'Keine Fotos zum Exportieren' });
+    }
+
+    logger.info('[downloads] USB export started', {
+      eventId, userId: req.userId, photoCount: photos.length, includeOriginals,
+    });
+
+    const safeTitle = (event.title || event.slug || 'event').replace(/[^a-zA-Z0-9äöüÄÖÜß _-]/g, '').slice(0, 50);
+    const dateStr = event.dateTime ? new Date(event.dateTime).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
+    const zipFilename = `${safeTitle}_${dateStr}_USB-Export.zip`;
+
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(zipFilename)}"`);
+    res.setHeader('Cache-Control', 'no-cache');
+
+    const archive = archiver('zip', { zlib: { level: 6 } });
+    archive.pipe(res);
+
+    archive.on('error', (err) => {
+      logger.error('[downloads] USB export archive error', { error: err.message, eventId });
+      if (!res.headersSent) res.status(500).json({ error: 'Archiv-Fehler' });
+    });
+
+    let counter = 0;
+    let errorCount = 0;
+
+    for (const photo of photos) {
+      counter++;
+      const pad = String(counter).padStart(4, '0');
+      const ext = photo.storagePath?.match(/\.[^/.]+$/)?.[0] || '.jpg';
+
+      try {
+        const buffer = await storageService.getFile(photo.storagePath);
+
+        // 1. Alle_Fotos/
+        archive.append(buffer, { name: `Alle_Fotos/${pad}_foto${ext}` });
+
+        // 2. Alben/{Name}/
+        if (photo.category?.name) {
+          const albumName = photo.category.name.replace(/[^a-zA-Z0-9äöüÄÖÜß _-]/g, '').slice(0, 40) || 'Unbekannt';
+          archive.append(buffer, { name: `Alben/${albumName}/${pad}_foto${ext}` });
+        }
+
+        // 3. Gaeste/{Name}/
+        const guestName = photo.guest
+          ? `${photo.guest.firstName || ''} ${photo.guest.lastName || ''}`.trim()
+          : (photo.uploadedBy || '');
+        if (guestName) {
+          const safeGuestName = guestName.replace(/[^a-zA-Z0-9äöüÄÖÜß _-]/g, '').slice(0, 40) || 'Gast';
+          archive.append(buffer, { name: `Gaeste/${safeGuestName}/${pad}_foto${ext}` });
+        }
+
+        // 4. Originale/ (if requested and available)
+        if (includeOriginals && photo.storagePathOriginal) {
+          try {
+            const origBuffer = await storageService.getFile(photo.storagePathOriginal);
+            const origExt = photo.storagePathOriginal.match(/\.[^/.]+$/)?.[0] || ext;
+            archive.append(origBuffer, { name: `Originale/${pad}_foto_original${origExt}` });
+          } catch {
+            // Original not available, skip silently
+          }
+        }
+      } catch (err) {
+        logger.error('[downloads] USB export: failed to add photo', { photoId: photo.id, error: (err as Error).message });
+        errorCount++;
+      }
+    }
+
+    // 5. README.txt
+    const readme = [
+      `USB-Export: ${event.title || 'Event'}`,
+      `Datum: ${dateStr}`,
+      `Fotos: ${photos.length}`,
+      ``,
+      `Ordnerstruktur:`,
+      `  /Alle_Fotos/     - Alle freigegebenen Fotos`,
+      `  /Alben/          - Nach Album sortiert`,
+      `  /Gaeste/         - Nach Gast sortiert`,
+      includeOriginals ? `  /Originale/      - Originalauflösung (falls vorhanden)` : '',
+      ``,
+      `Erstellt mit gästefotos.com`,
+      `Export am: ${new Date().toLocaleString('de-DE')}`,
+    ].filter(Boolean).join('\n');
+
+    archive.append(readme, { name: 'README.txt' });
+
+    await archive.finalize();
+
+    logger.info('[downloads] USB export completed', {
+      eventId, userId: req.userId, addedCount: counter - errorCount, errorCount,
+    });
+  } catch (error) {
+    logger.error('[downloads] USB export error', {
+      error: (error as Error).message, eventId: req.params.eventId,
+    });
+    if (!res.headersSent) res.status(500).json({ error: 'Export fehlgeschlagen' });
+  }
+});
+
 export default router;

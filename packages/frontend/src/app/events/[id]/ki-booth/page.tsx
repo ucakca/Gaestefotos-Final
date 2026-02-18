@@ -298,7 +298,7 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
             </p>
             <div className="flex items-center gap-2 text-muted-foreground text-xs">
               <Loader2 className="w-4 h-4 animate-spin" />
-              Dies kann bis zu 60 Sekunden dauern...
+              Dies kann bis zu 20 Sekunden dauern...
             </div>
           </div>
         )}

@@ -401,7 +401,7 @@ router.post(
       if (isGuest) {
         const toleranceDays = typeof featuresConfig?.uploadToleranceDays === 'number'
           ? featuresConfig.uploadToleranceDays
-          : 1;
+          : 3;
         const withinWindow = await isWithinUploadWindow({
           eventId,
           eventDateTime: event.dateTime,

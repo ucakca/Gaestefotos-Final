@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import multer from 'multer';
 import { io } from '../index';
+import { bufferedEmit } from '../services/wsBuffer';
 import prisma from '../config/database';
 import { authMiddleware, requireRole, AuthRequest, optionalAuthMiddleware, requireEventAccess, hasEventAccess, hasEventManageAccess, hasEventPermission, isPrivilegedRole } from '../middleware/auth';
 import { storageService } from '../services/storage';
@@ -200,7 +201,7 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
       const challengeCompletion = photo.challengeCompletions;
       return {
         ...photo,
-        url: photo.url?.startsWith('http') ? photo.url : (photo.id ? `/api/photos/${photo.id}/file` : photo.url),
+        url: `/cdn/${photo.id}`,
         challengeId: challengeCompletion?.challengeId || null,
         challengeTitle: challengeCompletion?.challenge?.title || null,
         challengeCompletions: undefined, // Remove nested object
@@ -268,8 +269,8 @@ router.get('/:eventId/media', async (req: AuthRequest, res: Response) => {
         id: p.id,
         type: 'PHOTO' as const,
         eventId: p.eventId,
-        url: p.url?.startsWith('http') ? p.url : `/api/photos/${p.id}/file`,
-        thumbnailUrl: p.storagePathThumb ? `/api/photos/${p.id}/file?variant=thumb` : undefined,
+        url: `/cdn/${p.id}`,
+        thumbnailUrl: `/cdn/${p.id}?w=400&f=webp`,
         status: p.status,
         uploadedBy: p.uploadedBy,
         categoryId: p.categoryId,
@@ -458,7 +459,7 @@ router.post(
 
       const photoWithProxyUrl = {
         ...photo,
-        url: `/api/photos/${photo.id}/file`,
+        url: `/cdn/${photo.id}`,
         challengeId: null as string | null,
         challengeTitle: null as string | null,
       };
@@ -489,8 +490,8 @@ router.post(
         }
       }
 
-      // Emit WebSocket event
-      io.to(`event:${eventId}`).emit('photo_uploaded', {
+      // Emit WebSocket event (buffered to reduce re-renders during bulk uploads)
+      bufferedEmit(io, eventId, 'photo_uploaded', {
         photo: serializeBigInt(photoWithProxyUrl),
       });
 
@@ -680,7 +681,7 @@ router.post(
         },
       });
 
-      const photoUrl = `/api/photos/${photo.id}/file`;
+      const photoUrl = `/cdn/${photo.id}`;
       await prisma.photo.update({
         where: { id: photo.id },
         data: { url: photoUrl },
@@ -692,8 +693,8 @@ router.post(
         sizeBytes: photo.sizeBytes?.toString(),
       };
 
-      // Emit WebSocket immediately — gallery shows thumbnail within ~1 second
-      io.to(`event:${eventId}`).emit('photo_uploaded', { photo: photoWithUrl });
+      // Emit WebSocket (buffered) — gallery shows thumbnail within ~2 seconds
+      bufferedEmit(io, eventId, 'photo_uploaded', { photo: photoWithUrl });
 
       logger.info('[ProgressiveUpload] Quick preview stored', {
         eventId,

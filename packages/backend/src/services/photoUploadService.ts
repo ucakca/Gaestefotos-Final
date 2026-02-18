@@ -149,9 +149,9 @@ export async function processUploadedPhoto(input: PhotoUploadInput): Promise<Pho
     // Update URL to point to the proxy endpoint
     await prisma.photo.update({
       where: { id: photoId },
-      data: { url: `/api/photos/${photoId}/file` },
+      data: { url: `/cdn/${photoId}` },
     });
-    photo.url = `/api/photos/${photoId}/file`;
+    photo.url = `/cdn/${photoId}`;
   }
 
   // 7. Release storage reservation (from Redis lock)

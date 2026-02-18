@@ -2,6 +2,12 @@ import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { decryptValue } from '../utils/encryption';
 import axios from 'axios';
+import FormData from 'form-data';
+import { storageService } from './storage';
+
+// Graceful sharp import
+let sharp: any;
+try { sharp = require('sharp'); } catch { /* sharp not available */ }
 
 export interface StyleTransferRequest {
   photoId: string;
@@ -83,6 +89,44 @@ export const AI_STYLES: Record<string, { name: string; prompt: string; negativeP
   },
 };
 
+// ── In-memory result cache (30 min TTL) ─────────────────────────────────────
+const resultCache = new Map<string, { storageKey: string; ts: number }>();
+const CACHE_TTL = 30 * 60 * 1000;
+
+function cleanCache() {
+  const now = Date.now();
+  for (const [k, v] of resultCache) {
+    if (now - v.ts > CACHE_TTL) resultCache.delete(k);
+  }
+}
+
+// ── Image preprocessing: resize to max 1024px ──────────────────────────────
+async function preprocessImage(imageUrl: string): Promise<Buffer> {
+  const t0 = Date.now();
+  const res = await axios.get(imageUrl, { responseType: 'arraybuffer', timeout: 15000 });
+  const dlMs = Date.now() - t0;
+  const raw = Buffer.from(res.data);
+
+  if (!sharp) {
+    logger.warn('[StyleTransfer] sharp unavailable, sending full-res');
+    return raw;
+  }
+
+  const t1 = Date.now();
+  const buf = await sharp(raw)
+    .resize(1024, 1024, { fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 85 })
+    .toBuffer();
+  const resizeMs = Date.now() - t1;
+
+  logger.info('[StyleTransfer] Preprocessed', {
+    from: raw.length, to: buf.length,
+    saved: `${Math.round((1 - buf.length / raw.length) * 100)}%`,
+    dlMs, resizeMs,
+  });
+  return buf;
+}
+
 // Get the configured AI provider for style transfer
 async function getStyleTransferProvider() {
   // First check feature mapping
@@ -107,8 +151,30 @@ async function getStyleTransferProvider() {
 // Execute style transfer via the configured provider
 export async function executeStyleTransfer(request: StyleTransferRequest): Promise<StyleTransferResult> {
   const startTime = Date.now();
+  const timings: Record<string, number> = {};
 
-  const config = await getStyleTransferProvider();
+  // ── 1. Check cache ──
+  cleanCache();
+  const cacheKey = `${request.photoId}_${request.style}`;
+  const cached = resultCache.get(cacheKey);
+  if (cached) {
+    try {
+      const outputUrl = await storageService.getFileUrl(cached.storageKey, 7200);
+      logger.info('[StyleTransfer] Cache hit', { cacheKey, ms: Date.now() - startTime });
+      return { outputUrl, style: request.style, durationMs: Date.now() - startTime, providerId: 'cache', model: 'cache' };
+    } catch {
+      resultCache.delete(cacheKey);
+    }
+  }
+
+  // ── 2. Parallel: photo + provider config ──
+  const t1 = Date.now();
+  const [config, photo] = await Promise.all([
+    getStyleTransferProvider(),
+    prisma.photo.findUnique({ where: { id: request.photoId } }),
+  ]);
+  timings.dbLookup = Date.now() - t1;
+
   if (!config) {
     throw new Error('Kein AI-Provider für Style Transfer konfiguriert. Bitte in Admin > AI Provider einrichten.');
   }
@@ -119,8 +185,6 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
     throw new Error(`Unbekannter Style: ${request.style}`);
   }
 
-  // Get the photo
-  const photo = await prisma.photo.findUnique({ where: { id: request.photoId } });
   if (!photo || !photo.url) {
     throw new Error('Foto nicht gefunden');
   }
@@ -137,22 +201,48 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
     ? `${request.prompt}, ${style.prompt}`
     : style.prompt;
 
-  let outputUrl: string;
+  // ── 3. Preprocess image (resize to 1024px max) ──
+  const t2 = Date.now();
+  const imageBuffer = await preprocessImage(photo.url);
+  timings.preprocess = Date.now() - t2;
 
-  // Route to appropriate provider
+  // ── 4. Call AI provider ──
+  const t3 = Date.now();
+  let resultBuffer: Buffer;
   const slug = provider.slug.toLowerCase();
   if (slug.includes('stability') || slug.includes('stable')) {
-    outputUrl = await callStabilityAI(apiKey, photo.url, finalPrompt, style.negativePrompt, strength, effectiveModel);
+    resultBuffer = await callStabilityAI(apiKey, imageBuffer, finalPrompt, style.negativePrompt, strength, effectiveModel);
   } else if (slug.includes('replicate')) {
-    outputUrl = await callReplicate(apiKey, photo.url, finalPrompt, style.negativePrompt, strength, effectiveModel);
+    resultBuffer = await callReplicate(apiKey, imageBuffer, finalPrompt, style.negativePrompt, strength, effectiveModel);
   } else {
     throw new Error(`Style Transfer wird für Provider "${provider.name}" nicht unterstützt. Nutze Stability AI oder Replicate.`);
   }
+  timings.aiCall = Date.now() - t3;
+
+  // ── 5. Store result to SeaweedFS ──
+  const t4 = Date.now();
+  const storageKey = await storageService.uploadFile(
+    request.eventId,
+    `ai-style-${request.style}-${request.photoId}.jpg`,
+    resultBuffer,
+    'image/jpeg',
+  );
+  const outputUrl = await storageService.getFileUrl(storageKey, 7200);
+  timings.storage = Date.now() - t4;
+
+  // ── 6. Cache result ──
+  resultCache.set(cacheKey, { storageKey, ts: Date.now() });
 
   const durationMs = Date.now() - startTime;
 
-  // Log usage
-  await prisma.aiUsageLog.create({
+  logger.info('[StyleTransfer] Complete', {
+    style: request.style, durationMs, timings,
+    provider: provider.slug, model: effectiveModel,
+    resultBytes: resultBuffer.length,
+  });
+
+  // Log usage (non-blocking)
+  prisma.aiUsageLog.create({
     data: {
       providerId: provider.id,
       feature: 'style_transfer',
@@ -161,7 +251,7 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
       success: true,
       costCents: estimateCost(slug),
     },
-  });
+  }).catch(err => logger.error('[StyleTransfer] Failed to log usage', { err }));
 
   return {
     outputUrl,
@@ -172,16 +262,11 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
   };
 }
 
-// Stability AI Image-to-Image
+// Stability AI Image-to-Image (accepts preprocessed Buffer, returns Buffer)
 async function callStabilityAI(
-  apiKey: string, imageUrl: string, prompt: string,
+  apiKey: string, imageBuffer: Buffer, prompt: string,
   negativePrompt: string | undefined, strength: number, model: string
-): Promise<string> {
-  // Download the source image
-  const imgResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-  const imageBuffer = Buffer.from(imgResponse.data);
-
-  const FormData = (await import('form-data')).default;
+): Promise<Buffer> {
   const form = new FormData();
   form.append('init_image', imageBuffer, { filename: 'photo.jpg', contentType: 'image/jpeg' });
   form.append('text_prompts[0][text]', prompt);
@@ -193,7 +278,7 @@ async function callStabilityAI(
   form.append('image_strength', String(strength));
   form.append('cfg_scale', '7');
   form.append('samples', '1');
-  form.append('steps', '30');
+  form.append('steps', '20');
 
   const response = await axios.post(
     `https://api.stability.ai/v1/generation/${model}/image-to-image`,
@@ -204,34 +289,36 @@ async function callStabilityAI(
         Authorization: `Bearer ${apiKey}`,
         Accept: 'application/json',
       },
-      timeout: 120000,
+      timeout: 60000,
     },
   );
 
   if (response.data?.artifacts?.[0]?.base64) {
-    // Return as data URL — in production, upload to S3/storage
-    return `data:image/png;base64,${response.data.artifacts[0].base64}`;
+    return Buffer.from(response.data.artifacts[0].base64, 'base64');
   }
 
   throw new Error('Stability AI: Keine Bilddaten in der Antwort');
 }
 
-// Replicate img2img
+// Replicate img2img (accepts preprocessed Buffer, returns Buffer)
 async function callReplicate(
-  apiKey: string, imageUrl: string, prompt: string,
+  apiKey: string, imageBuffer: Buffer, prompt: string,
   negativePrompt: string | undefined, strength: number, _model: string
-): Promise<string> {
-  // Start prediction
+): Promise<Buffer> {
+  // Convert buffer to data URI for Replicate API
+  const dataUri = `data:image/jpeg;base64,${imageBuffer.toString('base64')}`;
+
+  // Use SDXL instead of old SD 1.5 — faster cold-start, better quality, fewer steps needed
   const response = await axios.post(
     'https://api.replicate.com/v1/predictions',
     {
-      version: 'db21e45d3f7023abc2a46ee38a23973f6dce16bb082a930b0c49861f96d1e5bf', // stable-diffusion img2img
+      version: '39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b', // SDXL img2img
       input: {
-        image: imageUrl,
+        image: dataUri,
         prompt,
         negative_prompt: negativePrompt || '',
         prompt_strength: strength,
-        num_inference_steps: 30,
+        num_inference_steps: 20,
         guidance_scale: 7.5,
       },
     },
@@ -240,15 +327,16 @@ async function callReplicate(
         Authorization: `Token ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      timeout: 10000,
+      timeout: 15000,
     },
   );
 
   const predictionId = response.data.id;
+  logger.info('[StyleTransfer] Replicate prediction started', { predictionId });
 
-  // Poll for completion (max 120s)
+  // Poll every 1s (was 2s), max 60s (was 120s)
   for (let i = 0; i < 60; i++) {
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     const pollRes = await axios.get(
       `https://api.replicate.com/v1/predictions/${predictionId}`,
@@ -257,14 +345,17 @@ async function callReplicate(
 
     if (pollRes.data.status === 'succeeded') {
       const output = pollRes.data.output;
-      return Array.isArray(output) ? output[0] : output;
+      const outputUrl = Array.isArray(output) ? output[0] : output;
+      // Download result image as Buffer
+      const imgRes = await axios.get(outputUrl, { responseType: 'arraybuffer', timeout: 15000 });
+      return Buffer.from(imgRes.data);
     }
     if (pollRes.data.status === 'failed') {
       throw new Error(`Replicate error: ${pollRes.data.error || 'Unknown'}`);
     }
   }
 
-  throw new Error('Style Transfer Timeout (120s)');
+  throw new Error('Style Transfer Timeout (60s)');
 }
 
 function estimateCost(slug: string): number {

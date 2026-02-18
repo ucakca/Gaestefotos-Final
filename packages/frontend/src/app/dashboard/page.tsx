@@ -454,7 +454,7 @@ export default function DashboardPage() {
                 <div className="flex-1">
                   <p className="text-sm font-medium text-foreground">{limitMessage}</p>
                   <div className="flex gap-2 mt-2">
-                    <a href="https://gästefotos.com/pakete" className="text-xs font-medium text-warning hover:underline">Pakete ansehen →</a>
+                    <a href="/pricing" className="text-xs font-medium text-warning hover:underline">Pakete ansehen →</a>
                     <button onClick={() => setLimitMessage(null)} className="text-xs text-muted-foreground hover:text-foreground ml-auto">Schließen</button>
                   </div>
                 </div>

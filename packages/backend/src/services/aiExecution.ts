@@ -33,7 +33,8 @@ export type AiFeature =
   | 'challenge_suggest'
   | 'guestbook_suggest'
   | 'color_scheme'
-  | 'face_search';
+  | 'face_search'
+  | 'ai_categorize';
 
 // Credit costs per AI feature
 export const AI_CREDIT_COSTS: Record<AiFeature, number> = {
@@ -54,6 +55,7 @@ export const AI_CREDIT_COSTS: Record<AiFeature, number> = {
   guestbook_suggest: 1,
   color_scheme: 1,
   face_search: 0, // free
+  ai_categorize: 1,
 };
 
 export interface ResolvedProvider {
@@ -148,6 +150,7 @@ function getExpectedProviderType(feature: AiFeature): string {
     guestbook_suggest: 'LLM',
     color_scheme: 'LLM',
     face_search: 'FACE_RECOGNITION',
+    ai_categorize: 'LLM',
   };
   return typeMap[feature] || 'LLM';
 }
@@ -422,6 +425,7 @@ export function workflowStepToAiFeature(stepType: string): AiFeature | null {
     'AI_OLDIFY': 'ai_oldify',
     'AI_CARTOON': 'ai_cartoon',
     'AI_STYLE_POP': 'ai_style_pop',
+    'AI_CATEGORIZE_PHOTO': 'ai_categorize',
     'FACE_SEARCH': 'face_search',
     'COMPLIMENT': 'compliment_mirror',
   };

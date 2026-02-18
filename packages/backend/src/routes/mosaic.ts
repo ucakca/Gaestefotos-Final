@@ -1220,7 +1220,7 @@ router.get('/:eventId/mosaic/print-job/:pinCode', async (req: AuthRequest, res: 
         id: job.id,
         pinCode: job.pinCode,
         status: job.status,
-        photoUrl: `/api/photos/${job.photoId}/file`,
+        photoUrl: `/cdn/${job.photoId}`,
         gridX: job.gridX,
         gridY: job.gridY,
         printedAt: job.printedAt,

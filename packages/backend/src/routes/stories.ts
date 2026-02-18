@@ -33,7 +33,7 @@ const withProxyUrls = (s: any) => {
       ...s,
       photo: {
         ...s.photo,
-        url: `/api/photos/${s.photo.id}/file`,
+        url: `/cdn/${s.photo.id}`,
       },
     };
   }

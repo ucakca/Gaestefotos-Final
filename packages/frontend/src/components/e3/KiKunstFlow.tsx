@@ -371,7 +371,7 @@ export default function KiKunstFlow({ eventId, onClose, onComplete }: KiKunstFlo
             </p>
             <div className="flex items-center gap-2 mt-4 text-white/30 text-xs">
               <Loader2 className="w-4 h-4 animate-spin" />
-              Kann bis zu 60 Sekunden dauern
+              Kann bis zu 20 Sekunden dauern
             </div>
           </div>
         )}

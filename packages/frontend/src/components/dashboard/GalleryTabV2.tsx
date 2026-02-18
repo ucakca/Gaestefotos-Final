@@ -8,7 +8,8 @@ import {
   Camera, Video, Star, Trophy, Clock, Trash2, Filter, Users,
   Image as ImageIcon, Check, X, Download, ChevronDown, ChevronLeft,
   ChevronRight, Play, CheckCheck, RotateCw, Loader2,
-  ArrowUpDown, Heart, Search, DownloadCloud, Info, Eye,
+  ArrowUpDown, Heart, Search, DownloadCloud, Info, Eye, HardDrive,
+  MousePointerClick,
 } from 'lucide-react';
 
 type GalleryFilter = 'all' | 'photos' | 'videos' | 'albums' | 'guests' | 'challenges' | 'top' | 'pending' | 'trash';
@@ -44,7 +45,10 @@ export default function GalleryTabV2({
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [downloadingAll, setDownloadingAll] = useState(false);
+  const [exportingUsb, setExportingUsb] = useState(false);
   const [favLoading, setFavLoading] = useState<Set<string>>(new Set());
+  const [selectMode, setSelectMode] = useState(false);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
@@ -102,9 +106,26 @@ export default function GalleryTabV2({
     if (filter !== 'albums') setSelectedAlbum(null);
     if (filter !== 'guests') setSelectedGuest(null);
     setSelectedIds(new Set());
+    setSelectMode(false);
     setVisibleCount(PAGE_SIZE);
     setSearchQuery('');
   }, [filter]);
+
+  // Exit select mode when no items selected
+  useEffect(() => {
+    if (selectedIds.size === 0 && selectMode && filter !== 'pending') {
+      // Keep select mode active so user can keep selecting
+    }
+  }, [selectedIds.size, selectMode, filter]);
+
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const enterSelectMode = () => {
+    setSelectMode(true);
+  };
 
   // Filter + sort
   const filteredPhotos = useMemo(() => {
@@ -241,6 +262,25 @@ export default function GalleryTabV2({
     }
   }, [showToast, onPhotosChanged]);
 
+  // Bulk delete
+  const bulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`${selectedIds.size} Fotos wirklich löschen?`)) return;
+    setBulkLoading(true);
+    try {
+      const promises = Array.from(selectedIds).map(id => api.delete(`/photos/${id}`).catch(() => null));
+      await Promise.all(promises);
+      showToast(`${selectedIds.size} Fotos gelöscht`, 'success');
+      setSelectedIds(new Set());
+      setSelectMode(false);
+      onPhotosChanged?.();
+    } catch {
+      showToast('Löschen fehlgeschlagen', 'error');
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
   // Bulk actions
   const bulkModerate = async (action: 'approve' | 'reject') => {
     if (selectedIds.size === 0) return;
@@ -316,6 +356,28 @@ export default function GalleryTabV2({
     }
   };
 
+  // USB-Export
+  const usbExport = async () => {
+    setExportingUsb(true);
+    try {
+      const res = await api.post(`/events/${eventId}/download/usb-export`, {
+        includeOriginals: true,
+      }, { responseType: 'blob', timeout: 300000 });
+      const blob = new Blob([res.data], { type: 'application/zip' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `USB-Export-${new Date().toISOString().slice(0, 10)}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('USB-Export heruntergeladen', 'success');
+    } catch {
+      showToast('USB-Export fehlgeschlagen', 'error');
+    } finally {
+      setExportingUsb(false);
+    }
+  };
+
   // Lightbox
   const lightboxPhoto = lightboxIndex !== null ? filteredPhotos[lightboxIndex] : null;
 
@@ -387,6 +449,15 @@ export default function GalleryTabV2({
         >
           {downloadingAll ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <DownloadCloud className="w-3.5 h-3.5" />}
           Alle laden
+        </button>
+        <button
+          onClick={usbExport}
+          disabled={exportingUsb || approvedCount === 0}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-medium hover:bg-emerald-100 disabled:opacity-50 whitespace-nowrap"
+          title="USB-Export mit Ordnerstruktur (Alben, Gäste, Originale)"
+        >
+          {exportingUsb ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <HardDrive className="w-3.5 h-3.5" />}
+          USB-Export
         </button>
       </div>
 
@@ -499,32 +570,68 @@ export default function GalleryTabV2({
         </div>
       )}
 
-      {/* Bulk Action Bar */}
-      {(selectedIds.size > 0 || filter === 'pending') && (
-        <div className="flex items-center gap-2 mb-3 p-2 rounded-xl bg-blue-50 border border-blue-200">
+      {/* Select Mode Toggle + Bulk Action Bar */}
+      <div className="flex items-center gap-2 mb-3">
+        {!selectMode && !selectedIds.size && filter !== 'pending' ? (
+          <button
+            onClick={enterSelectMode}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:border-blue-300 hover:text-blue-600 transition-colors"
+          >
+            <MousePointerClick className="w-3.5 h-3.5" /> Auswählen
+          </button>
+        ) : null}
+      </div>
+
+      {(selectMode || selectedIds.size > 0 || filter === 'pending') && (
+        <div className="flex items-center gap-2 mb-3 p-2.5 rounded-xl bg-blue-50 border border-blue-200 flex-wrap">
           {selectedIds.size > 0 ? (
             <>
-              <span className="text-sm font-medium text-blue-800 px-2">
+              <CheckCheck className="w-4 h-4 text-blue-600 ml-1 shrink-0" />
+              <span className="text-sm font-medium text-blue-800">
                 {selectedIds.size} ausgewählt
               </span>
-              <div className="flex-1" />
-              {(filter === 'pending' || filteredPhotos.some(p => p.status === 'PENDING')) && (
-                <>
-                  <button onClick={() => bulkModerate('approve')} disabled={bulkLoading}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-medium hover:bg-emerald-600 disabled:opacity-50">
-                    {bulkLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Freigeben
-                  </button>
-                  <button onClick={() => bulkModerate('reject')} disabled={bulkLoading}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-medium hover:bg-red-600 disabled:opacity-50">
-                    <X className="w-3 h-3" /> Ablehnen
-                  </button>
-                </>
-              )}
-              <button onClick={bulkDownload} disabled={bulkLoading}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-xs font-medium hover:bg-blue-600 disabled:opacity-50">
-                <Download className="w-3 h-3" /> ZIP
+              <button onClick={selectAll}
+                className="text-xs text-blue-600 hover:text-blue-800 underline">
+                {selectedIds.size === filteredPhotos.length ? 'Keine' : 'Alle'}
               </button>
-              <button onClick={() => setSelectedIds(new Set())}
+              <div className="flex-1" />
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {filteredPhotos.some(p => selectedIds.has(p.id) && p.status === 'PENDING') && (
+                  <>
+                    <button onClick={() => bulkModerate('approve')} disabled={bulkLoading}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-medium hover:bg-emerald-600 disabled:opacity-50">
+                      {bulkLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Freigeben
+                    </button>
+                    <button onClick={() => bulkModerate('reject')} disabled={bulkLoading}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-medium hover:bg-red-600 disabled:opacity-50">
+                      <X className="w-3 h-3" /> Ablehnen
+                    </button>
+                  </>
+                )}
+                <button onClick={bulkDownload} disabled={bulkLoading}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-xs font-medium hover:bg-blue-600 disabled:opacity-50">
+                  <Download className="w-3 h-3" /> ZIP
+                </button>
+                <button onClick={bulkDelete} disabled={bulkLoading}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-medium hover:bg-red-100 border border-red-200 disabled:opacity-50">
+                  <Trash2 className="w-3 h-3" /> Löschen
+                </button>
+                <button onClick={exitSelectMode}
+                  className="p-1.5 rounded-lg hover:bg-blue-100 text-blue-600">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </>
+          ) : selectMode && selectedIds.size === 0 ? (
+            <>
+              <MousePointerClick className="w-4 h-4 text-blue-500 ml-1" />
+              <span className="text-sm text-blue-700">Tippe auf Fotos um sie auszuwählen</span>
+              <button onClick={selectAll}
+                className="text-xs text-blue-600 hover:text-blue-800 underline ml-1">
+                Alle auswählen
+              </button>
+              <div className="flex-1" />
+              <button onClick={exitSelectMode}
                 className="p-1.5 rounded-lg hover:bg-blue-100 text-blue-600">
                 <X className="w-4 h-4" />
               </button>
@@ -534,7 +641,7 @@ export default function GalleryTabV2({
               <Clock className="w-4 h-4 text-orange-500 ml-1" />
               <span className="text-sm text-blue-800">{pendingCount} Fotos warten auf Freigabe</span>
               <div className="flex-1" />
-              <button onClick={selectAll}
+              <button onClick={() => { enterSelectMode(); selectAll(); }}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-blue-200 text-blue-600 text-xs font-medium hover:bg-blue-50">
                 <CheckCheck className="w-3 h-3" /> Alle auswählen
               </button>
@@ -585,9 +692,25 @@ export default function GalleryTabV2({
             {displayedPhotos.map((photo, i) => (
               <button
                 key={photo.id || i}
-                onClick={() => selectedIds.size > 0 ? toggleSelect(photo.id) : openLightbox(photo)}
-                onContextMenu={(e) => { e.preventDefault(); toggleSelect(photo.id); }}
-                className={`aspect-square relative bg-border group cursor-pointer overflow-hidden ${
+                onClick={() => (selectMode || selectedIds.size > 0) ? toggleSelect(photo.id) : openLightbox(photo)}
+                onContextMenu={(e) => { e.preventDefault(); if (!selectMode) enterSelectMode(); toggleSelect(photo.id); }}
+                onTouchStart={(e) => {
+                  longPressTimer.current = setTimeout(() => {
+                    longPressTimer.current = null;
+                    if (!selectMode) enterSelectMode();
+                    toggleSelect(photo.id);
+                    // Haptic feedback if available
+                    if (navigator.vibrate) navigator.vibrate(30);
+                  }, 400);
+                }}
+                onTouchEnd={(e) => {
+                  if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null; }
+                }}
+                onTouchMove={() => {
+                  if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null; }
+                }}
+                style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', touchAction: 'manipulation' } as React.CSSProperties}
+                className={`aspect-square relative bg-border group cursor-pointer overflow-hidden select-none ${
                   selectedIds.has(photo.id) ? 'ring-3 ring-blue-500 ring-inset' : ''
                 }`}
               >
@@ -598,7 +721,7 @@ export default function GalleryTabV2({
                   loading="lazy"
                 />
                 {/* Selection checkbox */}
-                {(selectedIds.size > 0 || filter === 'pending') && (
+                {(selectMode || selectedIds.size > 0 || filter === 'pending') && (
                   <div className="absolute top-1 left-1 z-10" onClick={(e) => { e.stopPropagation(); toggleSelect(photo.id); }}>
                     <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
                       selectedIds.has(photo.id) ? 'bg-blue-500 border-blue-500 text-white' : 'bg-black/30 border-white/70'

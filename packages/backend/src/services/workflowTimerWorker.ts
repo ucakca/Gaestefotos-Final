@@ -135,7 +135,7 @@ async function checkTimersOnce(): Promise<void> {
         })),
       });
 
-      // Log each triggered timer as a QA event
+      // Execute workflow steps for each triggered timer
       for (const timer of pendingTimers) {
         await prisma.qaLogEvent.create({
           data: {
@@ -150,6 +150,21 @@ async function checkTimersOnce(): Promise<void> {
             } as any,
           },
         });
+
+        // Execute downstream steps
+        try {
+          const { executeWorkflow } = await import('./workflowExecutor');
+          await executeWorkflow(timer.workflowId, 'TRIGGER_TIMER', {
+            eventId: timer.eventId,
+            triggeredBy: 'timer',
+          });
+        } catch (execError: any) {
+          logger.error(`${LOG_PREFIX} Failed to execute workflow for timer`, {
+            workflowId: timer.workflowId,
+            eventId: timer.eventId,
+            error: execError?.message,
+          });
+        }
       }
     }
   } catch (error: any) {

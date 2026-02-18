@@ -89,10 +89,8 @@ export default function ForgotPasswordPage() {
           <p className="text-muted-foreground text-sm">
             Kein Konto?{' '}
             <a
-              href="https://gästefotos.com/registrieren"
+              href="/register"
               className="text-primary hover:text-primary/80 font-medium"
-              target="_blank"
-              rel="noopener noreferrer"
             >
               Jetzt registrieren
             </a>

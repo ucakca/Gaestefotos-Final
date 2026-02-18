@@ -13,7 +13,6 @@ import {
   Camera,
   Users,
   Clock,
-  BarChart3,
   Settings,
   Share2,
   Check,
@@ -27,7 +26,6 @@ import {
   Eye,
   Play,
   QrCode,
-  Link as LinkIcon,
   Calendar,
   MapPin,
   CheckCircle2,
@@ -47,7 +45,6 @@ import {
   Zap,
   Plus,
   Upload,
-  Wifi,
   LayoutGrid,
   Gamepad2,
   Activity,
@@ -57,7 +54,7 @@ import { useToastStore } from '@/store/toastStore';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { useRealtimePhotos } from '@/hooks/useRealtimePhotos';
 import { AIFloatingButton } from '@/components/ai-chat';
-import { CoHostsSection } from '@/components/dashboard/CoHostsSection';
+
 import SetupTabV2 from '@/components/dashboard/SetupTabV2';
 import GalleryTabV2 from '@/components/dashboard/GalleryTabV2';
 import GuestbookTabV2 from '@/components/dashboard/GuestbookTabV2';
@@ -376,17 +373,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
   const totalSteps = onboardingSteps.length;
   const progressPercent = Math.round((completedSteps / totalSteps) * 100);
 
-  // Format storage
-  const formatBytes = (bytes: number): string => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  };
-
   const storageUsed = usage?.used || 0;
-  const storageDisplay = formatBytes(storageUsed);
 
   if (loading) {
     return <FullPageLoader label="Lade Dashboard..." />;
@@ -485,8 +472,11 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
                 guestbook: guestbookCount,
                 challenges: challengesCompleted,
                 pending: photoStats.pending,
-                visitors: (event as any)?.visitCount || 0,
+                guests: guestCount,
               }}
+              storageUsed={storageUsed}
+              storageLimit={usage?.limit || 0}
+              recentPhotos={photos.filter((p: any) => p.status === 'APPROVED').slice(0, 6)}
               onStatClick={(filter) => {
                 setGalleryFilter(filter);
                 setActiveTab('gallery');
@@ -508,6 +498,10 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
               eventId={eventId || ''}
               onGoToSetup={() => {
                 setActiveTab('setup');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onGoToGuestbook={() => {
+                setActiveTab('guestbook');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               onOpenSheet={(sheetId) => {
@@ -794,6 +788,9 @@ function OverviewTab({
   eventDate,
   designConfig,
   stats,
+  storageUsed,
+  storageLimit,
+  recentPhotos,
   onStatClick,
   onboardingSteps,
   completedSteps,
@@ -811,11 +808,15 @@ function OverviewTab({
   eventId,
   onGoToSetup,
   onOpenSheet,
+  onGoToGuestbook,
 }: {
   event: EventType;
   eventDate: string | null;
   designConfig: any;
-  stats: { photos: number; videos: number; guestbook: number; challenges: number; pending: number; visitors?: number };
+  stats: { photos: number; videos: number; guestbook: number; challenges: number; pending: number; guests: number };
+  storageUsed: number;
+  storageLimit: number;
+  recentPhotos: any[];
   onStatClick: (filter: GalleryFilter) => void;
   onboardingSteps: OnboardingStep[];
   completedSteps: number;
@@ -833,6 +834,7 @@ function OverviewTab({
   eventId: string;
   onGoToSetup: () => void;
   onOpenSheet?: (sheetId: 'title' | 'date-location') => void;
+  onGoToGuestbook?: () => void;
 }) {
   const [showStatusInfo, setShowStatusInfo] = useState(false);
   const [showAllSteps, setShowAllSteps] = useState(completedSteps < totalSteps); // Open until complete
@@ -921,11 +923,49 @@ function OverviewTab({
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
         <StatCard icon={Camera} value={stats.photos} label="FOTOS" color="blue" onClick={() => onStatClick('photos')} />
         <StatCard icon={Video} value={stats.videos} label="VIDEOS" color="purple" onClick={() => onStatClick('videos')} />
-        <StatCard icon={BookOpen} value={stats.guestbook} label="GÄSTEBUCH" color="green" />
-        <StatCard icon={Eye} value={stats.visitors || 0} label="BESUCHER" color="cyan" />
+        <StatCard icon={Users} value={stats.guests} label="GÄSTE" color="cyan" onClick={() => onStatClick('guests')} />
+        <StatCard icon={BookOpen} value={stats.guestbook} label="GÄSTEBUCH" color="green" onClick={onGoToGuestbook} />
         <StatCard icon={Trophy} value={stats.challenges} label="FOTO-SPIELE" color="purple" onClick={() => onStatClick('challenges')} />
         <StatCard icon={Clock} value={stats.pending} label="AUSSTEHEND" color="yellow" highlight={stats.pending > 0} onClick={() => onStatClick('pending')} />
       </div>
+
+      {/* Recent Uploads Preview */}
+      {recentPhotos.length > 0 && (
+        <button
+          onClick={() => onStatClick('all')}
+          className="w-full rounded-2xl border border-border bg-card shadow-sm overflow-hidden hover:shadow-md transition-all text-left"
+        >
+          <div className="p-3 border-b border-border flex items-center justify-between">
+            <span className="text-sm font-medium text-foreground">Letzte Uploads</span>
+            <span className="text-xs text-blue-600 font-medium flex items-center gap-1">Alle anzeigen <ChevronRight className="w-3 h-3" /></span>
+          </div>
+          <div className="grid grid-cols-6 gap-0.5 p-0.5">
+            {recentPhotos.map((p: any) => (
+              <div key={p.id} className="aspect-square bg-border overflow-hidden">
+                <img src={p.thumbnailUrl || p.url || '/placeholder.jpg'} alt="" className="w-full h-full object-cover" loading="lazy" />
+              </div>
+            ))}
+          </div>
+        </button>
+      )}
+
+      {/* Storage Usage */}
+      {storageLimit > 0 && (
+        <div className="rounded-2xl border border-border bg-card shadow-sm p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-foreground">Speicher</span>
+            <span className="text-xs text-muted-foreground">
+              {formatBytesCompact(storageUsed)} / {formatBytesCompact(storageLimit)}
+            </span>
+          </div>
+          <div className="h-2 bg-border rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${storageUsed / storageLimit > 0.9 ? 'bg-red-500' : storageUsed / storageLimit > 0.7 ? 'bg-amber-500' : 'bg-blue-500'}`}
+              style={{ width: `${Math.min(100, (storageUsed / storageLimit) * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Theme Preview */}
       {(event as any)?.theme && (
@@ -1305,6 +1345,14 @@ function OverviewTab({
 // SetupTab removed — now using SetupTabV2 component
 
 // ============ HELPER COMPONENTS ============
+
+function formatBytesCompact(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
 
 function StatCard({ icon: Icon, value, label, color, highlight, onClick }: {
   icon: any;

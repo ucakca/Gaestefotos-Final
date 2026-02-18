@@ -137,7 +137,7 @@ async function callStabilityImg2Img(
   formData.append('image_strength', String(1 - strength));
   formData.append('cfg_scale', '7');
   formData.append('samples', '1');
-  formData.append('steps', '30');
+  formData.append('steps', '20');
 
   const response = await fetch(url, {
     method: 'POST',
@@ -197,7 +197,7 @@ async function callReplicateImg2Img(
         image: dataUri,
         prompt,
         strength,
-        num_inference_steps: 30,
+        num_inference_steps: 20,
       },
     }),
   });
@@ -216,7 +216,7 @@ async function callReplicateImg2Img(
     if (result.status === 'failed' || result.status === 'canceled') {
       throw new Error(`Replicate prediction ${result.status}: ${result.error || 'unknown'}`);
     }
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 1000));
     const pollRes = await fetch(result.urls.get, {
       headers: { 'Authorization': `Token ${provider.apiKey}` },
     });

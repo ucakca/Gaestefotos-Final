@@ -58,14 +58,10 @@ export type FeaturesConfig = z.infer<typeof FeaturesConfigSchema>;
  * EventMember.permissions - Co-host permissions
  */
 export const MemberPermissionsSchema = z.object({
-  canManagePhotos: z.boolean().optional().default(true),
-  canManageGuests: z.boolean().optional().default(false),
-  canManageSettings: z.boolean().optional().default(false),
-  canManageChallenges: z.boolean().optional().default(true),
-  canManageCategories: z.boolean().optional().default(true),
-  canDownloadAll: z.boolean().optional().default(true),
-  canDeletePhotos: z.boolean().optional().default(false),
-  canInviteGuests: z.boolean().optional().default(false),
+  canUpload: z.boolean().optional().default(true),
+  canModerate: z.boolean().optional().default(false),
+  canEditEvent: z.boolean().optional().default(false),
+  canDownload: z.boolean().optional().default(true),
 }).passthrough();
 
 export type MemberPermissions = z.infer<typeof MemberPermissionsSchema>;

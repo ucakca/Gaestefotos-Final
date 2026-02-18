@@ -13,6 +13,7 @@ import { domainToASCII } from 'node:url';
 
 import authRoutes from './routes/auth';
 import eventRoutes from './routes/events';
+import eventDesignRoutes from './routes/eventDesign';
 import eventQrRoutes from './routes/eventQr';
 import guestRoutes from './routes/guests';
 import photoRoutes from './routes/photos';
@@ -563,6 +564,7 @@ app.use('/api', maintenanceRoutes);
  app.use('/api/theme', themeRoutes);
  app.use('/api/face-search-consent', faceSearchConsentRoutes);
  app.use('/api/events', eventRoutes);
+app.use('/api/events', eventDesignRoutes); // Design routes: cover, profile, logo, design-image, download-zip
 app.use('/api/events', eventQrRoutes); // QR code routes: /api/events/:id/qr/*
 app.use('/api/events', guestRoutes);
 app.use('/api/events', photoRoutes); // Photo routes: /api/events/:eventId/photos/*
