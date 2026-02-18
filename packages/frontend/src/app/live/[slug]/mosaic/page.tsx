@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft, X } from 'lucide-react';
 import api from '@/lib/api';
 import { wsManager } from '@/lib/websocket';
 import MosaicGrid, { MosaicTileData } from '@/components/mosaic/MosaicGrid';
@@ -31,6 +32,7 @@ interface MosaicStats {
 
 export default function LiveMosaicPage() {
   const params = useParams();
+  const router = useRouter();
   const slug = params.slug as string;
 
   const [wall, setWall] = useState<MosaicWallDisplay | null>(null);
@@ -216,8 +218,15 @@ export default function LiveMosaicPage() {
           isDemo={(wall as any).isDemo}
         />
 
-        {/* Event title overlay - top left */}
-        <div className="absolute top-4 left-4 z-50">
+        {/* Back button + Event title overlay - top left */}
+        <div className="absolute top-4 left-4 z-50 flex items-center gap-3">
+          <button
+            onClick={() => router.push(`/e3/${slug}`)}
+            className="p-2 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-sm transition-colors"
+            aria-label="Zurück zur Eventseite"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
           <h1 className="text-white/80 text-xl font-bold drop-shadow-lg">{eventTitle}</h1>
         </div>
 

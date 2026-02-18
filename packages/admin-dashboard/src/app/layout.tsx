@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ['latin'], preload: false });
 export const metadata: Metadata = {
   title: 'Admin Dashboard - Gästefotos',
   description: 'Admin Dashboard für System-Überwachung und Verwaltung',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

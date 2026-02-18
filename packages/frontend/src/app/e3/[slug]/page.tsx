@@ -368,7 +368,7 @@ export default function PublicEventPageV2() {
 
           {/* Mosaic Print Upload - if print terminal mode is active */}
           {mosaicPrintEnabled && event?.id && (
-            <div className="px-4 mb-3">
+            <div className="px-4 mt-4 mb-4">
               <MosaicPrintUpload eventId={event.id} eventSlug={slug} />
             </div>
           )}
@@ -378,8 +378,8 @@ export default function PublicEventPageV2() {
             categories={categories.map(cat => ({
               id: cat.id,
               name: cat.name,
-              icon: cat.iconKey || undefined,
-              photoCount: photos.filter(p => p.categoryId === cat.id).length,
+              icon: (cat as any).iconKey || undefined,
+              photoCount: (cat as any)._count?.photos ?? photos.filter(p => p.categoryId === cat.id).length,
             }))}
             selectedAlbum={selectedAlbum}
             onAlbumSelect={setSelectedAlbum}
@@ -402,7 +402,7 @@ export default function PublicEventPageV2() {
           {/* Face Search now handled by WorkflowFaceSearchModal below */}
 
           {/* V0 Photo Grid (Masonry) */}
-          <div className="px-4 pb-24">
+          <div className="px-4 pt-4 pb-24">
             {featuresConfig?.mysteryMode ? (
               <Container>
                 <EmptyState
@@ -491,6 +491,8 @@ export default function PublicEventPageV2() {
         challengeCount={challenges?.filter((c: any) => c?.isActive).length || 0}
         guestbookCount={guestbookEntries.length}
         showFotoSpass={featuresConfig?.enableFotoSpass !== false && featuresConfig?.challengesEnabled !== false}
+        showStyleTransfer={featuresConfig?.enableFotoSpass !== false && featuresConfig?.enableStyleTransfer !== false}
+        showAiGames={featuresConfig?.enableFotoSpass !== false && featuresConfig?.enableAiGames !== false}
         showFaceSearch={featuresConfig?.faceSearch !== false}
         hasMosaicWall={hasMosaicWall}
       />
@@ -515,7 +517,7 @@ export default function PublicEventPageV2() {
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={0.2}
               onDragEnd={(_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) setLiveSheetOpen(false); }}
-              className="fixed bottom-0 left-0 right-0 z-[61] bg-card rounded-t-3xl shadow-2xl"
+              className="fixed bottom-0 left-0 right-0 z-[61] bg-card text-card-foreground rounded-t-3xl shadow-2xl"
             >
               <div className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
                 <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
@@ -577,7 +579,7 @@ export default function PublicEventPageV2() {
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={0.2}
               onDragEnd={(_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) setFotospassOpen(false); }}
-              className="fixed bottom-0 left-0 right-0 z-[56] bg-card rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto"
+              className="fixed bottom-0 left-0 right-0 z-[56] bg-card text-card-foreground rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto"
             >
               <div className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
                 <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
@@ -653,6 +655,7 @@ export default function PublicEventPageV2() {
         open={quickUploadOpen}
         onClose={() => setQuickUploadOpen(false)}
         eventId={event?.id || ''}
+        categories={categories?.map((cat: any) => ({ id: cat.id, name: cat.name, icon: cat.iconKey })) || []}
         onComplete={() => reloadPhotos()}
       />
 

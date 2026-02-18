@@ -465,6 +465,7 @@ router.post(
       if (bodyData.categories) bodyData.categories = JSON.parse(bodyData.categories);
       if (bodyData.featuresConfig) bodyData.featuresConfig = JSON.parse(bodyData.featuresConfig);
       if (bodyData.designConfig) bodyData.designConfig = JSON.parse(bodyData.designConfig);
+      if (bodyData.schedule) bodyData.schedule = JSON.parse(bodyData.schedule);
 
       const data = bodyData as any; // Schema validation temporarily disabled
 
@@ -596,6 +597,7 @@ router.post(
           designConfig: finalDesignConfig,
           featuresConfig: finalFeaturesConfig,
           guestbookHostMessage: bodyData.guestbook?.message || null,
+          schedule: Array.isArray(data.schedule) ? data.schedule : [],
           ...(categoriesCreate.length > 0
             ? {
                 categories: {

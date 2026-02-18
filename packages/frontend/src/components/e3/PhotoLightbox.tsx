@@ -449,6 +449,9 @@ export default function PhotoLightbox({
                   alt={t('photoN', { n: String((selectedIndex ?? 0) + 1) })}
                   className="max-w-full max-h-full object-contain rounded-sm"
                   style={{ maxHeight: 'calc(100vh - 280px)' }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
                 />
                 
                 {/* Challenge Badge */}

@@ -39,6 +39,7 @@ import {
   Sparkles,
   ScrollText,
   HardDrive,
+  Bug,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -93,9 +94,9 @@ const navigation: NavGroup[] = [
     name: 'KI & Automation',
     icon: Brain,
     items: [
+      { name: 'Feature Registry', href: '/manage/ai-features', icon: Sparkles },
+      { name: 'Prompt Studio', href: '/manage/prompt-templates', icon: ScrollText },
       { name: 'AI Provider', href: '/manage/ai-providers', icon: Brain },
-      { name: 'AI Features', href: '/manage/ai-features', icon: Sparkles },
-      { name: 'Prompt Templates', href: '/manage/prompt-templates', icon: ScrollText },
       { name: 'AI Credits', href: '/manage/credits', icon: Zap },
       { name: 'Workflow Builder', href: '/manage/workflows', icon: Workflow },
     ],
@@ -116,6 +117,7 @@ const navigation: NavGroup[] = [
     items: [
       { name: 'Health', href: '/system/health', icon: Server },
       { name: 'Logs', href: '/system/logs', icon: FileText },
+      { name: 'Debug Mode', href: '/system/debug', icon: Bug },
       { name: 'AI Analyse', href: '/system/ai-analyse', icon: Bot },
       { name: 'AI Logs', href: '/system/ai-logs', icon: Sparkles },
       { name: 'Rate Limits', href: '/system/rate-limits', icon: Shield },

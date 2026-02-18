@@ -119,6 +119,7 @@ model Event {
   visitCount              Int                         @default(0)
   wifiName                String?
   wifiPassword            String?
+  schedule                Json?                       @default("[]")
   leads                   Lead[]
   mosaicWall              MosaicWall?
   partnerId               String?
@@ -1540,6 +1541,7 @@ model AiProvider {
   // Relations
   usageLogs       AiUsageLog[]
   featureMappings AiFeatureMapping[]
+  promptTemplates AiPromptTemplate[]
 
   @@index([type, isActive])
   @@index([slug])
@@ -2274,7 +2276,7 @@ enum VideoJobStatus {
 // Ermöglicht Admin-Verwaltung, Versionierung & Event-spezifische Overrides.
 
 model AiPromptTemplate {
-  id              String    @id @default(uuid())
+  id              String      @id @default(uuid())
   feature         String                            // z.B. "chat", "compliment_mirror", "album_suggest", "style_transfer:oil-painting"
   name            String                            // Anzeigename z.B. "Chat System-Prompt"
   description     String?                           // Beschreibung wofür der Prompt ist
@@ -2287,6 +2289,9 @@ model AiPromptTemplate {
   temperature     Float?
   maxTokens       Int?
   strength        Float?                            // Für Image-Gen (0.0-1.0)
+  // Provider Link (optional — welche AI soll diesen Prompt verarbeiten?)
+  providerId      String?                           // FK zu AiProvider (null = Feature-Mapping entscheidet)
+  model           String?                           // Spezifisches Modell (null = Provider-Default)
   // Versioning
   version         Int       @default(1)
   isActive        Boolean   @default(true)          // Aktive Version (nur 1 pro feature+scope)
@@ -2300,11 +2305,14 @@ model AiPromptTemplate {
   // Timestamps
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  // Relations
+  provider        AiProvider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
 
   @@unique([feature, version, eventId])
   @@index([feature, isActive])
   @@index([category])
   @@index([eventId])
+  @@index([providerId])
   @@map("ai_prompt_templates")
 }
 

@@ -41,6 +41,7 @@ export function useSetupProgress() {
           eventSubtype: state.eventSubtype,
           dateTime: state.dateTime,
           location: state.location,
+          schedule: state.schedule,
           currentStepId: state.currentStepId,
           currentPhase: state.currentPhase,
           completedSteps: state.completedSteps,

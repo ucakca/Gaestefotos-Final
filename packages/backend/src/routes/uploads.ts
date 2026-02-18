@@ -8,7 +8,7 @@ import prisma from '../config/database';
 import { storageService } from '../services/storage';
 import { imageProcessor } from '../services/imageProcessor';
 import { assertUploadWithinLimit } from '../services/packageLimits';
-import { hasEventAccess } from '../middleware/auth';
+// hasEventAccess not used here — TUS v2.x passes Web API Request, so we replicate the logic inline
 import { logger } from '../utils/logger';
 import { auditLog, AuditType } from '../services/auditLogger';
 import { extractCapturedAtFromImage } from '../services/uploadDatePolicy';
@@ -37,17 +37,41 @@ const tusCreateLimiter = rateLimit({
 });
 
 /**
+ * Parse cookies from a raw Cookie header string.
+ */
+function parseCookieHeader(cookieHeader: string | null): Record<string, string> {
+  if (!cookieHeader) return {};
+  return cookieHeader.split(';').reduce((acc: Record<string, string>, c) => {
+    const [k, ...v] = c.trim().split('=');
+    if (k) acc[k] = v.join('=');
+    return acc;
+  }, {});
+}
+
+/**
  * Validate TUS upload request: check eventId, event existence, and access.
  * Runs on POST (upload creation) via onIncomingRequest hook.
+ *
+ * NOTE: @tus/server v2.x passes a Web API `Request` object (not Node.js IncomingMessage).
+ * Headers must be accessed via req.headers.get(), not req.headers['...'].
  */
 async function validateTusRequest(req: Request): Promise<void> {
   // Only validate on POST (upload creation), not PATCH/HEAD (resume/status)
   if (req.method !== 'POST') return;
 
+  // @tus/server v2.x uses Web API Request — headers via .get()
+  const headers = req.headers as any;
+  const getHeader = (name: string): string | null => {
+    if (typeof headers.get === 'function') return headers.get(name);
+    // Fallback for Node.js IncomingMessage style
+    return headers[name.toLowerCase()] || null;
+  };
+
   // Extract eventId from Upload-Metadata header
   // Format: "eventId base64val,filename base64val,..."
-  const metadataHeader = req.headers['upload-metadata'] as string;
+  const metadataHeader = getHeader('upload-metadata');
   if (!metadataHeader) {
+    logger.warn('[TUS] Upload-Metadata header missing', { method: req.method, url: req.url });
     throw { status_code: 400, body: 'Upload-Metadata header mit eventId erforderlich' };
   }
 
@@ -81,12 +105,10 @@ async function validateTusRequest(req: Request): Promise<void> {
   let userRole: string | null = null;
 
   // Try auth token from cookie or Authorization header
-  const cookies = (req.headers.cookie || '').split(';').reduce((acc: Record<string, string>, c) => {
-    const [k, ...v] = c.trim().split('=');
-    if (k) acc[k] = v.join('=');
-    return acc;
-  }, {});
-  const authToken = cookies['auth_token'] || (req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7) : null);
+  const cookieHeader = getHeader('cookie');
+  const cookies = parseCookieHeader(cookieHeader);
+  const authorizationHeader = getHeader('authorization');
+  const authToken = cookies['auth_token'] || (authorizationHeader?.startsWith('Bearer ') ? authorizationHeader.slice(7) : null);
 
   if (authToken && jwtSecret) {
     try {
@@ -103,9 +125,18 @@ async function validateTusRequest(req: Request): Promise<void> {
     return;
   }
 
-  // Guest: must have event access cookie
-  if (hasEventAccess(req, eventId)) {
-    return;
+  // Guest: check event access cookie (replicate hasEventAccess logic for Web API Request)
+  const eventAccessCookieName = `event_access_${eventId}`;
+  const eventAccessToken = cookies[eventAccessCookieName];
+  if (eventAccessToken && jwtSecret) {
+    try {
+      const decoded = jwt.verify(eventAccessToken, jwtSecret) as any;
+      if (decoded?.type === 'event_access' && decoded?.eventId === eventId) {
+        return;
+      }
+    } catch {
+      // Invalid token
+    }
   }
 
   // Logged-in user who is event member
@@ -122,6 +153,7 @@ async function validateTusRequest(req: Request): Promise<void> {
 // Create Tus server instance
 const tusServer = new Server({
   path: '/api/uploads',
+  respectForwardedHeaders: true,
   datastore: new FileStore({
     directory: TUS_UPLOAD_DIR,
   }),
@@ -285,6 +317,15 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
           logger.warn('Failed to emit WebSocket event', { error: wsError.message });
         }
       } else {
+        // Determine photo status based on event moderation settings
+        const event = await prisma.event.findUnique({
+          where: { id: eventId },
+          select: { featuresConfig: true },
+        });
+        const featuresConfig = (event?.featuresConfig || {}) as any;
+        const moderationRequired = featuresConfig?.moderationRequired === true;
+        const photoStatus = moderationRequired ? 'PENDING' : 'APPROVED';
+
         // Standard TUS upload: create new photo record
         const photo = await prisma.photo.create({
           data: {
@@ -295,7 +336,7 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
             storagePathWebp,
             categoryId: resolvedCategoryId,
             url: '',
-            status: 'PENDING',
+            status: photoStatus,
             sizeBytes: uploadBytes,
             uploadedBy: uploadedBy || null,
           },

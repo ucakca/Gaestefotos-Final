@@ -7,6 +7,7 @@ import { locales, defaultLocale, type Locale } from '../../i18n/locales'
 import ToastProvider from '@/components/ToastProvider'
 import MaintenanceBanner from '@/components/MaintenanceBanner'
 import ThemeLoader from '@/components/ThemeLoader'
+import { DebugProvider } from '@/components/debug/DebugProvider'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { ServiceWorkerProvider } from '@/components/pwa/ServiceWorkerProvider'
 import AutoLocaleDetect from '@/components/AutoLocaleDetect'
@@ -95,11 +96,13 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <ServiceWorkerProvider>
-              <ThemeLoader />
-              <AutoLocaleDetect />
-              <MaintenanceBanner />
-              {children}
-              <ToastProvider />
+              <DebugProvider>
+                <ThemeLoader />
+                <AutoLocaleDetect />
+                <MaintenanceBanner />
+                {children}
+                <ToastProvider />
+              </DebugProvider>
             </ServiceWorkerProvider>
           </ThemeProvider>
         </I18nProvider>

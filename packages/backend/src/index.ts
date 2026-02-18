@@ -104,6 +104,7 @@ import landingPublicRoutes from './routes/landingPublic';
 import adminAiLogsRoutes from './routes/adminAiLogs';
 import eventThemesRoutes from './routes/themes';
 import imageCdnRoutes from './routes/imageCdn';
+import debugRoutes from './routes/debug';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter, smsLimiter, paymentLimiter, leadLimiter, aiFeatureLimiter, pushSubscribeLimiter, analyticsLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -385,8 +386,17 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['Authorization'],
+  allowedHeaders: [
+    'Content-Type', 'Authorization', 'X-Requested-With',
+    // TUS resumable upload protocol headers
+    'Tus-Resumable', 'Upload-Length', 'Upload-Offset',
+    'Upload-Metadata', 'Upload-Concat', 'Upload-Defer-Length',
+  ],
+  exposedHeaders: [
+    'Authorization',
+    // TUS response headers the client needs to read
+    'Tus-Resumable', 'Upload-Offset', 'Upload-Length', 'Location',
+  ],
 }));
 
 app.use((req, res, next) => {
@@ -648,6 +658,7 @@ app.use('/api/assets', assetsRoutes);
 app.use('/api/booth-templates', boothTemplatesRoutes);
 app.use('/api/graffiti', graffitiRoutes);
 app.use('/api/workflows', workflowsRoutes);
+app.use('/api/debug', debugRoutes); // Debug mode: /api/debug/*
 app.use('/api', downloadsRoutes); // Bulk download ZIP: /api/events/:eventId/download/zip
 app.use('/api', paymentLimiter, paymentsRoutes); // Payment per Session: /api/events/:eventId/payment-sessions
 app.use('/api', spinnerRoutes); // 360° Spinner: /api/events/:eventId/spinner

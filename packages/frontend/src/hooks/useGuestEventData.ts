@@ -157,6 +157,9 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
       const moderationRequired = featuresConfig?.moderationRequired === true;
       const params: any = { limit: photosPerPage, skip };
       params.status = moderationRequired ? 'APPROVED' : 'all';
+      if (selectedAlbum) {
+        params.categoryId = selectedAlbum;
+      }
 
       const { data } = await api.get(`/events/${eventId}/photos`, { params });
       const nextPhotos = ((data.photos || []) as Photo[]).filter((p) => !((p as any)?.isStoryOnly === true));

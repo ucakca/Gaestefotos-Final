@@ -219,7 +219,7 @@ export default function GuestbookTab({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card border border-border rounded-2xl mb-8 shadow-sm overflow-hidden"
+          className="bg-card text-card-foreground border border-border rounded-2xl mb-8 shadow-sm overflow-hidden"
         >
           <WorkflowRunner
             definition={workflowDef}
@@ -234,7 +234,7 @@ export default function GuestbookTab({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card border border-border rounded-2xl p-6 mb-8 shadow-sm"
+        className="bg-card text-card-foreground border border-border rounded-2xl p-6 mb-8 shadow-sm"
       >
         <form onSubmit={rhfHandleSubmit(onClassicSubmit)} className="space-y-4">
           <FormInput
@@ -358,16 +358,16 @@ export default function GuestbookTab({
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="bg-card rounded-2xl p-6 shadow-sm"
+                className="bg-card text-card-foreground rounded-2xl p-6 shadow-sm"
                 style={isThemed ? { borderWidth: 1, borderStyle: 'solid', borderColor: `${colors.primary}20` } : { border: '1px solid var(--border)' }}
               >
                 {/* Author */}
                 <div className="flex items-center gap-3 mb-3">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center"
-                    style={isThemed ? { background: `linear-gradient(135deg, ${colors.primary}, ${colors.accent})` } : undefined}
-                  >{!isThemed && <div className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-500 to-pink-500" />}
-                    <User className="w-5 h-5 text-white" />
+                    className="relative w-10 h-10 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+                    style={isThemed ? { background: `linear-gradient(135deg, ${colors.primary}, ${colors.accent})` } : { background: 'linear-gradient(135deg, rgb(168, 85, 247), rgb(236, 72, 153))' }}
+                  >
+                    <User className="w-5 h-5 text-white relative z-10" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground">{entry.authorName}</p>

@@ -140,9 +140,14 @@ const uploadSinglePhoto = (req: AuthRequest, res: Response, next: any) => {
 router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
-    const { status, limit, skip } = req.query;
+    const { status, limit, skip, categoryId } = req.query;
 
-    const where: any = { eventId, isStoryOnly: false };
+    const where: any = { eventId, isStoryOnly: false, deletedAt: null };
+
+    // Filter by category if provided
+    if (typeof categoryId === 'string' && categoryId.trim()) {
+      where.categoryId = categoryId.trim();
+    }
 
     const statusValue = Array.isArray(status) ? status[0] : status;
     if (typeof statusValue === 'string') {
@@ -153,6 +158,10 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
           where.status = normalized;
         }
       }
+    }
+    // Safety net: never return DELETED photos unless explicitly requested
+    if (!where.status) {
+      where.status = { not: 'DELETED' };
     }
 
     const limitNum = limit ? Math.min(parseInt(limit as string, 10) || 100, 200) : undefined;
@@ -234,6 +243,10 @@ router.get('/:eventId/media', async (req: AuthRequest, res: Response) => {
           statusFilter.status = normalized;
         }
       }
+    }
+    // Safety net: never return DELETED photos unless explicitly requested
+    if (!statusFilter.status) {
+      statusFilter.status = { not: 'DELETED' };
     }
 
     const limitNum = limit ? Math.min(parseInt(limit as string, 10) || 100, 500) : undefined;

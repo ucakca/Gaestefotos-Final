@@ -105,12 +105,12 @@ export default function RegisterPage() {
                 type="button"
                 variant="ghost"
                 size="sm"
+                icon={showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-2 top-8"
                 aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </IconButton>
+              />
             </div>
 
             <FormInput

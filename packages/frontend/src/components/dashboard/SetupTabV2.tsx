@@ -418,7 +418,11 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
                   { key: 'moderationRequired', label: 'Moderation erforderlich' },
                   { key: 'mysteryMode', label: 'Mystery Mode (Fotos erst später sichtbar)' },
                   { key: 'showGuestlist', label: 'Gästeliste anzeigen' },
-                  { key: 'enableFotoSpass', label: 'Foto-Spaß (Spiele & Challenges für Gäste)' },
+                  { key: 'enableFotoSpass', label: 'Foto-Spaß (Master-Toggle für alle KI-Features)' },
+                  { key: 'enableStyleTransfer', label: '↳ KI Foto-Stile (Ölgemälde, Cartoon, etc.)' },
+                  { key: 'enableAiGames', label: '↳ KI Foto-Spiele (Roast, Fortune Teller, etc.)' },
+                  { key: 'enableAiEffects', label: '↳ KI Effekte (Oldify, Face Switch, etc.)' },
+                  { key: 'enableCaptions', label: '↳ KI Captions (Instagram-Texte generieren)' },
                   { key: 'faceSearch', label: 'Gesichtserkennung (Finde mein Foto)' },
                 ].map(({ key, label }) => (
                   <label key={key} className="flex items-center justify-between py-2">

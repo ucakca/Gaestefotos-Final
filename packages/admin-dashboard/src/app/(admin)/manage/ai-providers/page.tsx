@@ -244,7 +244,7 @@ export default function AiProvidersPage() {
   const [mappings, setMappings] = useState<AiFeatureMapping[]>([]);
   const [stats, setStats] = useState<UsageStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'providers' | 'features' | 'usage'>('providers');
+  const [activeTab, setActiveTab] = useState<'providers' | 'usage'>('providers');
   const [editProvider, setEditProvider] = useState<Partial<AiProvider> & { apiKey?: string } | null>(null);
   const [showApiKey, setShowApiKey] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -556,7 +556,6 @@ export default function AiProvidersPage() {
       <div className="flex gap-1 mb-6 border-b border-app-border">
         {([
           { key: 'providers', label: 'Provider', icon: Plug },
-          { key: 'features', label: 'Feature-Zuordnung', icon: Zap },
           { key: 'usage', label: 'Nutzung & Kosten', icon: BarChart3 },
         ] as const).map(tab => (
           <button
@@ -571,6 +570,13 @@ export default function AiProvidersPage() {
             {tab.label}
           </button>
         ))}
+        <a
+          href="/manage/ai-features"
+          className="flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 border-transparent text-app-muted hover:text-app-foreground transition"
+        >
+          <Sparkles className="w-4 h-4" />
+          Feature Registry →
+        </a>
       </div>
 
       {/* ═══════════ Tab: Provider List ═══════════ */}
@@ -787,111 +793,7 @@ export default function AiProvidersPage() {
         </div>
       )}
 
-      {/* ═══════════ Tab: Feature Mappings ═══════════ */}
-      {activeTab === 'features' && (
-        <div className="space-y-4">
-          {/* Feature Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-app-muted" />
-            <input
-              value={featureSearch}
-              onChange={e => setFeatureSearch(e.target.value)}
-              placeholder="Features durchsuchen… (Name, Key oder Typ)"
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-app-border rounded-xl bg-transparent text-app-fg placeholder:text-app-muted/60"
-            />
-          </div>
-
-          <ModernCard variant="default" className="!p-0 overflow-hidden">
-          <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[640px]">
-            <thead>
-              <tr className="border-b border-app-border bg-app-surface">
-                <th className="text-left px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Feature</th>
-                <th className="text-left px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Typ</th>
-                <th className="text-center px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Credits</th>
-                <th className="text-center px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Workflow</th>
-                <th className="text-left px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Provider</th>
-                <th className="text-center px-4 py-3 font-medium text-app-muted text-xs uppercase tracking-wider">Aktiviert</th>
-              </tr>
-            </thead>
-            <tbody>
-              {AI_FEATURES.filter(feat => {
-                if (!featureSearch) return true;
-                const q = featureSearch.toLowerCase();
-                return feat.label.toLowerCase().includes(q) || feat.key.toLowerCase().includes(q) || feat.type.toLowerCase().includes(q);
-              }).map(feat => {
-                const mapping = mappings.find(m => m.feature === feat.key);
-                const compatible = providers.filter(p => p.type === feat.type && p.isActive);
-                const typeInfo = getTypeInfo(feat.type);
-
-                return (
-                  <tr key={feat.key} className="border-b border-app-border/50 last:border-0 hover:bg-app-surface/50 transition-colors">
-                    <td className="px-4 py-3">
-                      <span className="font-medium text-app-fg">{feat.label}</span>
-                      <div className="text-xs text-app-muted font-mono mt-0.5">{feat.key}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant="info">{typeInfo.label}</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      {feat.credits > 0 ? (
-                        <Badge variant="warning"><Zap className="w-3 h-3" />{feat.credits}</Badge>
-                      ) : (
-                        <Badge variant="success">Gratis</Badge>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      {feat.workflow ? (
-                        <Badge variant="secondary">Workflow</Badge>
-                      ) : (
-                        <span className="text-xs text-app-muted">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      {compatible.length > 0 ? (
-                        <select
-                          value={mapping?.providerId || ''}
-                          onChange={(e) => {
-                            if (e.target.value) {
-                              handleUpdateMapping(feat.key, e.target.value, mapping?.isEnabled ?? true);
-                            }
-                          }}
-                          className="text-sm bg-transparent border border-app-border rounded-lg px-2.5 py-1.5 text-app-fg"
-                        >
-                          <option value="">— nicht zugeordnet —</option>
-                          {compatible.map(p => (
-                            <option key={p.id} value={p.id}>{p.name}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        <span className="text-xs text-app-muted italic">Kein kompatibler Provider</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      {mapping ? (
-                        <button
-                          onClick={() => handleUpdateMapping(feat.key, mapping.providerId, !mapping.isEnabled)}
-                          className={`w-10 h-5 rounded-full relative transition-colors ${
-                            mapping.isEnabled ? 'bg-app-success' : 'bg-app-border'
-                          }`}
-                        >
-                          <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-soft transition-transform ${
-                            mapping.isEnabled ? 'translate-x-5' : 'translate-x-0.5'
-                          }`} />
-                        </button>
-                      ) : (
-                        <span className="text-xs text-app-muted">—</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          </div>
-        </ModernCard>
-        </div>
-      )}
+      {/* Feature Mappings tab removed — now in /manage/ai-features (Feature Registry) */}
 
       {/* ═══════════ Tab: Usage & Costs ═══════════ */}
       {activeTab === 'usage' && stats && (

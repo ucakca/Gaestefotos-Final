@@ -50,8 +50,10 @@ export async function uploadWithTus(
 
     // Check for previous uploads to resume
     upload.findPreviousUploads().then((previousUploads) => {
-      if (previousUploads.length > 0) {
-        upload.resumeFromPreviousUpload(previousUploads[0]);
+      // Only resume uploads with https:// URLs (skip stale http:// from before SSL fix)
+      const safe = previousUploads.filter(u => !u.uploadUrl || !u.uploadUrl.startsWith('http://'));
+      if (safe.length > 0) {
+        upload.resumeFromPreviousUpload(safe[0]);
       }
       upload.start();
     });

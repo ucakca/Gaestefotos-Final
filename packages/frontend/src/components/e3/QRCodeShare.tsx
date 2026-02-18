@@ -55,7 +55,7 @@ export default function QRCodeShare({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-      <div className="relative w-full max-w-sm rounded-2xl bg-card p-6 shadow-2xl animate-in fade-in-0 zoom-in-95">
+      <div className="relative w-full max-w-sm rounded-2xl bg-card text-card-foreground p-6 shadow-2xl animate-in fade-in-0 zoom-in-95">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 rounded-full p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"

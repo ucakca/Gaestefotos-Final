@@ -79,7 +79,7 @@ export default function ChallengesTab({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.08 }}
-        className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+        className="bg-card text-card-foreground border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer"
         onClick={() => onChallengeClick?.(challenge)}
       >
         <div className="p-5">

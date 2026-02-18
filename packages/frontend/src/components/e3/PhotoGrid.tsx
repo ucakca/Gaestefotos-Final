@@ -81,6 +81,7 @@ export default function PhotoGrid({
   // Like state
   const [likedPhotos, setLikedPhotos] = useState<Set<string>>(new Set());
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
 
   // Sync external like updates from Lightbox
   useEffect(() => {
@@ -252,7 +253,7 @@ export default function PhotoGrid({
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div className="columns-2 sm:columns-2 lg:columns-3 xl:columns-4 gap-2 sm:gap-3 md:gap-6">
-        {photos.map((photo, index) => {
+        {photos.filter(p => !brokenImages.has(p.id)).map((photo, index) => {
           const isLiked = likedPhotos.has(photo.id);
           const likeCount = likeCounts[photo.id] || 0;
 
@@ -266,13 +267,16 @@ export default function PhotoGrid({
               onClick={() => handlePhotoTap(photo, index)}
             >
               {/* Photo Card */}
-              <div className="relative overflow-hidden rounded-2xl bg-card shadow-lg hover:shadow-2xl transition-all duration-300">
+              <div className="relative overflow-hidden rounded-2xl bg-card text-card-foreground shadow-lg hover:shadow-2xl transition-all duration-300">
                 {/* Image */}
                 <img
                   src={photo.url}
                   alt={t('photoN', { n: String(index + 1) })}
                   loading="lazy"
                   className="w-full h-auto object-cover"
+                  onError={() => {
+                    setBrokenImages(prev => new Set(prev).add(photo.id));
+                  }}
                 />
 
                 {/* Challenge Badge (always visible if photo is from challenge) */}

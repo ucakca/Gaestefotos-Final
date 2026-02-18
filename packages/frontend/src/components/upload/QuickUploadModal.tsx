@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Upload, ImagePlus, CheckCircle2, AlertCircle, RotateCcw,
-  Loader2, Trash2, ChevronDown, Camera,
+  Loader2, Trash2, ChevronDown, Camera, FolderOpen,
 } from 'lucide-react';
 import { useTranslations } from '@/components/I18nProvider';
 import * as tus from 'tus-js-client';
@@ -26,10 +26,17 @@ type FileState = {
 
 type ModalPhase = 'select' | 'uploading' | 'success';
 
+interface CategoryOption {
+  id: string;
+  name: string;
+  icon?: string;
+}
+
 interface QuickUploadModalProps {
   open: boolean;
   onClose: () => void;
   eventId: string;
+  categories?: CategoryOption[];
   onComplete?: (count: number) => void;
 }
 
@@ -50,11 +57,12 @@ function validateFile(file: File): string | null {
   return null;
 }
 
-export default function QuickUploadModal({ open, onClose, eventId, onComplete }: QuickUploadModalProps) {
+export default function QuickUploadModal({ open, onClose, eventId, categories, onComplete }: QuickUploadModalProps) {
   const [phase, setPhase] = useState<ModalPhase>('select');
   const [files, setFiles] = useState<FileState[]>([]);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [uploaderName, setUploaderName] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const activeUploadsRef = useRef<number>(0);
@@ -183,6 +191,7 @@ export default function QuickUploadModal({ open, onClose, eventId, onComplete }:
           filetype: fileState.file.type,
           eventId,
           uploadedBy: uploaderName || '',
+          ...(selectedCategory ? { categoryId: selectedCategory } : {}),
         },
         onProgress: (bytesUploaded, bytesTotal) => {
           const pct = Math.round((bytesUploaded / bytesTotal) * 100);
@@ -394,6 +403,26 @@ export default function QuickUploadModal({ open, onClose, eventId, onComplete }:
                       className="w-full px-3 py-2 bg-background border border-border rounded-xl text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
                   </div>
+
+                  {/* Category selector */}
+                  {categories && categories.length > 0 && (
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-1 block">Album</label>
+                      <div className="relative">
+                        <select
+                          value={selectedCategory}
+                          onChange={(e) => setSelectedCategory(e.target.value)}
+                          className="w-full px-3 py-2 bg-background border border-border rounded-xl text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none pr-8"
+                        >
+                          <option value="">Kein Album (Allgemein)</option>
+                          {categories.map(cat => (
+                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="w-4 h-4 text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                    </div>
+                  )}
 
                   {/* Drop zone / Select button */}
                   {files.length === 0 ? (

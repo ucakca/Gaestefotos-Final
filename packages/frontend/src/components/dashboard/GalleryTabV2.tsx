@@ -56,7 +56,7 @@ export default function GalleryTabV2({
   // Derived data
   const challengePhotos = useMemo(() => photos.filter(p => p.challengeId && p.status === 'APPROVED'), [photos]);
   const topPhotos = useMemo(() => photos.filter(p => p.isFavorite || p.likes > 0), [photos]);
-  const trashedPhotos = useMemo(() => photos.filter(p => p.status === 'REJECTED'), [photos]);
+  const trashedPhotos = useMemo(() => photos.filter(p => p.status === 'REJECTED' || p.status === 'DELETED'), [photos]);
   const favoriteCount = useMemo(() => photos.filter(p => p.isFavorite).length, [photos]);
 
   // Albums
@@ -145,7 +145,7 @@ export default function GalleryTabV2({
       if (filter === 'challenges') return p.challengeId && p.status === 'APPROVED';
       if (filter === 'top') return (p.isFavorite || p.likes > 0) && p.status === 'APPROVED';
       if (filter === 'pending') return p.status === 'PENDING';
-      if (filter === 'trash') return p.status === 'REJECTED';
+      if (filter === 'trash') return p.status === 'REJECTED' || p.status === 'DELETED';
       return true;
     });
 
@@ -737,7 +737,7 @@ export default function GalleryTabV2({
                   </div>
                 )}
                 {/* Rejected Overlay */}
-                {photo.status === 'REJECTED' && (
+                {(photo.status === 'REJECTED' || photo.status === 'DELETED') && (
                   <div className="absolute inset-0 bg-red-500/20" />
                 )}
                 {/* Video Overlay */}
@@ -832,7 +832,7 @@ export default function GalleryTabV2({
                     </button>
                   </>
                 )}
-                {lightboxPhoto.status === 'REJECTED' && (
+                {(lightboxPhoto.status === 'REJECTED' || lightboxPhoto.status === 'DELETED') && (
                   <button onClick={() => restorePhoto(lightboxPhoto.id)}
                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-500 text-white text-xs font-medium hover:bg-blue-600">
                     <RotateCw className="w-3.5 h-3.5" /> Wiederherstellen
@@ -890,10 +890,10 @@ export default function GalleryTabV2({
               </span>
               <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                 lightboxPhoto.status === 'APPROVED' ? 'bg-emerald-500/20 text-emerald-300' :
-                lightboxPhoto.status === 'REJECTED' ? 'bg-red-500/20 text-red-300' :
+                (lightboxPhoto.status === 'REJECTED' || lightboxPhoto.status === 'DELETED') ? 'bg-red-500/20 text-red-300' :
                 'bg-orange-500/20 text-orange-300'
               }`}>
-                {lightboxPhoto.status === 'APPROVED' ? 'Freigegeben' : lightboxPhoto.status === 'REJECTED' ? 'Abgelehnt' : 'Ausstehend'}
+                {lightboxPhoto.status === 'APPROVED' ? 'Freigegeben' : lightboxPhoto.status === 'REJECTED' ? 'Abgelehnt' : lightboxPhoto.status === 'DELETED' ? 'Gelöscht' : 'Ausstehend'}
               </span>
               {lightboxPhoto.likes > 0 && (
                 <span className="text-yellow-400 text-xs flex items-center gap-1"><Star className="w-3 h-3 fill-yellow-400" /> {lightboxPhoto.likes}</span>

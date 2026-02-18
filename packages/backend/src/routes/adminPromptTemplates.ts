@@ -44,6 +44,8 @@ const upsertSchema = z.object({
   temperature: z.number().min(0).max(2).optional().nullable(),
   maxTokens: z.number().int().positive().optional().nullable(),
   strength: z.number().min(0).max(1).optional().nullable(),
+  providerId: z.string().uuid().optional().nullable(),
+  model: z.string().max(100).optional().nullable(),
   eventId: z.string().uuid().optional().nullable(),
   variables: z.any().optional().nullable(),
   tags: z.any().optional().nullable(),
@@ -145,6 +147,8 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       temperature: parsed.temperature ?? undefined,
       maxTokens: parsed.maxTokens ?? undefined,
       strength: parsed.strength ?? undefined,
+      providerId: parsed.providerId ?? undefined,
+      model: parsed.model ?? undefined,
       eventId: parsed.eventId ?? undefined,
       variables: parsed.variables,
       tags: parsed.tags,
@@ -204,6 +208,112 @@ router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) =>
   } catch (error) {
     logger.error('Error deleting prompt template:', { error: (error as Error).message });
     res.status(500).json({ error: (error as Error).message || 'Fehler beim Löschen' });
+  }
+});
+
+/**
+ * POST /api/admin/prompt-templates/preview
+ * Live preview: send a prompt to an AI provider and return the response
+ */
+router.post('/preview', authMiddleware, async (req: AuthRequest, res: Response) => {
+  if (!(await requireAdmin(req, res))) return;
+
+  try {
+    const { systemPrompt, userPrompt, providerId, model, temperature, maxTokens } = req.body;
+
+    if (!systemPrompt && !userPrompt) {
+      return res.status(400).json({ error: 'systemPrompt oder userPrompt ist erforderlich' });
+    }
+
+    // Resolve provider: explicit → default LLM → any active LLM
+    let provider: any = null;
+    if (providerId) {
+      provider = await prisma.aiProvider.findUnique({ where: { id: providerId } });
+    }
+    if (!provider) {
+      provider = await prisma.aiProvider.findFirst({
+        where: { type: 'LLM', isActive: true, isDefault: true },
+      });
+    }
+    if (!provider) {
+      provider = await prisma.aiProvider.findFirst({
+        where: { type: 'LLM', isActive: true },
+      });
+    }
+    if (!provider) {
+      return res.status(400).json({ error: 'Kein aktiver LLM-Provider gefunden' });
+    }
+
+    if (!provider.apiKeyEncrypted || !provider.apiKeyIv || !provider.apiKeyTag) {
+      return res.status(400).json({ error: `Provider "${provider.name}" hat keinen API-Key` });
+    }
+
+    const { decryptValue } = await import('../utils/encryption');
+    const apiKey = decryptValue({
+      encrypted: provider.apiKeyEncrypted,
+      iv: provider.apiKeyIv,
+      tag: provider.apiKeyTag,
+    });
+
+    const effectiveModel = model || provider.defaultModel || 'llama-3.1-70b-versatile';
+    const baseUrl = provider.baseUrl || 'https://api.groq.com/openai/v1';
+
+    const messages: Array<{ role: string; content: string }> = [];
+    if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
+    if (userPrompt) messages.push({ role: 'user', content: userPrompt });
+
+    const startTime = Date.now();
+    const axios = (await import('axios')).default;
+    const response = await axios.post(
+      `${baseUrl}/chat/completions`,
+      {
+        model: effectiveModel,
+        messages,
+        temperature: temperature ?? 0.7,
+        max_tokens: maxTokens ?? 300,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000,
+      },
+    );
+
+    const durationMs = Date.now() - startTime;
+    const choice = response.data?.choices?.[0];
+    const usage = response.data?.usage;
+
+    // Log usage (non-blocking)
+    prisma.aiUsageLog.create({
+      data: {
+        providerId: provider.id,
+        feature: 'admin_preview',
+        model: effectiveModel,
+        inputTokens: usage?.prompt_tokens,
+        outputTokens: usage?.completion_tokens,
+        totalTokens: usage?.total_tokens,
+        durationMs,
+        success: true,
+      },
+    }).catch(err => logger.error('Failed to log preview usage', { err }));
+
+    res.json({
+      response: choice?.message?.content || '',
+      model: effectiveModel,
+      provider: { id: provider.id, name: provider.name, slug: provider.slug },
+      usage: {
+        promptTokens: usage?.prompt_tokens || 0,
+        completionTokens: usage?.completion_tokens || 0,
+        totalTokens: usage?.total_tokens || 0,
+      },
+      durationMs,
+    });
+  } catch (error: any) {
+    const msg = error.response?.data?.error?.message || error.message || 'Unbekannter Fehler';
+    logger.error('Prompt preview error:', { error: msg });
+    res.status(500).json({ error: `Preview fehlgeschlagen: ${msg}` });
   }
 });
 

@@ -56,7 +56,7 @@ export default function PushNotificationBanner({ eventId, visitorId }: PushNotif
           transition={{ type: 'spring', damping: 20, stiffness: 300 }}
           className="fixed bottom-24 left-4 right-4 z-[60] max-w-sm mx-auto"
         >
-          <div className="bg-card border border-border rounded-2xl shadow-xl p-4">
+          <div className="bg-card text-card-foreground border border-border rounded-2xl shadow-xl p-4">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                 <Bell className="w-5 h-5 text-primary" />

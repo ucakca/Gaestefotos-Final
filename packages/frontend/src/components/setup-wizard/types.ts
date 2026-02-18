@@ -16,6 +16,13 @@ export interface SetupStep {
   icon?: string;
 }
 
+export interface ScheduleItem {
+  id: string;
+  time: string;
+  title: string;
+  location?: string;
+}
+
 export interface AlbumConfig {
   id: string;
   name: string;
@@ -57,6 +64,7 @@ export interface SetupState {
   title: string;
   dateTime: Date | null;
   location: string;
+  schedule: ScheduleItem[];
   
   // Phase 2: Design
   coverImage: File | null;
@@ -106,6 +114,7 @@ export const INITIAL_SETUP_STATE: SetupState = {
   title: '',
   dateTime: null,
   location: '',
+  schedule: [],
   
   coverImage: null,
   coverImagePreview: null,

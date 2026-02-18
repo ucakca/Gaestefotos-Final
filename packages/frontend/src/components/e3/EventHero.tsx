@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Event as EventType } from '@gaestefotos/shared';
-import { MapPin, Calendar, Users, Camera, Plus, Play, ImageIcon, X, Share2, Clock, Gift, Shirt, User, Video, Eye, Moon, Sun, Wifi } from "lucide-react";
+import { MapPin, Calendar, Users, Camera, Plus, Play, ImageIcon, X, Share2, Clock, Gift, Shirt, User, Video, Eye, Moon, Sun, Wifi, Sparkles } from "lucide-react";
 import { useTheme } from 'next-themes';
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
@@ -65,7 +65,7 @@ export default function EventHero({
   const [showCoverLightbox, setShowCoverLightbox] = useState(false);
   const [mounted, setMounted] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const t = useTranslations('hero');
   const locale = useLocale();
 
@@ -137,7 +137,7 @@ export default function EventHero({
         >
           <div className="bg-black/50 backdrop-blur-sm rounded-full px-3 py-2">
             <img
-              src="https://xn--gstefotos-v2a.com/wp-content/uploads/2025/11/logo-Kopie.webp"
+              src="/images/logo.webp"
               alt="Gästefotos.com"
               className="h-5 w-auto brightness-0 invert"
             />
@@ -183,16 +183,16 @@ export default function EventHero({
         )}
 
         {/* Dark Mode Toggle */}
-        {mounted && (
+        {mounted && resolvedTheme && (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setTheme(theme === 'dark' ? 'light' : 'dark');
+              setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
             }}
             className={`absolute top-4 z-10 rounded-full bg-black/40 p-2.5 text-white backdrop-blur-sm transition-colors hover:bg-black/60 ${hasWifi && onWifiClick ? 'right-28' : 'right-16'}`}
-            aria-label={theme === 'dark' ? t('lightMode') : t('darkMode')}
+            aria-label={resolvedTheme === 'dark' ? t('lightMode') : t('darkMode')}
           >
-            {theme === 'dark' ? (
+            {resolvedTheme === 'dark' ? (
               <Sun className="h-5 w-5" />
             ) : (
               <Moon className="h-5 w-5" />
@@ -266,7 +266,7 @@ export default function EventHero({
           </button>
 
           {showAvatarMenu && (
-            <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 z-[60] min-w-48 rounded-xl border bg-card p-1 shadow-xl animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
+            <div className="absolute left-1/2 top-full mt-2 -translate-x-1/2 z-[60] min-w-48 rounded-xl border bg-card text-card-foreground p-1 shadow-xl animate-in fade-in-0 zoom-in-95 slide-in-from-top-2">
               {hasStories && (
                 <button
                   onClick={() => {
@@ -327,7 +327,7 @@ export default function EventHero({
         </h2>
       </div>
 
-      <div className="relative z-10 mx-4 mt-4 rounded-2xl border bg-card shadow-lg overflow-hidden">
+      <div className="relative z-10 mx-4 mt-4 mb-4 rounded-2xl border bg-card text-card-foreground shadow-lg overflow-hidden">
         <div className="px-4 pt-4 pb-3">
           <div className="flex items-start justify-between">
             <h1 className="text-2xl font-bold tracking-tight text-primary">
@@ -381,6 +381,7 @@ export default function EventHero({
           <AccordionItem value="details" className="border-0">
             <AccordionTrigger className="px-4 py-3 border-t hover:no-underline text-sm font-medium text-muted-foreground">
               <span className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4" />
                 {t('showDetails')}
               </span>
             </AccordionTrigger>

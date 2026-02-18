@@ -51,10 +51,10 @@ function WifiCard({ ssid, password }: { ssid: string; password?: string }) {
   };
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+    <div className="bg-card text-card-foreground border border-border rounded-2xl p-5 shadow-sm">
       <div className="flex items-center gap-2 mb-3">
         <Wifi className="w-5 h-5 text-destructive" />
-        <h3 className="text-lg font-bold text-foreground">{t('wifi')}</h3>
+        <h3 className="text-lg font-bold">{t('wifi')}</h3>
       </div>
       
       <p className="text-muted-foreground text-sm mb-4">
@@ -142,7 +142,7 @@ export default function InfoTab({
           onClick={() => setActiveTab('event')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-full text-sm font-medium transition-all ${
             activeTab === 'event'
-              ? 'bg-card text-foreground shadow-sm'
+              ? 'bg-card text-card-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground/80'
           }`}
         >
@@ -153,7 +153,7 @@ export default function InfoTab({
           onClick={() => setActiveTab('betreiber')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-full text-sm font-medium transition-all ${
             activeTab === 'betreiber'
-              ? 'bg-card text-foreground shadow-sm'
+              ? 'bg-card text-card-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground/80'
           }`}
         >
@@ -173,7 +173,7 @@ export default function InfoTab({
             className="space-y-4"
           >
             {/* Event Card */}
-            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+            <div className="bg-card text-card-foreground border border-border rounded-2xl p-5 shadow-sm">
               {/* Title with Heart */}
               <div className="flex items-center gap-2 mb-1">
                 <Heart className="w-5 h-5 text-destructive fill-red-500" />
@@ -232,10 +232,10 @@ export default function InfoTab({
 
             {/* Tagesablauf Card */}
             {schedule && schedule.length > 0 && (
-              <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+              <div className="bg-card text-card-foreground border border-border rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
-                  <Clock className="w-5 h-5 text-foreground/80" />
-                  <h3 className="text-lg font-bold text-foreground">{t('schedule')}</h3>
+                  <Clock className="w-5 h-5" />
+                  <h3 className="text-lg font-bold">{t('schedule')}</h3>
                 </div>
 
                 <div className="relative">
@@ -273,8 +273,8 @@ export default function InfoTab({
 
             {/* Kontakt Card */}
             {(designConfig.contactPhone || designConfig.contactEmail) && (
-              <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-                <h3 className="font-bold text-foreground mb-2">{t('contact')}</h3>
+              <div className="bg-card text-card-foreground border border-border rounded-2xl p-5 shadow-sm">
+                <h3 className="font-bold mb-2">{t('contact')}</h3>
                 <p className="text-muted-foreground text-sm mb-4">
                   {t('contactHint')}
                 </p>
@@ -317,7 +317,7 @@ export default function InfoTab({
             className="space-y-4"
           >
             {/* App Info Card */}
-            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+            <div className="bg-card text-card-foreground border border-border rounded-2xl p-5 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-orange-400 rounded-xl flex items-center justify-center">
                   <span className="text-white text-xl">📸</span>
@@ -344,8 +344,8 @@ export default function InfoTab({
             </div>
 
             {/* Support Card */}
-            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-              <h3 className="font-bold text-foreground mb-3">{t('support')}</h3>
+            <div className="bg-card text-card-foreground border border-border rounded-2xl p-5 shadow-sm">
+              <h3 className="font-bold mb-3">{t('support')}</h3>
               <p className="text-muted-foreground text-sm mb-4">
                 {t('supportHint')}
               </p>
@@ -380,8 +380,8 @@ export default function InfoTab({
             </div>
 
             {/* Legal Links Card */}
-            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-              <h3 className="font-bold text-foreground mb-3">{t('legal')}</h3>
+            <div className="bg-card text-card-foreground border border-border rounded-2xl p-5 shadow-sm">
+              <h3 className="font-bold mb-3">{t('legal')}</h3>
               <div className="space-y-2">
                 <a
                   href="/impressum"
@@ -419,8 +419,8 @@ export default function InfoTab({
             </div>
 
             {/* Language Selector */}
-            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-              <h3 className="font-bold text-foreground mb-3">🌐</h3>
+            <div className="bg-card text-card-foreground border border-border rounded-2xl p-5 shadow-sm">
+              <h3 className="font-bold mb-3">🌐</h3>
               <LanguageSelector showLabel={false} />
             </div>
 

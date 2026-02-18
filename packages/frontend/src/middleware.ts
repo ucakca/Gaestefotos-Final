@@ -56,11 +56,12 @@ export async function middleware(request: NextRequest) {
     return new NextResponse('Bad Request', { status: 400 });
   }
 
-  // Generate CSP nonce for this request
-  const nonce = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString('base64');
+  // CSP header — nonce-based 'strict-dynamic' removed because Next.js Turbopack
+  // does not inject the nonce into its inline bootstrap scripts, causing them to
+  // be blocked. Using 'unsafe-inline' for scripts is the pragmatic fallback.
   const cspHeader = [
     `default-src 'self'`,
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    `script-src 'self' 'unsafe-inline' 'unsafe-eval'`,
     `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
     `img-src 'self' data: https: http: blob:`,
     `font-src 'self' https://fonts.gstatic.com`,
@@ -71,10 +72,9 @@ export async function middleware(request: NextRequest) {
     `base-uri 'self'`,
   ].join('; ');
 
-  // Helper: attach CSP headers + nonce to any response
+  // Helper: attach CSP headers to any response
   function withCsp(response: NextResponse): NextResponse {
     response.headers.set('Content-Security-Policy', cspHeader);
-    response.headers.set('x-nonce', nonce);
     return response;
   }
 

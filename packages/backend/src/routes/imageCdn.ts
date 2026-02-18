@@ -159,9 +159,16 @@ router.get('/:photoId', optionalAuthMiddleware, async (req: AuthRequest, res: Re
 
     res.send(buffer);
   } catch (error: any) {
+    const msg = error.message || '';
+    // S3/SeaweedFS "NoSuchKey" or similar → return 404, not 500
+    const isNotFound = error.name === 'NoSuchKey' || msg.includes('does not exist') || msg.includes('NoSuchKey') || msg.includes('not found') || error.$metadata?.httpStatusCode === 404;
+    if (isNotFound) {
+      logger.warn('[ImageCDN] Storage key missing', { photoId: req.params.photoId });
+      return res.status(404).end();
+    }
     logger.error('[ImageCDN] Error serving image', {
       photoId: req.params.photoId,
-      error: error.message,
+      error: msg,
     });
     res.status(500).end();
   }

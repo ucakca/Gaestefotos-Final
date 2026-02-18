@@ -82,7 +82,9 @@ router.get(
       include: {
         _count: {
           select: {
-            photos: true,
+            photos: {
+              where: { deletedAt: null, status: { not: 'DELETED' } },
+            },
           },
         },
       },

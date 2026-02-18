@@ -164,6 +164,18 @@ router.get('/usage/stats', authMiddleware, async (req: AuthRequest, res: Respons
   }
 });
 
+// Feature Registry — central definitions of all AI features (labels, categories, costs, provider types)
+router.get('/features/registry', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!(await requireAdmin(req, res))) return;
+    const { AI_FEATURE_REGISTRY } = await import('../services/aiFeatureRegistry');
+    res.json({ features: AI_FEATURE_REGISTRY });
+  } catch (error) {
+    logger.error('Error getting AI feature registry:', error);
+    res.status(500).json({ error: 'Fehler beim Laden der Feature Registry' });
+  }
+});
+
 // Feature Status Overview — all AI features with provider, cost, enabled status
 router.get('/features/status', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {

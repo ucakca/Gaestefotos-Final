@@ -1,6 +1,7 @@
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { decryptValue } from '../utils/encryption';
+import { resolvePrompt } from './promptTemplates';
 import axios from 'axios';
 import FormData from 'form-data';
 import { storageService } from './storage';
@@ -128,8 +129,19 @@ async function preprocessImage(imageUrl: string): Promise<Buffer> {
 }
 
 // Get the configured AI provider for style transfer
-async function getStyleTransferProvider() {
-  // First check feature mapping
+// Priority: 1) PromptTemplate.providerId → 2) AiFeatureMapping → 3) any active IMAGE_GEN
+async function getStyleTransferProvider(promptProviderId?: string | null) {
+  // 1. If the prompt template specifies a provider, use it
+  if (promptProviderId) {
+    const provider = await prisma.aiProvider.findUnique({
+      where: { id: promptProviderId },
+    });
+    if (provider?.isActive) {
+      return { provider, model: null };
+    }
+  }
+
+  // 2. Check feature mapping
   const mapping = await prisma.aiFeatureMapping.findUnique({
     where: { feature: 'style_transfer' },
     include: { provider: true },
@@ -139,7 +151,7 @@ async function getStyleTransferProvider() {
     return { provider: mapping.provider, model: mapping.model };
   }
 
-  // Fallback: find any active IMAGE_GEN provider
+  // 3. Fallback: find any active IMAGE_GEN provider
   const provider = await prisma.aiProvider.findFirst({
     where: { type: 'IMAGE_GEN', isActive: true },
     orderBy: { isDefault: 'desc' },
@@ -167,23 +179,43 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
     }
   }
 
-  // ── 2. Parallel: photo + provider config ──
+  // ── 2. Parallel: photo + prompt from DB ──
   const t1 = Date.now();
-  const [config, photo] = await Promise.all([
-    getStyleTransferProvider(),
+  const promptFeature = `style_transfer:${request.style}`;
+  const [resolvedPrompt, photo] = await Promise.all([
+    resolvePrompt(promptFeature),
     prisma.photo.findUnique({ where: { id: request.photoId } }),
   ]);
   timings.dbLookup = Date.now() - t1;
 
+  // Build style from DB prompt or fallback to hardcoded AI_STYLES
+  const hardcodedStyle = AI_STYLES[request.style];
+  const style = resolvedPrompt.source === 'db'
+    ? {
+        name: request.style,
+        prompt: resolvedPrompt.userPromptTpl || hardcodedStyle?.prompt || '',
+        negativePrompt: resolvedPrompt.negativePrompt || hardcodedStyle?.negativePrompt,
+        strength: resolvedPrompt.strength ?? hardcodedStyle?.strength ?? 0.65,
+      }
+    : hardcodedStyle;
+
+  if (!style) {
+    throw new Error(`Unbekannter Style: ${request.style}`);
+  }
+
+  // Get provider (prompt-level → feature-mapping → fallback)
+  const config = await getStyleTransferProvider((resolvedPrompt as any).providerId || null);
   if (!config) {
     throw new Error('Kein AI-Provider für Style Transfer konfiguriert. Bitte in Admin > AI Provider einrichten.');
   }
 
   const { provider, model } = config;
-  const style = AI_STYLES[request.style];
-  if (!style) {
-    throw new Error(`Unbekannter Style: ${request.style}`);
-  }
+
+  logger.info('[StyleTransfer] Prompt resolved', {
+    feature: promptFeature,
+    source: resolvedPrompt.source,
+    provider: provider.slug,
+  });
 
   if (!photo || !photo.url) {
     throw new Error('Foto nicht gefunden');

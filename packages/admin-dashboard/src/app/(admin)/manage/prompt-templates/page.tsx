@@ -27,6 +27,9 @@ import {
   XCircle,
   Copy,
   Database,
+  Play,
+  Plug,
+  Bot,
 } from 'lucide-react';
 import { ModernCard } from '@/components/ui/ModernCard';
 import { Badge } from '@/components/ui/Badge';
@@ -48,6 +51,8 @@ interface PromptTemplate {
   temperature: number | null;
   maxTokens: number | null;
   strength: number | null;
+  providerId: string | null;
+  model: string | null;
   version: number;
   isActive: boolean;
   isDefault: boolean;
@@ -57,6 +62,16 @@ interface PromptTemplate {
   createdBy: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+interface AiProvider {
+  id: string;
+  slug: string;
+  name: string;
+  type: string;
+  isActive: boolean;
+  defaultModel: string | null;
+  models: Array<{ id: string; name: string }> | null;
 }
 
 type PromptCategory = 'SYSTEM' | 'STYLE' | 'GAME' | 'SUGGEST' | 'CUSTOM';
@@ -79,7 +94,10 @@ const FEATURE_LABELS: Record<string, string> = {
   challenge_suggest: 'Challenge-Ideen',
   guestbook_suggest: 'Gästebuch-Nachricht',
   color_scheme: 'Farbschema-Generator',
+  caption_suggest: 'Caption Generator',
   compliment_mirror: 'Compliment Mirror',
+  fortune_teller: 'AI Fortune Teller',
+  ai_roast: 'AI Roast',
   ai_oldify: 'Oldify-Effekt',
   ai_cartoon: 'Cartoon-Effekt',
   ai_style_pop: 'Style Pop-Effekt',
@@ -87,12 +105,27 @@ const FEATURE_LABELS: Record<string, string> = {
   'style_transfer:watercolor': 'Style: Aquarell',
   'style_transfer:pop-art': 'Style: Pop Art',
   'style_transfer:cartoon': 'Style: Cartoon',
+  'style_transfer:caricature': 'Style: Karikatur',
+  'style_transfer:magazine-cover': 'Style: Magazin-Cover',
+  'style_transfer:comic-hero': 'Style: Comic Hero',
+  'style_transfer:lego': 'Style: Lego',
+  'style_transfer:claymation': 'Style: Claymation',
+  'style_transfer:neon-portrait': 'Style: Neon Portrait',
+  'style_transfer:barbie': 'Style: Barbie/Ken',
+  'style_transfer:ghibli': 'Style: Studio Ghibli',
+  'style_transfer:headshot': 'Style: AI Headshot',
+  'style_transfer:stained-glass': 'Style: Glasmalerei',
+  'style_transfer:ukiyo-e': 'Style: Ukiyo-e',
+  'style_transfer:sketch': 'Style: Bleistiftzeichnung',
+  'style_transfer:vintage': 'Style: Vintage Retro',
+  'style_transfer:anime': 'Style: Anime',
 };
 
 // ─── Component ──────────────────────────────────────────────
 
 export default function PromptTemplatesPage() {
   const [templates, setTemplates] = useState<PromptTemplate[]>([]);
+  const [providers, setProviders] = useState<AiProvider[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<PromptCategory | 'ALL'>('ALL');
@@ -116,14 +149,20 @@ export default function PromptTemplatesPage() {
     temperature: '',
     maxTokens: '',
     strength: '',
+    providerId: '',
+    model: '',
     eventId: '',
   });
 
   const fetchTemplates = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await api.get('/admin/prompt-templates');
-      setTemplates(res.data.templates || []);
+      const [tplRes, provRes] = await Promise.all([
+        api.get('/admin/prompt-templates'),
+        api.get('/admin/ai-providers'),
+      ]);
+      setTemplates(tplRes.data.templates || []);
+      setProviders((provRes.data.providers || []).filter((p: AiProvider) => p.isActive));
     } catch (err) {
       toast.error('Fehler beim Laden der Templates');
     } finally {
@@ -187,6 +226,8 @@ export default function PromptTemplatesPage() {
         temperature: template.temperature?.toString() || '',
         maxTokens: template.maxTokens?.toString() || '',
         strength: template.strength?.toString() || '',
+        providerId: template.providerId || '',
+        model: template.model || '',
         eventId: template.eventId || '',
       });
     } else {
@@ -203,6 +244,8 @@ export default function PromptTemplatesPage() {
         temperature: '',
         maxTokens: '',
         strength: '',
+        providerId: '',
+        model: '',
         eventId: '',
       });
     }
@@ -231,6 +274,8 @@ export default function PromptTemplatesPage() {
         temperature: form.temperature ? parseFloat(form.temperature) : null,
         maxTokens: form.maxTokens ? parseInt(form.maxTokens) : null,
         strength: form.strength ? parseFloat(form.strength) : null,
+        providerId: form.providerId || null,
+        model: form.model || null,
         eventId: form.eventId || null,
       });
       toast.success(editingTemplate ? 'Neue Version gespeichert' : 'Template erstellt');
@@ -414,6 +459,7 @@ export default function PromptTemplatesPage() {
             saving={saving}
             isNew={isCreating}
             templateName={editingTemplate?.name}
+            providers={providers}
           />
         )}
 
@@ -568,6 +614,7 @@ function EditorModal({
   saving,
   isNew,
   templateName,
+  providers,
 }: {
   form: any;
   setForm: (f: any) => void;
@@ -576,13 +623,57 @@ function EditorModal({
   saving: boolean;
   isNew: boolean;
   templateName?: string;
+  providers: AiProvider[];
 }) {
+  const [previewing, setPreviewing] = useState(false);
+  const [previewResult, setPreviewResult] = useState<{
+    response: string;
+    model: string;
+    provider: { name: string };
+    usage: { promptTokens: number; completionTokens: number; totalTokens: number };
+    durationMs: number;
+  } | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+
+  const selectedProvider = providers.find((p) => p.id === form.providerId);
+  const providerModels = selectedProvider?.models || [];
+
+  const handlePreview = async () => {
+    if (!form.systemPrompt && !form.userPromptTpl) {
+      toast.error('System Prompt oder User Prompt ist erforderlich');
+      return;
+    }
+    setPreviewing(true);
+    setPreviewResult(null);
+    setPreviewError(null);
+    try {
+      const userPrompt = (form.userPromptTpl || '')
+        .replace(/\{\{(\w+)\}\}/g, (_: string, key: string) => `[${key}]`);
+      const res = await api.post('/admin/prompt-templates/preview', {
+        systemPrompt: form.systemPrompt || undefined,
+        userPrompt: userPrompt || undefined,
+        providerId: form.providerId || undefined,
+        model: form.model || undefined,
+        temperature: form.temperature ? parseFloat(form.temperature) : undefined,
+        maxTokens: form.maxTokens ? parseInt(form.maxTokens) : undefined,
+      });
+      setPreviewResult(res.data);
+    } catch (err: any) {
+      setPreviewError(err.response?.data?.error || err.message || 'Preview fehlgeschlagen');
+    } finally {
+      setPreviewing(false);
+    }
+  };
+
+  const inputClass = 'w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-gray-800 rounded-xl border border-gray-700 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-gray-800 rounded-xl border border-gray-700 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-gray-800 border-b border-gray-700 p-4 flex items-center justify-between z-10">
-          <h2 className="text-lg font-semibold text-white">
+          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+            <Bot className="w-5 h-5 text-purple-400" />
             {isNew ? 'Neues Prompt Template' : `Bearbeiten: ${templateName}`}
           </h2>
           <button onClick={onClose} className="p-1 text-gray-400 hover:text-white">
@@ -600,7 +691,7 @@ function EditorModal({
                 value={form.feature}
                 onChange={(e) => setForm({ ...form, feature: e.target.value })}
                 placeholder="z.B. compliment_mirror"
-                className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className={inputClass}
                 disabled={!isNew}
               />
             </div>
@@ -611,7 +702,7 @@ function EditorModal({
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="z.B. Compliment Mirror"
-                className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className={inputClass}
               />
             </div>
           </div>
@@ -623,7 +714,7 @@ function EditorModal({
               <select
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className={inputClass}
               >
                 {CATEGORIES.map((c) => (
                   <option key={c.value} value={c.value}>{c.label}</option>
@@ -637,8 +728,53 @@ function EditorModal({
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="Optional"
-                className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className={inputClass}
               />
+            </div>
+          </div>
+
+          {/* Row 3: Provider + Model */}
+          <div className="p-3 bg-gray-900/50 rounded-lg border border-gray-700/50">
+            <div className="flex items-center gap-2 mb-3">
+              <Plug className="w-4 h-4 text-blue-400" />
+              <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">AI Provider Zuordnung</span>
+              <span className="text-xs text-gray-500">(leer = Feature-Mapping entscheidet)</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Provider</label>
+                <select
+                  value={form.providerId}
+                  onChange={(e) => setForm({ ...form, providerId: e.target.value, model: '' })}
+                  className={inputClass}
+                >
+                  <option value="">-- Feature-Mapping --</option>
+                  {providers.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Modell</label>
+                <select
+                  value={form.model}
+                  onChange={(e) => setForm({ ...form, model: e.target.value })}
+                  className={inputClass}
+                  disabled={!form.providerId}
+                >
+                  <option value="">-- Provider-Default --</option>
+                  {selectedProvider?.defaultModel && (
+                    <option value={selectedProvider.defaultModel}>
+                      {selectedProvider.defaultModel} (Default)
+                    </option>
+                  )}
+                  {providerModels.map((m: any) => (
+                    <option key={m.id} value={m.id}>{m.name || m.id}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -650,7 +786,7 @@ function EditorModal({
               onChange={(e) => setForm({ ...form, systemPrompt: e.target.value })}
               placeholder="Instruktionen für die KI..."
               rows={6}
-              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-500 resize-y"
+              className={`${inputClass} font-mono resize-y`}
             />
           </div>
 
@@ -665,7 +801,7 @@ function EditorModal({
               onChange={(e) => setForm({ ...form, userPromptTpl: e.target.value })}
               placeholder="z.B. Generiere 5 Album-Namen für {{eventType}}..."
               rows={3}
-              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-500 resize-y"
+              className={`${inputClass} font-mono resize-y`}
             />
           </div>
 
@@ -677,7 +813,7 @@ function EditorModal({
               onChange={(e) => setForm({ ...form, negativePrompt: e.target.value })}
               placeholder="Was NICHT generiert werden soll..."
               rows={2}
-              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-purple-500 resize-y"
+              className={`${inputClass} font-mono resize-y`}
             />
           </div>
 
@@ -685,55 +821,82 @@ function EditorModal({
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="block text-xs text-gray-400 mb-1">Temperature (0-2)</label>
-              <input
-                type="number"
-                step="0.05"
-                min="0"
-                max="2"
-                value={form.temperature}
+              <input type="number" step="0.05" min="0" max="2" value={form.temperature}
                 onChange={(e) => setForm({ ...form, temperature: e.target.value })}
-                placeholder="0.7"
-                className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
+                placeholder="0.7" className={inputClass} />
             </div>
             <div>
               <label className="block text-xs text-gray-400 mb-1">Max Tokens</label>
-              <input
-                type="number"
-                min="1"
-                value={form.maxTokens}
+              <input type="number" min="1" value={form.maxTokens}
                 onChange={(e) => setForm({ ...form, maxTokens: e.target.value })}
-                placeholder="300"
-                className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
+                placeholder="300" className={inputClass} />
             </div>
             <div>
               <label className="block text-xs text-gray-400 mb-1">Strength (Image, 0-1)</label>
-              <input
-                type="number"
-                step="0.05"
-                min="0"
-                max="1"
-                value={form.strength}
+              <input type="number" step="0.05" min="0" max="1" value={form.strength}
                 onChange={(e) => setForm({ ...form, strength: e.target.value })}
-                placeholder="0.65"
-                className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-              />
+                placeholder="0.65" className={inputClass} />
             </div>
           </div>
 
           {/* Event ID */}
           <div>
-            <label className="block text-xs text-gray-400 mb-1">
-              Event-ID (leer = global)
-            </label>
-            <input
-              type="text"
-              value={form.eventId}
+            <label className="block text-xs text-gray-400 mb-1">Event-ID (leer = global)</label>
+            <input type="text" value={form.eventId}
               onChange={(e) => setForm({ ...form, eventId: e.target.value })}
-              placeholder="Leer lassen für globale Templates"
-              className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-            />
+              placeholder="Leer lassen für globale Templates" className={inputClass} />
+          </div>
+
+          {/* ─── Live Preview Section ─── */}
+          <div className="p-4 bg-gradient-to-br from-purple-500/5 to-blue-500/5 rounded-lg border border-purple-500/20">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Play className="w-4 h-4 text-purple-400" />
+                <span className="text-sm font-semibold text-white">Live Preview</span>
+                <span className="text-xs text-gray-500">Testet den Prompt gegen die AI</span>
+              </div>
+              <button
+                onClick={handlePreview}
+                disabled={previewing || (!form.systemPrompt && !form.userPromptTpl)}
+                className="flex items-center gap-2 px-4 py-2 text-sm bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {previewing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Play className="w-4 h-4" />
+                )}
+                {previewing ? 'Wird ausgeführt...' : 'Preview starten'}
+              </button>
+            </div>
+
+            {previewError && (
+              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-sm text-red-400">
+                {previewError}
+              </div>
+            )}
+
+            {previewResult && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 text-xs text-gray-400">
+                  <span className="flex items-center gap-1">
+                    <Bot className="w-3 h-3" />
+                    {previewResult.provider.name}
+                  </span>
+                  <span>Modell: {previewResult.model}</span>
+                  <span>{previewResult.durationMs}ms</span>
+                  <span>{previewResult.usage.totalTokens} Tokens</span>
+                </div>
+                <pre className="p-3 bg-gray-900 rounded-lg text-sm text-gray-200 font-mono whitespace-pre-wrap max-h-64 overflow-y-auto border border-gray-700">
+                  {previewResult.response}
+                </pre>
+              </div>
+            )}
+
+            {!previewResult && !previewError && !previewing && (
+              <p className="text-xs text-gray-500 italic">
+                Klicke &quot;Preview starten&quot; um den Prompt zu testen. Variablen werden als [variableName] ersetzt.
+              </p>
+            )}
           </div>
         </div>
 

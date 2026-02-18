@@ -26,6 +26,8 @@ export interface BottomNavProps {
   challengeCount?: number;
   guestbookCount?: number;
   showFotoSpass?: boolean;
+  showStyleTransfer?: boolean;
+  showAiGames?: boolean;
   showFaceSearch?: boolean;
   hasMosaicWall?: boolean;
 }
@@ -38,6 +40,8 @@ export default function BottomNav({
   challengeCount = 0,
   guestbookCount = 0,
   showFotoSpass = true,
+  showStyleTransfer = true,
+  showAiGames = true,
   showFaceSearch = true,
   hasMosaicWall = false,
 }: BottomNavProps) {
@@ -104,7 +108,7 @@ export default function BottomNav({
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-card text-card-foreground border-t border-border shadow-lg">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-around">
             {/* Feed */}
@@ -166,7 +170,7 @@ export default function BottomNav({
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={0.2}
               onDragEnd={(_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) setAiSheetOpen(false); }}
-              className="fixed bottom-0 left-0 right-0 z-[61] bg-card rounded-t-3xl shadow-2xl max-h-[70vh] overflow-y-auto"
+              className="fixed bottom-0 left-0 right-0 z-[61] bg-card text-card-foreground rounded-t-3xl shadow-2xl max-h-[70vh] overflow-y-auto"
             >
               {/* Handle */}
               <div className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
@@ -211,7 +215,7 @@ export default function BottomNav({
                 {/* 2-Column Grid */}
                 <div className="grid grid-cols-2 gap-2.5">
                   {/* Foto-Spiele */}
-                  {showFotoSpass && (
+                  {showFotoSpass && showAiGames && (
                     <motion.button
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -249,7 +253,7 @@ export default function BottomNav({
                   )}
 
                   {/* KI Foto-Stil */}
-                  <motion.button
+                  {showStyleTransfer && <motion.button
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
@@ -263,10 +267,10 @@ export default function BottomNav({
                       <div className="text-sm font-semibold">{tAi('kiStyle')}</div>
                       <div className="text-[10px] text-muted-foreground">{tAi('kiStyleDesc')}</div>
                     </div>
-                  </motion.button>
+                  </motion.button>}
 
                   {/* Filter Roulette */}
-                  {showFotoSpass && (
+                  {showFotoSpass && showStyleTransfer && (
                     <motion.button
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -285,7 +289,7 @@ export default function BottomNav({
                   )}
 
                   {/* Emoji Challenge */}
-                  {showFotoSpass && (
+                  {showFotoSpass && showAiGames && (
                     <motion.button
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}

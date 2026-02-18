@@ -13,50 +13,11 @@
 import prisma from '../config/database';
 import { decryptValue } from '../utils/encryption';
 import { logger } from '../utils/logger';
+import { AiFeature, AI_CREDIT_COSTS, getExpectedProviderType } from './aiFeatureRegistry';
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
-export type AiFeature = 
-  | 'face_switch'
-  | 'bg_removal'
-  | 'ai_oldify'
-  | 'ai_cartoon'
-  | 'ai_style_pop'
-  | 'style_transfer'
-  | 'drawbot'
-  | 'highlight_reel'
-  | 'compliment_mirror'
-  | 'chat'
-  | 'album_suggest'
-  | 'description_suggest'
-  | 'invitation_suggest'
-  | 'challenge_suggest'
-  | 'guestbook_suggest'
-  | 'color_scheme'
-  | 'face_search'
-  | 'ai_categorize';
-
-// Credit costs per AI feature
-export const AI_CREDIT_COSTS: Record<AiFeature, number> = {
-  face_switch: 5,
-  bg_removal: 3,
-  ai_oldify: 4,
-  ai_cartoon: 4,
-  ai_style_pop: 4,
-  style_transfer: 5,
-  drawbot: 8,
-  highlight_reel: 10,
-  compliment_mirror: 2,
-  chat: 1,
-  album_suggest: 1,
-  description_suggest: 1,
-  invitation_suggest: 1,
-  challenge_suggest: 1,
-  guestbook_suggest: 1,
-  color_scheme: 1,
-  face_search: 0, // free
-  ai_categorize: 1,
-};
+// Re-export for backward compatibility
+export type { AiFeature };
+export { AI_CREDIT_COSTS };
 
 export interface ResolvedProvider {
   id: string;
@@ -131,29 +92,7 @@ export async function resolveProvider(feature: AiFeature): Promise<ResolvedProvi
   };
 }
 
-function getExpectedProviderType(feature: AiFeature): string {
-  const typeMap: Record<AiFeature, string> = {
-    face_switch: 'IMAGE_GEN',
-    bg_removal: 'IMAGE_GEN',
-    ai_oldify: 'IMAGE_GEN',
-    ai_cartoon: 'IMAGE_GEN',
-    ai_style_pop: 'IMAGE_GEN',
-    style_transfer: 'IMAGE_GEN',
-    drawbot: 'IMAGE_GEN',
-    highlight_reel: 'VIDEO_GEN',
-    compliment_mirror: 'LLM',
-    chat: 'LLM',
-    album_suggest: 'LLM',
-    description_suggest: 'LLM',
-    invitation_suggest: 'LLM',
-    challenge_suggest: 'LLM',
-    guestbook_suggest: 'LLM',
-    color_scheme: 'LLM',
-    face_search: 'FACE_RECOGNITION',
-    ai_categorize: 'LLM',
-  };
-  return typeMap[feature] || 'LLM';
-}
+// getExpectedProviderType imported from aiFeatureRegistry
 
 // ─── Credit Management ──────────────────────────────────────────────────────
 

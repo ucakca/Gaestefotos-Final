@@ -47,11 +47,12 @@ export default function AlbumFilter({
     return Icon || Camera;
   };
 
-  // Filter visible categories (with photos)
-  const visibleCategories = categories.filter((cat) => (cat.photoCount || 0) > 0);
+  // Show all categories - don't filter by photoCount since it might not be loaded yet
+  // Categories without photos will show count of 0
+  const visibleCategories = categories;
 
-  if (visibleCategories.length === 0) {
-    return null; // No categories with photos
+  if (categories.length === 0) {
+    return null; // No categories at all
   }
 
   return (

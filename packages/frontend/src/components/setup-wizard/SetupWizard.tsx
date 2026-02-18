@@ -327,6 +327,9 @@ export default function SetupWizard() {
       if (state.location) {
         formData.append('location', state.location);
       }
+      if (state.schedule && state.schedule.length > 0) {
+        formData.append('schedule', JSON.stringify(state.schedule));
+      }
       
       // Default settings
       formData.append('visibilityMode', 'public');
@@ -422,8 +425,10 @@ export default function SetupWizard() {
           <DateLocationStep
             dateTime={state.dateTime}
             location={state.location}
+            schedule={state.schedule}
             onDateTimeChange={(dateTime) => updateState({ dateTime })}
             onLocationChange={(location) => updateState({ location })}
+            onScheduleChange={(schedule) => updateState({ schedule })}
             onNext={() => handleCompleteStep('date-location')}
             onBack={() => goToStep('title')}
             onSkip={() => handleCompleteStep('date-location')}
