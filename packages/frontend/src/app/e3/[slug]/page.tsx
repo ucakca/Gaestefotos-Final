@@ -50,6 +50,7 @@ const MosaicPrintUpload = dynamic(() => import('@/components/mosaic/MosaicPrintU
 const WorkflowUploadModal = dynamic(() => import('@/components/workflow-runtime/WorkflowUploadModal'), { ssr: false });
 const WorkflowFaceSearchModal = dynamic(() => import('@/components/workflow-runtime/WorkflowFaceSearchModal'), { ssr: false });
 const QuickUploadModal = dynamic(() => import('@/components/upload/QuickUploadModal'), { ssr: false });
+const StyleTransferModal = dynamic(() => import('@/components/ai/StyleTransferModal'), { ssr: false });
 
 export default function PublicEventPageV2() {
   const params = useParams();
@@ -65,6 +66,7 @@ export default function PublicEventPageV2() {
   const [liveSheetOpen, setLiveSheetOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [faceSearchOpen, setFaceSearchOpen] = useState(false);
+  const [styleTransferOpen, setStyleTransferOpen] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
   const [guestbookEntries, setGuestbookEntries] = useState<any[]>([]);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -473,9 +475,7 @@ export default function PublicEventPageV2() {
               setFotospassOpen(true);
               break;
             case 'ki-style':
-              setUploadChallengeId(null);
-              setUploadChallengeTitle('KI Foto-Stil');
-              setUploadModalOpen(true);
+              setStyleTransferOpen(true);
               break;
             case 'face-search':
               setActiveTab('feed');
@@ -659,6 +659,13 @@ export default function PublicEventPageV2() {
         onComplete={() => reloadPhotos()}
       />
 
+      <StyleTransferModal
+        isOpen={styleTransferOpen}
+        onClose={() => setStyleTransferOpen(false)}
+        eventId={event?.id || ''}
+        onComplete={() => reloadPhotos()}
+      />
+
       <WorkflowUploadModal
         isOpen={uploadModalOpen}
         onClose={() => {
@@ -675,7 +682,7 @@ export default function PublicEventPageV2() {
           setUploadChallengeId(null);
           setUploadChallengeTitle(null);
         }}
-        flowType={uploadChallengeTitle === 'KI Foto-Stil' ? 'KI_KUNST' : 'UPLOAD'}
+        flowType="UPLOAD"
       />
 
       <QRCodeShare
