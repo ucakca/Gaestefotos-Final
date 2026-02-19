@@ -52,7 +52,7 @@ router.get('/:eventId/ai-config', authMiddleware, async (req: AuthRequest, res: 
       where: { id: eventId },
       select: { hostId: true },
     });
-    if (!event || event.hostId !== req.userId) {
+    if (!event || (event.hostId !== req.userId && req.userRole !== 'ADMIN')) {
       return res.status(403).json({ error: 'Nur der Veranstalter kann die KI-Konfiguration einsehen' });
     }
 
@@ -112,7 +112,7 @@ router.put('/:eventId/ai-config', authMiddleware, async (req: AuthRequest, res: 
       where: { id: eventId },
       select: { hostId: true },
     });
-    if (!event || event.hostId !== req.userId) {
+    if (!event || (event.hostId !== req.userId && req.userRole !== 'ADMIN')) {
       return res.status(403).json({ error: 'Nur der Veranstalter kann die KI-Konfiguration ändern' });
     }
 

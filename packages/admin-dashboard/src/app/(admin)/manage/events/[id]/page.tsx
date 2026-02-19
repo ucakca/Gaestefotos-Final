@@ -7,7 +7,7 @@ import {
   ExternalLink, Loader2, ToggleLeft, ToggleRight, Trash2,
   Clock, Shield, RefreshCw, Activity, Package, ChevronDown, Check,
   Save, Edit2, Globe, Lock, Wifi, MessageSquare, X, AlertTriangle,
-  Puzzle, Plus, Minus, Workflow,
+  Puzzle, Plus, Minus, Workflow, Zap, Brain, Power,
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
@@ -80,6 +80,51 @@ export default function EventDetailPage() {
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string>('');
   const [workflowsLoading, setWorkflowsLoading] = useState(true);
   const [assigningWorkflow, setAssigningWorkflow] = useState(false);
+
+  // AI Config state
+  const [aiConfig, setAiConfig] = useState<any | null>(null);
+  const [aiConfigLoading, setAiConfigLoading] = useState(true);
+  const [aiConfigSaving, setAiConfigSaving] = useState(false);
+  const [aiConfigEditing, setAiConfigEditing] = useState(false);
+  const [aiConfigForm, setAiConfigForm] = useState<Record<string, any>>({});
+
+  const loadAiConfig = useCallback(async () => {
+    if (!eventId) return;
+    setAiConfigLoading(true);
+    try {
+      const res = await api.get(`/events/${eventId}/ai-config`);
+      setAiConfig(res.data.config);
+      setAiConfigForm({
+        energyEnabled: res.data.config?.energyEnabled ?? true,
+        energyStartBalance: res.data.config?.energyStartBalance ?? 10,
+        energyCooldownSeconds: res.data.config?.energyCooldownSeconds ?? 60,
+        welcomeMessage: res.data.config?.welcomeMessage || '',
+        customPromptContext: res.data.config?.customPromptContext || '',
+      });
+    } catch { /* silently fail */ }
+    finally { setAiConfigLoading(false); }
+  }, [eventId]);
+
+  const saveAiConfig = async () => {
+    if (!eventId) return;
+    setAiConfigSaving(true);
+    try {
+      const res = await api.put(`/events/${eventId}/ai-config`, {
+        energyEnabled: aiConfigForm.energyEnabled,
+        energyStartBalance: Number(aiConfigForm.energyStartBalance),
+        energyCooldownSeconds: Number(aiConfigForm.energyCooldownSeconds),
+        welcomeMessage: aiConfigForm.welcomeMessage || null,
+        customPromptContext: aiConfigForm.customPromptContext || null,
+      });
+      setAiConfig(res.data.config);
+      setAiConfigEditing(false);
+      toast.success('AI-Konfiguration gespeichert');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Fehler beim Speichern');
+    } finally {
+      setAiConfigSaving(false);
+    }
+  };
 
   const loadEvent = useCallback(async () => {
     if (!eventId) return;
@@ -227,15 +272,8 @@ export default function EventDetailPage() {
     }
   };
 
-  useEffect(() => {
-    loadEvent();
-    loadPackageData();
-    loadAddons();
-    loadWorkflows();
-  }, [loadEvent, loadPackageData, loadAddons, loadWorkflows]);
-
   const toggleActive = async () => {
-    if (!event) return;
+    if (!event || toggling) return;
     setToggling(true);
     try {
       await api.patch(`/admin/events/${event.id}/status`, { isActive: !event.isActive });
@@ -752,6 +790,89 @@ export default function EventDetailPage() {
             )}
           </>
         )}
+      </div>
+
+      {/* AI-Konfiguration */}
+      <div className="rounded-2xl border border-app-border bg-app-card p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-app-fg flex items-center gap-2">
+            <Brain className="w-4 h-4 text-purple-500" />
+            AI-Konfiguration
+          </h3>
+          {!aiConfigEditing ? (
+            <Button size="sm" variant="outline" onClick={() => setAiConfigEditing(true)}>
+              <Edit2 className="w-4 h-4 mr-1" /> Bearbeiten
+            </Button>
+          ) : (
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setAiConfigEditing(false)}>
+                <X className="w-4 h-4 mr-1" /> Abbrechen
+              </Button>
+              <Button size="sm" onClick={saveAiConfig} disabled={aiConfigSaving} className="bg-purple-500 hover:bg-purple-600 text-white">
+                <Save className="w-4 h-4 mr-1" /> {aiConfigSaving ? 'Speichere...' : 'Speichern'}
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {aiConfigLoading ? (
+          <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-app-muted" /></div>
+        ) : aiConfigEditing ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 rounded-xl border border-app-border bg-app-bg">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-amber-500" />
+                <span className="text-sm font-medium text-app-fg">AI-Energie aktiv</span>
+              </div>
+              <button
+                onClick={() => setAiConfigForm(f => ({ ...f, energyEnabled: !f.energyEnabled }))}
+                className={`w-10 h-6 rounded-full transition-colors ${aiConfigForm.energyEnabled ? 'bg-purple-500' : 'bg-muted'}`}
+              >
+                <span className={`block w-4 h-4 rounded-full bg-white shadow transition-transform mx-1 ${aiConfigForm.energyEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-app-muted mb-1">Startguthaben ⚡</label>
+                <input type="number" min={0} max={100} value={aiConfigForm.energyStartBalance} onChange={e => setAiConfigForm(f => ({ ...f, energyStartBalance: e.target.value }))} className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-app-muted mb-1">Cooldown (Sekunden)</label>
+                <input type="number" min={0} max={3600} value={aiConfigForm.energyCooldownSeconds} onChange={e => setAiConfigForm(f => ({ ...f, energyCooldownSeconds: e.target.value }))} className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-app-muted mb-1">Willkommensnachricht (AI-Sektion)</label>
+              <input type="text" value={aiConfigForm.welcomeMessage} onChange={e => setAiConfigForm(f => ({ ...f, welcomeMessage: e.target.value }))} placeholder="z.B. Willkommen bei Annas Hochzeit! ✨" className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-app-muted mb-1">Custom Prompt-Kontext (injiziert in AI-Spiele)</label>
+              <textarea rows={3} value={aiConfigForm.customPromptContext} onChange={e => setAiConfigForm(f => ({ ...f, customPromptContext: e.target.value }))} placeholder="z.B. Dies ist eine Hochzeitsfeier. Das Brautpaar heißt Anna und Max..." className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none" />
+            </div>
+          </div>
+        ) : aiConfig ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Power className={`w-4 h-4 ${aiConfig.energyEnabled ? 'text-green-500' : 'text-muted'}`} />
+              <span className="text-sm text-app-fg">Energie: <strong>{aiConfig.energyEnabled ? 'Aktiv' : 'Deaktiviert'}</strong></span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-amber-500" />
+              <span className="text-sm text-app-fg">Startguthaben: <strong>{aiConfig.energyStartBalance} ⚡</strong></span>
+            </div>
+            {aiConfig.welcomeMessage && (
+              <div className="flex items-start gap-2">
+                <MessageSquare className="w-4 h-4 text-app-muted mt-0.5" />
+                <span className="text-sm text-app-fg">{aiConfig.welcomeMessage}</span>
+              </div>
+            )}
+            {aiConfig.customPromptContext && (
+              <div className="p-2 bg-purple-50/50 dark:bg-purple-950/20 rounded-lg text-xs text-app-muted">
+                Custom Prompt: {aiConfig.customPromptContext.slice(0, 80)}{aiConfig.customPromptContext.length > 80 ? '...' : ''}
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
 
       {/* Actions */}
