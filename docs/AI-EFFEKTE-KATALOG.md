@@ -115,12 +115,9 @@
 | **Persona Quiz** | `persona_quiz` | Groq | **AiGamesModal** (3 Fragen → Quiz) | 2 |
 | **Hochzeitsrede** | `wedding_speech` | Groq | **AiGamesModal** (Brautpaar + Rolle) | 3 |
 | **Story Generator** | `ai_stories` | Groq | **AiGamesModal** (3 Wörter → Geschichte) | 2 |
-
-### Neue Text-Effekte (noch nicht implementiert) 🔴
-
-| Effekt | Feature-Key | Beschreibung | Credits |
-|--------|-------------|-------------|---------|
-| **AI DJ** | `ai_dj_suggest` | Musikvorschläge basierend auf Event-Stimmung | 1 |
+| **Promi-Doppelgänger** | `celebrity_lookalike` | Groq | **AiGamesModal** (Ähnlichkeit% + Fun Fact) | 2 |
+| **Foto-Bingo** | `ai_bingo` | Groq | **AiGamesModal** (3x3 Grid + Bonus) | 1 |
+| **AI DJ** | `ai_dj` | Groq | **AiGamesModal** (Stimmung → 5 Songs) | 1 |
 
 ---
 
@@ -143,12 +140,12 @@
 
 | Spiel | ChallengeType | Beschreibung | KI-Nutzung |
 |-------|--------------|-------------|------------|
-| ~~AI Trading Card~~ | ~~TRADING_CARD~~ | ~~Selfie → Trading Card mit KI-Stats~~ | ✅ AiEffectsModal |
-| **Time Machine** | `TIME_MACHINE` | Selfie → "So sahst du in den 80ern aus" | img2img Decades |
-| **Celebrity Lookalike** | `CELEB_LOOKALIKE` | "Du siehst aus wie..." → Ähnlichkeit in % | Face Recognition + LLM |
-| **Pet Me** | `PET_ME` | Selfie → KI verwandelt dich in ein Tier | img2img |
-| **Yearbook** | `YEARBOOK` | Selfie → 90er/2000er Yearbook-Foto | img2img |
-| **AI Bingo** | `AI_BINGO` | Foto-Aufgaben-Bingo | LLM generiert Aufgaben |
+| ~~AI Trading Card~~ | ~~TRADING_CARD~~ | ~~Selfie → Trading Card~~ | ✅ AiEffectsModal |
+| ~~Time Machine~~ | ~~TIME_MACHINE~~ | ~~5 Jahrzehnte (60s-2000s)~~ | ✅ AiEffectsModal (decade_select) |
+| ~~Celebrity Lookalike~~ | ~~CELEB_LOOKALIKE~~ | ~~Promi-Vergleich~~ | ✅ AiGamesModal |
+| ~~Pet Me~~ | ~~PET_ME~~ | ~~Tier-Transformation~~ | ✅ AiEffectsModal |
+| ~~Yearbook~~ | ~~YEARBOOK~~ | ~~90er Yearbook-Foto~~ | ✅ AiEffectsModal |
+| ~~AI Bingo~~ | ~~AI_BINGO~~ | ~~Foto-Aufgaben-Bingo~~ | ✅ AiGamesModal |
 
 ---
 
@@ -180,11 +177,16 @@
 17. ~~AI Stories~~ → AiGamesModal (3 Wörter → Titel + Geschichte + Genre) ✅
 18. ~~AI Trading Cards~~ → AiEffectsModal (Canvas + LLM-Stats: Charisma, Humor, Dance, Style, Energy) ✅
 
-### Sprint 5 — Nächste Schritte
-19. **AI Group Theme** (Multi-Face Processing)
-20. **AI DJ** (Musikvorschläge)
-21. **Celebrity Lookalike** (Face Recognition + LLM)
-22. **Pet Me** (Selfie → Tier-Transformation)
+### Sprint 5 — ✅ DONE (19. Feb 2026)
+19. ~~Time Machine~~ → AiEffectsModal (5 Jahrzehnte: 60s/70s/80s/90s/2000s, decade_select Step) ✅
+20. ~~Pet Me~~ → AiEffectsModal (Tier-Transformation via img2img) ✅
+21. ~~Yearbook~~ → AiEffectsModal (90er Yearbook-Foto via img2img) ✅
+22. ~~Celebrity Lookalike~~ → AiGamesModal (LLM Promi-Vergleich mit Ähnlichkeit% + Fun Fact) ✅
+23. ~~AI Bingo~~ → AiGamesModal (3x3 Foto-Aufgaben-Bingo + Bonus-Aufgabe) ✅
+24. ~~AI DJ~~ → AiGamesModal (mood_input → 5 Songs + DJ-Name + Vibe) ✅
+
+### Sprint 6 — Nächste Schritte
+25. **AI Group Theme** (Multi-Face Processing)
 
 ---
 
@@ -215,4 +217,4 @@
 
 ---
 
-> *Letzte Aktualisierung: 19. Februar 2026 — Sprint 4 abgeschlossen (9 Effekte + 7 Spiele)*
+> *Letzte Aktualisierung: 19. Februar 2026 — Sprint 5 abgeschlossen (12 Effekte + 10 Spiele + 24 Stile + 8 Video-Presets + 5 Jahrzehnt-Presets)*
