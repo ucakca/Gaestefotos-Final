@@ -164,6 +164,9 @@ router.post(
         photo: serializeBigInt(photo),
       });
 
+      // Trigger workflow automations (non-blocking)
+      import('../services/workflowExecutor').then(m => m.onPhotoUploaded(eventId, photo.id)).catch(() => {});
+
       // Mosaic auto-hook (same as regular uploads)
       prisma.mosaicWall.findUnique({
         where: { eventId },
