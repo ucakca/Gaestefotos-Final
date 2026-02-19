@@ -6,6 +6,7 @@ import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { getErrorMessage } from '../utils/typeHelpers';
 import { getWordPressUserByEmail } from '../config/wordpress';
+import { emailService } from '../services/email';
 
 const router = Router();
 
@@ -485,6 +486,58 @@ export async function processWooOrderPaidWebhook(params: {
           data: { status: 'PROCESSED', eventId: processed.eventId, reason: processed.mode },
         })
         .catch(() => null);
+    }
+
+    // ── P1-2: EventAiConfig mit Paket-Defaults erstellen (non-blocking) ──
+    const tier = (pkg?.resultingTier || 'BASIC').toUpperCase();
+    const energyDefaults = {
+      FREE:    { energyStartBalance: 5,  energyRewardFirstUpload: 3, energyCostLlmGame: 1, energyCostImageEffect: 2, energyCostStyleTransfer: 2 },
+      BASIC:   { energyStartBalance: 10, energyRewardFirstUpload: 5, energyCostLlmGame: 1, energyCostImageEffect: 2, energyCostStyleTransfer: 2 },
+      SMART:   { energyStartBalance: 10, energyRewardFirstUpload: 8, energyCostLlmGame: 1, energyCostImageEffect: 2, energyCostStyleTransfer: 2 },
+      PREMIUM: { energyStartBalance: 20, energyRewardFirstUpload: 10, energyCostLlmGame: 0, energyCostImageEffect: 1, energyCostStyleTransfer: 1 },
+    } as Record<string, any>;
+    const defaults = energyDefaults[tier] || energyDefaults['BASIC'];
+    prisma.eventAiConfig.upsert({
+      where: { eventId: processed.eventId },
+      create: { eventId: processed.eventId, ...defaults },
+      update: {},
+    }).catch((err: any) => logger.warn('WooCommerce: EventAiConfig upsert failed', { error: err.message }));
+
+    // ── P1-1: Briefing-Email an Kunden (non-blocking) ──
+    const customerEmail = payload.billing?.email;
+    if (customerEmail && processed.eventId) {
+      prisma.event.findUnique({
+        where: { id: processed.eventId },
+        select: { title: true, eventCode: true, id: true },
+      }).then(async (ev) => {
+        if (!ev) return;
+        const frontendUrl = (process.env.FRONTEND_URL || 'https://dash.xn--gstefotos-v2a.com').replace(/\/$/, '');
+        const briefingUrl = `${frontendUrl}/events/${ev.id}/briefing`;
+        const dashboardUrl = `${frontendUrl}/events/${ev.id}/dashboard`;
+        const packageName = pkg?.name || tier;
+        await (emailService as any).transporter?.sendMail({
+          from: (emailService as any).config?.from || 'info@gaestefotos.com',
+          to: customerEmail,
+          subject: `🎉 Dein gästefotos.com Event ist bereit! Jetzt Briefing ausfüllen`,
+          html: `
+            <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px">
+              <h2 style="color:#295B4D">Vielen Dank für deine Buchung! 🎉</h2>
+              <p>Dein <strong>${packageName}</strong>-Paket wurde aktiviert.</p>
+              <p>Fülle jetzt das <strong>Event-Briefing</strong> aus, damit wir deine KI-Features optimal konfigurieren können:</p>
+              <p style="text-align:center;margin:24px 0">
+                <a href="${briefingUrl}" style="background:#295B4D;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold">
+                  ✏️ Briefing ausfüllen
+                </a>
+              </p>
+              <p>Oder gehe direkt zu deinem <a href="${dashboardUrl}">Event-Dashboard</a>.</p>
+              ${ev.eventCode ? `<p style="background:#f5f5f5;padding:12px;border-radius:8px">Dein Event-Code: <strong>${ev.eventCode}</strong></p>` : ''}
+              <hr style="margin:24px 0;border:none;border-top:1px solid #eee">
+              <p style="color:#666;font-size:13px">Bei Fragen: <a href="mailto:support@gaestefotos.com">support@gaestefotos.com</a></p>
+            </div>`,
+          text: `Vielen Dank für deine Buchung!\n\nBriefing ausfüllen: ${briefingUrl}\nDashboard: ${dashboardUrl}${ev.eventCode ? `\nEvent-Code: ${ev.eventCode}` : ''}`,
+        });
+        logger.info('WooCommerce: Briefing-Email gesendet', { to: customerEmail, eventId: ev.id });
+      }).catch((err: any) => logger.warn('WooCommerce: Briefing-Email fehlgeschlagen', { error: err.message }));
     }
 
     return { httpStatus: 200, body: { success: true, eventId: processed.eventId, mode: processed.mode } };
