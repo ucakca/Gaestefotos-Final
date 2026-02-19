@@ -195,17 +195,43 @@ Regeln für Negative Prompt:
 export async function analyzeImageToPrompt(imageBuffer: Buffer): Promise<ImageToPromptResult> {
   const startTime = Date.now();
 
+  if (!imageBuffer || imageBuffer.length === 0) {
+    throw new Error('Leerer Bild-Buffer empfangen');
+  }
+
+  // Detect image format from magic bytes
+  const magic = imageBuffer.slice(0, 4);
+  const magicHex = magic.toString('hex');
+  logger.info('[img2prompt] Buffer received', {
+    size: imageBuffer.length,
+    magicHex,
+    isJpeg: magicHex.startsWith('ffd8'),
+    isPng: magicHex.startsWith('89504e47'),
+    isWebp: imageBuffer.length > 12 && imageBuffer.slice(8, 12).toString('ascii') === 'WEBP',
+    isGif: magicHex.startsWith('47494638'),
+  });
+
   // 1. Resize image for analysis (save bandwidth)
   let sharp: any;
   try { sharp = require('sharp'); } catch { /* */ }
 
   let processedBase64: string;
   if (sharp) {
-    const resized = await sharp(imageBuffer)
-      .resize(512, 512, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 80 })
-      .toBuffer();
-    processedBase64 = resized.toString('base64');
+    try {
+      const resized = await sharp(imageBuffer)
+        .resize(512, 512, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 80 })
+        .toBuffer();
+      processedBase64 = resized.toString('base64');
+    } catch (sharpError: any) {
+      logger.warn('[img2prompt] Sharp resize failed, using raw buffer', {
+        error: sharpError.message,
+        bufferSize: imageBuffer.length,
+        magicHex,
+      });
+      // Fallback: send raw image without resizing
+      processedBase64 = imageBuffer.toString('base64');
+    }
   } else {
     processedBase64 = imageBuffer.toString('base64');
   }

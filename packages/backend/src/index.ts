@@ -454,12 +454,21 @@ app.use((req, res, next) => {
   return res.status(403).json({ error: 'Forbidden: CSRF protection' });
 });
 
-app.use(express.json({
-  verify: (req: any, _res, buf) => {
-    req.rawBody = buf;
-  },
-}));
-app.use(express.urlencoded({ extended: true }));
+// Skip body parsing for multipart uploads (multer handles those)
+app.use((req, res, next) => {
+  const ct = req.headers['content-type'] || '';
+  if (ct.startsWith('multipart/form-data')) return next();
+  express.json({
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf;
+    },
+  })(req, res, next);
+});
+app.use((req, res, next) => {
+  const ct = req.headers['content-type'] || '';
+  if (ct.startsWith('multipart/form-data')) return next();
+  express.urlencoded({ extended: true })(req, res, next);
+});
 
 // Maintenance mode gate (must be after request parsing, before routes)
 app.use(maintenanceModeMiddleware);
