@@ -50,6 +50,7 @@ import {
   FileText,
   Activity,
   Film,
+  Wifi,
 } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
@@ -60,6 +61,8 @@ import SetupTabV2 from '@/components/dashboard/SetupTabV2';
 import GalleryTabV2 from '@/components/dashboard/GalleryTabV2';
 import GuestbookTabV2 from '@/components/dashboard/GuestbookTabV2';
 import HashtagWidget from '@/components/host-dashboard/HashtagWidget';
+import { usePackageFeatures } from '@/hooks/usePackageFeatures';
+import type { PackageInfo } from '@/hooks/usePackageFeatures';
 
 type TabType = 'overview' | 'gallery' | 'guestbook' | 'setup';
 type GalleryFilter = 'all' | 'photos' | 'videos' | 'albums' | 'guests' | 'challenges' | 'top' | 'pending' | 'trash';
@@ -123,6 +126,9 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
   const [editDateTime, setEditDateTime] = useState<Date | null>(null);
   const [editLocation, setEditLocation] = useState('');
   const [savingSheet, setSavingSheet] = useState(false);
+
+  // Package features (loaded via separate API)
+  const { packageInfo, features: pkgFeatures, packageName: pkgName, tier: pkgTier, loading: pkgLoading } = usePackageFeatures(eventId);
 
   // Load event ID from params
   React.useEffect(() => {
@@ -497,6 +503,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
               onMintCohostInvite={mintCohostInvite}
               mintingCohostInvite={mintingCohostInvite}
               eventId={eventId || ''}
+              packageInfo={packageInfo}
               onGoToSetup={() => {
                 setActiveTab('setup');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -810,6 +817,7 @@ function OverviewTab({
   onGoToSetup,
   onOpenSheet,
   onGoToGuestbook,
+  packageInfo,
 }: {
   event: EventType;
   eventDate: string | null;
@@ -833,6 +841,7 @@ function OverviewTab({
   onMintCohostInvite: () => void;
   mintingCohostInvite: boolean;
   eventId: string;
+  packageInfo: PackageInfo;
   onGoToSetup: () => void;
   onOpenSheet?: (sheetId: 'title' | 'date-location') => void;
   onGoToGuestbook?: () => void;
@@ -897,6 +906,12 @@ function OverviewTab({
                   {(event as any).location}
                 </p>
               )}
+              {(event as any).wifiName && (
+                <p className="text-white/80 text-sm flex items-center gap-1 mt-0.5">
+                  <Wifi className="w-4 h-4" />
+                  {(event as any).wifiName}{(event as any).wifiPassword ? ` · ${(event as any).wifiPassword}` : ''}
+                </p>
+              )}
             </div>
             
             <div className="flex flex-col gap-2">
@@ -930,30 +945,30 @@ function OverviewTab({
         <StatCard icon={Clock} value={stats.pending} label="AUSSTEHEND" color="yellow" highlight={stats.pending > 0} onClick={() => onStatClick('pending')} />
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-2">
+      {/* Quick Actions — Briefing + AI */}
+      <div className="grid grid-cols-2 gap-3">
         <Link
           href={`/events/${eventId}/briefing`}
-          className="flex items-center gap-3 p-3.5 rounded-2xl border border-border bg-card hover:shadow-md hover:-translate-y-0.5 transition-all"
+          className="group flex flex-col gap-2 p-4 rounded-2xl bg-gradient-to-br from-violet-500/10 to-purple-500/5 border border-violet-200/50 hover:border-violet-300 hover:shadow-lg hover:-translate-y-0.5 transition-all"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
             <FileText className="w-5 h-5 text-white" />
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground">Briefing</p>
-            <p className="text-[10px] text-muted-foreground">Event konfigurieren</p>
+          <div>
+            <p className="text-sm font-bold text-foreground">Event-Briefing</p>
+            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">Infos für AI-Personalisierung</p>
           </div>
         </Link>
         <Link
           href={`/events/${eventId}/booth-games`}
-          className="flex items-center gap-3 p-3.5 rounded-2xl border border-border bg-card hover:shadow-md hover:-translate-y-0.5 transition-all"
+          className="group flex flex-col gap-2 p-4 rounded-2xl bg-gradient-to-br from-pink-500/10 to-rose-500/5 border border-pink-200/50 hover:border-pink-300 hover:shadow-lg hover:-translate-y-0.5 transition-all"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-sm shrink-0">
-            <Sparkles className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+            <Gamepad2 className="w-5 h-5 text-white" />
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground">KI-Spiele</p>
-            <p className="text-[10px] text-muted-foreground">Foto-Spaß verwalten</p>
+          <div>
+            <p className="text-sm font-bold text-foreground">KI-Spiele</p>
+            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">Roast, Bingo, DJ & mehr</p>
           </div>
         </Link>
       </div>
@@ -1141,8 +1156,8 @@ function OverviewTab({
 
       {/* Quick Actions */}
       {(() => {
-        const pf = (event as any).packageInfo?.features || {};
-        const tier = (event as any).packageInfo?.tier || 'FREE';
+        const pf = packageInfo?.features || {};
+        const tier = packageInfo?.tier || 'FREE';
         const quickActions = [
           { label: 'Event Wall', sub: 'Slideshow starten', icon: Play, href: `/events/${eventId}/live-wall`, gradient: 'from-purple-500 to-violet-600', shadow: 'shadow-purple-500/20', featureKey: 'liveWall' as const },
           { label: 'Mosaic Wall', sub: 'Foto-Mosaik', icon: LayoutGrid, href: `/events/${eventId}/mosaic`, gradient: 'from-pink-500 to-rose-600', shadow: 'shadow-pink-500/20', featureKey: 'mosaicWall' as const },
@@ -1221,10 +1236,17 @@ function OverviewTab({
               <Package className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="font-semibold text-foreground">
-                {(event as any).packageInfo?.packageName || 'Free'}
+              <div className="font-semibold text-foreground flex items-center gap-2">
+                {packageInfo?.packageName || 'Free'}
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-bold uppercase">
+                  {packageInfo?.tier || 'FREE'}
+                </span>
               </div>
-              <div className="text-xs text-muted-foreground">Aktuelles Paket</div>
+              <div className="text-xs text-muted-foreground">
+                {(packageInfo as any)?.activeAddons?.length > 0
+                  ? `+ ${(packageInfo as any).activeAddons.map((a: any) => a.name).join(', ')}`
+                  : 'Aktuelles Paket'}
+              </div>
             </div>
           </div>
           <Link
@@ -1237,7 +1259,7 @@ function OverviewTab({
         </div>
         <div className="p-4 grid grid-cols-3 gap-2">
           {(() => {
-            const pf = (event as any).packageInfo?.features || {};
+            const pf = packageInfo?.features || {};
             return [
               { label: 'Live Wall', icon: Play, enabled: Boolean(pf.liveWall) },
               { label: 'Video', icon: Video, enabled: Boolean(pf.videoUpload) },

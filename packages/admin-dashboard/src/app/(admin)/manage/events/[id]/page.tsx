@@ -154,6 +154,13 @@ export default function EventDetailPage() {
         welcomeMessage: cfg?.welcomeMessage || '',
         customPromptContext: cfg?.customPromptContext || '',
         disabledFeatures: cfg?.disabledFeatures || [],
+        energyCostLlmGame: cfg?.energyCostLlmGame ?? 1,
+        energyCostImageEffect: cfg?.energyCostImageEffect ?? 2,
+        energyCostStyleTransfer: cfg?.energyCostStyleTransfer ?? 2,
+        energyCostFaceSwap: cfg?.energyCostFaceSwap ?? 3,
+        energyCostGif: cfg?.energyCostGif ?? 3,
+        energyCostVideo: cfg?.energyCostVideo ?? 5,
+        energyCostTradingCard: cfg?.energyCostTradingCard ?? 2,
       });
     } catch { /* silently fail */ }
     finally { setAiConfigLoading(false); }
@@ -170,6 +177,13 @@ export default function EventDetailPage() {
         welcomeMessage: aiConfigForm.welcomeMessage || null,
         customPromptContext: aiConfigForm.customPromptContext || null,
         disabledFeatures: aiConfigForm.disabledFeatures || [],
+        energyCostLlmGame: Number((aiConfigForm as any).energyCostLlmGame ?? 1),
+        energyCostImageEffect: Number((aiConfigForm as any).energyCostImageEffect ?? 2),
+        energyCostStyleTransfer: Number((aiConfigForm as any).energyCostStyleTransfer ?? 2),
+        energyCostFaceSwap: Number((aiConfigForm as any).energyCostFaceSwap ?? 3),
+        energyCostGif: Number((aiConfigForm as any).energyCostGif ?? 3),
+        energyCostVideo: Number((aiConfigForm as any).energyCostVideo ?? 5),
+        energyCostTradingCard: Number((aiConfigForm as any).energyCostTradingCard ?? 2),
       });
       setAiConfig(res.data.config);
       setAiConfigEditing(false);
@@ -923,6 +937,37 @@ export default function EventDetailPage() {
               <div>
                 <label className="block text-xs font-medium text-app-muted mb-1">Cooldown (Sekunden)</label>
                 <input type="number" min={0} max={3600} value={aiConfigForm.energyCooldownSeconds} onChange={e => setAiConfigForm(f => ({ ...f, energyCooldownSeconds: e.target.value }))} className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50" />
+              </div>
+            </div>
+            {/* Energy Costs per AI function */}
+            <div>
+              <label className="block text-xs font-semibold text-app-muted mb-2">⚡ Energie-Kosten pro Funktion</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { key: 'energyCostLlmGame', label: 'LLM-Spiel', icon: '🎮', def: 1 },
+                  { key: 'energyCostImageEffect', label: 'Bild-Effekt', icon: '🎨', def: 2 },
+                  { key: 'energyCostStyleTransfer', label: 'Style Transfer', icon: '🖼️', def: 2 },
+                  { key: 'energyCostFaceSwap', label: 'Face Swap', icon: '🔄', def: 3 },
+                  { key: 'energyCostGif', label: 'GIF', icon: '🎬', def: 3 },
+                  { key: 'energyCostVideo', label: 'Video', icon: '📹', def: 5 },
+                  { key: 'energyCostTradingCard', label: 'Trading Card', icon: '🃏', def: 2 },
+                ].map(c => (
+                  <div key={c.key} className="flex items-center gap-2 px-2 py-1.5 rounded-lg border border-app-border bg-app-bg/50">
+                    <span className="text-sm">{c.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[10px] text-app-muted truncate">{c.label}</div>
+                      <input
+                        type="number"
+                        min={0}
+                        max={20}
+                        value={(aiConfigForm as any)[c.key] ?? c.def}
+                        onChange={e => setAiConfigForm(f => ({ ...f, [c.key]: e.target.value }))}
+                        className="w-full text-sm font-bold text-app-fg bg-transparent border-none p-0 focus:outline-none"
+                      />
+                    </div>
+                    <span className="text-[10px] text-app-muted">⚡</span>
+                  </div>
+                ))}
               </div>
             </div>
             <div>

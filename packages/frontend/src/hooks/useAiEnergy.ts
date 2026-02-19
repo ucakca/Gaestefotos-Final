@@ -67,7 +67,7 @@ export function useAiEnergy(eventId: string | null) {
       });
       setEnergy(data.energy);
     } catch (err) {
-      // Energy system failure = treat as unlimited (fail-open)
+      // Energy system failure = treat as unlimited (fail-open) but still show bar
       setEnergy({
         balance: 9999,
         totalEarned: 0,
@@ -75,7 +75,7 @@ export function useAiEnergy(eventId: string | null) {
         rewardsClaimed: [],
         cooldownActive: false,
         cooldownEndsAt: null,
-        energyEnabled: false,
+        energyEnabled: true,
       });
     } finally {
       setLoading(false);

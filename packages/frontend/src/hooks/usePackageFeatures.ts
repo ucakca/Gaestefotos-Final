@@ -19,7 +19,21 @@ export type FeatureKey =
   | 'mosaicWall'
   | 'mosaicPrint'
   | 'mosaicExport'
-  | 'boothGames';
+  | 'boothGames'
+  | 'aiEffects'
+  | 'aiFaceSwitch'
+  | 'aiBgRemoval'
+  | 'aiGames'
+  | 'aiImageEffects'
+  | 'aiGifVideo'
+  | 'aiAdvanced'
+  | 'aiHostTools'
+  | 'aiStyleTransfer'
+  | 'smsSharing'
+  | 'emailSharing'
+  | 'galleryEmbed'
+  | 'slideshow'
+  | 'leadCollection';
 
 export type LimitKey =
   | 'maxCategories'
@@ -66,6 +80,20 @@ const DEFAULT_PACKAGE_INFO: PackageInfo = {
     mosaicPrint: false,
     mosaicExport: false,
     boothGames: true,
+    aiEffects: false,
+    aiFaceSwitch: false,
+    aiBgRemoval: false,
+    aiGames: true,
+    aiImageEffects: false,
+    aiGifVideo: false,
+    aiAdvanced: false,
+    aiHostTools: true,
+    aiStyleTransfer: false,
+    smsSharing: false,
+    emailSharing: false,
+    galleryEmbed: false,
+    slideshow: false,
+    leadCollection: false,
   },
   limits: {
     maxCategories: 1,
@@ -95,6 +123,20 @@ export const FEATURE_DESCRIPTIONS: Record<FeatureKey, { name: string; descriptio
   mosaicPrint: { name: 'Mosaic Print', description: 'Tiles als Labels drucken (Print-Station)' },
   mosaicExport: { name: 'Mosaic Export', description: 'HD-Poster des fertigen Mosaiks herunterladen' },
   boothGames: { name: 'Foto-Spaß', description: 'Selfie-Spiele und interaktive Foto-Challenges für Gäste' },
+  aiEffects: { name: 'KI-Effekte', description: 'AI-basierte Bildeffekte (Oldify, Cartoon, etc.)' },
+  aiFaceSwitch: { name: 'Face Switch', description: 'Gesichtertausch mit AI' },
+  aiBgRemoval: { name: 'BG Removal', description: 'Hintergrund entfernen mit AI' },
+  aiGames: { name: 'KI-Spiele', description: '14 LLM-basierte Spiele (Roast, Bingo, DJ...)' },
+  aiImageEffects: { name: 'AI Image Effects', description: 'AI-Bildeffekte (Oldify, Cartoon, Yearbook...)' },
+  aiGifVideo: { name: 'GIF/Video', description: 'AI-generierte GIFs und Videos' },
+  aiAdvanced: { name: 'AI Advanced', description: 'Face Switch, BG Removal, Drawbot' },
+  aiHostTools: { name: 'AI Host-Tools', description: 'Chat-Assistent, Album-Vorschläge, Texte' },
+  aiStyleTransfer: { name: 'Style Transfer', description: '24 Kunststile (Van Gogh, Monet, Warhol...)' },
+  smsSharing: { name: 'SMS Sharing', description: 'Fotos per SMS teilen' },
+  emailSharing: { name: 'E-Mail Sharing', description: 'Fotos per E-Mail teilen' },
+  galleryEmbed: { name: 'Galerie Embed', description: 'Galerie auf eigener Website einbetten' },
+  slideshow: { name: 'Slideshow', description: 'Automatische Foto-Slideshow' },
+  leadCollection: { name: 'Lead-Erfassung', description: 'Kontaktdaten der Gäste sammeln' },
 };
 
 export function usePackageFeatures(eventId: string | null) {
