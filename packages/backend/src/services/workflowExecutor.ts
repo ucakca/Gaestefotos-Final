@@ -54,6 +54,7 @@ interface ExecutionContext {
   triggeredBy: string; // 'timer' | 'photo_upload' | 'manual'
   photoId?: string;
   guestId?: string;
+  uploadSource?: string; // 'guest' | 'booth' | 'photographer' | 'hashtag'
 }
 
 interface StepResult {
@@ -109,6 +110,26 @@ function findTriggerNodes(graph: WorkflowGraph, triggerType: string): WorkflowNo
     const t = n.data?.type || n.type;
     return t === triggerType;
   });
+}
+
+/**
+ * Check if a trigger node's config matches the current execution context.
+ * Used to filter automations by source (e.g., only run for booth uploads).
+ */
+function triggerMatchesContext(trigger: WorkflowNode, ctx: ExecutionContext): boolean {
+  const config = trigger.data?.config || {};
+  const triggerType = trigger.data?.type || trigger.type;
+
+  // TRIGGER_PHOTO_UPLOADED: filter by source
+  if (triggerType === 'TRIGGER_PHOTO_UPLOADED' || triggerType === 'TRIGGER_PHOTO_UPLOAD') {
+    const source = config.source || 'any';
+    if (source === 'any') return true;
+    if (!ctx.uploadSource) return true; // Unknown source — don't filter out
+    return source === ctx.uploadSource;
+  }
+
+  // All other triggers: always match (no source filter)
+  return true;
 }
 
 // ─── Step Executors ─────────────────────────────────────────────────────────
@@ -186,7 +207,12 @@ Falls kein Album passt, antworte mit: ${categoryNames[0]}`,
 }
 
 async function executeSendEmail(ctx: ExecutionContext, config: any): Promise<StepResult> {
-  const { recipient, subject, body, templateKind } = config || {};
+  // Support both 'to' (UI) and 'recipient' (legacy) key names
+  const recipient = config?.to || config?.recipient;
+  const subject = config?.subject;
+  const body = config?.body;
+  // Support both 'template' (UI) and 'templateKind' (legacy)
+  const templateKind = config?.templateKind || config?.template;
 
   const event = await prisma.event.findUnique({
     where: { id: ctx.eventId },
@@ -197,15 +223,42 @@ async function executeSendEmail(ctx: ExecutionContext, config: any): Promise<Ste
   });
   if (!event) return { success: false, message: 'Event not found' };
 
-  // Determine recipient
+  const variables = {
+    eventTitle: event.title || '',
+    eventSlug: event.slug || '',
+    eventDate: event.dateTime ? new Date(event.dateTime).toLocaleDateString('de-DE') : '',
+    hostName: event.host?.name || '',
+    photoCount: String(await prisma.photo.count({ where: { eventId: ctx.eventId, status: 'APPROVED' } })),
+  };
+
+  // ── Handle 'all_guests' — send to every guest with email ──
+  if (recipient === 'all_guests') {
+    const guests = await prisma.guest.findMany({
+      where: { eventId: ctx.eventId, email: { not: null } },
+      select: { email: true, firstName: true },
+    });
+    if (guests.length === 0) {
+      return { success: true, message: 'all_guests: no guests with email address' };
+    }
+    let sent = 0;
+    for (const g of guests) {
+      if (!g.email) continue;
+      try {
+        await sendToSingleRecipient(g.email, { subject, body, templateKind, variables });
+        sent++;
+      } catch (err: any) {
+        logger.warn(`${LOG} SEND_EMAIL all_guests failed for ${g.email}`, { error: err.message });
+      }
+    }
+    return { success: true, message: `Email sent to ${sent}/${guests.length} guests` };
+  }
+
+  // ── Single recipient ──
   let toEmail: string | null = null;
   if (recipient === 'host' && event.host?.email) {
     toEmail = event.host.email;
   } else if (recipient === 'guest' && ctx.guestId) {
-    const guest = await prisma.guest.findUnique({
-      where: { id: ctx.guestId },
-      select: { email: true },
-    });
+    const guest = await prisma.guest.findUnique({ where: { id: ctx.guestId }, select: { email: true } });
     toEmail = guest?.email || null;
   } else if (typeof recipient === 'string' && recipient.includes('@')) {
     toEmail = recipient;
@@ -215,72 +268,84 @@ async function executeSendEmail(ctx: ExecutionContext, config: any): Promise<Ste
     return { success: false, message: `No valid email for recipient: ${recipient}` };
   }
 
-  const variables = {
-    eventTitle: event.title || '',
-    eventSlug: event.slug || '',
-    eventDate: event.dateTime ? new Date(event.dateTime).toLocaleDateString('de-DE') : '',
-    hostName: event.host?.name || '',
-    photoCount: String(await prisma.photo.count({ where: { eventId: ctx.eventId, status: 'APPROVED' } })),
-  };
-
   try {
-    // Try template from DB first
-    if (templateKind) {
-      const tpl = await (prisma as any).emailTemplate?.findFirst?.({
-        where: { kind: templateKind, isActive: true },
-        orderBy: { updatedAt: 'desc' },
-      });
-      if (tpl) {
-        await emailService.sendTemplatedEmail({
-          to: toEmail,
-          template: { subject: tpl.subject, html: tpl.html, text: tpl.text },
-          variables,
-        });
-        return { success: true, message: `Email sent to ${toEmail} (template: ${templateKind})` };
-      }
-    }
-
-    // Inline subject/body from workflow config
-    if (subject && body) {
-      await emailService.sendTemplatedEmail({
-        to: toEmail,
-        template: {
-          subject: subject || 'Benachrichtigung von gästefotos.com',
-          html: body,
-          text: null,
-        },
-        variables,
-      });
-      return { success: true, message: `Email sent to ${toEmail}` };
-    }
-
-    return { success: false, message: 'No email template or subject/body configured' };
+    await sendToSingleRecipient(toEmail, { subject, body, templateKind, variables });
+    return { success: true, message: `Email sent to ${toEmail}` };
   } catch (error: any) {
     logger.error(`${LOG} Send email failed`, { to: toEmail, error: error.message });
     return { success: false, message: error.message };
   }
 }
 
+async function sendToSingleRecipient(
+  toEmail: string,
+  opts: { subject?: string; body?: string; templateKind?: string; variables: Record<string, string> }
+): Promise<void> {
+  const { subject, body, templateKind, variables } = opts;
+  // Try DB template first
+  if (templateKind && templateKind !== 'notification' && templateKind !== 'gallery_link' && templateKind !== 'thank_you') {
+    const tpl = await (prisma as any).emailTemplate?.findFirst?.({ where: { kind: templateKind, isActive: true }, orderBy: { updatedAt: 'desc' } });
+    if (tpl) {
+      await emailService.sendTemplatedEmail({ to: toEmail, template: { subject: tpl.subject, html: tpl.html, text: tpl.text }, variables });
+      return;
+    }
+  }
+  // Inline subject/body
+  if (subject) {
+    await emailService.sendTemplatedEmail({
+      to: toEmail,
+      template: {
+        subject,
+        html: body || `<p>${subject}</p><p>Event: {{eventTitle}}</p><p><a href="https://app.xn--gstefotos-v2a.com/e2/{{eventSlug}}">Zur Galerie</a></p>`,
+        text: null,
+      },
+      variables,
+    });
+    return;
+  }
+  throw new Error('No email template or subject/body configured');
+}
+
 async function executeSendNotification(ctx: ExecutionContext, config: any): Promise<StepResult> {
-  // Log notification intent — actual push sending depends on push subscription infrastructure
-  const { title, message: body } = config || {};
-  logger.info(`${LOG} Notification triggered`, {
-    eventId: ctx.eventId,
-    title: title || 'Neue Benachrichtigung',
-    body: body || '',
-  });
+  // Support both key variants: UI uses 'to'/'message', legacy uses 'title'/'message'
+  const to = config?.to || 'host'; // 'host' | 'admins'
+  const messageText = config?.message || config?.body || 'Neue Benachrichtigung';
+
+  try {
+    const { notifyEventHost, sendPushToEvent, pushTemplates } = await import('./pushNotification');
+
+    if (to === 'host' || to === 'all') {
+      const event = await prisma.event.findUnique({ where: { id: ctx.eventId }, select: { title: true } });
+      await notifyEventHost(ctx.eventId, {
+        title: event?.title || 'Gästefotos',
+        body: messageText,
+        data: { type: 'workflow_notification', eventId: ctx.eventId },
+      }).catch(() => {});
+    }
+
+    if (to === 'guests' || to === 'all') {
+      const event = await prisma.event.findUnique({ where: { id: ctx.eventId }, select: { title: true, slug: true } });
+      await sendPushToEvent(ctx.eventId, {
+        title: event?.title || 'Gästefotos',
+        body: messageText,
+        data: { type: 'workflow_notification', eventId: ctx.eventId },
+      }).catch(() => {});
+    }
+  } catch (importErr: any) {
+    logger.warn(`${LOG} Push notification failed (non-critical)`, { error: importErr.message });
+  }
 
   // Log as QA event for tracking
   await prisma.qaLogEvent.create({
     data: {
       level: 'DEBUG',
       type: 'WORKFLOW_NOTIFICATION',
-      message: `${title || 'Notification'}: ${body || ''}`,
-      data: { eventId: ctx.eventId, config } as any,
+      message: messageText,
+      data: { eventId: ctx.eventId, to, config } as any,
     },
   });
 
-  return { success: true, message: 'Notification logged' };
+  return { success: true, message: `Notification sent (${to}): ${messageText}` };
 }
 
 // ─── AI_MODIFY (Style Transfer) ─────────────────────────────────────────────
@@ -527,23 +592,56 @@ async function evaluateCondition(ctx: ExecutionContext, config: any): Promise<{ 
 
   let fieldValue: any = null;
 
-  // Resolve field value from context
+  // Resolve field value from context using REAL data
   if (ctx.photoId) {
     const photo = await prisma.photo.findUnique({
       where: { id: ctx.photoId },
-      select: { tags: true, categoryId: true, status: true },
+      select: { tags: true, categoryId: true, status: true, sizeBytes: true, faceCount: true, uploadedBy: true },
     });
 
     switch (field) {
-      case 'has_face': fieldValue = false; break; // Would need face detection
-      case 'is_duplicate': fieldValue = false; break;
-      case 'quality_score': fieldValue = 100; break;
-      case 'file_size': fieldValue = 0; break;
+      case 'has_face':
+        fieldValue = (photo?.faceCount ?? 0) > 0;
+        break;
+      case 'is_duplicate':
+        // Check if photo has 'duplicate' tag (set by quality gate)
+        fieldValue = Array.isArray(photo?.tags) && (photo.tags as string[]).includes('duplicate');
+        break;
+      case 'quality_score': {
+        // Derive score from tags: 'blur', 'low-resolution', 'duplicate' lower it
+        const tags = Array.isArray(photo?.tags) ? photo!.tags as string[] : [];
+        let score = 100;
+        if (tags.includes('blur') || tags.includes('blurry')) score -= 40;
+        if (tags.includes('low-resolution')) score -= 30;
+        if (tags.includes('duplicate')) score -= 20;
+        if (tags.includes('quality-rejected')) score = 0;
+        fieldValue = Math.max(0, score);
+        break;
+      }
+      case 'file_size':
+        fieldValue = photo?.sizeBytes ? Number(photo.sizeBytes) : 0;
+        break;
+      case 'upload_source':
+        fieldValue = photo?.uploadedBy || 'guest';
+        break;
       case 'photo_count':
         fieldValue = await prisma.photo.count({ where: { eventId: ctx.eventId, status: 'APPROVED' } });
         break;
-      case 'has_consent': fieldValue = true; break;
-      default: fieldValue = null;
+      case 'has_consent':
+        // consent is handled separately; default true unless explicitly denied
+        fieldValue = !Array.isArray(photo?.tags) || !(photo!.tags as string[]).includes('no-consent');
+        break;
+      default:
+        fieldValue = null;
+    }
+  } else {
+    // Non-photo context
+    switch (field) {
+      case 'photo_count':
+        fieldValue = await prisma.photo.count({ where: { eventId: ctx.eventId, status: 'APPROVED' } });
+        break;
+      default:
+        fieldValue = null;
     }
   }
 
@@ -746,9 +844,9 @@ export async function executeWorkflow(
  * 1. Runs event-specific workflow (event.workflowId) if assigned
  * 2. Runs ALL active AUTOMATION workflows with TRIGGER_PHOTO_UPLOADED
  */
-export async function onPhotoUploaded(eventId: string, photoId: string): Promise<void> {
+export async function onPhotoUploaded(eventId: string, photoId: string, uploadSource?: string): Promise<void> {
   try {
-    const ctx: ExecutionContext = { eventId, triggeredBy: 'photo_upload', photoId };
+    const ctx: ExecutionContext = { eventId, triggeredBy: 'photo_upload', photoId, uploadSource: uploadSource || 'guest' };
 
     // 1. Event-specific workflow (Booth-Flow etc.)
     const event = await prisma.event.findUnique({
@@ -796,14 +894,15 @@ async function runAutomations(triggerType: string, ctx: ExecutionContext): Promi
 
   // 1. Global automations
   const globalAutomations = await prisma.boothWorkflow.findMany({
-    where: { flowType: 'AUTOMATION' as any, isActive: true, isGlobal: true },
+    where: { flowType: 'AUTOMATION', isActive: true, isGlobal: true } as any,
     select: { id: true, name: true, steps: true },
   });
 
   for (const wf of globalAutomations) {
     const graph = parseGraph(wf.steps);
     const triggers = findTriggerNodes(graph, triggerType);
-    if (triggers.length === 0) continue;
+    const matchingTriggers = triggers.filter(t => triggerMatchesContext(t, ctx));
+    if (matchingTriggers.length === 0) continue;
 
     executedIds.add(wf.id);
     logger.info(`${LOG} Running global automation "${wf.name}" for ${triggerType}`, { eventId: ctx.eventId });
@@ -829,7 +928,8 @@ async function runAutomations(triggerType: string, ctx: ExecutionContext): Promi
 
     const graph = parseGraph(wf.steps);
     const triggers = findTriggerNodes(graph, triggerType);
-    if (triggers.length === 0) continue;
+    const matchingTriggers = triggers.filter(t => triggerMatchesContext(t, ctx));
+    if (matchingTriggers.length === 0) continue;
 
     executedIds.add(wf.id);
     logger.info(`${LOG} Running event automation "${wf.name}" for ${triggerType}`, { eventId: ctx.eventId });

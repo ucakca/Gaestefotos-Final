@@ -6,7 +6,8 @@ import {
   Zap, GitBranch, Play, GripVertical, Power, PowerOff,
   Upload, Clock, Flag, FlagOff, UserPlus,
   Tags, Wand2, Eraser, ShieldCheck, Tag, FolderInput,
-  Mail, Bell, Webhook, Printer, Timer,
+  Mail, Bell, Webhook, Printer, Timer, CheckCircle, XCircle,
+  Globe, Lock,
 } from 'lucide-react';
 import {
   AUTOMATION_TRIGGERS,
@@ -26,7 +27,7 @@ const ICON_MAP: Record<string, any> = {
   Upload, Clock, Flag, FlagOff, UserPlus,
   GitBranch, Tags, Wand2, Eraser, ShieldCheck,
   Tag, FolderInput, Mail, Bell, Webhook, Printer, Timer,
-  Zap, Play, Power, PowerOff,
+  Zap, Play, Power, PowerOff, CheckCircle, XCircle,
 };
 
 function StepIcon({ name, className }: { name: string; className?: string }) {
@@ -261,6 +262,7 @@ export default function AutomationBuilder({ onSave, existingPipeline }: Automati
   const [trigger, setTrigger] = useState<AutomationStep | null>(existingPipeline?.trigger || null);
   const [steps, setSteps] = useState<AutomationStep[]>(existingPipeline?.steps || []);
   const [isActive, setIsActive] = useState(existingPipeline?.isActive ?? true);
+  const [isGlobal, setIsGlobal] = useState(existingPipeline?.isGlobal ?? false);
   const [saving, setSaving] = useState(false);
   const [selectorOpen, setSelectorOpen] = useState<'trigger' | 'condition' | 'action' | null>(null);
   const [showPresets, setShowPresets] = useState(!existingPipeline && steps.length === 0);
@@ -321,6 +323,7 @@ export default function AutomationBuilder({ onSave, existingPipeline }: Automati
         trigger,
         steps,
         isActive,
+        isGlobal,
       });
       toast.success('Automation gespeichert');
     } catch (err: any) {
@@ -450,19 +453,33 @@ export default function AutomationBuilder({ onSave, existingPipeline }: Automati
         </div>
       </div>
 
-      {/* Active Toggle + Save */}
+      {/* Active Toggle + Global + Save */}
       <div className="flex items-center justify-between pt-4 border-t border-border/50">
-        <button
-          onClick={() => setIsActive(!isActive)}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-            isActive
-              ? 'bg-green-100 text-green-700 hover:bg-green-200'
-              : 'bg-muted text-muted-foreground hover:bg-muted/80'
-          }`}
-        >
-          {isActive ? <Power className="w-3.5 h-3.5" /> : <PowerOff className="w-3.5 h-3.5" />}
-          {isActive ? 'Aktiv' : 'Deaktiviert'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsActive(!isActive)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              isActive
+                ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
+          >
+            {isActive ? <Power className="w-3.5 h-3.5" /> : <PowerOff className="w-3.5 h-3.5" />}
+            {isActive ? 'Aktiv' : 'Deaktiviert'}
+          </button>
+          <button
+            onClick={() => setIsGlobal(!isGlobal)}
+            title={isGlobal ? 'Global: läuft für alle Events' : 'Event-spezifisch: nur für zugewiesene Events'}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              isGlobal
+                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
+          >
+            {isGlobal ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+            {isGlobal ? 'Global (alle Events)' : 'Event-spezifisch'}
+          </button>
+        </div>
 
         <div className="flex gap-2">
           <button

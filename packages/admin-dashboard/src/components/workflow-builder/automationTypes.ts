@@ -44,6 +44,7 @@ export interface AutomationPipeline {
   trigger: AutomationStep;
   steps: AutomationStep[];
   isActive: boolean;
+  isGlobal?: boolean;
 }
 
 // ─── Triggers ───────────────────────────────────────────────────────────────
@@ -80,6 +81,7 @@ export const AUTOMATION_TRIGGERS: AutomationStepDef[] = [
       { key: 'mode', label: 'Zeitpunkt', type: 'select', options: [
         { value: 'after_event_start', label: 'Nach Event-Beginn' },
         { value: 'after_event_end', label: 'Nach Event-Ende' },
+        { value: 'specific_time', label: 'Bestimmte Uhrzeit (am Event-Tag)' },
       ]},
       { key: 'delayMinutes', label: 'Verzögerung (Minuten)', type: 'number', min: 0, max: 10080, defaultValue: 60 },
     ],
@@ -111,6 +113,28 @@ export const AUTOMATION_TRIGGERS: AutomationStepDef[] = [
     label: 'Gast beigetreten',
     description: 'Wird ausgelöst wenn ein neuer Gast dem Event beitritt',
     icon: 'UserPlus',
+    color: 'text-rose-600',
+    bgColor: 'bg-rose-50',
+    group: 'trigger',
+    defaultConfig: {},
+    configFields: [],
+  },
+  {
+    type: 'TRIGGER_PHOTO_APPROVED',
+    label: 'Foto freigegeben',
+    description: 'Wird ausgelöst wenn ein moderiertes Foto vom Host freigegeben wird',
+    icon: 'CheckCircle',
+    color: 'text-rose-600',
+    bgColor: 'bg-rose-50',
+    group: 'trigger',
+    defaultConfig: {},
+    configFields: [],
+  },
+  {
+    type: 'TRIGGER_PHOTO_REJECTED',
+    label: 'Foto abgelehnt',
+    description: 'Wird ausgelöst wenn ein Foto vom Host abgelehnt wird',
+    icon: 'XCircle',
     color: 'text-rose-600',
     bgColor: 'bg-rose-50',
     group: 'trigger',

@@ -1163,6 +1163,7 @@ function AutomationTab() {
       description: pipeline.description,
       flowType: 'AUTOMATION',
       isActive: pipeline.isActive,
+      isGlobal: pipeline.isGlobal ?? false,
       steps: { nodes, edges },
     };
 
@@ -1215,9 +1216,13 @@ function AutomationTab() {
         <div className="space-y-2">
           {automations.map((wf: any) => (
             <div key={wf.id} className="flex items-center gap-3 p-4 rounded-xl border border-border/50 hover:bg-muted/20 transition-colors">
-              <div className={`w-2 h-2 rounded-full ${wf.isActive !== false ? 'bg-green-500' : 'bg-muted'}`} />
+              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${wf.isActive !== false ? 'bg-green-500' : 'bg-muted'}`} />
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium">{wf.name}</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{wf.name}</span>
+                  {wf.isGlobal && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">🌐 Global</span>}
+                  {wf.isSystem && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 font-medium">System</span>}
+                </div>
                 {wf.description && <div className="text-xs text-muted-foreground">{wf.description}</div>}
               </div>
               <span className="text-xs text-muted-foreground">{wf.steps?.nodes?.length || 0} Steps</span>
@@ -1232,6 +1237,7 @@ function AutomationTab() {
                     name: wf.name,
                     description: wf.description || '',
                     isActive: wf.isActive !== false,
+                    isGlobal: wf.isGlobal ?? false,
                     trigger: triggerNode ? { id: triggerNode.id, type: triggerNode.data.type, config: triggerNode.data.config || {} } : null,
                     steps: actionNodes.map((n: any) => ({ id: n.id, type: n.data.type, config: n.data.config || {} })),
                   });
