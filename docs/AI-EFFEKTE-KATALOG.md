@@ -113,13 +113,13 @@
 | **AI Fortune Teller** | `fortune_teller` | Groq | **AiGamesModal** | 2 |
 | **AI Roast** | `ai_roast` | Groq | **AiGamesModal** | 2 |
 | **Persona Quiz** | `persona_quiz` | Groq | **AiGamesModal** (3 Fragen → Quiz) | 2 |
+| **Hochzeitsrede** | `wedding_speech` | Groq | **AiGamesModal** (Brautpaar + Rolle) | 3 |
+| **Story Generator** | `ai_stories` | Groq | **AiGamesModal** (3 Wörter → Geschichte) | 2 |
 
 ### Neue Text-Effekte (noch nicht implementiert) 🔴
 
 | Effekt | Feature-Key | Beschreibung | Credits |
 |--------|-------------|-------------|---------|
-| **Wedding Speech** | `wedding_speech` | KI generiert eine kurze, lustige Hochzeitsrede | 3 |
-| **AI Stories** | `ai_stories` | Gast gibt 3 Wörter → KI generiert Mini-Geschichte | 2 |
 | **AI DJ** | `ai_dj_suggest` | Musikvorschläge basierend auf Event-Stimmung | 1 |
 
 ---
@@ -143,7 +143,7 @@
 
 | Spiel | ChallengeType | Beschreibung | KI-Nutzung |
 |-------|--------------|-------------|------------|
-| **AI Trading Card Battle** | `TRADING_CARD` | Selfie → Trading Card → Vergleiche Stats | img2img + LLM Stats |
+| ~~AI Trading Card~~ | ~~TRADING_CARD~~ | ~~Selfie → Trading Card mit KI-Stats~~ | ✅ AiEffectsModal |
 | **Time Machine** | `TIME_MACHINE` | Selfie → "So sahst du in den 80ern aus" | img2img Decades |
 | **Celebrity Lookalike** | `CELEB_LOOKALIKE` | "Du siehst aus wie..." → Ähnlichkeit in % | Face Recognition + LLM |
 | **Pet Me** | `PET_ME` | Selfie → KI verwandelt dich in ein Tier | img2img |
@@ -175,11 +175,16 @@
 14. ~~Video-Presets~~ → 8 Stile (Cinematic, Cyberpunk, Zeitreise, Superhero, Unterwasser, Märchen, Weltraum, Disco) ✅
 15. ~~Persona Quiz~~ → AiGamesModal (3 Fragen → KI-Persönlichkeitsanalyse) ✅
 
-### Sprint 4 — Nächste Schritte
-16. **AI Trading Cards** als Template-basiertes Feature
-17. **AI Group Theme** (Multi-Face Processing)
-18. **Wedding Speech** Generator
-19. **AI Stories** (3 Wörter → Mini-Geschichte)
+### Sprint 4 — ✅ DONE (19. Feb 2026)
+16. ~~Wedding Speech~~ → AiGamesModal (Brautpaar + Rolle → Rede + Trinkspruch) ✅
+17. ~~AI Stories~~ → AiGamesModal (3 Wörter → Titel + Geschichte + Genre) ✅
+18. ~~AI Trading Cards~~ → AiEffectsModal (Canvas + LLM-Stats: Charisma, Humor, Dance, Style, Energy) ✅
+
+### Sprint 5 — Nächste Schritte
+19. **AI Group Theme** (Multi-Face Processing)
+20. **AI DJ** (Musikvorschläge)
+21. **Celebrity Lookalike** (Face Recognition + LLM)
+22. **Pet Me** (Selfie → Tier-Transformation)
 
 ---
 
@@ -210,4 +215,4 @@
 
 ---
 
-> *Letzte Aktualisierung: 19. Februar 2026*
+> *Letzte Aktualisierung: 19. Februar 2026 — Sprint 4 abgeschlossen (9 Effekte + 7 Spiele)*
