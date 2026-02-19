@@ -260,4 +260,35 @@ router.post('/bg-removal', authMiddleware, async (req: AuthRequest, res: Respons
   }
 });
 
+// POST /api/booth-games/gif-morph — Create animated GIF morph (Original → Style1 → Style2)
+router.post('/gif-morph', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { photoId, eventId, styles, frameDelay, width } = req.body;
+
+    if (!photoId || !eventId) {
+      return res.status(400).json({ error: 'photoId und eventId sind erforderlich' });
+    }
+
+    const { createGifMorph } = await import('../services/gifMorph');
+    const result = await createGifMorph({
+      photoId,
+      eventId,
+      styles,
+      frameDelay: frameDelay ? Number(frameDelay) : undefined,
+      width: width ? Number(width) : undefined,
+    });
+
+    res.json({
+      success: true,
+      gifUrl: result.gifUrl,
+      styles: result.styles,
+      frames: result.frames,
+      durationMs: result.durationMs,
+    });
+  } catch (error) {
+    logger.error('GIF morph error', { message: (error as Error).message });
+    res.status(500).json({ error: (error as Error).message || 'GIF-Morph Fehler' });
+  }
+});
+
 export default router;
