@@ -11,7 +11,7 @@ import api from '@/lib/api';
 
 // ─── Types ──────────────────────────────────────────────────
 
-type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop';
+type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'bg_removal';
 type Step = 'photo' | 'effects' | 'processing' | 'result' | 'error';
 
 interface EffectDef {
@@ -20,6 +20,7 @@ interface EffectDef {
   emoji: string;
   description: string;
   gradient: string;
+  endpoint: string;
 }
 
 interface AiEffectsModalProps {
@@ -36,6 +37,7 @@ const EFFECTS: EffectDef[] = [
     emoji: '👴',
     description: 'So siehst du in 40 Jahren aus!',
     gradient: 'from-amber-600 to-orange-700',
+    endpoint: '/booth-games/style-effect',
   },
   {
     key: 'ai_cartoon',
@@ -43,6 +45,7 @@ const EFFECTS: EffectDef[] = [
     emoji: '🎬',
     description: 'Werde ein 3D Cartoon-Charakter!',
     gradient: 'from-blue-500 to-cyan-500',
+    endpoint: '/booth-games/style-effect',
   },
   {
     key: 'ai_style_pop',
@@ -50,6 +53,23 @@ const EFFECTS: EffectDef[] = [
     emoji: '🎨',
     description: 'Dein Foto im Pop-Art-Stil!',
     gradient: 'from-fuchsia-500 to-pink-500',
+    endpoint: '/booth-games/style-effect',
+  },
+  {
+    key: 'face_switch',
+    name: 'Face Swap',
+    emoji: '🔄',
+    description: 'Gesichter im Gruppenfoto tauschen!',
+    gradient: 'from-emerald-500 to-teal-500',
+    endpoint: '/booth-games/face-switch',
+  },
+  {
+    key: 'bg_removal',
+    name: 'Hintergrund weg',
+    emoji: '✂️',
+    description: 'Hintergrund entfernen — nur du!',
+    gradient: 'from-violet-500 to-purple-600',
+    endpoint: '/booth-games/bg-removal',
   },
 ];
 
@@ -118,11 +138,15 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
 
       setProgress(40);
 
-      // Step 2: Apply the AI effect
-      const effectRes = await api.post('/booth-games/style-effect', {
-        photoId,
-        effect: effect.key,
-      });
+      // Step 2: Apply the AI effect (different endpoints per type)
+      let effectRes;
+      if (effect.key === 'face_switch') {
+        effectRes = await api.post(effect.endpoint, { photoId });
+      } else if (effect.key === 'bg_removal') {
+        effectRes = await api.post(effect.endpoint, { photoId });
+      } else {
+        effectRes = await api.post(effect.endpoint, { photoId, effect: effect.key });
+      }
 
       clearInterval(progressInterval);
       setProgress(100);
