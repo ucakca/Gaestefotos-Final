@@ -117,7 +117,7 @@ router.put('/:eventId/ai-config', authMiddleware, async (req: AuthRequest, res: 
     }
 
     const {
-      disabledFeatures, boothPreset, welcomeMessage,
+      disabledFeatures, boothPreset, welcomeMessage, customPromptContext,
       // Energy config fields
       energyStartBalance, energyRewardFirstUpload, energyRewardGuestbook,
       energyRewardChallenge, energyRewardSurvey, energyRewardSocialShare,
@@ -131,6 +131,7 @@ router.put('/:eventId/ai-config', authMiddleware, async (req: AuthRequest, res: 
     if (disabledFeatures !== undefined) updateData.disabledFeatures = disabledFeatures;
     if (boothPreset !== undefined) updateData.boothPreset = boothPreset;
     if (welcomeMessage !== undefined) updateData.welcomeMessage = welcomeMessage;
+    if (customPromptContext !== undefined) updateData.customPromptContext = customPromptContext;
     // Energy fields (only set if explicitly provided)
     if (energyStartBalance !== undefined) updateData.energyStartBalance = Number(energyStartBalance);
     if (energyRewardFirstUpload !== undefined) updateData.energyRewardFirstUpload = Number(energyRewardFirstUpload);

@@ -7,7 +7,7 @@ import {
   ExternalLink, Loader2, ToggleLeft, ToggleRight, Trash2,
   Clock, Shield, RefreshCw, Activity, Package, ChevronDown, Check,
   Save, Edit2, Globe, Lock, Wifi, MessageSquare, X, AlertTriangle,
-  Puzzle, Plus, Minus, Workflow, Zap, Brain, Power,
+  Puzzle, Plus, Minus, Workflow, Zap, Brain, Power, Ban,
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
@@ -88,18 +88,54 @@ export default function EventDetailPage() {
   const [aiConfigEditing, setAiConfigEditing] = useState(false);
   const [aiConfigForm, setAiConfigForm] = useState<Record<string, any>>({});
 
+  // AI Category → Feature Keys mapping (mirrors aiFeatureRegistry.ts)
+  const AI_CATEGORIES: { key: string; label: string; icon: string; features: string[] }[] = [
+    { key: 'games',        label: 'AI Games',      icon: '🎮', features: ['compliment_mirror','fortune_teller','ai_roast','celebrity_lookalike','ai_bingo','ai_dj','ai_meme','ai_superlatives','ai_photo_critic','ai_couple_match','caption_suggest'] },
+    { key: 'imageEffects', label: 'Image Effects', icon: '🎨', features: ['ai_oldify','ai_cartoon','ai_style_pop','time_machine','pet_me','yearbook','emoji_me','miniature'] },
+    { key: 'styleTransfer',label: 'Style Transfer',icon: '🖼️', features: ['style_transfer'] },
+    { key: 'advanced',     label: 'Advanced',      icon: '⚡', features: ['face_switch','bg_removal','drawbot'] },
+    { key: 'gifVideo',     label: 'GIF / Video',   icon: '🎬', features: ['highlight_reel'] },
+    { key: 'hostTools',    label: 'Host-Tools',    icon: '🛠️', features: ['chat','album_suggest','description_suggest','invitation_suggest','challenge_suggest','guestbook_suggest','color_scheme','ai_categorize'] },
+    { key: 'recognition',  label: 'Face Search',   icon: '👤', features: ['face_search'] },
+  ];
+
+  const disabledFeaturesToCategoryState = (disabled: string[]): Record<string, boolean> => {
+    const state: Record<string, boolean> = {};
+    for (const cat of AI_CATEGORIES) {
+      state[cat.key] = !cat.features.every(f => disabled.includes(f));
+    }
+    return state;
+  };
+
+  const categoryStateToDisabledFeatures = (catState: Record<string, boolean>): string[] => {
+    const disabled: string[] = [];
+    for (const cat of AI_CATEGORIES) {
+      if (!catState[cat.key]) {
+        disabled.push(...cat.features);
+      }
+    }
+    return [...new Set(disabled)];
+  };
+
   const loadAiConfig = useCallback(async () => {
     if (!eventId) return;
     setAiConfigLoading(true);
     try {
       const res = await api.get(`/events/${eventId}/ai-config`);
-      setAiConfig(res.data.config);
+      const cfg = res.data.config;
+      setAiConfig(cfg);
+      const disabledFeatures: string[] = cfg?.disabledFeatures || [];
+      const catState: Record<string,boolean> = {};
+      for (const cat of [{key:'games',features:['compliment_mirror','fortune_teller','ai_roast','celebrity_lookalike','ai_bingo','ai_dj','ai_meme','ai_superlatives','ai_photo_critic','ai_couple_match','caption_suggest']},{key:'imageEffects',features:['ai_oldify','ai_cartoon','ai_style_pop','time_machine','pet_me','yearbook','emoji_me','miniature']},{key:'styleTransfer',features:['style_transfer']},{key:'advanced',features:['face_switch','bg_removal','drawbot']},{key:'gifVideo',features:['highlight_reel']},{key:'hostTools',features:['chat','album_suggest','description_suggest','invitation_suggest','challenge_suggest','guestbook_suggest','color_scheme','ai_categorize']},{key:'recognition',features:['face_search']}]) {
+        catState[cat.key] = !cat.features.every((f: string) => disabledFeatures.includes(f));
+      }
       setAiConfigForm({
-        energyEnabled: res.data.config?.energyEnabled ?? true,
-        energyStartBalance: res.data.config?.energyStartBalance ?? 10,
-        energyCooldownSeconds: res.data.config?.energyCooldownSeconds ?? 60,
-        welcomeMessage: res.data.config?.welcomeMessage || '',
-        customPromptContext: res.data.config?.customPromptContext || '',
+        energyEnabled: cfg?.energyEnabled ?? true,
+        energyStartBalance: cfg?.energyStartBalance ?? 10,
+        energyCooldownSeconds: cfg?.energyCooldownSeconds ?? 60,
+        welcomeMessage: cfg?.welcomeMessage || '',
+        customPromptContext: cfg?.customPromptContext || '',
+        categories: catState,
       });
     } catch { /* silently fail */ }
     finally { setAiConfigLoading(false); }
@@ -109,12 +145,20 @@ export default function EventDetailPage() {
     if (!eventId) return;
     setAiConfigSaving(true);
     try {
+      // Convert category states back to disabledFeatures array
+      const catDefs = [{key:'games',features:['compliment_mirror','fortune_teller','ai_roast','celebrity_lookalike','ai_bingo','ai_dj','ai_meme','ai_superlatives','ai_photo_critic','ai_couple_match','caption_suggest']},{key:'imageEffects',features:['ai_oldify','ai_cartoon','ai_style_pop','time_machine','pet_me','yearbook','emoji_me','miniature']},{key:'styleTransfer',features:['style_transfer']},{key:'advanced',features:['face_switch','bg_removal','drawbot']},{key:'gifVideo',features:['highlight_reel']},{key:'hostTools',features:['chat','album_suggest','description_suggest','invitation_suggest','challenge_suggest','guestbook_suggest','color_scheme','ai_categorize']},{key:'recognition',features:['face_search']}];
+      const disabled: string[] = [];
+      const cats = aiConfigForm.categories || {};
+      for (const cat of catDefs) { if (!cats[cat.key]) disabled.push(...cat.features); }
+      const disabledFeatures = [...new Set(disabled)];
+
       const res = await api.put(`/events/${eventId}/ai-config`, {
         energyEnabled: aiConfigForm.energyEnabled,
         energyStartBalance: Number(aiConfigForm.energyStartBalance),
         energyCooldownSeconds: Number(aiConfigForm.energyCooldownSeconds),
         welcomeMessage: aiConfigForm.welcomeMessage || null,
         customPromptContext: aiConfigForm.customPromptContext || null,
+        disabledFeatures,
       });
       setAiConfig(res.data.config);
       setAiConfigEditing(false);
@@ -849,6 +893,29 @@ export default function EventDetailPage() {
               <label className="block text-xs font-medium text-app-muted mb-1">Custom Prompt-Kontext (injiziert in AI-Spiele)</label>
               <textarea rows={3} value={aiConfigForm.customPromptContext} onChange={e => setAiConfigForm(f => ({ ...f, customPromptContext: e.target.value }))} placeholder="z.B. Dies ist eine Hochzeitsfeier. Das Brautpaar heißt Anna und Max..." className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none" />
             </div>
+            <div>
+              <label className="block text-xs font-semibold text-app-muted mb-2">🤖 AI-Kategorien aktivieren/deaktivieren</label>
+              <div className="grid grid-cols-2 gap-2">
+                {AI_CATEGORIES.map(cat => {
+                  const enabled = aiConfigForm.categories?.[cat.key] !== false;
+                  return (
+                    <button
+                      key={cat.key}
+                      onClick={() => setAiConfigForm(f => ({ ...f, categories: { ...(f.categories || {}), [cat.key]: !enabled } }))}
+                      className={`flex items-center justify-between p-2.5 rounded-xl border text-left text-xs transition-all ${enabled ? 'border-purple-300 bg-purple-50/50 dark:bg-purple-950/20' : 'border-red-300 bg-red-50/30 dark:bg-red-950/10 opacity-60'}`}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <span>{cat.icon}</span>
+                        <span className="font-medium text-app-fg">{cat.label}</span>
+                      </span>
+                      {enabled
+                        ? <Check className="w-3.5 h-3.5 text-purple-500" />
+                        : <Ban className="w-3.5 h-3.5 text-red-500" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         ) : aiConfig ? (
           <div className="space-y-2">
@@ -860,6 +927,19 @@ export default function EventDetailPage() {
               <Zap className="w-4 h-4 text-amber-500" />
               <span className="text-sm text-app-fg">Startguthaben: <strong>{aiConfig.energyStartBalance} ⚡</strong></span>
             </div>
+            {(aiConfig.disabledFeatures?.length || 0) > 0 && (() => {
+              const disabledCats = AI_CATEGORIES.filter(cat => cat.features.every((f: string) => aiConfig.disabledFeatures.includes(f)));
+              if (disabledCats.length === 0) return null;
+              return (
+                <div className="flex flex-wrap gap-1 pt-1">
+                  {disabledCats.map(cat => (
+                    <span key={cat.key} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-600 dark:bg-red-950/20">
+                      <Ban className="w-3 h-3" /> {cat.icon} {cat.label}
+                    </span>
+                  ))}
+                </div>
+              );
+            })()}
             {aiConfig.welcomeMessage && (
               <div className="flex items-start gap-2">
                 <MessageSquare className="w-4 h-4 text-app-muted mt-0.5" />

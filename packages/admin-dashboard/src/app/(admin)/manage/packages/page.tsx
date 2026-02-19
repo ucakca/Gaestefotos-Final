@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Package,
   RefreshCw,
@@ -45,10 +45,19 @@ interface PackageDefinition {
   allowMosaicPrint: boolean;
   allowMosaicExport: boolean;
   isAdFree: boolean;
+  // AI-Kategorien
+  allowAiGames: boolean;
+  allowAiImageEffects: boolean;
+  allowAiStyleTransfer: boolean;
+  allowAiGifVideo: boolean;
+  allowAiAdvanced: boolean;
+  allowAiHostTools: boolean;
   maxCategories: number | null;
   maxChallenges: number | null;
   maxZipDownloadPhotos: number | null;
   maxCoHosts: number | null;
+  maxAiPlaysPerGuest: number | null;
+  maxAiCreditsPerEvent: number | null;
   displayOrder: number;
   priceEurCents: number | null;
   description: string | null;
@@ -79,12 +88,24 @@ const FEATURE_FIELDS: { key: keyof PackageDefinition; label: string; description
   { key: 'isAdFree', label: 'Werbefrei', description: 'Keine Fremdwerbung' },
 ];
 
+const AI_FEATURE_FIELDS: { key: keyof PackageDefinition; label: string; description: string }[] = [
+  { key: 'allowAiGames', label: '🎮 AI Games', description: '14 LLM-Spiele (Roast, Bingo, DJ...)' },
+  { key: 'allowAiImageEffects', label: '🎨 AI Image Effects', description: '14 Bildeffekte (Oldify, Cartoon, Emoji Me...)' },
+  { key: 'allowAiStyleTransfer', label: '🖼️ Style Transfer', description: '24 Kunststile (Öl, Aquarell, Pop Art...)' },
+  { key: 'allowAiAdvanced', label: '⚡ AI Advanced', description: 'Face Switch, BG Removal, Drawbot' },
+  { key: 'allowAiGifVideo', label: '🎬 GIF/Video', description: 'Highlight Reel, GIF-Generierung' },
+  { key: 'allowAiHostTools', label: '🛠️ Host-Tools', description: 'Album-Vorschläge, Caption, Chat-Assistent' },
+  { key: 'allowFaceSearch', label: '👤 Face Search', description: 'KI-Gesichtserkennung' },
+];
+
 const LIMIT_FIELDS: { key: keyof PackageDefinition; label: string; placeholder: string }[] = [
   { key: 'storageLimitPhotos', label: 'Max Fotos', placeholder: '∞' },
   { key: 'storageDurationDays', label: 'Galerie (Tage)', placeholder: '∞' },
   { key: 'maxCoHosts', label: 'Max Co-Hosts', placeholder: '∞' },
   { key: 'maxCategories', label: 'Max Kategorien', placeholder: '∞' },
   { key: 'maxChallenges', label: 'Max Challenges', placeholder: '∞' },
+  { key: 'maxAiPlaysPerGuest', label: 'AI Plays/Gast', placeholder: '∞' },
+  { key: 'maxAiCreditsPerEvent', label: 'AI Credits/Event', placeholder: '∞' },
 ];
 
 function formatPrice(cents: number | null): string {
@@ -560,43 +581,53 @@ function FeatureMatrix({
               </td>
             </tr>
             {/* Feature rows */}
-            {FEATURE_FIELDS.map(({ key, label, description }, idx) => (
-              <tr
-                key={key}
-                className={`border-b border-app-border/30 ${idx % 2 === 0 ? '' : 'bg-app-bg/20'}`}
-              >
-                <td className="px-4 py-2.5 sticky left-0 z-10" style={{ backgroundColor: 'inherit' }}>
-                  <div>
-                    <span className="text-sm text-app-fg">{label}</span>
-                    <span className="block text-[11px] text-app-muted">{description}</span>
-                  </div>
-                </td>
-                {packages.map((pkg) => {
-                  const value = pkg[key] as boolean;
-                  return (
-                    <td key={pkg.id} className="px-3 py-2.5 text-center">
-                      <button
-                        onClick={() => onToggle(pkg.id, key, value)}
-                        disabled={saving === pkg.id}
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center mx-auto transition-colors ${
-                          value
-                            ? 'bg-success/100/15 text-success hover:bg-success/100/25'
-                            : 'bg-app-bg text-app-muted/40 hover:bg-app-bg/80 hover:text-app-muted'
-                        } ${saving === pkg.id ? 'opacity-50' : ''}`}
-                      >
-                        {saving === pkg.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : value ? (
-                          <Check className="w-4 h-4" />
-                        ) : (
-                          <X className="w-4 h-4" />
-                        )}
-                      </button>
+            {[...FEATURE_FIELDS, ...AI_FEATURE_FIELDS].map(({ key, label, description }, idx) => {
+              const isAiSection = AI_FEATURE_FIELDS.some(f => f.key === key);
+              const isFirstAi = key === AI_FEATURE_FIELDS[0].key;
+              return (
+                <React.Fragment key={key}>
+                  {isFirstAi && (
+                    <tr className="border-b-2 border-app-border">
+                      <td colSpan={packages.length + 1} className="px-4 py-2 bg-violet-50/50 dark:bg-violet-950/20">
+                        <span className="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400">🤖 KI / AI-Kategorien</span>
+                      </td>
+                    </tr>
+                  )}
+                  <tr className={`border-b border-app-border/30 ${isAiSection ? 'bg-violet-50/20 dark:bg-violet-950/10' : idx % 2 === 0 ? '' : 'bg-app-bg/20'}`}>
+                    <td className="px-4 py-2.5 sticky left-0 z-10" style={{ backgroundColor: 'inherit' }}>
+                      <div>
+                        <span className="text-sm text-app-fg">{label}</span>
+                        <span className="block text-[11px] text-app-muted">{description}</span>
+                      </div>
                     </td>
-                  );
-                })}
-              </tr>
-            ))}
+                    {packages.map((pkg) => {
+                      const value = (pkg[key] as boolean) ?? false;
+                      return (
+                        <td key={pkg.id} className="px-3 py-2.5 text-center">
+                          <button
+                            onClick={() => onToggle(pkg.id, key, value)}
+                            disabled={saving === pkg.id}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center mx-auto transition-colors ${
+                              value
+                                ? isAiSection ? 'bg-violet-500/15 text-violet-600 hover:bg-violet-500/25' : 'bg-success/100/15 text-success hover:bg-success/100/25'
+                                : 'bg-app-bg text-app-muted/40 hover:bg-app-bg/80 hover:text-app-muted'
+                            } ${saving === pkg.id ? 'opacity-50' : ''}`}
+                          >
+                            {saving === pkg.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : value ? (
+                              <Check className="w-4 h-4" />
+                            ) : (
+                              <X className="w-4 h-4" />
+                            )}
+                          </button>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>

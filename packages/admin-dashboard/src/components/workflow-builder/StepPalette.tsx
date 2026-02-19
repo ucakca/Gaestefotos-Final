@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Hand, Sparkles, Timer, Heart, PartyPopper,
   Lightbulb, Camera, LayoutGrid, Gamepad2, Pen,
@@ -7,9 +8,9 @@ import {
   Printer, Monitor, GripVertical,
   Upload, Clock, MousePointerClick, Flag,
   GitBranch, ListTree, Repeat, GitFork,
-  Shuffle, Eraser, Palette,
+  Shuffle, Eraser, Palette, Zap, Filter,
 } from 'lucide-react';
-import { STEP_CATEGORIES, STEP_TYPES, type StepTypeDefinition } from './types';
+import { STEP_CATEGORIES, STEP_TYPES, EXECUTABLE_STEP_TYPES, type StepTypeDefinition } from './types';
 
 const ICON_MAP: Record<string, any> = {
   Hand, Sparkles, Timer, Heart, PartyPopper,
@@ -36,11 +37,37 @@ interface StepPaletteProps {
 }
 
 export default function StepPalette({ onAddStep }: StepPaletteProps) {
+  const [filterMode, setFilterMode] = useState<'all' | 'server' | 'booth'>('all');
+
   return (
-    <div className="space-y-4">
-      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-1">Step-Palette</h3>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between px-1">
+        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Step-Palette</h3>
+        <div className="flex gap-1">
+          {(['all', 'server', 'booth'] as const).map(mode => (
+            <button
+              key={mode}
+              onClick={() => setFilterMode(mode)}
+              className={`px-1.5 py-0.5 text-[10px] rounded font-medium transition-colors ${filterMode === mode ? 'bg-blue-500 text-white' : 'bg-muted/50 text-muted-foreground hover:bg-muted/80'}`}
+            >
+              {mode === 'all' ? 'Alle' : mode === 'server' ? '⚡ Server' : '🖥️ Booth'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="px-1 flex gap-3 text-[10px] text-muted-foreground">
+        <span className="flex items-center gap-1"><Zap className="w-3 h-3 text-amber-500" /> = Server-Automation</span>
+        <span className="flex items-center gap-1"><span className="text-muted-foreground/50">🖥️</span> = Booth-App</span>
+      </div>
+
       {STEP_CATEGORIES.map((cat) => {
-        const steps = STEP_TYPES.filter(s => s.category === cat.key);
+        let steps = STEP_TYPES.filter(s => s.category === cat.key);
+        if (filterMode === 'server') steps = steps.filter(s => EXECUTABLE_STEP_TYPES.has(s.type));
+        if (filterMode === 'booth') steps = steps.filter(s => !EXECUTABLE_STEP_TYPES.has(s.type));
+        if (steps.length === 0) return null;
+
         const style = CATEGORY_STYLE[cat.key];
         return (
           <div key={cat.key}>
@@ -53,6 +80,7 @@ export default function StepPalette({ onAddStep }: StepPaletteProps) {
             <div className="space-y-1">
               {steps.map((step) => {
                 const IconComp = ICON_MAP[step.icon] || Camera;
+                const isServerSide = EXECUTABLE_STEP_TYPES.has(step.type);
                 return (
                   <button
                     key={step.type}
@@ -62,11 +90,14 @@ export default function StepPalette({ onAddStep }: StepPaletteProps) {
                       e.dataTransfer.setData('application/workflow-step', JSON.stringify(step));
                       e.dataTransfer.effectAllowed = 'copy';
                     }}
-                    className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg border text-left text-sm transition-all hover:shadow-sm active:scale-[0.98] ${style.bg} ${style.border} ${style.text}`}
+                    className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg border text-left transition-all hover:shadow-sm active:scale-[0.98] ${style.bg} ${style.border} ${style.text}`}
                   >
                     <GripVertical className="w-3 h-3 opacity-30 flex-shrink-0" />
                     <IconComp className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span className="font-medium truncate text-xs">{step.label}</span>
+                    <span className="font-medium truncate text-xs flex-1">{step.label.replace(/^⚡\s*/, '')}</span>
+                    {isServerSide && (
+                      <Zap className="w-3 h-3 text-amber-500 flex-shrink-0 opacity-80" />
+                    )}
                   </button>
                 );
               })}
