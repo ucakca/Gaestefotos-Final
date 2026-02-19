@@ -78,6 +78,7 @@ import { shutdownQueues, getQueueStats } from './services/jobQueue';
 import slideshowRoutes from './routes/slideshow';
 import styleTransferRoutes from './routes/styleTransfer';
 import boothGamesRoutes from './routes/boothGames';
+import eventAiConfigRoutes from './routes/eventAiConfig';
 import gamificationRoutes from './routes/gamification';
 import pushRoutes from './routes/push';
 import analyticsRoutes from './routes/analytics';
@@ -645,6 +646,7 @@ app.use('/api', galleryEmbedRoutes);
 app.use('/api/slideshow', slideshowRoutes);
 app.use('/api/style-transfer', aiFeatureLimiter, styleTransferRoutes);
 app.use('/api/booth-games', aiFeatureLimiter, boothGamesRoutes);
+app.use('/api/events', eventAiConfigRoutes); // AI Config: /api/events/:eventId/ai-features, ai-config
 app.use('/api/events', gamificationRoutes); // Gamification: /api/events/:eventId/achievements, leaderboard
 app.use('/api/push', pushSubscribeLimiter, pushRoutes); // Push Notifications: /api/push/vapid-key, subscribe
 app.use('/api/events', analyticsLimiter, analyticsRoutes); // Analytics: /api/events/:eventId/analytics

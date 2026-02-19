@@ -131,6 +131,7 @@ model Event {
   workflowId              String?
   workflow                BoothWorkflow?              @relation(fields: [workflowId], references: [id], onDelete: SetNull)
   pushSubscriptions       PushSubscription[]
+  aiConfig                EventAiConfig?
 
   @@index([slug])
   @@index([hostId])
@@ -309,6 +310,13 @@ model PackageDefinition {
   allowAiEffects       Boolean               @default(false)
   allowAiFaceSwitch    Boolean               @default(false)
   allowAiBgRemoval     Boolean               @default(false)
+  allowAiGames         Boolean               @default(true)
+  allowAiImageEffects  Boolean               @default(false)
+  allowAiGifVideo      Boolean               @default(false)
+  allowAiAdvanced      Boolean               @default(false)
+  allowAiHostTools     Boolean               @default(true)
+  allowAiStyleTransfer Boolean               @default(false)
+  maxAiPlaysPerGuest   Int?
   allowSmsSharing      Boolean               @default(false)
   allowEmailSharing    Boolean               @default(false)
   allowGalleryEmbed    Boolean               @default(false)
@@ -331,6 +339,20 @@ model PackageDefinition {
   @@index([isActive])
   @@index([displayOrder])
   @@map("package_definitions")
+}
+
+model EventAiConfig {
+  id                String   @id @default(uuid())
+  eventId           String   @unique
+  event             Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  disabledFeatures  String[] @default([])
+  boothPreset       Json?
+  welcomeMessage    String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([eventId])
+  @@map("event_ai_configs")
 }
 
 model Guest {

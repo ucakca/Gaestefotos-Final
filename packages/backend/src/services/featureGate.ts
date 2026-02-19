@@ -30,6 +30,12 @@ export type FeatureKey =
   | 'aiEffects'
   | 'aiFaceSwitch'
   | 'aiBgRemoval'
+  | 'aiGames'
+  | 'aiImageEffects'
+  | 'aiGifVideo'
+  | 'aiAdvanced'
+  | 'aiHostTools'
+  | 'aiStyleTransfer'
   | 'smsSharing'
   | 'emailSharing'
   | 'galleryEmbed'
@@ -44,6 +50,7 @@ export type LimitKey =
   | 'maxCoHosts'
   | 'maxGamePlaysPerDay'
   | 'maxAiCreditsPerEvent'
+  | 'maxAiPlaysPerGuest'
   | 'storageLimitPhotos';
 
 // Mapping von FeatureKey zu PackageDefinition Feld
@@ -67,6 +74,12 @@ const featureToFieldMap: Record<FeatureKey, string> = {
   aiEffects: 'allowAiEffects',
   aiFaceSwitch: 'allowAiFaceSwitch',
   aiBgRemoval: 'allowAiBgRemoval',
+  aiGames: 'allowAiGames',
+  aiImageEffects: 'allowAiImageEffects',
+  aiGifVideo: 'allowAiGifVideo',
+  aiAdvanced: 'allowAiAdvanced',
+  aiHostTools: 'allowAiHostTools',
+  aiStyleTransfer: 'allowAiStyleTransfer',
   smsSharing: 'allowSmsSharing',
   emailSharing: 'allowEmailSharing',
   galleryEmbed: 'allowGalleryEmbed',
@@ -149,6 +162,7 @@ export async function getFeatureLimit(
       maxCoHosts: 0,
       maxGamePlaysPerDay: 3,
       maxAiCreditsPerEvent: 0,
+      maxAiPlaysPerGuest: 3,
       storageLimitPhotos: 50,
     };
     return freeDefaults[limit] ?? 0;
@@ -267,6 +281,12 @@ export async function getEventFeatures(eventId: string): Promise<{
     aiEffects: false,
     aiFaceSwitch: false,
     aiBgRemoval: false,
+    aiGames: true,
+    aiImageEffects: false,
+    aiGifVideo: false,
+    aiAdvanced: false,
+    aiHostTools: true,
+    aiStyleTransfer: false,
     smsSharing: false,
     emailSharing: false,
     galleryEmbed: false,
@@ -281,6 +301,7 @@ export async function getEventFeatures(eventId: string): Promise<{
     maxCoHosts: 0,
     maxGamePlaysPerDay: 3,
     maxAiCreditsPerEvent: 0,
+    maxAiPlaysPerGuest: 3,
     storageLimitPhotos: 50,
   };
   
@@ -296,6 +317,7 @@ export async function getEventFeatures(eventId: string): Promise<{
     limits.maxZipDownloadPhotos = pkg.maxZipDownloadPhotos;
     limits.maxCoHosts = pkg.maxCoHosts;
     limits.maxGamePlaysPerDay = (pkg as any).maxGamePlaysPerDay ?? null;
+    limits.maxAiPlaysPerGuest = (pkg as any).maxAiPlaysPerGuest ?? null;
     limits.storageLimitPhotos = pkg.storageLimitPhotos;
   }
   
