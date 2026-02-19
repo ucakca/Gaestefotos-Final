@@ -87,35 +87,58 @@ export default function EventDetailPage() {
   const [aiConfigSaving, setAiConfigSaving] = useState(false);
   const [aiConfigEditing, setAiConfigEditing] = useState(false);
   const [aiConfigForm, setAiConfigForm] = useState<Record<string, any>>({});
+  const [expandedAiCats, setExpandedAiCats] = useState<Record<string, boolean>>({});
 
-  // AI Category → Feature Keys mapping (mirrors aiFeatureRegistry.ts)
-  const AI_CATEGORIES: { key: string; label: string; icon: string; features: string[] }[] = [
-    { key: 'games',        label: 'AI Games',      icon: '🎮', features: ['compliment_mirror','fortune_teller','ai_roast','celebrity_lookalike','ai_bingo','ai_dj','ai_meme','ai_superlatives','ai_photo_critic','ai_couple_match','caption_suggest'] },
-    { key: 'imageEffects', label: 'Image Effects', icon: '🎨', features: ['ai_oldify','ai_cartoon','ai_style_pop','time_machine','pet_me','yearbook','emoji_me','miniature'] },
-    { key: 'styleTransfer',label: 'Style Transfer',icon: '🖼️', features: ['style_transfer'] },
-    { key: 'advanced',     label: 'Advanced',      icon: '⚡', features: ['face_switch','bg_removal','drawbot'] },
-    { key: 'gifVideo',     label: 'GIF / Video',   icon: '🎬', features: ['highlight_reel'] },
-    { key: 'hostTools',    label: 'Host-Tools',    icon: '🛠️', features: ['chat','album_suggest','description_suggest','invitation_suggest','challenge_suggest','guestbook_suggest','color_scheme','ai_categorize'] },
-    { key: 'recognition',  label: 'Face Search',   icon: '👤', features: ['face_search'] },
+  // AI Category → Feature Keys + Labels (mirrors aiFeatureRegistry.ts)
+  const AI_CATEGORIES: { key: string; label: string; icon: string; features: { key: string; label: string }[] }[] = [
+    { key: 'games', label: 'AI Games', icon: '🎮', features: [
+      { key: 'compliment_mirror', label: 'Compliment Mirror' },
+      { key: 'fortune_teller',    label: 'AI Fortune Teller' },
+      { key: 'ai_roast',          label: 'AI Roast' },
+      { key: 'celebrity_lookalike',label: 'Celebrity Lookalike' },
+      { key: 'ai_bingo',          label: 'AI Bingo' },
+      { key: 'ai_dj',             label: 'AI DJ' },
+      { key: 'ai_meme',           label: 'AI Meme Generator' },
+      { key: 'ai_superlatives',   label: 'AI Superlatives' },
+      { key: 'ai_photo_critic',   label: 'AI Foto-Kritiker' },
+      { key: 'ai_couple_match',   label: 'AI Couple Match' },
+      { key: 'caption_suggest',   label: 'Caption Generator' },
+    ]},
+    { key: 'imageEffects', label: 'Image Effects', icon: '🎨', features: [
+      { key: 'ai_oldify',    label: 'Oldify (Altern-Effekt)' },
+      { key: 'ai_cartoon',   label: 'Cartoon' },
+      { key: 'ai_style_pop', label: 'Style Pop (Pop Art)' },
+      { key: 'time_machine', label: 'Time Machine' },
+      { key: 'pet_me',       label: 'Pet Me (Tier-Verwandlung)' },
+      { key: 'yearbook',     label: 'Yearbook (90er Foto)' },
+      { key: 'emoji_me',     label: 'Emoji Me' },
+      { key: 'miniature',    label: 'Miniature (Tilt-Shift)' },
+    ]},
+    { key: 'styleTransfer', label: 'Style Transfer', icon: '🖼️', features: [
+      { key: 'style_transfer', label: 'Style Transfer (24 Kunststile)' },
+    ]},
+    { key: 'advanced', label: 'Advanced', icon: '⚡', features: [
+      { key: 'face_switch', label: 'Face Switch (Gesicht tauschen)' },
+      { key: 'bg_removal',  label: 'Hintergrund entfernen' },
+      { key: 'drawbot',     label: 'Drawbot (Zeichenroboter)' },
+    ]},
+    { key: 'gifVideo', label: 'GIF / Video', icon: '🎬', features: [
+      { key: 'highlight_reel', label: 'Highlight Reel (Event-Video)' },
+    ]},
+    { key: 'hostTools', label: 'Host-Tools', icon: '🛠️', features: [
+      { key: 'chat',                label: 'KI Chat-Assistent' },
+      { key: 'album_suggest',       label: 'Album-Vorschläge' },
+      { key: 'description_suggest', label: 'Event-Beschreibung' },
+      { key: 'invitation_suggest',  label: 'Einladungstext' },
+      { key: 'challenge_suggest',   label: 'Challenge-Ideen' },
+      { key: 'guestbook_suggest',   label: 'Gästebuch-Nachricht' },
+      { key: 'color_scheme',        label: 'Farbschema' },
+      { key: 'ai_categorize',       label: 'AI Kategorisierung' },
+    ]},
+    { key: 'recognition', label: 'Face Search', icon: '👤', features: [
+      { key: 'face_search', label: 'Face Search (Gesichtserkennung)' },
+    ]},
   ];
-
-  const disabledFeaturesToCategoryState = (disabled: string[]): Record<string, boolean> => {
-    const state: Record<string, boolean> = {};
-    for (const cat of AI_CATEGORIES) {
-      state[cat.key] = !cat.features.every(f => disabled.includes(f));
-    }
-    return state;
-  };
-
-  const categoryStateToDisabledFeatures = (catState: Record<string, boolean>): string[] => {
-    const disabled: string[] = [];
-    for (const cat of AI_CATEGORIES) {
-      if (!catState[cat.key]) {
-        disabled.push(...cat.features);
-      }
-    }
-    return [...new Set(disabled)];
-  };
 
   const loadAiConfig = useCallback(async () => {
     if (!eventId) return;
@@ -124,18 +147,13 @@ export default function EventDetailPage() {
       const res = await api.get(`/events/${eventId}/ai-config`);
       const cfg = res.data.config;
       setAiConfig(cfg);
-      const disabledFeatures: string[] = cfg?.disabledFeatures || [];
-      const catState: Record<string,boolean> = {};
-      for (const cat of [{key:'games',features:['compliment_mirror','fortune_teller','ai_roast','celebrity_lookalike','ai_bingo','ai_dj','ai_meme','ai_superlatives','ai_photo_critic','ai_couple_match','caption_suggest']},{key:'imageEffects',features:['ai_oldify','ai_cartoon','ai_style_pop','time_machine','pet_me','yearbook','emoji_me','miniature']},{key:'styleTransfer',features:['style_transfer']},{key:'advanced',features:['face_switch','bg_removal','drawbot']},{key:'gifVideo',features:['highlight_reel']},{key:'hostTools',features:['chat','album_suggest','description_suggest','invitation_suggest','challenge_suggest','guestbook_suggest','color_scheme','ai_categorize']},{key:'recognition',features:['face_search']}]) {
-        catState[cat.key] = !cat.features.every((f: string) => disabledFeatures.includes(f));
-      }
       setAiConfigForm({
         energyEnabled: cfg?.energyEnabled ?? true,
         energyStartBalance: cfg?.energyStartBalance ?? 10,
         energyCooldownSeconds: cfg?.energyCooldownSeconds ?? 60,
         welcomeMessage: cfg?.welcomeMessage || '',
         customPromptContext: cfg?.customPromptContext || '',
-        categories: catState,
+        disabledFeatures: cfg?.disabledFeatures || [],
       });
     } catch { /* silently fail */ }
     finally { setAiConfigLoading(false); }
@@ -145,20 +163,13 @@ export default function EventDetailPage() {
     if (!eventId) return;
     setAiConfigSaving(true);
     try {
-      // Convert category states back to disabledFeatures array
-      const catDefs = [{key:'games',features:['compliment_mirror','fortune_teller','ai_roast','celebrity_lookalike','ai_bingo','ai_dj','ai_meme','ai_superlatives','ai_photo_critic','ai_couple_match','caption_suggest']},{key:'imageEffects',features:['ai_oldify','ai_cartoon','ai_style_pop','time_machine','pet_me','yearbook','emoji_me','miniature']},{key:'styleTransfer',features:['style_transfer']},{key:'advanced',features:['face_switch','bg_removal','drawbot']},{key:'gifVideo',features:['highlight_reel']},{key:'hostTools',features:['chat','album_suggest','description_suggest','invitation_suggest','challenge_suggest','guestbook_suggest','color_scheme','ai_categorize']},{key:'recognition',features:['face_search']}];
-      const disabled: string[] = [];
-      const cats = aiConfigForm.categories || {};
-      for (const cat of catDefs) { if (!cats[cat.key]) disabled.push(...cat.features); }
-      const disabledFeatures = [...new Set(disabled)];
-
       const res = await api.put(`/events/${eventId}/ai-config`, {
         energyEnabled: aiConfigForm.energyEnabled,
         energyStartBalance: Number(aiConfigForm.energyStartBalance),
         energyCooldownSeconds: Number(aiConfigForm.energyCooldownSeconds),
         welcomeMessage: aiConfigForm.welcomeMessage || null,
         customPromptContext: aiConfigForm.customPromptContext || null,
-        disabledFeatures,
+        disabledFeatures: aiConfigForm.disabledFeatures || [],
       });
       setAiConfig(res.data.config);
       setAiConfigEditing(false);
@@ -168,6 +179,29 @@ export default function EventDetailPage() {
     } finally {
       setAiConfigSaving(false);
     }
+  };
+
+  const toggleAiFeature = (featureKey: string) => {
+    setAiConfigForm(f => {
+      const current: string[] = f.disabledFeatures || [];
+      const isDisabled = current.includes(featureKey);
+      return { ...f, disabledFeatures: isDisabled ? current.filter((k: string) => k !== featureKey) : [...current, featureKey] };
+    });
+  };
+
+  const toggleAiCategory = (cat: typeof AI_CATEGORIES[0]) => {
+    setAiConfigForm(f => {
+      const current: string[] = f.disabledFeatures || [];
+      const allDisabled = cat.features.every(feat => current.includes(feat.key));
+      if (allDisabled) {
+        // Enable all in category
+        return { ...f, disabledFeatures: current.filter((k: string) => !cat.features.some(feat => feat.key === k)) };
+      } else {
+        // Disable all in category
+        const toAdd = cat.features.map(feat => feat.key).filter(k => !current.includes(k));
+        return { ...f, disabledFeatures: [...current, ...toAdd] };
+      }
+    });
   };
 
   const loadEvent = useCallback(async () => {
@@ -893,25 +927,64 @@ export default function EventDetailPage() {
               <label className="block text-xs font-medium text-app-muted mb-1">Custom Prompt-Kontext (injiziert in AI-Spiele)</label>
               <textarea rows={3} value={aiConfigForm.customPromptContext} onChange={e => setAiConfigForm(f => ({ ...f, customPromptContext: e.target.value }))} placeholder="z.B. Dies ist eine Hochzeitsfeier. Das Brautpaar heißt Anna und Max..." className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none" />
             </div>
+            {/* Individual AI Feature Toggles */}
             <div>
-              <label className="block text-xs font-semibold text-app-muted mb-2">🤖 AI-Kategorien aktivieren/deaktivieren</label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-semibold text-app-muted">🤖 AI-Features aktivieren / deaktivieren</label>
+                <div className="flex gap-1.5">
+                  <button onClick={() => setAiConfigForm(f => ({ ...f, disabledFeatures: [] }))} className="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-600 hover:bg-green-500/20 font-medium">Alle an</button>
+                  <button onClick={() => setAiConfigForm(f => ({ ...f, disabledFeatures: AI_CATEGORIES.flatMap(c => c.features.map(ft => ft.key)) }))} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 text-red-600 hover:bg-red-500/20 font-medium">Alle aus</button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
                 {AI_CATEGORIES.map(cat => {
-                  const enabled = aiConfigForm.categories?.[cat.key] !== false;
+                  const disabled: string[] = aiConfigForm.disabledFeatures || [];
+                  const disabledCount = cat.features.filter(ft => disabled.includes(ft.key)).length;
+                  const allDisabled = disabledCount === cat.features.length;
+                  const someDisabled = disabledCount > 0 && disabledCount < cat.features.length;
+                  const isExpanded = expandedAiCats[cat.key] ?? false;
                   return (
-                    <button
-                      key={cat.key}
-                      onClick={() => setAiConfigForm(f => ({ ...f, categories: { ...(f.categories || {}), [cat.key]: !enabled } }))}
-                      className={`flex items-center justify-between p-2.5 rounded-xl border text-left text-xs transition-all ${enabled ? 'border-purple-300 bg-purple-50/50 dark:bg-purple-950/20' : 'border-red-300 bg-red-50/30 dark:bg-red-950/10 opacity-60'}`}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <span>{cat.icon}</span>
-                        <span className="font-medium text-app-fg">{cat.label}</span>
-                      </span>
-                      {enabled
-                        ? <Check className="w-3.5 h-3.5 text-purple-500" />
-                        : <Ban className="w-3.5 h-3.5 text-red-500" />}
-                    </button>
+                    <div key={cat.key} className={`rounded-xl border overflow-hidden transition-all ${allDisabled ? 'border-red-200 bg-red-50/30 dark:bg-red-950/10' : someDisabled ? 'border-amber-200 bg-amber-50/20 dark:bg-amber-950/10' : 'border-purple-200 bg-purple-50/20 dark:bg-purple-950/10'}`}>
+                      {/* Category Header */}
+                      <div className="flex items-center gap-2 px-3 py-2">
+                        <button
+                          onClick={() => toggleAiCategory(cat)}
+                          className={`w-8 h-4 rounded-full transition-colors flex-shrink-0 ${allDisabled ? 'bg-red-400' : 'bg-purple-500'}`}
+                        >
+                          <span className={`block w-3 h-3 rounded-full bg-white shadow transition-transform mx-0.5 ${allDisabled ? 'translate-x-0' : 'translate-x-4'}`} />
+                        </button>
+                        <button
+                          onClick={() => setExpandedAiCats(e => ({ ...e, [cat.key]: !e[cat.key] }))}
+                          className="flex-1 flex items-center gap-2 text-left"
+                        >
+                          <span className="text-sm">{cat.icon}</span>
+                          <span className={`text-xs font-semibold ${allDisabled ? 'text-red-500 line-through' : 'text-app-fg'}`}>{cat.label}</span>
+                          {someDisabled && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">{cat.features.length - disabledCount}/{cat.features.length}</span>}
+                          {allDisabled && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">Alle deaktiviert</span>}
+                          <ChevronDown className={`w-3 h-3 text-app-muted ml-auto transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        </button>
+                      </div>
+                      {/* Individual features (collapsible) */}
+                      {isExpanded && (
+                        <div className="border-t border-app-border/30 px-3 py-2 grid grid-cols-2 gap-1">
+                          {cat.features.map(feat => {
+                            const isOff = disabled.includes(feat.key);
+                            return (
+                              <button
+                                key={feat.key}
+                                onClick={() => toggleAiFeature(feat.key)}
+                                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-left text-xs transition-all ${isOff ? 'bg-red-50 dark:bg-red-950/20 text-red-500' : 'bg-white dark:bg-white/5 text-app-fg hover:bg-purple-50 dark:hover:bg-purple-950/20'}`}
+                              >
+                                {isOff
+                                  ? <Ban className="w-3 h-3 text-red-400 flex-shrink-0" />
+                                  : <Check className="w-3 h-3 text-purple-500 flex-shrink-0" />}
+                                <span className={isOff ? 'line-through opacity-60' : ''}>{feat.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -927,19 +1000,26 @@ export default function EventDetailPage() {
               <Zap className="w-4 h-4 text-amber-500" />
               <span className="text-sm text-app-fg">Startguthaben: <strong>{aiConfig.energyStartBalance} ⚡</strong></span>
             </div>
-            {(aiConfig.disabledFeatures?.length || 0) > 0 && (() => {
-              const disabledCats = AI_CATEGORIES.filter(cat => cat.features.every((f: string) => aiConfig.disabledFeatures.includes(f)));
-              if (disabledCats.length === 0) return null;
-              return (
-                <div className="flex flex-wrap gap-1 pt-1">
-                  {disabledCats.map(cat => (
-                    <span key={cat.key} className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-600 dark:bg-red-950/20">
-                      <Ban className="w-3 h-3" /> {cat.icon} {cat.label}
-                    </span>
-                  ))}
-                </div>
-              );
-            })()}
+            {(aiConfig.disabledFeatures?.length || 0) > 0 && (
+              <div className="space-y-1 pt-1">
+                {AI_CATEGORIES.map(cat => {
+                  const disabledInCat = cat.features.filter(ft => aiConfig.disabledFeatures.includes(ft.key));
+                  if (disabledInCat.length === 0) return null;
+                  const allOff = disabledInCat.length === cat.features.length;
+                  return (
+                    <div key={cat.key} className="flex items-center gap-1 flex-wrap">
+                      <span className="text-xs text-app-muted">{cat.icon}</span>
+                      {allOff
+                        ? <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-600 dark:bg-red-950/20"><Ban className="w-2.5 h-2.5 inline mr-0.5" />{cat.label} (alle aus)</span>
+                        : disabledInCat.map(ft => (
+                            <span key={ft.key} className="text-xs px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 dark:bg-red-950/20 line-through">{ft.label}</span>
+                          ))
+                      }
+                    </div>
+                  );
+                })}
+              </div>
+            )}
             {aiConfig.welcomeMessage && (
               <div className="flex items-start gap-2">
                 <MessageSquare className="w-4 h-4 text-app-muted mt-0.5" />
