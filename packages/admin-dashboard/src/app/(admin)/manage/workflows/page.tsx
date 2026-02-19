@@ -24,6 +24,7 @@ import {
   Camera, Wand2, Printer, Gamepad2, QrCode,
   Lock, Unlock, Copy, History, Shield, RotateCcw,
   ShieldCheck, Play, Undo2, Redo2,
+  Search, Globe, Link, Unlink, ToggleLeft, ToggleRight, ChevronDown,
 } from 'lucide-react';
 import WorkflowNodeComponent from '@/components/workflow-builder/WorkflowNode';
 import StepPalette from '@/components/workflow-builder/StepPalette';
@@ -1254,8 +1255,271 @@ function AutomationTab() {
   );
 }
 
+// ─── EventAutomation Tab ─────────────────────────────────────────────────────
+
+function EventAutomationTab() {
+  const [events, setEvents] = useState<any[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>('');
+  const [selectedEventTitle, setSelectedEventTitle] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showEventDropdown, setShowEventDropdown] = useState(false);
+  const [data, setData] = useState<{ assignments: any[]; globalAutomations: any[]; unassigned: any[] } | null>(null);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+  const [loadingData, setLoadingData] = useState(false);
+  const [actionInProgress, setActionInProgress] = useState<string | null>(null);
+
+  // Load events list
+  useEffect(() => {
+    api.get('/admin/events?limit=200&offset=0')
+      .then(res => setEvents(res.data?.events || []))
+      .catch(() => {})
+      .finally(() => setLoadingEvents(false));
+  }, []);
+
+  // Load automations for selected event
+  const loadEventAutomations = useCallback(async (eventId: string) => {
+    if (!eventId) return;
+    setLoadingData(true);
+    try {
+      const res = await api.get(`/workflows/event-automations/${eventId}`);
+      setData(res.data);
+    } catch {
+      toast.error('Fehler beim Laden der Automationen');
+    } finally {
+      setLoadingData(false);
+    }
+  }, []);
+
+  const handleSelectEvent = (ev: any) => {
+    setSelectedEventId(ev.id);
+    setSelectedEventTitle(ev.title);
+    setShowEventDropdown(false);
+    setSearchQuery('');
+    loadEventAutomations(ev.id);
+  };
+
+  const handleAssign = async (workflowId: string) => {
+    setActionInProgress(workflowId);
+    try {
+      await api.post(`/workflows/event-automations/${selectedEventId}`, { workflowId });
+      toast.success('Automation zugewiesen');
+      loadEventAutomations(selectedEventId);
+    } catch {
+      toast.error('Fehler beim Zuweisen');
+    } finally {
+      setActionInProgress(null);
+    }
+  };
+
+  const handleToggle = async (workflowId: string, currentActive: boolean) => {
+    setActionInProgress(workflowId);
+    try {
+      await api.patch(`/workflows/event-automations/${selectedEventId}/${workflowId}`, { isActive: !currentActive });
+      toast.success(currentActive ? 'Deaktiviert' : 'Aktiviert');
+      loadEventAutomations(selectedEventId);
+    } catch {
+      toast.error('Fehler beim Aktualisieren');
+    } finally {
+      setActionInProgress(null);
+    }
+  };
+
+  const handleRemove = async (workflowId: string) => {
+    setActionInProgress(workflowId);
+    try {
+      await api.delete(`/workflows/event-automations/${selectedEventId}/${workflowId}`);
+      toast.success('Automation entfernt');
+      loadEventAutomations(selectedEventId);
+    } catch {
+      toast.error('Fehler beim Entfernen');
+    } finally {
+      setActionInProgress(null);
+    }
+  };
+
+  const filteredEvents = events.filter(ev =>
+    !searchQuery || ev.title?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold">Event-Zuweisung</h2>
+        <p className="text-sm text-muted-foreground">Automationen gezielt pro Event aktivieren oder deaktivieren</p>
+      </div>
+
+      {/* Event Selector */}
+      <div className="relative">
+        <label className="text-sm font-medium text-foreground block mb-1.5">Event auswählen</label>
+        <button
+          onClick={() => setShowEventDropdown(v => !v)}
+          className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-border bg-background hover:bg-muted/30 transition-colors text-sm"
+        >
+          <span className={selectedEventTitle ? 'text-foreground' : 'text-muted-foreground'}>
+            {loadingEvents ? 'Lade Events…' : (selectedEventTitle || 'Event auswählen…')}
+          </span>
+          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+        </button>
+
+        {showEventDropdown && (
+          <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-xl shadow-xl overflow-hidden">
+            <div className="p-2 border-b border-border">
+              <div className="flex items-center gap-2 px-2">
+                <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                <input
+                  autoFocus
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Event suchen…"
+                  className="flex-1 text-sm bg-transparent outline-none py-1"
+                />
+              </div>
+            </div>
+            <div className="max-h-64 overflow-y-auto">
+              {filteredEvents.length === 0 ? (
+                <div className="px-4 py-3 text-sm text-muted-foreground">Keine Events gefunden</div>
+              ) : (
+                filteredEvents.slice(0, 50).map(ev => (
+                  <button
+                    key={ev.id}
+                    onClick={() => handleSelectEvent(ev)}
+                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted/50 transition-colors flex items-center justify-between"
+                  >
+                    <span>{ev.title}</span>
+                    <span className="text-xs text-muted-foreground">{ev.eventCode || ''}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      {!selectedEventId ? (
+        <div className="text-center py-16 text-muted-foreground">
+          <Workflow className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p className="text-sm">Wähle ein Event um seine Automationen zu verwalten.</p>
+        </div>
+      ) : loadingData ? (
+        <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+      ) : data ? (
+        <div className="space-y-6">
+
+          {/* Global Automations */}
+          <div className="rounded-xl border border-border/50 overflow-hidden">
+            <div className="px-4 py-3 bg-blue-50/50 dark:bg-blue-950/20 border-b border-border/50 flex items-center gap-2">
+              <Globe className="w-4 h-4 text-blue-500" />
+              <span className="text-sm font-medium">Globale Automationen</span>
+              <span className="text-xs text-muted-foreground ml-1">(laufen automatisch für alle Events)</span>
+            </div>
+            {data.globalAutomations.length === 0 ? (
+              <div className="px-4 py-4 text-sm text-muted-foreground">Keine globalen Automationen aktiv</div>
+            ) : (
+              <div className="divide-y divide-border/30">
+                {data.globalAutomations.map(wf => (
+                  <div key={wf.id} className="flex items-center gap-3 px-4 py-3">
+                    <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium">{wf.name}</div>
+                      {wf.description && <div className="text-xs text-muted-foreground">{wf.description}</div>}
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Global</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Assigned Automations */}
+          <div className="rounded-xl border border-border/50 overflow-hidden">
+            <div className="px-4 py-3 bg-muted/20 border-b border-border/50 flex items-center gap-2">
+              <Link className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">Zugewiesene Automationen</span>
+              <span className="ml-auto text-xs text-muted-foreground">{data.assignments.length} zugewiesen</span>
+            </div>
+            {data.assignments.length === 0 ? (
+              <div className="px-4 py-4 text-sm text-muted-foreground">Noch keine event-spezifischen Automationen zugewiesen</div>
+            ) : (
+              <div className="divide-y divide-border/30">
+                {data.assignments.map(a => (
+                  <div key={a.workflowId} className="flex items-center gap-3 px-4 py-3">
+                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${a.isActive ? 'bg-green-500' : 'bg-muted'}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium">{a.workflow?.name || a.workflowId}</div>
+                      {a.workflow?.description && <div className="text-xs text-muted-foreground">{a.workflow.description}</div>}
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        onClick={() => handleToggle(a.workflowId, a.isActive)}
+                        disabled={actionInProgress === a.workflowId}
+                        title={a.isActive ? 'Deaktivieren' : 'Aktivieren'}
+                        className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
+                      >
+                        {actionInProgress === a.workflowId ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : a.isActive ? (
+                          <ToggleRight className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <ToggleLeft className="w-4 h-4" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleRemove(a.workflowId)}
+                        disabled={actionInProgress === a.workflowId}
+                        title="Zuweisung entfernen"
+                        className="p-1.5 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors text-muted-foreground"
+                      >
+                        <Unlink className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Available (unassigned) Automations */}
+          {data.unassigned.length > 0 && (
+            <div className="rounded-xl border border-border/50 overflow-hidden">
+              <div className="px-4 py-3 bg-muted/20 border-b border-border/50 flex items-center gap-2">
+                <Plus className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Verfügbare Automationen</span>
+                <span className="ml-auto text-xs text-muted-foreground">{data.unassigned.length} verfügbar</span>
+              </div>
+              <div className="divide-y divide-border/30">
+                {data.unassigned.map(wf => (
+                  <div key={wf.id} className="flex items-center gap-3 px-4 py-3">
+                    <div className="w-2 h-2 rounded-full bg-muted flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-muted-foreground">{wf.name}</div>
+                      {wf.description && <div className="text-xs text-muted-foreground/70">{wf.description}</div>}
+                    </div>
+                    <button
+                      onClick={() => handleAssign(wf.id)}
+                      disabled={actionInProgress === wf.id}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex-shrink-0"
+                    >
+                      {actionInProgress === wf.id ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Link className="w-3 h-3" />
+                      )}
+                      Zuweisen
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function WorkflowBuilderPage() {
-  const [activeTab, setActiveTab] = useState<'automations' | 'booth'>('automations');
+  const [activeTab, setActiveTab] = useState<'automations' | 'booth' | 'event-assign'>('automations');
 
   return (
     <div className="h-screen flex flex-col">
@@ -1282,6 +1546,16 @@ export default function WorkflowBuilderPage() {
           >
             🔧 Booth-Flows (Erweitert)
           </button>
+          <button
+            onClick={() => setActiveTab('event-assign')}
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'event-assign'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            🔗 Event-Zuweisung
+          </button>
         </div>
       </div>
 
@@ -1290,6 +1564,10 @@ export default function WorkflowBuilderPage() {
         {activeTab === 'automations' ? (
           <div className="h-full overflow-y-auto">
             <AutomationTab />
+          </div>
+        ) : activeTab === 'event-assign' ? (
+          <div className="h-full overflow-y-auto">
+            <EventAutomationTab />
           </div>
         ) : (
           <ReactFlowProvider>
