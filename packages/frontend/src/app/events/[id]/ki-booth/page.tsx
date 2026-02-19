@@ -9,6 +9,7 @@ import DashboardFooter from '@/components/DashboardFooter';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Button } from '@/components/ui/Button';
 import { useToastStore } from '@/store/toastStore';
+import { usePackageFeatures } from '@/hooks/usePackageFeatures';
 import {
   Sparkles, Wand2, ArrowLeft, Download, Share2, RotateCw,
   Palette, Loader2, Check, Image as ImageIcon, ChevronRight,
@@ -124,9 +125,11 @@ export default function KiBoothPage({ params }: { params: Promise<{ id: string }
     }
   };
 
-  if (loading || !eventId) return <FullPageLoader />;
+  const { features: pkgFeatures, loading: pkgLoading } = usePackageFeatures(eventId);
 
-  const aiEnabled = (event as any)?.packageInfo?.features?.aiEffects === true;
+  if (loading || pkgLoading || !eventId) return <FullPageLoader />;
+
+  const aiEnabled = pkgFeatures?.aiStyleTransfer === true || pkgFeatures?.aiEffects === true;
 
   if (!aiEnabled) {
     return (

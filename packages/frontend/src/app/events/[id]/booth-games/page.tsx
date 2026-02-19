@@ -10,6 +10,7 @@ import DashboardFooter from '@/components/DashboardFooter';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { Button } from '@/components/ui/Button';
 import { useToastStore } from '@/store/toastStore';
+import { usePackageFeatures } from '@/hooks/usePackageFeatures';
 import {
   Gamepad2, ArrowLeft, RotateCw, Trophy, Star, Send, Sparkles, Loader2, Pen, Camera, Video, FlipHorizontal2,
 } from 'lucide-react';
@@ -148,9 +149,11 @@ export default function BoothGamesPage({ params }: { params: Promise<{ id: strin
     }
   };
 
-  if (loading || !eventId) return <FullPageLoader />;
+  const { features: pkgFeatures, loading: pkgLoading } = usePackageFeatures(eventId);
 
-  const boothGamesEnabled = (event as any)?.packageInfo?.features?.boothGames === true;
+  if (loading || pkgLoading || !eventId) return <FullPageLoader />;
+
+  const boothGamesEnabled = pkgFeatures?.boothGames === true;
 
   if (!boothGamesEnabled) {
     return (
