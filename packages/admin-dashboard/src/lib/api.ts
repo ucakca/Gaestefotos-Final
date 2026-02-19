@@ -29,6 +29,11 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
+    // Let browser set correct Content-Type + boundary for FormData uploads
+    if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     const token = localStorage.getItem('admin-auth-storage');
     if (token) {
       try {

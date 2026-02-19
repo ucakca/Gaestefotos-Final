@@ -1024,7 +1024,90 @@ export const STEP_TYPES: StepTypeDefinition[] = [
     ],
     outputs: [{ id: 'default', label: 'Gesendet', type: 'default' }],
   },
+
+  // ── AUTOMATION (Sprint 18 — server-executable) ──
+  {
+    type: 'QUALITY_GATE',
+    label: '⚡ Qualitäts-Check',
+    category: 'ai',
+    icon: 'ShieldCheck',
+    color: 'text-violet-700',
+    bgColor: 'bg-violet-50',
+    borderColor: 'border-violet-300',
+    defaultConfig: { minBlurScore: 50, minResolution: 640, checkDuplicates: true },
+    configFields: [
+      { key: 'minBlurScore', label: 'Min. Schärfe-Score (0-100)', type: 'number', min: 0, max: 100, defaultValue: 50 },
+      { key: 'minResolution', label: 'Min. Auflösung (px)', type: 'number', min: 100, max: 4000, defaultValue: 640 },
+      { key: 'checkDuplicates', label: 'Duplikat-Erkennung', type: 'toggle', defaultValue: true },
+    ],
+    outputs: [
+      { id: 'default', label: 'Bestanden ✓', type: 'default' },
+      { id: 'rejected', label: 'Abgelehnt ✗', type: 'conditional' },
+    ],
+  },
+  {
+    type: 'ADD_TAG',
+    label: '⚡ Tags hinzufügen',
+    category: 'feature',
+    icon: 'Tag',
+    color: 'text-amber-700',
+    bgColor: 'bg-amber-50',
+    borderColor: 'border-amber-300',
+    defaultConfig: { tags: '' },
+    configFields: [
+      { key: 'tags', label: 'Tags (kommagetrennt)', type: 'text', placeholder: 'booth,hochzeit,vip' },
+    ],
+    outputs: [{ id: 'default', label: 'Getaggt', type: 'default' }],
+  },
+  {
+    type: 'MOVE_TO_ALBUM',
+    label: '⚡ In Album verschieben',
+    category: 'feature',
+    icon: 'FolderInput',
+    color: 'text-amber-700',
+    bgColor: 'bg-amber-50',
+    borderColor: 'border-amber-300',
+    defaultConfig: { albumName: '', albumId: '' },
+    configFields: [
+      { key: 'albumName', label: 'Album-Name (oder neu erstellen)', type: 'text', placeholder: 'z.B. Booth-Fotos' },
+      { key: 'albumId', label: 'Album-ID (optional, überschreibt Name)', type: 'text', placeholder: 'UUID' },
+    ],
+    outputs: [{ id: 'default', label: 'Verschoben', type: 'default' }],
+  },
+  {
+    type: 'WEBHOOK',
+    label: '⚡ Webhook',
+    category: 'cloud',
+    icon: 'Webhook',
+    color: 'text-blue-700',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-300',
+    defaultConfig: { url: '', method: 'POST', authHeader: '', timeoutMs: 10000 },
+    configFields: [
+      { key: 'url', label: 'Webhook-URL', type: 'text', placeholder: 'https://example.com/webhook' },
+      { key: 'method', label: 'HTTP-Methode', type: 'select', options: [
+        { value: 'POST', label: 'POST' },
+        { value: 'GET', label: 'GET' },
+        { value: 'PUT', label: 'PUT' },
+      ]},
+      { key: 'authHeader', label: 'Authorization Header (optional)', type: 'text', placeholder: 'Bearer xxx...' },
+      { key: 'timeoutMs', label: 'Timeout (ms)', type: 'number', min: 1000, max: 30000, defaultValue: 10000 },
+    ],
+    outputs: [{ id: 'default', label: 'Gesendet', type: 'default' }],
+  },
 ];
+
+// Step types that are actually executed server-side (Sprint 18)
+export const EXECUTABLE_STEP_TYPES = new Set([
+  'AI_CATEGORIZE_PHOTO', 'AI_MODIFY', 'AI_BG_REMOVAL',
+  'QUALITY_GATE', 'ADD_TAG', 'MOVE_TO_ALBUM',
+  'SEND_EMAIL', 'EMAIL_SHARE', 'SEND_NOTIFICATION',
+  'WEBHOOK', 'PRINT', 'PRINT_JOB', 'DELAY', 'CONDITION',
+]);
+
+export function isExecutableStep(type: string): boolean {
+  return EXECUTABLE_STEP_TYPES.has(type);
+}
 
 export function getStepType(type: string): StepTypeDefinition | undefined {
   return STEP_TYPES.find(s => s.type === type);

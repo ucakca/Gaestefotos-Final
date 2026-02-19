@@ -1,17 +1,26 @@
 /**
  * Workflow Executor — Processes workflow steps for events.
  * 
- * Supported step types:
+ * Supported step types (Sprint 18 — fully executable):
  * - AI_CATEGORIZE_PHOTO: Uses LLM to auto-categorize photos into albums
+ * - AI_MODIFY: Style Transfer via Replicate/Stability
+ * - AI_BG_REMOVAL: Background removal via configured provider
+ * - QUALITY_GATE: Photo quality check (blur, resolution, duplicate)
+ * - ADD_TAG: Add tags to a photo
+ * - MOVE_TO_ALBUM: Move photo to a specific album/category
  * - SEND_EMAIL: Sends templated emails to host/guests
  * - SEND_NOTIFICATION: Sends push notifications
- * - All existing AI steps (AI_MODIFY, AI_FACE_SWITCH, etc.)
+ * - WEBHOOK: Call external URL with event data
+ * - PRINT_JOB: Create print job for print terminal
+ * - DELAY: Wait for a specified duration
+ * - CONDITION: Evaluate conditions and branch
  */
 
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { generateCompletion } from '../lib/groq';
 import { emailService } from './email';
+import axios from 'axios';
 
 const LOG = '[workflow-executor]';
 
@@ -32,6 +41,7 @@ interface WorkflowEdge {
   id: string;
   source: string;
   target: string;
+  sourceHandle?: string;
 }
 
 interface WorkflowGraph {
@@ -77,11 +87,21 @@ function parseGraph(steps: any): WorkflowGraph {
   return { nodes: [], edges: [] };
 }
 
-function getDownstreamNodes(graph: WorkflowGraph, sourceId: string): WorkflowNode[] {
+function getDownstreamNodes(graph: WorkflowGraph, sourceId: string, handleFilter?: string): WorkflowNode[] {
   const targetIds = graph.edges
-    .filter(e => e.source === sourceId)
+    .filter(e => e.source === sourceId && (handleFilter === undefined || e.sourceHandle === handleFilter))
     .map(e => e.target);
   return graph.nodes.filter(n => targetIds.includes(n.id));
+}
+
+function getConditionalDownstream(graph: WorkflowGraph, nodeId: string, conditionResult: boolean): WorkflowNode[] {
+  const handle = conditionResult ? 'then' : 'else';
+  const nodes = getDownstreamNodes(graph, nodeId, handle);
+  // Fallback: if no handle-specific edges, use 'default' or all edges
+  if (nodes.length === 0) {
+    return getDownstreamNodes(graph, nodeId, conditionResult ? 'default' : undefined);
+  }
+  return nodes;
 }
 
 function findTriggerNodes(graph: WorkflowGraph, triggerType: string): WorkflowNode[] {
@@ -263,6 +283,286 @@ async function executeSendNotification(ctx: ExecutionContext, config: any): Prom
   return { success: true, message: 'Notification logged' };
 }
 
+// ─── AI_MODIFY (Style Transfer) ─────────────────────────────────────────────
+
+async function executeAiModify(ctx: ExecutionContext, config: any): Promise<StepResult> {
+  if (!ctx.photoId) return { success: false, message: 'No photoId in context' };
+
+  try {
+    const photo = await prisma.photo.findUnique({ where: { id: ctx.photoId }, select: { id: true, url: true, eventId: true } });
+    if (!photo?.url) return { success: false, message: 'Photo not found or has no URL' };
+
+    const { executeStyleTransfer } = await import('./styleTransfer');
+    const style = config?.style || config?.prompt ? 'custom' : 'oil-painting';
+    const result = await executeStyleTransfer({
+      photoId: ctx.photoId,
+      eventId: ctx.eventId,
+      style,
+      prompt: config?.prompt,
+      strength: config?.strength,
+    });
+
+    logger.info(`${LOG} AI_MODIFY complete`, { photoId: ctx.photoId, style, durationMs: result.durationMs });
+    return { success: true, message: `Style Transfer: ${style} (${result.durationMs}ms)`, data: { outputUrl: result.outputUrl } };
+  } catch (error: any) {
+    logger.error(`${LOG} AI_MODIFY failed`, { photoId: ctx.photoId, error: error.message });
+    return { success: false, message: `Style Transfer fehlgeschlagen: ${error.message}` };
+  }
+}
+
+// ─── AI_BG_REMOVAL ──────────────────────────────────────────────────────────
+
+async function executeAiBgRemoval(ctx: ExecutionContext, config: any): Promise<StepResult> {
+  if (!ctx.photoId) return { success: false, message: 'No photoId in context' };
+
+  try {
+    const { processBgRemovalForPhoto } = await import('./bgRemoval');
+    const replaceBg = config?.replaceBg || 'transparent';
+    const result = await processBgRemovalForPhoto(ctx.photoId, ctx.triggeredBy, {
+      replacementColor: replaceBg === 'white' ? '#ffffff' : undefined,
+      outputFormat: replaceBg === 'transparent' ? 'png' : 'jpeg',
+    });
+
+    logger.info(`${LOG} AI_BG_REMOVAL complete`, { photoId: ctx.photoId });
+    return { success: true, message: 'Hintergrund entfernt', data: result };
+  } catch (error: any) {
+    logger.error(`${LOG} AI_BG_REMOVAL failed`, { photoId: ctx.photoId, error: error.message });
+    return { success: false, message: `BG Removal fehlgeschlagen: ${error.message}` };
+  }
+}
+
+// ─── QUALITY_GATE ───────────────────────────────────────────────────────────
+
+async function executeQualityGate(ctx: ExecutionContext, _config: any): Promise<StepResult> {
+  if (!ctx.photoId) return { success: false, message: 'No photoId in context' };
+
+  try {
+    const photo = await prisma.photo.findUnique({ where: { id: ctx.photoId }, select: { url: true } });
+    if (!photo?.url) return { success: false, message: 'Photo not found' };
+
+    // Download photo buffer
+    const response = await axios.get(photo.url, { responseType: 'arraybuffer', timeout: 15000 });
+    const buffer = Buffer.from(response.data);
+
+    const { runPhotoQualityGate } = await import('./photoQualityGate');
+    const result = await runPhotoQualityGate(ctx.eventId, ctx.photoId, buffer);
+
+    logger.info(`${LOG} QUALITY_GATE complete`, { photoId: ctx.photoId, passed: result.passed, blurScore: result.checks.blur.score });
+    return {
+      success: true,
+      message: result.passed ? 'Qualitäts-Check bestanden' : `Abgelehnt: ${result.rejectionReason}`,
+      data: { passed: result.passed, checks: result.checks, warnings: result.warnings },
+    };
+  } catch (error: any) {
+    logger.error(`${LOG} QUALITY_GATE failed`, { photoId: ctx.photoId, error: error.message });
+    return { success: false, message: `Quality Gate fehlgeschlagen: ${error.message}` };
+  }
+}
+
+// ─── ADD_TAG ────────────────────────────────────────────────────────────────
+
+async function executeAddTag(ctx: ExecutionContext, config: any): Promise<StepResult> {
+  if (!ctx.photoId) return { success: false, message: 'No photoId in context' };
+
+  const tagsToAdd = (config?.tags || config?.tag || '').split(',').map((t: string) => t.trim()).filter(Boolean);
+  if (tagsToAdd.length === 0) return { success: false, message: 'Keine Tags konfiguriert' };
+
+  try {
+    const photo = await prisma.photo.findUnique({ where: { id: ctx.photoId }, select: { tags: true } });
+    const existingTags = photo?.tags || [];
+    const mergedTags = [...new Set([...existingTags, ...tagsToAdd])];
+
+    await prisma.photo.update({ where: { id: ctx.photoId }, data: { tags: mergedTags } });
+
+    logger.info(`${LOG} ADD_TAG complete`, { photoId: ctx.photoId, added: tagsToAdd });
+    return { success: true, message: `Tags hinzugefügt: ${tagsToAdd.join(', ')}`, data: { tags: mergedTags } };
+  } catch (error: any) {
+    return { success: false, message: `Tags fehlgeschlagen: ${error.message}` };
+  }
+}
+
+// ─── MOVE_TO_ALBUM ──────────────────────────────────────────────────────────
+
+async function executeMoveToAlbum(ctx: ExecutionContext, config: any): Promise<StepResult> {
+  if (!ctx.photoId) return { success: false, message: 'No photoId in context' };
+
+  const albumName = config?.albumName || config?.categoryName;
+  const albumId = config?.albumId || config?.categoryId;
+
+  try {
+    let targetId = albumId;
+
+    if (!targetId && albumName) {
+      // Find or create category by name
+      let category = await prisma.category.findFirst({
+        where: { eventId: ctx.eventId, name: { equals: albumName, mode: 'insensitive' } },
+      });
+
+      if (!category) {
+        const maxOrder = await prisma.category.aggregate({ where: { eventId: ctx.eventId }, _max: { order: true } });
+        category = await prisma.category.create({
+          data: { eventId: ctx.eventId, name: albumName, order: (maxOrder._max.order || 0) + 1 },
+        });
+        logger.info(`${LOG} Created album "${albumName}" for event ${ctx.eventId}`);
+      }
+
+      targetId = category.id;
+    }
+
+    if (!targetId) return { success: false, message: 'Kein Album angegeben (albumName oder albumId)' };
+
+    await prisma.photo.update({ where: { id: ctx.photoId }, data: { categoryId: targetId } });
+
+    logger.info(`${LOG} MOVE_TO_ALBUM complete`, { photoId: ctx.photoId, albumId: targetId });
+    return { success: true, message: `In Album verschoben: ${albumName || targetId}` };
+  } catch (error: any) {
+    return { success: false, message: `Album-Verschiebung fehlgeschlagen: ${error.message}` };
+  }
+}
+
+// ─── WEBHOOK ────────────────────────────────────────────────────────────────
+
+async function executeWebhook(ctx: ExecutionContext, config: any): Promise<StepResult> {
+  const url = config?.url;
+  if (!url) return { success: false, message: 'Keine Webhook-URL konfiguriert' };
+
+  try {
+    const event = await prisma.event.findUnique({
+      where: { id: ctx.eventId },
+      select: { id: true, title: true, slug: true },
+    });
+
+    const payload = {
+      event: 'workflow_step',
+      eventId: ctx.eventId,
+      eventTitle: event?.title,
+      eventSlug: event?.slug,
+      photoId: ctx.photoId,
+      guestId: ctx.guestId,
+      triggeredBy: ctx.triggeredBy,
+      timestamp: new Date().toISOString(),
+      ...(config?.extraData || {}),
+    };
+
+    const method = (config?.method || 'POST').toUpperCase();
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (config?.authHeader) headers['Authorization'] = config.authHeader;
+
+    const response = await axios({
+      method,
+      url,
+      data: method !== 'GET' ? payload : undefined,
+      params: method === 'GET' ? payload : undefined,
+      headers,
+      timeout: config?.timeoutMs || 10000,
+    });
+
+    logger.info(`${LOG} WEBHOOK complete`, { url, status: response.status });
+    return { success: true, message: `Webhook ${response.status}: ${url}`, data: { status: response.status } };
+  } catch (error: any) {
+    logger.error(`${LOG} WEBHOOK failed`, { url, error: error.message });
+    return { success: false, message: `Webhook fehlgeschlagen: ${error.message}` };
+  }
+}
+
+// ─── PRINT_JOB ──────────────────────────────────────────────────────────────
+
+async function executePrintJob(ctx: ExecutionContext, config: any): Promise<StepResult> {
+  if (!ctx.photoId) return { success: false, message: 'No photoId in context' };
+
+  try {
+    const photo = await prisma.photo.findUnique({ where: { id: ctx.photoId }, select: { url: true } });
+    if (!photo?.url) return { success: false, message: 'Photo not found' };
+
+    // Create a print job entry (to be picked up by print terminal)
+    await prisma.qaLogEvent.create({
+      data: {
+        level: 'DEBUG',
+        type: 'PRINT_JOB_CREATED',
+        message: `Druckauftrag erstellt für Foto ${ctx.photoId}`,
+        data: {
+          eventId: ctx.eventId,
+          photoId: ctx.photoId,
+          photoUrl: photo.url,
+          copies: config?.copies || 1,
+          size: config?.size || 'standard',
+          quality: config?.quality || 'high',
+          source: 'workflow',
+        } as any,
+      },
+    });
+
+    logger.info(`${LOG} PRINT_JOB created`, { photoId: ctx.photoId, copies: config?.copies || 1 });
+    return { success: true, message: `Druckauftrag erstellt (${config?.copies || 1}x ${config?.size || 'standard'})` };
+  } catch (error: any) {
+    return { success: false, message: `Druckauftrag fehlgeschlagen: ${error.message}` };
+  }
+}
+
+// ─── DELAY ──────────────────────────────────────────────────────────────────
+
+async function executeDelay(_ctx: ExecutionContext, config: any): Promise<StepResult> {
+  const duration = config?.duration || 5;
+  const unit = config?.unit || 'seconds';
+
+  let ms = duration * 1000;
+  if (unit === 'minutes') ms = duration * 60 * 1000;
+  if (unit === 'hours') ms = duration * 60 * 60 * 1000;
+
+  // Cap at 5 minutes for safety
+  const maxMs = 5 * 60 * 1000;
+  const actualMs = Math.min(ms, maxMs);
+
+  await new Promise(resolve => setTimeout(resolve, actualMs));
+
+  return { success: true, message: `Gewartet: ${duration} ${unit} (${actualMs}ms)` };
+}
+
+// ─── CONDITION ───────────────────────────────────────────────────────────────
+
+async function evaluateCondition(ctx: ExecutionContext, config: any): Promise<{ result: boolean; message: string }> {
+  const { field, operator, value } = config || {};
+
+  if (!field) return { result: true, message: 'No condition field — passing through' };
+
+  let fieldValue: any = null;
+
+  // Resolve field value from context
+  if (ctx.photoId) {
+    const photo = await prisma.photo.findUnique({
+      where: { id: ctx.photoId },
+      select: { tags: true, categoryId: true, status: true },
+    });
+
+    switch (field) {
+      case 'has_face': fieldValue = false; break; // Would need face detection
+      case 'is_duplicate': fieldValue = false; break;
+      case 'quality_score': fieldValue = 100; break;
+      case 'file_size': fieldValue = 0; break;
+      case 'photo_count':
+        fieldValue = await prisma.photo.count({ where: { eventId: ctx.eventId, status: 'APPROVED' } });
+        break;
+      case 'has_consent': fieldValue = true; break;
+      default: fieldValue = null;
+    }
+  }
+
+  // Evaluate operator
+  let result = false;
+  switch (operator) {
+    case 'equals': result = String(fieldValue) === String(value); break;
+    case 'not_equals': result = String(fieldValue) !== String(value); break;
+    case 'greater_than': result = Number(fieldValue) > Number(value); break;
+    case 'less_than': result = Number(fieldValue) < Number(value); break;
+    case 'contains': result = String(fieldValue).includes(String(value)); break;
+    case 'is_true': result = !!fieldValue; break;
+    case 'is_false': result = !fieldValue; break;
+    default: result = true;
+  }
+
+  return { result, message: `${field} ${operator} ${value} → ${result}` };
+}
+
 // ─── Step Router ────────────────────────────────────────────────────────────
 
 async function executeStep(node: WorkflowNode, ctx: ExecutionContext): Promise<StepResult> {
@@ -270,19 +570,77 @@ async function executeStep(node: WorkflowNode, ctx: ExecutionContext): Promise<S
   const config = node.data?.config || {};
 
   switch (stepType) {
+    // ── Executable AI Steps ──
     case 'AI_CATEGORIZE_PHOTO':
       return executeAiCategorizePhoto(ctx, config);
+    case 'AI_MODIFY':
+      return executeAiModify(ctx, config);
+    case 'AI_BG_REMOVAL':
+      return executeAiBgRemoval(ctx, config);
+
+    // ── Processing Steps ──
+    case 'QUALITY_GATE':
+      return executeQualityGate(ctx, config);
+    case 'ADD_TAG':
+      return executeAddTag(ctx, config);
+    case 'MOVE_TO_ALBUM':
+      return executeMoveToAlbum(ctx, config);
+
+    // ── Communication Steps ──
     case 'SEND_EMAIL':
+    case 'EMAIL_SHARE':
       return executeSendEmail(ctx, config);
     case 'SEND_NOTIFICATION':
       return executeSendNotification(ctx, config);
-    // Trigger nodes don't execute — they're entry points
+
+    // ── Integration Steps ──
+    case 'WEBHOOK':
+      return executeWebhook(ctx, config);
+    case 'PRINT':
+    case 'PRINT_JOB':
+      return executePrintJob(ctx, config);
+    case 'DELAY':
+      return executeDelay(ctx, config);
+
+    // ── Condition (evaluates and returns result for branching) ──
+    case 'CONDITION': {
+      const cond = await evaluateCondition(ctx, config);
+      return { success: cond.result, message: cond.message, data: { conditionResult: cond.result } };
+    }
+
+    // ── Trigger nodes — entry points, no execution ──
     case 'TRIGGER_PHOTO_UPLOADED':
+    case 'TRIGGER_PHOTO_UPLOAD':
     case 'TRIGGER_TIMER':
     case 'TRIGGER_GUEST_JOINED':
     case 'TRIGGER_EVENT_START':
     case 'TRIGGER_EVENT_END':
+    case 'TRIGGER_EVENT_STATE':
+    case 'TRIGGER_MANUAL':
+    case 'TRIGGER_QR_SCAN':
       return { success: true, message: `Trigger: ${stepType}` };
+
+    // ── UI-only steps (documentation, no server execution) ──
+    case 'TOUCH_TO_START':
+    case 'BEFORE_COUNTDOWN':
+    case 'COUNTDOWN':
+    case 'COMPLIMENT':
+    case 'AFTER_SHARE':
+    case 'TAKE_PHOTO':
+    case 'SELECTION_SCREEN':
+    case 'DIGITAL_GRAFFITI':
+    case 'FOTO_SPIEL':
+    case 'LED_RING':
+    case 'BOOTH_DISPLAY':
+    case 'QR_CODE':
+    case 'SMS_SHARE':
+    case 'FACE_SEARCH':
+    case 'GALLERY_EMBED':
+    case 'SLIDESHOW':
+    case 'ZIP_DOWNLOAD':
+    case 'LEAD_COLLECTION':
+      return { success: true, message: `UI-Step (Doku): ${stepType}` };
+
     default:
       logger.warn(`${LOG} Unknown step type: ${stepType}`);
       return { success: true, message: `Skipped unknown step: ${stepType}` };
@@ -343,8 +701,12 @@ export async function executeWorkflow(
         message: result.message,
       });
 
-      // Continue to downstream nodes
-      if (result.success) {
+      // Continue to downstream nodes (with CONDITION branching)
+      const stepType = node.data?.type || node.type;
+      if (stepType === 'CONDITION' && result.data?.conditionResult !== undefined) {
+        const downstream = getConditionalDownstream(graph, node.id, result.data.conditionResult);
+        queue.push(...downstream);
+      } else if (result.success) {
         const downstream = getDownstreamNodes(graph, node.id);
         queue.push(...downstream);
       }

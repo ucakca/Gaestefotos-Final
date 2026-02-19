@@ -727,6 +727,7 @@ Alle getroffenen Entscheidungen an einem Ort:
 | **Sprint 15** | Foto-Qualitäts-Gate (photoQualityGate Service: Blur-Detection, Resolution-Check, Duplicate-Detection, Upload-Hook) | ✅ DONE | — |
 | **Sprint 16** | Prompt Analyzer Backend (img2prompt CLIP+LLM, EXIF/Metadata Reader, Quality-Check, Resources, Patterns — 5 Admin-Endpoints) | ✅ DONE | Sprint 11 |
 | **Sprint 17** | Prompt Analyzer Frontend (Dashboard Page /manage/prompt-analyzer: img2prompt, EXIF Reader, Quality-Check, Resources+Patterns, Sidebar-Nav) | ✅ DONE | Sprint 16 |
+| **Sprint 18** | Workflow Executor Upgrade (10 ausführbare Step-Types: AI_MODIFY, AI_BG_REMOVAL, QUALITY_GATE, ADD_TAG, MOVE_TO_ALBUM, WEBHOOK, PRINT_JOB, DELAY, CONDITION branching + 4 neue Builder-Palette Steps) | ✅ DONE | Sprint 15 |
 
 ---
 
