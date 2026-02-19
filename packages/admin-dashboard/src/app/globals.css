@@ -82,6 +82,14 @@ select {
   color: var(--app-fg);
   background-color: var(--app-card);
 }
+/* Dark mode: tell browser to render native controls (spinners, date pickers, scrollbars) in dark */
+@media (prefers-color-scheme: dark) {
+  input,
+  textarea,
+  select {
+    color-scheme: dark;
+  }
+}
 input[type="range"],
 input[type="checkbox"],
 input[type="radio"],
