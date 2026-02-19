@@ -1122,7 +1122,7 @@ export default function EventDetailPage() {
                                     max={20}
                                     value={(aiConfigForm as any)[`energyCost_${feat.key}`] ?? 1}
                                     onChange={e => setAiConfigForm(f => ({ ...f, [`energyCost_${feat.key}`]: Number(e.target.value) }))}
-                                    className="w-10 text-center text-xs font-bold rounded border border-app-border/50 bg-app-bg/50 text-app-fg py-0.5 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+                                    className="w-10 text-center text-xs font-bold rounded border border-app-border bg-app-card text-app-fg py-0.5 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
                                   />
                                 </div>
                               </div>

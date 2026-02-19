@@ -74,12 +74,19 @@ body {
   background-color: var(--app-bg);
 }
 
-/* ═══ Form Element Text Color Fix ═══ */
+/* ═══ Form Element Color Fix ═══ */
 /* Ensures all inputs/textareas/selects always have proper contrast */
 input,
 textarea,
 select {
   color: var(--app-fg);
+  background-color: var(--app-card);
+}
+input[type="range"],
+input[type="checkbox"],
+input[type="radio"],
+input[type="color"] {
+  background-color: transparent;
 }
 
 /* ═══ Modern Utility Classes ═══ */
