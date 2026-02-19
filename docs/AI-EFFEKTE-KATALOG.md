@@ -54,9 +54,16 @@
 
 ## 2. GIF-EFFEKTE (Animated)
 
+### Bereits implementiert ✅
+
+| Effekt | Feature-Key | Beschreibung | Guest-UI | Status |
+|--------|-------------|-------------|----------|--------|
+| **GIF Face Morph** | `gif_morph` | 5 Frames: Orig → Style1 → Style2 → Style1 → Orig | **AiEffectsModal** | ✅ Backend + Frontend |
+
+### Noch nicht implementiert
+
 | Effekt | Feature-Key | Beschreibung | Implementierung | Priority |
 |--------|-------------|-------------|-----------------|----------|
-| **Face Morph GIF** | `gif_face_morph` | Gesicht morpht zwischen 2 Styles (z.B. Normal → Cartoon → Normal) | 3 Frames: Original + 2 Styles → GIF | 🔴 HIGH |
 | **Aging GIF** | `gif_aging` | Zeigt Alterungsprozess als Animation (20→40→60→80 Jahre) | 4 Frames verschiedene Strengths → GIF | 🔴 HIGH |
 | **Style Carousel GIF** | `gif_style_carousel` | 5 verschiedene Styles als animiertes Karussell | 5 Style-Transfers → GIF | 🟡 MEDIUM |
 | **Glitch Transition** | `gif_glitch` | Glitch-Übergang zwischen Original und Style | Sharp.js Pixel-Manipulation → GIF | 🟡 MEDIUM |
@@ -69,16 +76,22 @@
 
 ## 3. VIDEO-EFFEKTE (Image-to-Video)
 
+### Bereits implementiert ✅
+
+| Effekt | Feature-Key | Provider | Guest-UI | Credits |
+|--------|-------------|----------|----------|---------|
+| **AI Video** (Image-to-Video) | `ai_video` | Runway (gen4_turbo) / LumaAI (ray2) | **AiEffectsModal** | 10 |
+| **Event Highlight Reel** | `highlight_reel` | ffmpeg (lokal) | Host-Dashboard | 10 |
+
+### Noch nicht implementiert
+
 | Effekt | Feature-Key | Beschreibung | Provider | Priority | Credits |
 |--------|-------------|-------------|----------|----------|---------|
-| **Selfie → Cyberpunk Scene** | `video_cyberpunk` | Foto wird lebendig in Cyberpunk-Welt | Replicate (Kling/SVD) | 🔴 HIGH | 10 |
-| **Time Travel Video** | `video_time_travel` | Person "reist" durch Epochen (50er→Zukunft) | Replicate (Kling) | 🔴 HIGH | 10 |
-| **Selfie → Superhero Intro** | `video_superhero` | Dramatisches Superhero-Intro aus Selfie | Replicate (Kling) | 🟡 MEDIUM | 10 |
+| **Selfie → Cyberpunk Scene** | `video_cyberpunk` | Foto wird lebendig in Cyberpunk-Welt | Runway/LumaAI (prompt) | � MEDIUM | 10 |
+| **Time Travel Video** | `video_time_travel` | Person "reist" durch Epochen | Runway/LumaAI (prompt) | 🟡 MEDIUM | 10 |
 | **Dancing Photo** | `video_dancing` | Foto fängt an zu tanzen | Replicate (SadTalker) | 🟡 MEDIUM | 8 |
 | **Talking Photo** | `video_talking` | Foto "spricht" einen Text | Replicate (SadTalker/Wav2Lip) | 🟡 MEDIUM | 8 |
-| **Event Highlight Reel** | `highlight_reel` | Automatisches Best-of-Video aus Event-Fotos | ffmpeg + AI Sorting | 🔴 HIGH | 10 |
-| **Cinemagraph** | `video_cinemagraph` | Teilweise animiertes Standbild (z.B. Haare wehen) | Replicate (Stable Video) | 🟢 LOW | 8 |
-| **AI Music Video** | `video_music` | Fotos zu Musik-Slideshow mit Effekten | ffmpeg + Transition AI | 🟢 LOW | 15 |
+| **Cinemagraph** | `video_cinemagraph` | Teilweise animiertes Standbild | Replicate (Stable Video) | 🟢 LOW | 8 |
 
 ---
 
@@ -95,7 +108,7 @@
 | Challenge-Ideen | `challenge_suggest` | Groq | Dashboard | 1 |
 | Gästebuch-Nachricht | `guestbook_suggest` | Groq | Dashboard | 1 |
 | Farbschema | `color_scheme` | Groq | Dashboard | 1 |
-| Caption Generator | `caption_suggest` | Groq | Prompt ready | 1 |
+| **Caption Generator** | `caption_suggest` | Groq | **AiGamesModal** | 1 |
 | **Compliment Mirror** | `compliment_mirror` | Groq | **AiGamesModal** | 2 |
 | **AI Fortune Teller** | `fortune_teller` | Groq | **AiGamesModal** | 2 |
 | **AI Roast** | `ai_roast` | Groq | **AiGamesModal** | 2 |
@@ -149,18 +162,20 @@
 5. ~~Compliment Mirror Guest-UI~~ → AiGamesModal ✅
 6. ~~Auto-Setup Button~~ → One-Click Provider-Mapping + Prompt-Seeding ✅
 
-### Sprint 2 — Nächste Schritte
-7. **GIF: Face Morph** (3 Frames → GIF)
-8. **Face Swap Guest-UI** (Backend ready, InsightFace via Replicate)
-9. **BG Removal Guest-UI** (Backend ready, remove.bg)
-10. **AI Trading Cards** als Template-basiertes Feature
-11. **Caption Generator Guest-UI** (Prompt ready)
+### Sprint 2 — ✅ DONE (19. Feb 2026)
+7. ~~GIF Face Morph~~ → AiEffectsModal (5 Frames, gif-encoder-2) ✅
+8. ~~Face Swap Guest-UI~~ → AiEffectsModal ✅
+9. ~~BG Removal Guest-UI~~ → AiEffectsModal ✅
+10. ~~Caption Generator Guest-UI~~ → AiGamesModal ✅
+11. ~~AI Video (Image-to-Video)~~ → AiEffectsModal (Runway/LumaAI Polling) ✅
+12. ~~24 Style-Transfer-Stile~~ (von 10 auf 24 erweitert) ✅
 
-### Sprint 3 — Major Features
-12. **AI Video Booth** (Selfie → Cyberpunk/Time Travel via Runway/Luma)
-13. **Event Highlight Reel** (Automatisches Best-of-Video)
-14. **AI Group Theme** (Multi-Face Processing)
-15. **Persona Quiz** mit AI Portrait
+### Sprint 3 — Nächste Schritte
+13. **Aging GIF** (4 Frames verschiedene Strengths → GIF)
+14. **AI Trading Cards** als Template-basiertes Feature
+15. **AI Group Theme** (Multi-Face Processing)
+16. **Persona Quiz** mit AI Portrait
+17. **Video-Presets**: Cyberpunk Scene, Time Travel (Prompt-Varianten für AI Video)
 
 ---
 
