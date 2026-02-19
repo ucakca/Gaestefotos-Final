@@ -118,6 +118,10 @@
 | **Promi-Doppelgänger** | `celebrity_lookalike` | Groq | **AiGamesModal** (Ähnlichkeit% + Fun Fact) | 2 |
 | **Foto-Bingo** | `ai_bingo` | Groq | **AiGamesModal** (3x3 Grid + Bonus) | 1 |
 | **AI DJ** | `ai_dj` | Groq | **AiGamesModal** (Stimmung → 5 Songs) | 1 |
+| **Meme Generator** | `ai_meme` | Groq | **AiGamesModal** (3 Meme-Captions + Template) | 1 |
+| **Party Awards** | `ai_superlatives` | Groq | **AiGamesModal** (5 "Am ehesten..." Awards) | 1 |
+| **Foto-Kritiker** | `ai_photo_critic` | Groq | **AiGamesModal** (Sterne + Kunstkritik) | 1 |
+| **Couple Match** | `ai_couple_match` | Groq | **AiGamesModal** (match_input → Score + Ship-Name) | 2 |
 
 ---
 
@@ -185,8 +189,16 @@
 23. ~~AI Bingo~~ → AiGamesModal (3x3 Foto-Aufgaben-Bingo + Bonus-Aufgabe) ✅
 24. ~~AI DJ~~ → AiGamesModal (mood_input → 5 Songs + DJ-Name + Vibe) ✅
 
-### Sprint 6 — Nächste Schritte
-25. **AI Group Theme** (Multi-Face Processing)
+### Sprint 6 — ✅ DONE (19. Feb 2026)
+25. ~~Emoji Me~~ → AiEffectsModal (Emoji-Avatar via img2img SDXL) ✅
+26. ~~Miniature~~ → AiEffectsModal (Tilt-Shift Miniatur-Effekt) ✅
+27. ~~Meme Generator~~ → AiGamesModal (3 Captions mit Template-Namen) ✅
+28. ~~Party Awards~~ → AiGamesModal (5 "Am ehesten..." Awards) ✅
+29. ~~Foto-Kritiker~~ → AiGamesModal (Sterne-Rating + Kunstkritik + Technik) ✅
+30. ~~Couple Match~~ → AiGamesModal (match_input → Score + Ship-Name + Song) ✅
+
+### Sprint 7 — Nächste Schritte
+31. **AI Group Theme** (Multi-Face Processing)
 
 ---
 
@@ -217,4 +229,4 @@
 
 ---
 
-> *Letzte Aktualisierung: 19. Februar 2026 — Sprint 5 abgeschlossen (12 Effekte + 10 Spiele + 24 Stile + 8 Video-Presets + 5 Jahrzehnt-Presets)*
+> *Letzte Aktualisierung: 19. Februar 2026 — Sprint 6 abgeschlossen (14 Effekte + 14 Spiele + 24 Stile + 8 Video-Presets + 5 Jahrzehnt-Presets)*
