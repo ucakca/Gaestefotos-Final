@@ -42,6 +42,7 @@ import {
   Bug,
   Wand2,
   BarChart3,
+  ScanSearch,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -119,6 +120,7 @@ const navigation: NavGroup[] = [
     name: 'System',
     icon: Server,
     items: [
+      { name: '360° Analyse', href: '/manage/system-analysis', icon: ScanSearch },
       { name: 'Health', href: '/system/health', icon: Server },
       { name: 'Logs', href: '/system/logs', icon: FileText },
       { name: 'Debug Mode', href: '/system/debug', icon: Bug },
