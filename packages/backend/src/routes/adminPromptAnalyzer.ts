@@ -39,11 +39,27 @@ router.post('/img2prompt', authMiddleware, requireRole('ADMIN'), upload.single('
       return res.status(400).json({ error: 'Kein Bild hochgeladen' });
     }
 
+    const bufferHead = req.file.buffer.slice(0, 200).toString('utf8');
+    const magicHex = req.file.buffer.slice(0, 8).toString('hex');
     logger.info('[PromptAnalyzer] img2prompt request', {
       userId: req.userId,
       fileSize: req.file.size,
       mimeType: req.file.mimetype,
+      originalName: req.file.originalname,
+      magicHex,
+      bufferHead: bufferHead.substring(0, 200),
+      isHtml: bufferHead.startsWith('<!') || bufferHead.startsWith('<html'),
     });
+
+    // If buffer contains HTML instead of image data, reject early
+    if (bufferHead.startsWith('<!') || bufferHead.startsWith('<html')) {
+      logger.error('[PromptAnalyzer] Buffer contains HTML instead of image data!', {
+        bufferHead: bufferHead.substring(0, 500),
+      });
+      return res.status(400).json({
+        error: 'Upload-Fehler: Der Server hat HTML statt Bilddaten empfangen. Bitte versuche es erneut oder nutze ein anderes Bild-Format (JPEG/PNG).',
+      });
+    }
 
     const result = await analyzeImageToPrompt(req.file.buffer);
 
@@ -57,8 +73,17 @@ router.post('/img2prompt', authMiddleware, requireRole('ADMIN'), upload.single('
       metadata: result.metadata,
     });
   } catch (error: any) {
-    logger.error('[PromptAnalyzer] img2prompt error', { error: error.message });
-    res.status(500).json({ error: error.message || 'Analyse fehlgeschlagen' });
+    const msg = error.message || 'Analyse fehlgeschlagen';
+    logger.error('[PromptAnalyzer] img2prompt error', { error: msg, status: error.response?.status });
+
+    // Replicate 402 = no credits
+    if (msg.includes('402') || error.response?.status === 402) {
+      return res.status(503).json({
+        error: 'Replicate-Konto hat kein Guthaben. Bitte unter replicate.com aufladen.',
+      });
+    }
+
+    res.status(500).json({ error: msg });
   }
 });
 
