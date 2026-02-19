@@ -496,6 +496,41 @@ export async function getEventEnergyStats(eventId: string) {
   };
 }
 
+/**
+ * Get system-wide energy stats (admin dashboard).
+ */
+export async function getSystemEnergyStats() {
+  const [balanceAgg, logAgg, activeEvents] = await Promise.all([
+    prisma.guestEnergyBalance.aggregate({
+      _count: true,
+      _sum: { balance: true, totalEarned: true, totalSpent: true },
+    }),
+    prisma.guestEnergyLog.groupBy({
+      by: ['reason'],
+      _sum: { amount: true },
+      _count: true,
+      where: { type: 'SPEND' },
+    }),
+    prisma.guestEnergyBalance.groupBy({
+      by: ['eventId'],
+      _count: true,
+    }),
+  ]);
+
+  return {
+    totalGuests: balanceAgg._count,
+    totalEnergyEarned: balanceAgg._sum.totalEarned ?? 0,
+    totalEnergySpent: balanceAgg._sum.totalSpent ?? 0,
+    totalBalanceRemaining: balanceAgg._sum.balance ?? 0,
+    activeEventsWithEnergy: activeEvents.length,
+    spendByReason: logAgg.map(l => ({
+      reason: l.reason,
+      totalSpent: l._sum.amount ?? 0,
+      count: l._count,
+    })),
+  };
+}
+
 // ─── Helpers ────────────────────────────────────────────────
 
 async function getCooldownStatus(

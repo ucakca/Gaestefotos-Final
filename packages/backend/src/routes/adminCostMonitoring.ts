@@ -438,4 +438,17 @@ router.get('/provider-live', authMiddleware, requireRole('ADMIN'), async (req: A
   }
 });
 
+// ─── GET /energy-stats ──────────────────────────────────────────────────────
+
+router.get('/energy-stats', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { getSystemEnergyStats } = await import('../services/aiEnergyService');
+    const stats = await getSystemEnergyStats();
+    res.json({ energy: stats });
+  } catch (error) {
+    logger.error('Energy stats error', { error });
+    res.status(500).json({ error: 'Fehler beim Laden der Energie-Statistiken' });
+  }
+});
+
 export default router;

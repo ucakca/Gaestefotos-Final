@@ -214,18 +214,20 @@ export default function CostMonitoringPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [recentJobs, setRecentJobs] = useState<RecentJob[]>([]);
   const [providerLive, setProviderLive] = useState<ProviderLiveInfo[]>([]);
+  const [energyStats, setEnergyStats] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'jobs' | 'providers'>('overview');
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [summaryRes, timelineRes, topRes, alertsRes, jobsRes, liveRes] = await Promise.all([
+      const [summaryRes, timelineRes, topRes, alertsRes, jobsRes, liveRes, energyRes] = await Promise.all([
         api.get(`/admin/cost-monitoring/summary?timeRange=${timeRange}`),
         api.get(`/admin/cost-monitoring/timeline?timeRange=${timeRange}`),
         api.get(`/admin/cost-monitoring/top-events?timeRange=${timeRange}`),
         api.get('/admin/cost-monitoring/alerts'),
         api.get('/admin/cost-monitoring/recent-jobs?limit=50'),
         api.get('/admin/cost-monitoring/provider-live'),
+        api.get('/admin/cost-monitoring/energy-stats').catch(() => ({ data: { energy: null } })),
       ]);
 
       setSummary(summaryRes.data.summary);
@@ -236,6 +238,7 @@ export default function CostMonitoringPage() {
       setAlerts(alertsRes.data.alerts || []);
       setRecentJobs(jobsRes.data.jobs || []);
       setProviderLive(liveRes.data.providers || []);
+      setEnergyStats(energyRes.data.energy || null);
     } catch (err: any) {
       toast.error('Fehler beim Laden der Kostendaten');
       console.error(err);
@@ -430,6 +433,49 @@ export default function CostMonitoringPage() {
               )}
             </div>
           </div>
+
+          {/* Guest Energy Overview */}
+          {energyStats && (
+            <div className="p-4 rounded-xl border border-purple-200/50 bg-gradient-to-br from-purple-50/30 to-violet-50/20 dark:from-purple-950/20 dark:to-violet-950/10 space-y-3">
+              <h2 className="text-sm font-semibold flex items-center gap-2">
+                <Zap className="w-4 h-4 text-purple-500" /> Gäste-Energie (systemweit)
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div className="p-3 rounded-lg bg-white/60 dark:bg-white/5 border border-purple-100 dark:border-purple-800/30">
+                  <div className="text-[10px] text-muted-foreground">Gäste gesamt</div>
+                  <div className="text-lg font-bold text-purple-600">{energyStats.totalGuests}</div>
+                </div>
+                <div className="p-3 rounded-lg bg-white/60 dark:bg-white/5 border border-purple-100 dark:border-purple-800/30">
+                  <div className="text-[10px] text-muted-foreground">Energie verdient</div>
+                  <div className="text-lg font-bold text-emerald-600">{energyStats.totalEnergyEarned}⚡</div>
+                </div>
+                <div className="p-3 rounded-lg bg-white/60 dark:bg-white/5 border border-purple-100 dark:border-purple-800/30">
+                  <div className="text-[10px] text-muted-foreground">Energie verbraucht</div>
+                  <div className="text-lg font-bold text-rose-600">{energyStats.totalEnergySpent}⚡</div>
+                </div>
+                <div className="p-3 rounded-lg bg-white/60 dark:bg-white/5 border border-purple-100 dark:border-purple-800/30">
+                  <div className="text-[10px] text-muted-foreground">Rest-Guthaben</div>
+                  <div className="text-lg font-bold text-blue-600">{energyStats.totalBalanceRemaining}⚡</div>
+                </div>
+                <div className="p-3 rounded-lg bg-white/60 dark:bg-white/5 border border-purple-100 dark:border-purple-800/30">
+                  <div className="text-[10px] text-muted-foreground">Events mit Energie</div>
+                  <div className="text-lg font-bold text-violet-600">{energyStats.activeEventsWithEnergy}</div>
+                </div>
+              </div>
+              {energyStats.spendByReason?.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="text-[10px] font-medium text-muted-foreground">Verbrauch nach Kategorie</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {energyStats.spendByReason.map((s: any, i: number) => (
+                      <span key={i} className="text-[10px] px-2 py-1 rounded-lg bg-purple-100 text-purple-700 dark:bg-purple-950/30 dark:text-purple-300 font-medium">
+                        {s.reason}: {Math.abs(s.totalSpent)}⚡ ({s.count}×)
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           </>)}
 
           {/* ═══ TAB: Recent Jobs ═══ */}
