@@ -213,7 +213,7 @@ router.post('/style-effect', authMiddleware, async (req: AuthRequest, res: Respo
       return res.status(400).json({ error: 'photoId ist erforderlich' });
     }
 
-    const validEffects = ['ai_oldify', 'ai_cartoon', 'ai_style_pop'];
+    const validEffects = ['ai_oldify', 'ai_cartoon', 'ai_style_pop', 'time_machine', 'pet_me', 'yearbook'];
     if (!effect || !validEffects.includes(effect)) {
       return res.status(400).json({ error: `Ungültiger Effekt. Erlaubt: ${validEffects.join(', ')}` });
     }
@@ -222,6 +222,7 @@ router.post('/style-effect', authMiddleware, async (req: AuthRequest, res: Respo
     const result = await processStyleEffectForPhoto(photoId, req.userId!, effect, {
       intensity: intensity ? Number(intensity) : undefined,
       outputFormat: outputFormat || 'jpeg',
+      variant: req.body.variant || undefined,
     });
 
     res.json({
@@ -460,6 +461,136 @@ Schreibe eine kurze, lustige Geschichte die ALLE 3 Wörter enthält!`;
       genre: 'Fantasy',
       emoji: '📖',
       source: 'fallback',
+    });
+  }
+});
+
+// POST /api/booth-games/celebrity-lookalike — LLM guesses which celebrity you look like
+router.post('/celebrity-lookalike', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, eventType, eventTitle, guestName } = req.body;
+    const { generateCompletion } = await import('../lib/groq');
+
+    const systemPrompt = `Du bist ein witziger Promi-Experte auf einer ${eventType || 'Party'}.
+Jemand zeigt dir ein Foto und du sagst, welchem Promi die Person ähnlich sieht.
+Sei kreativ, lustig und schmeichelhaft. Wähle Promis aus verschiedenen Bereichen (Film, Musik, Sport, etc).
+Antworte NUR mit JSON: {"celebrity": "Name des Promis", "similarity": 70-99, "reason": "Witziger Grund in 1-2 Sätzen", "funFact": "Fun Fact über den Promi", "emoji": "passendes Emoji"}`;
+
+    const userPrompt = `Der Gast "${guestName || 'Ein geheimnisvoller Gast'}" auf "${eventTitle || 'der Party'}" möchte wissen: Welchem Promi sehe ich ähnlich? Sei kreativ und witzig!`;
+
+    const response = await generateCompletion(userPrompt, systemPrompt, { maxTokens: 300, temperature: 0.95 });
+    let result: any = null;
+    try {
+      const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
+      if (jsonMatch) result = JSON.parse(jsonMatch[0]);
+    } catch { /* parse error */ }
+
+    if (!result?.celebrity) {
+      result = { celebrity: 'George Clooney', similarity: 87, reason: 'Dieses Charisma ist unverkennbar!', funFact: 'George Clooney wurde 2-mal zum Sexiest Man Alive gewählt.', emoji: '🌟' };
+    }
+
+    const session = createGameSession(eventId, 'fortune_teller', result);
+    res.json({ sessionId: session.id, ...result, source: 'ai' });
+  } catch (error) {
+    logger.error('Celebrity lookalike error', { message: (error as Error).message });
+    res.json({
+      celebrity: 'Brad Pitt', similarity: 85, reason: 'Die Ausstrahlung! Das Lächeln! Einfach unwiderstehlich.',
+      funFact: 'Brad Pitt hat seinen ersten Oscar erst 2020 gewonnen.', emoji: '🌟', source: 'fallback',
+    });
+  }
+});
+
+// POST /api/booth-games/ai-bingo — Generate a photo challenge bingo card
+router.post('/ai-bingo', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, eventType, eventTitle, guestName } = req.body;
+    const { generateCompletion } = await import('../lib/groq');
+
+    const systemPrompt = `Du bist ein Party-Spiele-Meister auf einer ${eventType || 'Feier'}.
+Erstelle eine 3x3 Bingo-Karte mit lustigen Foto-Aufgaben für Gäste.
+Jede Aufgabe soll mit einem Selfie oder Foto erfüllbar sein.
+Antworte NUR mit JSON: {"title": "Lustiger Bingo-Titel", "tasks": ["Aufgabe 1", "Aufgabe 2", ... "Aufgabe 9"], "bonusTask": "Eine extra schwere Bonus-Aufgabe", "emoji": "passendes Emoji"}
+Die 9 Aufgaben sollen kurz (max 6 Wörter) und lustig sein!`;
+
+    const userPrompt = `Erstelle eine Foto-Bingo-Karte für "${eventTitle || 'die Party'}". Die Aufgaben sollen lustig, machbar und party-tauglich sein! Gast: ${guestName || 'Ein Partygast'}`;
+
+    const response = await generateCompletion(userPrompt, systemPrompt, { maxTokens: 400, temperature: 0.9 });
+    let result: any = null;
+    try {
+      const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
+      if (jsonMatch) result = JSON.parse(jsonMatch[0]);
+    } catch { /* parse error */ }
+
+    if (!result?.tasks || !Array.isArray(result.tasks) || result.tasks.length < 9) {
+      result = {
+        title: 'Party Bingo!',
+        tasks: ['Selfie mit DJ', 'Foto mit Brautpaar', 'Grimasse schneiden', 'Gruppenfoto 5+ Leute', 'Tanzfoto', 'Foto mit Deko', 'Funny Face Duo', 'Essen-Foto', 'Luftgitarre spielen'],
+        bonusTask: 'Selfie mit allen Kellnern!',
+        emoji: '🎲',
+      };
+    }
+
+    const session = createGameSession(eventId, 'fortune_teller', result);
+    res.json({ sessionId: session.id, ...result, source: 'ai' });
+  } catch (error) {
+    logger.error('AI bingo error', { message: (error as Error).message });
+    res.json({
+      title: 'Party Bingo!',
+      tasks: ['Selfie mit DJ', 'Foto mit dem Brautpaar', 'Grimasse schneiden', 'Gruppenfoto 5+ Leute', 'Tanzfoto', 'Foto mit Deko', 'Funny Face Duo', 'Essen-Foto', 'Luftgitarre spielen'],
+      bonusTask: 'Selfie mit allen Kellnern!', emoji: '🎲', source: 'fallback',
+    });
+  }
+});
+
+// POST /api/booth-games/ai-dj — AI suggests party songs
+router.post('/ai-dj', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, eventType, eventTitle, guestName, mood } = req.body;
+    const { generateCompletion } = await import('../lib/groq');
+
+    const systemPrompt = `Du bist ein legendärer Party-DJ auf einer ${eventType || 'Feier'}.
+Basierend auf der Stimmung schlägst du 5 perfekte Songs vor.
+Antworte NUR mit JSON: {"djName": "Dein lustiger DJ-Name", "songs": [{"title": "Song", "artist": "Künstler", "reason": "Warum dieser Song"}], "vibe": "Beschreibung der Stimmung in 1 Satz", "emoji": "passendes Emoji"}
+Wähle echte, bekannte Songs! Mix aus Deutsch und International.`;
+
+    const userPrompt = `${guestName || 'Ein Gast'} auf "${eventTitle || 'der Party'}" wünscht sich Musik.
+${mood ? `Gewünschte Stimmung: ${mood}` : 'Die Party ist in vollem Gange!'}
+Schlage 5 perfekte Songs vor!`;
+
+    const response = await generateCompletion(userPrompt, systemPrompt, { maxTokens: 400, temperature: 0.9 });
+    let result: any = null;
+    try {
+      const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
+      if (jsonMatch) result = JSON.parse(jsonMatch[0]);
+    } catch { /* parse error */ }
+
+    if (!result?.songs || !Array.isArray(result.songs) || result.songs.length < 3) {
+      result = {
+        djName: 'DJ Algorithmus',
+        songs: [
+          { title: 'Blinding Lights', artist: 'The Weeknd', reason: 'Der ultimative Party-Starter!' },
+          { title: 'Atemlos durch die Nacht', artist: 'Helene Fischer', reason: 'Muss sein. Einfach Muss.' },
+          { title: 'Uptown Funk', artist: 'Bruno Mars', reason: 'Bringt JEDEN auf die Tanzfläche!' },
+          { title: 'Waka Waka', artist: 'Shakira', reason: 'Die Hüften lügen nicht!' },
+          { title: 'Mr. Brightside', artist: 'The Killers', reason: 'Für die Indie-Fraktion!' },
+        ],
+        vibe: 'Pure Party-Energie!',
+        emoji: '🎧',
+      };
+    }
+
+    const session = createGameSession(eventId, 'fortune_teller', result);
+    res.json({ sessionId: session.id, ...result, source: 'ai' });
+  } catch (error) {
+    logger.error('AI DJ error', { message: (error as Error).message });
+    res.json({
+      djName: 'DJ Backup', songs: [
+        { title: 'Blinding Lights', artist: 'The Weeknd', reason: 'Immer ein Hit!' },
+        { title: 'Atemlos', artist: 'Helene Fischer', reason: 'Der Klassiker!' },
+        { title: 'Uptown Funk', artist: 'Bruno Mars', reason: 'Garantiert gute Laune!' },
+        { title: 'Dancing Queen', artist: 'ABBA', reason: 'Zeitlos!' },
+        { title: 'Levels', artist: 'Avicii', reason: 'RIP Legend!' },
+      ], vibe: 'Party-Stimmung!', emoji: '🎧', source: 'fallback',
     });
   }
 });

@@ -11,8 +11,8 @@ import api from '@/lib/api';
 
 // ─── Types ──────────────────────────────────────────────────
 
-type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'bg_removal' | 'gif_morph' | 'gif_aging' | 'ai_video' | 'trading_card';
-type Step = 'photo' | 'effects' | 'video_preset' | 'processing' | 'result' | 'error';
+type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'bg_removal' | 'gif_morph' | 'gif_aging' | 'ai_video' | 'trading_card' | 'time_machine' | 'pet_me' | 'yearbook';
+type Step = 'photo' | 'effects' | 'video_preset' | 'decade_select' | 'processing' | 'result' | 'error';
 
 interface VideoPreset {
   key: string;
@@ -21,6 +21,21 @@ interface VideoPreset {
   prompt: string;
   gradient: string;
 }
+
+interface DecadePreset {
+  key: string;
+  name: string;
+  emoji: string;
+  gradient: string;
+}
+
+const DECADE_PRESETS: DecadePreset[] = [
+  { key: '60s', name: '60er', emoji: '✌️', gradient: 'from-orange-400 to-pink-500' },
+  { key: '70s', name: '70er', emoji: '🥿', gradient: 'from-amber-500 to-yellow-600' },
+  { key: '80s', name: '80er', emoji: '🕺', gradient: 'from-fuchsia-500 to-purple-600' },
+  { key: '90s', name: '90er', emoji: '📼', gradient: 'from-teal-400 to-cyan-600' },
+  { key: '2000s', name: '2000er', emoji: '🤋', gradient: 'from-pink-400 to-rose-500' },
+];
 
 const VIDEO_PRESETS: VideoPreset[] = [
   { key: 'cinematic', name: 'Cinematic', emoji: '🎥', prompt: 'gentle camera movement, cinematic lighting, film look, shallow depth of field', gradient: 'from-slate-600 to-zinc-800' },
@@ -122,6 +137,30 @@ const EFFECTS: EffectDef[] = [
     gradient: 'from-yellow-500 to-amber-700',
     endpoint: '/booth-games/trading-card',
   },
+  {
+    key: 'time_machine',
+    name: 'Time Machine',
+    emoji: '⏰',
+    description: 'Reise in ein anderes Jahrzehnt!',
+    gradient: 'from-indigo-500 to-blue-700',
+    endpoint: '/booth-games/style-effect',
+  },
+  {
+    key: 'pet_me',
+    name: 'Pet Me',
+    emoji: '🐾',
+    description: 'Verwandle dich in ein süßes Tier!',
+    gradient: 'from-orange-400 to-amber-600',
+    endpoint: '/booth-games/style-effect',
+  },
+  {
+    key: 'yearbook',
+    name: 'Yearbook',
+    emoji: '📸',
+    description: 'Dein 90er Yearbook-Foto!',
+    gradient: 'from-sky-400 to-blue-600',
+    endpoint: '/booth-games/style-effect',
+  },
 ];
 
 // ─── Component ──────────────────────────────────────────────
@@ -136,6 +175,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
   const [progress, setProgress] = useState(0);
   const [videoPrompt, setVideoPrompt] = useState<string | null>(null);
   const videoPromptRef = useRef<string | null>(null);
+  const decadeVariantRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -149,6 +189,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
     setProgress(0);
     setVideoPrompt(null);
     videoPromptRef.current = null;
+    decadeVariantRef.current = null;
     onClose();
   }, [onClose]);
 
@@ -200,6 +241,10 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
       } else if (effect.key === 'trading_card') {
         const savedName = typeof window !== 'undefined' ? localStorage.getItem('guestUploaderName') : '';
         effectRes = await api.post(effect.endpoint, { photoId, eventId, guestName: savedName || undefined });
+      } else if (effect.key === 'time_machine') {
+        effectRes = await api.post(effect.endpoint, { photoId, effect: 'time_machine', variant: decadeVariantRef.current || '80s' });
+      } else if (effect.key === 'pet_me' || effect.key === 'yearbook') {
+        effectRes = await api.post(effect.endpoint, { photoId, effect: effect.key });
       } else if (effect.key === 'gif_morph' || effect.key === 'gif_aging') {
         effectRes = await api.post(effect.endpoint, { photoId, eventId });
       } else if (effect.key === 'face_switch' || effect.key === 'bg_removal') {
@@ -276,7 +321,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
               <button
                 onClick={() => {
                   if (step === 'effects') setStep('photo');
-                  else if (step === 'video_preset') setStep('effects');
+                  else if (step === 'video_preset' || step === 'decade_select') setStep('effects');
                   else if (step === 'result' || step === 'error') setStep('effects');
                 }}
                 className="p-1.5 rounded-full hover:bg-muted/50 transition-colors"
@@ -292,6 +337,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
                 {step === 'photo' && 'Foto wählen'}
                 {step === 'effects' && 'Effekt wählen'}
                 {step === 'video_preset' && 'Video-Stil wählen'}
+                {step === 'decade_select' && 'Jahrzehnt wählen'}
                 {step === 'processing' && 'KI verarbeitet...'}
                 {step === 'result' && 'Dein KI-Effekt'}
                 {step === 'error' && 'Fehler'}
@@ -387,6 +433,9 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
                         if (effect.key === 'ai_video') {
                           setSelectedEffect(effect);
                           setStep('video_preset');
+                        } else if (effect.key === 'time_machine') {
+                          setSelectedEffect(effect);
+                          setStep('decade_select');
                         } else {
                           handleApplyEffect(effect);
                         }
@@ -437,6 +486,42 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
                         {preset.emoji}
                       </div>
                       <p className="text-xs font-semibold text-foreground text-center">{preset.name}</p>
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ═══ Decade Selection (Time Machine) ═══ */}
+            {step === 'decade_select' && selectedEffect && (
+              <motion.div key="decade_select" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="p-4">
+                {photoPreview && (
+                  <div className="flex items-center gap-3 mb-4 p-2 rounded-xl bg-muted/30">
+                    <img src={photoPreview} alt="Dein Foto" className="w-12 h-12 rounded-lg object-cover" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">Time Machine</p>
+                      <p className="text-xs text-muted-foreground">Wähle dein Jahrzehnt</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  {DECADE_PRESETS.map((decade, i) => (
+                    <motion.button
+                      key={decade.key}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.05 }}
+                      onClick={() => {
+                        decadeVariantRef.current = decade.key;
+                        handleApplyEffect(selectedEffect);
+                      }}
+                      className="flex flex-col items-center gap-2 p-4 rounded-2xl border border-border hover:border-primary/40 hover:shadow-md active:scale-[0.96] transition-all"
+                    >
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${decade.gradient} flex items-center justify-center text-2xl shadow-md`}>
+                        {decade.emoji}
+                      </div>
+                      <p className="text-xs font-semibold text-foreground text-center">{decade.name}</p>
                     </motion.button>
                   ))}
                 </div>

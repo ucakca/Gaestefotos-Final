@@ -11,8 +11,8 @@ import api from '@/lib/api';
 
 // ─── Types ──────────────────────────────────────────────────
 
-type GameKey = 'compliment_mirror' | 'fortune_teller' | 'ai_roast' | 'caption_generator' | 'persona_quiz' | 'wedding_speech' | 'ai_stories';
-type Step = 'select' | 'name' | 'quiz' | 'wedding_input' | 'words_input' | 'processing' | 'result' | 'error';
+type GameKey = 'compliment_mirror' | 'fortune_teller' | 'ai_roast' | 'caption_generator' | 'persona_quiz' | 'wedding_speech' | 'ai_stories' | 'celebrity_lookalike' | 'ai_bingo' | 'ai_dj';
+type Step = 'select' | 'name' | 'quiz' | 'wedding_input' | 'words_input' | 'mood_input' | 'processing' | 'result' | 'error';
 
 const QUIZ_QUESTIONS = [
   { key: 'drink', label: 'Dein Lieblingsdrink auf der Party?', placeholder: 'z.B. Aperol Spritz, Bier, Wasser...' },
@@ -94,6 +94,30 @@ const GAMES: GameDef[] = [
     gradient: 'from-violet-500 to-purple-600',
     endpoint: '/booth-games/ai-stories',
   },
+  {
+    key: 'celebrity_lookalike',
+    name: 'Promi-Doppelgänger',
+    emoji: '🌟',
+    description: 'Welchem Promi siehst du ähnlich?',
+    gradient: 'from-amber-400 to-orange-600',
+    endpoint: '/booth-games/celebrity-lookalike',
+  },
+  {
+    key: 'ai_bingo',
+    name: 'Foto-Bingo',
+    emoji: '🎲',
+    description: 'KI erstellt deine persönliche Bingo-Karte!',
+    gradient: 'from-green-500 to-emerald-700',
+    endpoint: '/booth-games/ai-bingo',
+  },
+  {
+    key: 'ai_dj',
+    name: 'AI DJ',
+    emoji: '🎧',
+    description: 'KI schlägt die perfekten Party-Songs vor!',
+    gradient: 'from-fuchsia-500 to-pink-700',
+    endpoint: '/booth-games/ai-dj',
+  },
 ];
 
 // ─── Component ──────────────────────────────────────────────
@@ -110,6 +134,7 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
   const [weddingCouple, setWeddingCouple] = useState('');
   const [weddingRole, setWeddingRole] = useState('');
   const [storyWords, setStoryWords] = useState<string[]>(['', '', '']);
+  const [djMood, setDjMood] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleClose = useCallback(() => {
@@ -121,6 +146,7 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
     setWeddingCouple('');
     setWeddingRole('');
     setStoryWords(['', '', '']);
+    setDjMood('');
     onClose();
   }, [onClose]);
 
@@ -149,6 +175,25 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
       setStep('error');
     }
   }, [selectedGame, eventId, eventType, eventTitle, guestName, weddingCouple, weddingRole]);
+
+  const handleDjSubmit = useCallback(async () => {
+    if (!selectedGame) return;
+    setStep('processing');
+    setError(null);
+    if (guestName.trim() && typeof window !== 'undefined') localStorage.setItem('guestUploaderName', guestName.trim());
+    try {
+      const res = await api.post(selectedGame.endpoint, {
+        eventId, eventType, eventTitle,
+        guestName: guestName.trim() || undefined,
+        mood: djMood.trim() || undefined,
+      });
+      setResult(res.data);
+      setStep('result');
+    } catch (err: any) {
+      setError(err?.response?.data?.error || 'Etwas ist schiefgelaufen');
+      setStep('error');
+    }
+  }, [selectedGame, eventId, eventType, eventTitle, guestName, djMood]);
 
   const handleStoriesSubmit = useCallback(async () => {
     if (!selectedGame || storyWords.some(w => !w.trim())) return;
@@ -241,6 +286,12 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
       text = `🎙️ ${result.speech}\n\n🥂 ${result.toast}`;
     } else if (selectedGame.key === 'ai_stories' && result.story) {
       text = `${result.emoji} ${result.title}\n\n${result.story}\n\n🎭 Genre: ${result.genre}`;
+    } else if (selectedGame.key === 'celebrity_lookalike' && result.celebrity) {
+      text = `${result.emoji} Du siehst aus wie ${result.celebrity}! (${result.similarity}%)\n\n${result.reason}\n\n💡 ${result.funFact}`;
+    } else if (selectedGame.key === 'ai_bingo' && result.tasks) {
+      text = `🎲 ${result.title}\n\n${result.tasks.map((t: string, i: number) => `${i + 1}. ${t}`).join('\n')}\n\n⭐ Bonus: ${result.bonusTask}`;
+    } else if (selectedGame.key === 'ai_dj' && result.songs) {
+      text = `🎧 ${result.djName}\n\n${result.songs.map((s: any) => `🎵 ${s.title} — ${s.artist}`).join('\n')}\n\n${result.vibe}`;
     }
     if (navigator.share) {
       navigator.share({ text }).catch(() => {});
@@ -258,8 +309,8 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
             {step !== 'select' && step !== 'processing' && (
               <button
                 onClick={() => {
-                  if (step === 'quiz' || step === 'wedding_input' || step === 'words_input') { setStep('name'); }
-                  else { setStep('select'); setSelectedGame(null); setResult(null); setQuizAnswers(['', '', '']); setStoryWords(['', '', '']); setWeddingCouple(''); setWeddingRole(''); }
+                  if (step === 'quiz' || step === 'wedding_input' || step === 'words_input' || step === 'mood_input') { setStep('name'); }
+                  else { setStep('select'); setSelectedGame(null); setResult(null); setQuizAnswers(['', '', '']); setStoryWords(['', '', '']); setWeddingCouple(''); setWeddingRole(''); setDjMood(''); }
                 }}
                 className="p-1.5 rounded-full hover:bg-muted/50 transition-colors"
               >
@@ -276,6 +327,7 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                 {step === 'quiz' && 'Persona Quiz'}
                 {step === 'wedding_input' && 'Hochzeitsrede'}
                 {step === 'words_input' && 'Story Generator'}
+                {step === 'mood_input' && 'AI DJ'}
                 {step === 'processing' && 'KI denkt nach...'}
                 {step === 'result' && selectedGame?.name}
                 {step === 'error' && 'Fehler'}
@@ -349,12 +401,13 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                     if (selectedGame.key === 'persona_quiz') setStep('quiz');
                     else if (selectedGame.key === 'wedding_speech') setStep('wedding_input');
                     else if (selectedGame.key === 'ai_stories') setStep('words_input');
+                    else if (selectedGame.key === 'ai_dj') setStep('mood_input');
                     else handlePlay();
                   }}
                   className={`mt-5 w-full py-3.5 bg-gradient-to-r ${selectedGame.gradient} text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg`}
                 >
                   <Wand2 className="w-4 h-4" />
-                  {selectedGame.key === 'persona_quiz' ? 'Zum Quiz!' : selectedGame.key === 'wedding_speech' ? 'Rede schreiben!' : selectedGame.key === 'ai_stories' ? 'Geschichte starten!' : 'Los geht\'s!'}
+                  {selectedGame.key === 'persona_quiz' ? 'Zum Quiz!' : selectedGame.key === 'wedding_speech' ? 'Rede schreiben!' : selectedGame.key === 'ai_stories' ? 'Geschichte starten!' : selectedGame.key === 'ai_dj' ? 'Musik bitte!' : 'Los geht\'s!'}
                 </button>
               </motion.div>
             )}
@@ -445,6 +498,24 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
               </motion.div>
             )}
 
+            {/* ═══ Mood Input (AI DJ) ═══ */}
+            {step === 'mood_input' && selectedGame?.key === 'ai_dj' && (
+              <motion.div key="mood" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="p-5">
+                <div className="text-center mb-5">
+                  <div className="text-5xl mb-2">🎧</div>
+                  <p className="text-sm text-muted-foreground">Welche Stimmung soll die Musik haben?</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-1.5">Stimmung <span className="text-muted-foreground font-normal">(optional)</span></label>
+                  <input type="text" value={djMood} onChange={(e) => setDjMood(e.target.value)} placeholder="z.B. Romantisch, Party, Chill, 80er Vibes..." className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50" />
+                </div>
+                <button onClick={handleDjSubmit} className="mt-5 w-full py-3.5 bg-gradient-to-r from-fuchsia-500 to-pink-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg">
+                  <Sparkles className="w-4 h-4" />
+                  Playlist mixen!
+                </button>
+              </motion.div>
+            )}
+
             {/* ═══ Processing ═══ */}
             {step === 'processing' && selectedGame && (
               <motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-16 gap-5">
@@ -466,6 +537,9 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                     {selectedGame.key === 'persona_quiz' && 'Deine Persönlichkeit wird analysiert...'}
                     {selectedGame.key === 'wedding_speech' && 'Die Rede wird geschrieben...'}
                     {selectedGame.key === 'ai_stories' && 'Eine Geschichte entsteht...'}
+                    {selectedGame.key === 'celebrity_lookalike' && 'Promi-Datenbank wird durchsucht...'}
+                    {selectedGame.key === 'ai_bingo' && 'Bingo-Karte wird erstellt...'}
+                    {selectedGame.key === 'ai_dj' && 'Die perfekte Playlist wird gemischt...'}
                   </p>
                 </div>
               </motion.div>
@@ -592,6 +666,72 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                     <div className="inline-block px-3 py-1 bg-muted rounded-full text-xs text-muted-foreground">
                       🎭 Genre: {result.genre}
                     </div>
+                  </div>
+                )}
+
+                {/* Celebrity Lookalike */}
+                {selectedGame.key === 'celebrity_lookalike' && result.celebrity && (
+                  <div className="text-center">
+                    <div className="text-6xl mb-3">{result.emoji || '🌟'}</div>
+                    <div className="inline-block px-5 py-2 bg-gradient-to-r from-amber-400 to-orange-600 text-white rounded-full font-bold text-lg mb-4">
+                      {result.celebrity}
+                    </div>
+                    <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-2xl p-5 mb-3">
+                      <div className="text-3xl font-bold text-amber-500 mb-2">{result.similarity}%</div>
+                      <p className="text-foreground text-base leading-relaxed">{result.reason}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-2xl p-4">
+                      <p className="text-sm text-muted-foreground mb-1">Fun Fact:</p>
+                      <p className="text-foreground font-medium">💡 {result.funFact}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* AI Bingo */}
+                {selectedGame.key === 'ai_bingo' && result.tasks && (
+                  <div className="text-center">
+                    <div className="text-5xl mb-2">{result.emoji || '🎲'}</div>
+                    <div className="inline-block px-4 py-1.5 bg-gradient-to-r from-green-500 to-emerald-700 text-white rounded-full font-bold text-sm mb-4">
+                      {result.title}
+                    </div>
+                    <div className="grid grid-cols-3 gap-1.5 mb-3">
+                      {result.tasks.slice(0, 9).map((task: string, i: number) => (
+                        <div key={i} className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl p-2.5 flex items-center justify-center min-h-[70px]">
+                          <p className="text-foreground text-[11px] font-medium leading-tight text-center">{task}</p>
+                        </div>
+                      ))}
+                    </div>
+                    {result.bonusTask && (
+                      <div className="bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border border-amber-500/20 rounded-2xl p-3">
+                        <p className="text-xs text-muted-foreground mb-0.5">⭐ Bonus-Aufgabe:</p>
+                        <p className="text-foreground font-bold text-sm">{result.bonusTask}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* AI DJ */}
+                {selectedGame.key === 'ai_dj' && result.songs && (
+                  <div className="text-center">
+                    <div className="text-5xl mb-2">{result.emoji || '🎧'}</div>
+                    <div className="inline-block px-4 py-1.5 bg-gradient-to-r from-fuchsia-500 to-pink-700 text-white rounded-full font-bold text-sm mb-3">
+                      {result.djName}
+                    </div>
+                    <div className="space-y-2 mb-3 text-left">
+                      {result.songs.map((song: any, i: number) => (
+                        <div key={i} className="bg-gradient-to-br from-fuchsia-500/10 to-pink-500/10 border border-fuchsia-500/20 rounded-xl p-3 flex items-start gap-3">
+                          <span className="text-lg">🎵</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-foreground font-bold text-sm">{song.title}</p>
+                            <p className="text-muted-foreground text-xs">{song.artist}</p>
+                            <p className="text-muted-foreground text-[10px] mt-0.5 italic">{song.reason}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {result.vibe && (
+                      <p className="text-muted-foreground text-xs italic">{result.vibe}</p>
+                    )}
                   </div>
                 )}
 

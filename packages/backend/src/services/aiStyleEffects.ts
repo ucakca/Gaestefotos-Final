@@ -14,7 +14,7 @@ import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { prepareAiExecution, logAiUsage, AiFeature } from './aiExecution';
 
-export type StyleEffect = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop';
+export type StyleEffect = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'time_machine' | 'pet_me' | 'yearbook';
 
 interface StyleEffectResult {
   outputBuffer: Buffer;
@@ -26,6 +26,7 @@ interface StyleEffectOptions {
   intensity?: number;       // 0.0 - 1.0, default 0.8
   outputFormat?: 'jpeg' | 'png';
   quality?: number;
+  variant?: string;         // e.g. decade for time_machine: '60s', '70s', '80s', '90s', '2000s'
 }
 
 // Style prompts for different effects (used with image-to-image APIs)
@@ -44,6 +45,45 @@ const STYLE_PROMPTS: Record<StyleEffect, { prompt: string; negativePrompt: strin
     prompt: 'vibrant pop art style, bold colors, andy warhol inspired, high contrast, artistic, modern pop art portrait',
     negativePrompt: 'dull, muted colors, black and white, boring, plain',
     strength: 0.7,
+  },
+  time_machine: {
+    prompt: '1980s retro photo, big hair, neon colors, vintage 80s fashion, synthesizer era, VHS aesthetic, film grain',
+    negativePrompt: 'modern, contemporary, high resolution, digital, clean',
+    strength: 0.65,
+  },
+  pet_me: {
+    prompt: 'adorable anthropomorphic animal version of the person, same facial expression and pose, cute furry animal character, pixar style, high quality, detailed fur texture',
+    negativePrompt: 'human, realistic person, scary, horror, ugly',
+    strength: 0.75,
+  },
+  yearbook: {
+    prompt: '1990s yearbook photo, school portrait, blue gradient background, soft lighting, retro 90s hairstyle, vintage school photo, slightly overexposed, warm tones',
+    negativePrompt: 'modern, selfie, outdoor, artistic, cartoon',
+    strength: 0.6,
+  },
+};
+
+// Decade variants for Time Machine (overrides base prompt)
+const TIME_MACHINE_DECADES: Record<string, { prompt: string; negativePrompt: string }> = {
+  '60s': {
+    prompt: '1960s mod style photo, beehive hair, go-go fashion, psychedelic colors, groovy vintage, flower power era, kodachrome film look',
+    negativePrompt: 'modern, digital, contemporary, high resolution',
+  },
+  '70s': {
+    prompt: '1970s disco era photo, big collar shirt, bell-bottoms fashion, warm earth tones, film grain, polaroid aesthetic, retro 70s style',
+    negativePrompt: 'modern, digital, contemporary, clean, minimalist',
+  },
+  '80s': {
+    prompt: '1980s retro photo, big hair, neon colors, vintage 80s fashion, synthesizer era, VHS aesthetic, film grain, mullet or perm hairstyle',
+    negativePrompt: 'modern, contemporary, high resolution, digital, clean',
+  },
+  '90s': {
+    prompt: '1990s photo, grunge aesthetic, flannel shirt, frosted tips, disposable camera quality, 90s teen magazine style, slightly washed out colors',
+    negativePrompt: 'modern, HD, sharp, professional, polished',
+  },
+  '2000s': {
+    prompt: '2000s Y2K style photo, low-rise fashion, butterfly clips, early digital camera quality, flash photography, MySpace era aesthetic, chunky highlights',
+    negativePrompt: 'modern, vintage, old, black and white, film',
   },
 };
 
@@ -70,7 +110,15 @@ export async function applyStyleEffect(
   }
 
   const provider = execution.provider;
-  const styleConfig = STYLE_PROMPTS[effect];
+  let styleConfig = { ...STYLE_PROMPTS[effect] };
+
+  // Override prompt for Time Machine decade variants
+  if (effect === 'time_machine' && options.variant && TIME_MACHINE_DECADES[options.variant]) {
+    const decade = TIME_MACHINE_DECADES[options.variant];
+    styleConfig.prompt = decade.prompt;
+    styleConfig.negativePrompt = decade.negativePrompt;
+  }
+
   const strength = styleConfig.strength * intensity;
 
   try {
@@ -178,6 +226,9 @@ async function callReplicateImg2Img(
     ai_oldify: 'tencentarc/gfpgan:9283608cc6b7be6b65a8e44983db012355fde4132009bf99d976b2f0896856a3',
     ai_cartoon: 'cjwbw/anything-v3-better-vae:09a5805203f4c12da649ec1923bb7729517ca25fcac790e640eaa9ed66573b65',
     ai_style_pop: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    time_machine: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    pet_me: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    yearbook: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
   };
 
   const base64 = imageBuffer.toString('base64');
@@ -301,6 +352,29 @@ async function fallbackStyleEffect(
       processed = sharp(imageBuffer)
         .modulate({ saturation: 2.0, brightness: 1.1 })
         .sharpen(3);
+      break;
+
+    case 'time_machine':
+      // Warm vintage tones
+      processed = sharp(imageBuffer)
+        .modulate({ saturation: 0.7, brightness: 0.95 })
+        .tint({ r: 200, g: 160, b: 120 })
+        .blur(0.3);
+      break;
+
+    case 'pet_me':
+      // Soften + warm for animal-like feel
+      processed = sharp(imageBuffer)
+        .modulate({ saturation: 1.3, brightness: 1.05 })
+        .blur(1.0);
+      break;
+
+    case 'yearbook':
+      // Slightly overexposed, warm school photo
+      processed = sharp(imageBuffer)
+        .modulate({ saturation: 0.8, brightness: 1.1 })
+        .tint({ r: 220, g: 200, b: 180 })
+        .blur(0.3);
       break;
 
     default:

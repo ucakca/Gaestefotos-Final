@@ -35,7 +35,13 @@ export type AiFeature =
   | 'caption_suggest'
   | 'color_scheme'
   | 'face_search'
-  | 'ai_categorize';
+  | 'ai_categorize'
+  | 'time_machine'
+  | 'pet_me'
+  | 'yearbook'
+  | 'celebrity_lookalike'
+  | 'ai_bingo'
+  | 'ai_dj';
 
 // ─── Feature Definition ──────────────────────────────────────
 
@@ -66,6 +72,9 @@ export const AI_FEATURE_REGISTRY: AiFeatureDefinition[] = [
   { key: 'compliment_mirror', label: 'Compliment Mirror', description: 'KI-Komplimente für Selfies', category: 'game', providerType: 'LLM', creditCost: 2, isWorkflow: true },
   { key: 'fortune_teller', label: 'AI Fortune Teller', description: 'Witzige Zukunftsvorhersagen', category: 'game', providerType: 'LLM', creditCost: 2, isWorkflow: true },
   { key: 'ai_roast', label: 'AI Roast', description: 'Liebevoller Comedy-Roast', category: 'game', providerType: 'LLM', creditCost: 2, isWorkflow: true },
+  { key: 'celebrity_lookalike', label: 'Celebrity Lookalike', description: 'Welchem Promi siehst du ähnlich?', category: 'game', providerType: 'LLM', creditCost: 2, isWorkflow: true },
+  { key: 'ai_bingo', label: 'AI Bingo', description: 'KI-generierte Foto-Aufgaben-Bingo-Karte', category: 'game', providerType: 'LLM', creditCost: 1, isWorkflow: true },
+  { key: 'ai_dj', label: 'AI DJ', description: 'KI-Musikvorschläge für die Party', category: 'game', providerType: 'LLM', creditCost: 1, isWorkflow: true },
   // Image
   { key: 'style_transfer', label: 'Style Transfer', description: 'Foto in Kunststil verwandeln', category: 'image', providerType: 'IMAGE_GEN', creditCost: 5, isWorkflow: true },
   { key: 'face_switch', label: 'Face Switch', description: 'Gesichter in Gruppenfotos tauschen', category: 'image', providerType: 'IMAGE_GEN', creditCost: 5, isWorkflow: true },
@@ -73,6 +82,9 @@ export const AI_FEATURE_REGISTRY: AiFeatureDefinition[] = [
   { key: 'ai_oldify', label: 'Oldify', description: 'Alterungs-Effekt auf Fotos', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true },
   { key: 'ai_cartoon', label: 'Cartoon', description: 'Foto in Cartoon-Stil', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true },
   { key: 'ai_style_pop', label: 'Style Pop', description: 'Foto in Pop-Art-Stil', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true },
+  { key: 'time_machine', label: 'Time Machine', description: 'Foto in ein anderes Jahrzehnt versetzen', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true },
+  { key: 'pet_me', label: 'Pet Me', description: 'Verwandelt dich in ein Tier', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true },
+  { key: 'yearbook', label: 'Yearbook', description: '90er/2000er Yearbook-Foto', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true },
   { key: 'drawbot', label: 'Drawbot', description: 'Line-Art G-Code für Zeichenroboter', category: 'image', providerType: 'IMAGE_GEN', creditCost: 8, isWorkflow: true },
   // Video
   { key: 'highlight_reel', label: 'Highlight Reel', description: 'Automatisches Event-Highlight-Video', category: 'video', providerType: 'VIDEO_GEN', creditCost: 10, isWorkflow: true },
