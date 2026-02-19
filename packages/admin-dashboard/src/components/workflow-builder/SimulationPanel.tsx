@@ -180,7 +180,7 @@ export default function SimulationPanel({ nodes, edges, onClose, onHighlightNode
           <select
             value={speed}
             onChange={(e) => setSpeed(Number(e.target.value))}
-            className="text-xs px-1.5 py-0.5 rounded border border-border bg-white"
+            className="text-xs px-1.5 py-0.5 rounded border border-border bg-app-card text-app-fg"
           >
             <option value={2000}>0.5x</option>
             <option value={1000}>1x</option>

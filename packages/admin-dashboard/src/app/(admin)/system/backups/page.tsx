@@ -201,13 +201,13 @@ export default function BackupsPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-app-fg flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
                 <HardDrive className="w-5 h-5 text-blue-600" />
               </div>
               Backup-Verwaltung
             </h1>
-            <p className="text-gray-500 mt-1">Vollständige und inkrementelle Backups verwalten</p>
+            <p className="text-app-muted mt-1">Vollständige und inkrementelle Backups verwalten</p>
           </div>
           <Button variant="secondary" onClick={loadBackups} className="gap-2">
             <RefreshCw className="w-4 h-4" /> Aktualisieren
@@ -217,49 +217,49 @@ export default function BackupsPage() {
         {/* Stats Cards */}
         <StaggerContainer className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StaggerItem>
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div className="bg-app-card rounded-xl border border-app-border p-4 shadow-sm">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
                   <Archive className="w-4 h-4 text-blue-600" />
                 </div>
-                <span className="text-sm text-gray-500">Letztes Voll-Backup</span>
+                <span className="text-sm text-app-muted">Letztes Voll-Backup</span>
               </div>
-              <div className="font-semibold text-gray-900">{timeAgo(stats?.lastFullBackup ?? null)}</div>
+              <div className="font-semibold text-app-fg">{timeAgo(stats?.lastFullBackup ?? null)}</div>
             </div>
           </StaggerItem>
           <StaggerItem>
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div className="bg-app-card rounded-xl border border-app-border p-4 shadow-sm">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
                   <Database className="w-4 h-4 text-purple-600" />
                 </div>
-                <span className="text-sm text-gray-500">Letztes DB-Backup</span>
+                <span className="text-sm text-app-muted">Letztes DB-Backup</span>
               </div>
-              <div className="font-semibold text-gray-900">{timeAgo(stats?.lastDbBackup ?? null)}</div>
+              <div className="font-semibold text-app-fg">{timeAgo(stats?.lastDbBackup ?? null)}</div>
             </div>
           </StaggerItem>
           <StaggerItem>
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div className="bg-app-card rounded-xl border border-app-border p-4 shadow-sm">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
                   <FileArchive className="w-4 h-4 text-emerald-600" />
                 </div>
-                <span className="text-sm text-gray-500">Backups gesamt</span>
+                <span className="text-sm text-app-muted">Backups gesamt</span>
               </div>
-              <div className="font-semibold text-gray-900">
-                {stats?.totalBackups || 0} <span className="text-sm font-normal text-gray-500">({stats?.totalSize})</span>
+              <div className="font-semibold text-app-fg">
+                {stats?.totalBackups || 0} <span className="text-sm font-normal text-app-muted">({stats?.totalSize})</span>
               </div>
             </div>
           </StaggerItem>
           <StaggerItem>
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div className="bg-app-card rounded-xl border border-app-border p-4 shadow-sm">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
                   <Server className="w-4 h-4 text-amber-600" />
                 </div>
-                <span className="text-sm text-gray-500">Speicherplatz</span>
+                <span className="text-sm text-app-muted">Speicherplatz</span>
               </div>
-              <div className="font-semibold text-gray-900">{stats?.diskFree} frei</div>
+              <div className="font-semibold text-app-fg">{stats?.diskFree} frei</div>
               <div className="mt-1.5 w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${
@@ -273,8 +273,8 @@ export default function BackupsPage() {
         </StaggerContainer>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="bg-app-card rounded-xl border border-app-border p-5 shadow-sm mb-6">
+          <h2 className="font-semibold text-app-fg mb-4 flex items-center gap-2">
             <Play className="w-4 h-4" /> Backup jetzt erstellen
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -327,12 +327,12 @@ export default function BackupsPage() {
         </div>
 
         {/* Schedule Section */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm mb-6">
+        <div className="bg-app-card rounded-xl border border-app-border shadow-sm mb-6">
           <button
             onClick={() => setShowSchedule(!showSchedule)}
             className="w-full flex items-center justify-between p-5 text-left"
           >
-            <h2 className="font-semibold text-gray-900 flex items-center gap-2">
+            <h2 className="font-semibold text-app-fg flex items-center gap-2">
               <Calendar className="w-4 h-4" /> Automatischer Zeitplan
             </h2>
             <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showSchedule ? 'rotate-180' : ''}`} />
@@ -344,7 +344,7 @@ export default function BackupsPage() {
                 <div className={`rounded-xl p-4 border ${schedule.daily.enabled ? 'border-emerald-200 bg-emerald-50' : 'border-gray-200 bg-gray-50'}`}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-sm">Täglich</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${schedule.daily.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-500'}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${schedule.daily.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-app-muted'}`}>
                       {schedule.daily.enabled ? 'Aktiv' : 'Inaktiv'}
                     </span>
                   </div>
@@ -359,7 +359,7 @@ export default function BackupsPage() {
                 <div className={`rounded-xl p-4 border ${schedule.weekly.enabled ? 'border-emerald-200 bg-emerald-50' : 'border-gray-200 bg-gray-50'}`}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-sm">Wöchentlich</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${schedule.weekly.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-500'}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${schedule.weekly.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-app-muted'}`}>
                       {schedule.weekly.enabled ? 'Aktiv' : 'Inaktiv'}
                     </span>
                   </div>
@@ -375,7 +375,7 @@ export default function BackupsPage() {
                 <div className={`rounded-xl p-4 border ${schedule.monthly.enabled ? 'border-emerald-200 bg-emerald-50' : 'border-gray-200 bg-gray-50'}`}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-sm">Monatlich</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${schedule.monthly.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-500'}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${schedule.monthly.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-app-muted'}`}>
                       {schedule.monthly.enabled ? 'Aktiv' : 'Inaktiv'}
                     </span>
                   </div>
@@ -393,16 +393,16 @@ export default function BackupsPage() {
         </div>
 
         {/* Backup List */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+        <div className="bg-app-card rounded-xl border border-app-border shadow-sm">
           <div className="p-5 border-b border-gray-100">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <h2 className="font-semibold text-gray-900">Backup-Verlauf ({filteredBackups.length})</h2>
+              <h2 className="font-semibold text-app-fg">Backup-Verlauf ({filteredBackups.length})</h2>
               <div className="flex gap-2 flex-wrap">
                 {/* Category filter */}
                 <select
                   value={filterCategory}
                   onChange={e => setFilterCategory(e.target.value as FilterCategory)}
-                  className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="text-sm border border-app-border rounded-lg px-3 py-1.5 bg-app-card text-app-fg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">Alle Kategorien</option>
                   <option value="daily">Täglich</option>
@@ -414,7 +414,7 @@ export default function BackupsPage() {
                 <select
                   value={filterType}
                   onChange={e => setFilterType(e.target.value as FilterType)}
-                  className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="text-sm border border-app-border rounded-lg px-3 py-1.5 bg-app-card text-app-fg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">Alle Typen</option>
                   <option value="full">Voll-Backup</option>
@@ -449,7 +449,7 @@ export default function BackupsPage() {
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm text-gray-900 truncate">{backup.filename}</span>
+                        <span className="font-medium text-sm text-app-fg truncate">{backup.filename}</span>
                         <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${cc.color}`}>
                           {cc.label}
                         </span>

@@ -180,27 +180,27 @@ export default function EventThemesAdminPage() {
       {showStats && stats && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white border rounded-xl p-4">
-              <p className="text-xs text-gray-500 uppercase">Themes gesamt</p>
+            <div className="bg-app-card border border-app-border rounded-xl p-4">
+              <p className="text-xs text-app-muted uppercase">Themes gesamt</p>
               <p className="text-2xl font-bold">{stats.totalThemes}</p>
             </div>
-            <div className="bg-white border rounded-xl p-4">
-              <p className="text-xs text-gray-500 uppercase">Verwendungen</p>
+            <div className="bg-app-card border border-app-border rounded-xl p-4">
+              <p className="text-xs text-app-muted uppercase">Verwendungen</p>
               <p className="text-2xl font-bold">{stats.totalUsage}</p>
             </div>
-            <div className="bg-white border rounded-xl p-4">
-              <p className="text-xs text-gray-500 uppercase">Premium</p>
+            <div className="bg-app-card border border-app-border rounded-xl p-4">
+              <p className="text-xs text-app-muted uppercase">Premium</p>
               <p className="text-2xl font-bold">{themes.filter(t => t.isPremium).length}</p>
             </div>
-            <div className="bg-white border rounded-xl p-4">
-              <p className="text-xs text-gray-500 uppercase">KI-generiert</p>
+            <div className="bg-app-card border border-app-border rounded-xl p-4">
+              <p className="text-xs text-app-muted uppercase">KI-generiert</p>
               <p className="text-2xl font-bold">{themes.filter(t => t.isAiGenerated).length}</p>
             </div>
           </div>
 
           {/* Event-Type Distribution */}
-          <div className="bg-white border rounded-xl p-4">
-            <p className="text-xs text-gray-500 uppercase mb-3">Verwendung nach Event-Typ</p>
+          <div className="bg-app-card border border-app-border rounded-xl p-4">
+            <p className="text-xs text-app-muted uppercase mb-3">Verwendung nach Event-Typ</p>
             <div className="space-y-2">
               {stats.byEventType.map((entry) => {
                 const usage = entry._sum?.usageCount || 0;
@@ -222,8 +222,8 @@ export default function EventThemesAdminPage() {
           </div>
 
           {/* Top Themes Ranking */}
-          <div className="bg-white border rounded-xl p-4">
-            <p className="text-xs text-gray-500 uppercase mb-3">Top Themes Ranking</p>
+          <div className="bg-app-card border border-app-border rounded-xl p-4">
+            <p className="text-xs text-app-muted uppercase mb-3">Top Themes Ranking</p>
             <div className="space-y-2">
               {stats.topThemes.map((t, i) => (
                 <div key={t.id} className="flex items-center gap-3 py-1.5">
@@ -335,8 +335,8 @@ export default function EventThemesAdminPage() {
       {/* Edit Modal */}
       {editingTheme && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
+          <div className="bg-app-card rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-app-card border-b border-app-border px-6 py-4 flex items-center justify-between z-10">
               <h2 className="text-lg font-bold">{isCreating ? 'Neues Theme' : 'Theme bearbeiten'}</h2>
               <button onClick={() => { setEditingTheme(null); setIsCreating(false); }} className="p-1 hover:bg-gray-100 rounded-lg">
                 <X className="w-5 h-5" />
@@ -348,31 +348,31 @@ export default function EventThemesAdminPage() {
               <div className="grid grid-cols-2 gap-4">
                 {isCreating && (
                   <div>
-                    <label className="text-xs font-medium text-gray-600 mb-1 block">Slug</label>
+                    <label className="text-xs font-medium text-app-muted mb-1 block">Slug</label>
                     <input
                       type="text"
                       value={editingTheme.slug || ''}
                       onChange={(e) => setEditingTheme({ ...editingTheme, slug: e.target.value })}
-                      className="w-full border rounded-lg px-3 py-2 text-sm"
+                      className="w-full border border-app-border rounded-lg px-3 py-2 text-sm bg-app-card text-app-fg"
                       placeholder="wedding-elegant-ivory"
                     />
                   </div>
                 )}
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1 block">Name</label>
+                  <label className="text-xs font-medium text-app-muted mb-1 block">Name</label>
                   <input
                     type="text"
                     value={editingTheme.name || ''}
                     onChange={(e) => setEditingTheme({ ...editingTheme, name: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                    className="w-full border border-app-border rounded-lg px-3 py-2 text-sm bg-app-card text-app-fg"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1 block">Event-Typ</label>
+                  <label className="text-xs font-medium text-app-muted mb-1 block">Event-Typ</label>
                   <select
                     value={editingTheme.eventType || 'custom'}
                     onChange={(e) => setEditingTheme({ ...editingTheme, eventType: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                    className="w-full border border-app-border rounded-lg px-3 py-2 text-sm bg-app-card text-app-fg"
                   >
                     {EVENT_TYPES.map((t) => (
                       <option key={t} value={t}>{t}</option>
@@ -380,23 +380,23 @@ export default function EventThemesAdminPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1 block">Wall Layout</label>
+                  <label className="text-xs font-medium text-app-muted mb-1 block">Wall Layout</label>
                   <select
                     value={editingTheme.wallLayout || 'masonry'}
                     onChange={(e) => setEditingTheme({ ...editingTheme, wallLayout: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                    className="w-full border border-app-border rounded-lg px-3 py-2 text-sm bg-app-card text-app-fg"
                   >
                     <option value="masonry">Masonry</option>
                     <option value="grid">Grid</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1 block">Beschreibung</label>
+                  <label className="text-xs font-medium text-app-muted mb-1 block">Beschreibung</label>
                   <input
                     type="text"
                     value={editingTheme.description || ''}
                     onChange={(e) => setEditingTheme({ ...editingTheme, description: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2 text-sm"
+                    className="w-full border border-app-border rounded-lg px-3 py-2 text-sm bg-app-card text-app-fg"
                   />
                 </div>
               </div>
@@ -471,7 +471,7 @@ export default function EventThemesAdminPage() {
             </div>
 
             {/* Footer */}
-            <div className="sticky bottom-0 bg-white border-t px-6 py-4 flex justify-end gap-3">
+            <div className="sticky bottom-0 bg-app-card border-t border-app-border px-6 py-4 flex justify-end gap-3">
               <button
                 onClick={() => { setEditingTheme(null); setIsCreating(false); }}
                 className="px-4 py-2 text-sm border rounded-lg hover:bg-gray-50"

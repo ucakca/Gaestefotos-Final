@@ -74,6 +74,14 @@ body {
   background-color: var(--app-bg);
 }
 
+/* ═══ Form Element Text Color Fix ═══ */
+/* Ensures all inputs/textareas/selects always have proper contrast */
+input,
+textarea,
+select {
+  color: var(--app-fg);
+}
+
 /* ═══ Modern Utility Classes ═══ */
 @layer utilities {
   .text-balance {
