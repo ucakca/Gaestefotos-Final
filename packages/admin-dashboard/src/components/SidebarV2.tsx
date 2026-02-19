@@ -41,6 +41,7 @@ import {
   HardDrive,
   Bug,
   Wand2,
+  BarChart3,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -100,6 +101,7 @@ const navigation: NavGroup[] = [
       { name: 'Prompt Analyzer', href: '/manage/prompt-analyzer', icon: Wand2 },
       { name: 'AI Provider', href: '/manage/ai-providers', icon: Brain },
       { name: 'AI Credits', href: '/manage/credits', icon: Zap },
+      { name: 'Cost Monitoring', href: '/manage/cost-monitoring', icon: BarChart3 },
       { name: 'Workflow Builder', href: '/manage/workflows', icon: Workflow },
     ],
   },
