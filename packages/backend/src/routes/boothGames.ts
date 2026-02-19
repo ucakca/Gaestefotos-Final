@@ -260,6 +260,48 @@ router.post('/bg-removal', authMiddleware, async (req: AuthRequest, res: Respons
   }
 });
 
+// POST /api/booth-games/caption-generator — Generate social media captions
+router.post('/caption-generator', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, eventType, eventTitle } = req.body;
+
+    const { resolvePrompt, renderPrompt } = await import('../services/promptTemplates');
+    const { generateCompletion } = await import('../lib/groq');
+
+    const prompt = await resolvePrompt('caption_suggest');
+    const systemPrompt = prompt.systemPrompt || 'Du bist ein Social-Media-Experte. Generiere kreative Instagram-Captions auf Deutsch. Antworte NUR mit einem JSON-Array von Strings.';
+    const userPromptTpl = prompt.userPromptTpl || 'Generiere 3 Instagram-Captions für ein Foto von "{{eventType}}".';
+    const context = eventType || eventTitle || 'Party';
+    const userPrompt = renderPrompt(userPromptTpl, { eventType: context });
+
+    const response = await generateCompletion(userPrompt, systemPrompt, {
+      maxTokens: prompt.maxTokens || 200,
+      temperature: prompt.temperature || 0.85,
+    });
+
+    let captions: string[] = [];
+    try {
+      const jsonMatch = response.content.trim().match(/\[[\s\S]*\]/);
+      if (jsonMatch) captions = JSON.parse(jsonMatch[0]);
+    } catch {
+      captions = [response.content.trim()];
+    }
+
+    const session = createGameSession(eventId, 'compliment_mirror', { captions });
+    res.json({ sessionId: session.id, captions, source: 'ai' });
+  } catch (error) {
+    logger.error('Caption generator error', { message: (error as Error).message });
+    res.json({
+      captions: [
+        'Beste Nacht ever! 🎉 #party #memories',
+        'Making memories, one photo at a time 📸 #gästefotos',
+        'Die besten Geschichten beginnen auf der Tanzfläche 💃 #nightout',
+      ],
+      source: 'fallback',
+    });
+  }
+});
+
 // POST /api/booth-games/gif-morph — Create animated GIF morph (Original → Style1 → Style2)
 router.post('/gif-morph', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {

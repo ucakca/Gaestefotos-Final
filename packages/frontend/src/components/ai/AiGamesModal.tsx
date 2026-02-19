@@ -11,7 +11,7 @@ import api from '@/lib/api';
 
 // ─── Types ──────────────────────────────────────────────────
 
-type GameKey = 'compliment_mirror' | 'fortune_teller' | 'ai_roast';
+type GameKey = 'compliment_mirror' | 'fortune_teller' | 'ai_roast' | 'caption_generator';
 type Step = 'select' | 'name' | 'processing' | 'result' | 'error';
 
 interface GameDef {
@@ -55,6 +55,14 @@ const GAMES: GameDef[] = [
     description: 'Liebevoller Comedy-Roast — traust du dich?',
     gradient: 'from-orange-500 to-red-500',
     endpoint: '/booth-games/ai-roast',
+  },
+  {
+    key: 'caption_generator',
+    name: 'Caption Generator',
+    emoji: '📝',
+    description: '3 kreative Instagram-Captions für dein Foto!',
+    gradient: 'from-sky-500 to-blue-600',
+    endpoint: '/booth-games/caption-generator',
   },
 ];
 
@@ -121,6 +129,8 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
       text = `🔮 ${result.prediction}\n\nGlücksgegenstand: ${result.luckyItem} | Glückszahl: ${result.luckyNumber}`;
     } else if (selectedGame.key === 'ai_roast') {
       text = `🔥 ${result.roast}\n\n❤️ ${result.rescue}`;
+    } else if (selectedGame.key === 'caption_generator' && result.captions) {
+      text = result.captions.join('\n\n');
     }
     if (navigator.share) {
       navigator.share({ text }).catch(() => {});
@@ -245,6 +255,7 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                     {selectedGame.key === 'fortune_teller' && 'Die Sterne werden befragt...'}
                     {selectedGame.key === 'ai_roast' && 'Die KI feilt an einem Witz...'}
                     {selectedGame.key === 'compliment_mirror' && 'Der Spiegel poliert sich...'}
+                    {selectedGame.key === 'caption_generator' && 'Kreative Captions werden generiert...'}
                   </p>
                 </div>
               </motion.div>
@@ -297,6 +308,32 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                     <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl p-4">
                       <p className="text-sm text-muted-foreground mb-1">Rettungs-Kompliment:</p>
                       <p className="text-foreground font-medium">{result.rescue}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Caption Generator */}
+                {selectedGame.key === 'caption_generator' && result.captions && (
+                  <div>
+                    <div className="text-center mb-4">
+                      <div className="text-6xl mb-2">📝</div>
+                      <p className="text-sm text-muted-foreground">Tippe auf eine Caption zum Kopieren</p>
+                    </div>
+                    <div className="space-y-2.5">
+                      {result.captions.map((caption: string, i: number) => (
+                        <button
+                          key={i}
+                          onClick={() => {
+                            navigator.clipboard.writeText(caption).catch(() => {});
+                          }}
+                          className="w-full text-left bg-gradient-to-br from-sky-500/10 to-blue-500/10 border border-sky-500/20 rounded-2xl p-4 hover:from-sky-500/20 hover:to-blue-500/20 active:scale-[0.98] transition-all"
+                        >
+                          <div className="flex items-start gap-3">
+                            <span className="text-lg shrink-0 mt-0.5">#{i + 1}</span>
+                            <p className="text-foreground text-sm leading-relaxed">{caption}</p>
+                          </div>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 )}
