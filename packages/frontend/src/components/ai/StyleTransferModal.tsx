@@ -49,6 +49,8 @@ const STYLE_COLORS: Record<string, { gradient: string; emoji: string }> = {
   'headshot':       { gradient: 'from-slate-400 to-slate-600', emoji: '👤' },
   'stained-glass':  { gradient: 'from-purple-500 to-amber-400', emoji: '🪟' },
   'ukiyo-e':        { gradient: 'from-red-400 to-blue-600', emoji: '🏯' },
+  'film-noir':      { gradient: 'from-gray-700 to-gray-900', emoji: '🎬' },
+  'pixel-art':      { gradient: 'from-green-500 to-lime-400', emoji: '👾' },
 };
 
 const DEFAULT_STYLE = { gradient: 'from-purple-500 to-pink-500', emoji: '🎨' };

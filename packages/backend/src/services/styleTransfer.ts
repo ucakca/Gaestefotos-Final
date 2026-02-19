@@ -88,6 +88,84 @@ export const AI_STYLES: Record<string, { name: string; prompt: string; negativeP
     negativePrompt: 'daylight, natural, muted',
     strength: 0.65,
   },
+  'caricature': {
+    name: 'Karikatur',
+    prompt: 'exaggerated caricature drawing, big head, small body, humorous, colorful, professional caricature artist style',
+    negativePrompt: 'realistic, photograph, normal proportions',
+    strength: 0.75,
+  },
+  'magazine-cover': {
+    name: 'Magazine Cover',
+    prompt: 'professional magazine cover photo, glamorous lighting, high fashion, vogue style, dramatic pose, editorial photography',
+    negativePrompt: 'amateur, casual, low quality',
+    strength: 0.55,
+  },
+  'comic-hero': {
+    name: 'Comic Hero',
+    prompt: 'marvel comic book style, bold outlines, halftone dots, dynamic pose, superhero comic panel, vibrant colors',
+    negativePrompt: 'photograph, realistic, muted',
+    strength: 0.70,
+  },
+  'lego': {
+    name: 'Lego',
+    prompt: 'lego minifigure version of person, plastic toy, yellow skin, simple features, lego world background',
+    negativePrompt: 'realistic, photograph, detailed skin',
+    strength: 0.80,
+  },
+  'claymation': {
+    name: 'Claymation',
+    prompt: 'stop motion claymation character, wallace and gromit style, plasticine texture, warm lighting',
+    negativePrompt: 'photograph, realistic, digital',
+    strength: 0.75,
+  },
+  'neon-portrait': {
+    name: 'Neon Portrait',
+    prompt: 'cyberpunk neon portrait, dark background, vibrant neon lights reflecting on skin, futuristic, blade runner aesthetic',
+    negativePrompt: 'daylight, natural, flat lighting',
+    strength: 0.65,
+  },
+  'barbie': {
+    name: 'Barbie / Ken',
+    prompt: 'barbie doll version, perfect plastic skin, glossy, pink background, toy box aesthetic, fashion doll',
+    negativePrompt: 'realistic, wrinkles, natural skin',
+    strength: 0.75,
+  },
+  'ghibli': {
+    name: 'Studio Ghibli',
+    prompt: 'studio ghibli anime style, miyazaki inspired, soft watercolor, dreamy atmosphere, detailed background, spirited away aesthetic',
+    negativePrompt: 'realistic, photograph, dark, gritty',
+    strength: 0.70,
+  },
+  'headshot': {
+    name: 'AI Headshot',
+    prompt: 'professional linkedin headshot, studio lighting, clean background, business attire, confident expression',
+    negativePrompt: 'casual, blurry, dark, amateur',
+    strength: 0.50,
+  },
+  'stained-glass': {
+    name: 'Kirchenfenster',
+    prompt: 'stained glass window art style, vibrant colored glass pieces, black lead lines, church window, backlit',
+    negativePrompt: 'photograph, realistic, modern',
+    strength: 0.75,
+  },
+  'ukiyo-e': {
+    name: 'Ukiyo-e',
+    prompt: 'ukiyo-e japanese woodblock print style, flat colors, wave patterns, traditional japanese art',
+    negativePrompt: 'photograph, 3d, modern, digital',
+    strength: 0.70,
+  },
+  'film-noir': {
+    name: 'Film Noir',
+    prompt: 'film noir style, black and white, dramatic shadows, 1940s detective movie, high contrast, venetian blinds lighting',
+    negativePrompt: 'color, bright, modern, casual',
+    strength: 0.60,
+  },
+  'pixel-art': {
+    name: 'Pixel Art',
+    prompt: '16-bit pixel art portrait, retro video game style, limited color palette, blocky pixels, nostalgic gaming aesthetic',
+    negativePrompt: 'realistic, smooth, high resolution, photograph',
+    strength: 0.75,
+  },
 };
 
 // ── In-memory result cache (30 min TTL) ─────────────────────────────────────
