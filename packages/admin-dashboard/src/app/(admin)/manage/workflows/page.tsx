@@ -33,6 +33,7 @@ import SimulationPanel from '@/components/workflow-builder/SimulationPanel';
 import { validateWorkflow, type ValidationResult } from '@/components/workflow-builder/validation';
 import { WORKFLOW_PRESETS } from '@/components/workflow-builder/presets';
 import type { StepTypeDefinition, WorkflowNodeData } from '@/components/workflow-builder/types';
+import AutomationBuilder from '@/components/workflow-builder/AutomationBuilder';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
 
@@ -1111,14 +1112,185 @@ function WorkflowEditorInner() {
   );
 }
 
-// ─── Page wrapper with ReactFlowProvider ──────────────────────────────────────
+// ─── Page wrapper with Tabs ───────────────────────────────────────────────────
+
+function AutomationTab() {
+  const [automations, setAutomations] = useState<any[]>([]);
+  const [editingPipeline, setEditingPipeline] = useState<any | null>(null);
+  const [showBuilder, setShowBuilder] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const loadAutomations = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { data } = await api.get('/workflows?flowType=AUTOMATION');
+      setAutomations(data.workflows || []);
+    } catch { /* ignore */ }
+    finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { loadAutomations(); }, [loadAutomations]);
+
+  const handleSave = async (pipeline: any) => {
+    // Convert pipeline format to workflow format for the existing API
+    const nodes: any[] = [];
+    const edges: any[] = [];
+    let y = 0;
+
+    // Trigger node
+    nodes.push({
+      id: pipeline.trigger.id,
+      type: 'workflowStep',
+      position: { x: 200, y },
+      data: { type: pipeline.trigger.type, label: pipeline.trigger.type, config: pipeline.trigger.config },
+    });
+
+    let prevId = pipeline.trigger.id;
+    for (const step of pipeline.steps) {
+      y += 120;
+      nodes.push({
+        id: step.id,
+        type: 'workflowStep',
+        position: { x: 200, y },
+        data: { type: step.type, label: step.type, config: step.config },
+      });
+      edges.push({ id: `e-${prevId}-${step.id}`, source: prevId, target: step.id, sourceHandle: 'default' });
+      prevId = step.id;
+    }
+
+    const payload = {
+      name: pipeline.name,
+      description: pipeline.description,
+      flowType: 'AUTOMATION',
+      isActive: pipeline.isActive,
+      steps: { nodes, edges },
+    };
+
+    if (pipeline.id) {
+      await api.put(`/workflows/${pipeline.id}`, payload);
+    } else {
+      await api.post('/workflows', payload);
+    }
+
+    setShowBuilder(false);
+    setEditingPipeline(null);
+    loadAutomations();
+  };
+
+  if (showBuilder || editingPipeline) {
+    return (
+      <div className="p-6 max-w-3xl mx-auto">
+        <button onClick={() => { setShowBuilder(false); setEditingPipeline(null); }} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4">
+          <ChevronLeft className="w-4 h-4" /> Zurück zur Übersicht
+        </button>
+        <AutomationBuilder onSave={handleSave} existingPipeline={editingPipeline} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold">Automationen</h2>
+          <p className="text-sm text-muted-foreground">Server-seitige Workflows die automatisch ausgeführt werden</p>
+        </div>
+        <button
+          onClick={() => setShowBuilder(true)}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+        >
+          <Plus className="w-4 h-4" /> Neue Automation
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+      ) : automations.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <Workflow className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p className="text-sm">Noch keine Automationen erstellt.</p>
+          <button onClick={() => setShowBuilder(true)} className="mt-3 text-sm text-primary hover:underline">Erste Automation erstellen →</button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {automations.map((wf: any) => (
+            <div key={wf.id} className="flex items-center gap-3 p-4 rounded-xl border border-border/50 hover:bg-muted/20 transition-colors">
+              <div className={`w-2 h-2 rounded-full ${wf.isActive !== false ? 'bg-green-500' : 'bg-muted'}`} />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium">{wf.name}</div>
+                {wf.description && <div className="text-xs text-muted-foreground">{wf.description}</div>}
+              </div>
+              <span className="text-xs text-muted-foreground">{wf.steps?.nodes?.length || 0} Steps</span>
+              <button
+                onClick={() => {
+                  // Convert workflow back to pipeline format
+                  const graph = wf.steps || { nodes: [], edges: [] };
+                  const triggerNode = graph.nodes?.find((n: any) => (n.data?.type || '').startsWith('TRIGGER_'));
+                  const actionNodes = graph.nodes?.filter((n: any) => !(n.data?.type || '').startsWith('TRIGGER_')) || [];
+                  setEditingPipeline({
+                    id: wf.id,
+                    name: wf.name,
+                    description: wf.description || '',
+                    isActive: wf.isActive !== false,
+                    trigger: triggerNode ? { id: triggerNode.id, type: triggerNode.data.type, config: triggerNode.data.config || {} } : null,
+                    steps: actionNodes.map((n: any) => ({ id: n.id, type: n.data.type, config: n.data.config || {} })),
+                  });
+                }}
+                className="text-xs text-primary hover:underline"
+              >
+                Bearbeiten
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function WorkflowBuilderPage() {
+  const [activeTab, setActiveTab] = useState<'automations' | 'booth'>('automations');
+
   return (
-    <div className="h-screen">
-      <ReactFlowProvider>
-        <WorkflowEditorInner />
-      </ReactFlowProvider>
+    <div className="h-screen flex flex-col">
+      {/* Tab Bar */}
+      <div className="flex-shrink-0 border-b border-border bg-card">
+        <div className="flex">
+          <button
+            onClick={() => setActiveTab('automations')}
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'automations'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            ⚡ Automationen
+          </button>
+          <button
+            onClick={() => setActiveTab('booth')}
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'booth'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            🔧 Booth-Flows (Erweitert)
+          </button>
+        </div>
+      </div>
+
+      {/* Tab Content */}
+      <div className="flex-1 overflow-hidden">
+        {activeTab === 'automations' ? (
+          <div className="h-full overflow-y-auto">
+            <AutomationTab />
+          </div>
+        ) : (
+          <ReactFlowProvider>
+            <WorkflowEditorInner />
+          </ReactFlowProvider>
+        )}
+      </div>
     </div>
   );
 }
