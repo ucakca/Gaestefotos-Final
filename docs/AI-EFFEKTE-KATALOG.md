@@ -6,46 +6,41 @@
 
 ## 1. BILD-EFFEKTE (Image-to-Image)
 
-### Bereits implementiert ✅
+### Bereits implementiert ✅ (Backend + Frontend + Prompts in DB)
 
-| Effekt | Feature-Key | Provider | Prompt-Typ | Credits |
-|--------|-------------|----------|------------|---------|
-| Ölgemälde | `style_transfer:oil-painting` | Stability AI / Replicate | img2img | 5 |
-| Aquarell | `style_transfer:watercolor` | Stability AI / Replicate | img2img | 5 |
-| Pop Art | `style_transfer:pop-art` | Stability AI / Replicate | img2img | 5 |
-| Bleistiftzeichnung | `style_transfer:sketch` | Stability AI / Replicate | img2img | 5 |
-| Cartoon | `style_transfer:cartoon` | Stability AI / Replicate | img2img | 5 |
-| Vintage Retro | `style_transfer:vintage` | Stability AI / Replicate | img2img | 5 |
-| Cyberpunk | `style_transfer:cyberpunk` | Stability AI / Replicate | img2img | 5 |
-| Renaissance | `style_transfer:renaissance` | Stability AI / Replicate | img2img | 5 |
-| Anime | `style_transfer:anime` | Stability AI / Replicate | img2img | 5 |
-| Neon Glow | `style_transfer:neon-glow` | Stability AI / Replicate | img2img | 5 |
-
-### Neue Bild-Effekte (HIGH Priority) 🔴
-
-| Effekt | Feature-Key | Prompt | Negative Prompt | Strength | Provider |
-|--------|-------------|--------|-----------------|----------|----------|
-| **Oldify / Aging** | `ai_oldify` | aged elderly version, wrinkles, grey hair, realistic aging, same person 40 years older | young, smooth skin, child, cartoon | 0.65 | Replicate (SDXL) |
-| **Pixar 3D Cartoon** | `ai_cartoon` | pixar style 3d cartoon character, animated movie, colorful, expressive | realistic, photograph, blurry | 0.75 | Replicate (SDXL) |
-| **Style Pop** | `ai_style_pop` | vibrant pop art, bold colors, warhol inspired, high contrast, modern portrait | dull, muted, black and white | 0.70 | Stability AI |
-| **AI Karikatur** | `style_transfer:caricature` | exaggerated caricature drawing, big head, small body, humorous, colorful, professional caricature artist style | realistic, photograph, normal proportions | 0.75 | Replicate |
-| **Magazine Cover** | `style_transfer:magazine-cover` | professional magazine cover photo, glamorous lighting, high fashion, vogue style, dramatic pose, editorial photography | amateur, casual, low quality | 0.55 | Stability AI |
-| **Comic Book Hero** | `style_transfer:comic-hero` | marvel comic book style, bold outlines, halftone dots, dynamic pose, superhero comic panel, vibrant colors | photograph, realistic, muted | 0.70 | Replicate |
-| **Lego Minifig** | `style_transfer:lego` | lego minifigure version of person, plastic toy, yellow skin, simple features, lego world background | realistic, photograph, detailed | 0.80 | Replicate |
-| **Claymation** | `style_transfer:claymation` | stop motion claymation character, wallace and gromit style, plasticine texture, warm lighting | photograph, realistic, digital | 0.75 | Replicate |
-| **Neon Cyberpunk Portrait** | `style_transfer:neon-portrait` | cyberpunk neon portrait, dark background, vibrant neon lights reflecting on skin, futuristic, blade runner aesthetic | daylight, natural, flat lighting | 0.65 | Stability AI |
-| **Barbie / Ken Doll** | `style_transfer:barbie` | barbie doll version, perfect plastic skin, glossy, pink background, toy box aesthetic, fashion doll | realistic, wrinkles, natural skin | 0.75 | Replicate |
-| **Studio Ghibli** | `style_transfer:ghibli` | studio ghibli anime style, miyazaki inspired, soft watercolor, dreamy atmosphere, detailed background, spirited away aesthetic | realistic, photograph, dark, gritty | 0.70 | Replicate |
-| **AI Headshot** | `style_transfer:headshot` | professional linkedin headshot, studio lighting, clean background, business attire, confident expression | casual, blurry, dark, amateur | 0.50 | Stability AI |
-| **Stained Glass** | `style_transfer:stained-glass` | stained glass window art style, vibrant colored glass pieces, black lead lines, church window, backlit | photograph, realistic, modern | 0.75 | Stability AI |
-| **Ukiyo-e / Japanese Woodblock** | `style_transfer:ukiyo-e` | ukiyo-e japanese woodblock print style, flat colors, wave patterns, traditional japanese art | photograph, 3d, modern, digital | 0.70 | Replicate |
+| Effekt | Feature-Key | Provider | Guest-UI | Credits |
+|--------|-------------|----------|----------|---------|
+| Ölgemälde | `style_transfer:oil-painting` | Replicate | StyleTransferModal | 5 |
+| Aquarell | `style_transfer:watercolor` | Replicate | StyleTransferModal | 5 |
+| Pop Art | `style_transfer:pop-art` | Replicate | StyleTransferModal | 5 |
+| Bleistiftzeichnung | `style_transfer:sketch` | Replicate | StyleTransferModal | 5 |
+| Cartoon | `style_transfer:cartoon` | Replicate | StyleTransferModal | 5 |
+| Vintage Retro | `style_transfer:vintage` | Replicate | StyleTransferModal | 5 |
+| Cyberpunk | `style_transfer:cyberpunk` | Replicate | StyleTransferModal | 5 |
+| Renaissance | `style_transfer:renaissance` | Replicate | StyleTransferModal | 5 |
+| Anime | `style_transfer:anime` | Replicate | StyleTransferModal | 5 |
+| Neon Glow | `style_transfer:neon-glow` | Replicate | StyleTransferModal | 5 |
+| AI Karikatur | `style_transfer:caricature` | Replicate | StyleTransferModal | 5 |
+| Magazine Cover | `style_transfer:magazine-cover` | Replicate | StyleTransferModal | 5 |
+| Comic Book Hero | `style_transfer:comic-hero` | Replicate | StyleTransferModal | 5 |
+| Lego Minifig | `style_transfer:lego` | Replicate | StyleTransferModal | 5 |
+| Claymation | `style_transfer:claymation` | Replicate | StyleTransferModal | 5 |
+| Neon Cyberpunk Portrait | `style_transfer:neon-portrait` | Replicate | StyleTransferModal | 5 |
+| Barbie / Ken Doll | `style_transfer:barbie` | Replicate | StyleTransferModal | 5 |
+| Studio Ghibli | `style_transfer:ghibli` | Replicate | StyleTransferModal | 5 |
+| AI Headshot | `style_transfer:headshot` | Replicate | StyleTransferModal | 5 |
+| Stained Glass | `style_transfer:stained-glass` | Replicate | StyleTransferModal | 5 |
+| Ukiyo-e | `style_transfer:ukiyo-e` | Replicate | StyleTransferModal | 5 |
+| **Oldify / Aging** | `ai_oldify` | Replicate | **AiEffectsModal** | 4 |
+| **Pixar 3D Cartoon** | `ai_cartoon` | Replicate | **AiEffectsModal** | 4 |
+| **Style Pop** | `ai_style_pop` | Replicate | **AiEffectsModal** | 4 |
 
 ### Neue Bild-Effekte (MEDIUM Priority) 🟡
 
-| Effekt | Feature-Key | Beschreibung | Provider |
-|--------|-------------|-------------|----------|
-| **Face Swap** | `face_switch` | Gesichter tauschen (InsightFace/ReActor) | Replicate |
-| **BG Removal** | `bg_removal` | Hintergrund entfernen (remove.bg API) | remove.bg |
+| Effekt | Feature-Key | Beschreibung | Provider | Status |
+|--------|-------------|-------------|----------|--------|
+| **Face Swap** | `face_switch` | Gesichter tauschen (InsightFace/ReActor) | Replicate | Backend ✅, Guest-UI fehlt |
+| **BG Removal** | `bg_removal` | Hintergrund entfernen (remove.bg API) | remove.bg | Backend ✅, Guest-UI fehlt |
 | **AI Group Theme** | `ai_group_theme` | Gruppenfoto → alle im gleichen Stil | Replicate (multi-face) |
 | **Trading Card** | `ai_trading_card` | Selfie → personalisierte Sammelkarte mit Stats | Template + img2img |
 | **Film Poster** | `style_transfer:film-poster` | Als Filmplakat (Action, Horror, Romance) | Stability AI |
@@ -89,30 +84,30 @@
 
 ## 4. TEXT-KI-EFFEKTE (LLM-basiert)
 
-### Bereits implementiert ✅
+### Bereits implementiert ✅ (Backend + Prompts in DB + Guest-UI)
 
-| Effekt | Feature-Key | Provider | Credits |
-|--------|-------------|----------|---------|
-| KI Chat-Assistent | `chat` | Groq | 1 |
-| Album-Vorschläge | `album_suggest` | Groq | 1 |
-| Event-Beschreibung | `description_suggest` | Groq | 1 |
-| Einladungstext | `invitation_suggest` | Groq | 1 |
-| Challenge-Ideen | `challenge_suggest` | Groq | 1 |
-| Gästebuch-Nachricht | `guestbook_suggest` | Groq | 1 |
-| Farbschema | `color_scheme` | Groq | 1 |
-| Compliment Mirror | `compliment_mirror` | Groq | 2 |
+| Effekt | Feature-Key | Provider | Guest-UI | Credits |
+|--------|-------------|----------|----------|---------|
+| KI Chat-Assistent | `chat` | Groq | AIChatPanel | 1 |
+| Album-Vorschläge | `album_suggest` | Groq | Dashboard | 1 |
+| Event-Beschreibung | `description_suggest` | Groq | Dashboard | 1 |
+| Einladungstext | `invitation_suggest` | Groq | Dashboard | 1 |
+| Challenge-Ideen | `challenge_suggest` | Groq | Dashboard | 1 |
+| Gästebuch-Nachricht | `guestbook_suggest` | Groq | Dashboard | 1 |
+| Farbschema | `color_scheme` | Groq | Dashboard | 1 |
+| Caption Generator | `caption_suggest` | Groq | Prompt ready | 1 |
+| **Compliment Mirror** | `compliment_mirror` | Groq | **AiGamesModal** | 2 |
+| **AI Fortune Teller** | `fortune_teller` | Groq | **AiGamesModal** | 2 |
+| **AI Roast** | `ai_roast` | Groq | **AiGamesModal** | 2 |
 
-### Neue Text-Effekte 🔴
+### Neue Text-Effekte (noch nicht implementiert) 🔴
 
-| Effekt | Feature-Key | Beschreibung | Prompt-Idee | Credits |
-|--------|-------------|-------------|-------------|---------|
-| **AI Fortune Teller** | `fortune_teller` | Witzige Zukunftsvorhersage basierend auf Selfie-Beschreibung | "Du bist eine mystische Wahrsagerin auf einer Party. Gib eine lustige Vorhersage..." | 2 |
-| **AI Roast** | `ai_roast` | Liebevoller Comedy-Roast des Gastes | "Du bist ein Stand-Up-Comedian. Roaste den Gast liebevoll und witzig..." | 2 |
-| **Persona Quiz** | `persona_quiz` | "Welcher Typ bist du?" basierend auf Antworten | "Basierend auf den Antworten, generiere eine lustige Persona mit Titel und Beschreibung..." | 2 |
-| **Wedding Speech** | `wedding_speech` | KI generiert eine kurze, lustige Hochzeitsrede | "Schreibe eine kurze, witzige Rede für die Hochzeit von {{names}}..." | 3 |
-| **AI Stories** | `ai_stories` | Gast gibt 3 Wörter → KI generiert Mini-Geschichte | "Schreibe eine lustige 3-Satz-Geschichte die {{word1}}, {{word2}} und {{word3}} enthält..." | 2 |
-| **Caption Generator** | `caption_suggest` | Social-Media Caption für Event-Foto | "Generiere 3 Instagram-Captions für ein Foto von {{eventType}}..." | 1 |
-| **AI DJ** | `ai_dj_suggest` | Musikvorschläge basierend auf Event-Stimmung | "Schlage 5 Songs vor die zur Stimmung von {{eventType}} passen..." | 1 |
+| Effekt | Feature-Key | Beschreibung | Credits |
+|--------|-------------|-------------|---------|
+| **Persona Quiz** | `persona_quiz` | "Welcher Typ bist du?" basierend auf Antworten | 2 |
+| **Wedding Speech** | `wedding_speech` | KI generiert eine kurze, lustige Hochzeitsrede | 3 |
+| **AI Stories** | `ai_stories` | Gast gibt 3 Wörter → KI generiert Mini-Geschichte | 2 |
+| **AI DJ** | `ai_dj_suggest` | Musikvorschläge basierend auf Event-Stimmung | 1 |
 
 ---
 
@@ -120,66 +115,80 @@
 
 ### Bereits implementiert ✅
 
-| Spiel | ChallengeType | Beschreibung |
-|-------|--------------|-------------|
-| Photobomb | `PHOTOBOMB` | Schmuggle dich in Fotos anderer |
-| Cover-Shooting | `COVER_SHOOT` | Magazin-Cover nachstellen |
-| Emoji Challenge | `EMOJI_CHALLENGE` | Emoji-Gesichter nachstellen |
-| Filter Roulette | `FILTER_ROULETTE` | Zufälliger KI-Effekt |
+| Spiel | ChallengeType / GameType | Beschreibung | Guest-UI |
+|-------|--------------------------|-------------|----------|
+| Photobomb | `PHOTOBOMB` | Schmuggle dich in Fotos anderer | ChallengesTab |
+| Cover-Shooting | `COVER_SHOOT` | Magazin-Cover nachstellen | ChallengesTab |
+| Emoji Challenge | `EMOJI_CHALLENGE` | Emoji-Gesichter nachstellen | BottomNav |
+| Filter Roulette | `FILTER_ROULETTE` | Zufälliger KI-Effekt | BottomNav |
+| **Compliment Mirror** | `compliment_mirror` | KI-Kompliment nach Selfie | **AiGamesModal** |
+| **Fortune Teller** | `fortune_teller` | Witzige KI-Zukunftsvorhersage | **AiGamesModal** |
+| **AI Roast** | `ai_roast` | Liebevoller Comedy-Roast | **AiGamesModal** |
+| Mystery Overlay | `mystery_overlay` | Blind posieren + Overlay | Backend only |
 
-### Neue Spiele 🔴
+### Neue Spiele (noch nicht implementiert) 🔴
 
 | Spiel | ChallengeType | Beschreibung | KI-Nutzung |
 |-------|--------------|-------------|------------|
-| **AI Trading Card Battle** | `TRADING_CARD` | Selfie → Trading Card → Vergleiche Stats mit anderen Gästen | img2img + LLM Stats |
-| **Fortune Teller** | `FORTUNE_TELLER` | Selfie → KI gibt lustige Zukunftsvorhersage | LLM + Style Transfer |
-| **AI Roast Battle** | `ROAST_BATTLE` | 2 Gäste → KI roastet beide liebevoll | LLM |
+| **AI Trading Card Battle** | `TRADING_CARD` | Selfie → Trading Card → Vergleiche Stats | img2img + LLM Stats |
 | **Time Machine** | `TIME_MACHINE` | Selfie → "So sahst du in den 80ern aus" | img2img Decades |
 | **Celebrity Lookalike** | `CELEB_LOOKALIKE` | "Du siehst aus wie..." → Ähnlichkeit in % | Face Recognition + LLM |
 | **Pet Me** | `PET_ME` | Selfie → KI verwandelt dich in ein Tier | img2img |
 | **Yearbook** | `YEARBOOK` | Selfie → 90er/2000er Yearbook-Foto | img2img |
-| **AI Bingo** | `AI_BINGO` | Foto-Aufgaben-Bingo (z.B. "Foto mit DJ") | LLM generiert Aufgaben |
-| **Mystery Overlay** | `MYSTERY_OVERLAY` | Blind posieren + zufälliger Overlay/Frame | Template |
+| **AI Bingo** | `AI_BINGO` | Foto-Aufgaben-Bingo | LLM generiert Aufgaben |
 
 ---
 
 ## 6. IMPLEMENTIERUNGS-REIHENFOLGE
 
-### Sprint 1 — Quick Wins (1-2 Wochen)
-1. **14 neue Style Transfer Prompts** in PromptTemplate-DB seeden (nur Prompts, kein Code)
-2. **AI Fortune Teller** als neues Foto-Spiel
-3. **AI Trading Cards** als Template-basiertes Feature
-4. **Oldify / Aging** als Style-Effekt
-5. **GIF: Face Morph** (3 Frames → GIF)
+### Sprint 1 — Quick Wins ✅ DONE (19. Feb 2026)
+1. ~~14 neue Style Transfer Prompts seeden~~ → 40 Prompts in DB ✅
+2. ~~AI Fortune Teller als Foto-Spiel~~ → AiGamesModal ✅
+3. ~~Oldify / Aging als Style-Effekt~~ → AiEffectsModal ✅
+4. ~~AI Roast als Foto-Spiel~~ → AiGamesModal ✅
+5. ~~Compliment Mirror Guest-UI~~ → AiGamesModal ✅
+6. ~~Auto-Setup Button~~ → One-Click Provider-Mapping + Prompt-Seeding ✅
 
-### Sprint 2 — Medium Effort (2-4 Wochen)
-6. **Face Swap** via Replicate InsightFace
-7. **AI Caricature** neue Modell-Kategorie
-8. **GIF: Aging Animation** (4 Frames)
-9. **Magazine Cover** Template-Overlay
-10. **AI Roast** als Foto-Spiel
+### Sprint 2 — Nächste Schritte
+7. **GIF: Face Morph** (3 Frames → GIF)
+8. **Face Swap Guest-UI** (Backend ready, InsightFace via Replicate)
+9. **BG Removal Guest-UI** (Backend ready, remove.bg)
+10. **AI Trading Cards** als Template-basiertes Feature
+11. **Caption Generator Guest-UI** (Prompt ready)
 
-### Sprint 3 — Major Features (4-8 Wochen)
-11. **AI Video Booth** (Selfie → Cyberpunk/Time Travel Video)
-12. **Event Highlight Reel** (Automatisches Best-of-Video)
-13. **AI Group Theme** (Multi-Face Processing)
-14. **Persona Quiz** mit AI Portrait
+### Sprint 3 — Major Features
+12. **AI Video Booth** (Selfie → Cyberpunk/Time Travel via Runway/Luma)
+13. **Event Highlight Reel** (Automatisches Best-of-Video)
+14. **AI Group Theme** (Multi-Face Processing)
+15. **Persona Quiz** mit AI Portrait
 
 ---
 
-## 7. PROVIDER-EMPFEHLUNG PRO EFFEKT-TYP
+## 7. PROVIDER-KONFIGURATION (aktiv)
+
+| Provider | Typ | Model | Features | Status |
+|----------|-----|-------|----------|--------|
+| **Groq** | LLM | llama-3.3-70b | 11 Features (Chat, Games, Suggest) | ✅ aktiv |
+| **Grok/xAI** | LLM | grok-3-mini | ai_categorize | ✅ aktiv |
+| **Replicate** | IMAGE_GEN | SDXL | 6 Features (Style Transfer, Effekte) | ✅ aktiv |
+| **Stability AI** | IMAGE_GEN | SDXL | Backup | ✅ aktiv |
+| **remove.bg** | IMAGE_GEN | — | bg_removal | ✅ aktiv |
+| **Runway** | VIDEO_GEN | gen4_turbo | highlight_reel | ✅ aktiv |
+| **LumaAI** | VIDEO_GEN | ray2 | Backup | ✅ aktiv |
+
+### Kosten/Request
 
 | Effekt-Typ | Primär | Fallback | Kosten/Request |
 |------------|--------|----------|----------------|
-| Style Transfer (img2img) | **Stability AI** (SDXL) | Replicate (SDXL) | ~$0.03 |
+| Style Transfer (img2img) | **Replicate** (SDXL) | Stability AI | ~$0.03 |
 | Face Swap | **Replicate** (InsightFace) | — | ~$0.05 |
 | BG Removal | **remove.bg** | Replicate (BRIA) | ~$0.02 |
-| Aging/Cartoon | **Replicate** (spezialisierte Modelle) | Stability AI | ~$0.04 |
-| Video Generation | **Replicate** (Kling/SVD) | — | ~$0.15-0.30 |
+| Aging/Cartoon | **Replicate** (SDXL) | Stability AI | ~$0.04 |
+| Video Generation | **Runway** (gen4_turbo) | LumaAI (ray2) | ~$0.15-0.30 |
 | LLM Text | **Groq** (Llama 3.3) | Grok → OpenAI | ~$0.001 |
 | GIF Assembly | **Lokal** (Sharp.js + gifenc) | — | $0 |
 | Face Recognition | **Lokal** (WASM) | — | $0 |
 
 ---
 
-> *Letzte Aktualisierung: 18. Februar 2026*
+> *Letzte Aktualisierung: 19. Februar 2026*
