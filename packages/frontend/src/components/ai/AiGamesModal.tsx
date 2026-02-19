@@ -11,8 +11,8 @@ import api from '@/lib/api';
 
 // ─── Types ──────────────────────────────────────────────────
 
-type GameKey = 'compliment_mirror' | 'fortune_teller' | 'ai_roast' | 'caption_generator' | 'persona_quiz';
-type Step = 'select' | 'name' | 'quiz' | 'processing' | 'result' | 'error';
+type GameKey = 'compliment_mirror' | 'fortune_teller' | 'ai_roast' | 'caption_generator' | 'persona_quiz' | 'wedding_speech' | 'ai_stories';
+type Step = 'select' | 'name' | 'quiz' | 'wedding_input' | 'words_input' | 'processing' | 'result' | 'error';
 
 const QUIZ_QUESTIONS = [
   { key: 'drink', label: 'Dein Lieblingsdrink auf der Party?', placeholder: 'z.B. Aperol Spritz, Bier, Wasser...' },
@@ -78,6 +78,22 @@ const GAMES: GameDef[] = [
     gradient: 'from-emerald-500 to-teal-600',
     endpoint: '/booth-games/persona-quiz',
   },
+  {
+    key: 'wedding_speech',
+    name: 'Hochzeitsrede',
+    emoji: '🎙️',
+    description: 'KI schreibt dir eine lustige Mini-Rede!',
+    gradient: 'from-rose-400 to-pink-600',
+    endpoint: '/booth-games/wedding-speech',
+  },
+  {
+    key: 'ai_stories',
+    name: 'Story Generator',
+    emoji: '📖',
+    description: 'Gib 3 Wörter — die KI erzählt eine Geschichte!',
+    gradient: 'from-violet-500 to-purple-600',
+    endpoint: '/booth-games/ai-stories',
+  },
 ];
 
 // ─── Component ──────────────────────────────────────────────
@@ -91,6 +107,9 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [quizAnswers, setQuizAnswers] = useState<string[]>(['', '', '']);
+  const [weddingCouple, setWeddingCouple] = useState('');
+  const [weddingRole, setWeddingRole] = useState('');
+  const [storyWords, setStoryWords] = useState<string[]>(['', '', '']);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleClose = useCallback(() => {
@@ -99,6 +118,9 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
     setResult(null);
     setError(null);
     setQuizAnswers(['', '', '']);
+    setWeddingCouple('');
+    setWeddingRole('');
+    setStoryWords(['', '', '']);
     onClose();
   }, [onClose]);
 
@@ -107,6 +129,45 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
     setStep('name');
     setTimeout(() => nameInputRef.current?.focus(), 100);
   }, []);
+
+  const handleWeddingSpeechSubmit = useCallback(async () => {
+    if (!selectedGame) return;
+    setStep('processing');
+    setError(null);
+    if (guestName.trim() && typeof window !== 'undefined') localStorage.setItem('guestUploaderName', guestName.trim());
+    try {
+      const res = await api.post(selectedGame.endpoint, {
+        eventId, eventType, eventTitle,
+        guestName: guestName.trim() || undefined,
+        coupleName: weddingCouple.trim() || undefined,
+        role: weddingRole.trim() || undefined,
+      });
+      setResult(res.data);
+      setStep('result');
+    } catch (err: any) {
+      setError(err?.response?.data?.error || 'Etwas ist schiefgelaufen');
+      setStep('error');
+    }
+  }, [selectedGame, eventId, eventType, eventTitle, guestName, weddingCouple, weddingRole]);
+
+  const handleStoriesSubmit = useCallback(async () => {
+    if (!selectedGame || storyWords.some(w => !w.trim())) return;
+    setStep('processing');
+    setError(null);
+    if (guestName.trim() && typeof window !== 'undefined') localStorage.setItem('guestUploaderName', guestName.trim());
+    try {
+      const res = await api.post(selectedGame.endpoint, {
+        eventId, eventType, eventTitle,
+        guestName: guestName.trim() || undefined,
+        words: storyWords.map(w => w.trim()),
+      });
+      setResult(res.data);
+      setStep('result');
+    } catch (err: any) {
+      setError(err?.response?.data?.error || 'Etwas ist schiefgelaufen');
+      setStep('error');
+    }
+  }, [selectedGame, eventId, eventType, eventTitle, guestName, storyWords]);
 
   const handleQuizSubmit = useCallback(async () => {
     if (!selectedGame || quizAnswers.some(a => !a.trim())) return;
@@ -176,6 +237,10 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
       text = result.captions.join('\n\n');
     } else if (selectedGame.key === 'persona_quiz' && result.persona) {
       text = `${result.emoji} ${result.persona}\n\n${result.description}\n\n⚡ Superkraft: ${result.superpower}`;
+    } else if (selectedGame.key === 'wedding_speech' && result.speech) {
+      text = `🎙️ ${result.speech}\n\n🥂 ${result.toast}`;
+    } else if (selectedGame.key === 'ai_stories' && result.story) {
+      text = `${result.emoji} ${result.title}\n\n${result.story}\n\n🎭 Genre: ${result.genre}`;
     }
     if (navigator.share) {
       navigator.share({ text }).catch(() => {});
@@ -193,8 +258,8 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
             {step !== 'select' && step !== 'processing' && (
               <button
                 onClick={() => {
-                  if (step === 'quiz') { setStep('name'); }
-                  else { setStep('select'); setSelectedGame(null); setResult(null); setQuizAnswers(['', '', '']); }
+                  if (step === 'quiz' || step === 'wedding_input' || step === 'words_input') { setStep('name'); }
+                  else { setStep('select'); setSelectedGame(null); setResult(null); setQuizAnswers(['', '', '']); setStoryWords(['', '', '']); setWeddingCouple(''); setWeddingRole(''); }
                 }}
                 className="p-1.5 rounded-full hover:bg-muted/50 transition-colors"
               >
@@ -209,6 +274,8 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                 {step === 'select' && 'KI Foto-Spiele'}
                 {step === 'name' && selectedGame?.name}
                 {step === 'quiz' && 'Persona Quiz'}
+                {step === 'wedding_input' && 'Hochzeitsrede'}
+                {step === 'words_input' && 'Story Generator'}
                 {step === 'processing' && 'KI denkt nach...'}
                 {step === 'result' && selectedGame?.name}
                 {step === 'error' && 'Fehler'}
@@ -279,16 +346,15 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
 
                 <button
                   onClick={() => {
-                    if (selectedGame.key === 'persona_quiz') {
-                      setStep('quiz');
-                    } else {
-                      handlePlay();
-                    }
+                    if (selectedGame.key === 'persona_quiz') setStep('quiz');
+                    else if (selectedGame.key === 'wedding_speech') setStep('wedding_input');
+                    else if (selectedGame.key === 'ai_stories') setStep('words_input');
+                    else handlePlay();
                   }}
                   className={`mt-5 w-full py-3.5 bg-gradient-to-r ${selectedGame.gradient} text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg`}
                 >
                   <Wand2 className="w-4 h-4" />
-                  {selectedGame.key === 'persona_quiz' ? 'Zum Quiz!' : 'Los geht\'s!'}
+                  {selectedGame.key === 'persona_quiz' ? 'Zum Quiz!' : selectedGame.key === 'wedding_speech' ? 'Rede schreiben!' : selectedGame.key === 'ai_stories' ? 'Geschichte starten!' : 'Los geht\'s!'}
                 </button>
               </motion.div>
             )}
@@ -333,6 +399,52 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
               </motion.div>
             )}
 
+            {/* ═══ Wedding Speech Input ═══ */}
+            {step === 'wedding_input' && selectedGame?.key === 'wedding_speech' && (
+              <motion.div key="wedding" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="p-5">
+                <div className="text-center mb-5">
+                  <div className="text-5xl mb-2">🎙️</div>
+                  <p className="text-sm text-muted-foreground">Ein paar Details für deine Rede!</p>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">Name des Brautpaars</label>
+                    <input type="text" value={weddingCouple} onChange={(e) => setWeddingCouple(e.target.value)} placeholder="z.B. Anna & Max" className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-rose-500/50" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">Deine Beziehung zum Paar <span className="text-muted-foreground font-normal">(optional)</span></label>
+                    <input type="text" value={weddingRole} onChange={(e) => setWeddingRole(e.target.value)} placeholder="z.B. Trauzeuge, beste Freundin, Kollege..." className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-rose-500/50" />
+                  </div>
+                </div>
+                <button onClick={handleWeddingSpeechSubmit} className="mt-5 w-full py-3.5 bg-gradient-to-r from-rose-400 to-pink-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg">
+                  <Sparkles className="w-4 h-4" />
+                  Rede generieren!
+                </button>
+              </motion.div>
+            )}
+
+            {/* ═══ Words Input (AI Stories) ═══ */}
+            {step === 'words_input' && selectedGame?.key === 'ai_stories' && (
+              <motion.div key="words" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="p-5">
+                <div className="text-center mb-5">
+                  <div className="text-5xl mb-2">📖</div>
+                  <p className="text-sm text-muted-foreground">Gib 3 Wörter — die KI macht eine Geschichte daraus!</p>
+                </div>
+                <div className="space-y-3">
+                  {['Erstes Wort', 'Zweites Wort', 'Drittes Wort'].map((label, i) => (
+                    <div key={i}>
+                      <label className="block text-sm font-semibold text-foreground mb-1.5">{label}</label>
+                      <input type="text" value={storyWords[i]} onChange={(e) => { const next = [...storyWords]; next[i] = e.target.value; setStoryWords(next); }} placeholder={['z.B. Disco', 'z.B. Einhorn', 'z.B. Pizza'][i]} className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/50" />
+                    </div>
+                  ))}
+                </div>
+                <button onClick={handleStoriesSubmit} disabled={storyWords.some(w => !w.trim())} className="mt-5 w-full py-3.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg disabled:opacity-50 disabled:pointer-events-none">
+                  <Sparkles className="w-4 h-4" />
+                  Geschichte erzählen!
+                </button>
+              </motion.div>
+            )}
+
             {/* ═══ Processing ═══ */}
             {step === 'processing' && selectedGame && (
               <motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-16 gap-5">
@@ -352,6 +464,8 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                     {selectedGame.key === 'compliment_mirror' && 'Der Spiegel poliert sich...'}
                     {selectedGame.key === 'caption_generator' && 'Kreative Captions werden generiert...'}
                     {selectedGame.key === 'persona_quiz' && 'Deine Persönlichkeit wird analysiert...'}
+                    {selectedGame.key === 'wedding_speech' && 'Die Rede wird geschrieben...'}
+                    {selectedGame.key === 'ai_stories' && 'Eine Geschichte entsteht...'}
                   </p>
                 </div>
               </motion.div>
@@ -447,6 +561,36 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                     <div className="bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border border-amber-500/20 rounded-2xl p-4">
                       <p className="text-sm text-muted-foreground mb-1">Deine Superkraft:</p>
                       <p className="text-foreground font-bold">⚡ {result.superpower}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Wedding Speech */}
+                {selectedGame.key === 'wedding_speech' && result.speech && (
+                  <div className="text-center">
+                    <div className="text-6xl mb-3">{result.emoji || '🎙️'}</div>
+                    <div className="bg-gradient-to-br from-rose-500/10 to-pink-500/10 border border-rose-500/20 rounded-2xl p-5 mb-3">
+                      <p className="text-foreground text-base leading-relaxed italic">„{result.speech}“</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border border-amber-500/20 rounded-2xl p-4">
+                      <p className="text-sm text-muted-foreground mb-1">Trinkspruch:</p>
+                      <p className="text-foreground font-bold">🥂 {result.toast}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* AI Stories */}
+                {selectedGame.key === 'ai_stories' && result.story && (
+                  <div className="text-center">
+                    <div className="text-6xl mb-3">{result.emoji || '📖'}</div>
+                    <div className="inline-block px-4 py-1.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-full font-bold text-sm mb-3">
+                      {result.title}
+                    </div>
+                    <div className="bg-gradient-to-br from-violet-500/10 to-purple-500/10 border border-violet-500/20 rounded-2xl p-5 mb-3 text-left">
+                      <p className="text-foreground text-base leading-relaxed">{result.story}</p>
+                    </div>
+                    <div className="inline-block px-3 py-1 bg-muted rounded-full text-xs text-muted-foreground">
+                      🎭 Genre: {result.genre}
                     </div>
                   </div>
                 )}

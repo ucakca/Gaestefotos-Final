@@ -358,6 +358,184 @@ Welcher Party-Persönlichkeitstyp ist das?`;
   }
 });
 
+// POST /api/booth-games/wedding-speech — AI generates a funny short wedding speech
+router.post('/wedding-speech', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, eventType, eventTitle, guestName, coupleName, role } = req.body;
+
+    const { generateCompletion } = await import('../lib/groq');
+
+    const systemPrompt = `Du bist ein brillanter Comedy-Redenschreiber auf einer ${eventType || 'Hochzeit'}. 
+Schreibe eine kurze, witzige Rede (3-4 Sätze) die das Publikum zum Lachen bringt.
+Die Rede soll herzlich, persönlich und ein bisschen frech sein — aber niemals verletzend.
+Antworte NUR mit einem JSON-Objekt: {"speech": "Die komplette Rede", "toast": "Ein kurzer Trinkspruch (1 Satz)", "emoji": "passendes Emoji"}`;
+
+    const userPrompt = `Gast "${guestName || 'Ein Gast'}" möchte eine kurze Rede halten auf "${eventTitle || 'der Feier'}".
+${coupleName ? `Das Brautpaar: ${coupleName}` : ''}
+${role ? `Beziehung zum Brautpaar: ${role}` : ''}
+Schreibe eine kurze, lustige Hochzeitsrede!`;
+
+    const response = await generateCompletion(userPrompt, systemPrompt, {
+      maxTokens: 400,
+      temperature: 0.9,
+    });
+
+    let result: any = null;
+    try {
+      const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
+      if (jsonMatch) result = JSON.parse(jsonMatch[0]);
+    } catch { /* parse error */ }
+
+    if (!result?.speech) {
+      result = {
+        speech: response.content.trim().substring(0, 400),
+        toast: 'Auf die Liebe! 🥂',
+        emoji: '🎤',
+      };
+    }
+
+    const session = createGameSession(eventId, 'fortune_teller', result);
+    res.json({ sessionId: session.id, ...result, source: 'ai' });
+  } catch (error) {
+    logger.error('Wedding speech error', { message: (error as Error).message });
+    res.json({
+      speech: 'Liebe Gäste, ich kenne das Brautpaar schon seit Jahren — und ich muss sagen: Endlich hat jemand Ja gesagt, der nicht bei Verstand ist. Aber genau das macht echte Liebe aus! Ihr seid das chaotischste, lustigste und schönste Paar das ich kenne.',
+      toast: 'Auf die Liebe und den Wahnsinn, der dazugehört! 🥂',
+      emoji: '🎤',
+      source: 'fallback',
+    });
+  }
+});
+
+// POST /api/booth-games/ai-stories — Guest gives 3 words → AI generates a mini story
+router.post('/ai-stories', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, eventType, eventTitle, guestName, words } = req.body;
+
+    if (!words || !Array.isArray(words) || words.length < 3) {
+      return res.status(400).json({ error: '3 Wörter erforderlich' });
+    }
+
+    const { generateCompletion } = await import('../lib/groq');
+
+    const systemPrompt = `Du bist ein kreativer Geschichtenerzähler auf einer ${eventType || 'Party'}.
+Du bekommst 3 Wörter und schreibst daraus eine kurze, witzige Mini-Geschichte (4-6 Sätze).
+Die Geschichte soll zum Event "${eventTitle || 'der Feier'}" passen und lustig sein.
+Antworte NUR mit einem JSON-Objekt: {"title": "Kreativer Titel", "story": "Die Geschichte in 4-6 Sätzen", "genre": "z.B. Krimi, Romanze, Sci-Fi, Fantasy", "emoji": "passendes Emoji"}`;
+
+    const userPrompt = `${guestName || 'Ein Gast'} gibt dir 3 Wörter:
+1. "${words[0]}"
+2. "${words[1]}"
+3. "${words[2]}"
+
+Schreibe eine kurze, lustige Geschichte die ALLE 3 Wörter enthält!`;
+
+    const response = await generateCompletion(userPrompt, systemPrompt, {
+      maxTokens: 400,
+      temperature: 0.95,
+    });
+
+    let result: any = null;
+    try {
+      const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
+      if (jsonMatch) result = JSON.parse(jsonMatch[0]);
+    } catch { /* parse error */ }
+
+    if (!result?.story) {
+      result = {
+        title: 'Die unglaubliche Geschichte',
+        story: response.content.trim().substring(0, 500),
+        genre: 'Abenteuer',
+        emoji: '📖',
+      };
+    }
+
+    const session = createGameSession(eventId, 'fortune_teller', result);
+    res.json({ sessionId: session.id, ...result, source: 'ai' });
+  } catch (error) {
+    logger.error('AI stories error', { message: (error as Error).message });
+    res.json({
+      title: 'Die Party-Legende',
+      story: `Es war einmal auf der wildesten Party des Jahres. ${req.body?.guestName || 'Ein mutiger Gast'} betrat die Tanzfläche und alles wurde still. Dann passierte das Unmögliche — die Diskokugel fing an zu sprechen. "Endlich jemand, der es verdient hat, im Rampenlicht zu stehen!" Seitdem nennt man diese Nacht nur noch "Die Legende".`,
+      genre: 'Fantasy',
+      emoji: '📖',
+      source: 'fallback',
+    });
+  }
+});
+
+// POST /api/booth-games/trading-card — Generate AI Trading Card from guest photo
+router.post('/trading-card', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { photoId, eventId, guestName } = req.body;
+
+    if (!photoId || !eventId) {
+      return res.status(400).json({ error: 'photoId und eventId sind erforderlich' });
+    }
+
+    // 1. Fetch photo
+    const { PrismaClient } = await import('@prisma/client');
+    const prisma = new PrismaClient();
+    const photo = await prisma.photo.findUnique({ where: { id: photoId } });
+    if (!photo || !photo.url) {
+      return res.status(404).json({ error: 'Foto nicht gefunden' });
+    }
+
+    // 2. Download photo buffer
+    const photoResponse = await fetch(photo.url);
+    const photoBuffer = Buffer.from(await photoResponse.arrayBuffer());
+
+    // 3. Generate stats via LLM
+    const { generateCompletion } = await import('../lib/groq');
+    const nameStr = guestName || 'Mystery Guest';
+
+    const statsPrompt = `Generiere lustige RPG-Stats für "${nameStr}" auf einer Party. 
+Antworte NUR mit JSON: {"title": "Lustiger 2-Wort-Titel", "emoji": "1 Emoji", "charisma": 50-99, "humor": 50-99, "dance": 50-99, "style": 50-99, "energy": 50-99, "specialMove": "Lustiger Spezial-Move in 3-5 Wörtern"}
+Mach es witzig und kreativ!`;
+
+    let stats = {
+      title: 'Party Legend',
+      emoji: '⚡',
+      charisma: 75,
+      humor: 82,
+      dance: 68,
+      style: 91,
+      energy: 77,
+      specialMove: 'Der unaufhaltsame Hüftschwung',
+    };
+
+    try {
+      const llmResponse = await generateCompletion(statsPrompt, 'Du bist ein lustiger RPG-Meister.', {
+        maxTokens: 200,
+        temperature: 0.95,
+      });
+      const jsonMatch = llmResponse.content.trim().match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.title) stats = { ...stats, ...parsed };
+      }
+    } catch { /* use default stats */ }
+
+    // 4. Create trading card
+    const { createTradingCard } = await import('../services/tradingCard');
+    const result = await createTradingCard({
+      photoBuffer,
+      eventId,
+      guestName: nameStr,
+      stats,
+    });
+
+    res.json({
+      success: true,
+      cardUrl: result.cardUrl,
+      stats,
+    });
+  } catch (error) {
+    logger.error('Trading card error', { message: (error as Error).message });
+    res.status(500).json({ error: (error as Error).message || 'Trading Card Fehler' });
+  }
+});
+
 // POST /api/booth-games/gif-morph — Create animated GIF morph (Original → Style1 → Style2)
 router.post('/gif-morph', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {

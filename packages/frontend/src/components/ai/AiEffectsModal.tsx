@@ -11,7 +11,7 @@ import api from '@/lib/api';
 
 // ─── Types ──────────────────────────────────────────────────
 
-type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'bg_removal' | 'gif_morph' | 'gif_aging' | 'ai_video';
+type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'bg_removal' | 'gif_morph' | 'gif_aging' | 'ai_video' | 'trading_card';
 type Step = 'photo' | 'effects' | 'video_preset' | 'processing' | 'result' | 'error';
 
 interface VideoPreset {
@@ -114,6 +114,14 @@ const EFFECTS: EffectDef[] = [
     gradient: 'from-red-500 to-pink-600',
     endpoint: '/booth-games/ai-video',
   },
+  {
+    key: 'trading_card',
+    name: 'Trading Card',
+    emoji: '🃏',
+    description: 'Werde zur Party-Sammelkarte mit KI-Stats!',
+    gradient: 'from-yellow-500 to-amber-700',
+    endpoint: '/booth-games/trading-card',
+  },
 ];
 
 // ─── Component ──────────────────────────────────────────────
@@ -189,6 +197,9 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
       let effectRes;
       if (effect.key === 'ai_video') {
         effectRes = await api.post(effect.endpoint, { photoId, eventId, prompt: videoPromptRef.current || undefined });
+      } else if (effect.key === 'trading_card') {
+        const savedName = typeof window !== 'undefined' ? localStorage.getItem('guestUploaderName') : '';
+        effectRes = await api.post(effect.endpoint, { photoId, eventId, guestName: savedName || undefined });
       } else if (effect.key === 'gif_morph' || effect.key === 'gif_aging') {
         effectRes = await api.post(effect.endpoint, { photoId, eventId });
       } else if (effect.key === 'face_switch' || effect.key === 'bg_removal') {
@@ -225,7 +236,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
       clearInterval(progressInterval);
       setProgress(100);
 
-      const resultPath = effectRes.data?.newPhotoPath || effectRes.data?.gifUrl;
+      const resultPath = effectRes.data?.newPhotoPath || effectRes.data?.gifUrl || effectRes.data?.cardUrl;
       if (effectRes.data?.success && resultPath) {
         setResultUrl(resultPath);
         setStep('result');
