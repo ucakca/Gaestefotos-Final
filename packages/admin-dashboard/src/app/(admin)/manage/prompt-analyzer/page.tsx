@@ -161,7 +161,7 @@ function Img2PromptTab() {
       const formData = new FormData();
       formData.append('image', file);
       const res = await api.post('/admin/prompt-analyzer/img2prompt', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': undefined },
         timeout: 120000,
       });
       setResult(res.data);
@@ -244,7 +244,7 @@ function MetadataTab() {
       const formData = new FormData();
       formData.append('image', file);
       const res = await api.post('/admin/prompt-analyzer/metadata', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': undefined },
         timeout: 30000,
       });
       setResult(res.data);
