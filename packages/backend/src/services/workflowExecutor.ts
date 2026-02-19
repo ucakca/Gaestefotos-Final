@@ -331,6 +331,21 @@ async function executeSendNotification(ctx: ExecutionContext, config: any): Prom
         data: { type: 'workflow_notification', eventId: ctx.eventId },
       }).catch(() => {});
     }
+
+    if (to === 'admins') {
+      const { sendPushToUser } = await import('./pushNotification');
+      const admins = await prisma.user.findMany({
+        where: { role: 'ADMIN' },
+        select: { id: true },
+      });
+      for (const admin of admins) {
+        await sendPushToUser(admin.id, {
+          title: 'Admin-Benachrichtigung',
+          body: messageText,
+          data: { type: 'workflow_notification', eventId: ctx.eventId },
+        }).catch(() => {});
+      }
+    }
   } catch (importErr: any) {
     logger.warn(`${LOG} Push notification failed (non-critical)`, { error: importErr.message });
   }
@@ -574,13 +589,23 @@ async function executeDelay(_ctx: ExecutionContext, config: any): Promise<StepRe
   if (unit === 'minutes') ms = duration * 60 * 1000;
   if (unit === 'hours') ms = duration * 60 * 60 * 1000;
 
-  // Cap at 5 minutes for safety
+  // Cap at 5 minutes for safety (synchronous step — use TRIGGER_TIMER for longer delays)
   const maxMs = 5 * 60 * 1000;
   const actualMs = Math.min(ms, maxMs);
+  const wasCapped = ms > maxMs;
+
+  if (wasCapped) {
+    logger.warn(`${LOG} DELAY capped at 5min (requested: ${duration} ${unit}). Use TRIGGER_TIMER with after_event_end for longer delays.`);
+  }
 
   await new Promise(resolve => setTimeout(resolve, actualMs));
 
-  return { success: true, message: `Gewartet: ${duration} ${unit} (${actualMs}ms)` };
+  return {
+    success: true,
+    message: wasCapped
+      ? `Gewartet: 5 Minuten (Cap — angefordert: ${duration} ${unit}). Tipp: TRIGGER_TIMER für lange Verzögerungen verwenden.`
+      : `Gewartet: ${duration} ${unit} (${actualMs}ms)`,
+  };
 }
 
 // ─── CONDITION ───────────────────────────────────────────────────────────────
