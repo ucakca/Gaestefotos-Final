@@ -168,7 +168,9 @@ export default function EventDetailPage() {
         energyCostVideo: cfg?.energyCostVideo ?? 5,
         energyCostTradingCard: cfg?.energyCostTradingCard ?? 2,
       });
-    } catch { /* silently fail */ }
+    } catch (err) {
+      console.error('Failed to load AI config:', err);
+    }
     finally { setAiConfigLoading(false); }
   }, [eventId]);
 
@@ -373,8 +375,8 @@ export default function EventDetailPage() {
         source: currentRes.data.source || null,
       });
       setSelectedSku(currentRes.data.currentSku || '');
-    } catch {
-      // silently fail
+    } catch (err) {
+      console.error('Failed to load package data:', err);
     } finally {
       setPkgLoading(false);
     }
@@ -386,8 +388,8 @@ export default function EventDetailPage() {
     try {
       const res = await api.get(`/admin/events/${eventId}/addons`);
       setAddons(res.data.addons || []);
-    } catch {
-      // silently fail
+    } catch (err) {
+      console.error('Failed to load addons:', err);
     } finally {
       setAddonsLoading(false);
     }
@@ -416,8 +418,8 @@ export default function EventDetailPage() {
     try {
       const res = await api.get('/workflows');
       setAvailableWorkflows(res.data.workflows || []);
-    } catch {
-      // silently fail
+    } catch (err) {
+      console.error('Failed to load workflows:', err);
     } finally {
       setWorkflowsLoading(false);
     }
@@ -491,6 +493,10 @@ export default function EventDetailPage() {
   useEffect(() => { loadAddons(); }, [loadAddons]);
   useEffect(() => { loadWorkflows(); }, [loadWorkflows]);
   useEffect(() => { loadPromptOverrides(); }, [loadPromptOverrides]);
+  // Initialize selectedWorkflowId when event loads
+  useEffect(() => {
+    if (event?.workflowId) setSelectedWorkflowId(event.workflowId);
+  }, [event?.workflowId]);
 
   if (loading) {
     return (
@@ -501,8 +507,6 @@ export default function EventDetailPage() {
   }
 
   if (!event) return null;
-
-  const isLive = event.isActive && event.dateTime && new Date(event.dateTime) >= new Date(new Date().setHours(0, 0, 0, 0));
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
