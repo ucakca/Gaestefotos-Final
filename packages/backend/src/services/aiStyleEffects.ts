@@ -14,7 +14,7 @@ import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { prepareAiExecution, logAiUsage, AiFeature } from './aiExecution';
 
-export type StyleEffect = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'time_machine' | 'pet_me' | 'yearbook';
+export type StyleEffect = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'time_machine' | 'pet_me' | 'yearbook' | 'emoji_me' | 'miniature';
 
 interface StyleEffectResult {
   outputBuffer: Buffer;
@@ -60,6 +60,16 @@ const STYLE_PROMPTS: Record<StyleEffect, { prompt: string; negativePrompt: strin
     prompt: '1990s yearbook photo, school portrait, blue gradient background, soft lighting, retro 90s hairstyle, vintage school photo, slightly overexposed, warm tones',
     negativePrompt: 'modern, selfie, outdoor, artistic, cartoon',
     strength: 0.6,
+  },
+  emoji_me: {
+    prompt: 'emoji avatar version of the person, round face emoji style, simple cute cartoon, apple emoji aesthetic, big eyes, minimal features, flat design, same hair color and style',
+    negativePrompt: 'realistic, photograph, detailed, complex, 3d render, scary',
+    strength: 0.8,
+  },
+  miniature: {
+    prompt: 'tilt-shift miniature effect, selective focus, toy-like scene, vibrant saturated colors, tiny world effect, diorama photography style',
+    negativePrompt: 'normal perspective, flat, dull colors, blurry everywhere',
+    strength: 0.5,
   },
 };
 
@@ -229,6 +239,8 @@ async function callReplicateImg2Img(
     time_machine: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
     pet_me: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
     yearbook: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    emoji_me: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    miniature: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
   };
 
   const base64 = imageBuffer.toString('base64');
@@ -375,6 +387,21 @@ async function fallbackStyleEffect(
         .modulate({ saturation: 0.8, brightness: 1.1 })
         .tint({ r: 220, g: 200, b: 180 })
         .blur(0.3);
+      break;
+
+    case 'emoji_me':
+      // Flat, bright, posterized emoji look
+      processed = sharp(imageBuffer)
+        .modulate({ saturation: 1.6, brightness: 1.15 })
+        .median(5)
+        .sharpen(2);
+      break;
+
+    case 'miniature':
+      // Tilt-shift: saturate + selective blur simulation
+      processed = sharp(imageBuffer)
+        .modulate({ saturation: 1.4, brightness: 1.05 })
+        .sharpen(4, 1, 2);
       break;
 
     default:

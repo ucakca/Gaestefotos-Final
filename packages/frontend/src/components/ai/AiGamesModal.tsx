@@ -11,8 +11,8 @@ import api from '@/lib/api';
 
 // ─── Types ──────────────────────────────────────────────────
 
-type GameKey = 'compliment_mirror' | 'fortune_teller' | 'ai_roast' | 'caption_generator' | 'persona_quiz' | 'wedding_speech' | 'ai_stories' | 'celebrity_lookalike' | 'ai_bingo' | 'ai_dj';
-type Step = 'select' | 'name' | 'quiz' | 'wedding_input' | 'words_input' | 'mood_input' | 'processing' | 'result' | 'error';
+type GameKey = 'compliment_mirror' | 'fortune_teller' | 'ai_roast' | 'caption_generator' | 'persona_quiz' | 'wedding_speech' | 'ai_stories' | 'celebrity_lookalike' | 'ai_bingo' | 'ai_dj' | 'ai_meme' | 'ai_superlatives' | 'ai_photo_critic' | 'ai_couple_match';
+type Step = 'select' | 'name' | 'quiz' | 'wedding_input' | 'words_input' | 'mood_input' | 'match_input' | 'processing' | 'result' | 'error';
 
 const QUIZ_QUESTIONS = [
   { key: 'drink', label: 'Dein Lieblingsdrink auf der Party?', placeholder: 'z.B. Aperol Spritz, Bier, Wasser...' },
@@ -118,6 +118,38 @@ const GAMES: GameDef[] = [
     gradient: 'from-fuchsia-500 to-pink-700',
     endpoint: '/booth-games/ai-dj',
   },
+  {
+    key: 'ai_meme',
+    name: 'Meme Generator',
+    emoji: '😂',
+    description: 'KI erstellt lustige Party-Memes!',
+    gradient: 'from-yellow-500 to-red-500',
+    endpoint: '/booth-games/ai-meme',
+  },
+  {
+    key: 'ai_superlatives',
+    name: 'Party Awards',
+    emoji: '🏆',
+    description: '"Am ehesten..." — Deine Party-Awards!',
+    gradient: 'from-amber-500 to-yellow-600',
+    endpoint: '/booth-games/ai-superlatives',
+  },
+  {
+    key: 'ai_photo_critic',
+    name: 'Foto-Kritiker',
+    emoji: '🎨',
+    description: 'KI bewertet dein Foto wie ein Kunstkritiker!',
+    gradient: 'from-indigo-500 to-purple-700',
+    endpoint: '/booth-games/ai-photo-critic',
+  },
+  {
+    key: 'ai_couple_match',
+    name: 'Couple Match',
+    emoji: '💕',
+    description: 'Wie gut passt ihr zusammen? Fun-Score!',
+    gradient: 'from-rose-400 to-red-600',
+    endpoint: '/booth-games/ai-couple-match',
+  },
 ];
 
 // ─── Component ──────────────────────────────────────────────
@@ -135,6 +167,7 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
   const [weddingRole, setWeddingRole] = useState('');
   const [storyWords, setStoryWords] = useState<string[]>(['', '', '']);
   const [djMood, setDjMood] = useState('');
+  const [partnerName, setPartnerName] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleClose = useCallback(() => {
@@ -147,6 +180,7 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
     setWeddingRole('');
     setStoryWords(['', '', '']);
     setDjMood('');
+    setPartnerName('');
     onClose();
   }, [onClose]);
 
@@ -175,6 +209,25 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
       setStep('error');
     }
   }, [selectedGame, eventId, eventType, eventTitle, guestName, weddingCouple, weddingRole]);
+
+  const handleCoupleMatchSubmit = useCallback(async () => {
+    if (!selectedGame || !partnerName.trim()) return;
+    setStep('processing');
+    setError(null);
+    if (guestName.trim() && typeof window !== 'undefined') localStorage.setItem('guestUploaderName', guestName.trim());
+    try {
+      const res = await api.post(selectedGame.endpoint, {
+        eventId, eventType, eventTitle,
+        guestName: guestName.trim() || 'Gast',
+        partnerName: partnerName.trim(),
+      });
+      setResult(res.data);
+      setStep('result');
+    } catch (err: any) {
+      setError(err?.response?.data?.error || 'Etwas ist schiefgelaufen');
+      setStep('error');
+    }
+  }, [selectedGame, eventId, eventType, eventTitle, guestName, partnerName]);
 
   const handleDjSubmit = useCallback(async () => {
     if (!selectedGame) return;
@@ -292,6 +345,14 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
       text = `🎲 ${result.title}\n\n${result.tasks.map((t: string, i: number) => `${i + 1}. ${t}`).join('\n')}\n\n⭐ Bonus: ${result.bonusTask}`;
     } else if (selectedGame.key === 'ai_dj' && result.songs) {
       text = `🎧 ${result.djName}\n\n${result.songs.map((s: any) => `🎵 ${s.title} — ${s.artist}`).join('\n')}\n\n${result.vibe}`;
+    } else if (selectedGame.key === 'ai_meme' && result.captions) {
+      text = `😂 Party-Memes:\n\n${result.captions.map((c: any) => `${c.top} / ${c.bottom} (${c.template})`).join('\n\n')}\n\n⭐ ${result.bestCaption}`;
+    } else if (selectedGame.key === 'ai_superlatives' && result.awards) {
+      text = `🏆 Party Awards:\n\n${result.awards.map((a: any) => `${a.emoji} ${a.title} — ${a.reason}`).join('\n')}\n\n🌟 Top: ${result.topAward}`;
+    } else if (selectedGame.key === 'ai_photo_critic' && result.review) {
+      text = `${result.emoji} ${result.category} (${'⭐'.repeat(Math.round(result.stars))})\n\n${result.review}\n\n🎨 Technik: ${result.technique}\n${result.verdict}`;
+    } else if (selectedGame.key === 'ai_couple_match' && result.compatibility) {
+      text = `${result.emoji} ${result.shipName}: ${result.compatibility}%\n\n${result.strengths.join(' \u2022 ')}\n\n🎵 Song: ${result.songForYou}\n${result.verdict}`;
     }
     if (navigator.share) {
       navigator.share({ text }).catch(() => {});
@@ -309,8 +370,8 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
             {step !== 'select' && step !== 'processing' && (
               <button
                 onClick={() => {
-                  if (step === 'quiz' || step === 'wedding_input' || step === 'words_input' || step === 'mood_input') { setStep('name'); }
-                  else { setStep('select'); setSelectedGame(null); setResult(null); setQuizAnswers(['', '', '']); setStoryWords(['', '', '']); setWeddingCouple(''); setWeddingRole(''); setDjMood(''); }
+                  if (step === 'quiz' || step === 'wedding_input' || step === 'words_input' || step === 'mood_input' || step === 'match_input') { setStep('name'); }
+                  else { setStep('select'); setSelectedGame(null); setResult(null); setQuizAnswers(['', '', '']); setStoryWords(['', '', '']); setWeddingCouple(''); setWeddingRole(''); setDjMood(''); setPartnerName(''); }
                 }}
                 className="p-1.5 rounded-full hover:bg-muted/50 transition-colors"
               >
@@ -328,6 +389,7 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                 {step === 'wedding_input' && 'Hochzeitsrede'}
                 {step === 'words_input' && 'Story Generator'}
                 {step === 'mood_input' && 'AI DJ'}
+                {step === 'match_input' && 'Couple Match'}
                 {step === 'processing' && 'KI denkt nach...'}
                 {step === 'result' && selectedGame?.name}
                 {step === 'error' && 'Fehler'}
@@ -402,12 +464,13 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                     else if (selectedGame.key === 'wedding_speech') setStep('wedding_input');
                     else if (selectedGame.key === 'ai_stories') setStep('words_input');
                     else if (selectedGame.key === 'ai_dj') setStep('mood_input');
+                    else if (selectedGame.key === 'ai_couple_match') setStep('match_input');
                     else handlePlay();
                   }}
                   className={`mt-5 w-full py-3.5 bg-gradient-to-r ${selectedGame.gradient} text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg`}
                 >
                   <Wand2 className="w-4 h-4" />
-                  {selectedGame.key === 'persona_quiz' ? 'Zum Quiz!' : selectedGame.key === 'wedding_speech' ? 'Rede schreiben!' : selectedGame.key === 'ai_stories' ? 'Geschichte starten!' : selectedGame.key === 'ai_dj' ? 'Musik bitte!' : 'Los geht\'s!'}
+                  {selectedGame.key === 'persona_quiz' ? 'Zum Quiz!' : selectedGame.key === 'wedding_speech' ? 'Rede schreiben!' : selectedGame.key === 'ai_stories' ? 'Geschichte starten!' : selectedGame.key === 'ai_dj' ? 'Musik bitte!' : selectedGame.key === 'ai_couple_match' ? 'Match berechnen!' : 'Los geht\'s!'}
                 </button>
               </motion.div>
             )}
@@ -516,6 +579,24 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
               </motion.div>
             )}
 
+            {/* ═══ Match Input (Couple Match) ═══ */}
+            {step === 'match_input' && selectedGame?.key === 'ai_couple_match' && (
+              <motion.div key="match" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="p-5">
+                <div className="text-center mb-5">
+                  <div className="text-5xl mb-2">{'\ud83d\udc95'}</div>
+                  <p className="text-sm text-muted-foreground">Wie hei\u00dft dein Match?</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-1.5">Name des Partners / der Partnerin</label>
+                  <input type="text" value={partnerName} onChange={(e) => setPartnerName(e.target.value)} placeholder="z.B. Lisa, Max, ..." className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-rose-500/50" onKeyDown={(e) => e.key === 'Enter' && partnerName.trim() && handleCoupleMatchSubmit()} />
+                </div>
+                <button onClick={handleCoupleMatchSubmit} disabled={!partnerName.trim()} className="mt-5 w-full py-3.5 bg-gradient-to-r from-rose-400 to-red-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg disabled:opacity-50 disabled:pointer-events-none">
+                  <Sparkles className="w-4 h-4" />
+                  Match berechnen!
+                </button>
+              </motion.div>
+            )}
+
             {/* ═══ Processing ═══ */}
             {step === 'processing' && selectedGame && (
               <motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-16 gap-5">
@@ -540,6 +621,10 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                     {selectedGame.key === 'celebrity_lookalike' && 'Promi-Datenbank wird durchsucht...'}
                     {selectedGame.key === 'ai_bingo' && 'Bingo-Karte wird erstellt...'}
                     {selectedGame.key === 'ai_dj' && 'Die perfekte Playlist wird gemischt...'}
+                    {selectedGame.key === 'ai_meme' && 'Memes werden generiert...'}
+                    {selectedGame.key === 'ai_superlatives' && 'Party-Awards werden verliehen...'}
+                    {selectedGame.key === 'ai_photo_critic' && 'Der Kritiker betrachtet dein Werk...'}
+                    {selectedGame.key === 'ai_couple_match' && 'Kompatibilität wird berechnet...'}
                   </p>
                 </div>
               </motion.div>
@@ -731,6 +816,116 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                     </div>
                     {result.vibe && (
                       <p className="text-muted-foreground text-xs italic">{result.vibe}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Meme Generator */}
+                {selectedGame.key === 'ai_meme' && result.captions && (
+                  <div className="text-center">
+                    <div className="text-5xl mb-3">{result.emoji || '😂'}</div>
+                    <div className="space-y-3 mb-3 text-left">
+                      {result.captions.map((meme: any, i: number) => (
+                        <div key={i} className="bg-gradient-to-br from-yellow-500/10 to-red-500/10 border border-yellow-500/20 rounded-xl p-3">
+                          <p className="text-foreground font-bold text-sm">{meme.top}</p>
+                          <p className="text-foreground font-bold text-sm">{meme.bottom}</p>
+                          <p className="text-muted-foreground text-[10px] mt-1 italic">📸 {meme.template}</p>
+                        </div>
+                      ))}
+                    </div>
+                    {result.bestCaption && (
+                      <div className="inline-block px-4 py-1.5 bg-gradient-to-r from-yellow-500 to-red-500 text-white rounded-full font-bold text-xs">
+                        ⭐ {result.bestCaption}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Superlatives / Party Awards */}
+                {selectedGame.key === 'ai_superlatives' && result.awards && (
+                  <div className="text-center">
+                    <div className="text-5xl mb-3">🏆</div>
+                    <div className="space-y-2 mb-3 text-left">
+                      {result.awards.map((award: any, i: number) => (
+                        <div key={i} className="bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border border-amber-500/20 rounded-xl p-3 flex items-start gap-3">
+                          <span className="text-2xl">{award.emoji}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-foreground font-bold text-sm">{award.title}</p>
+                            <p className="text-muted-foreground text-xs">{award.reason}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {result.topAward && (
+                      <div className="inline-block px-4 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-600 text-white rounded-full font-bold text-xs">
+                        🌟 {result.topAward}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Photo Critic */}
+                {selectedGame.key === 'ai_photo_critic' && result.review && (
+                  <div className="text-center">
+                    <div className="text-5xl mb-3">{result.emoji || '🎨'}</div>
+                    <div className="inline-block px-4 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-700 text-white rounded-full font-bold text-sm mb-3">
+                      {result.category}
+                    </div>
+                    <div className="flex justify-center gap-0.5 mb-3">
+                      {[1, 2, 3, 4, 5].map(s => (
+                        <span key={s} className={`text-xl ${s <= Math.round(result.stars) ? 'text-yellow-400' : 'text-muted/30'}`}>⭐</span>
+                      ))}
+                      <span className="text-sm text-muted-foreground ml-1 self-center">{result.stars}/5</span>
+                    </div>
+                    <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-2xl p-5 mb-3">
+                      <p className="text-foreground text-base leading-relaxed">{result.review}</p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div className="bg-muted/30 rounded-xl px-4 py-2">
+                        <p className="text-[10px] text-muted-foreground">🎨 Technik</p>
+                        <p className="text-foreground text-sm font-medium">{result.technique}</p>
+                      </div>
+                      <div className="inline-block px-4 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-700 text-white rounded-full font-bold text-xs">
+                        {result.verdict}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Couple Match */}
+                {selectedGame.key === 'ai_couple_match' && result.compatibility && (
+                  <div className="text-center">
+                    <div className="text-5xl mb-2">{result.emoji || '💕'}</div>
+                    <div className="inline-block px-5 py-2 bg-gradient-to-r from-rose-400 to-red-600 text-white rounded-full font-bold text-lg mb-2">
+                      {result.shipName}
+                    </div>
+                    <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-red-600 mb-3">
+                      {result.compatibility}%
+                    </div>
+                    <div className="bg-gradient-to-br from-rose-500/10 to-red-500/10 border border-rose-500/20 rounded-2xl p-4 mb-3">
+                      <p className="text-xs text-muted-foreground mb-2">Stärken</p>
+                      <div className="flex flex-wrap justify-center gap-1.5">
+                        {result.strengths.map((s: string, i: number) => (
+                          <span key={i} className="px-2.5 py-1 bg-rose-500/10 text-foreground text-xs rounded-full">💪 {s}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      <div className="bg-muted/30 rounded-xl p-2.5">
+                        <p className="text-[10px] text-muted-foreground">⚡ Challenge</p>
+                        <p className="text-foreground text-xs font-medium">{result.challenge}</p>
+                      </div>
+                      <div className="bg-muted/30 rounded-xl p-2.5">
+                        <p className="text-[10px] text-muted-foreground">💬 Liebessprache</p>
+                        <p className="text-foreground text-xs font-medium">{result.loveLanguage}</p>
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-br from-pink-500/10 to-fuchsia-500/10 border border-pink-500/20 rounded-xl p-2.5">
+                      <p className="text-[10px] text-muted-foreground">🎵 Euer Song</p>
+                      <p className="text-foreground text-sm font-bold">{result.songForYou}</p>
+                    </div>
+                    {result.verdict && (
+                      <p className="mt-2 text-muted-foreground text-xs italic">{result.verdict}</p>
                     )}
                   </div>
                 )}

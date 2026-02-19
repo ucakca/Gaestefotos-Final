@@ -11,7 +11,7 @@ import api from '@/lib/api';
 
 // ─── Types ──────────────────────────────────────────────────
 
-type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'bg_removal' | 'gif_morph' | 'gif_aging' | 'ai_video' | 'trading_card' | 'time_machine' | 'pet_me' | 'yearbook';
+type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'bg_removal' | 'gif_morph' | 'gif_aging' | 'ai_video' | 'trading_card' | 'time_machine' | 'pet_me' | 'yearbook' | 'emoji_me' | 'miniature';
 type Step = 'photo' | 'effects' | 'video_preset' | 'decade_select' | 'processing' | 'result' | 'error';
 
 interface VideoPreset {
@@ -161,6 +161,22 @@ const EFFECTS: EffectDef[] = [
     gradient: 'from-sky-400 to-blue-600',
     endpoint: '/booth-games/style-effect',
   },
+  {
+    key: 'emoji_me',
+    name: 'Emoji Me',
+    emoji: '😎',
+    description: 'Verwandle dich in ein Emoji!',
+    gradient: 'from-yellow-400 to-orange-500',
+    endpoint: '/booth-games/style-effect',
+  },
+  {
+    key: 'miniature',
+    name: 'Miniature',
+    emoji: '🏠',
+    description: 'Tilt-Shift Miniatur-Welt!',
+    gradient: 'from-lime-400 to-green-600',
+    endpoint: '/booth-games/style-effect',
+  },
 ];
 
 // ─── Component ──────────────────────────────────────────────
@@ -243,7 +259,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
         effectRes = await api.post(effect.endpoint, { photoId, eventId, guestName: savedName || undefined });
       } else if (effect.key === 'time_machine') {
         effectRes = await api.post(effect.endpoint, { photoId, effect: 'time_machine', variant: decadeVariantRef.current || '80s' });
-      } else if (effect.key === 'pet_me' || effect.key === 'yearbook') {
+      } else if (effect.key === 'pet_me' || effect.key === 'yearbook' || effect.key === 'emoji_me' || effect.key === 'miniature') {
         effectRes = await api.post(effect.endpoint, { photoId, effect: effect.key });
       } else if (effect.key === 'gif_morph' || effect.key === 'gif_aging') {
         effectRes = await api.post(effect.endpoint, { photoId, eventId });

@@ -213,7 +213,7 @@ router.post('/style-effect', authMiddleware, async (req: AuthRequest, res: Respo
       return res.status(400).json({ error: 'photoId ist erforderlich' });
     }
 
-    const validEffects = ['ai_oldify', 'ai_cartoon', 'ai_style_pop', 'time_machine', 'pet_me', 'yearbook'];
+    const validEffects = ['ai_oldify', 'ai_cartoon', 'ai_style_pop', 'time_machine', 'pet_me', 'yearbook', 'emoji_me', 'miniature'];
     if (!effect || !validEffects.includes(effect)) {
       return res.status(400).json({ error: `Ungültiger Effekt. Erlaubt: ${validEffects.join(', ')}` });
     }
@@ -763,6 +763,181 @@ router.get('/ai-video/status/:jobId', authMiddleware, async (req: AuthRequest, r
     res.json(job);
   } catch (error) {
     res.status(500).json({ error: 'Status-Abfrage fehlgeschlagen' });
+  }
+});
+
+// POST /api/booth-games/ai-meme — Generate funny meme captions
+router.post('/ai-meme', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, eventType, eventTitle, guestName } = req.body;
+    const { generateCompletion } = await import('../lib/groq');
+
+    const systemPrompt = `Du bist ein Meme-Generator für Party-Events. Erstelle 3 lustige Meme-Captions im Internet-Meme-Stil. 
+Die Captions sollen zur Event-Stimmung passen und Party-Humor haben.
+Antworte NUR als JSON: {"captions": [{"top": "oberer Text", "bottom": "unterer Text", "template": "Meme-Template-Name"}], "bestCaption": "der lustigste als Einzeiler", "emoji": "passendes Emoji", "source": "ai"}`;
+
+    const userPrompt = `Event: ${eventTitle || 'Party'} (${eventType || 'party'})${guestName ? `, Gast: ${guestName}` : ''}. Erstelle 3 lustige Meme-Captions!`;
+
+    try {
+      const response = await generateCompletion(userPrompt, systemPrompt, { maxTokens: 500, temperature: 0.9 });
+
+      const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.captions) {
+          return res.json({ ...parsed, source: 'ai' });
+        }
+      }
+    } catch (aiErr) {
+      logger.warn('AI Meme generation failed, using fallback', { error: (aiErr as Error).message });
+    }
+
+    // Fallback
+    res.json({
+      captions: [
+        { top: 'Wenn der DJ', bottom: 'endlich deinen Song spielt', template: 'Drake Approving' },
+        { top: 'Niemand:', bottom: 'Ich um 3 Uhr nachts auf der Tanzfläche', template: 'Distracted Boyfriend' },
+        { top: 'Mein Gesicht wenn', bottom: 'das Buffet eröffnet wird', template: 'Surprised Pikachu' },
+      ],
+      bestCaption: 'Wenn der DJ endlich deinen Song spielt 🕺',
+      emoji: '😂',
+      source: 'fallback',
+    });
+  } catch (error) {
+    logger.error('AI Meme error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Meme-Generierung fehlgeschlagen' });
+  }
+});
+
+// POST /api/booth-games/ai-superlatives — Generate "Most likely to..." party awards
+router.post('/ai-superlatives', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, eventType, eventTitle, guestName } = req.body;
+    const { generateCompletion } = await import('../lib/groq');
+
+    const systemPrompt = `Du bist ein lustiger Party-Award-Generator. Erstelle 5 kreative "Am ehesten..." / "Most likely to..." Awards für einen Party-Gast.
+Die Awards sollen lustig, positiv und party-bezogen sein. Mische deutsch und englisch.
+Antworte NUR als JSON: {"awards": [{"title": "Award-Titel", "reason": "kurze lustige Begründung", "emoji": "passendes Emoji"}], "topAward": "der beste Award als Titel", "source": "ai"}`;
+
+    const userPrompt = `Event: ${eventTitle || 'Party'} (${eventType || 'party'})${guestName ? `, Gast: ${guestName}` : ''}. Erstelle 5 lustige Party-Awards!`;
+
+    try {
+      const response = await generateCompletion(userPrompt, systemPrompt, { maxTokens: 600, temperature: 0.9 });
+
+      const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.awards) {
+          return res.json({ ...parsed, source: 'ai' });
+        }
+      }
+    } catch (aiErr) {
+      logger.warn('AI Superlatives generation failed, using fallback', { error: (aiErr as Error).message });
+    }
+
+    // Fallback
+    res.json({
+      awards: [
+        { title: 'Last One Standing', reason: 'Tanzt noch wenn alle anderen schon im Taxi sitzen', emoji: '🕺' },
+        { title: 'Selfie-Champion', reason: 'Hat mehr Selfies als das Event Gäste hat', emoji: '🤳' },
+        { title: 'DJ-Flüsterer', reason: 'Nervt den DJ so lange bis der richtige Song läuft', emoji: '🎧' },
+        { title: 'Buffet-Architekt', reason: 'Baut den perfekten Teller — jedes Mal', emoji: '🍽️' },
+        { title: 'Stimmungskanone', reason: 'Sorgt dafür dass JEDER auf die Tanzfläche kommt', emoji: '🎉' },
+      ],
+      topAward: 'Last One Standing 🕺',
+      source: 'fallback',
+    });
+  } catch (error) {
+    logger.error('AI Superlatives error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Award-Generierung fehlgeschlagen' });
+  }
+});
+
+// POST /api/booth-games/ai-photo-critic — Humorous photo review with star rating
+router.post('/ai-photo-critic', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, eventType, eventTitle, guestName } = req.body;
+    const { generateCompletion } = await import('../lib/groq');
+
+    const systemPrompt = `Du bist ein humorvoller Foto-Kritiker auf einer Party. Gib eine witzige, übertriebene Foto-Bewertung ab — wie ein Kunstkritiker der ein Selfie bewertet.
+Sei dramatisch, lustig und positiv. Verwende Fachbegriffe aus der Kunst/Fotografie auf lustige Weise.
+Antworte NUR als JSON: {"review": "die lustige Bewertung (2-3 Sätze)", "stars": 4.5, "category": "Bewertungs-Kategorie z.B. Meisterwerk", "technique": "erfundene Technik-Bewertung", "emoji": "passendes Emoji", "verdict": "kurzes Urteil (3-5 Wörter)", "source": "ai"}`;
+
+    const userPrompt = `Event: ${eventTitle || 'Party'} (${eventType || 'party'})${guestName ? `, Fotograf/in: ${guestName}` : ''}. Bewerte dieses Party-Foto!`;
+
+    try {
+      const response = await generateCompletion(userPrompt, systemPrompt, { maxTokens: 400, temperature: 0.95 });
+
+      const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.review) {
+          return res.json({ ...parsed, stars: Math.min(5, Math.max(1, parsed.stars || 4)), source: 'ai' });
+        }
+      }
+    } catch (aiErr) {
+      logger.warn('AI Photo Critic failed, using fallback', { error: (aiErr as Error).message });
+    }
+
+    // Fallback
+    const reviews = [
+      { review: 'Die Komposition dieses Selfies erinnert an die frühen Werke von Da Vinci — nur mit besserer Beleuchtung und mehr Glitzer. Ein Meisterwerk der modernen Party-Fotografie!', stars: 4.7, category: 'Meisterwerk', technique: 'Neo-impressionistischer Selfie-Realismus', emoji: '🎨', verdict: 'Absolut galerie-würdig!' },
+      { review: 'Der kühne Einsatz des Blitzlichts in Kombination mit dem leicht verschwommenen Hintergrund erzeugt eine Atmosphäre von "Ich hab getanzt und schnell ein Foto gemacht". Brillant!', stars: 4.3, category: 'Avantgarde', technique: 'Dynamischer Party-Expressionismus', emoji: '✨', verdict: 'Tanzflächen-Kunstwerk!' },
+    ];
+    res.json({ ...reviews[Math.floor(Math.random() * reviews.length)], source: 'fallback' });
+  } catch (error) {
+    logger.error('AI Photo Critic error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Foto-Kritik fehlgeschlagen' });
+  }
+});
+
+// POST /api/booth-games/ai-couple-match — Fun compatibility score between two names
+router.post('/ai-couple-match', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, eventType, eventTitle, guestName, partnerName } = req.body;
+
+    if (!guestName || !partnerName) {
+      return res.status(400).json({ error: 'Beide Namen sind erforderlich (guestName + partnerName)' });
+    }
+
+    const { generateCompletion } = await import('../lib/groq');
+
+    const systemPrompt = `Du bist ein lustiger Liebes-Kompatibilitäts-Rechner auf einer Party. Berechne einen humorvollen Compatibility-Score zwischen zwei Personen.
+Sei lustig, positiv und kreativ. Der Score sollte zwischen 60-99% liegen (immer optimistisch!).
+Antworte NUR als JSON: {"compatibility": 87, "shipName": "kreativer Paar-Name", "strengths": ["Stärke 1", "Stärke 2", "Stärke 3"], "challenge": "eine lustige Herausforderung", "loveLanguage": "gemeinsame Liebessprache", "songForYou": "ein passender Song-Titel", "emoji": "passendes Emoji", "verdict": "kurzes lustiges Urteil", "source": "ai"}`;
+
+    const userPrompt = `Event: ${eventTitle || 'Party'} (${eventType || 'party'}). Berechne die Kompatibilität zwischen "${guestName}" und "${partnerName}"!`;
+
+    try {
+      const response = await generateCompletion(userPrompt, systemPrompt, { maxTokens: 500, temperature: 0.9 });
+
+      const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.compatibility) {
+          return res.json({ ...parsed, compatibility: Math.min(99, Math.max(60, parsed.compatibility)), source: 'ai' });
+        }
+      }
+    } catch (aiErr) {
+      logger.warn('AI Couple Match failed, using fallback', { error: (aiErr as Error).message });
+    }
+
+    // Fallback
+    const score = 70 + Math.floor(Math.random() * 25);
+    res.json({
+      compatibility: score,
+      shipName: `${guestName.substring(0, 3)}${partnerName.substring(Math.max(0, partnerName.length - 3))}`,
+      strengths: ['Gleicher Musikgeschmack', 'Perfektes Tanzflächen-Duo', 'Gemeinsame Buffet-Liebe'],
+      challenge: 'Wer bezahlt das nächste Getränk?',
+      loveLanguage: 'Gemeinsames Tanzen',
+      songForYou: 'Perfect — Ed Sheeran',
+      emoji: '💕',
+      verdict: `${score}% — da geht was!`,
+      source: 'fallback',
+    });
+  } catch (error) {
+    logger.error('AI Couple Match error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Couple Match fehlgeschlagen' });
   }
 });
 

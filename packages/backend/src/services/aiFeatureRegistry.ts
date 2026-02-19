@@ -41,7 +41,13 @@ export type AiFeature =
   | 'yearbook'
   | 'celebrity_lookalike'
   | 'ai_bingo'
-  | 'ai_dj';
+  | 'ai_dj'
+  | 'emoji_me'
+  | 'miniature'
+  | 'ai_meme'
+  | 'ai_superlatives'
+  | 'ai_photo_critic'
+  | 'ai_couple_match';
 
 // ─── Feature Definition ──────────────────────────────────────
 
@@ -75,6 +81,10 @@ export const AI_FEATURE_REGISTRY: AiFeatureDefinition[] = [
   { key: 'celebrity_lookalike', label: 'Celebrity Lookalike', description: 'Welchem Promi siehst du ähnlich?', category: 'game', providerType: 'LLM', creditCost: 2, isWorkflow: true },
   { key: 'ai_bingo', label: 'AI Bingo', description: 'KI-generierte Foto-Aufgaben-Bingo-Karte', category: 'game', providerType: 'LLM', creditCost: 1, isWorkflow: true },
   { key: 'ai_dj', label: 'AI DJ', description: 'KI-Musikvorschläge für die Party', category: 'game', providerType: 'LLM', creditCost: 1, isWorkflow: true },
+  { key: 'ai_meme', label: 'AI Meme Generator', description: 'KI-generierte Meme-Captions', category: 'game', providerType: 'LLM', creditCost: 1, isWorkflow: true },
+  { key: 'ai_superlatives', label: 'AI Superlatives', description: 'Most likely to... Party-Awards', category: 'game', providerType: 'LLM', creditCost: 1, isWorkflow: true },
+  { key: 'ai_photo_critic', label: 'AI Foto-Kritiker', description: 'Humorvolle Foto-Bewertung', category: 'game', providerType: 'LLM', creditCost: 1, isWorkflow: true },
+  { key: 'ai_couple_match', label: 'AI Couple Match', description: 'Fun Compatibility-Score', category: 'game', providerType: 'LLM', creditCost: 2, isWorkflow: true },
   // Image
   { key: 'style_transfer', label: 'Style Transfer', description: 'Foto in Kunststil verwandeln', category: 'image', providerType: 'IMAGE_GEN', creditCost: 5, isWorkflow: true },
   { key: 'face_switch', label: 'Face Switch', description: 'Gesichter in Gruppenfotos tauschen', category: 'image', providerType: 'IMAGE_GEN', creditCost: 5, isWorkflow: true },
@@ -85,6 +95,8 @@ export const AI_FEATURE_REGISTRY: AiFeatureDefinition[] = [
   { key: 'time_machine', label: 'Time Machine', description: 'Foto in ein anderes Jahrzehnt versetzen', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true },
   { key: 'pet_me', label: 'Pet Me', description: 'Verwandelt dich in ein Tier', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true },
   { key: 'yearbook', label: 'Yearbook', description: '90er/2000er Yearbook-Foto', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true },
+  { key: 'emoji_me', label: 'Emoji Me', description: 'Selfie in Emoji-Avatar verwandeln', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true },
+  { key: 'miniature', label: 'Miniature', description: 'Tilt-Shift Miniatur-Effekt', category: 'image', providerType: 'IMAGE_GEN', creditCost: 3, isWorkflow: true },
   { key: 'drawbot', label: 'Drawbot', description: 'Line-Art G-Code für Zeichenroboter', category: 'image', providerType: 'IMAGE_GEN', creditCost: 8, isWorkflow: true },
   // Video
   { key: 'highlight_reel', label: 'Highlight Reel', description: 'Automatisches Event-Highlight-Video', category: 'video', providerType: 'VIDEO_GEN', creditCost: 10, isWorkflow: true },
