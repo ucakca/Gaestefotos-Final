@@ -1911,6 +1911,7 @@ model BoothWorkflow {
   ownerId       String?                                 // Partner ID — null = global/admin
   ownerType     String?             @default("admin")   // "admin" | "partner"
   tags          String[]            @default([])        // Tags for marketplace search
+  isActive      Boolean             @default(true)      // Active automations get executed
   isTemplate    Boolean             @default(false)     // Available in template marketplace
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
@@ -1940,15 +1941,16 @@ model WorkflowBackup {
 }
 
 enum WorkflowFlowType {
+  AUTOMATION      // Server-side automations (triggers + actions)
   BOOTH           // Photo Booth Hardware
   MIRROR_BOOTH    // Mirror Booth
   KI_BOOTH        // KI Booth
-  KI_KUNST        // KI-Kunst App Flow
-  FOTO_SPIEL      // Foto-Spiele
-  UPLOAD          // Upload Flow
-  FACE_SEARCH     // Face Search Flow
+  KI_KUNST        // KI-Kunst App Flow (legacy)
+  FOTO_SPIEL      // Foto-Spiele (legacy)
+  UPLOAD          // Upload Flow (legacy)
+  FACE_SEARCH     // Face Search Flow (legacy)
   MOSAIC          // Mosaic Wall Flow
-  GUESTBOOK       // Gästebuch Flow
+  GUESTBOOK       // Gästebuch Flow (legacy)
   SPINNER         // 360° Spinner
   DRAWBOT         // Drawbot
   CUSTOM          // Custom workflow

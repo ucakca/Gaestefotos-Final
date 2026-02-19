@@ -741,24 +741,67 @@ export async function executeWorkflow(
 
 /**
  * Trigger workflow execution when a photo is uploaded.
- * Called from photo upload handlers.
+ * 1. Runs event-specific workflow (event.workflowId) if assigned
+ * 2. Runs ALL active AUTOMATION workflows with TRIGGER_PHOTO_UPLOADED
  */
 export async function onPhotoUploaded(eventId: string, photoId: string): Promise<void> {
   try {
+    const ctx: ExecutionContext = { eventId, triggeredBy: 'photo_upload', photoId };
+
+    // 1. Event-specific workflow (Booth-Flow etc.)
     const event = await prisma.event.findUnique({
       where: { id: eventId },
       select: { workflowId: true },
     });
 
-    if (!event?.workflowId) return;
+    if (event?.workflowId) {
+      await executeWorkflow(event.workflowId, 'TRIGGER_PHOTO_UPLOADED', ctx);
+    }
 
-    await executeWorkflow(event.workflowId, 'TRIGGER_PHOTO_UPLOADED', {
-      eventId,
-      triggeredBy: 'photo_upload',
-      photoId,
-    });
+    // 2. Global AUTOMATION workflows
+    await runGlobalAutomations('TRIGGER_PHOTO_UPLOADED', ctx);
   } catch (error: any) {
     // Never let workflow errors break photo upload
     logger.error(`${LOG} onPhotoUploaded error`, { eventId, photoId, error: error.message });
+  }
+}
+
+/**
+ * Trigger workflow execution for event lifecycle events.
+ * Runs ALL active AUTOMATION workflows matching the trigger type.
+ */
+export async function onEventTrigger(
+  eventId: string,
+  triggerType: 'TRIGGER_EVENT_START' | 'TRIGGER_EVENT_END' | 'TRIGGER_GUEST_JOINED',
+  extra?: { guestId?: string }
+): Promise<void> {
+  try {
+    const ctx: ExecutionContext = { eventId, triggeredBy: triggerType, ...extra };
+    await runGlobalAutomations(triggerType, ctx);
+  } catch (error: any) {
+    logger.error(`${LOG} onEventTrigger error`, { eventId, triggerType, error: error.message });
+  }
+}
+
+/**
+ * Find and execute all active AUTOMATION workflows that contain a matching trigger node.
+ */
+async function runGlobalAutomations(triggerType: string, ctx: ExecutionContext): Promise<void> {
+  const automations = await prisma.boothWorkflow.findMany({
+    where: { flowType: 'AUTOMATION', isActive: true },
+    select: { id: true, name: true, steps: true },
+  });
+
+  for (const wf of automations) {
+    const graph = parseGraph(wf.steps);
+    const triggers = findTriggerNodes(graph, triggerType);
+    if (triggers.length === 0) continue;
+
+    logger.info(`${LOG} Running automation "${wf.name}" for ${triggerType}`, { eventId: ctx.eventId });
+    try {
+      await executeWorkflow(wf.id, triggerType, ctx);
+    } catch (err: any) {
+      logger.error(`${LOG} Automation "${wf.name}" failed`, { error: err.message });
+    }
   }
 }
