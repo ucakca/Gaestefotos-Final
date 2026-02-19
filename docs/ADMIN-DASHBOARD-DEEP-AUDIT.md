@@ -171,22 +171,19 @@ AI_CATEGORIES.filter(cat => cat.features.some(f =>
 5. ✅ Sidebar: Verwaiste Seiten eingebunden
 6. ✅ Sidebar: Duplikate und leere Gruppen entfernt
 
-## Haupt-Architekturproblem: AI Feature Duplikation
+## Haupt-Architekturproblem: AI Feature Duplikation — ✅ GEFIXT
 
-**Problem**: AI-Feature-Listen sind an 4 Stellen hardcoded:
-1. `backend/src/services/aiFeatureRegistry.ts` (Source of Truth)
-2. `admin-dashboard/.../events/[id]/page.tsx` (AI_CATEGORIES)
-3. `admin-dashboard/.../packages/page.tsx` (PKG_AI_CATEGORIES)
-4. `admin-dashboard/.../ai-features/page.tsx` (FEATURE_META)
+**Problem war**: AI-Feature-Listen waren an 4 Stellen hardcoded.
 
-**Risiko**: Bei neuen Features muss an 4 Stellen geändert werden.
+**Lösung implementiert** (19.02.2026):
+1. ✅ API-Endpoint `GET /admin/ai-providers/registry` erstellt
+2. ✅ Hook `useAiFeatureRegistry.ts` mit Caching
+3. ✅ Event-Detail: `AI_CATEGORIES` durch Hook ersetzt
+4. ✅ Packages: `PKG_AI_CATEGORIES` durch Hook ersetzt
+5. ✅ AI Features: `FEATURE_META` durch Hook ersetzt (Icons bleiben lokal)
 
-**Empfohlene Lösung** (Sprint 9+):
-1. API-Endpoint `/admin/ai-features/registry` erstellen der `AI_FEATURE_REGISTRY` zurückgibt
-2. Frontend lädt Registry dynamisch statt hardcoded
-3. Shared types Package für TypeScript-Typen
-
-**Aufwand**: ~4-6h
+**Neue AI-Features werden jetzt NUR in `aiFeatureRegistry.ts` hinzugefügt!**
+Frontend lädt automatisch die aktuelle Liste vom Backend.
 
 ## Kleinere offene Punkte:
 - Face Search Doppel-Rolle in Packages (erscheint 2x in Matrix)

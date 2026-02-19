@@ -248,6 +248,28 @@ export default function EventDetailPage() {
     });
   };
 
+  // AI Presets for quick configuration
+  const AI_PRESETS: { id: string; label: string; icon: string; description: string; config: { energyStartBalance: number; disabledCategories: string[] } }[] = [
+    { id: 'wedding', label: 'Hochzeit', icon: '💒', description: 'Alle Features, hohe Energie', config: { energyStartBalance: 20, disabledCategories: [] } },
+    { id: 'party', label: 'Party', icon: '🎉', description: 'Spiele & Effekte, mittlere Energie', config: { energyStartBalance: 15, disabledCategories: ['hostTools'] } },
+    { id: 'business', label: 'Business', icon: '💼', description: 'Dezent, nur Host-Tools', config: { energyStartBalance: 5, disabledCategories: ['games', 'imageEffects', 'styleTransfer', 'advanced', 'gifVideo'] } },
+    { id: 'minimal', label: 'Minimal', icon: '🔒', description: 'Nur Face Search', config: { energyStartBalance: 0, disabledCategories: ['games', 'imageEffects', 'styleTransfer', 'advanced', 'gifVideo', 'hostTools'] } },
+  ];
+
+  const applyPreset = (preset: typeof AI_PRESETS[0]) => {
+    const disabledFeatures = AI_CATEGORIES
+      .filter(cat => preset.config.disabledCategories.includes(cat.key))
+      .flatMap(cat => cat.features.map(f => f.key));
+    setAiConfigForm(f => ({
+      ...f,
+      energyStartBalance: preset.config.energyStartBalance,
+      disabledFeatures,
+    }));
+  };
+
+  // State for advanced section toggle
+  const [showAdvancedAi, setShowAdvancedAi] = useState(false);
+
   const loadEvent = useCallback(async () => {
     if (!eventId) return;
     setLoading(true);
@@ -946,132 +968,161 @@ export default function EventDetailPage() {
           )}
         </div>
 
-        {aiConfigLoading ? (
+        {aiConfigLoading || registryLoading ? (
           <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-app-muted" /></div>
         ) : aiConfigEditing ? (
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 rounded-xl border border-app-border bg-app-bg">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-500" />
-                <span className="text-sm font-medium text-app-fg">AI-Energie aktiv</span>
-              </div>
-              <button
-                onClick={() => setAiConfigForm(f => ({ ...f, energyEnabled: !f.energyEnabled }))}
-                className={`w-10 h-6 rounded-full transition-colors ${aiConfigForm.energyEnabled ? 'bg-purple-500' : 'bg-muted'}`}
-              >
-                <span className={`block w-4 h-4 rounded-full bg-white shadow transition-transform mx-1 ${aiConfigForm.energyEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-app-muted mb-1">Startguthaben ⚡</label>
-                <input type="number" min={0} max={100} value={aiConfigForm.energyStartBalance} onChange={e => setAiConfigForm(f => ({ ...f, energyStartBalance: e.target.value }))} className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-app-muted mb-1">Cooldown (Sekunden)</label>
-                <input type="number" min={0} max={3600} value={aiConfigForm.energyCooldownSeconds} onChange={e => setAiConfigForm(f => ({ ...f, energyCooldownSeconds: e.target.value }))} className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50" />
-              </div>
-            </div>
-            {/* Energy Costs per AI function */}
+            {/* Presets - Quick Start */}
             <div>
-              <label className="block text-xs font-semibold text-app-muted mb-2">⚡ Energie-Kosten pro Funktion</label>
+              <label className="block text-xs font-semibold text-app-muted mb-2">⚡ Schnellstart-Preset</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {[
-                  { key: 'energyCostLlmGame', label: 'LLM-Spiel', icon: '🎮', def: 1 },
-                  { key: 'energyCostImageEffect', label: 'Bild-Effekt', icon: '🎨', def: 2 },
-                  { key: 'energyCostStyleTransfer', label: 'Style Transfer', icon: '🖼️', def: 2 },
-                  { key: 'energyCostFaceSwap', label: 'Face Swap', icon: '🔄', def: 3 },
-                  { key: 'energyCostGif', label: 'GIF', icon: '🎬', def: 3 },
-                  { key: 'energyCostVideo', label: 'Video', icon: '📹', def: 5 },
-                  { key: 'energyCostTradingCard', label: 'Trading Card', icon: '🃏', def: 2 },
-                ].map(c => (
-                  <div key={c.key} className="flex items-center gap-2 px-2 py-1.5 rounded-lg border border-app-border bg-app-bg/50">
-                    <span className="text-sm">{c.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[10px] text-app-muted truncate">{c.label}</div>
-                      <input
-                        type="number"
-                        min={0}
-                        max={20}
-                        value={(aiConfigForm as any)[c.key] ?? c.def}
-                        onChange={e => setAiConfigForm(f => ({ ...f, [c.key]: e.target.value }))}
-                        className="w-full text-sm font-bold text-app-fg bg-transparent border-none p-0 focus:outline-none"
-                      />
-                    </div>
-                    <span className="text-[10px] text-app-muted">⚡</span>
-                  </div>
+                {AI_PRESETS.map(preset => (
+                  <button
+                    key={preset.id}
+                    onClick={() => applyPreset(preset)}
+                    className="flex flex-col items-center gap-1 p-3 rounded-xl border border-app-border bg-app-bg hover:border-purple-400 hover:bg-purple-50/50 dark:hover:bg-purple-950/20 transition-all text-center"
+                  >
+                    <span className="text-2xl">{preset.icon}</span>
+                    <span className="text-xs font-semibold text-app-fg">{preset.label}</span>
+                    <span className="text-[10px] text-app-muted">{preset.description}</span>
+                  </button>
                 ))}
               </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-app-muted mb-1">Willkommensnachricht (AI-Sektion)</label>
-              <input type="text" value={aiConfigForm.welcomeMessage} onChange={e => setAiConfigForm(f => ({ ...f, welcomeMessage: e.target.value }))} placeholder="z.B. Willkommen bei Annas Hochzeit! ✨" className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-app-muted mb-1">Custom Prompt-Kontext (injiziert in AI-Spiele)</label>
-              <textarea rows={3} value={aiConfigForm.customPromptContext} onChange={e => setAiConfigForm(f => ({ ...f, customPromptContext: e.target.value }))} placeholder="z.B. Dies ist eine Hochzeitsfeier. Das Brautpaar heißt Anna und Max..." className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none" />
-            </div>
-            {/* Individual AI Feature Toggles */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-semibold text-app-muted">🤖 AI-Features aktivieren / deaktivieren</label>
-                <div className="flex gap-1.5">
-                  <button onClick={() => setAiConfigForm(f => ({ ...f, disabledFeatures: [] }))} className="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-600 hover:bg-green-500/20 font-medium">Alle an</button>
-                  <button onClick={() => setAiConfigForm(f => ({ ...f, disabledFeatures: AI_CATEGORIES.flatMap(c => c.features.map(ft => ft.key)) }))} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 text-red-600 hover:bg-red-500/20 font-medium">Alle aus</button>
+
+            {/* Main Controls - Energy Toggle & Budget */}
+            <div className="flex items-center gap-4 p-4 rounded-xl border border-purple-200 bg-purple-50/30 dark:bg-purple-950/10">
+              <button
+                onClick={() => setAiConfigForm(f => ({ ...f, energyEnabled: !f.energyEnabled }))}
+                className={`w-12 h-7 rounded-full transition-colors flex-shrink-0 ${aiConfigForm.energyEnabled ? 'bg-purple-500' : 'bg-gray-300'}`}
+              >
+                <span className={`block w-5 h-5 rounded-full bg-white shadow transition-transform mx-1 ${aiConfigForm.energyEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-app-fg">AI-Energie</span>
+                  <span className="text-lg font-bold text-purple-600">{aiConfigForm.energyStartBalance} ⚡</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={50}
+                  value={aiConfigForm.energyStartBalance}
+                  onChange={e => setAiConfigForm(f => ({ ...f, energyStartBalance: Number(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                  disabled={!aiConfigForm.energyEnabled}
+                />
+                <div className="flex justify-between text-[10px] text-app-muted mt-1">
+                  <span>0 (aus)</span>
+                  <span>50 (max)</span>
                 </div>
               </div>
-              <div className="space-y-1.5">
-                {AI_CATEGORIES.map(cat => {
-                  const disabled: string[] = aiConfigForm.disabledFeatures || [];
-                  const disabledCount = cat.features.filter(ft => disabled.includes(ft.key)).length;
-                  const allDisabled = disabledCount === cat.features.length;
-                  const someDisabled = disabledCount > 0 && disabledCount < cat.features.length;
-                  const isExpanded = expandedAiCats[cat.key] ?? false;
-                  return (
-                    <div key={cat.key} className={`rounded-xl border overflow-hidden transition-all ${allDisabled ? 'border-red-200 bg-red-50/30 dark:bg-red-950/10' : someDisabled ? 'border-amber-200 bg-amber-50/20 dark:bg-amber-950/10' : 'border-purple-200 bg-purple-50/20 dark:bg-purple-950/10'}`}>
-                      {/* Category Header */}
-                      <div className="flex items-center gap-2 px-3 py-2">
-                        <button
-                          onClick={() => toggleAiCategory(cat)}
-                          className={`w-8 h-4 rounded-full transition-colors flex-shrink-0 ${allDisabled ? 'bg-red-400' : 'bg-purple-500'}`}
-                        >
-                          <span className={`block w-3 h-3 rounded-full bg-white shadow transition-transform mx-0.5 ${allDisabled ? 'translate-x-0' : 'translate-x-4'}`} />
-                        </button>
-                        <button
-                          onClick={() => setExpandedAiCats(e => ({ ...e, [cat.key]: !e[cat.key] }))}
-                          className="flex-1 flex items-center gap-2 text-left"
-                        >
-                          <span className="text-sm">{cat.icon}</span>
-                          <span className={`text-xs font-semibold ${allDisabled ? 'text-red-500 line-through' : 'text-app-fg'}`}>{cat.label}</span>
-                          {someDisabled && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">{cat.features.length - disabledCount}/{cat.features.length}</span>}
-                          {allDisabled && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">Alle deaktiviert</span>}
-                          <ChevronDown className={`w-3 h-3 text-app-muted ml-auto transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                        </button>
-                      </div>
-                      {/* Individual features (collapsible) */}
-                      {isExpanded && (
-                        <div className="border-t border-app-border/30 px-3 py-2 grid grid-cols-2 gap-1">
-                          {cat.features.map(feat => {
-                            const isOff = disabled.includes(feat.key);
-                            return (
-                              <button
-                                key={feat.key}
-                                onClick={() => toggleAiFeature(feat.key)}
-                                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-left text-xs transition-all ${isOff ? 'bg-red-50 dark:bg-red-950/20 text-red-500' : 'bg-white dark:bg-white/5 text-app-fg hover:bg-purple-50 dark:hover:bg-purple-950/20'}`}
-                              >
-                                {isOff
-                                  ? <Ban className="w-3 h-3 text-red-400 flex-shrink-0" />
-                                  : <Check className="w-3 h-3 text-purple-500 flex-shrink-0" />}
-                                <span className={isOff ? 'line-through opacity-60' : ''}>{feat.label}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
+            </div>
+
+            {/* Active Features Summary */}
+            <div className="flex flex-wrap gap-1.5">
+              {AI_CATEGORIES.map(cat => {
+                const disabled: string[] = aiConfigForm.disabledFeatures || [];
+                const enabledCount = cat.features.filter(f => !disabled.includes(f.key)).length;
+                const allEnabled = enabledCount === cat.features.length;
+                const allDisabled = enabledCount === 0;
+                return (
+                  <button
+                    key={cat.key}
+                    onClick={() => toggleAiCategory(cat)}
+                    className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all ${
+                      allDisabled ? 'bg-gray-100 text-gray-400 dark:bg-gray-800' :
+                      allEnabled ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30' :
+                      'bg-amber-100 text-amber-700 dark:bg-amber-900/30'
+                    }`}
+                  >
+                    <span>{cat.icon}</span>
+                    <span className={allDisabled ? 'line-through' : ''}>{cat.label}</span>
+                    {!allEnabled && !allDisabled && <span className="font-bold">{enabledCount}/{cat.features.length}</span>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Advanced Section (Collapsible) */}
+            <div className="border border-app-border rounded-xl overflow-hidden">
+              <button
+                onClick={() => setShowAdvancedAi(!showAdvancedAi)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-app-bg/50 hover:bg-app-bg transition-colors"
+              >
+                <span className="text-sm font-medium text-app-muted">⚙️ Erweiterte Einstellungen</span>
+                <ChevronDown className={`w-4 h-4 text-app-muted transition-transform ${showAdvancedAi ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {showAdvancedAi && (
+                <div className="p-4 space-y-4 border-t border-app-border">
+                  {/* Cooldown */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-app-muted mb-1">Cooldown (Sekunden)</label>
+                      <input type="number" min={0} max={3600} value={aiConfigForm.energyCooldownSeconds} onChange={e => setAiConfigForm(f => ({ ...f, energyCooldownSeconds: e.target.value }))} className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50" />
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+
+                  {/* Welcome Message */}
+                  <div>
+                    <label className="block text-xs font-medium text-app-muted mb-1">Willkommensnachricht</label>
+                    <input type="text" value={aiConfigForm.welcomeMessage} onChange={e => setAiConfigForm(f => ({ ...f, welcomeMessage: e.target.value }))} placeholder="z.B. Willkommen bei Annas Hochzeit! ✨" className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50" />
+                  </div>
+
+                  {/* Custom Prompt Context */}
+                  <div>
+                    <label className="block text-xs font-medium text-app-muted mb-1">Custom Prompt-Kontext</label>
+                    <textarea rows={2} value={aiConfigForm.customPromptContext} onChange={e => setAiConfigForm(f => ({ ...f, customPromptContext: e.target.value }))} placeholder="z.B. Dies ist eine Hochzeitsfeier..." className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none" />
+                  </div>
+
+                  {/* Individual Feature Toggles */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-xs font-semibold text-app-muted">Einzelne Features</label>
+                      <div className="flex gap-1.5">
+                        <button onClick={() => setAiConfigForm(f => ({ ...f, disabledFeatures: [] }))} className="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-600 hover:bg-green-500/20 font-medium">Alle an</button>
+                        <button onClick={() => setAiConfigForm(f => ({ ...f, disabledFeatures: AI_CATEGORIES.flatMap(c => c.features.map(ft => ft.key)) }))} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 text-red-600 hover:bg-red-500/20 font-medium">Alle aus</button>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5 max-h-60 overflow-y-auto">
+                      {AI_CATEGORIES.map(cat => {
+                        const disabled: string[] = aiConfigForm.disabledFeatures || [];
+                        const isExpanded = expandedAiCats[cat.key] ?? false;
+                        return (
+                          <div key={cat.key} className="rounded-lg border border-app-border/50 overflow-hidden">
+                            <button
+                              onClick={() => setExpandedAiCats(e => ({ ...e, [cat.key]: !e[cat.key] }))}
+                              className="w-full flex items-center gap-2 px-2 py-1.5 bg-app-bg/30 text-left"
+                            >
+                              <span className="text-sm">{cat.icon}</span>
+                              <span className="text-xs font-medium text-app-fg flex-1">{cat.label}</span>
+                              <ChevronDown className={`w-3 h-3 text-app-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            </button>
+                            {isExpanded && (
+                              <div className="px-2 py-1.5 grid grid-cols-2 gap-1 bg-white/50 dark:bg-black/20">
+                                {cat.features.map(feat => {
+                                  const isOff = disabled.includes(feat.key);
+                                  return (
+                                    <button
+                                      key={feat.key}
+                                      onClick={() => toggleAiFeature(feat.key)}
+                                      className={`flex items-center gap-1 px-1.5 py-1 rounded text-[10px] transition-all ${isOff ? 'text-red-500 line-through' : 'text-app-fg'}`}
+                                    >
+                                      {isOff ? <X className="w-2.5 h-2.5" /> : <Check className="w-2.5 h-2.5 text-green-500" />}
+                                      {feat.label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ) : aiConfig ? (

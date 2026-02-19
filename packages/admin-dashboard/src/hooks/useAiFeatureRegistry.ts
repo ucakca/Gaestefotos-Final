@@ -49,6 +49,10 @@ let cachePromise: Promise<AiFeatureRegistry> | null = null;
 
 async function fetchRegistry(): Promise<AiFeatureRegistry> {
   const res = await api.get<AiFeatureRegistry>('/admin/ai-providers/registry');
+  // Validate response has expected structure
+  if (!res.data?.features || !res.data?.categories) {
+    throw new Error('Invalid registry response');
+  }
   return res.data;
 }
 
@@ -88,7 +92,11 @@ export function useAiFeatureRegistry() {
       const data = await cachePromise;
       cachedRegistry = data;
       setRegistry(data);
+      setError(null);
     } catch (err: any) {
+      // Don't cache failed requests - allow retry
+      cachePromise = null;
+      cachedRegistry = null;
       setError(err.message || 'Failed to load AI registry');
     } finally {
       setLoading(false);
