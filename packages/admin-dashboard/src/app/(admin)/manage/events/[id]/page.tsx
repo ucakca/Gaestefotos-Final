@@ -397,6 +397,12 @@ export default function EventDetailPage() {
     }
   };
 
+  useEffect(() => { loadEvent(); }, [loadEvent]);
+  useEffect(() => { loadAiConfig(); }, [loadAiConfig]);
+  useEffect(() => { loadPackageData(); }, [loadPackageData]);
+  useEffect(() => { loadAddons(); }, [loadAddons]);
+  useEffect(() => { loadWorkflows(); }, [loadWorkflows]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">

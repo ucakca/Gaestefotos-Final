@@ -37,6 +37,15 @@ const createSchema = z.object({
   allowAiEffects: z.boolean().optional(),
   allowAiFaceSwitch: z.boolean().optional(),
   allowAiBgRemoval: z.boolean().optional(),
+  // AI Categories
+  allowAiGames: z.boolean().optional(),
+  allowAiImageEffects: z.boolean().optional(),
+  allowAiGifVideo: z.boolean().optional(),
+  allowAiAdvanced: z.boolean().optional(),
+  allowAiHostTools: z.boolean().optional(),
+  allowAiStyleTransfer: z.boolean().optional(),
+  disabledAiFeatures: z.array(z.string()).optional(),
+  maxAiPlaysPerGuest: z.number().int().nonnegative().optional().nullable(),
   allowSmsSharing: z.boolean().optional(),
   allowEmailSharing: z.boolean().optional(),
   allowGalleryEmbed: z.boolean().optional(),
@@ -179,6 +188,14 @@ router.put('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest
   if (patch.allowAiEffects !== undefined) updateData.allowAiEffects = patch.allowAiEffects;
   if (patch.allowAiFaceSwitch !== undefined) updateData.allowAiFaceSwitch = patch.allowAiFaceSwitch;
   if (patch.allowAiBgRemoval !== undefined) updateData.allowAiBgRemoval = patch.allowAiBgRemoval;
+  if (patch.allowAiGames !== undefined) updateData.allowAiGames = patch.allowAiGames;
+  if (patch.allowAiImageEffects !== undefined) updateData.allowAiImageEffects = patch.allowAiImageEffects;
+  if (patch.allowAiGifVideo !== undefined) updateData.allowAiGifVideo = patch.allowAiGifVideo;
+  if (patch.allowAiAdvanced !== undefined) updateData.allowAiAdvanced = patch.allowAiAdvanced;
+  if (patch.allowAiHostTools !== undefined) updateData.allowAiHostTools = patch.allowAiHostTools;
+  if (patch.allowAiStyleTransfer !== undefined) updateData.allowAiStyleTransfer = patch.allowAiStyleTransfer;
+  if (patch.disabledAiFeatures !== undefined) updateData.disabledAiFeatures = patch.disabledAiFeatures;
+  if (patch.maxAiPlaysPerGuest !== undefined) updateData.maxAiPlaysPerGuest = patch.maxAiPlaysPerGuest;
   if (patch.allowSmsSharing !== undefined) updateData.allowSmsSharing = patch.allowSmsSharing;
   if (patch.allowEmailSharing !== undefined) updateData.allowEmailSharing = patch.allowEmailSharing;
   if (patch.allowGalleryEmbed !== undefined) updateData.allowGalleryEmbed = patch.allowGalleryEmbed;

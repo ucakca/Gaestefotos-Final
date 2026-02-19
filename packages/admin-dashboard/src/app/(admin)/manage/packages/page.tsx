@@ -12,6 +12,7 @@ import {
   Puzzle,
   TableProperties,
   Euro,
+  ChevronDown,
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
@@ -52,6 +53,7 @@ interface PackageDefinition {
   allowAiGifVideo: boolean;
   allowAiAdvanced: boolean;
   allowAiHostTools: boolean;
+  disabledAiFeatures: string[];
   maxCategories: number | null;
   maxChallenges: number | null;
   maxZipDownloadPhotos: number | null;
@@ -86,6 +88,56 @@ const FEATURE_FIELDS: { key: keyof PackageDefinition; label: string; description
   { key: 'allowMosaicPrint', label: 'Mosaic Print', description: 'Mosaik-Sticker drucken' },
   { key: 'allowMosaicExport', label: 'Mosaic Export', description: 'HD-Poster Export' },
   { key: 'isAdFree', label: 'Werbefrei', description: 'Keine Fremdwerbung' },
+];
+
+const PKG_AI_CATEGORIES: { key: string; label: string; icon: string; catField: keyof PackageDefinition; features: { key: string; label: string }[] }[] = [
+  { key: 'games', label: 'AI Games', icon: '🎮', catField: 'allowAiGames', features: [
+    { key: 'compliment_mirror', label: 'Compliment Mirror' },
+    { key: 'fortune_teller',    label: 'AI Fortune Teller' },
+    { key: 'ai_roast',          label: 'AI Roast' },
+    { key: 'celebrity_lookalike',label: 'Celebrity Lookalike' },
+    { key: 'ai_bingo',          label: 'AI Bingo' },
+    { key: 'ai_dj',             label: 'AI DJ' },
+    { key: 'ai_meme',           label: 'AI Meme Generator' },
+    { key: 'ai_superlatives',   label: 'AI Superlatives' },
+    { key: 'ai_photo_critic',   label: 'AI Foto-Kritiker' },
+    { key: 'ai_couple_match',   label: 'AI Couple Match' },
+    { key: 'caption_suggest',   label: 'Caption Generator' },
+  ]},
+  { key: 'imageEffects', label: 'Image Effects', icon: '🎨', catField: 'allowAiImageEffects', features: [
+    { key: 'ai_oldify',    label: 'Oldify' },
+    { key: 'ai_cartoon',   label: 'Cartoon' },
+    { key: 'ai_style_pop', label: 'Style Pop' },
+    { key: 'time_machine', label: 'Time Machine' },
+    { key: 'pet_me',       label: 'Pet Me' },
+    { key: 'yearbook',     label: 'Yearbook' },
+    { key: 'emoji_me',     label: 'Emoji Me' },
+    { key: 'miniature',    label: 'Miniature' },
+  ]},
+  { key: 'styleTransfer', label: 'Style Transfer', icon: '🖼️', catField: 'allowAiStyleTransfer', features: [
+    { key: 'style_transfer', label: 'Style Transfer' },
+  ]},
+  { key: 'advanced', label: 'Advanced', icon: '⚡', catField: 'allowAiAdvanced', features: [
+    { key: 'face_switch', label: 'Face Switch' },
+    { key: 'bg_removal',  label: 'BG Removal' },
+    { key: 'drawbot',     label: 'Drawbot' },
+  ]},
+  { key: 'gifVideo', label: 'GIF / Video', icon: '🎬', catField: 'allowAiGifVideo', features: [
+    { key: 'highlight_reel', label: 'Highlight Reel' },
+  ]},
+  { key: 'hostTools', label: 'Host-Tools', icon: '🛠️', catField: 'allowAiHostTools', features: [
+    { key: 'chat',                label: 'Chat-Assistent' },
+    { key: 'album_suggest',       label: 'Album-Vorschläge' },
+    { key: 'description_suggest', label: 'Event-Beschreibung' },
+    { key: 'invitation_suggest',  label: 'Einladungstext' },
+    { key: 'challenge_suggest',   label: 'Challenge-Ideen' },
+    { key: 'guestbook_suggest',   label: 'Gästebuch-Nachricht' },
+    { key: 'color_scheme',        label: 'Farbschema' },
+    { key: 'ai_categorize',       label: 'AI Kategorisierung' },
+  ]},
+  { key: 'recognition', label: 'Face Search', icon: '👤', catField: 'allowFaceSearch', features: [
+    { key: 'face_search', label: 'Face Search' },
+  ]},
 ];
 
 const AI_FEATURE_FIELDS: { key: keyof PackageDefinition; label: string; description: string }[] = [
@@ -500,9 +552,107 @@ function PackageCards({
                 })}
               </div>
             </div>
+
+            {/* AI Feature Individual Toggles */}
+            <PkgAiFeatureSection
+              displayPkg={displayPkg}
+              onUpdate={(newDisabled) => updateField(pkg, 'disabledAiFeatures', newDisabled)}
+              onToggleCat={(catField) => toggleFeature(pkg, catField as keyof PackageDefinition)}
+            />
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/* ── AI Feature Detail Section (inside PackageCards) ── */
+function PkgAiFeatureSection({
+  displayPkg,
+  onUpdate,
+  onToggleCat,
+}: {
+  displayPkg: PackageDefinition;
+  onUpdate: (newDisabled: string[]) => void;
+  onToggleCat: (catField: string) => void;
+}) {
+  const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
+  const disabled: string[] = displayPkg.disabledAiFeatures || [];
+
+  const toggleFeature = (featureKey: string) => {
+    const isOff = disabled.includes(featureKey);
+    onUpdate(isOff ? disabled.filter(k => k !== featureKey) : [...disabled, featureKey]);
+  };
+
+  const toggleCategory = (cat: typeof PKG_AI_CATEGORIES[0]) => {
+    const allOff = cat.features.every(f => disabled.includes(f.key));
+    if (allOff) {
+      onUpdate(disabled.filter(k => !cat.features.some(f => f.key === k)));
+    } else {
+      const toAdd = cat.features.map(f => f.key).filter(k => !disabled.includes(k));
+      onUpdate([...disabled, ...toAdd]);
+    }
+  };
+
+  return (
+    <div className="mt-4 pt-4 border-t border-app-border/50">
+      <div className="flex items-center justify-between mb-2">
+        <label className="text-xs font-semibold text-app-muted">🤖 Individuelle AI-Features</label>
+        <div className="flex gap-1.5">
+          <button onClick={() => onUpdate([])} className="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-600 hover:bg-green-500/20 font-medium">Alle an</button>
+          <button onClick={() => onUpdate(PKG_AI_CATEGORIES.flatMap(c => c.features.map(f => f.key)))} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 text-red-600 hover:bg-red-500/20 font-medium">Alle aus</button>
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        {PKG_AI_CATEGORIES.map(cat => {
+          const catEnabled = !!(displayPkg[cat.catField] as boolean);
+          const disabledCount = cat.features.filter(f => disabled.includes(f.key)).length;
+          const allDisabled = disabledCount === cat.features.length;
+          const someDisabled = disabledCount > 0 && disabledCount < cat.features.length;
+          const isExpanded = expanded[cat.key] ?? false;
+
+          return (
+            <div key={cat.key} className={`rounded-xl border overflow-hidden ${!catEnabled ? 'opacity-40 pointer-events-none' : allDisabled ? 'border-red-200 bg-red-50/30 dark:bg-red-950/10' : someDisabled ? 'border-amber-200 bg-amber-50/20 dark:bg-amber-950/10' : 'border-violet-200 bg-violet-50/20 dark:bg-violet-950/10'}`}>
+              <div className="flex items-center gap-2 px-3 py-2">
+                <button
+                  onClick={() => toggleCategory(cat)}
+                  className={`w-8 h-4 rounded-full transition-colors flex-shrink-0 ${allDisabled ? 'bg-red-400' : 'bg-violet-500'}`}
+                >
+                  <span className={`block w-3 h-3 rounded-full bg-white shadow transition-transform mx-0.5 ${allDisabled ? 'translate-x-0' : 'translate-x-4'}`} />
+                </button>
+                <button
+                  onClick={() => setExpanded(e => ({ ...e, [cat.key]: !e[cat.key] }))}
+                  className="flex-1 flex items-center gap-2 text-left"
+                >
+                  <span className="text-sm">{cat.icon}</span>
+                  <span className={`text-xs font-semibold ${allDisabled ? 'text-red-500 line-through' : 'text-app-fg'}`}>{cat.label}</span>
+                  {!catEnabled && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">Kategorie deaktiviert</span>}
+                  {catEnabled && someDisabled && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">{cat.features.length - disabledCount}/{cat.features.length}</span>}
+                  {catEnabled && allDisabled && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-600">Alle aus</span>}
+                  <ChevronDown className={`w-3 h-3 text-app-muted ml-auto transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
+              {isExpanded && (
+                <div className="border-t border-app-border/30 px-3 py-2 grid grid-cols-2 gap-1">
+                  {cat.features.map(feat => {
+                    const isOff = disabled.includes(feat.key);
+                    return (
+                      <button
+                        key={feat.key}
+                        onClick={() => toggleFeature(feat.key)}
+                        className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-left text-xs transition-all ${isOff ? 'bg-red-50 dark:bg-red-950/20 text-red-500' : 'bg-white dark:bg-white/5 text-app-fg hover:bg-violet-50 dark:hover:bg-violet-950/20'}`}
+                      >
+                        {isOff ? <X className="w-3 h-3 text-red-400 flex-shrink-0" /> : <Check className="w-3 h-3 text-violet-500 flex-shrink-0" />}
+                        <span className={isOff ? 'line-through opacity-60' : ''}>{feat.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

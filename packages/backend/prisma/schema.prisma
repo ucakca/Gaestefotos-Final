@@ -323,6 +323,7 @@ model PackageDefinition {
   allowAiAdvanced      Boolean               @default(false)
   allowAiHostTools     Boolean               @default(true)
   allowAiStyleTransfer Boolean               @default(false)
+  disabledAiFeatures   String[]              @default([])
   maxAiPlaysPerGuest   Int?
   allowSmsSharing      Boolean               @default(false)
   allowEmailSharing    Boolean               @default(false)

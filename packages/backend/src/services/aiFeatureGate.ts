@@ -76,9 +76,13 @@ export async function getAiFeatureGate(
 
   // 3. Evaluate each feature
   const features: AiFeatureAccess[] = AI_FEATURE_REGISTRY.map((def) => {
-    // Level 1: Package allows the category?
+    // Level 1a: Package allows the category?
     const categoryField = PACKAGE_CATEGORY_TO_FEATURE_KEY[def.packageCategory] as string;
-    const packageAllowed = pkg ? (pkg as any)[categoryField] === true : isFreeTierAllowed(def.packageCategory);
+    const packageCategoryAllowed = pkg ? (pkg as any)[categoryField] === true : isFreeTierAllowed(def.packageCategory);
+    // Level 1b: Package hasn't explicitly disabled this individual feature?
+    const pkgDisabledFeatures: string[] = (pkg as any)?.disabledAiFeatures || [];
+    const packageFeatureAllowed = !pkgDisabledFeatures.includes(def.key);
+    const packageAllowed = packageCategoryAllowed && packageFeatureAllowed;
 
     // Level 2: Host hasn't disabled this feature?
     const hostAllowed = !disabledFeatures.includes(def.key);
