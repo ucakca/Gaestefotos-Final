@@ -5,6 +5,7 @@ import { authMiddleware, AuthRequest, optionalAuthMiddleware, hasEventAccess, ha
 import { logger } from '../utils/logger';
 import { getErrorMessage } from '../utils/typeHelpers';
 import { assertWithinLimit, assertFeatureEnabled, isFeatureEnabled } from '../services/featureGate';
+import { checkAchievements } from '../services/achievementTracker';
 
 const router = Router();
 
@@ -517,6 +518,12 @@ router.post(
       });
 
       res.status(201).json({ completion });
+
+      // Gamification: check achievements after challenge completion (non-blocking)
+      const visitorName = uploaderName || photo.uploadedBy || 'Gast';
+      const visitorId = photo.guestId || photo.uploadedBy || 'anonymous';
+      checkAchievements(eventId, visitorId, visitorName).catch(() => {});
+
     } catch (error) {
       logger.error('Fehler beim Erfüllen der Challenge', {
         message: getErrorMessage(error),
