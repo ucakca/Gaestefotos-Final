@@ -80,7 +80,7 @@ async function runClipInterrogator(imageBase64: string, apiKey: string): Promise
         'Content-Type': 'application/json',
         Prefer: 'wait', // Wait for result (up to 60s)
       },
-      timeout: 90000,
+      timeout: 120000,
     },
   );
 
@@ -96,8 +96,8 @@ async function runClipInterrogator(imageBase64: string, apiKey: string): Promise
 
   logger.info('[img2prompt] CLIP Interrogator prediction started', { predictionId });
 
-  // Poll for result (max 90s)
-  for (let i = 0; i < 90; i++) {
+  // Poll for result (max 480s / 8min — Replicate cold start can take 6+ min)
+  for (let i = 0; i < 480; i++) {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     const pollRes = await axios.get(
@@ -113,7 +113,7 @@ async function runClipInterrogator(imageBase64: string, apiKey: string): Promise
     }
   }
 
-  throw new Error('CLIP Interrogator Timeout (90s)');
+  throw new Error('CLIP Interrogator Timeout (480s). Replicate-Server antwortet nicht. Bitte später erneut versuchen.');
 }
 
 // ─── LLM SYNTHESIS ──────────────────────────────────────────────────────────
