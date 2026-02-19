@@ -78,7 +78,40 @@ router.patch('/:id/role', authMiddleware, requireRole('ADMIN'), async (req: Auth
 });
 
 router.patch('/:id/lock', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
-  return res.status(501).json({ error: 'User locking not implemented - field missing in schema' });
+  try {
+    const { id } = req.params;
+    const { locked, reason } = req.body as { locked: boolean; reason?: string };
+
+    if (id === req.userId) {
+      return res.status(400).json({ error: 'Cannot lock yourself' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id }, select: { id: true, email: true, name: true } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const updated = await prisma.user.update({
+      where: { id },
+      data: {
+        isLocked: locked,
+        lockedAt: locked ? new Date() : null,
+        lockedReason: locked ? (reason || null) : null,
+      },
+      select: { id: true, email: true, isLocked: true, lockedAt: true, lockedReason: true },
+    });
+
+    auditLog({
+      type: AuditType.ADMIN_USER_UPDATED,
+      message: locked
+        ? `User gesperrt: ${user.email}${reason ? ` (Grund: ${reason})` : ''}`
+        : `User entsperrt: ${user.email}`,
+      data: { targetUserId: id, locked, reason },
+      req,
+    });
+
+    return res.json({ ok: true, user: updated });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 router.delete('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {

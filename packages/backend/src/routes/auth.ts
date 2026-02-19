@@ -816,6 +816,12 @@ router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
       where: { email: { in: emailCandidates } },
     });
 
+    // Admin-forced lock check (permanent suspension, different from rate-limit lockout)
+    if (user?.isLocked) {
+      auditLog({ type: AuditType.AUTH_LOGIN_FAILED, message: `Login blockiert (gesperrter Account): ${data.email}`, data: { email: data.email }, req });
+      return res.status(403).json({ error: 'Dein Account wurde gesperrt. Bitte kontaktiere den Support.' });
+    }
+
     // Always run bcrypt.compare to prevent timing-based user enumeration
     const DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012';
     const localPasswordOk = await bcrypt.compare(data.password, user?.password || DUMMY_HASH) && !!user;

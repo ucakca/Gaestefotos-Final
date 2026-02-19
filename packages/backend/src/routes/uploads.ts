@@ -367,9 +367,21 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
 
         // Quality Gate: blur + resolution + duplicate detection (non-blocking)
         import('../services/photoQualityGate').then(m =>
-          m.runPhotoQualityGate(eventId, photo.id, buffer).then(qr => {
+          m.runPhotoQualityGate(eventId, photo.id, buffer).then(async (qr) => {
             if (!qr.passed) {
               logger.info('[QualityGate] Photo flagged', { eventId, photoId: photo.id, reason: qr.rejectionReason });
+            }
+            // Write quality tags so CONDITION-step evaluator can use them
+            const tagsToAdd: string[] = [];
+            if (qr.checks.blur.isBlurry) tagsToAdd.push('blur');
+            if (qr.checks.blur.isWarning) tagsToAdd.push('blur-warning');
+            if (!qr.checks.resolution.passed) tagsToAdd.push('low-resolution');
+            if (qr.checks.duplicate.isDuplicate) tagsToAdd.push('duplicate');
+            if (tagsToAdd.length > 0) {
+              await prisma.photo.update({
+                where: { id: photo.id },
+                data: { tags: { push: tagsToAdd } },
+              }).catch(() => {});
             }
           })
         ).catch(() => {});

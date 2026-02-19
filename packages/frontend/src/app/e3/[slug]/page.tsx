@@ -43,6 +43,8 @@ import api, { formatApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { useToastStore } from '@/store/toastStore';
 import { useTranslations } from '@/components/I18nProvider';
+import { useAiEnergy } from '@/hooks/useAiEnergy';
+import { EnergyBar } from '@/components/ai/EnergyBar';
 
 const StoryViewer = dynamic(() => import('@/components/guest/StoryViewer'), { ssr: false });
 // FaceSearch replaced by WorkflowFaceSearchModal
@@ -116,6 +118,15 @@ export default function PublicEventPageV2() {
     inviteExchangeBump,
   } = useGuestEventData(slug, selectedAlbum);
 
+  // AI Energy System — loads balance + enables reward claiming
+  const {
+    balance: energyBalance,
+    isEnabled: energyEnabled,
+    cooldownActive: energyCooldown,
+    claimReward,
+    isRewardClaimed,
+  } = useAiEnergy(event?.id ?? null);
+
   const {
     stories,
     selectedStoryIndex,
@@ -127,6 +138,13 @@ export default function PublicEventPageV2() {
     onStoryResume,
     reloadStories,
   } = useStoriesViewer(event?.id ?? null, inviteExchangeBump);
+
+  // Claim event_join reward once when event is loaded
+  useEffect(() => {
+    if (!event?.id || !energyEnabled) return;
+    if (isRewardClaimed('event_join')) return;
+    claimReward('event_join');
+  }, [event?.id, energyEnabled, isRewardClaimed, claimReward]);
 
   // Realtime notifications for gamification (Social Proof Toast + New Photo Indicator)
   const {
@@ -448,7 +466,10 @@ export default function PublicEventPageV2() {
         <GuestbookTab
           entries={guestbookEntries}
           eventId={event.id}
-          onEntrySubmit={reloadGuestbook}
+          onEntrySubmit={() => {
+            reloadGuestbook();
+            if (!isRewardClaimed('guestbook')) claimReward('guestbook');
+          }}
         />
       )}
 
@@ -706,6 +727,7 @@ export default function PublicEventPageV2() {
           reloadPhotos();
           setUploadChallengeId(null);
           setUploadChallengeTitle(null);
+          if (!isRewardClaimed('first_upload')) claimReward('first_upload');
         }}
         flowType="UPLOAD"
       />
@@ -731,6 +753,20 @@ export default function PublicEventPageV2() {
         onClose={() => setLeaderboardOpen(false)}
         eventId={event?.id || ''}
       />
+
+      {/* AI Energy compact badge — shown above BottomNav when energy system is active */}
+      {energyEnabled && (
+        <div className="fixed bottom-[72px] right-3 z-40 pointer-events-none">
+          <div className="bg-black/60 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg">
+            <EnergyBar
+              balance={energyBalance}
+              cooldownActive={energyCooldown}
+              enabled={energyEnabled}
+              compact
+            />
+          </div>
+        </div>
+      )}
 
       <AchievementToast eventId={event?.id || ''} />
       <PushNotificationBanner eventId={event?.id || ''} />

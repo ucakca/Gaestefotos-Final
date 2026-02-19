@@ -23,6 +23,9 @@ model User {
   twoFactorSecretIv            String?
   twoFactorSecretTag           String?
   twoFactorSetupAt             DateTime?
+  isLocked                     Boolean                 @default(false)
+  lockedAt                     DateTime?
+  lockedReason                 String?
   apiKeys                      ApiKey[]
   eventMembers                 EventMember[]
   events                       Event[]
