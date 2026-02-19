@@ -59,12 +59,12 @@
 | Effekt | Feature-Key | Beschreibung | Guest-UI | Status |
 |--------|-------------|-------------|----------|--------|
 | **GIF Face Morph** | `gif_morph` | 5 Frames: Orig → Style1 → Style2 → Style1 → Orig | **AiEffectsModal** | ✅ Backend + Frontend |
+| **Aging GIF** | `gif_aging` | Bounce-GIF: Orig → 30 → 50 → 70 → 90 → 70 → 50 → 30 → Orig | **AiEffectsModal** | ✅ Backend + Frontend |
 
 ### Noch nicht implementiert
 
 | Effekt | Feature-Key | Beschreibung | Implementierung | Priority |
 |--------|-------------|-------------|-----------------|----------|
-| **Aging GIF** | `gif_aging` | Zeigt Alterungsprozess als Animation (20→40→60→80 Jahre) | 4 Frames verschiedene Strengths → GIF | 🔴 HIGH |
 | **Style Carousel GIF** | `gif_style_carousel` | 5 verschiedene Styles als animiertes Karussell | 5 Style-Transfers → GIF | 🟡 MEDIUM |
 | **Glitch Transition** | `gif_glitch` | Glitch-Übergang zwischen Original und Style | Sharp.js Pixel-Manipulation → GIF | 🟡 MEDIUM |
 | **Zoom Reveal** | `gif_zoom_reveal` | Reinzoomen ins Gesicht → Style erscheint | Crop-Sequence + Style overlay | 🟢 LOW |
@@ -80,7 +80,7 @@
 
 | Effekt | Feature-Key | Provider | Guest-UI | Credits |
 |--------|-------------|----------|----------|---------|
-| **AI Video** (Image-to-Video) | `ai_video` | Runway (gen4_turbo) / LumaAI (ray2) | **AiEffectsModal** | 10 |
+| **AI Video** (Image-to-Video) | `ai_video` | Runway (gen4_turbo) / LumaAI (ray2) | **AiEffectsModal** (8 Presets) | 10 |
 | **Event Highlight Reel** | `highlight_reel` | ffmpeg (lokal) | Host-Dashboard | 10 |
 
 ### Noch nicht implementiert
@@ -112,12 +112,12 @@
 | **Compliment Mirror** | `compliment_mirror` | Groq | **AiGamesModal** | 2 |
 | **AI Fortune Teller** | `fortune_teller` | Groq | **AiGamesModal** | 2 |
 | **AI Roast** | `ai_roast` | Groq | **AiGamesModal** | 2 |
+| **Persona Quiz** | `persona_quiz` | Groq | **AiGamesModal** (3 Fragen → Quiz) | 2 |
 
 ### Neue Text-Effekte (noch nicht implementiert) 🔴
 
 | Effekt | Feature-Key | Beschreibung | Credits |
 |--------|-------------|-------------|---------|
-| **Persona Quiz** | `persona_quiz` | "Welcher Typ bist du?" basierend auf Antworten | 2 |
 | **Wedding Speech** | `wedding_speech` | KI generiert eine kurze, lustige Hochzeitsrede | 3 |
 | **AI Stories** | `ai_stories` | Gast gibt 3 Wörter → KI generiert Mini-Geschichte | 2 |
 | **AI DJ** | `ai_dj_suggest` | Musikvorschläge basierend auf Event-Stimmung | 1 |
@@ -170,12 +170,16 @@
 11. ~~AI Video (Image-to-Video)~~ → AiEffectsModal (Runway/LumaAI Polling) ✅
 12. ~~24 Style-Transfer-Stile~~ (von 10 auf 24 erweitert) ✅
 
-### Sprint 3 — Nächste Schritte
-13. **Aging GIF** (4 Frames verschiedene Strengths → GIF)
-14. **AI Trading Cards** als Template-basiertes Feature
-15. **AI Group Theme** (Multi-Face Processing)
-16. **Persona Quiz** mit AI Portrait
-17. **Video-Presets**: Cyberpunk Scene, Time Travel (Prompt-Varianten für AI Video)
+### Sprint 3 — ✅ DONE (19. Feb 2026)
+13. ~~Aging GIF~~ → AiEffectsModal (Bounce-GIF: Orig→30→50→70→90→70→50→30→Orig) ✅
+14. ~~Video-Presets~~ → 8 Stile (Cinematic, Cyberpunk, Zeitreise, Superhero, Unterwasser, Märchen, Weltraum, Disco) ✅
+15. ~~Persona Quiz~~ → AiGamesModal (3 Fragen → KI-Persönlichkeitsanalyse) ✅
+
+### Sprint 4 — Nächste Schritte
+16. **AI Trading Cards** als Template-basiertes Feature
+17. **AI Group Theme** (Multi-Face Processing)
+18. **Wedding Speech** Generator
+19. **AI Stories** (3 Wörter → Mini-Geschichte)
 
 ---
 
