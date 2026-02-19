@@ -1200,6 +1200,29 @@ router.post(
         photo: updatedPhoto,
       });
 
+      // Trigger workflow automations (non-blocking)
+      import('../services/workflowExecutor').then(m =>
+        m.onEventTrigger(photo.eventId, 'TRIGGER_PHOTO_APPROVED', { guestId: undefined })
+      ).catch(() => {});
+
+      // Mosaic auto-hook: place newly approved photo if wall is active (non-blocking)
+      prisma.mosaicWall.findUnique({ where: { eventId: photo.eventId }, select: { id: true, status: true } }).then(async (wall) => {
+        if (wall?.status === 'ACTIVE') {
+          try {
+            const photoBuffer = await storageService.getFile(photo.storagePath);
+            const result = await mosaicEngine.placePhoto(wall.id, photo.id, photoBuffer, 'SMARTPHONE');
+            if (result) {
+              io.to(`event:${photo.eventId}`).emit('mosaic_tile_placed', {
+                tileId: result.tileId, position: result.position, printNumber: result.printNumber,
+                photoId: photo.id,
+              });
+            }
+          } catch (err: any) {
+            logger.warn('Approve mosaic auto-place failed', { error: err.message });
+          }
+        }
+      }).catch(() => {});
+
       res.json({ photo: updatedPhoto });
     } catch (error: any) {
       logger.error('Approve photo error', { error: error.message, stack: error.stack, photoId: req.params.photoId });
@@ -1245,6 +1268,11 @@ router.post(
       });
 
       auditLog({ type: AuditType.PHOTO_MODERATED, message: `Foto abgelehnt`, eventId: photo.eventId, data: { photoId, action: 'reject' }, req });
+
+      // Trigger workflow automations (non-blocking)
+      import('../services/workflowExecutor').then(m =>
+        m.onEventTrigger(photo.eventId, 'TRIGGER_PHOTO_REJECTED', { guestId: undefined })
+      ).catch(() => {});
 
       res.json({ photo: updatedPhoto });
     } catch (error: any) {
@@ -1298,6 +1326,12 @@ router.post(
           count: result.count,
         });
       }
+
+      // Trigger workflow automations for bulk moderation (non-blocking)
+      const triggerType = action === 'approve' ? 'TRIGGER_PHOTO_APPROVED' : 'TRIGGER_PHOTO_REJECTED';
+      import('../services/workflowExecutor').then(m =>
+        m.onEventTrigger(eventId, triggerType as any, { guestId: undefined })
+      ).catch(() => {});
 
       logger.info('Bulk moderation', { eventId, action, requested: photoIds.length, updated: result.count });
 

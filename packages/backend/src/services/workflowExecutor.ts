@@ -611,6 +611,8 @@ async function executeStep(node: WorkflowNode, ctx: ExecutionContext): Promise<S
     // ── Trigger nodes — entry points, no execution ──
     case 'TRIGGER_PHOTO_UPLOADED':
     case 'TRIGGER_PHOTO_UPLOAD':
+    case 'TRIGGER_PHOTO_APPROVED':
+    case 'TRIGGER_PHOTO_REJECTED':
     case 'TRIGGER_TIMER':
     case 'TRIGGER_GUEST_JOINED':
     case 'TRIGGER_EVENT_START':
@@ -772,7 +774,7 @@ export async function onPhotoUploaded(eventId: string, photoId: string): Promise
  */
 export async function onEventTrigger(
   eventId: string,
-  triggerType: 'TRIGGER_EVENT_START' | 'TRIGGER_EVENT_END' | 'TRIGGER_GUEST_JOINED',
+  triggerType: 'TRIGGER_EVENT_START' | 'TRIGGER_EVENT_END' | 'TRIGGER_GUEST_JOINED' | 'TRIGGER_PHOTO_APPROVED' | 'TRIGGER_PHOTO_REJECTED',
   extra?: { guestId?: string }
 ): Promise<void> {
   try {
@@ -794,7 +796,7 @@ async function runAutomations(triggerType: string, ctx: ExecutionContext): Promi
 
   // 1. Global automations
   const globalAutomations = await prisma.boothWorkflow.findMany({
-    where: { flowType: 'AUTOMATION', isActive: true, isGlobal: true },
+    where: { flowType: 'AUTOMATION' as any, isActive: true, isGlobal: true },
     select: { id: true, name: true, steps: true },
   });
 
@@ -813,7 +815,7 @@ async function runAutomations(triggerType: string, ctx: ExecutionContext): Promi
   }
 
   // 2. Event-specific automations (via EventAutomation join table)
-  const eventAutomations = await prisma.eventAutomation.findMany({
+  const eventAutomations = await (prisma as any).eventAutomation.findMany({
     where: { eventId: ctx.eventId, isActive: true },
     include: {
       workflow: { select: { id: true, name: true, steps: true, isActive: true, flowType: true } },

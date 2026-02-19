@@ -373,6 +373,75 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
             }
           })
         ).catch(() => {});
+
+        // Face Detection (non-blocking)
+        import('../services/faceRecognition').then(m =>
+          m.getFaceDetectionMetadata(buffer).then(async (faceResult) => {
+            if (faceResult.faceCount > 0) {
+              await prisma.photo.update({
+                where: { id: photo.id },
+                data: { faceCount: faceResult.faceCount, faceData: { faces: faceResult.faces, descriptors: faceResult.descriptors || [] } },
+              });
+              const { storeFaceEmbedding } = await import('../services/faceSearchPgvector');
+              const descriptors = faceResult.descriptors || [];
+              for (let i = 0; i < descriptors.length; i++) {
+                storeFaceEmbedding({ photoId: photo.id, eventId, descriptor: descriptors[i], faceIndex: i, box: faceResult.faces[i] }).catch(() => {});
+              }
+            }
+          })
+        ).catch(() => {});
+
+        // Push Notifications (non-blocking)
+        import('../services/pushNotification').then(async (m) => {
+          const eventForPush = await prisma.event.findUnique({ where: { id: eventId }, select: { title: true, slug: true } });
+          if (eventForPush) {
+            const name = uploadedBy || 'Ein Gast';
+            m.sendPushToEvent(eventId, m.pushTemplates.newPhoto(eventForPush.title, name, eventForPush.slug)).catch(() => {});
+            m.notifyEventHost(eventId, m.pushTemplates.hostNewUpload(eventForPush.title, 1)).catch(() => {});
+          }
+        }).catch(() => {});
+
+        // Mosaic auto-hook (non-blocking)
+        if (photoStatus === 'APPROVED') {
+          prisma.mosaicWall.findUnique({ where: { eventId }, select: { id: true, status: true } }).then(async (wall) => {
+            if (wall?.status === 'ACTIVE') {
+              try {
+                const { mosaicEngine } = await import('../services/mosaicEngine');
+                const photoBuffer = await storageService.getFile(storagePath);
+                const result = await mosaicEngine.placePhoto(wall.id, photo.id, photoBuffer, 'SMARTPHONE');
+                if (result) {
+                  io.to(`event:${eventId}`).emit('mosaic_tile_placed', {
+                    tileId: result.tileId, position: result.position, printNumber: result.printNumber,
+                    photoId: photo.id, croppedImageUrl: `/api/events/${eventId}/mosaic/tile-image/${result.tileId}`,
+                    uploadedBy: uploadedBy || null,
+                  });
+                }
+              } catch (err: any) {
+                logger.warn('TUS mosaic auto-place failed', { error: err.message, eventId, photoId: photo.id });
+              }
+            }
+          }).catch(() => {});
+        }
+
+        // Upload notification email to host (non-blocking)
+        if (uploadedBy) {
+          prisma.event.findUnique({
+            where: { id: eventId },
+            include: { host: { select: { email: true, name: true } } },
+          }).then(async (eventWithHost) => {
+            if (eventWithHost?.host?.email) {
+              const { emailService } = await import('../services/email');
+              emailService.sendUploadNotification({
+                to: eventWithHost.host.email,
+                hostName: eventWithHost.host.name || 'Host',
+                eventTitle: eventWithHost.title,
+                eventId,
+                uploaderName: uploadedBy,
+                photoCount: 1,
+              }).catch(() => {});
+            }
+          }).catch(() => {});
+        }
       }
 
       auditLog({ type: AuditType.TUS_UPLOAD_FINISHED, message: `TUS Upload abgeschlossen: ${filename}`, eventId, data: { uploadId: upload.id, filename, isVideo: false, progressive: !!progressivePhotoId }, level: 'DEBUG' });
