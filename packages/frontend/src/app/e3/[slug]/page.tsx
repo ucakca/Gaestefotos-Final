@@ -51,6 +51,8 @@ const WorkflowUploadModal = dynamic(() => import('@/components/workflow-runtime/
 const WorkflowFaceSearchModal = dynamic(() => import('@/components/workflow-runtime/WorkflowFaceSearchModal'), { ssr: false });
 const QuickUploadModal = dynamic(() => import('@/components/upload/QuickUploadModal'), { ssr: false });
 const StyleTransferModal = dynamic(() => import('@/components/ai/StyleTransferModal'), { ssr: false });
+const AiGamesModal = dynamic(() => import('@/components/ai/AiGamesModal'), { ssr: false });
+const AiEffectsModal = dynamic(() => import('@/components/ai/AiEffectsModal'), { ssr: false });
 
 export default function PublicEventPageV2() {
   const params = useParams();
@@ -67,6 +69,8 @@ export default function PublicEventPageV2() {
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [faceSearchOpen, setFaceSearchOpen] = useState(false);
   const [styleTransferOpen, setStyleTransferOpen] = useState(false);
+  const [aiGamesOpen, setAiGamesOpen] = useState(false);
+  const [aiEffectsOpen, setAiEffectsOpen] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
   const [guestbookEntries, setGuestbookEntries] = useState<any[]>([]);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -486,6 +490,12 @@ export default function PublicEventPageV2() {
               setUploadChallengeTitle('Mosaic Wall');
               setUploadModalOpen(true);
               break;
+            case 'ai-games':
+              setAiGamesOpen(true);
+              break;
+            case 'ai-effects':
+              setAiEffectsOpen(true);
+              break;
           }
         }}
         challengeCount={challenges?.filter((c: any) => c?.isActive).length || 0}
@@ -662,6 +672,21 @@ export default function PublicEventPageV2() {
       <StyleTransferModal
         isOpen={styleTransferOpen}
         onClose={() => setStyleTransferOpen(false)}
+        eventId={event?.id || ''}
+        onComplete={() => reloadPhotos()}
+      />
+
+      <AiGamesModal
+        isOpen={aiGamesOpen}
+        onClose={() => setAiGamesOpen(false)}
+        eventId={event?.id || ''}
+        eventType={(event as any)?.eventType}
+        eventTitle={event?.title}
+      />
+
+      <AiEffectsModal
+        isOpen={aiEffectsOpen}
+        onClose={() => setAiEffectsOpen(false)}
         eventId={event?.id || ''}
         onComplete={() => reloadPhotos()}
       />

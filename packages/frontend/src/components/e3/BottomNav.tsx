@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Play, BookOpen, Info, X, Gamepad2, ScanFace, Sparkles, Shuffle, Camera, Puzzle } from 'lucide-react';
+import { Home, Play, BookOpen, Info, X, Gamepad2, ScanFace, Sparkles, Shuffle, Camera, Puzzle, Wand2, Flame } from 'lucide-react';
 import { useTranslations } from '@/components/I18nProvider';
 import { DualFAB } from '@/components/ui/DualFAB';
 
@@ -21,7 +21,7 @@ export type TabId = 'feed' | 'guestbook' | 'info';
 export interface BottomNavProps {
   activeTab: TabId;
   onTabChange: (tab: TabId) => void;
-  onCameraAction?: (action: 'photo' | 'game' | 'ki-style' | 'face-search' | 'mosaic-upload') => void;
+  onCameraAction?: (action: 'photo' | 'game' | 'ki-style' | 'face-search' | 'mosaic-upload' | 'ai-games' | 'ai-effects') => void;
   onLivePress?: () => void;
   challengeCount?: number;
   guestbookCount?: number;
@@ -64,6 +64,10 @@ export default function BottomNav({
       onCameraAction?.('game');
     } else if (id === 'mosaic-upload') {
       onCameraAction?.('mosaic-upload');
+    } else if (id === 'ai-games') {
+      onCameraAction?.('ai-games');
+    } else if (id === 'ai-effects') {
+      onCameraAction?.('ai-effects');
     } else {
       onCameraAction?.(id as any);
     }
@@ -295,7 +299,7 @@ export default function BottomNav({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.3 }}
                       onClick={() => handleAiAction('emoji-challenge')}
-                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-rose-500/10 to-red-500/10 border border-rose-500/20 hover:from-rose-500/20 hover:to-red-500/20 active:scale-[0.97] transition-all text-left col-span-2 sm:col-span-1"
+                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-rose-500/10 to-red-500/10 border border-rose-500/20 hover:from-rose-500/20 hover:to-red-500/20 active:scale-[0.97] transition-all text-left"
                     >
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-400 to-red-500 flex items-center justify-center shadow-md shadow-rose-500/20">
                         <Camera className="w-5 h-5 text-white" />
@@ -303,6 +307,44 @@ export default function BottomNav({
                       <div>
                         <div className="text-sm font-semibold">{tAi('emojiChallenge')}</div>
                         <div className="text-[10px] text-muted-foreground">{tAi('emojiChallengeDesc')}</div>
+                      </div>
+                    </motion.button>
+                  )}
+
+                  {/* KI Spiele (Fortune Teller, AI Roast, Compliment Mirror) */}
+                  {showFotoSpass && showAiGames && (
+                    <motion.button
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.35 }}
+                      onClick={() => handleAiAction('ai-games')}
+                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-violet-500/10 to-purple-500/10 border border-violet-500/20 hover:from-violet-500/20 hover:to-purple-500/20 active:scale-[0.97] transition-all text-left"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-md shadow-violet-500/20">
+                        <Flame className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold">KI Spiele</div>
+                        <div className="text-[10px] text-muted-foreground">Roast, Fortune Teller & mehr</div>
+                      </div>
+                    </motion.button>
+                  )}
+
+                  {/* KI Effekte (Oldify, Cartoon, Style Pop) */}
+                  {showFotoSpass && (
+                    <motion.button
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 }}
+                      onClick={() => handleAiAction('ai-effects')}
+                      className="flex flex-col items-start gap-2 p-4 rounded-2xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 hover:from-blue-500/20 hover:to-cyan-500/20 active:scale-[0.97] transition-all text-left"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center shadow-md shadow-blue-500/20">
+                        <Wand2 className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold">KI Effekte</div>
+                        <div className="text-[10px] text-muted-foreground">Oldify, Cartoon, Style Pop</div>
                       </div>
                     </motion.button>
                   )}

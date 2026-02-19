@@ -8,6 +8,8 @@ import { generateCompletion } from '../lib/groq';
 
 export type GameType =
   | 'compliment_mirror'
+  | 'fortune_teller'
+  | 'ai_roast'
   | 'slot_machine'
   | 'mystery_overlay'
   | 'mimik_duell'
@@ -30,6 +32,24 @@ export const GAME_CATALOG: GameConfig[] = [
     name: 'Compliment Mirror',
     description: 'Mach ein Selfie und erhalte ein KI-generiertes Kompliment!',
     icon: '🪞',
+    category: 'app',
+    requiresBooth: false,
+    requiresAI: true,
+  },
+  {
+    type: 'fortune_teller',
+    name: 'AI Fortune Teller',
+    description: 'Die KI sagt dir deine Zukunft voraus — lustig & mystisch!',
+    icon: '🔮',
+    category: 'app',
+    requiresBooth: false,
+    requiresAI: true,
+  },
+  {
+    type: 'ai_roast',
+    name: 'AI Roast',
+    description: 'Liebevoller Comedy-Roast von der KI — traust du dich?',
+    icon: '🔥',
     category: 'app',
     requiresBooth: false,
     requiresAI: true,
@@ -228,6 +248,112 @@ REGELN:
 - Wenn ein Event-Typ gegeben ist, passe das Kompliment an den Kontext an`,
   userPromptTpl: 'Gib dem Gast ein kreatives Kompliment.{{eventContext}}{{guestContext}}',
 };
+
+// ─── FORTUNE TELLER ─────────────────────────────────────────────────────────
+
+const FORTUNE_FALLBACKS = [
+  { prediction: 'Die Sterne sagen: Heute Nacht wirst du den besten Tanz deines Lebens hinlegen! 💃', luckyItem: 'Konfetti', luckyNumber: 7 },
+  { prediction: 'Ich sehe... eine legendäre Karaoke-Performance in deiner nahen Zukunft! 🎤', luckyItem: 'Mikrofon', luckyNumber: 13 },
+  { prediction: 'Meine Kristallkugel zeigt: Du wirst heute Abend mindestens 3 neue Freunde finden! 🌟', luckyItem: 'Glückskeks', luckyNumber: 42 },
+];
+
+export const generateFortuneTellerAI = withKnowledge<
+  { eventType?: string; eventTitle?: string; guestName?: string },
+  { prediction: string; luckyItem: string; luckyNumber: number; source: 'ai' | 'fallback' }
+>(
+  'fortune-teller',
+  async ({ eventType, eventTitle, guestName }) => {
+    try {
+      const prompt = await resolvePrompt('fortune_teller');
+      const eventContext = eventType ? ` Event-Typ: ${eventType}${eventTitle ? `, Titel: "${eventTitle}"` : ''}.` : '';
+      const guestContext = guestName ? ` Gastname: ${guestName}.` : '';
+
+      const systemPrompt = prompt.systemPrompt || `Du bist eine mystische Wahrsagerin auf einer Party.
+Gib dem Gast eine witzige, kreative Zukunftsvorhersage.
+Antworte NUR auf Deutsch. Sei mystisch aber humorvoll. Max 3 Sätze.
+Antworte NUR als JSON: {"prediction": "...", "luckyItem": "...", "luckyNumber": 7}`;
+      const userPromptTpl = prompt.userPromptTpl || 'Gib dem Gast eine witzige Zukunftsvorhersage.{{eventContext}}{{guestContext}}';
+      const userPrompt = renderPrompt(userPromptTpl, { eventContext, guestContext });
+
+      const response = await generateCompletion(userPrompt, systemPrompt, {
+        maxTokens: prompt.maxTokens || 200,
+        temperature: prompt.temperature || 0.95,
+      });
+
+      const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.prediction) {
+          return { prediction: parsed.prediction, luckyItem: parsed.luckyItem || '🍀', luckyNumber: parsed.luckyNumber || 7, source: 'ai' as const };
+        }
+      }
+      return { prediction: response.content.trim().substring(0, 250), luckyItem: '🔮', luckyNumber: 7, source: 'ai' as const };
+    } catch (error) {
+      logger.warn('[FortuneTeller] LLM failed, using fallback', { error: (error as Error).message });
+      const fb = FORTUNE_FALLBACKS[Math.floor(Math.random() * FORTUNE_FALLBACKS.length)];
+      return { ...fb, source: 'fallback' as const };
+    }
+  },
+  {
+    fallback: () => {
+      const fb = FORTUNE_FALLBACKS[Math.floor(Math.random() * FORTUNE_FALLBACKS.length)];
+      return { ...fb, source: 'fallback' as const };
+    },
+  }
+);
+
+// ─── AI ROAST ───────────────────────────────────────────────────────────────
+
+const ROAST_FALLBACKS = [
+  { roast: 'Du siehst aus, als hättest du dein Outfit im Dunkeln ausgewählt — und trotzdem sieht es besser aus als bei den meisten! 😂', rescue: 'Aber mal ehrlich: Du bist der heimliche Style-Star des Abends! ✨' },
+  { roast: 'Dein Selfie-Game ist so stark, dass selbst dein Spiegelbild neidisch wird! 📸', rescue: 'Im Ernst: Wir brauchen mehr Leute wie dich auf dieser Party! 🎉' },
+  { roast: 'Du tanzt, als würde niemand zusehen — leider sehen alle zu! 💃', rescue: 'Aber weißt du was? Genau das macht dich zum Party-Highlight! 🌟' },
+];
+
+export const generateRoastAI = withKnowledge<
+  { eventType?: string; eventTitle?: string; guestName?: string },
+  { roast: string; rescue: string; source: 'ai' | 'fallback' }
+>(
+  'ai-roast',
+  async ({ eventType, eventTitle, guestName }) => {
+    try {
+      const prompt = await resolvePrompt('ai_roast');
+      const eventContext = eventType ? ` Event-Typ: ${eventType}${eventTitle ? `, Titel: "${eventTitle}"` : ''}.` : '';
+      const guestContext = guestName ? ` Gastname: ${guestName}.` : '';
+
+      const systemPrompt = prompt.systemPrompt || `Du bist ein Stand-Up-Comedian auf einer Party.
+Roaste den Gast liebevoll und witzig. NIEMALS verletzend oder beleidigend.
+Antworte NUR auf Deutsch. Max 2 Sätze Roast + 1 Rettungs-Kompliment.
+Antworte NUR als JSON: {"roast": "...", "rescue": "..."}`;
+      const userPromptTpl = prompt.userPromptTpl || 'Roaste den Gast liebevoll.{{eventContext}}{{guestContext}}';
+      const userPrompt = renderPrompt(userPromptTpl, { eventContext, guestContext });
+
+      const response = await generateCompletion(userPrompt, systemPrompt, {
+        maxTokens: prompt.maxTokens || 200,
+        temperature: prompt.temperature || 0.95,
+      });
+
+      const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.roast) {
+          return { roast: parsed.roast, rescue: parsed.rescue || '❤️', source: 'ai' as const };
+        }
+      }
+      return { roast: response.content.trim().substring(0, 250), rescue: '❤️', source: 'ai' as const };
+    } catch (error) {
+      logger.warn('[AiRoast] LLM failed, using fallback', { error: (error as Error).message });
+      const fb = ROAST_FALLBACKS[Math.floor(Math.random() * ROAST_FALLBACKS.length)];
+      return { ...fb, source: 'fallback' as const };
+    }
+  },
+  {
+    fallback: () => {
+      const fb = ROAST_FALLBACKS[Math.floor(Math.random() * ROAST_FALLBACKS.length)];
+      return { ...fb, source: 'fallback' as const };
+    },
+  }
+);
 
 // ─── MIMIK-DUELL ────────────────────────────────────────────────────────────
 

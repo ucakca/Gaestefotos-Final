@@ -6,6 +6,8 @@ import {
   spinSlotMachine,
   generateCompliment,
   generateComplimentAI,
+  generateFortuneTellerAI,
+  generateRoastAI,
   getRandomMimikChallenge,
   scoreMimik,
   getRandomOverlay,
@@ -61,6 +63,44 @@ router.post('/compliment-mirror', authMiddleware, async (req: AuthRequest, res: 
     // Ultimate fallback: random compliment
     const fallback = generateCompliment();
     res.json({ ...fallback, source: 'fallback' });
+  }
+});
+
+// POST /api/booth-games/fortune-teller — Get an AI-generated fortune prediction
+router.post('/fortune-teller', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, eventType, eventTitle, guestName } = req.body;
+
+    const result = await generateFortuneTellerAI({
+      eventType: eventType || undefined,
+      eventTitle: eventTitle || undefined,
+      guestName: guestName || undefined,
+    });
+
+    const session = createGameSession(eventId, 'fortune_teller', result);
+    res.json({ sessionId: session.id, ...result });
+  } catch (error) {
+    logger.error('Fortune teller error', { message: (error as Error).message });
+    res.json({ prediction: 'Die Sterne sind heute etwas schüchtern... Versuch es gleich nochmal! 🌟', luckyItem: '🍀', luckyNumber: 7, source: 'fallback' });
+  }
+});
+
+// POST /api/booth-games/ai-roast — Get a loving AI roast
+router.post('/ai-roast', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, eventType, eventTitle, guestName } = req.body;
+
+    const result = await generateRoastAI({
+      eventType: eventType || undefined,
+      eventTitle: eventTitle || undefined,
+      guestName: guestName || undefined,
+    });
+
+    const session = createGameSession(eventId, 'ai_roast', result);
+    res.json({ sessionId: session.id, ...result });
+  } catch (error) {
+    logger.error('AI roast error', { message: (error as Error).message });
+    res.json({ roast: 'Die KI ist gerade sprachlos — das passiert selten! 😂', rescue: 'Das bedeutet: Du bist einfach zu cool zum Roasten! 🔥', source: 'fallback' });
   }
 });
 
