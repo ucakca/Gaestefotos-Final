@@ -267,4 +267,175 @@ router.get('/alerts', authMiddleware, requireRole('ADMIN'), async (req: AuthRequ
   }
 });
 
+// ─── GET /recent-jobs ────────────────────────────────────────────────────────
+
+router.get('/recent-jobs', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit as string) || 50, 200);
+    const providerId = req.query.providerId as string | undefined;
+    const feature = req.query.feature as string | undefined;
+    const successOnly = req.query.success as string | undefined;
+
+    const where: any = {};
+    if (providerId) where.providerId = providerId;
+    if (feature) where.feature = feature;
+    if (successOnly === 'true') where.success = true;
+    if (successOnly === 'false') where.success = false;
+
+    const jobs = await prisma.aiUsageLog.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        feature: true,
+        model: true,
+        inputTokens: true,
+        outputTokens: true,
+        totalTokens: true,
+        costCents: true,
+        durationMs: true,
+        statusCode: true,
+        success: true,
+        errorMessage: true,
+        eventId: true,
+        userId: true,
+        createdAt: true,
+        provider: { select: { id: true, slug: true, name: true, type: true } },
+      },
+    });
+
+    // Aggregate stats for the returned jobs
+    const totalCost = jobs.reduce((s, j) => s + j.costCents, 0);
+    const totalDuration = jobs.reduce((s, j) => s + j.durationMs, 0);
+    const successCount = jobs.filter(j => j.success).length;
+
+    res.json({
+      jobs,
+      meta: {
+        count: jobs.length,
+        totalCostCents: totalCost,
+        avgDurationMs: jobs.length > 0 ? Math.round(totalDuration / jobs.length) : 0,
+        successRate: jobs.length > 0 ? Math.round(successCount / jobs.length * 100) : 100,
+      },
+    });
+  } catch (error) {
+    logger.error('Recent jobs error', { error });
+    res.status(500).json({ error: 'Fehler beim Laden der Jobs' });
+  }
+});
+
+// ─── GET /provider-live ──────────────────────────────────────────────────────
+
+router.get('/provider-live', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { decryptValue } = await import('../utils/encryption');
+
+    // Fetch all active providers with API keys
+    const providers = await prisma.aiProvider.findMany({
+      where: { isActive: true },
+      select: {
+        id: true, slug: true, name: true, type: true, baseUrl: true,
+        apiKeyEncrypted: true, apiKeyIv: true, apiKeyTag: true,
+        monthlyBudgetCents: true,
+        _count: { select: { usageLogs: true } },
+      },
+    });
+
+    const results: any[] = [];
+
+    for (const p of providers) {
+      const hasKey = !!(p.apiKeyEncrypted && p.apiKeyIv && p.apiKeyTag);
+
+      // Internal usage stats (last 30 days)
+      const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const stats = await prisma.aiUsageLog.aggregate({
+        where: { providerId: p.id, createdAt: { gte: since30d } },
+        _sum: { costCents: true, totalTokens: true },
+        _count: true,
+        _avg: { durationMs: true },
+      });
+
+      const errorCount = await prisma.aiUsageLog.count({
+        where: { providerId: p.id, createdAt: { gte: since30d }, success: false },
+      });
+
+      const lastUsed = await prisma.aiUsageLog.findFirst({
+        where: { providerId: p.id },
+        orderBy: { createdAt: 'desc' },
+        select: { createdAt: true, feature: true, model: true },
+      });
+
+      const providerInfo: any = {
+        id: p.id,
+        slug: p.slug,
+        name: p.name,
+        type: p.type,
+        hasApiKey: hasKey,
+        monthlyBudgetCents: p.monthlyBudgetCents,
+        stats30d: {
+          requests: stats._count,
+          costCents: stats._sum.costCents || 0,
+          tokens: stats._sum.totalTokens || 0,
+          avgDurationMs: Math.round(stats._avg.durationMs || 0),
+          errorCount,
+          errorRate: stats._count > 0 ? Math.round(errorCount / stats._count * 100) : 0,
+        },
+        lastUsed: lastUsed ? {
+          at: lastUsed.createdAt,
+          feature: lastUsed.feature,
+          model: lastUsed.model,
+        } : null,
+        liveData: null,
+      };
+
+      // Fetch live data from Replicate API
+      if (hasKey && p.slug.toLowerCase().includes('replicate')) {
+        try {
+          const apiKey = decryptValue({
+            encrypted: p.apiKeyEncrypted!,
+            iv: p.apiKeyIv!,
+            tag: p.apiKeyTag!,
+          });
+
+          const replicateRes = await fetch('https://api.replicate.com/v1/predictions?limit=10', {
+            headers: { 'Authorization': `Bearer ${apiKey}` },
+            signal: AbortSignal.timeout(5000),
+          });
+
+          if (replicateRes.ok) {
+            const data: any = await replicateRes.json();
+            const predictions = (data.results || []).map((pred: any) => ({
+              id: pred.id,
+              model: pred.model,
+              status: pred.status,
+              createdAt: pred.created_at,
+              completedAt: pred.completed_at,
+              predictTime: pred.metrics?.predict_time || null,
+              source: pred.source,
+              error: pred.error || null,
+            }));
+
+            providerInfo.liveData = {
+              source: 'replicate_api',
+              recentPredictions: predictions,
+              fetchedAt: new Date().toISOString(),
+            };
+          }
+        } catch (err: any) {
+          logger.warn('[ProviderLive] Replicate API fetch failed', { error: err.message });
+          providerInfo.liveData = { source: 'replicate_api', error: err.message };
+        }
+      }
+
+      results.push(providerInfo);
+    }
+
+    res.json({ providers: results });
+  } catch (error) {
+    logger.error('Provider live error', { error });
+    res.status(500).json({ error: 'Fehler beim Laden der Provider-Daten' });
+  }
+});
+
 export default router;
