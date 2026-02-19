@@ -711,6 +711,14 @@ router.post(
 
       auditLog({ type: AuditType.EVENT_CREATED, message: `Event erstellt: ${event.title}`, eventId: event.id, req });
 
+      // Auto-assign automations based on event settings (non-blocking)
+      import('../services/automationAssignment').then(m =>
+        m.autoAssignAutomations(event.id, {
+          moderationRequired: finalFeaturesConfig?.moderationRequired === true,
+          hasDateTime: !!event.dateTime,
+        })
+      ).catch(() => {});
+
       res.status(201).json({ event, id: event.id });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -767,6 +775,18 @@ router.patch(
           },
         },
       });
+
+      // Sync automations if featuresConfig changed (non-blocking)
+      if (nextFeaturesConfig) {
+        import('../services/automationAssignment').then(m =>
+          m.syncAutomationsOnSettingsChange(
+            event.id,
+            (existingEvent as any).featuresConfig,
+            nextFeaturesConfig,
+            !!event.dateTime,
+          )
+        ).catch(() => {});
+      }
 
       return res.json({ event });
     } catch (error) {

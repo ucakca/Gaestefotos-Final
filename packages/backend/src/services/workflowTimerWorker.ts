@@ -167,8 +167,66 @@ async function checkTimersOnce(): Promise<void> {
         }
       }
     }
+
+    // ── Event Lifecycle Detection ──────────────────────────────────────────
+    // Check if any events just started or ended (within the last check interval)
+    await checkEventLifecycle(now, getIntervalMs());
+
   } catch (error: any) {
     logger.error(`${LOG_PREFIX} Error checking timers`, { message: error?.message || String(error) });
+  }
+}
+
+/**
+ * Detect event start/end transitions and fire TRIGGER_EVENT_START / TRIGGER_EVENT_END.
+ * Uses a simple time-window approach: if event.dateTime falls within [now - interval, now],
+ * the event just started. For end detection, assumes 4h duration (configurable via schedule).
+ */
+async function checkEventLifecycle(now: Date, intervalMs: number): Promise<void> {
+  const windowStart = new Date(now.getTime() - intervalMs);
+
+  try {
+    // Events that just STARTED (dateTime within window)
+    const startingEvents = await prisma.event.findMany({
+      where: {
+        deletedAt: null,
+        isActive: true,
+        dateTime: { gt: windowStart, lte: now },
+      },
+      select: { id: true, title: true, dateTime: true },
+    });
+
+    if (startingEvents.length > 0) {
+      const { onEventTrigger } = await import('./workflowExecutor');
+      for (const evt of startingEvents) {
+        logger.info(`${LOG_PREFIX} Event started: "${evt.title}"`, { eventId: evt.id });
+        await onEventTrigger(evt.id, 'TRIGGER_EVENT_START').catch(() => {});
+      }
+    }
+
+    // Events that just ENDED (dateTime + 4h within window)
+    const DEFAULT_DURATION_MS = 4 * 60 * 60 * 1000; // 4 hours
+    const endWindowStart = new Date(windowStart.getTime() - DEFAULT_DURATION_MS);
+    const endWindowEnd = new Date(now.getTime() - DEFAULT_DURATION_MS);
+
+    const endingEvents = await prisma.event.findMany({
+      where: {
+        deletedAt: null,
+        isActive: true,
+        dateTime: { gt: endWindowStart, lte: endWindowEnd },
+      },
+      select: { id: true, title: true, dateTime: true },
+    });
+
+    if (endingEvents.length > 0) {
+      const { onEventTrigger } = await import('./workflowExecutor');
+      for (const evt of endingEvents) {
+        logger.info(`${LOG_PREFIX} Event ended: "${evt.title}"`, { eventId: evt.id });
+        await onEventTrigger(evt.id, 'TRIGGER_EVENT_END').catch(() => {});
+      }
+    }
+  } catch (err: any) {
+    logger.error(`${LOG_PREFIX} Event lifecycle check failed`, { error: err.message });
   }
 }
 

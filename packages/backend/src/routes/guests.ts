@@ -76,6 +76,11 @@ router.post('/:eventId/guests', async (req: AuthRequest, res: Response) => {
       },
     });
 
+    // Trigger workflow automations (non-blocking)
+    import('../services/workflowExecutor').then(m =>
+      m.onEventTrigger(eventId, 'TRIGGER_GUEST_JOINED', { guestId: guest.id })
+    ).catch(() => {});
+
     res.status(201).json({ guest });
   } catch (error) {
     if (error instanceof z.ZodError) {

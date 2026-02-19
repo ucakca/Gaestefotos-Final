@@ -510,6 +510,9 @@ router.post(
 
       auditLog({ type: AuditType.PHOTO_UPLOADED, message: `Foto hochgeladen: ${file.originalname}`, eventId, data: { photoId: photo.id, filename: file.originalname, status: photo.status }, req, level: 'DEBUG' });
 
+      // Trigger workflow automations (non-blocking)
+      import('../services/workflowExecutor').then(m => m.onPhotoUploaded(eventId, photo.id)).catch(() => {});
+
       // Gamification: auto-check achievements (async, non-blocking)
       if (photo.uploadedBy) {
         const visitorId = req.userId || photo.uploadedBy;
