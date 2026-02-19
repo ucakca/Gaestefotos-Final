@@ -1256,7 +1256,7 @@ export default function EventDetailPage() {
                     <div className="flex justify-center py-2"><Loader2 className="w-4 h-4 animate-spin text-app-muted" /></div>
                   ) : (
                     <div className="space-y-1.5 max-h-60 overflow-y-auto">
-                      {AI_CATEGORIES.filter(cat => cat.features.some(f => ['compliment_mirror','fortune_teller','ai_roast','ai_bingo','ai_dj','ai_meme','ai_superlatives','ai_photo_critic','ai_couple_match','caption_suggest'].includes(f.key) || f.key.startsWith('style_transfer'))).map(cat => (
+                      {AI_CATEGORIES.map(cat => (
                         <div key={cat.key} className="rounded-lg border border-app-border/50 overflow-hidden">
                           <div className="px-2 py-1.5 bg-app-bg/30 text-[10px] font-semibold text-app-muted flex items-center gap-1">
                             <span>{cat.icon}</span> {cat.label}
