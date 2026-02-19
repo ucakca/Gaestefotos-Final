@@ -730,6 +730,7 @@ Alle getroffenen Entscheidungen an einem Ort:
 | **Sprint 18** | Workflow Executor Upgrade (10 ausführbare Step-Types: AI_MODIFY, AI_BG_REMOVAL, QUALITY_GATE, ADD_TAG, MOVE_TO_ALBUM, WEBHOOK, PRINT_JOB, DELAY, CONDITION branching + 4 neue Builder-Palette Steps) | ✅ DONE | Sprint 15 |
 | **Sprint 19** | AI Cost Monitoring Dashboard (Frontend: Summary, Timeline-Chart, Provider-Breakdown, Feature-Ranking, Top-Events, Alerts + Sidebar-Link) | ✅ DONE | Sprint 14 |
 | **Sprint 20** | Workflow Builder Redesign (Dual-Tab: ⚡ Automationen Pipeline-Builder mit 16 Steps + 5 Presets + 🔧 Booth-Flows ReactFlow-Editor unverändert) | ✅ DONE | Sprint 18 |
+| **Sprint 21** | AI Provider Usage Dashboard (3-Tab: Übersicht + Letzte Jobs-Tabelle + Provider Details mit 30d-Stats + Replicate Live-Predictions via API) | ✅ DONE | Sprint 14+19 |
 
 ---
 
