@@ -56,7 +56,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Nur Admins können Workflows erstellen' });
     }
 
-    const { name, description, steps, flowType, isPublic, isDefault, isActive } = req.body;
+    const { name, description, steps, flowType, isPublic, isDefault, isActive, isGlobal } = req.body;
     if (!name || !steps) {
       return res.status(400).json({ error: 'Name und Steps sind erforderlich' });
     }
@@ -78,6 +78,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         isPublic: isPublic ?? false,
         isDefault: isDefault ?? false,
         isActive: isActive ?? true,
+        isGlobal: isGlobal ?? false,
         createdBy: req.userId,
       },
     });
@@ -97,7 +98,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'Nur Admins können Workflows bearbeiten' });
     }
 
-    const { name, description, steps, flowType, isPublic, isDefault, isActive, expectedVersion } = req.body;
+    const { name, description, steps, flowType, isPublic, isDefault, isActive, isGlobal, expectedVersion } = req.body;
 
     // Block editing locked workflows
     const existing = await prisma.boothWorkflow.findUnique({ where: { id: req.params.id } });
@@ -125,6 +126,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     if (flowType !== undefined) data.flowType = flowType;
     if (isPublic !== undefined) data.isPublic = isPublic;
     if (isActive !== undefined) data.isActive = isActive;
+    if (isGlobal !== undefined) data.isGlobal = isGlobal;
     if (isDefault !== undefined) {
       data.isDefault = isDefault;
       if (isDefault) {
@@ -739,6 +741,121 @@ router.get('/meta/analytics', authMiddleware, async (req: AuthRequest, res: Resp
   } catch (error) {
     logger.error('Workflow analytics error', { message: (error as Error).message });
     res.status(500).json({ error: 'Fehler beim Laden der Analytics' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EVENT AUTOMATIONS — Assign/remove automations per event
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── LIST AUTOMATIONS FOR EVENT ──────────────────────────────────────────────
+
+router.get('/event-automations/:eventId', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+
+    // Get event-specific assignments
+    const assignments = await prisma.eventAutomation.findMany({
+      where: { eventId },
+      include: {
+        workflow: {
+          select: { id: true, name: true, description: true, flowType: true, isActive: true, isGlobal: true },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    // Get global automations (run for all events)
+    const globalAutomations = await prisma.boothWorkflow.findMany({
+      where: { flowType: 'AUTOMATION', isActive: true, isGlobal: true },
+      select: { id: true, name: true, description: true, flowType: true, isActive: true, isGlobal: true },
+    });
+
+    // Get all available automations for assignment
+    const available = await prisma.boothWorkflow.findMany({
+      where: { flowType: 'AUTOMATION', isGlobal: false },
+      select: { id: true, name: true, description: true, isActive: true },
+    });
+
+    const assignedIds = new Set(assignments.map(a => a.workflowId));
+    const unassigned = available.filter(a => !assignedIds.has(a.id));
+
+    res.json({ assignments, globalAutomations, unassigned });
+  } catch (error) {
+    logger.error('List event automations error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
+// ─── ASSIGN AUTOMATION TO EVENT ──────────────────────────────────────────────
+
+router.post('/event-automations/:eventId', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.userRole !== 'ADMIN') {
+      return res.status(403).json({ error: 'Nur Admins' });
+    }
+
+    const { eventId } = req.params;
+    const { workflowId } = req.body;
+
+    if (!workflowId) {
+      return res.status(400).json({ error: 'workflowId ist erforderlich' });
+    }
+
+    const assignment = await prisma.eventAutomation.upsert({
+      where: { eventId_workflowId: { eventId, workflowId } },
+      create: { eventId, workflowId, isActive: true },
+      update: { isActive: true },
+    });
+
+    res.status(201).json({ assignment });
+  } catch (error) {
+    logger.error('Assign automation error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Zuweisen' });
+  }
+});
+
+// ─── TOGGLE EVENT AUTOMATION ACTIVE STATE ────────────────────────────────────
+
+router.patch('/event-automations/:eventId/:workflowId', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.userRole !== 'ADMIN') {
+      return res.status(403).json({ error: 'Nur Admins' });
+    }
+
+    const { eventId, workflowId } = req.params;
+    const { isActive } = req.body;
+
+    const assignment = await prisma.eventAutomation.update({
+      where: { eventId_workflowId: { eventId, workflowId } },
+      data: { isActive: isActive ?? false },
+    });
+
+    res.json({ assignment });
+  } catch (error) {
+    logger.error('Toggle event automation error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Aktualisieren' });
+  }
+});
+
+// ─── REMOVE AUTOMATION FROM EVENT ────────────────────────────────────────────
+
+router.delete('/event-automations/:eventId/:workflowId', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.userRole !== 'ADMIN') {
+      return res.status(403).json({ error: 'Nur Admins' });
+    }
+
+    const { eventId, workflowId } = req.params;
+
+    await prisma.eventAutomation.delete({
+      where: { eventId_workflowId: { eventId, workflowId } },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    logger.error('Remove event automation error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Entfernen' });
   }
 });
 

@@ -758,8 +758,8 @@ export async function onPhotoUploaded(eventId: string, photoId: string): Promise
       await executeWorkflow(event.workflowId, 'TRIGGER_PHOTO_UPLOADED', ctx);
     }
 
-    // 2. Global AUTOMATION workflows
-    await runGlobalAutomations('TRIGGER_PHOTO_UPLOADED', ctx);
+    // 2. Global + event-specific AUTOMATION workflows
+    await runAutomations('TRIGGER_PHOTO_UPLOADED', ctx);
   } catch (error: any) {
     // Never let workflow errors break photo upload
     logger.error(`${LOG} onPhotoUploaded error`, { eventId, photoId, error: error.message });
@@ -768,7 +768,7 @@ export async function onPhotoUploaded(eventId: string, photoId: string): Promise
 
 /**
  * Trigger workflow execution for event lifecycle events.
- * Runs ALL active AUTOMATION workflows matching the trigger type.
+ * Runs global + event-specific AUTOMATION workflows matching the trigger type.
  */
 export async function onEventTrigger(
   eventId: string,
@@ -777,31 +777,64 @@ export async function onEventTrigger(
 ): Promise<void> {
   try {
     const ctx: ExecutionContext = { eventId, triggeredBy: triggerType, ...extra };
-    await runGlobalAutomations(triggerType, ctx);
+    await runAutomations(triggerType, ctx);
   } catch (error: any) {
     logger.error(`${LOG} onEventTrigger error`, { eventId, triggerType, error: error.message });
   }
 }
 
 /**
- * Find and execute all active AUTOMATION workflows that contain a matching trigger node.
+ * Find and execute all matching AUTOMATION workflows for an event:
+ * 1. Global automations (isGlobal=true, isActive=true) → run for ALL events
+ * 2. Event-specific automations (via EventAutomation join table, isActive=true)
+ * Deduplicates so a workflow only runs once even if both global and assigned.
  */
-async function runGlobalAutomations(triggerType: string, ctx: ExecutionContext): Promise<void> {
-  const automations = await prisma.boothWorkflow.findMany({
-    where: { flowType: 'AUTOMATION', isActive: true },
+async function runAutomations(triggerType: string, ctx: ExecutionContext): Promise<void> {
+  const executedIds = new Set<string>();
+
+  // 1. Global automations
+  const globalAutomations = await prisma.boothWorkflow.findMany({
+    where: { flowType: 'AUTOMATION', isActive: true, isGlobal: true },
     select: { id: true, name: true, steps: true },
   });
 
-  for (const wf of automations) {
+  for (const wf of globalAutomations) {
     const graph = parseGraph(wf.steps);
     const triggers = findTriggerNodes(graph, triggerType);
     if (triggers.length === 0) continue;
 
-    logger.info(`${LOG} Running automation "${wf.name}" for ${triggerType}`, { eventId: ctx.eventId });
+    executedIds.add(wf.id);
+    logger.info(`${LOG} Running global automation "${wf.name}" for ${triggerType}`, { eventId: ctx.eventId });
     try {
       await executeWorkflow(wf.id, triggerType, ctx);
     } catch (err: any) {
-      logger.error(`${LOG} Automation "${wf.name}" failed`, { error: err.message });
+      logger.error(`${LOG} Global automation "${wf.name}" failed`, { error: err.message });
+    }
+  }
+
+  // 2. Event-specific automations (via EventAutomation join table)
+  const eventAutomations = await prisma.eventAutomation.findMany({
+    where: { eventId: ctx.eventId, isActive: true },
+    include: {
+      workflow: { select: { id: true, name: true, steps: true, isActive: true, flowType: true } },
+    },
+  });
+
+  for (const ea of eventAutomations) {
+    const wf = ea.workflow;
+    if (!wf.isActive || wf.flowType !== 'AUTOMATION') continue;
+    if (executedIds.has(wf.id)) continue; // Already ran as global
+
+    const graph = parseGraph(wf.steps);
+    const triggers = findTriggerNodes(graph, triggerType);
+    if (triggers.length === 0) continue;
+
+    executedIds.add(wf.id);
+    logger.info(`${LOG} Running event automation "${wf.name}" for ${triggerType}`, { eventId: ctx.eventId });
+    try {
+      await executeWorkflow(wf.id, triggerType, ctx);
+    } catch (err: any) {
+      logger.error(`${LOG} Event automation "${wf.name}" failed`, { error: err.message });
     }
   }
 }

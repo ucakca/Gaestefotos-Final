@@ -135,6 +135,7 @@ model Event {
   guestEnergyBalances     GuestEnergyBalance[]
   guestEnergyLogs         GuestEnergyLog[]
   briefing                EventBriefing?
+  eventAutomations        EventAutomation[]
 
   @@index([slug])
   @@index([hostId])
@@ -1912,17 +1913,35 @@ model BoothWorkflow {
   ownerType     String?             @default("admin")   // "admin" | "partner"
   tags          String[]            @default([])        // Tags for marketplace search
   isActive      Boolean             @default(true)      // Active automations get executed
+  isGlobal      Boolean             @default(false)     // Global automations run for ALL events
   isTemplate    Boolean             @default(false)     // Available in template marketplace
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
   events        Event[]
   backups       WorkflowBackup[]
+  eventAutomations EventAutomation[]
 
   @@index([flowType])
   @@index([isSystem])
   @@index([parentId])
   @@index([ownerId])
+  @@index([flowType, isActive, isGlobal])
   @@map("booth_workflows")
+}
+
+model EventAutomation {
+  id          String        @id @default(uuid())
+  eventId     String
+  workflowId  String
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  event       Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  workflow    BoothWorkflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, workflowId])
+  @@index([eventId])
+  @@index([workflowId])
+  @@map("event_automations")
 }
 
 model WorkflowBackup {
