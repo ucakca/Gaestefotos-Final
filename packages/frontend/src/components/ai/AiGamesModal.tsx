@@ -11,8 +11,14 @@ import api from '@/lib/api';
 
 // ─── Types ──────────────────────────────────────────────────
 
-type GameKey = 'compliment_mirror' | 'fortune_teller' | 'ai_roast' | 'caption_generator';
-type Step = 'select' | 'name' | 'processing' | 'result' | 'error';
+type GameKey = 'compliment_mirror' | 'fortune_teller' | 'ai_roast' | 'caption_generator' | 'persona_quiz';
+type Step = 'select' | 'name' | 'quiz' | 'processing' | 'result' | 'error';
+
+const QUIZ_QUESTIONS = [
+  { key: 'drink', label: 'Dein Lieblingsdrink auf der Party?', placeholder: 'z.B. Aperol Spritz, Bier, Wasser...' },
+  { key: 'dance', label: 'Dein Party-Move auf der Tanzfläche?', placeholder: 'z.B. Macarena, Headbang, Barhocker...' },
+  { key: 'late', label: 'Was machst du um 3 Uhr nachts?', placeholder: 'z.B. Tanzen, Döner holen, schlafen...' },
+];
 
 interface GameDef {
   key: GameKey;
@@ -64,6 +70,14 @@ const GAMES: GameDef[] = [
     gradient: 'from-sky-500 to-blue-600',
     endpoint: '/booth-games/caption-generator',
   },
+  {
+    key: 'persona_quiz',
+    name: 'Persona Quiz',
+    emoji: '🧬',
+    description: 'Welcher Party-Typ bist du? 3 Fragen verraten es!',
+    gradient: 'from-emerald-500 to-teal-600',
+    endpoint: '/booth-games/persona-quiz',
+  },
 ];
 
 // ─── Component ──────────────────────────────────────────────
@@ -76,6 +90,7 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
   );
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [quizAnswers, setQuizAnswers] = useState<string[]>(['', '', '']);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleClose = useCallback(() => {
@@ -83,6 +98,7 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
     setSelectedGame(null);
     setResult(null);
     setError(null);
+    setQuizAnswers(['', '', '']);
     onClose();
   }, [onClose]);
 
@@ -91,6 +107,33 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
     setStep('name');
     setTimeout(() => nameInputRef.current?.focus(), 100);
   }, []);
+
+  const handleQuizSubmit = useCallback(async () => {
+    if (!selectedGame || quizAnswers.some(a => !a.trim())) return;
+
+    setStep('processing');
+    setError(null);
+
+    if (guestName.trim() && typeof window !== 'undefined') {
+      localStorage.setItem('guestUploaderName', guestName.trim());
+    }
+
+    try {
+      const res = await api.post(selectedGame.endpoint, {
+        eventId,
+        eventType,
+        eventTitle,
+        guestName: guestName.trim() || undefined,
+        answers: quizAnswers.map(a => a.trim()),
+      });
+
+      setResult(res.data);
+      setStep('result');
+    } catch (err: any) {
+      setError(err?.response?.data?.error || 'Etwas ist schiefgelaufen');
+      setStep('error');
+    }
+  }, [selectedGame, eventId, eventType, eventTitle, guestName, quizAnswers]);
 
   const handlePlay = useCallback(async () => {
     if (!selectedGame) return;
@@ -131,6 +174,8 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
       text = `🔥 ${result.roast}\n\n❤️ ${result.rescue}`;
     } else if (selectedGame.key === 'caption_generator' && result.captions) {
       text = result.captions.join('\n\n');
+    } else if (selectedGame.key === 'persona_quiz' && result.persona) {
+      text = `${result.emoji} ${result.persona}\n\n${result.description}\n\n⚡ Superkraft: ${result.superpower}`;
     }
     if (navigator.share) {
       navigator.share({ text }).catch(() => {});
@@ -147,7 +192,10 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
           <div className="flex items-center gap-2">
             {step !== 'select' && step !== 'processing' && (
               <button
-                onClick={() => { setStep('select'); setSelectedGame(null); setResult(null); }}
+                onClick={() => {
+                  if (step === 'quiz') { setStep('name'); }
+                  else { setStep('select'); setSelectedGame(null); setResult(null); setQuizAnswers(['', '', '']); }
+                }}
                 className="p-1.5 rounded-full hover:bg-muted/50 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 text-muted-foreground" />
@@ -160,6 +208,7 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
               <h2 className="text-lg font-bold text-foreground">
                 {step === 'select' && 'KI Foto-Spiele'}
                 {step === 'name' && selectedGame?.name}
+                {step === 'quiz' && 'Persona Quiz'}
                 {step === 'processing' && 'KI denkt nach...'}
                 {step === 'result' && selectedGame?.name}
                 {step === 'error' && 'Fehler'}
@@ -229,11 +278,57 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                 </div>
 
                 <button
-                  onClick={handlePlay}
+                  onClick={() => {
+                    if (selectedGame.key === 'persona_quiz') {
+                      setStep('quiz');
+                    } else {
+                      handlePlay();
+                    }
+                  }}
                   className={`mt-5 w-full py-3.5 bg-gradient-to-r ${selectedGame.gradient} text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg`}
                 >
                   <Wand2 className="w-4 h-4" />
-                  Los geht's!
+                  {selectedGame.key === 'persona_quiz' ? 'Zum Quiz!' : 'Los geht\'s!'}
+                </button>
+              </motion.div>
+            )}
+
+            {/* ═══ Quiz Questions (Persona Quiz) ═══ */}
+            {step === 'quiz' && selectedGame?.key === 'persona_quiz' && (
+              <motion.div key="quiz" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="p-5">
+                <div className="text-center mb-5">
+                  <div className="text-5xl mb-2">🧬</div>
+                  <p className="text-sm text-muted-foreground">Beantworte 3 schnelle Fragen!</p>
+                </div>
+
+                <div className="space-y-4">
+                  {QUIZ_QUESTIONS.map((q, i) => (
+                    <div key={q.key}>
+                      <label className="block text-sm font-semibold text-foreground mb-1.5">
+                        {i + 1}. {q.label}
+                      </label>
+                      <input
+                        type="text"
+                        value={quizAnswers[i]}
+                        onChange={(e) => {
+                          const next = [...quizAnswers];
+                          next[i] = e.target.value;
+                          setQuizAnswers(next);
+                        }}
+                        placeholder={q.placeholder}
+                        className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleQuizSubmit}
+                  disabled={quizAnswers.some(a => !a.trim())}
+                  className={`mt-5 w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-lg disabled:opacity-50 disabled:pointer-events-none`}
+                >
+                  <Sparkles className="w-4 h-4" />
+                  KI analysieren!
                 </button>
               </motion.div>
             )}
@@ -256,6 +351,7 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                     {selectedGame.key === 'ai_roast' && 'Die KI feilt an einem Witz...'}
                     {selectedGame.key === 'compliment_mirror' && 'Der Spiegel poliert sich...'}
                     {selectedGame.key === 'caption_generator' && 'Kreative Captions werden generiert...'}
+                    {selectedGame.key === 'persona_quiz' && 'Deine Persönlichkeit wird analysiert...'}
                   </p>
                 </div>
               </motion.div>
@@ -334,6 +430,23 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                           </div>
                         </button>
                       ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Persona Quiz */}
+                {selectedGame.key === 'persona_quiz' && result.persona && (
+                  <div className="text-center">
+                    <div className="text-6xl mb-3">{result.emoji || '🧬'}</div>
+                    <div className="inline-block px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-full font-bold text-lg mb-4">
+                      {result.persona}
+                    </div>
+                    <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-2xl p-5 mb-3">
+                      <p className="text-foreground text-base leading-relaxed">{result.description}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border border-amber-500/20 rounded-2xl p-4">
+                      <p className="text-sm text-muted-foreground mb-1">Deine Superkraft:</p>
+                      <p className="text-foreground font-bold">⚡ {result.superpower}</p>
                     </div>
                   </div>
                 )}

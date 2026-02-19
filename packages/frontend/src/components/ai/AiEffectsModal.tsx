@@ -11,8 +11,27 @@ import api from '@/lib/api';
 
 // ─── Types ──────────────────────────────────────────────────
 
-type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'bg_removal' | 'gif_morph' | 'ai_video';
-type Step = 'photo' | 'effects' | 'processing' | 'result' | 'error';
+type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'bg_removal' | 'gif_morph' | 'gif_aging' | 'ai_video';
+type Step = 'photo' | 'effects' | 'video_preset' | 'processing' | 'result' | 'error';
+
+interface VideoPreset {
+  key: string;
+  name: string;
+  emoji: string;
+  prompt: string;
+  gradient: string;
+}
+
+const VIDEO_PRESETS: VideoPreset[] = [
+  { key: 'cinematic', name: 'Cinematic', emoji: '🎥', prompt: 'gentle camera movement, cinematic lighting, film look, shallow depth of field', gradient: 'from-slate-600 to-zinc-800' },
+  { key: 'cyberpunk', name: 'Cyberpunk', emoji: '🌆', prompt: 'cyberpunk neon city, rain, holographic displays, futuristic, blade runner atmosphere', gradient: 'from-cyan-500 to-purple-600' },
+  { key: 'time_travel', name: 'Zeitreise', emoji: '⏰', prompt: 'time travel portal effect, swirling energy, clock gears floating, temporal distortion, dramatic lighting', gradient: 'from-amber-500 to-blue-600' },
+  { key: 'superhero', name: 'Superhero', emoji: '🦸', prompt: 'epic superhero landing, cape flowing in wind, dramatic sky, powerful energy aura, cinematic', gradient: 'from-red-500 to-yellow-500' },
+  { key: 'underwater', name: 'Unterwasser', emoji: '🌊', prompt: 'underwater scene, bubbles rising, sunlight filtering through water, serene ocean atmosphere', gradient: 'from-blue-400 to-teal-600' },
+  { key: 'fairy_tale', name: 'Märchen', emoji: '🏰', prompt: 'enchanted fairy tale forest, magical sparkles, soft golden light, whimsical atmosphere, fantasy', gradient: 'from-emerald-400 to-lime-500' },
+  { key: 'space', name: 'Weltraum', emoji: '🚀', prompt: 'floating in space, stars and galaxies in background, zero gravity, astronaut vibes, cosmic', gradient: 'from-indigo-600 to-violet-900' },
+  { key: 'disco', name: 'Disco Party', emoji: '🪩', prompt: 'disco ball lights, colorful dance floor, 70s party vibes, confetti falling, energetic', gradient: 'from-pink-500 to-yellow-400' },
+];
 
 interface EffectDef {
   key: EffectKey;
@@ -80,6 +99,14 @@ const EFFECTS: EffectDef[] = [
     endpoint: '/booth-games/gif-morph',
   },
   {
+    key: 'gif_aging',
+    name: 'Aging GIF',
+    emoji: '⏳',
+    description: 'Zeitreise: So alterst du von 30 bis 90!',
+    gradient: 'from-yellow-600 to-amber-800',
+    endpoint: '/booth-games/gif-aging',
+  },
+  {
     key: 'ai_video',
     name: 'AI Video',
     emoji: '🎬',
@@ -99,6 +126,8 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [videoPrompt, setVideoPrompt] = useState<string | null>(null);
+  const videoPromptRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -110,6 +139,8 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
     setResultUrl(null);
     setError(null);
     setProgress(0);
+    setVideoPrompt(null);
+    videoPromptRef.current = null;
     onClose();
   }, [onClose]);
 
@@ -157,8 +188,8 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
       // Step 2: Apply the AI effect (different endpoints per type)
       let effectRes;
       if (effect.key === 'ai_video') {
-        effectRes = await api.post(effect.endpoint, { photoId, eventId });
-      } else if (effect.key === 'gif_morph') {
+        effectRes = await api.post(effect.endpoint, { photoId, eventId, prompt: videoPromptRef.current || undefined });
+      } else if (effect.key === 'gif_morph' || effect.key === 'gif_aging') {
         effectRes = await api.post(effect.endpoint, { photoId, eventId });
       } else if (effect.key === 'face_switch' || effect.key === 'bg_removal') {
         effectRes = await api.post(effect.endpoint, { photoId });
@@ -234,6 +265,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
               <button
                 onClick={() => {
                   if (step === 'effects') setStep('photo');
+                  else if (step === 'video_preset') setStep('effects');
                   else if (step === 'result' || step === 'error') setStep('effects');
                 }}
                 className="p-1.5 rounded-full hover:bg-muted/50 transition-colors"
@@ -248,6 +280,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
               <h2 className="text-lg font-bold text-foreground">
                 {step === 'photo' && 'Foto wählen'}
                 {step === 'effects' && 'Effekt wählen'}
+                {step === 'video_preset' && 'Video-Stil wählen'}
                 {step === 'processing' && 'KI verarbeitet...'}
                 {step === 'result' && 'Dein KI-Effekt'}
                 {step === 'error' && 'Fehler'}
@@ -339,7 +372,14 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.08 }}
-                      onClick={() => handleApplyEffect(effect)}
+                      onClick={() => {
+                        if (effect.key === 'ai_video') {
+                          setSelectedEffect(effect);
+                          setStep('video_preset');
+                        } else {
+                          handleApplyEffect(effect);
+                        }
+                      }}
                       className="w-full flex items-center gap-4 p-4 rounded-2xl border border-border hover:border-primary/40 hover:shadow-md active:scale-[0.98] transition-all text-left"
                     >
                       <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${effect.gradient} flex items-center justify-center text-2xl shadow-md shrink-0`}>
@@ -349,6 +389,43 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
                         <p className="font-bold text-foreground">{effect.name}</p>
                         <p className="text-sm text-muted-foreground mt-0.5">{effect.description}</p>
                       </div>
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ═══ Video Preset Selection ═══ */}
+            {step === 'video_preset' && selectedEffect && (
+              <motion.div key="video_preset" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="p-4">
+                {photoPreview && (
+                  <div className="flex items-center gap-3 mb-4 p-2 rounded-xl bg-muted/30">
+                    <img src={photoPreview} alt="Dein Foto" className="w-12 h-12 rounded-lg object-cover" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">AI Video</p>
+                      <p className="text-xs text-muted-foreground">Wähle einen Video-Stil</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  {VIDEO_PRESETS.map((preset, i) => (
+                    <motion.button
+                      key={preset.key}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.05 }}
+                      onClick={() => {
+                        setVideoPrompt(preset.prompt);
+                        videoPromptRef.current = preset.prompt;
+                        handleApplyEffect(selectedEffect);
+                      }}
+                      className="flex flex-col items-center gap-2 p-4 rounded-2xl border border-border hover:border-primary/40 hover:shadow-md active:scale-[0.96] transition-all"
+                    >
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${preset.gradient} flex items-center justify-center text-2xl shadow-md`}>
+                        {preset.emoji}
+                      </div>
+                      <p className="text-xs font-semibold text-foreground text-center">{preset.name}</p>
                     </motion.button>
                   ))}
                 </div>

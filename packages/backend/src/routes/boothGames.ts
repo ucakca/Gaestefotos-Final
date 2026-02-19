@@ -302,6 +302,62 @@ router.post('/caption-generator', authMiddleware, async (req: AuthRequest, res: 
   }
 });
 
+// POST /api/booth-games/persona-quiz — AI analyzes 3 answers → Persona type
+router.post('/persona-quiz', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, eventType, eventTitle, guestName, answers } = req.body;
+
+    if (!answers || !Array.isArray(answers) || answers.length < 3) {
+      return res.status(400).json({ error: '3 Antworten erforderlich' });
+    }
+
+    const { generateCompletion } = await import('../lib/groq');
+
+    const systemPrompt = `Du bist ein witziger Persönlichkeits-Analyst auf einer ${eventType || 'Party'}. 
+Analysiere die 3 Antworten des Gastes und ordne einen lustigen Persönlichkeitstyp zu.
+Antworte NUR mit einem JSON-Objekt: {"persona": "DER TITEL", "description": "2-3 lustige Sätze", "emoji": "passendes Emoji", "superpower": "witzige Superkraft"}`;
+
+    const userPrompt = `Gast "${guestName || 'Anonymer Gast'}" auf "${eventTitle || 'Event'}" hat geantwortet:
+1. Lieblingsdrink auf der Party: "${answers[0]}"
+2. Dein Party-Move auf der Tanzfläche: "${answers[1]}"  
+3. Was machst du um 3 Uhr nachts: "${answers[2]}"
+
+Welcher Party-Persönlichkeitstyp ist das?`;
+
+    const response = await generateCompletion(userPrompt, systemPrompt, {
+      maxTokens: 300,
+      temperature: 0.9,
+    });
+
+    let result: any = null;
+    try {
+      const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
+      if (jsonMatch) result = JSON.parse(jsonMatch[0]);
+    } catch { /* parse error */ }
+
+    if (!result?.persona) {
+      result = {
+        persona: 'DER MYSTERIUM',
+        description: response.content.trim().substring(0, 200),
+        emoji: '🎭',
+        superpower: 'Unberechenbarkeit',
+      };
+    }
+
+    const session = createGameSession(eventId, 'fortune_teller', result);
+    res.json({ sessionId: session.id, ...result, source: 'ai' });
+  } catch (error) {
+    logger.error('Persona quiz error', { message: (error as Error).message });
+    res.json({
+      persona: 'DER PARTY-TIER',
+      description: 'Du bist das Herz jeder Party! Wenn du den Raum betrittst, dreht sich die Musik lauter.',
+      emoji: '🦁',
+      superpower: 'Stimmung auf 100% bringen',
+      source: 'fallback',
+    });
+  }
+});
+
 // POST /api/booth-games/gif-morph — Create animated GIF morph (Original → Style1 → Style2)
 router.post('/gif-morph', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
@@ -330,6 +386,30 @@ router.post('/gif-morph', authMiddleware, async (req: AuthRequest, res: Response
   } catch (error) {
     logger.error('GIF morph error', { message: (error as Error).message });
     res.status(500).json({ error: (error as Error).message || 'GIF-Morph Fehler' });
+  }
+});
+
+// POST /api/booth-games/gif-aging — Generate aging progression GIF (4 frames: 30→50→70→90)
+router.post('/gif-aging', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { photoId, eventId } = req.body;
+
+    if (!photoId || !eventId) {
+      return res.status(400).json({ error: 'photoId und eventId sind erforderlich' });
+    }
+
+    const { createGifAging } = await import('../services/gifAging');
+    const result = await createGifAging({ photoId, eventId });
+
+    res.json({
+      success: true,
+      gifUrl: result.gifUrl,
+      frames: result.frames,
+      durationMs: result.durationMs,
+    });
+  } catch (error) {
+    logger.error('GIF aging error', { message: (error as Error).message });
+    res.status(500).json({ error: (error as Error).message || 'Aging-GIF Fehler' });
   }
 });
 
