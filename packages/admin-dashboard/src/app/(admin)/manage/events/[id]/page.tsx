@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 import { HelpButton } from '@/components/ui/HelpPanel';
 import { useAiFeatureRegistry, buildAiCategories } from '@/hooks/useAiFeatureRegistry';
+import { useAiUsageStats } from '@/hooks/useAiUsageStats';
 
 interface EventDetail {
   id: string;
@@ -269,6 +270,10 @@ export default function EventDetailPage() {
 
   // State for advanced section toggle
   const [showAdvancedAi, setShowAdvancedAi] = useState(false);
+  // AI Config Mode: 'paket' (simple) or 'experte' (full control)
+  const [aiConfigMode, setAiConfigMode] = useState<'paket' | 'experte'>('paket');
+  // Usage stats for self-learning energy recommendations
+  const { evaluateEnergyCost, stats: usageStats } = useAiUsageStats();
 
   const loadEvent = useCallback(async () => {
     if (!eventId) return;
@@ -972,25 +977,31 @@ export default function EventDetailPage() {
           <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-app-muted" /></div>
         ) : aiConfigEditing ? (
           <div className="space-y-4">
-            {/* Presets - Quick Start */}
-            <div>
-              <label className="block text-xs font-semibold text-app-muted mb-2">⚡ Schnellstart-Preset</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {AI_PRESETS.map(preset => (
-                  <button
-                    key={preset.id}
-                    onClick={() => applyPreset(preset)}
-                    className="flex flex-col items-center gap-1 p-3 rounded-xl border border-app-border bg-app-bg hover:border-purple-400 hover:bg-purple-50/50 dark:hover:bg-purple-950/20 transition-all text-center"
-                  >
-                    <span className="text-2xl">{preset.icon}</span>
-                    <span className="text-xs font-semibold text-app-fg">{preset.label}</span>
-                    <span className="text-[10px] text-app-muted">{preset.description}</span>
-                  </button>
-                ))}
-              </div>
+            {/* Mode Toggle: Paket-Standard / Experte */}
+            <div className="flex items-center justify-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+              <button
+                onClick={() => setAiConfigMode('paket')}
+                className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  aiConfigMode === 'paket' 
+                    ? 'bg-white dark:bg-gray-700 text-purple-600 shadow-sm' 
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                📦 Paket-Standard
+              </button>
+              <button
+                onClick={() => setAiConfigMode('experte')}
+                className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  aiConfigMode === 'experte' 
+                    ? 'bg-white dark:bg-gray-700 text-purple-600 shadow-sm' 
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                ⚙️ Experte
+              </button>
             </div>
 
-            {/* Main Controls - Energy Toggle & Budget */}
+            {/* Energy Toggle & Slider (both modes) */}
             <div className="flex items-center gap-4 p-4 rounded-xl border border-purple-200 bg-purple-50/30 dark:bg-purple-950/10">
               <button
                 onClick={() => setAiConfigForm(f => ({ ...f, energyEnabled: !f.energyEnabled }))}
@@ -1019,32 +1030,100 @@ export default function EventDetailPage() {
               </div>
             </div>
 
-            {/* Active Features Summary */}
-            <div className="flex flex-wrap gap-1.5">
-              {AI_CATEGORIES.map(cat => {
-                const disabled: string[] = aiConfigForm.disabledFeatures || [];
-                const enabledCount = cat.features.filter(f => !disabled.includes(f.key)).length;
-                const allEnabled = enabledCount === cat.features.length;
-                const allDisabled = enabledCount === 0;
-                return (
-                  <button
-                    key={cat.key}
-                    onClick={() => toggleAiCategory(cat)}
-                    className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-all ${
-                      allDisabled ? 'bg-gray-100 text-gray-400 dark:bg-gray-800' :
-                      allEnabled ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30' :
-                      'bg-amber-100 text-amber-700 dark:bg-amber-900/30'
-                    }`}
-                  >
-                    <span>{cat.icon}</span>
-                    <span className={allDisabled ? 'line-through' : ''}>{cat.label}</span>
-                    {!allEnabled && !allDisabled && <span className="font-bold">{enabledCount}/{cat.features.length}</span>}
-                  </button>
-                );
-              })}
-            </div>
+            {/* PAKET-STANDARD MODE */}
+            {aiConfigMode === 'paket' && (
+              <div className="p-4 rounded-xl border border-green-200 bg-green-50/30 dark:bg-green-950/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <Package className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-700 dark:text-green-400">Paket-Einstellungen aktiv</span>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  AI-Features werden automatisch vom gebuchten Paket bestimmt. 
+                  Du kannst nur die Energie anpassen. Für individuelle Feature-Kontrolle wechsle zu "Experte".
+                </p>
+                <div className="mt-3 flex flex-wrap gap-1">
+                  {AI_CATEGORIES.map(cat => {
+                    const disabled: string[] = aiConfigForm.disabledFeatures || [];
+                    const enabledCount = cat.features.filter(f => !disabled.includes(f.key)).length;
+                    return (
+                      <span key={cat.key} className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-white/50 dark:bg-black/20">
+                        <span>{cat.icon}</span>
+                        <span>{cat.label}</span>
+                        <span className="text-purple-600 font-bold">{enabledCount}/{cat.features.length}</span>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-            {/* Advanced Section (Collapsible) */}
+            {/* EXPERTE MODE */}
+            {aiConfigMode === 'experte' && (
+              <div className="space-y-3">
+                {/* Quick Actions */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-app-muted">Features & Energiekosten</span>
+                  <div className="flex gap-1.5">
+                    <button onClick={() => setAiConfigForm(f => ({ ...f, disabledFeatures: [] }))} className="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-600 hover:bg-green-500/20 font-medium">Alle an</button>
+                    <button onClick={() => setAiConfigForm(f => ({ ...f, disabledFeatures: AI_CATEGORIES.flatMap(c => c.features.map(ft => ft.key)) }))} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 text-red-600 hover:bg-red-500/20 font-medium">Alle aus</button>
+                  </div>
+                </div>
+
+                {/* Feature List with Toggles and Cost */}
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  {AI_CATEGORIES.map(cat => {
+                    const disabled: string[] = aiConfigForm.disabledFeatures || [];
+                    return (
+                      <div key={cat.key} className="rounded-xl border border-app-border overflow-hidden">
+                        <div className="px-3 py-2 bg-app-bg/50 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span>{cat.icon}</span>
+                            <span className="text-sm font-semibold text-app-fg">{cat.label}</span>
+                          </div>
+                          <button
+                            onClick={() => toggleAiCategory(cat)}
+                            className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 hover:bg-purple-500/20"
+                          >
+                            {cat.features.every(f => disabled.includes(f.key)) ? 'Alle an' : 'Alle aus'}
+                          </button>
+                        </div>
+                        <div className="divide-y divide-app-border/50">
+                          {cat.features.map(feat => {
+                            const isOff = disabled.includes(feat.key);
+                            const costEval = evaluateEnergyCost(feat.key, 1);
+                            return (
+                              <div key={feat.key} className={`px-3 py-2 flex items-center justify-between ${isOff ? 'bg-gray-50 dark:bg-gray-900/30' : ''}`}>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => toggleAiFeature(feat.key)}
+                                    className={`w-8 h-4 rounded-full transition-colors ${isOff ? 'bg-gray-300' : 'bg-purple-500'}`}
+                                  >
+                                    <span className={`block w-3 h-3 rounded-full bg-white shadow transition-transform mx-0.5 ${isOff ? 'translate-x-0' : 'translate-x-4'}`} />
+                                  </button>
+                                  <span className={`text-sm ${isOff ? 'text-gray-400 line-through' : 'text-app-fg'}`}>{feat.label}</span>
+                                </div>
+                                {costEval.status !== 'unknown' && (
+                                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                                    costEval.status === 'recommended' ? 'bg-green-100 text-green-700 dark:bg-green-900/30' :
+                                    costEval.status === 'too_high' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30' :
+                                    'bg-red-100 text-red-700 dark:bg-red-900/30'
+                                  }`}>
+                                    {costEval.message}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Advanced Section (Collapsible) - Only in Experte mode */}
+            {aiConfigMode === 'experte' && (
             <div className="border border-app-border rounded-xl overflow-hidden">
               <button
                 onClick={() => setShowAdvancedAi(!showAdvancedAi)}
@@ -1153,8 +1232,9 @@ export default function EventDetailPage() {
                 </div>
               )}
             </div>
+            )}
 
-            {/* Prompt Overrides (integrated) */}
+            {/* Prompt Overrides (always visible in edit mode) */}
             <div className="border border-app-border rounded-xl overflow-hidden">
               <button
                 onClick={() => setExpandedAiCats(e => ({ ...e, promptOverrides: !e.promptOverrides }))}

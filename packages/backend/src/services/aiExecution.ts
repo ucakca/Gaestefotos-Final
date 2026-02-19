@@ -14,6 +14,7 @@ import prisma from '../config/database';
 import { decryptValue } from '../utils/encryption';
 import { logger } from '../utils/logger';
 import { AiFeature, AI_CREDIT_COSTS, getExpectedProviderType } from './aiFeatureRegistry';
+import { calculateAiCost } from './aiCostCalculator';
 
 // Re-export for backward compatibility
 export type { AiFeature };
@@ -315,34 +316,54 @@ export async function prepareAiExecution(
 
 /**
  * Log AI usage after execution completes
+ * Automatically calculates costs based on provider/model and usage metrics
  */
 export async function logAiUsage(
   providerId: string,
   feature: string,
   opts: {
+    providerType?: string;  // 'openai', 'replicate', 'stability', 'fal', 'anthropic'
     model?: string;
     inputTokens?: number;
     outputTokens?: number;
     totalTokens?: number;
-    costCents?: number;
+    costCents?: number;     // Override: if provided, skip calculation
     durationMs: number;
     success: boolean;
     errorMessage?: string;
+    eventId?: string;
+    userId?: string;
   },
 ): Promise<void> {
   try {
+    // Auto-calculate cost if not provided
+    let costCents = opts.costCents;
+    if (costCents === undefined && opts.providerType) {
+      const costResult = calculateAiCost({
+        provider: opts.providerType,
+        model: opts.model,
+        inputTokens: opts.inputTokens,
+        outputTokens: opts.outputTokens,
+        durationSeconds: opts.durationMs / 1000,
+        requestCount: 1,
+      });
+      costCents = costResult.costCents;
+    }
+
     await prisma.aiUsageLog.create({
       data: {
         providerId,
         feature,
         model: opts.model,
-        inputTokens: opts.inputTokens,
-        outputTokens: opts.outputTokens,
-        totalTokens: opts.totalTokens,
-        costCents: opts.costCents,
+        inputTokens: opts.inputTokens || 0,
+        outputTokens: opts.outputTokens || 0,
+        totalTokens: opts.totalTokens || (opts.inputTokens || 0) + (opts.outputTokens || 0),
+        costCents: costCents || 0,
         durationMs: opts.durationMs,
         success: opts.success,
         errorMessage: opts.errorMessage,
+        eventId: opts.eventId,
+        userId: opts.userId,
       },
     });
   } catch (err) {

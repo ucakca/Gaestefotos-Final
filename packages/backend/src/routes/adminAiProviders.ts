@@ -752,4 +752,85 @@ router.get('/registry', async (_req: AuthRequest, res: Response) => {
   }
 });
 
+// ─── AI Usage Stats & Cost Aggregation ────────────────────────────────────────
+
+/**
+ * GET /admin/ai-providers/usage-stats
+ * Returns aggregated usage statistics and average costs per feature
+ * Used for self-learning energy cost recommendations
+ */
+router.get('/usage-stats', async (_req: AuthRequest, res: Response) => {
+  try {
+    // Aggregate costs per feature (last 30 days)
+    const stats = await prisma.$queryRaw<Array<{
+      feature: string;
+      totalCalls: bigint;
+      successfulCalls: bigint;
+      avgCostCents: number;
+      totalCostCents: number;
+      avgDurationMs: number;
+      avgInputTokens: number;
+      avgOutputTokens: number;
+    }>>`
+      SELECT 
+        feature,
+        COUNT(*) as "totalCalls",
+        COUNT(*) FILTER (WHERE success = true) as "successfulCalls",
+        AVG(CASE WHEN success = true THEN "costCents" ELSE NULL END) as "avgCostCents",
+        SUM(CASE WHEN success = true THEN "costCents" ELSE 0 END) as "totalCostCents",
+        AVG(CASE WHEN success = true THEN "durationMs" ELSE NULL END) as "avgDurationMs",
+        AVG(CASE WHEN success = true THEN "inputTokens" ELSE NULL END) as "avgInputTokens",
+        AVG(CASE WHEN success = true THEN "outputTokens" ELSE NULL END) as "avgOutputTokens"
+      FROM ai_usage_logs
+      WHERE "createdAt" >= NOW() - INTERVAL '30 days'
+      GROUP BY feature
+      ORDER BY "totalCalls" DESC
+    `;
+
+    // Convert bigints to numbers and calculate recommended energy
+    const ENERGY_TO_USD = 0.002; // 1⚡ = 0.2 Cent = 0.002 USD
+    const MARGIN = 1.2;
+
+    const result = stats.map(s => {
+      const avgCostUsd = (s.avgCostCents || 0) / 100;
+      const recommendedEnergy = Math.max(1, Math.round((avgCostUsd / ENERGY_TO_USD) * MARGIN));
+      
+      return {
+        feature: s.feature,
+        totalCalls: Number(s.totalCalls),
+        successfulCalls: Number(s.successfulCalls),
+        successRate: Number(s.totalCalls) > 0 
+          ? (Number(s.successfulCalls) / Number(s.totalCalls) * 100).toFixed(1) + '%'
+          : '0%',
+        avgCostCents: Number((s.avgCostCents || 0).toFixed(4)),
+        avgCostUsd: Number(avgCostUsd.toFixed(6)),
+        totalCostUsd: Number(((s.totalCostCents || 0) / 100).toFixed(2)),
+        avgDurationMs: Math.round(s.avgDurationMs || 0),
+        avgInputTokens: Math.round(s.avgInputTokens || 0),
+        avgOutputTokens: Math.round(s.avgOutputTokens || 0),
+        recommendedEnergy,
+      };
+    });
+
+    // Also return total stats
+    const totals = await prisma.aiUsageLog.aggregate({
+      where: { createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
+      _count: true,
+      _sum: { costCents: true },
+    });
+
+    res.json({
+      period: '30 days',
+      features: result,
+      totals: {
+        totalCalls: totals._count,
+        totalCostUsd: Number(((totals._sum.costCents || 0) / 100).toFixed(2)),
+      },
+    });
+  } catch (err) {
+    logger.error('Failed to get AI usage stats', err);
+    res.status(500).json({ error: 'Failed to load usage stats' });
+  }
+});
+
 export default router;

@@ -94,6 +94,7 @@ export async function removeBackground(
     const durationMs = Date.now() - startTime;
 
     await logAiUsage(provider.id, 'bg_removal', {
+      providerType: provider.type,
       model: provider.model || undefined,
       durationMs,
       success: true,
@@ -110,6 +111,7 @@ export async function removeBackground(
     const durationMs = Date.now() - startTime;
     
     await logAiUsage(provider.id, 'bg_removal', {
+      providerType: provider.type,
       durationMs,
       success: false,
       errorMessage: err.message,

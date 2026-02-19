@@ -175,6 +175,7 @@ export async function processFaceSwitchForPhoto(
   const durationMs = Date.now() - startTime;
   if (execution.provider) {
     await logAiUsage(execution.provider.id, 'face_switch', {
+      providerType: execution.provider.type,
       durationMs,
       success: true,
     });

@@ -152,6 +152,7 @@ export async function applyStyleEffect(
 
     const durationMs = Date.now() - startTime;
     await logAiUsage(provider.id, effect as AiFeature, {
+      providerType: provider.type,
       model: provider.model || undefined,
       durationMs,
       success: true,
@@ -163,6 +164,7 @@ export async function applyStyleEffect(
   } catch (err: any) {
     const durationMs = Date.now() - startTime;
     await logAiUsage(provider.id, effect as AiFeature, {
+      providerType: provider.type,
       durationMs,
       success: false,
       errorMessage: err.message,
