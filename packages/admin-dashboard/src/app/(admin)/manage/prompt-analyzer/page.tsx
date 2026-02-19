@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '@/lib/api';
 import {
   Upload,
@@ -152,28 +152,51 @@ function ScoreBadge({ score }: { score: number }) {
 
 function Img2PromptTab() {
   const [loading, setLoading] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const [result, setResult] = useState<Img2PromptResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleUpload = async (file: File) => {
-    setLoading(true); setError(null); setResult(null);
+    setLoading(true); setError(null); setResult(null); setElapsed(0);
+    timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
     try {
       const formData = new FormData();
       formData.append('image', file);
       const res = await api.post('/admin/prompt-analyzer/img2prompt', formData, {
-        timeout: 120000,
+        timeout: 600000,
       });
       setResult(res.data);
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || 'Analyse fehlgeschlagen');
+      const msg = err.response?.data?.error || err.message || 'Analyse fehlgeschlagen';
+      if (err.code === 'ECONNABORTED' || msg.includes('timeout')) {
+        setError('Timeout: Replicate-Server brauchte zu lange (Cold Start). Bitte in 1-2 Min nochmal versuchen — beim 2. Mal geht es schneller.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
+      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     }
   };
 
   return (
     <div className="space-y-6">
       <ImageUploadArea onUpload={handleUpload} loading={loading} />
+      {loading && (
+        <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/5 border border-primary/20 text-sm">
+          <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />
+          <div>
+            <p className="font-medium">KI analysiert das Bild... ({elapsed}s)</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {elapsed < 15 ? 'Bild wird vorbereitet und hochgeladen...' :
+               elapsed < 60 ? 'CLIP Interrogator läuft (kann beim ersten Mal 2-7 Min dauern)...' :
+               elapsed < 180 ? 'Replicate GPU wird gestartet (Cold Start)... Bitte Geduld.' :
+               'Dauert ungewöhnlich lange. Wenn es >8 Min dauert, bitte abbrechen und nochmal versuchen.'}
+            </p>
+          </div>
+        </div>
+      )}
       {error && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
           <AlertCircle className="w-4 h-4 shrink-0" /> {error}
