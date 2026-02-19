@@ -36,6 +36,7 @@ import { Badge } from '@/components/ui/Badge';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 import toast from 'react-hot-toast';
+import { useAiFeatureRegistry, buildFeatureMetaMap } from '@/hooks/useAiFeatureRegistry';
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -73,30 +74,43 @@ interface PromptInfo {
   providerId: string | null;
 }
 
-// ─── Feature Metadata ───────────────────────────────────────
+// ─── Feature Icons (local, since they are React components) ───────────────
+// Labels and descriptions now come from backend registry via useAiFeatureRegistry
 
-const FEATURE_META: Record<string, { label: string; icon: any; category: string; description: string }> = {
-  chat: { label: 'KI Chat-Assistent', icon: MessageSquare, category: 'text', description: 'FAQ & Event-Hilfe für Hosts' },
-  album_suggest: { label: 'Album-Vorschläge', icon: Sparkles, category: 'text', description: 'KI-generierte Album-Namen' },
-  description_suggest: { label: 'Event-Beschreibung', icon: Pencil, category: 'text', description: 'Automatische Event-Beschreibungen' },
-  invitation_suggest: { label: 'Einladungstext', icon: Pencil, category: 'text', description: 'KI-generierte Einladungstexte' },
-  challenge_suggest: { label: 'Challenge-Ideen', icon: Gamepad2, category: 'text', description: 'Kreative Foto-Challenge-Vorschläge' },
-  guestbook_suggest: { label: 'Gästebuch-Nachricht', icon: Pencil, category: 'text', description: 'Willkommensnachrichten für Gästebuch' },
-  color_scheme: { label: 'Farbschema', icon: Palette, category: 'text', description: 'Event-Farbschemata generieren' },
-  caption_suggest: { label: 'Caption Generator', icon: Pencil, category: 'text', description: 'Social-Media-Captions generieren' },
-  compliment_mirror: { label: 'Compliment Mirror', icon: Sparkles, category: 'game', description: 'KI-Komplimente für Selfies' },
-  fortune_teller: { label: 'AI Fortune Teller', icon: Sparkles, category: 'game', description: 'Witzige Zukunftsvorhersagen' },
-  ai_roast: { label: 'AI Roast', icon: Gamepad2, category: 'game', description: 'Liebevoller Comedy-Roast' },
-  style_transfer: { label: 'Style Transfer', icon: Wand2, category: 'image', description: 'Foto in Kunststil verwandeln' },
-  face_switch: { label: 'Face Switch', icon: ScanFace, category: 'image', description: 'Gesichter in Gruppenfotos tauschen' },
-  bg_removal: { label: 'Hintergrund entfernen', icon: Image, category: 'image', description: 'Hintergrund aus Fotos entfernen' },
-  ai_oldify: { label: 'Oldify', icon: Wand2, category: 'image', description: 'Alterungs-Effekt auf Fotos' },
-  ai_cartoon: { label: 'Cartoon', icon: Wand2, category: 'image', description: 'Foto in Cartoon-Stil' },
-  ai_style_pop: { label: 'Style Pop', icon: Wand2, category: 'image', description: 'Foto in Pop-Art-Stil' },
-  drawbot: { label: 'Drawbot', icon: Pencil, category: 'image', description: 'Line-Art G-Code für Zeichenroboter' },
-  highlight_reel: { label: 'Highlight Reel', icon: Video, category: 'video', description: 'Automatisches Event-Highlight-Video' },
-  face_search: { label: 'Face Search', icon: ScanFace, category: 'recognition', description: 'Gesichtserkennung "Finde mein Foto"' },
-  ai_categorize: { label: 'AI Kategorisierung', icon: Layers, category: 'text', description: 'Fotos automatisch kategorisieren' },
+const FEATURE_ICONS: Record<string, any> = {
+  chat: MessageSquare,
+  album_suggest: Sparkles,
+  description_suggest: Pencil,
+  invitation_suggest: Pencil,
+  challenge_suggest: Gamepad2,
+  guestbook_suggest: Pencil,
+  color_scheme: Palette,
+  caption_suggest: Pencil,
+  compliment_mirror: Sparkles,
+  fortune_teller: Sparkles,
+  ai_roast: Gamepad2,
+  style_transfer: Wand2,
+  face_switch: ScanFace,
+  bg_removal: Image,
+  ai_oldify: Wand2,
+  ai_cartoon: Wand2,
+  ai_style_pop: Wand2,
+  time_machine: Wand2,
+  pet_me: Wand2,
+  yearbook: Wand2,
+  emoji_me: Wand2,
+  miniature: Wand2,
+  drawbot: Pencil,
+  highlight_reel: Video,
+  face_search: ScanFace,
+  ai_categorize: Layers,
+  celebrity_lookalike: Sparkles,
+  ai_bingo: Gamepad2,
+  ai_dj: Sparkles,
+  ai_meme: Gamepad2,
+  ai_superlatives: Sparkles,
+  ai_photo_critic: Sparkles,
+  ai_couple_match: Sparkles,
 };
 
 // Sub-features for style_transfer (style names that exist as prompt templates)
@@ -137,6 +151,10 @@ export default function AiFeaturesPage() {
   const [providers, setProviders] = useState<AiProvider[]>([]);
   const [prompts, setPrompts] = useState<PromptInfo[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // AI Feature Registry — loaded dynamically from backend (Single Source of Truth)
+  const { registry } = useAiFeatureRegistry();
+  const featureMeta = buildFeatureMetaMap(registry);
   const [toggling, setToggling] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -184,7 +202,7 @@ export default function AiFeaturesPage() {
         });
       }
       await loadData();
-      toast.success(`${FEATURE_META[feature]?.label || feature} ${!currentEnabled ? 'aktiviert' : 'deaktiviert'}`);
+      toast.success(`${featureMeta[feature]?.label || feature} ${!currentEnabled ? 'aktiviert' : 'deaktiviert'}`);
     } catch {
       toast.error('Fehler beim Umschalten');
     } finally {
@@ -194,7 +212,7 @@ export default function AiFeaturesPage() {
 
   // Group features by category
   const grouped = features.reduce<Record<string, AiFeatureInfo[]>>((acc, f) => {
-    const cat = FEATURE_META[f.feature]?.category || 'text';
+    const cat = featureMeta[f.feature]?.category || 'text';
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(f);
     return acc;
@@ -206,7 +224,7 @@ export default function AiFeaturesPage() {
       cat,
       feats: feats.filter(f => {
         if (!search) return true;
-        const meta = FEATURE_META[f.feature];
+        const meta = featureMeta[f.feature];
         const label = meta?.label || f.feature;
         return label.toLowerCase().includes(search.toLowerCase()) ||
                f.feature.toLowerCase().includes(search.toLowerCase());
@@ -339,6 +357,7 @@ export default function AiFeaturesPage() {
                     prompts={prompts}
                     toggling={toggling === f.feature}
                     onToggle={() => toggleFeature(f.feature, f.isEnabled)}
+                    featureMeta={featureMeta}
                   />
                 ))}
               </div>
@@ -365,6 +384,7 @@ function FeatureRow({
   prompts,
   toggling,
   onToggle,
+  featureMeta,
 }: {
   feature: AiFeatureInfo;
   mapping?: FeatureMapping;
@@ -372,15 +392,15 @@ function FeatureRow({
   prompts: PromptInfo[];
   toggling: boolean;
   onToggle: () => void;
+  featureMeta: Record<string, { label: string; description: string; category: string }>;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const meta = FEATURE_META[feature.feature] || {
+  const meta = featureMeta[feature.feature] || {
     label: feature.feature,
-    icon: Sparkles,
     category: 'text',
     description: '',
   };
-  const Icon = meta.icon;
+  const Icon = FEATURE_ICONS[feature.feature] || Sparkles;
 
   const hasSubFeatures = feature.feature === 'style_transfer';
   const subFeatures = hasSubFeatures ? STYLE_TRANSFER_SUBS : {};

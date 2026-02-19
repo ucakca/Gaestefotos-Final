@@ -13,6 +13,7 @@ import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 import { HelpButton } from '@/components/ui/HelpPanel';
+import { useAiFeatureRegistry, buildAiCategories } from '@/hooks/useAiFeatureRegistry';
 
 interface EventDetail {
   id: string;
@@ -95,56 +96,9 @@ export default function EventDetailPage() {
   const [editingPrompt, setEditingPrompt] = useState<string | null>(null); // feature key being edited
   const [promptForm, setPromptForm] = useState<Record<string, any>>({});
 
-  // AI Category → Feature Keys + Labels (mirrors aiFeatureRegistry.ts)
-  const AI_CATEGORIES: { key: string; label: string; icon: string; features: { key: string; label: string }[] }[] = [
-    { key: 'games', label: 'AI Games', icon: '🎮', features: [
-      { key: 'compliment_mirror', label: 'Compliment Mirror' },
-      { key: 'fortune_teller',    label: 'AI Fortune Teller' },
-      { key: 'ai_roast',          label: 'AI Roast' },
-      { key: 'celebrity_lookalike',label: 'Celebrity Lookalike' },
-      { key: 'ai_bingo',          label: 'AI Bingo' },
-      { key: 'ai_dj',             label: 'AI DJ' },
-      { key: 'ai_meme',           label: 'AI Meme Generator' },
-      { key: 'ai_superlatives',   label: 'AI Superlatives' },
-      { key: 'ai_photo_critic',   label: 'AI Foto-Kritiker' },
-      { key: 'ai_couple_match',   label: 'AI Couple Match' },
-      { key: 'caption_suggest',   label: 'Caption Generator' },
-    ]},
-    { key: 'imageEffects', label: 'Image Effects', icon: '🎨', features: [
-      { key: 'ai_oldify',    label: 'Oldify (Altern-Effekt)' },
-      { key: 'ai_cartoon',   label: 'Cartoon' },
-      { key: 'ai_style_pop', label: 'Style Pop (Pop Art)' },
-      { key: 'time_machine', label: 'Time Machine' },
-      { key: 'pet_me',       label: 'Pet Me (Tier-Verwandlung)' },
-      { key: 'yearbook',     label: 'Yearbook (90er Foto)' },
-      { key: 'emoji_me',     label: 'Emoji Me' },
-      { key: 'miniature',    label: 'Miniature (Tilt-Shift)' },
-    ]},
-    { key: 'styleTransfer', label: 'Style Transfer', icon: '🖼️', features: [
-      { key: 'style_transfer', label: 'Style Transfer (24 Kunststile)' },
-    ]},
-    { key: 'advanced', label: 'Advanced', icon: '⚡', features: [
-      { key: 'face_switch', label: 'Face Switch (Gesicht tauschen)' },
-      { key: 'bg_removal',  label: 'Hintergrund entfernen' },
-      { key: 'drawbot',     label: 'Drawbot (Zeichenroboter)' },
-    ]},
-    { key: 'gifVideo', label: 'GIF / Video', icon: '🎬', features: [
-      { key: 'highlight_reel', label: 'Highlight Reel (Event-Video)' },
-    ]},
-    { key: 'hostTools', label: 'Host-Tools', icon: '🛠️', features: [
-      { key: 'chat',                label: 'KI Chat-Assistent' },
-      { key: 'album_suggest',       label: 'Album-Vorschläge' },
-      { key: 'description_suggest', label: 'Event-Beschreibung' },
-      { key: 'invitation_suggest',  label: 'Einladungstext' },
-      { key: 'challenge_suggest',   label: 'Challenge-Ideen' },
-      { key: 'guestbook_suggest',   label: 'Gästebuch-Nachricht' },
-      { key: 'color_scheme',        label: 'Farbschema' },
-      { key: 'ai_categorize',       label: 'AI Kategorisierung' },
-    ]},
-    { key: 'recognition', label: 'Face Search', icon: '👤', features: [
-      { key: 'face_search', label: 'Face Search (Gesichtserkennung)' },
-    ]},
-  ];
+  // AI Feature Registry — loaded dynamically from backend (Single Source of Truth)
+  const { registry, loading: registryLoading } = useAiFeatureRegistry();
+  const AI_CATEGORIES = buildAiCategories(registry);
 
   const loadAiConfig = useCallback(async () => {
     if (!eventId) return;

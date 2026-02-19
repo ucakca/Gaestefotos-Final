@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
 import { HelpButton } from '@/components/ui/HelpPanel';
+import { useAiFeatureRegistry, buildPkgAiCategories } from '@/hooks/useAiFeatureRegistry';
 
 interface PackageDefinition {
   id: string;
@@ -90,55 +91,7 @@ const FEATURE_FIELDS: { key: keyof PackageDefinition; label: string; description
   { key: 'isAdFree', label: 'Werbefrei', description: 'Keine Fremdwerbung' },
 ];
 
-const PKG_AI_CATEGORIES: { key: string; label: string; icon: string; catField: keyof PackageDefinition; features: { key: string; label: string }[] }[] = [
-  { key: 'games', label: 'AI Games', icon: '🎮', catField: 'allowAiGames', features: [
-    { key: 'compliment_mirror', label: 'Compliment Mirror' },
-    { key: 'fortune_teller',    label: 'AI Fortune Teller' },
-    { key: 'ai_roast',          label: 'AI Roast' },
-    { key: 'celebrity_lookalike',label: 'Celebrity Lookalike' },
-    { key: 'ai_bingo',          label: 'AI Bingo' },
-    { key: 'ai_dj',             label: 'AI DJ' },
-    { key: 'ai_meme',           label: 'AI Meme Generator' },
-    { key: 'ai_superlatives',   label: 'AI Superlatives' },
-    { key: 'ai_photo_critic',   label: 'AI Foto-Kritiker' },
-    { key: 'ai_couple_match',   label: 'AI Couple Match' },
-    { key: 'caption_suggest',   label: 'Caption Generator' },
-  ]},
-  { key: 'imageEffects', label: 'Image Effects', icon: '🎨', catField: 'allowAiImageEffects', features: [
-    { key: 'ai_oldify',    label: 'Oldify' },
-    { key: 'ai_cartoon',   label: 'Cartoon' },
-    { key: 'ai_style_pop', label: 'Style Pop' },
-    { key: 'time_machine', label: 'Time Machine' },
-    { key: 'pet_me',       label: 'Pet Me' },
-    { key: 'yearbook',     label: 'Yearbook' },
-    { key: 'emoji_me',     label: 'Emoji Me' },
-    { key: 'miniature',    label: 'Miniature' },
-  ]},
-  { key: 'styleTransfer', label: 'Style Transfer', icon: '🖼️', catField: 'allowAiStyleTransfer', features: [
-    { key: 'style_transfer', label: 'Style Transfer' },
-  ]},
-  { key: 'advanced', label: 'Advanced', icon: '⚡', catField: 'allowAiAdvanced', features: [
-    { key: 'face_switch', label: 'Face Switch' },
-    { key: 'bg_removal',  label: 'BG Removal' },
-    { key: 'drawbot',     label: 'Drawbot' },
-  ]},
-  { key: 'gifVideo', label: 'GIF / Video', icon: '🎬', catField: 'allowAiGifVideo', features: [
-    { key: 'highlight_reel', label: 'Highlight Reel' },
-  ]},
-  { key: 'hostTools', label: 'Host-Tools', icon: '🛠️', catField: 'allowAiHostTools', features: [
-    { key: 'chat',                label: 'Chat-Assistent' },
-    { key: 'album_suggest',       label: 'Album-Vorschläge' },
-    { key: 'description_suggest', label: 'Event-Beschreibung' },
-    { key: 'invitation_suggest',  label: 'Einladungstext' },
-    { key: 'challenge_suggest',   label: 'Challenge-Ideen' },
-    { key: 'guestbook_suggest',   label: 'Gästebuch-Nachricht' },
-    { key: 'color_scheme',        label: 'Farbschema' },
-    { key: 'ai_categorize',       label: 'AI Kategorisierung' },
-  ]},
-  { key: 'recognition', label: 'Face Search', icon: '👤', catField: 'allowFaceSearch', features: [
-    { key: 'face_search', label: 'Face Search' },
-  ]},
-];
+// PKG_AI_CATEGORIES is now loaded dynamically via useAiFeatureRegistry hook
 
 const AI_FEATURE_FIELDS: { key: keyof PackageDefinition; label: string; description: string }[] = [
   { key: 'allowAiGames', label: '🎮 AI Games', description: '14 LLM-Spiele (Roast, Bingo, DJ...)' },
@@ -183,8 +136,15 @@ function getTypeBadgeClass(type: string): string {
   }
 }
 
+// Type for dynamic AI categories from registry
+type PkgAiCategory = { key: string; label: string; icon: string; catField: string; features: { key: string; label: string }[] };
+
 export default function PackagesPage() {
   const [loading, setLoading] = useState(true);
+  
+  // AI Feature Registry — loaded dynamically from backend (Single Source of Truth)
+  const { registry, loading: registryLoading } = useAiFeatureRegistry();
+  const PKG_AI_CATEGORIES: PkgAiCategory[] = buildPkgAiCategories(registry);
   const [saving, setSaving] = useState<string | null>(null);
   const [packages, setPackages] = useState<PackageDefinition[]>([]);
   const [editingPackage, setEditingPackage] = useState<PackageDefinition | null>(null);
@@ -349,6 +309,7 @@ export default function PackagesPage() {
                   ? 'Keine Basis-Pakete vorhanden'
                   : 'Keine Add-ons vorhanden. Erstelle ein Paket mit Typ "Add-on".'
               }
+              pkgAiCategories={PKG_AI_CATEGORIES}
             />
           )}
 
@@ -404,6 +365,7 @@ function PackageCards({
   handleSave,
   setEditingPackage,
   emptyMessage,
+  pkgAiCategories,
 }: {
   packages: PackageDefinition[];
   editingPackage: PackageDefinition | null;
@@ -414,6 +376,7 @@ function PackageCards({
   handleSave: (pkg: PackageDefinition) => void;
   setEditingPackage: (pkg: PackageDefinition | null) => void;
   emptyMessage: string;
+  pkgAiCategories: PkgAiCategory[];
 }) {
   if (packages.length === 0) {
     return <div className="text-center py-12 text-app-muted">{emptyMessage}</div>;
@@ -558,6 +521,7 @@ function PackageCards({
               displayPkg={displayPkg}
               onUpdate={(newDisabled) => updateField(pkg, 'disabledAiFeatures', newDisabled)}
               onToggleCat={(catField) => toggleFeature(pkg, catField as keyof PackageDefinition)}
+              pkgAiCategories={pkgAiCategories}
             />
           </div>
         );
@@ -571,25 +535,27 @@ function PkgAiFeatureSection({
   displayPkg,
   onUpdate,
   onToggleCat,
+  pkgAiCategories,
 }: {
   displayPkg: PackageDefinition;
   onUpdate: (newDisabled: string[]) => void;
   onToggleCat: (catField: string) => void;
+  pkgAiCategories: PkgAiCategory[];
 }) {
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
   const disabled: string[] = displayPkg.disabledAiFeatures || [];
 
   const toggleFeature = (featureKey: string) => {
     const isOff = disabled.includes(featureKey);
-    onUpdate(isOff ? disabled.filter(k => k !== featureKey) : [...disabled, featureKey]);
+    onUpdate(isOff ? disabled.filter((k: string) => k !== featureKey) : [...disabled, featureKey]);
   };
 
-  const toggleCategory = (cat: typeof PKG_AI_CATEGORIES[0]) => {
-    const allOff = cat.features.every(f => disabled.includes(f.key));
+  const toggleCategory = (cat: PkgAiCategory) => {
+    const allOff = cat.features.every((f: { key: string }) => disabled.includes(f.key));
     if (allOff) {
-      onUpdate(disabled.filter(k => !cat.features.some(f => f.key === k)));
+      onUpdate(disabled.filter((k: string) => !cat.features.some((f: { key: string }) => f.key === k)));
     } else {
-      const toAdd = cat.features.map(f => f.key).filter(k => !disabled.includes(k));
+      const toAdd = cat.features.map((f: { key: string }) => f.key).filter((k: string) => !disabled.includes(k));
       onUpdate([...disabled, ...toAdd]);
     }
   };
@@ -600,13 +566,13 @@ function PkgAiFeatureSection({
         <label className="text-xs font-semibold text-app-muted">🤖 Individuelle AI-Features</label>
         <div className="flex gap-1.5">
           <button onClick={() => onUpdate([])} className="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-600 hover:bg-green-500/20 font-medium">Alle an</button>
-          <button onClick={() => onUpdate(PKG_AI_CATEGORIES.flatMap(c => c.features.map(f => f.key)))} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 text-red-600 hover:bg-red-500/20 font-medium">Alle aus</button>
+          <button onClick={() => onUpdate(pkgAiCategories.flatMap((c: PkgAiCategory) => c.features.map((f: { key: string }) => f.key)))} className="text-[10px] px-2 py-0.5 rounded bg-red-500/10 text-red-600 hover:bg-red-500/20 font-medium">Alle aus</button>
         </div>
       </div>
       <div className="space-y-1.5">
-        {PKG_AI_CATEGORIES.map(cat => {
-          const catEnabled = !!(displayPkg[cat.catField] as boolean);
-          const disabledCount = cat.features.filter(f => disabled.includes(f.key)).length;
+        {pkgAiCategories.map((cat: PkgAiCategory) => {
+          const catEnabled = !!(displayPkg[cat.catField as keyof PackageDefinition] as boolean);
+          const disabledCount = cat.features.filter((f: { key: string }) => disabled.includes(f.key)).length;
           const allDisabled = disabledCount === cat.features.length;
           const someDisabled = disabledCount > 0 && disabledCount < cat.features.length;
           const isExpanded = expanded[cat.key] ?? false;
@@ -634,7 +600,7 @@ function PkgAiFeatureSection({
               </div>
               {isExpanded && (
                 <div className="border-t border-app-border/30 px-3 py-2 grid grid-cols-2 gap-1">
-                  {cat.features.map(feat => {
+                  {cat.features.map((feat: { key: string; label: string }) => {
                     const isOff = disabled.includes(feat.key);
                     return (
                       <button

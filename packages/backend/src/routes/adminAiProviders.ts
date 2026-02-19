@@ -4,6 +4,11 @@ import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { encryptValue, decryptValue } from '../utils/encryption';
 import { z } from 'zod';
+import {
+  AI_FEATURE_REGISTRY,
+  PACKAGE_CATEGORY_TO_FEATURE_KEY,
+  AiPackageCategory,
+} from '../services/aiFeatureRegistry';
 
 // All AI provider routes require ADMIN role
 // (legacy requireAdmin function kept for backwards compat but router.use enforces it)
@@ -688,6 +693,62 @@ router.post('/:id/test', authMiddleware, async (req: AuthRequest, res: Response)
       message: error.message || 'Verbindungstest fehlgeschlagen',
       durationMs: 0,
     });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// AI Feature Registry — Single Source of Truth for Frontend
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * GET /api/admin/ai-providers/registry
+ * Returns the complete AI Feature Registry for frontend consumption.
+ * This eliminates the need for hardcoded feature lists in admin pages.
+ */
+router.get('/registry', async (_req: AuthRequest, res: Response) => {
+  try {
+    // Group features by packageCategory for UI consumption
+    const categories: Record<string, {
+      key: string;
+      label: string;
+      icon: string;
+      packageFeatureKey: string;
+      features: typeof AI_FEATURE_REGISTRY;
+    }> = {};
+
+    const CATEGORY_META: Record<AiPackageCategory, { label: string; icon: string }> = {
+      games: { label: 'AI Games', icon: '🎮' },
+      imageEffects: { label: 'Image Effects', icon: '🎨' },
+      styleTransfer: { label: 'Style Transfer', icon: '🖼️' },
+      advanced: { label: 'Advanced', icon: '⚡' },
+      gifVideo: { label: 'GIF / Video', icon: '🎬' },
+      hostTools: { label: 'Host-Tools', icon: '🛠️' },
+      recognition: { label: 'Face Search', icon: '👤' },
+    };
+
+    for (const feat of AI_FEATURE_REGISTRY) {
+      const cat = feat.packageCategory;
+      if (!categories[cat]) {
+        const meta = CATEGORY_META[cat] || { label: cat, icon: '❓' };
+        categories[cat] = {
+          key: cat,
+          label: meta.label,
+          icon: meta.icon,
+          packageFeatureKey: PACKAGE_CATEGORY_TO_FEATURE_KEY[cat] || '',
+          features: [],
+        };
+      }
+      categories[cat].features.push(feat);
+    }
+
+    res.json({
+      features: AI_FEATURE_REGISTRY,
+      categories: Object.values(categories),
+      packageCategoryMap: PACKAGE_CATEGORY_TO_FEATURE_KEY,
+    });
+  } catch (err) {
+    logger.error('Failed to get AI feature registry', err);
+    res.status(500).json({ error: 'Failed to load registry' });
   }
 });
 
