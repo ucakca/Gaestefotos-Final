@@ -1283,6 +1283,45 @@ function OverviewTab({
         </div>
       </div>
 
+      {/* AI Energy Info for Host */}
+      {(() => {
+        const pf = packageInfo?.features || {};
+        const hasAI = Boolean(pf.aiEffects || pf.aiGames || pf.boothGames);
+        if (!hasAI) return null;
+        return (
+          <div className="rounded-2xl border border-purple-200/50 bg-gradient-to-br from-purple-50/50 to-violet-50/30 p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-purple-500/15 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">AI-Energie für Gäste</h3>
+                <p className="text-[10px] text-muted-foreground">Kosten pro AI-Feature (konfigurierbar im Briefing)</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {[
+                { label: 'KI-Spiel', cost: 1, icon: '🎮' },
+                { label: 'Bild-Effekt', cost: 2, icon: '🎨' },
+                { label: 'Style Transfer', cost: 2, icon: '🖼️' },
+                { label: 'Face Swap', cost: 3, icon: '🔄' },
+                { label: 'GIF', cost: 3, icon: '🎬' },
+                { label: 'Video', cost: 5, icon: '📹' },
+              ].map(c => (
+                <div key={c.label} className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-white/60 border border-purple-100">
+                  <span className="text-xs">{c.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[9px] text-muted-foreground truncate">{c.label}</div>
+                  </div>
+                  <span className="text-xs font-bold text-purple-600">{c.cost}⚡</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground">Gäste starten mit 10⚡ und verdienen mehr durch Teilnahme (Fotos, Gästebuch, Challenges)</p>
+          </div>
+        );
+      })()}
+
       {/* Hashtag — Always FREE */}
       <HashtagWidget eventId={eventId} onCopy={onCopy} />
 

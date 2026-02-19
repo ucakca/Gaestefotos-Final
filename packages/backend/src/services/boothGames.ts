@@ -1,6 +1,7 @@
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { resolvePrompt, renderPrompt } from './promptTemplates';
+import { enrichSystemPrompt } from './eventPromptContext';
 import { withKnowledge } from './cache/knowledgeStore';
 import { generateCompletion } from '../lib/groq';
 
@@ -172,13 +173,13 @@ export function generateCompliment(): { compliment: string; verdict: string } {
  * Uses AI cache to avoid duplicate API calls for similar contexts.
  */
 export const generateComplimentAI = withKnowledge<
-  { eventType?: string; eventTitle?: string; guestName?: string; locale?: string },
+  { eventId?: string; eventType?: string; eventTitle?: string; guestName?: string; locale?: string },
   { compliment: string; verdict: string; source: 'ai' | 'fallback' }
 >(
   'compliment-mirror',
-  async ({ eventType, eventTitle, guestName, locale }) => {
+  async ({ eventId, eventType, eventTitle, guestName, locale }) => {
     try {
-      const prompt = await resolvePrompt('compliment_mirror');
+      const prompt = await resolvePrompt('compliment_mirror', eventId);
 
       // Build context variables
       const eventContext = eventType
@@ -186,7 +187,8 @@ export const generateComplimentAI = withKnowledge<
         : '';
       const guestContext = guestName ? ` Gastname: ${guestName}.` : '';
 
-      const systemPrompt = prompt.systemPrompt || FALLBACK_PROMPTS_CM.systemPrompt;
+      const rawSystemPrompt = prompt.systemPrompt || FALLBACK_PROMPTS_CM.systemPrompt;
+      const systemPrompt = eventId ? await enrichSystemPrompt(eventId, rawSystemPrompt) : rawSystemPrompt;
       const userPromptTpl = prompt.userPromptTpl || FALLBACK_PROMPTS_CM.userPromptTpl;
 
       const userPrompt = renderPrompt(userPromptTpl, {
@@ -258,20 +260,21 @@ const FORTUNE_FALLBACKS = [
 ];
 
 export const generateFortuneTellerAI = withKnowledge<
-  { eventType?: string; eventTitle?: string; guestName?: string },
+  { eventId?: string; eventType?: string; eventTitle?: string; guestName?: string },
   { prediction: string; luckyItem: string; luckyNumber: number; source: 'ai' | 'fallback' }
 >(
   'fortune-teller',
-  async ({ eventType, eventTitle, guestName }) => {
+  async ({ eventId, eventType, eventTitle, guestName }) => {
     try {
-      const prompt = await resolvePrompt('fortune_teller');
+      const prompt = await resolvePrompt('fortune_teller', eventId);
       const eventContext = eventType ? ` Event-Typ: ${eventType}${eventTitle ? `, Titel: "${eventTitle}"` : ''}.` : '';
       const guestContext = guestName ? ` Gastname: ${guestName}.` : '';
 
-      const systemPrompt = prompt.systemPrompt || `Du bist eine mystische Wahrsagerin auf einer Party.
+      const rawSystemPrompt = prompt.systemPrompt || `Du bist eine mystische Wahrsagerin auf einer Party.
 Gib dem Gast eine witzige, kreative Zukunftsvorhersage.
 Antworte NUR auf Deutsch. Sei mystisch aber humorvoll. Max 3 Sätze.
 Antworte NUR als JSON: {"prediction": "...", "luckyItem": "...", "luckyNumber": 7}`;
+      const systemPrompt = eventId ? await enrichSystemPrompt(eventId, rawSystemPrompt) : rawSystemPrompt;
       const userPromptTpl = prompt.userPromptTpl || 'Gib dem Gast eine witzige Zukunftsvorhersage.{{eventContext}}{{guestContext}}';
       const userPrompt = renderPrompt(userPromptTpl, { eventContext, guestContext });
 
@@ -311,21 +314,22 @@ const ROAST_FALLBACKS = [
 ];
 
 export const generateRoastAI = withKnowledge<
-  { eventType?: string; eventTitle?: string; guestName?: string },
+  { eventId?: string; eventType?: string; eventTitle?: string; guestName?: string },
   { roast: string; rescue: string; source: 'ai' | 'fallback' }
 >(
   'ai-roast',
-  async ({ eventType, eventTitle, guestName }) => {
+  async ({ eventId, eventType, eventTitle, guestName }) => {
     try {
-      const prompt = await resolvePrompt('ai_roast');
+      const prompt = await resolvePrompt('ai_roast', eventId);
       const eventContext = eventType ? ` Event-Typ: ${eventType}${eventTitle ? `, Titel: "${eventTitle}"` : ''}.` : '';
       const guestContext = guestName ? ` Gastname: ${guestName}.` : '';
 
-      const systemPrompt = prompt.systemPrompt || `Du bist ein Stand-Up-Comedian auf einer Party.
+      const rawSystemPrompt = prompt.systemPrompt || `Du bist ein Stand-Up-Comedian auf einer Party.
 Roaste den Gast liebevoll und witzig. NIEMALS verletzend oder beleidigend.
 Antworte NUR auf Deutsch. Max 2 Sätze Roast + 1 Rettungs-Kompliment.
 Antworte NUR als JSON: {"roast": "...", "rescue": "..."}`;
       const userPromptTpl = prompt.userPromptTpl || 'Roaste den Gast liebevoll.{{eventContext}}{{guestContext}}';
+      const systemPrompt = eventId ? await enrichSystemPrompt(eventId, rawSystemPrompt) : rawSystemPrompt;
       const userPrompt = renderPrompt(userPromptTpl, { eventContext, guestContext });
 
       const response = await generateCompletion(userPrompt, systemPrompt, {

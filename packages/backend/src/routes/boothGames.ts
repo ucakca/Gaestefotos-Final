@@ -49,6 +49,7 @@ router.post('/compliment-mirror', authMiddleware, withEnergyCheck('compliment_mi
     // Use AI if requested (default: true), fall back to random on failure
     if (useAI !== false) {
       result = await generateComplimentAI({
+        eventId: eventId || undefined,
         eventType: eventType || undefined,
         eventTitle: eventTitle || undefined,
         guestName: guestName || undefined,
@@ -74,6 +75,7 @@ router.post('/fortune-teller', authMiddleware, withEnergyCheck('fortune_teller')
     const { eventId, eventType, eventTitle, guestName } = req.body;
 
     const result = await generateFortuneTellerAI({
+      eventId: eventId || undefined,
       eventType: eventType || undefined,
       eventTitle: eventTitle || undefined,
       guestName: guestName || undefined,
@@ -93,6 +95,7 @@ router.post('/ai-roast', authMiddleware, withEnergyCheck('ai_roast'), async (req
     const { eventId, eventType, eventTitle, guestName } = req.body;
 
     const result = await generateRoastAI({
+      eventId: eventId || undefined,
       eventType: eventType || undefined,
       eventTitle: eventTitle || undefined,
       guestName: guestName || undefined,
