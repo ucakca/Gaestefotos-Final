@@ -333,4 +333,48 @@ router.post('/gif-morph', authMiddleware, async (req: AuthRequest, res: Response
   }
 });
 
+// POST /api/booth-games/ai-video — Generate AI video from a photo (Runway/LumaAI)
+router.post('/ai-video', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { photoId, eventId, prompt, duration } = req.body;
+
+    if (!photoId || !eventId) {
+      return res.status(400).json({ error: 'photoId und eventId sind erforderlich' });
+    }
+
+    const { generateImageToVideo } = await import('../services/aiVideoGen');
+    const jobId = await generateImageToVideo({
+      photoId,
+      eventId,
+      prompt,
+      duration: duration ? Number(duration) : undefined,
+    });
+
+    res.json({
+      success: true,
+      jobId,
+      message: 'Video-Generierung gestartet (kann 1-3 Minuten dauern)',
+    });
+  } catch (error) {
+    logger.error('AI video error', { message: (error as Error).message });
+    res.status(500).json({ error: (error as Error).message || 'Video-Generierung fehlgeschlagen' });
+  }
+});
+
+// GET /api/booth-games/ai-video/status/:jobId — Poll video generation status
+router.get('/ai-video/status/:jobId', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { getVideoJobStatus } = await import('../services/aiVideoGen');
+    const job = getVideoJobStatus(req.params.jobId);
+
+    if (!job) {
+      return res.status(404).json({ error: 'Job nicht gefunden' });
+    }
+
+    res.json(job);
+  } catch (error) {
+    res.status(500).json({ error: 'Status-Abfrage fehlgeschlagen' });
+  }
+});
+
 export default router;

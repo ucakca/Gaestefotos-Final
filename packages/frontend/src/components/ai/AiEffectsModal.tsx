@@ -11,7 +11,7 @@ import api from '@/lib/api';
 
 // ─── Types ──────────────────────────────────────────────────
 
-type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'bg_removal' | 'gif_morph';
+type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'bg_removal' | 'gif_morph' | 'ai_video';
 type Step = 'photo' | 'effects' | 'processing' | 'result' | 'error';
 
 interface EffectDef {
@@ -78,6 +78,14 @@ const EFFECTS: EffectDef[] = [
     description: 'Animiertes GIF: Dein Foto in 2 Kunststilen!',
     gradient: 'from-rose-500 to-amber-500',
     endpoint: '/booth-games/gif-morph',
+  },
+  {
+    key: 'ai_video',
+    name: 'AI Video',
+    emoji: '🎬',
+    description: 'Dein Foto wird zum lebendigen Video!',
+    gradient: 'from-red-500 to-pink-600',
+    endpoint: '/booth-games/ai-video',
   },
 ];
 
@@ -148,12 +156,39 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
 
       // Step 2: Apply the AI effect (different endpoints per type)
       let effectRes;
-      if (effect.key === 'gif_morph') {
+      if (effect.key === 'ai_video') {
+        effectRes = await api.post(effect.endpoint, { photoId, eventId });
+      } else if (effect.key === 'gif_morph') {
         effectRes = await api.post(effect.endpoint, { photoId, eventId });
       } else if (effect.key === 'face_switch' || effect.key === 'bg_removal') {
         effectRes = await api.post(effect.endpoint, { photoId });
       } else {
         effectRes = await api.post(effect.endpoint, { photoId, effect: effect.key });
+      }
+
+      // AI Video needs polling (async generation)
+      if (effect.key === 'ai_video' && effectRes.data?.jobId) {
+        const jobId = effectRes.data.jobId;
+        for (let i = 0; i < 60; i++) {
+          await new Promise(r => setTimeout(r, 5000));
+          setProgress(Math.min(40 + i * 1.5, 95));
+          try {
+            const statusRes = await api.get(`/booth-games/ai-video/status/${jobId}`);
+            if (statusRes.data?.status === 'completed' && statusRes.data?.videoUrl) {
+              clearInterval(progressInterval);
+              setProgress(100);
+              setResultUrl(statusRes.data.videoUrl);
+              setStep('result');
+              return;
+            }
+            if (statusRes.data?.status === 'failed') {
+              throw new Error(statusRes.data?.error || 'Video-Generierung fehlgeschlagen');
+            }
+          } catch (pollErr: any) {
+            if (pollErr?.response?.status !== 404) throw pollErr;
+          }
+        }
+        throw new Error('Video-Generierung Timeout');
       }
 
       clearInterval(progressInterval);
