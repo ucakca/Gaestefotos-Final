@@ -15,7 +15,7 @@ export interface ResolvedPrompt {
   strength: number | null;
   providerId: string | null;
   model: string | null;
-  source: 'db' | 'fallback';
+  source: 'db' | 'event' | 'global' | 'fallback';
 }
 
 export interface PromptVariables {
@@ -386,6 +386,58 @@ Beispiel: ["Beste Party ever! 🎉 #wedding #bestnight"]`,
     maxTokens: 200,
     strength: null,
   },
+  emoji_me: {
+    feature: 'emoji_me',
+    providerId: null, model: null, systemPrompt: null,
+    userPromptTpl: 'transform the person into an emoji character, round yellow emoji face with their features and expression, cute emoji style, simple clean design',
+    negativePrompt: 'realistic, photograph, detailed skin, complex background',
+    temperature: null, maxTokens: null, strength: 0.75,
+  },
+  pet_me: {
+    feature: 'pet_me',
+    providerId: null, model: null, systemPrompt: null,
+    userPromptTpl: 'transform the person into an adorable animal version of themselves, cute anthropomorphic animal, fluffy, same clothing and pose, pixar style',
+    negativePrompt: 'scary, realistic animal, horror, dark',
+    temperature: null, maxTokens: null, strength: 0.75,
+  },
+  yearbook: {
+    feature: 'yearbook',
+    providerId: null, model: null, systemPrompt: null,
+    userPromptTpl: '1990s high school yearbook photo, soft studio lighting, gradient blue background, slightly awkward smile, retro school portrait, film grain',
+    negativePrompt: 'modern, digital, outdoor, casual',
+    temperature: null, maxTokens: null, strength: 0.60,
+  },
+  miniature: {
+    feature: 'miniature',
+    providerId: null, model: null, systemPrompt: null,
+    userPromptTpl: 'miniature diorama scene, tilt-shift effect, tiny figurine version of the person, macro photography, detailed small world, miniature model',
+    negativePrompt: 'full size, normal scale, blurry',
+    temperature: null, maxTokens: null, strength: 0.70,
+  },
+  time_machine: {
+    feature: 'time_machine',
+    providerId: null, model: null, systemPrompt: null,
+    userPromptTpl: 'person transported to a historical era, medieval knight, ancient rome, 1920s gatsby, victorian era, historically accurate clothing and setting',
+    negativePrompt: 'modern clothing, contemporary, anachronistic',
+    temperature: null, maxTokens: null, strength: 0.70,
+  },
+  ai_categorize: {
+    feature: 'ai_categorize',
+    providerId: null, model: null,
+    systemPrompt: `Du bist ein Foto-Kategorisierer für Event-Fotogalerien.
+Analysiere das Foto und ordne es der passendsten Kategorie zu.
+Antworte NUR als JSON: {"category": "...", "confidence": 0.9}`,
+    userPromptTpl: 'Kategorisiere dieses Event-Foto. Verfügbare Kategorien: {{categories}}',
+    negativePrompt: null,
+    temperature: 0.3, maxTokens: 50, strength: null,
+  },
+  trading_card: {
+    feature: 'trading_card',
+    providerId: null, model: null, systemPrompt: null,
+    userPromptTpl: 'trading card design, holographic border, stats panel, character portrait, collectible card game style, shiny foil effect, fantasy card art',
+    negativePrompt: 'plain, no border, photograph, simple',
+    temperature: null, maxTokens: null, strength: 0.70,
+  },
 };
 
 // ─── Core Functions ─────────────────────────────────────────
@@ -398,6 +450,8 @@ export async function resolvePrompt(
   feature: string,
   eventId?: string,
 ): Promise<ResolvedPrompt> {
+  const fallback = FALLBACK_PROMPTS[feature] || null;
+
   try {
     // 1. Try event-specific template
     if (eventId) {
@@ -406,7 +460,17 @@ export async function resolvePrompt(
         orderBy: { version: 'desc' },
       });
       if (eventTemplate) {
-        return { ...templateToResolved(eventTemplate), source: 'db' };
+        const resolved = templateToResolved(eventTemplate);
+        // Merge with fallback for any null fields
+        if (fallback) {
+          resolved.systemPrompt = resolved.systemPrompt ?? fallback.systemPrompt;
+          resolved.userPromptTpl = resolved.userPromptTpl ?? fallback.userPromptTpl;
+          resolved.negativePrompt = resolved.negativePrompt ?? fallback.negativePrompt;
+          resolved.temperature = resolved.temperature ?? fallback.temperature;
+          resolved.maxTokens = resolved.maxTokens ?? fallback.maxTokens;
+          resolved.strength = resolved.strength ?? fallback.strength;
+        }
+        return { ...resolved, source: 'event' as const };
       }
     }
 
@@ -416,7 +480,17 @@ export async function resolvePrompt(
       orderBy: { version: 'desc' },
     });
     if (globalTemplate) {
-      return { ...templateToResolved(globalTemplate), source: 'db' };
+      const resolved = templateToResolved(globalTemplate);
+      // Merge with fallback for any null fields
+      if (fallback) {
+        resolved.systemPrompt = resolved.systemPrompt ?? fallback.systemPrompt;
+        resolved.userPromptTpl = resolved.userPromptTpl ?? fallback.userPromptTpl;
+        resolved.negativePrompt = resolved.negativePrompt ?? fallback.negativePrompt;
+        resolved.temperature = resolved.temperature ?? fallback.temperature;
+        resolved.maxTokens = resolved.maxTokens ?? fallback.maxTokens;
+        resolved.strength = resolved.strength ?? fallback.strength;
+      }
+      return { ...resolved, source: 'global' as const };
     }
   } catch (error) {
     logger.warn('[PromptTemplates] DB lookup failed, using fallback', {
@@ -426,7 +500,6 @@ export async function resolvePrompt(
   }
 
   // 3. Hardcoded fallback
-  const fallback = FALLBACK_PROMPTS[feature];
   if (fallback) {
     return { ...fallback, id: `fallback:${feature}`, source: 'fallback' };
   }
