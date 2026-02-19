@@ -342,6 +342,18 @@ model PackageDefinition {
   priceEurCents        Int?
   storageLimitPhotos   Int?
 
+  // Default AI energy settings (inherited by EventAiConfig on creation)
+  defaultEnergyEnabled       Boolean @default(true)
+  defaultEnergyStartBalance  Int     @default(10)
+  defaultEnergyCooldown      Int     @default(60)
+  defaultCostLlmGame         Int     @default(1)
+  defaultCostImageEffect     Int     @default(2)
+  defaultCostStyleTransfer   Int     @default(2)
+  defaultCostFaceSwap        Int     @default(3)
+  defaultCostGif             Int     @default(3)
+  defaultCostVideo           Int     @default(5)
+  defaultCostTradingCard     Int     @default(2)
+
   @@index([sku])
   @@index([type])
   @@index([isActive])

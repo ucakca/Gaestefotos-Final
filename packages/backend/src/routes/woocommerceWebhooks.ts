@@ -489,17 +489,23 @@ export async function processWooOrderPaidWebhook(params: {
     }
 
     // ── P1-2: EventAiConfig mit Paket-Defaults erstellen (non-blocking) ──
-    const tier = (pkg?.resultingTier || 'BASIC').toUpperCase();
-    const energyDefaults = {
-      FREE:    { energyStartBalance: 5,  energyRewardFirstUpload: 3, energyCostLlmGame: 1, energyCostImageEffect: 2, energyCostStyleTransfer: 2 },
-      BASIC:   { energyStartBalance: 10, energyRewardFirstUpload: 5, energyCostLlmGame: 1, energyCostImageEffect: 2, energyCostStyleTransfer: 2 },
-      SMART:   { energyStartBalance: 10, energyRewardFirstUpload: 8, energyCostLlmGame: 1, energyCostImageEffect: 2, energyCostStyleTransfer: 2 },
-      PREMIUM: { energyStartBalance: 20, energyRewardFirstUpload: 10, energyCostLlmGame: 0, energyCostImageEffect: 1, energyCostStyleTransfer: 1 },
-    } as Record<string, any>;
-    const defaults = energyDefaults[tier] || energyDefaults['BASIC'];
+    // Use actual PackageDefinition energy defaults instead of hardcoded tier map
+    const pkgDefaults: Record<string, any> = {};
+    if (pkg) {
+      pkgDefaults.energyEnabled = pkg.defaultEnergyEnabled ?? true;
+      pkgDefaults.energyStartBalance = pkg.defaultEnergyStartBalance ?? 10;
+      pkgDefaults.energyCooldownSeconds = pkg.defaultEnergyCooldown ?? 60;
+      pkgDefaults.energyCostLlmGame = pkg.defaultCostLlmGame ?? 1;
+      pkgDefaults.energyCostImageEffect = pkg.defaultCostImageEffect ?? 2;
+      pkgDefaults.energyCostStyleTransfer = pkg.defaultCostStyleTransfer ?? 2;
+      pkgDefaults.energyCostFaceSwap = pkg.defaultCostFaceSwap ?? 3;
+      pkgDefaults.energyCostGif = pkg.defaultCostGif ?? 3;
+      pkgDefaults.energyCostVideo = pkg.defaultCostVideo ?? 5;
+      pkgDefaults.energyCostTradingCard = pkg.defaultCostTradingCard ?? 2;
+    }
     prisma.eventAiConfig.upsert({
       where: { eventId: processed.eventId },
-      create: { eventId: processed.eventId, ...defaults },
+      create: { eventId: processed.eventId, ...pkgDefaults },
       update: {},
     }).catch((err: any) => logger.warn('WooCommerce: EventAiConfig upsert failed', { error: err.message }));
 
@@ -514,7 +520,7 @@ export async function processWooOrderPaidWebhook(params: {
         const frontendUrl = (process.env.FRONTEND_URL || 'https://dash.xn--gstefotos-v2a.com').replace(/\/$/, '');
         const briefingUrl = `${frontendUrl}/events/${ev.id}/briefing`;
         const dashboardUrl = `${frontendUrl}/events/${ev.id}/dashboard`;
-        const packageName = pkg?.name || tier;
+        const packageName = pkg?.name || pkg?.resultingTier || 'Standard';
         await (emailService as any).transporter?.sendMail({
           from: (emailService as any).config?.from || 'info@gaestefotos.com',
           to: customerEmail,

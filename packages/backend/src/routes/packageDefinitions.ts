@@ -60,6 +60,18 @@ const createSchema = z.object({
   maxGamePlaysPerDay: z.number().int().nonnegative().optional().nullable(),
   maxAiCreditsPerEvent: z.number().int().nonnegative().optional().nullable(),
   
+  // Default AI Energy Settings
+  defaultEnergyEnabled: z.boolean().optional(),
+  defaultEnergyStartBalance: z.number().int().nonnegative().optional(),
+  defaultEnergyCooldown: z.number().int().nonnegative().optional(),
+  defaultCostLlmGame: z.number().int().nonnegative().optional(),
+  defaultCostImageEffect: z.number().int().nonnegative().optional(),
+  defaultCostStyleTransfer: z.number().int().nonnegative().optional(),
+  defaultCostFaceSwap: z.number().int().nonnegative().optional(),
+  defaultCostGif: z.number().int().nonnegative().optional(),
+  defaultCostVideo: z.number().int().nonnegative().optional(),
+  defaultCostTradingCard: z.number().int().nonnegative().optional(),
+
   // Display & Pricing
   displayOrder: z.number().int().optional(),
   priceEurCents: z.number().int().nonnegative().optional().nullable(),
@@ -215,6 +227,18 @@ router.put('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest
   if (patch.priceEurCents !== undefined) updateData.priceEurCents = patch.priceEurCents;
   if (patch.description !== undefined) updateData.description = patch.description;
   
+  // Default AI Energy Settings
+  if (patch.defaultEnergyEnabled !== undefined) updateData.defaultEnergyEnabled = patch.defaultEnergyEnabled;
+  if (patch.defaultEnergyStartBalance !== undefined) updateData.defaultEnergyStartBalance = patch.defaultEnergyStartBalance;
+  if (patch.defaultEnergyCooldown !== undefined) updateData.defaultEnergyCooldown = patch.defaultEnergyCooldown;
+  if (patch.defaultCostLlmGame !== undefined) updateData.defaultCostLlmGame = patch.defaultCostLlmGame;
+  if (patch.defaultCostImageEffect !== undefined) updateData.defaultCostImageEffect = patch.defaultCostImageEffect;
+  if (patch.defaultCostStyleTransfer !== undefined) updateData.defaultCostStyleTransfer = patch.defaultCostStyleTransfer;
+  if (patch.defaultCostFaceSwap !== undefined) updateData.defaultCostFaceSwap = patch.defaultCostFaceSwap;
+  if (patch.defaultCostGif !== undefined) updateData.defaultCostGif = patch.defaultCostGif;
+  if (patch.defaultCostVideo !== undefined) updateData.defaultCostVideo = patch.defaultCostVideo;
+  if (patch.defaultCostTradingCard !== undefined) updateData.defaultCostTradingCard = patch.defaultCostTradingCard;
+
   if (patch.isActive !== undefined) updateData.isActive = patch.isActive;
 
   const updated = await prisma.packageDefinition.update({

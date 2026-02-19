@@ -64,6 +64,17 @@ interface PackageDefinition {
   displayOrder: number;
   priceEurCents: number | null;
   description: string | null;
+  // Default AI Energy Settings
+  defaultEnergyEnabled: boolean;
+  defaultEnergyStartBalance: number;
+  defaultEnergyCooldown: number;
+  defaultCostLlmGame: number;
+  defaultCostImageEffect: number;
+  defaultCostStyleTransfer: number;
+  defaultCostFaceSwap: number;
+  defaultCostGif: number;
+  defaultCostVideo: number;
+  defaultCostTradingCard: number;
 }
 
 type TabId = 'base' | 'addons' | 'matrix';
@@ -523,6 +534,12 @@ function PackageCards({
               onToggleCat={(catField) => toggleFeature(pkg, catField as keyof PackageDefinition)}
               pkgAiCategories={pkgAiCategories}
             />
+
+            {/* Default AI Energy Settings */}
+            <PkgEnergySection
+              displayPkg={displayPkg}
+              updateField={(field, value) => updateField(pkg, field, value)}
+            />
           </div>
         );
       })}
@@ -619,6 +636,110 @@ function PkgAiFeatureSection({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/* ── Default AI Energy Settings (inside PackageCards) ── */
+
+const ENERGY_COST_FIELDS: { key: keyof PackageDefinition; label: string; icon: string }[] = [
+  { key: 'defaultCostLlmGame', label: 'LLM / Spiele', icon: '🎮' },
+  { key: 'defaultCostImageEffect', label: 'Bildeffekte', icon: '🎨' },
+  { key: 'defaultCostStyleTransfer', label: 'Style Transfer', icon: '🖼️' },
+  { key: 'defaultCostFaceSwap', label: 'Face Swap', icon: '🔄' },
+  { key: 'defaultCostGif', label: 'GIF', icon: '📸' },
+  { key: 'defaultCostVideo', label: 'Video', icon: '🎬' },
+  { key: 'defaultCostTradingCard', label: 'Trading Card', icon: '🃏' },
+];
+
+function PkgEnergySection({
+  displayPkg,
+  updateField,
+}: {
+  displayPkg: PackageDefinition;
+  updateField: (field: keyof PackageDefinition, value: any) => void;
+}) {
+  const [expanded, setExpanded] = React.useState(false);
+
+  return (
+    <div className="mt-4 pt-4 border-t border-app-border/50">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center justify-between w-full text-left"
+      >
+        <label className="text-xs font-semibold text-app-muted flex items-center gap-1.5">
+          ⚡ Standard-Energiekosten
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 font-medium">
+            {displayPkg.defaultEnergyStartBalance} ⚡ Start
+          </span>
+        </label>
+        <ChevronDown className={`w-3.5 h-3.5 text-app-muted transition-transform ${expanded ? 'rotate-180' : ''}`} />
+      </button>
+
+      {expanded && (
+        <div className="mt-3 space-y-3">
+          {/* Energy Toggle + Start Balance + Cooldown */}
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="text-[10px] text-app-muted mb-1 block">Energie aktiv</label>
+              <button
+                onClick={() => updateField('defaultEnergyEnabled', !displayPkg.defaultEnergyEnabled)}
+                className={`w-full py-2 rounded-lg text-xs font-medium border transition-colors ${
+                  displayPkg.defaultEnergyEnabled
+                    ? 'bg-green-500/10 text-green-600 border-green-500/30'
+                    : 'bg-app-bg text-app-muted border-app-border'
+                }`}
+              >
+                {displayPkg.defaultEnergyEnabled ? '✅ Aktiv' : '❌ Deaktiviert'}
+              </button>
+            </div>
+            <div>
+              <label className="text-[10px] text-app-muted mb-1 block">Startguthaben ⚡</label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                value={displayPkg.defaultEnergyStartBalance}
+                onChange={(e) => updateField('defaultEnergyStartBalance', parseInt(e.target.value) || 0)}
+                className="text-center text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-app-muted mb-1 block">Cooldown (Sek.)</label>
+              <Input
+                type="number"
+                min={0}
+                value={displayPkg.defaultEnergyCooldown}
+                onChange={(e) => updateField('defaultEnergyCooldown', parseInt(e.target.value) || 0)}
+                className="text-center text-sm"
+              />
+            </div>
+          </div>
+
+          {/* Per-category energy costs */}
+          <div>
+            <label className="text-[10px] text-app-muted mb-2 block">Kosten pro Feature-Kategorie</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {ENERGY_COST_FIELDS.map(({ key, label, icon }) => (
+                <div key={key} className="rounded-lg border border-app-border/50 p-2 bg-app-bg/30">
+                  <div className="flex items-center gap-1 mb-1">
+                    <span className="text-xs">{icon}</span>
+                    <span className="text-[10px] text-app-muted font-medium truncate">{label}</span>
+                  </div>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={20}
+                    value={(displayPkg[key] as number) ?? 1}
+                    onChange={(e) => updateField(key, parseInt(e.target.value) || 0)}
+                    className="text-center text-sm font-bold"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

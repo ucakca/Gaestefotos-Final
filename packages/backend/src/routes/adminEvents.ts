@@ -573,6 +573,25 @@ router.post('/', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, 
             storageLimitBytes: targetPkg.storageLimitBytes,
           },
         });
+
+        // Create EventAiConfig with package energy defaults
+        await prisma.eventAiConfig.upsert({
+          where: { eventId: event.id },
+          create: {
+            eventId: event.id,
+            energyEnabled: targetPkg.defaultEnergyEnabled ?? true,
+            energyStartBalance: targetPkg.defaultEnergyStartBalance ?? 10,
+            energyCooldownSeconds: targetPkg.defaultEnergyCooldown ?? 60,
+            energyCostLlmGame: targetPkg.defaultCostLlmGame ?? 1,
+            energyCostImageEffect: targetPkg.defaultCostImageEffect ?? 2,
+            energyCostStyleTransfer: targetPkg.defaultCostStyleTransfer ?? 2,
+            energyCostFaceSwap: targetPkg.defaultCostFaceSwap ?? 3,
+            energyCostGif: targetPkg.defaultCostGif ?? 3,
+            energyCostVideo: targetPkg.defaultCostVideo ?? 5,
+            energyCostTradingCard: targetPkg.defaultCostTradingCard ?? 2,
+          },
+          update: {},
+        }).catch(() => {});
       }
     }
 
