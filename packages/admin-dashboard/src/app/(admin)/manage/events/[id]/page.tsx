@@ -1124,6 +1124,88 @@ export default function EventDetailPage() {
                 </div>
               )}
             </div>
+
+            {/* Prompt Overrides (integrated) */}
+            <div className="border border-app-border rounded-xl overflow-hidden">
+              <button
+                onClick={() => setExpandedAiCats(e => ({ ...e, promptOverrides: !e.promptOverrides }))}
+                className="w-full flex items-center justify-between px-4 py-3 bg-app-bg/50 hover:bg-app-bg transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-app-muted">✏️ Prompt-Overrides</span>
+                  {promptOverrides.length > 0 && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/30">{promptOverrides.length} aktiv</span>
+                  )}
+                </div>
+                <ChevronDown className={`w-4 h-4 text-app-muted transition-transform ${expandedAiCats.promptOverrides ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {expandedAiCats.promptOverrides && (
+                <div className="p-4 border-t border-app-border space-y-2">
+                  <p className="text-[10px] text-app-muted mb-2">Custom Prompts für einzelne AI-Features (überschreibt globale Defaults)</p>
+                  {promptOverridesLoading ? (
+                    <div className="flex justify-center py-2"><Loader2 className="w-4 h-4 animate-spin text-app-muted" /></div>
+                  ) : (
+                    <div className="space-y-1.5 max-h-60 overflow-y-auto">
+                      {AI_CATEGORIES.filter(cat => cat.features.some(f => ['compliment_mirror','fortune_teller','ai_roast','ai_bingo','ai_dj','ai_meme','ai_superlatives','ai_photo_critic','ai_couple_match','caption_suggest'].includes(f.key) || f.key.startsWith('style_transfer'))).map(cat => (
+                        <div key={cat.key} className="rounded-lg border border-app-border/50 overflow-hidden">
+                          <div className="px-2 py-1.5 bg-app-bg/30 text-[10px] font-semibold text-app-muted flex items-center gap-1">
+                            <span>{cat.icon}</span> {cat.label}
+                          </div>
+                          <div className="divide-y divide-app-border/30">
+                            {cat.features.map(feat => {
+                              const override = promptOverrides.find((t: any) => t.feature === feat.key);
+                              const isEditing = editingPrompt === feat.key;
+                              return (
+                                <div key={feat.key} className="px-2 py-1.5">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-xs text-app-fg">{feat.label}</span>
+                                      {override ? (
+                                        <span className="text-[8px] px-1 py-0.5 rounded bg-purple-100 text-purple-700 dark:bg-purple-950/30">Override</span>
+                                      ) : null}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <button
+                                        onClick={() => isEditing ? setEditingPrompt(null) : startEditPrompt(feat.key)}
+                                        className="text-[10px] px-1.5 py-0.5 rounded hover:bg-app-bg text-app-accent"
+                                      >
+                                        {isEditing ? '×' : 'Edit'}
+                                      </button>
+                                      {override && (
+                                        <button onClick={() => deletePromptOverride(override.id)} className="text-[10px] text-red-500 hover:text-red-600">
+                                          <X className="w-3 h-3" />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {isEditing && (
+                                    <div className="mt-2 space-y-2 p-2 bg-white/50 dark:bg-black/20 rounded-lg">
+                                      <div>
+                                        <label className="block text-[9px] text-app-muted mb-0.5">System-Prompt</label>
+                                        <textarea rows={3} value={promptForm.systemPrompt || ''} onChange={e => setPromptForm(f => ({ ...f, systemPrompt: e.target.value }))} className="w-full px-2 py-1 rounded border border-app-border bg-app-bg text-[10px] font-mono resize-none" placeholder="System-Prompt..." />
+                                      </div>
+                                      <div>
+                                        <label className="block text-[9px] text-app-muted mb-0.5">User-Prompt</label>
+                                        <textarea rows={2} value={promptForm.userPromptTpl || ''} onChange={e => setPromptForm(f => ({ ...f, userPromptTpl: e.target.value }))} className="w-full px-2 py-1 rounded border border-app-border bg-app-bg text-[10px] font-mono resize-none" placeholder="User-Prompt..." />
+                                      </div>
+                                      <div className="flex justify-end gap-1">
+                                        <button onClick={() => setEditingPrompt(null)} className="text-[10px] px-2 py-1 rounded border border-app-border text-app-muted">Abbrechen</button>
+                                        <button onClick={() => savePromptOverride(feat.key)} className="text-[10px] px-2 py-1 rounded bg-purple-500 text-white">Speichern</button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         ) : aiConfig ? (
           <div className="space-y-2">
@@ -1168,152 +1250,6 @@ export default function EventDetailPage() {
             )}
           </div>
         ) : null}
-      </div>
-
-      {/* Per-Event Prompt Overrides */}
-      <div className="rounded-2xl border border-app-border bg-app-card p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-app-fg flex items-center gap-2">
-            <Brain className="w-4 h-4 text-purple-500" />
-            Prompt-Overrides (pro Event)
-          </h3>
-          <span className="text-xs text-app-muted">
-            {promptOverrides.length} Override{promptOverrides.length !== 1 ? 's' : ''} aktiv
-          </span>
-        </div>
-        <p className="text-xs text-app-muted">
-          Hier kannst du für jedes AI-Feature ein individuelles Prompt setzen, das nur für dieses Event gilt.
-          Ohne Override wird das globale Default-Prompt verwendet.
-        </p>
-
-        {promptOverridesLoading ? (
-          <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-app-muted" /></div>
-        ) : (
-          <div className="space-y-2">
-            {AI_CATEGORIES.filter(cat => cat.features.some(f => ['compliment_mirror','fortune_teller','ai_roast','ai_bingo','ai_dj','ai_meme','ai_superlatives','ai_photo_critic','ai_couple_match','caption_suggest'].includes(f.key) || f.key.startsWith('style_transfer'))).map(cat => (
-              <div key={cat.key} className="rounded-xl border border-app-border overflow-hidden">
-                <div className="px-3 py-2 bg-app-bg/50 text-xs font-semibold text-app-muted flex items-center gap-1.5">
-                  <span>{cat.icon}</span> {cat.label}
-                </div>
-                <div className="divide-y divide-app-border">
-                  {cat.features.map(feat => {
-                    const override = promptOverrides.find((t: any) => t.feature === feat.key);
-                    const isEditing = editingPrompt === feat.key;
-
-                    return (
-                      <div key={feat.key} className="px-3 py-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-app-fg">{feat.label}</span>
-                            {override ? (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950/30 dark:text-purple-300 font-medium">Override</span>
-                            ) : (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">Default</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => isEditing ? setEditingPrompt(null) : startEditPrompt(feat.key)}
-                              className="text-xs px-2 py-1 rounded-lg hover:bg-app-bg transition-colors text-app-accent"
-                            >
-                              {isEditing ? 'Schließen' : 'Bearbeiten'}
-                            </button>
-                            {override && (
-                              <button
-                                onClick={() => deletePromptOverride(override.id)}
-                                className="text-xs px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors text-red-500"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        {isEditing && (
-                          <div className="mt-2 space-y-2 p-3 bg-app-bg/50 rounded-xl border border-app-border">
-                            <div className="flex items-center gap-2 text-[10px] text-app-muted">
-                              Quelle: <span className={`px-1.5 py-0.5 rounded ${promptForm.source === 'db' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>{promptForm.source || 'fallback'}</span>
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-medium text-app-muted mb-0.5">System-Prompt</label>
-                              <textarea
-                                rows={4}
-                                value={promptForm.systemPrompt || ''}
-                                onChange={e => setPromptForm(f => ({ ...f, systemPrompt: e.target.value }))}
-                                className="w-full px-2 py-1.5 rounded-lg border border-app-border bg-app-bg text-app-fg text-xs font-mono focus:outline-none focus:ring-1 focus:ring-purple-500/50 resize-none"
-                                placeholder="System-Prompt (Rolle & Regeln der AI)..."
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-medium text-app-muted mb-0.5">User-Prompt Template <span className="text-app-muted/50">{'{{eventContext}} {{guestContext}}'}</span></label>
-                              <textarea
-                                rows={2}
-                                value={promptForm.userPromptTpl || ''}
-                                onChange={e => setPromptForm(f => ({ ...f, userPromptTpl: e.target.value }))}
-                                className="w-full px-2 py-1.5 rounded-lg border border-app-border bg-app-bg text-app-fg text-xs font-mono focus:outline-none focus:ring-1 focus:ring-purple-500/50 resize-none"
-                                placeholder="User-Prompt mit {{variables}}..."
-                              />
-                            </div>
-                            {(feat.key.startsWith('style_transfer') || cat.key === 'imageEffects') && (
-                              <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                  <label className="block text-[10px] font-medium text-app-muted mb-0.5">Negative Prompt</label>
-                                  <input
-                                    value={promptForm.negativePrompt || ''}
-                                    onChange={e => setPromptForm(f => ({ ...f, negativePrompt: e.target.value }))}
-                                    className="w-full px-2 py-1.5 rounded-lg border border-app-border bg-app-bg text-app-fg text-xs focus:outline-none focus:ring-1 focus:ring-purple-500/50"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-[10px] font-medium text-app-muted mb-0.5">Strength (0-1)</label>
-                                  <input
-                                    type="number" min={0} max={1} step={0.05}
-                                    value={promptForm.strength || ''}
-                                    onChange={e => setPromptForm(f => ({ ...f, strength: e.target.value }))}
-                                    className="w-full px-2 py-1.5 rounded-lg border border-app-border bg-app-bg text-app-fg text-xs focus:outline-none focus:ring-1 focus:ring-purple-500/50"
-                                  />
-                                </div>
-                              </div>
-                            )}
-                            <div className="grid grid-cols-2 gap-2">
-                              <div>
-                                <label className="block text-[10px] font-medium text-app-muted mb-0.5">Temperature</label>
-                                <input
-                                  type="number" min={0} max={2} step={0.05}
-                                  value={promptForm.temperature || ''}
-                                  onChange={e => setPromptForm(f => ({ ...f, temperature: e.target.value }))}
-                                  className="w-full px-2 py-1.5 rounded-lg border border-app-border bg-app-bg text-app-fg text-xs focus:outline-none focus:ring-1 focus:ring-purple-500/50"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] font-medium text-app-muted mb-0.5">Max Tokens</label>
-                                <input
-                                  type="number" min={50} max={2000}
-                                  value={promptForm.maxTokens || ''}
-                                  onChange={e => setPromptForm(f => ({ ...f, maxTokens: e.target.value }))}
-                                  className="w-full px-2 py-1.5 rounded-lg border border-app-border bg-app-bg text-app-fg text-xs focus:outline-none focus:ring-1 focus:ring-purple-500/50"
-                                />
-                              </div>
-                            </div>
-                            <div className="flex justify-end gap-2 pt-1">
-                              <button onClick={() => setEditingPrompt(null)} className="text-xs px-3 py-1.5 rounded-lg border border-app-border hover:bg-app-bg transition-colors text-app-muted">
-                                Abbrechen
-                              </button>
-                              <button onClick={() => savePromptOverride(feat.key)} className="text-xs px-3 py-1.5 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-colors font-medium">
-                                <Save className="w-3 h-3 inline mr-1" />
-                                Override speichern
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Actions */}
