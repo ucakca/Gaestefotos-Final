@@ -1057,10 +1057,39 @@ export default function EventDetailPage() {
               {showAdvancedAi && (
                 <div className="p-4 space-y-4 border-t border-app-border">
                   {/* Cooldown */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-app-muted mb-1">Cooldown (Sekunden)</label>
-                      <input type="number" min={0} max={3600} value={aiConfigForm.energyCooldownSeconds} onChange={e => setAiConfigForm(f => ({ ...f, energyCooldownSeconds: e.target.value }))} className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50" />
+                  <div>
+                    <label className="block text-xs font-medium text-app-muted mb-1">Cooldown (Sekunden)</label>
+                    <input type="number" min={0} max={3600} value={aiConfigForm.energyCooldownSeconds} onChange={e => setAiConfigForm(f => ({ ...f, energyCooldownSeconds: e.target.value }))} className="w-24 px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50" />
+                  </div>
+
+                  {/* Energy Costs */}
+                  <div>
+                    <label className="block text-xs font-semibold text-app-muted mb-2">Energiekosten pro Kategorie</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { key: 'energyCostLlmGame', label: 'KI-Spiele', icon: '🎮', def: 1 },
+                        { key: 'energyCostImageEffect', label: 'Bildeffekte', icon: '🎨', def: 2 },
+                        { key: 'energyCostStyleTransfer', label: 'Style Transfer', icon: '🖼️', def: 2 },
+                        { key: 'energyCostFaceSwap', label: 'Face Swap', icon: '🔄', def: 3 },
+                        { key: 'energyCostGif', label: 'GIF', icon: '🎬', def: 3 },
+                        { key: 'energyCostVideo', label: 'Video', icon: '📹', def: 5 },
+                      ].map(c => (
+                        <div key={c.key} className="flex items-center gap-2 px-2 py-1.5 rounded-lg border border-app-border bg-app-bg/50">
+                          <span className="text-sm">{c.icon}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-[10px] text-app-muted truncate">{c.label}</div>
+                            <input
+                              type="number"
+                              min={0}
+                              max={20}
+                              value={(aiConfigForm as any)[c.key] ?? c.def}
+                              onChange={e => setAiConfigForm(f => ({ ...f, [c.key]: e.target.value }))}
+                              className="w-full text-sm font-bold text-app-fg bg-transparent border-none p-0 focus:outline-none"
+                            />
+                          </div>
+                          <span className="text-[10px] text-app-muted">⚡</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
