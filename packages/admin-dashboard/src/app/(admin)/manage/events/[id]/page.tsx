@@ -1134,59 +1134,61 @@ export default function EventDetailPage() {
                   })}
                 </div>
 
-                {/* Prompt Override Overlay (inline below feature list) */}
+                {/* Prompt Override Modal Overlay */}
                 {editingPrompt && (
-                  <div className="rounded-xl border-2 border-purple-500/50 bg-purple-50/10 dark:bg-purple-950/20 overflow-hidden">
-                    <div className="px-4 py-3 bg-purple-500/10 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Edit2 className="w-4 h-4 text-purple-500" />
-                        <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">
-                          Prompt-Override: {AI_CATEGORIES.flatMap(c => c.features).find(f => f.key === editingPrompt)?.label || editingPrompt}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {promptOverrides.find((t: any) => t.feature === editingPrompt) && (
-                          <button
-                            onClick={() => { const o = promptOverrides.find((t: any) => t.feature === editingPrompt); if (o) deletePromptOverride(o.id); }}
-                            className="text-[10px] px-2 py-1 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20 font-medium"
-                          >
-                            Override löschen
-                          </button>
-                        )}
-                        <button onClick={() => setEditingPrompt(null)} className="text-app-muted hover:text-app-fg">
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="p-4 space-y-3">
-                      {promptForm.source && (
-                        <div className="text-[10px] text-app-muted">
-                          Quelle: <span className="font-medium">{promptForm.source === 'event' ? 'Event-Override' : promptForm.source === 'global' ? 'Globale Vorlage' : 'System-Default'}</span>
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setEditingPrompt(null)}>
+                    <div className="w-full max-w-lg rounded-xl border-2 border-purple-500/50 bg-app-card shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+                      <div className="px-4 py-3 bg-purple-500/10 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Edit2 className="w-4 h-4 text-purple-500" />
+                          <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">
+                            Prompt-Override: {AI_CATEGORIES.flatMap(c => c.features).find(f => f.key === editingPrompt)?.label || editingPrompt}
+                          </span>
                         </div>
-                      )}
-                      <div>
-                        <label className="block text-xs font-medium text-app-muted mb-1">System-Prompt</label>
-                        <textarea
-                          rows={4}
-                          value={promptForm.systemPrompt || ''}
-                          onChange={e => setPromptForm(f => ({ ...f, systemPrompt: e.target.value }))}
-                          className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-xs font-mono text-app-fg resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                          placeholder="System-Prompt..."
-                        />
+                        <div className="flex items-center gap-2">
+                          {promptOverrides.find((t: any) => t.feature === editingPrompt) && (
+                            <button
+                              onClick={() => { const o = promptOverrides.find((t: any) => t.feature === editingPrompt); if (o) deletePromptOverride(o.id); }}
+                              className="text-[10px] px-2 py-1 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20 font-medium"
+                            >
+                              Override löschen
+                            </button>
+                          )}
+                          <button onClick={() => setEditingPrompt(null)} className="text-app-muted hover:text-app-fg">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-xs font-medium text-app-muted mb-1">User-Prompt</label>
-                        <textarea
-                          rows={3}
-                          value={promptForm.userPromptTpl || ''}
-                          onChange={e => setPromptForm(f => ({ ...f, userPromptTpl: e.target.value }))}
-                          className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-xs font-mono text-app-fg resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                          placeholder="User-Prompt Template..."
-                        />
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <button onClick={() => setEditingPrompt(null)} className="text-xs px-3 py-1.5 rounded-lg border border-app-border text-app-muted hover:bg-app-bg">Abbrechen</button>
-                        <button onClick={() => savePromptOverride(editingPrompt)} className="text-xs px-3 py-1.5 rounded-lg bg-purple-500 text-white hover:bg-purple-600 font-medium">Speichern</button>
+                      <div className="p-4 space-y-3">
+                        {promptForm.source && (
+                          <div className="text-[10px] text-app-muted">
+                            Quelle: <span className="font-medium">{promptForm.source === 'event' ? 'Event-Override' : promptForm.source === 'global' ? 'Globale Vorlage' : 'System-Default'}</span>
+                          </div>
+                        )}
+                        <div>
+                          <label className="block text-xs font-medium text-app-muted mb-1">System-Prompt</label>
+                          <textarea
+                            rows={4}
+                            value={promptForm.systemPrompt || ''}
+                            onChange={e => setPromptForm(f => ({ ...f, systemPrompt: e.target.value }))}
+                            className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-xs font-mono text-app-fg resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                            placeholder="System-Prompt..."
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-app-muted mb-1">User-Prompt</label>
+                          <textarea
+                            rows={3}
+                            value={promptForm.userPromptTpl || ''}
+                            onChange={e => setPromptForm(f => ({ ...f, userPromptTpl: e.target.value }))}
+                            className="w-full px-3 py-2 rounded-lg border border-app-border bg-app-bg text-xs font-mono text-app-fg resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                            placeholder="User-Prompt Template..."
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => setEditingPrompt(null)} className="text-xs px-3 py-1.5 rounded-lg border border-app-border text-app-muted hover:bg-app-bg">Abbrechen</button>
+                          <button onClick={() => savePromptOverride(editingPrompt)} className="text-xs px-3 py-1.5 rounded-lg bg-purple-500 text-white hover:bg-purple-600 font-medium">Speichern</button>
+                        </div>
                       </div>
                     </div>
                   </div>
