@@ -1,5 +1,7 @@
 import { Router, Response } from 'express';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
+import { withEnergyCheck } from '../middleware/energyCheck';
+import { enrichSystemPrompt } from '../services/eventPromptContext';
 import { logger } from '../utils/logger';
 import {
   GAME_CATALOG,
@@ -38,7 +40,7 @@ router.post('/slot-machine/spin', authMiddleware, async (req: AuthRequest, res: 
 });
 
 // POST /api/booth-games/compliment-mirror — Get an AI-generated compliment (with fallback)
-router.post('/compliment-mirror', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/compliment-mirror', authMiddleware, withEnergyCheck('compliment_mirror'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName, useAI } = req.body;
 
@@ -67,7 +69,7 @@ router.post('/compliment-mirror', authMiddleware, async (req: AuthRequest, res: 
 });
 
 // POST /api/booth-games/fortune-teller — Get an AI-generated fortune prediction
-router.post('/fortune-teller', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/fortune-teller', authMiddleware, withEnergyCheck('fortune_teller'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName } = req.body;
 
@@ -86,7 +88,7 @@ router.post('/fortune-teller', authMiddleware, async (req: AuthRequest, res: Res
 });
 
 // POST /api/booth-games/ai-roast — Get a loving AI roast
-router.post('/ai-roast', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/ai-roast', authMiddleware, withEnergyCheck('ai_roast'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName } = req.body;
 
@@ -205,7 +207,7 @@ router.post('/face-switch', authMiddleware, async (req: AuthRequest, res: Respon
 });
 
 // POST /api/booth-games/style-effect — Apply AI style effect (oldify, cartoon, style_pop)
-router.post('/style-effect', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/style-effect', authMiddleware, withEnergyCheck('ai_oldify'), async (req: AuthRequest, res: Response) => {
   try {
     const { photoId, effect, intensity, outputFormat } = req.body;
 
@@ -237,7 +239,7 @@ router.post('/style-effect', authMiddleware, async (req: AuthRequest, res: Respo
 });
 
 // POST /api/booth-games/bg-removal — Remove background from a photo
-router.post('/bg-removal', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/bg-removal', authMiddleware, withEnergyCheck('bg_removal'), async (req: AuthRequest, res: Response) => {
   try {
     const { photoId, replacementColor, outputFormat } = req.body;
 
@@ -262,7 +264,7 @@ router.post('/bg-removal', authMiddleware, async (req: AuthRequest, res: Respons
 });
 
 // POST /api/booth-games/caption-generator — Generate social media captions
-router.post('/caption-generator', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/caption-generator', authMiddleware, withEnergyCheck('caption_suggest'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle } = req.body;
 
@@ -275,7 +277,7 @@ router.post('/caption-generator', authMiddleware, async (req: AuthRequest, res: 
     const context = eventType || eventTitle || 'Party';
     const userPrompt = renderPrompt(userPromptTpl, { eventType: context });
 
-    const response = await generateCompletion(userPrompt, systemPrompt, {
+    const response = await generateCompletion(userPrompt, await enrichSystemPrompt(eventId, systemPrompt), {
       maxTokens: prompt.maxTokens || 200,
       temperature: prompt.temperature || 0.85,
     });
@@ -304,7 +306,7 @@ router.post('/caption-generator', authMiddleware, async (req: AuthRequest, res: 
 });
 
 // POST /api/booth-games/persona-quiz — AI analyzes 3 answers → Persona type
-router.post('/persona-quiz', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/persona-quiz', authMiddleware, withEnergyCheck('compliment_mirror'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName, answers } = req.body;
 
@@ -325,7 +327,7 @@ Antworte NUR mit einem JSON-Objekt: {"persona": "DER TITEL", "description": "2-3
 
 Welcher Party-Persönlichkeitstyp ist das?`;
 
-    const response = await generateCompletion(userPrompt, systemPrompt, {
+    const response = await generateCompletion(userPrompt, await enrichSystemPrompt(eventId, systemPrompt), {
       maxTokens: 300,
       temperature: 0.9,
     });
@@ -360,7 +362,7 @@ Welcher Party-Persönlichkeitstyp ist das?`;
 });
 
 // POST /api/booth-games/wedding-speech — AI generates a funny short wedding speech
-router.post('/wedding-speech', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/wedding-speech', authMiddleware, withEnergyCheck('compliment_mirror'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName, coupleName, role } = req.body;
 
@@ -376,7 +378,7 @@ ${coupleName ? `Das Brautpaar: ${coupleName}` : ''}
 ${role ? `Beziehung zum Brautpaar: ${role}` : ''}
 Schreibe eine kurze, lustige Hochzeitsrede!`;
 
-    const response = await generateCompletion(userPrompt, systemPrompt, {
+    const response = await generateCompletion(userPrompt, await enrichSystemPrompt(eventId, systemPrompt), {
       maxTokens: 400,
       temperature: 0.9,
     });
@@ -409,7 +411,7 @@ Schreibe eine kurze, lustige Hochzeitsrede!`;
 });
 
 // POST /api/booth-games/ai-stories — Guest gives 3 words → AI generates a mini story
-router.post('/ai-stories', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/ai-stories', authMiddleware, withEnergyCheck('compliment_mirror'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName, words } = req.body;
 
@@ -431,7 +433,7 @@ Antworte NUR mit einem JSON-Objekt: {"title": "Kreativer Titel", "story": "Die G
 
 Schreibe eine kurze, lustige Geschichte die ALLE 3 Wörter enthält!`;
 
-    const response = await generateCompletion(userPrompt, systemPrompt, {
+    const response = await generateCompletion(userPrompt, await enrichSystemPrompt(eventId, systemPrompt), {
       maxTokens: 400,
       temperature: 0.95,
     });
@@ -466,7 +468,7 @@ Schreibe eine kurze, lustige Geschichte die ALLE 3 Wörter enthält!`;
 });
 
 // POST /api/booth-games/celebrity-lookalike — LLM guesses which celebrity you look like
-router.post('/celebrity-lookalike', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/celebrity-lookalike', authMiddleware, withEnergyCheck('celebrity_lookalike'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName } = req.body;
     const { generateCompletion } = await import('../lib/groq');
@@ -478,7 +480,7 @@ Antworte NUR mit JSON: {"celebrity": "Name des Promis", "similarity": 70-99, "re
 
     const userPrompt = `Der Gast "${guestName || 'Ein geheimnisvoller Gast'}" auf "${eventTitle || 'der Party'}" möchte wissen: Welchem Promi sehe ich ähnlich? Sei kreativ und witzig!`;
 
-    const response = await generateCompletion(userPrompt, systemPrompt, { maxTokens: 300, temperature: 0.95 });
+    const response = await generateCompletion(userPrompt, await enrichSystemPrompt(eventId, systemPrompt), { maxTokens: 300, temperature: 0.95 });
     let result: any = null;
     try {
       const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
@@ -501,7 +503,7 @@ Antworte NUR mit JSON: {"celebrity": "Name des Promis", "similarity": 70-99, "re
 });
 
 // POST /api/booth-games/ai-bingo — Generate a photo challenge bingo card
-router.post('/ai-bingo', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/ai-bingo', authMiddleware, withEnergyCheck('ai_bingo'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName } = req.body;
     const { generateCompletion } = await import('../lib/groq');
@@ -514,7 +516,7 @@ Die 9 Aufgaben sollen kurz (max 6 Wörter) und lustig sein!`;
 
     const userPrompt = `Erstelle eine Foto-Bingo-Karte für "${eventTitle || 'die Party'}". Die Aufgaben sollen lustig, machbar und party-tauglich sein! Gast: ${guestName || 'Ein Partygast'}`;
 
-    const response = await generateCompletion(userPrompt, systemPrompt, { maxTokens: 400, temperature: 0.9 });
+    const response = await generateCompletion(userPrompt, await enrichSystemPrompt(eventId, systemPrompt), { maxTokens: 400, temperature: 0.9 });
     let result: any = null;
     try {
       const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
@@ -543,7 +545,7 @@ Die 9 Aufgaben sollen kurz (max 6 Wörter) und lustig sein!`;
 });
 
 // POST /api/booth-games/ai-dj — AI suggests party songs
-router.post('/ai-dj', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/ai-dj', authMiddleware, withEnergyCheck('ai_dj'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName, mood } = req.body;
     const { generateCompletion } = await import('../lib/groq');
@@ -557,7 +559,7 @@ Wähle echte, bekannte Songs! Mix aus Deutsch und International.`;
 ${mood ? `Gewünschte Stimmung: ${mood}` : 'Die Party ist in vollem Gange!'}
 Schlage 5 perfekte Songs vor!`;
 
-    const response = await generateCompletion(userPrompt, systemPrompt, { maxTokens: 400, temperature: 0.9 });
+    const response = await generateCompletion(userPrompt, await enrichSystemPrompt(eventId, systemPrompt), { maxTokens: 400, temperature: 0.9 });
     let result: any = null;
     try {
       const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
@@ -767,7 +769,7 @@ router.get('/ai-video/status/:jobId', authMiddleware, async (req: AuthRequest, r
 });
 
 // POST /api/booth-games/ai-meme — Generate funny meme captions
-router.post('/ai-meme', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/ai-meme', authMiddleware, withEnergyCheck('ai_meme'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName } = req.body;
     const { generateCompletion } = await import('../lib/groq');
@@ -779,7 +781,7 @@ Antworte NUR als JSON: {"captions": [{"top": "oberer Text", "bottom": "unterer T
     const userPrompt = `Event: ${eventTitle || 'Party'} (${eventType || 'party'})${guestName ? `, Gast: ${guestName}` : ''}. Erstelle 3 lustige Meme-Captions!`;
 
     try {
-      const response = await generateCompletion(userPrompt, systemPrompt, { maxTokens: 500, temperature: 0.9 });
+      const response = await generateCompletion(userPrompt, await enrichSystemPrompt(eventId, systemPrompt), { maxTokens: 500, temperature: 0.9 });
 
       const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
       if (jsonMatch) {
@@ -810,7 +812,7 @@ Antworte NUR als JSON: {"captions": [{"top": "oberer Text", "bottom": "unterer T
 });
 
 // POST /api/booth-games/ai-superlatives — Generate "Most likely to..." party awards
-router.post('/ai-superlatives', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/ai-superlatives', authMiddleware, withEnergyCheck('ai_superlatives'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName } = req.body;
     const { generateCompletion } = await import('../lib/groq');
@@ -822,7 +824,7 @@ Antworte NUR als JSON: {"awards": [{"title": "Award-Titel", "reason": "kurze lus
     const userPrompt = `Event: ${eventTitle || 'Party'} (${eventType || 'party'})${guestName ? `, Gast: ${guestName}` : ''}. Erstelle 5 lustige Party-Awards!`;
 
     try {
-      const response = await generateCompletion(userPrompt, systemPrompt, { maxTokens: 600, temperature: 0.9 });
+      const response = await generateCompletion(userPrompt, await enrichSystemPrompt(eventId, systemPrompt), { maxTokens: 600, temperature: 0.9 });
 
       const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
       if (jsonMatch) {
@@ -854,7 +856,7 @@ Antworte NUR als JSON: {"awards": [{"title": "Award-Titel", "reason": "kurze lus
 });
 
 // POST /api/booth-games/ai-photo-critic — Humorous photo review with star rating
-router.post('/ai-photo-critic', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/ai-photo-critic', authMiddleware, withEnergyCheck('ai_photo_critic'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName } = req.body;
     const { generateCompletion } = await import('../lib/groq');
@@ -866,7 +868,7 @@ Antworte NUR als JSON: {"review": "die lustige Bewertung (2-3 Sätze)", "stars":
     const userPrompt = `Event: ${eventTitle || 'Party'} (${eventType || 'party'})${guestName ? `, Fotograf/in: ${guestName}` : ''}. Bewerte dieses Party-Foto!`;
 
     try {
-      const response = await generateCompletion(userPrompt, systemPrompt, { maxTokens: 400, temperature: 0.95 });
+      const response = await generateCompletion(userPrompt, await enrichSystemPrompt(eventId, systemPrompt), { maxTokens: 400, temperature: 0.95 });
 
       const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
       if (jsonMatch) {
@@ -892,7 +894,7 @@ Antworte NUR als JSON: {"review": "die lustige Bewertung (2-3 Sätze)", "stars":
 });
 
 // POST /api/booth-games/ai-couple-match — Fun compatibility score between two names
-router.post('/ai-couple-match', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/ai-couple-match', authMiddleware, withEnergyCheck('ai_couple_match'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName, partnerName } = req.body;
 
@@ -909,7 +911,7 @@ Antworte NUR als JSON: {"compatibility": 87, "shipName": "kreativer Paar-Name", 
     const userPrompt = `Event: ${eventTitle || 'Party'} (${eventType || 'party'}). Berechne die Kompatibilität zwischen "${guestName}" und "${partnerName}"!`;
 
     try {
-      const response = await generateCompletion(userPrompt, systemPrompt, { maxTokens: 500, temperature: 0.9 });
+      const response = await generateCompletion(userPrompt, await enrichSystemPrompt(eventId, systemPrompt), { maxTokens: 500, temperature: 0.9 });
 
       const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
       if (jsonMatch) {

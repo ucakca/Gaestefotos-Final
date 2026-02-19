@@ -364,6 +364,15 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
 
         // Trigger workflow (non-blocking)
         import('../services/workflowExecutor').then(m => m.onPhotoUploaded(eventId, photo.id)).catch(() => {});
+
+        // Quality Gate: blur + resolution + duplicate detection (non-blocking)
+        import('../services/photoQualityGate').then(m =>
+          m.runPhotoQualityGate(eventId, photo.id, buffer).then(qr => {
+            if (!qr.passed) {
+              logger.info('[QualityGate] Photo flagged', { eventId, photoId: photo.id, reason: qr.rejectionReason });
+            }
+          })
+        ).catch(() => {});
       }
 
       auditLog({ type: AuditType.TUS_UPLOAD_FINISHED, message: `TUS Upload abgeschlossen: ${filename}`, eventId, data: { uploadId: upload.id, filename, isVideo: false, progressive: !!progressivePhotoId }, level: 'DEBUG' });

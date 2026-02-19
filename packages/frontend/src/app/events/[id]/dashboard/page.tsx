@@ -47,6 +47,7 @@ import {
   Upload,
   LayoutGrid,
   Gamepad2,
+  FileText,
   Activity,
   Film,
 } from 'lucide-react';
@@ -927,6 +928,34 @@ function OverviewTab({
         <StatCard icon={BookOpen} value={stats.guestbook} label="GÄSTEBUCH" color="green" onClick={onGoToGuestbook} />
         <StatCard icon={Trophy} value={stats.challenges} label="FOTO-SPIELE" color="purple" onClick={() => onStatClick('challenges')} />
         <StatCard icon={Clock} value={stats.pending} label="AUSSTEHEND" color="yellow" highlight={stats.pending > 0} onClick={() => onStatClick('pending')} />
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 gap-2">
+        <Link
+          href={`/events/${eventId}/briefing`}
+          className="flex items-center gap-3 p-3.5 rounded-2xl border border-border bg-card hover:shadow-md hover:-translate-y-0.5 transition-all"
+        >
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-sm shrink-0">
+            <FileText className="w-5 h-5 text-white" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-foreground">Briefing</p>
+            <p className="text-[10px] text-muted-foreground">Event konfigurieren</p>
+          </div>
+        </Link>
+        <Link
+          href={`/events/${eventId}/booth-games`}
+          className="flex items-center gap-3 p-3.5 rounded-2xl border border-border bg-card hover:shadow-md hover:-translate-y-0.5 transition-all"
+        >
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-sm shrink-0">
+            <Sparkles className="w-5 h-5 text-white" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-foreground">KI-Spiele</p>
+            <p className="text-[10px] text-muted-foreground">Foto-Spaß verwalten</p>
+          </div>
+        </Link>
       </div>
 
       {/* Recent Uploads Preview */}

@@ -132,6 +132,9 @@ model Event {
   workflow                BoothWorkflow?              @relation(fields: [workflowId], references: [id], onDelete: SetNull)
   pushSubscriptions       PushSubscription[]
   aiConfig                EventAiConfig?
+  guestEnergyBalances     GuestEnergyBalance[]
+  guestEnergyLogs         GuestEnergyLog[]
+  briefing                EventBriefing?
 
   @@index([slug])
   @@index([hostId])
@@ -348,11 +351,123 @@ model EventAiConfig {
   disabledFeatures  String[] @default([])
   boothPreset       Json?
   welcomeMessage    String?
+  // Energy system configuration (all overridable per event)
+  energyStartBalance    Int      @default(10)
+  energyRewardFirstUpload   Int  @default(5)
+  energyRewardGuestbook     Int  @default(3)
+  energyRewardChallenge     Int  @default(3)
+  energyRewardSurvey        Int  @default(2)
+  energyRewardSocialShare   Int  @default(2)
+  energyCostLlmGame         Int  @default(1)
+  energyCostImageEffect     Int  @default(2)
+  energyCostStyleTransfer   Int  @default(2)
+  energyCostFaceSwap        Int  @default(3)
+  energyCostGif             Int  @default(3)
+  energyCostVideo           Int  @default(5)
+  energyCostTradingCard     Int  @default(2)
+  energyCooldownSeconds     Int  @default(60)
+  energyEnabled         Boolean  @default(true)
+  // Custom prompt context (injected into all AI game system prompts)
+  customPromptContext   String?
+  // Event keywords for AI context (from briefing)
+  eventKeywords         String[] @default([])
+  // Event type hint for AI (from briefing)
+  eventTypeHint         String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   @@index([eventId])
   @@map("event_ai_configs")
+}
+
+model GuestEnergyBalance {
+  id              String   @id @default(uuid())
+  eventId         String
+  deviceId        String
+  balance         Int      @default(0)
+  totalEarned     Int      @default(0)
+  totalSpent      Int      @default(0)
+  // Track which one-time rewards have been claimed
+  rewardsClaimed  String[] @default([])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, deviceId])
+  @@index([eventId])
+  @@index([deviceId])
+  @@map("guest_energy_balances")
+}
+
+model GuestEnergyLog {
+  id          String   @id @default(uuid())
+  eventId     String
+  deviceId    String
+  type        EnergyLogType
+  amount      Int
+  reason      String
+  featureKey  String?
+  balanceAfter Int
+  createdAt   DateTime @default(now())
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([deviceId])
+  @@index([eventId, deviceId])
+  @@index([createdAt])
+  @@map("guest_energy_logs")
+}
+
+enum EnergyLogType {
+  EARN
+  SPEND
+  ADMIN_ADJUST
+}
+
+model EventBriefing {
+  id                  String          @id @default(uuid())
+  eventId             String          @unique
+  event               Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  status              BriefingStatus  @default(DRAFT)
+  // Event basics (pre-filled from Event if exists)
+  eventType           String?
+  eventName           String?
+  eventDate           DateTime?
+  guestCount          Int?
+  // Branding
+  logoUrl             String?
+  primaryColor        String?
+  footerText          String?
+  // Mood & Theme
+  mood                String?
+  theme               String?
+  keywords            String[]        @default([])
+  // AI Config preferences
+  disabledFeatures    String[]        @default([])
+  customPromptRequest String?
+  // Devices being used
+  devices             String[]        @default([])
+  // Special requests
+  specialRequests     String?
+  // Internal notes (Admin/Partner only)
+  internalNotes       String?
+  // Who filled it / reviewed it
+  filledById          String?
+  reviewedById        String?
+  reviewedAt          DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@index([eventId])
+  @@index([status])
+  @@map("event_briefings")
+}
+
+enum BriefingStatus {
+  DRAFT
+  SUBMITTED
+  REVIEWED
+  FINALIZED
 }
 
 model Guest {

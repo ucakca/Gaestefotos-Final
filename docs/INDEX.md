@@ -2,6 +2,15 @@
 
 Ziel: Diese Dokumente sind die **Single Source of Truth** für Architektur, APIs, Datenmodell und Produktlogik – sowohl **technisch** als auch **laiensicher**.
 
+## ⚡ MASTER-KONZEPT (Zentrales Dokument)
+
+> **Alles an einem Ort**: `docs/MASTER-KONZEPT.md`
+> 
+> Rollen, AI-System, Energie, Verbindungen, Entscheidungen, Sprint-Status, Dokument-Index.
+> **Wenn du nur EINE Datei liest, lies diese.**
+
+---
+
 ## Schnellstart (für Laien)
 
 - **Was ist Gästefotos?**

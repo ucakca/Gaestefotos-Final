@@ -40,6 +40,7 @@ import {
   ScrollText,
   HardDrive,
   Bug,
+  Wand2,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -96,6 +97,7 @@ const navigation: NavGroup[] = [
     items: [
       { name: 'Feature Registry', href: '/manage/ai-features', icon: Sparkles },
       { name: 'Prompt Studio', href: '/manage/prompt-templates', icon: ScrollText },
+      { name: 'Prompt Analyzer', href: '/manage/prompt-analyzer', icon: Wand2 },
       { name: 'AI Provider', href: '/manage/ai-providers', icon: Brain },
       { name: 'AI Credits', href: '/manage/credits', icon: Zap },
       { name: 'Workflow Builder', href: '/manage/workflows', icon: Workflow },

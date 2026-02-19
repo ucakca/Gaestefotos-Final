@@ -178,13 +178,21 @@ api.interceptors.response.use(
   }
 );
 
-// Add auth token to requests
+// Add auth token and device ID to requests
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Attach device ID for energy tracking
+    const KEY = 'gf_device_id';
+    let deviceId = localStorage.getItem(KEY);
+    if (!deviceId) {
+      deviceId = crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem(KEY, deviceId);
+    }
+    config.headers['x-device-id'] = deviceId;
     // Don't set Content-Type for FormData, let browser set it with boundary
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];

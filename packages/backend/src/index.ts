@@ -78,7 +78,13 @@ import { shutdownQueues, getQueueStats } from './services/jobQueue';
 import slideshowRoutes from './routes/slideshow';
 import styleTransferRoutes from './routes/styleTransfer';
 import boothGamesRoutes from './routes/boothGames';
+import boothSetupRoutes from './routes/boothSetup';
+import partnerAiConfigRoutes from './routes/partnerAiConfig';
+import adminCostMonitoringRoutes from './routes/adminCostMonitoring';
+import adminPromptAnalyzerRoutes from './routes/adminPromptAnalyzer';
 import eventAiConfigRoutes from './routes/eventAiConfig';
+import eventEnergyRoutes from './routes/eventEnergy';
+import eventBriefingRoutes from './routes/eventBriefing';
 import gamificationRoutes from './routes/gamification';
 import pushRoutes from './routes/push';
 import analyticsRoutes from './routes/analytics';
@@ -646,7 +652,11 @@ app.use('/api', galleryEmbedRoutes);
 app.use('/api/slideshow', slideshowRoutes);
 app.use('/api/style-transfer', aiFeatureLimiter, styleTransferRoutes);
 app.use('/api/booth-games', aiFeatureLimiter, boothGamesRoutes);
+app.use('/api/booth', boothSetupRoutes); // Booth Setup: /api/booth/setup, config, heartbeat
+app.use('/api/partner', partnerAiConfigRoutes); // Partner AI Config: /api/partner/events/:eventId/ai-config, briefing
 app.use('/api/events', eventAiConfigRoutes); // AI Config: /api/events/:eventId/ai-features, ai-config
+app.use('/api/events', eventEnergyRoutes); // Energy: /api/events/:eventId/energy, energy/reward, energy/stats
+app.use('/api/events', eventBriefingRoutes); // Briefing: /api/events/:eventId/briefing
 app.use('/api/events', gamificationRoutes); // Gamification: /api/events/:eventId/achievements, leaderboard
 app.use('/api/push', pushSubscribeLimiter, pushRoutes); // Push Notifications: /api/push/vapid-key, subscribe
 app.use('/api/events', analyticsLimiter, analyticsRoutes); // Analytics: /api/events/:eventId/analytics
@@ -656,6 +666,8 @@ app.use('/api/demo', demoRoutes);
 app.use('/api/admin/landing', adminLandingRoutes);
 app.use('/api/landing', landingPublicRoutes);
 app.use('/api/admin/ai-logs', adminAiLogsRoutes);
+app.use('/api/admin/cost-monitoring', adminCostMonitoringRoutes); // Cost Monitoring: summary, timeline, top-events, alerts
+app.use('/api/admin/prompt-analyzer', adminPromptAnalyzerRoutes); // Prompt Analyzer: img2prompt, metadata, quality-check, resources, patterns
 app.use('/api/assets', assetsRoutes);
 app.use('/api/booth-templates', boothTemplatesRoutes);
 app.use('/api/graffiti', graffitiRoutes);

@@ -68,6 +68,24 @@ router.get('/:eventId/ai-config', authMiddleware, async (req: AuthRequest, res: 
         disabledFeatures: [],
         boothPreset: null,
         welcomeMessage: null,
+        energyStartBalance: 10,
+        energyRewardFirstUpload: 5,
+        energyRewardGuestbook: 3,
+        energyRewardChallenge: 3,
+        energyRewardSurvey: 2,
+        energyRewardSocialShare: 2,
+        energyCostLlmGame: 1,
+        energyCostImageEffect: 2,
+        energyCostStyleTransfer: 2,
+        energyCostFaceSwap: 3,
+        energyCostGif: 3,
+        energyCostVideo: 5,
+        energyCostTradingCard: 2,
+        energyCooldownSeconds: 60,
+        energyEnabled: true,
+        customPromptContext: null,
+        eventKeywords: [],
+        eventTypeHint: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -98,7 +116,37 @@ router.put('/:eventId/ai-config', authMiddleware, async (req: AuthRequest, res: 
       return res.status(403).json({ error: 'Nur der Veranstalter kann die KI-Konfiguration ändern' });
     }
 
-    const { disabledFeatures, boothPreset, welcomeMessage } = req.body;
+    const {
+      disabledFeatures, boothPreset, welcomeMessage,
+      // Energy config fields
+      energyStartBalance, energyRewardFirstUpload, energyRewardGuestbook,
+      energyRewardChallenge, energyRewardSurvey, energyRewardSocialShare,
+      energyCostLlmGame, energyCostImageEffect, energyCostStyleTransfer,
+      energyCostFaceSwap, energyCostGif, energyCostVideo, energyCostTradingCard,
+      energyCooldownSeconds, energyEnabled,
+    } = req.body;
+
+    // Build update object only for provided fields
+    const updateData: Record<string, any> = {};
+    if (disabledFeatures !== undefined) updateData.disabledFeatures = disabledFeatures;
+    if (boothPreset !== undefined) updateData.boothPreset = boothPreset;
+    if (welcomeMessage !== undefined) updateData.welcomeMessage = welcomeMessage;
+    // Energy fields (only set if explicitly provided)
+    if (energyStartBalance !== undefined) updateData.energyStartBalance = Number(energyStartBalance);
+    if (energyRewardFirstUpload !== undefined) updateData.energyRewardFirstUpload = Number(energyRewardFirstUpload);
+    if (energyRewardGuestbook !== undefined) updateData.energyRewardGuestbook = Number(energyRewardGuestbook);
+    if (energyRewardChallenge !== undefined) updateData.energyRewardChallenge = Number(energyRewardChallenge);
+    if (energyRewardSurvey !== undefined) updateData.energyRewardSurvey = Number(energyRewardSurvey);
+    if (energyRewardSocialShare !== undefined) updateData.energyRewardSocialShare = Number(energyRewardSocialShare);
+    if (energyCostLlmGame !== undefined) updateData.energyCostLlmGame = Number(energyCostLlmGame);
+    if (energyCostImageEffect !== undefined) updateData.energyCostImageEffect = Number(energyCostImageEffect);
+    if (energyCostStyleTransfer !== undefined) updateData.energyCostStyleTransfer = Number(energyCostStyleTransfer);
+    if (energyCostFaceSwap !== undefined) updateData.energyCostFaceSwap = Number(energyCostFaceSwap);
+    if (energyCostGif !== undefined) updateData.energyCostGif = Number(energyCostGif);
+    if (energyCostVideo !== undefined) updateData.energyCostVideo = Number(energyCostVideo);
+    if (energyCostTradingCard !== undefined) updateData.energyCostTradingCard = Number(energyCostTradingCard);
+    if (energyCooldownSeconds !== undefined) updateData.energyCooldownSeconds = Number(energyCooldownSeconds);
+    if (energyEnabled !== undefined) updateData.energyEnabled = Boolean(energyEnabled);
 
     const config = await prisma.eventAiConfig.upsert({
       where: { eventId },
@@ -107,12 +155,9 @@ router.put('/:eventId/ai-config', authMiddleware, async (req: AuthRequest, res: 
         disabledFeatures: disabledFeatures || [],
         boothPreset: boothPreset || null,
         welcomeMessage: welcomeMessage || null,
+        ...updateData,
       },
-      update: {
-        ...(disabledFeatures !== undefined && { disabledFeatures }),
-        ...(boothPreset !== undefined && { boothPreset }),
-        ...(welcomeMessage !== undefined && { welcomeMessage }),
-      },
+      update: updateData,
     });
 
     logger.info('AI config updated', { eventId, userId: req.userId });

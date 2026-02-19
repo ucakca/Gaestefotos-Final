@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import api from '@/lib/api';
+import { useAiEnergy } from '@/hooks/useAiEnergy';
+import { EnergyBar, EnergyCostBadge, InsufficientEnergyOverlay } from './EnergyBar';
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -184,6 +186,8 @@ const EFFECTS: EffectDef[] = [
 export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }: AiEffectsModalProps) {
   const [step, setStep] = useState<Step>('photo');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [energyError, setEnergyError] = useState<string | null>(null);
+  const { balance, isEnabled, cooldownActive, cooldownEndsAt, handleEnergyError, refreshAfterSpend } = useAiEnergy(eventId);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedEffect, setSelectedEffect] = useState<EffectDef | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -306,10 +310,12 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
       }
     } catch (err: any) {
       clearInterval(progressInterval);
+      const { isEnergyError, message } = handleEnergyError(err);
+      if (isEnergyError) { setEnergyError(message); setStep('effects'); return; }
       setError(err?.response?.data?.error || err?.message || 'Effekt fehlgeschlagen');
       setStep('error');
     }
-  }, [photoFile, eventId]);
+  }, [photoFile, eventId, handleEnergyError]);
 
   const handleDownload = useCallback(async () => {
     if (!resultUrl) return;
@@ -427,7 +433,21 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
 
             {/* ═══ Effect Selection ═══ */}
             {step === 'effects' && (
-              <motion.div key="effects" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="p-4">
+              <motion.div key="effects" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="p-4 relative">
+                {/* Energy Bar */}
+                {isEnabled && (
+                  <div className="px-2 py-2 rounded-xl bg-black/5 dark:bg-white/5 mb-3">
+                    <EnergyBar balance={balance} cooldownActive={cooldownActive} cooldownEndsAt={cooldownEndsAt} enabled={isEnabled} />
+                  </div>
+                )}
+
+                {/* Insufficient Energy Overlay */}
+                <AnimatePresence>
+                  {energyError && (
+                    <InsufficientEnergyOverlay message={energyError} onClose={() => setEnergyError(null)} />
+                  )}
+                </AnimatePresence>
+
                 {photoPreview && (
                   <div className="flex items-center gap-3 mb-4 p-2 rounded-xl bg-muted/30">
                     <img src={photoPreview} alt="Dein Foto" className="w-12 h-12 rounded-lg object-cover" />
@@ -462,7 +482,10 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
                         {effect.emoji}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-foreground">{effect.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-foreground">{effect.name}</p>
+                          <EnergyCostBadge cost={effect.key === 'ai_video' ? 5 : effect.key === 'face_switch' ? 3 : effect.key === 'gif_morph' || effect.key === 'gif_aging' ? 3 : 2} balance={balance} enabled={isEnabled} />
+                        </div>
                         <p className="text-sm text-muted-foreground mt-0.5">{effect.description}</p>
                       </div>
                     </motion.button>

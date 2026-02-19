@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import api from '@/lib/api';
+import { useAiEnergy } from '@/hooks/useAiEnergy';
+import { EnergyBar, EnergyCostBadge, InsufficientEnergyOverlay } from './EnergyBar';
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -157,6 +159,8 @@ const GAMES: GameDef[] = [
 export default function AiGamesModal({ isOpen, onClose, eventId, eventType, eventTitle }: AiGamesModalProps) {
   const [step, setStep] = useState<Step>('select');
   const [selectedGame, setSelectedGame] = useState<GameDef | null>(null);
+  const [energyError, setEnergyError] = useState<string | null>(null);
+  const { energy, balance, isEnabled, cooldownActive, cooldownEndsAt, handleEnergyError, refreshAfterSpend } = useAiEnergy(eventId);
   const [guestName, setGuestName] = useState(() =>
     typeof window !== 'undefined' ? localStorage.getItem('guestUploaderName') || '' : ''
   );
@@ -204,11 +208,14 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
       });
       setResult(res.data);
       setStep('result');
+      refreshAfterSpend();
     } catch (err: any) {
+      const { isEnergyError, message } = handleEnergyError(err);
+      if (isEnergyError) { setEnergyError(message); setStep('select'); return; }
       setError(err?.response?.data?.error || 'Etwas ist schiefgelaufen');
       setStep('error');
     }
-  }, [selectedGame, eventId, eventType, eventTitle, guestName, weddingCouple, weddingRole]);
+  }, [selectedGame, eventId, eventType, eventTitle, guestName, weddingCouple, weddingRole, handleEnergyError, refreshAfterSpend]);
 
   const handleCoupleMatchSubmit = useCallback(async () => {
     if (!selectedGame || !partnerName.trim()) return;
@@ -223,11 +230,14 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
       });
       setResult(res.data);
       setStep('result');
+      refreshAfterSpend();
     } catch (err: any) {
+      const { isEnergyError, message } = handleEnergyError(err);
+      if (isEnergyError) { setEnergyError(message); setStep('select'); return; }
       setError(err?.response?.data?.error || 'Etwas ist schiefgelaufen');
       setStep('error');
     }
-  }, [selectedGame, eventId, eventType, eventTitle, guestName, partnerName]);
+  }, [selectedGame, eventId, eventType, eventTitle, guestName, partnerName, handleEnergyError, refreshAfterSpend]);
 
   const handleDjSubmit = useCallback(async () => {
     if (!selectedGame) return;
@@ -242,11 +252,14 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
       });
       setResult(res.data);
       setStep('result');
+      refreshAfterSpend();
     } catch (err: any) {
+      const { isEnergyError, message } = handleEnergyError(err);
+      if (isEnergyError) { setEnergyError(message); setStep('select'); return; }
       setError(err?.response?.data?.error || 'Etwas ist schiefgelaufen');
       setStep('error');
     }
-  }, [selectedGame, eventId, eventType, eventTitle, guestName, djMood]);
+  }, [selectedGame, eventId, eventType, eventTitle, guestName, djMood, handleEnergyError, refreshAfterSpend]);
 
   const handleStoriesSubmit = useCallback(async () => {
     if (!selectedGame || storyWords.some(w => !w.trim())) return;
@@ -261,11 +274,14 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
       });
       setResult(res.data);
       setStep('result');
+      refreshAfterSpend();
     } catch (err: any) {
+      const { isEnergyError, message } = handleEnergyError(err);
+      if (isEnergyError) { setEnergyError(message); setStep('select'); return; }
       setError(err?.response?.data?.error || 'Etwas ist schiefgelaufen');
       setStep('error');
     }
-  }, [selectedGame, eventId, eventType, eventTitle, guestName, storyWords]);
+  }, [selectedGame, eventId, eventType, eventTitle, guestName, storyWords, handleEnergyError, refreshAfterSpend]);
 
   const handleQuizSubmit = useCallback(async () => {
     if (!selectedGame || quizAnswers.some(a => !a.trim())) return;
@@ -288,11 +304,14 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
 
       setResult(res.data);
       setStep('result');
+      refreshAfterSpend();
     } catch (err: any) {
+      const { isEnergyError, message } = handleEnergyError(err);
+      if (isEnergyError) { setEnergyError(message); setStep('select'); return; }
       setError(err?.response?.data?.error || 'Etwas ist schiefgelaufen');
       setStep('error');
     }
-  }, [selectedGame, eventId, eventType, eventTitle, guestName, quizAnswers]);
+  }, [selectedGame, eventId, eventType, eventTitle, guestName, quizAnswers, handleEnergyError, refreshAfterSpend]);
 
   const handlePlay = useCallback(async () => {
     if (!selectedGame) return;
@@ -316,11 +335,14 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
 
       setResult(res.data);
       setStep('result');
+      refreshAfterSpend();
     } catch (err: any) {
+      const { isEnergyError, message } = handleEnergyError(err);
+      if (isEnergyError) { setEnergyError(message); setStep('select'); return; }
       setError(err?.response?.data?.error || 'Etwas ist schiefgelaufen');
       setStep('error');
     }
-  }, [selectedGame, eventId, eventType, eventTitle, guestName]);
+  }, [selectedGame, eventId, eventType, eventTitle, guestName, handleEnergyError, refreshAfterSpend]);
 
   const handleShare = useCallback(() => {
     if (!result || !selectedGame) return;
@@ -407,7 +429,21 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
 
             {/* ═══ Game Selection ═══ */}
             {step === 'select' && (
-              <motion.div key="select" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-4 space-y-3">
+              <motion.div key="select" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-4 space-y-3 relative">
+                {/* Energy Bar */}
+                {isEnabled && (
+                  <div className="px-2 py-2 rounded-xl bg-black/5 dark:bg-white/5">
+                    <EnergyBar balance={balance} cooldownActive={cooldownActive} cooldownEndsAt={cooldownEndsAt} enabled={isEnabled} />
+                  </div>
+                )}
+
+                {/* Insufficient Energy Overlay */}
+                <AnimatePresence>
+                  {energyError && (
+                    <InsufficientEnergyOverlay message={energyError} onClose={() => setEnergyError(null)} />
+                  )}
+                </AnimatePresence>
+
                 <p className="text-sm text-muted-foreground text-center mb-2">
                   Wähle ein KI-Spiel und lass dich überraschen!
                 </p>
@@ -424,7 +460,10 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                       {game.emoji}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-foreground">{game.name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-foreground">{game.name}</p>
+                        <EnergyCostBadge cost={1} balance={balance} enabled={isEnabled} />
+                      </div>
                       <p className="text-sm text-muted-foreground mt-0.5">{game.description}</p>
                     </div>
                   </motion.button>

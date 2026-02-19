@@ -32,7 +32,8 @@ Es gibt zwei separate Systeme die dasselbe tun wollen:
 Diese sind **nicht verbunden**. Ein AI-Feature hat keine Referenz zum Feature-Gate.
 
 ### Problem 4: Kein Event-Level AI-Konfiguration
-Der Host kann nicht steuern, welche AI-Features bei SEINEM Event aktiv sein sollen. Alles wird global über das Paket gesteuert.
+Der Host kann nicht steuern, welche AI-Features bei SEINEM Event aktiv sein sollen. Alles wird global über das Paket gesteuert. der host soll das sowieso nicht steuern können, wenn dann ich als admin oder partner (ich weiß auch nicht ob der Partner solche entscheidungen treffen dürfen sollte), eigentlich bin ich mir auch nicht sicher dabei... es kann für host aufwendiger werden als es schon ist... ich hätte aber keine idee wie man das sonst lösen könnte. ich bin der meinung, dass alle ai features vom admin entschieden werden, aber auch pro event pro gerät konfigurierbar sind. oder wir bauen tatsächlich einen booth wizzard. ?!? viele fragen noch offen! zudem sollte es möglich sein für spezielle events spezielle prompts zu setzen. so holt sich das system nur den standard prompt. angenommen host möchte superheld ai aber auf der brust mit seinem eigenen logo, auch an overlays müssen wir denken, fußzeile bei firmenevents zb.
+Qr Code scannen für event laden sollte immer sein, egal ob online oder offline event. das vereinfacht vieles, möglicherweise ist dann der aufwand auch enorm wenig für uns vor ort.
 
 ---
 
@@ -44,7 +45,7 @@ Der Host kann nicht steuern, welche AI-Features bei SEINEM Event aktiv sein soll
 ┌──────────────────────────────────────────────────────┐
 │  Ebene 1: PAKET (Was ist bezahlt?)                   │
 │  → PackageDefinition.allowAiEffects = true           │
-│  → PackageDefinition.maxAiCreditsPerEvent = 500      │
+│  → PackageDefinition.maxAiCreditsPerEvent = 500      │ ich bin mir noch nicht sicher ob ich maxcreditsperevent setzen möchte, das kann nicht hinten los gehen!
 │  → Grobe Kategorien, nicht einzelne Features          │
 ├──────────────────────────────────────────────────────┤
 │  Ebene 2: EVENT-KONFIGURATION (Was will der Host?)   │
