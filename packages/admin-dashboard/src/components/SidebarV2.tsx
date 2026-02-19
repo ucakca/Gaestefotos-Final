@@ -76,7 +76,6 @@ const navigation: NavGroup[] = [
     items: [
       { name: 'Benutzer', href: '/manage/users', icon: Users },
       { name: 'Events', href: '/manage/events', icon: Calendar },
-      { name: 'Event erstellen', href: '/manage/events/create', icon: UserPlus },
       { name: 'Pakete & Features', href: '/manage/packages', icon: Package },
       { name: 'Impersonation', href: '/manage/impersonation', icon: UserCog },
       { name: 'Partner', href: '/manage/partners', icon: Building2 },
@@ -101,6 +100,8 @@ const navigation: NavGroup[] = [
       { name: 'AI Features', href: '/manage/ai-features', icon: Sparkles },
       { name: 'AI Provider', href: '/manage/ai-providers', icon: Brain },
       { name: 'Prompt Studio', href: '/manage/prompt-templates', icon: ScrollText },
+      { name: 'Prompt Analyzer', href: '/manage/prompt-analyzer', icon: Wand2 },
+      { name: 'AI Credits', href: '/manage/credits', icon: Zap },
       { name: 'Workflow Builder', href: '/manage/workflows', icon: Workflow },
     ],
   },
@@ -124,15 +125,9 @@ const navigation: NavGroup[] = [
       { name: 'Debug Mode', href: '/system/debug', icon: Bug },
       { name: 'AI Analyse', href: '/system/ai-analyse', icon: Bot },
       { name: 'AI Logs', href: '/system/ai-logs', icon: Sparkles },
+      { name: 'AI Cache', href: '/system/ai-cache', icon: HardDrive },
       { name: 'Rate Limits', href: '/system/rate-limits', icon: Shield },
       { name: 'Backups', href: '/system/backups', icon: HardDrive },
-    ],
-  },
-  {
-    name: 'Design',
-    icon: Palette,
-    items: [
-      { name: 'Theme', href: '/design/theme', icon: Palette },
     ],
   },
   {
@@ -140,9 +135,9 @@ const navigation: NavGroup[] = [
     icon: Settings,
     items: [
       { name: 'Allgemein', href: '/settings/general', icon: Settings },
+      { name: 'Theme', href: '/design/theme', icon: Palette },
       { name: 'API Keys', href: '/settings/api-keys', icon: KeyRound },
       { name: 'Maintenance', href: '/settings/maintenance', icon: Wrench },
-      { name: 'Theme', href: '/settings/theme', icon: Palette },
       { name: 'Woo Inbox', href: '/settings/woo', icon: ShoppingCart },
     ],
   },
