@@ -306,6 +306,8 @@ export const AUTOMATION_ACTIONS: AutomationStepDef[] = [
     configFields: [
       { key: 'to', label: 'Empfänger', type: 'select', options: [
         { value: 'host', label: 'Event-Host' },
+        { value: 'guests', label: 'Alle Event-Gäste' },
+        { value: 'all', label: 'Host + Alle Gäste' },
         { value: 'admins', label: 'Alle Admins' },
       ]},
       { key: 'message', label: 'Nachricht', type: 'text', placeholder: 'Neues Foto hochgeladen!' },
