@@ -14,6 +14,40 @@ const createCommentSchema = z.object({
 });
 
 // Get comments for a photo
+// GET /events/:eventId/comments — All comments for an event (host moderation)
+router.get('/events/:eventId/comments', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const { status, limit, skip } = req.query;
+
+    const event = await prisma.event.findUnique({ where: { id: eventId }, select: { hostId: true } });
+    if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+    if (req.userId !== event.hostId && req.userRole !== 'ADMIN') return res.status(403).json({ error: 'Kein Zugriff' });
+
+    const limitNum = Math.min(100, parseInt(limit as string, 10) || 50);
+    const skipNum = parseInt(skip as string, 10) || 0;
+
+    const [comments, total] = await Promise.all([
+      prisma.photoComment.findMany({
+        where: {
+          photo: { eventId },
+          ...(status ? { status: status as any } : {}),
+        },
+        include: { photo: { select: { id: true, url: true } } },
+        orderBy: { createdAt: 'desc' },
+        take: limitNum,
+        skip: skipNum,
+      }),
+      prisma.photoComment.count({ where: { photo: { eventId }, ...(status ? { status: status as any } : {}) } }),
+    ]);
+
+    res.json({ comments, total });
+  } catch (error) {
+    logger.error('Event comments error:', error);
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
 router.get(
   '/:photoId/comments',
   optionalAuthMiddleware,
