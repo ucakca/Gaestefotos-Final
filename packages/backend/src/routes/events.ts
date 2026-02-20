@@ -1679,6 +1679,34 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/photos/activity — Recent photo activity (uploads, approvals)
+router.get('/:eventId/photos/activity', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const limit = Math.min(50, parseInt(req.query.limit as string, 10) || 20);
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { id: true, status: true, uploadedBy: true, createdAt: true, updatedAt: true, url: true },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    const activity = photos.map((p: any) => ({
+      photoId: p.id,
+      action: p.status === 'PENDING' ? 'uploaded' : p.status === 'APPROVED' ? 'approved' : 'rejected',
+      uploadedBy: p.uploadedBy,
+      at: p.updatedAt || p.createdAt,
+      photoUrl: p.url,
+    }));
+
+    res.json({ activity });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/qr-code — QR code as SVG for event share URL
 router.get('/:eventId/qr-code', optionalAuthMiddleware, async (req: AuthRequest, res: Response) => {
   try {
