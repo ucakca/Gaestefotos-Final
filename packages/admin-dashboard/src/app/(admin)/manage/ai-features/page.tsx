@@ -161,6 +161,7 @@ export default function AiFeaturesPage() {
 
   // Provider priority routing for style_transfer
   const [priority, setPriority] = useState<[string, string, string]>(['', '', '']);
+  const [faceRouting, setFaceRouting] = useState({ single: '', multi: '', none: '' });
   const [savingPriority, setSavingPriority] = useState(false);
 
   const imageGenProviders = providers.filter(p => p.type === 'IMAGE_GEN');
@@ -186,6 +187,8 @@ export default function AiFeaturesPage() {
         existingPriority[1] || '',
         existingPriority[2] || '',
       ]);
+      const existingFaceRouting = (stMap?.config as any)?.faceRouting || {};
+      setFaceRouting({ single: existingFaceRouting.single || '', multi: existingFaceRouting.multi || '', none: existingFaceRouting.none || '' });
     } catch (err) {
       toast.error('Fehler beim Laden der AI-Features');
     } finally {
@@ -346,9 +349,32 @@ export default function AiFeaturesPage() {
               </div>
             ))}
           </div>
+          {/* Face-Count Routing */}
+          <div className="mb-4 p-3 bg-gray-800/60 rounded-lg border border-gray-700">
+            <p className="text-xs text-gray-300 font-medium mb-2">Automatisches Face-Routing (GPT-4o-mini erkennt Gesichter, ~$0.001/Bild)</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {([['Einzelporträt (1 Gesicht)', 'single'], ['Gruppe (2+ Gesichter)', 'multi'], ['Kein Gesicht erkannt', 'none']] as const).map(([label, key]) => (
+                <div key={key}>
+                  <label className="text-xs text-gray-500 block mb-1">{label}</label>
+                  <select
+                    value={faceRouting[key]}
+                    onChange={e => setFaceRouting(prev => ({ ...prev, [key]: e.target.value }))}
+                    className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/40"
+                  >
+                    <option value="">(deaktiviert)</option>
+                    {imageGenProviders.map(p => (
+                      <option key={p.slug} value={p.slug}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-2">Wenn kein Face-Routing gesetzt → Standard-Priorisierung wird genutzt.</p>
+          </div>
+
           <div className="flex items-center justify-between flex-wrap gap-3">
             <p className="text-xs text-gray-500">
-              PuLID = beste Gesichtstreue (Einzelporträt) · Flux.1 = hohe Qualität · OpenAI = Multi-Gesicht · SDXL = günstigster Fallback
+              PuLID = Einzelporträt · OpenAI = Gruppe · Flux.1 = hohe Qualität · SDXL = günstigster Fallback
             </p>
             <button
               onClick={async () => {
@@ -356,9 +382,13 @@ export default function AiFeaturesPage() {
                 try {
                   const slugs = priority.filter(Boolean);
                   const stMap = mappings.find(m => m.feature === 'style_transfer');
+                  const faceRoutingClean: Record<string, string> = {};
+                  if (faceRouting.single) faceRoutingClean.single = faceRouting.single;
+                  if (faceRouting.multi) faceRoutingClean.multi = faceRouting.multi;
+                  if (faceRouting.none) faceRoutingClean.none = faceRouting.none;
                   await api.put('/admin/ai-providers/features/mappings/style_transfer', {
                     providerId: stMap?.provider?.id || imageGenProviders[0]?.id,
-                    config: { providerPriority: slugs },
+                    config: { providerPriority: slugs, faceRouting: faceRoutingClean },
                   });
                   toast.success('Routing gespeichert ✓');
                   loadData();

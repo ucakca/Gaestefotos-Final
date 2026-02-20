@@ -309,10 +309,49 @@ async function callFlux1Dev(apiKey: string, imageBuffer: Buffer, prompt: string,
   return pollReplicateResult(apiKey, resp.data.id);
 }
 
-// ── Provider Priority List — reads config.providerPriority from feature mapping
+// ── Face Detection — GPT-4o-mini Vision (cheap: ~$0.001, fast: ~1-2s) ────────
+async function countFaces(photoUrl: string): Promise<number> {
+  try {
+    const openAiProvider = await prisma.aiProvider.findFirst({
+      where: { isActive: true, slug: { contains: 'openai' } },
+    });
+    if (!openAiProvider?.apiKeyEncrypted || !openAiProvider.apiKeyIv || !openAiProvider.apiKeyTag) return -1;
+    const apiKey = decryptValue({
+      encrypted: openAiProvider.apiKeyEncrypted,
+      iv: openAiProvider.apiKeyIv,
+      tag: openAiProvider.apiKeyTag,
+    });
+    const resp = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-4o-mini',
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image_url', image_url: { url: photoUrl, detail: 'low' } },
+            { type: 'text', text: 'Count the number of human faces clearly visible in this image. Reply with ONLY a single integer (0, 1, 2, 3...). No other text.' },
+          ],
+        }],
+        max_tokens: 5,
+      },
+      { headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 10000 },
+    );
+    const count = parseInt(resp.data.choices[0]?.message?.content?.trim() || '-1', 10);
+    logger.info('[StyleTransfer] Face count detected', { count, photoUrl });
+    return isNaN(count) ? -1 : count;
+  } catch (err: any) {
+    logger.warn('[StyleTransfer] Face detection failed (non-fatal)', { err: err.message });
+    return -1;
+  }
+}
+
+// ── Provider Priority List — reads config from feature mapping ────────────────
 interface ProviderConfig { provider: any; model: string | null; }
 
-async function getStyleTransferProviderList(promptProviderId?: string | null): Promise<ProviderConfig[]> {
+async function getStyleTransferProviderList(
+  promptProviderId: string | null | undefined,
+  photoUrl: string,
+): Promise<ProviderConfig[]> {
   const results: ProviderConfig[] = [];
 
   if (promptProviderId) {
@@ -325,21 +364,46 @@ async function getStyleTransferProviderList(promptProviderId?: string | null): P
     include: { provider: true },
   });
 
-  if (mapping) {
-    const priority: string[] = (mapping.config as any)?.providerPriority || [];
-    if (priority.length > 0) {
-      const allProviders = await prisma.aiProvider.findMany({ where: { isActive: true } });
-      const bySlug = Object.fromEntries(allProviders.map(p => [p.slug, p]));
-      for (const slug of priority) {
-        const p = bySlug[slug];
-        if (p && !results.find(r => r.provider.id === p.id)) results.push({ provider: p, model: mapping.model });
-      }
-    }
-    if (mapping.isEnabled && mapping.provider?.isActive && !results.find(r => r.provider.id === mapping.provider.id)) {
-      results.push({ provider: mapping.provider, model: mapping.model });
+  const config = (mapping?.config as any) || {};
+  const allProviders = await prisma.aiProvider.findMany({ where: { isActive: true } });
+  const bySlug = Object.fromEntries(allProviders.map(p => [p.slug, p]));
+
+  // ── Face-count-based routing (runs in parallel with nothing, adds ~1-2s) ──
+  const faceRouting: Record<string, string> = config.faceRouting || {};
+  const hasFaceRouting = Object.keys(faceRouting).length > 0;
+  let faceCount = -1;
+  if (hasFaceRouting) {
+    faceCount = await countFaces(photoUrl);
+  }
+
+  // Determine face-routing slug
+  let faceRoutingSlug: string | null = null;
+  if (faceCount === 0 && faceRouting.none) faceRoutingSlug = faceRouting.none;
+  else if (faceCount === 1 && faceRouting.single) faceRoutingSlug = faceRouting.single;
+  else if (faceCount >= 2 && faceRouting.multi) faceRoutingSlug = faceRouting.multi;
+
+  // Face-routing provider goes first (highest priority)
+  if (faceRoutingSlug) {
+    const p = bySlug[faceRoutingSlug];
+    if (p && !results.find(r => r.provider.id === p.id)) {
+      results.push({ provider: p, model: mapping?.model ?? null });
+      logger.info(`[StyleTransfer] Face routing: ${faceCount} face(s) → ${faceRoutingSlug}`);
     }
   }
 
+  // Then standard providerPriority as fallback chain
+  const priority: string[] = config.providerPriority || [];
+  for (const slug of priority) {
+    const p = bySlug[slug];
+    if (p && !results.find(r => r.provider.id === p.id)) results.push({ provider: p, model: mapping?.model ?? null });
+  }
+
+  // Always include the directly mapped provider as final fallback
+  if (mapping?.isEnabled && mapping.provider?.isActive && !results.find(r => r.provider.id === mapping.provider.id)) {
+    results.push({ provider: mapping.provider, model: mapping.model });
+  }
+
+  // Emergency fallback
   if (results.length === 0) {
     const p = await prisma.aiProvider.findFirst({ where: { type: 'IMAGE_GEN', isActive: true } });
     if (p) results.push({ provider: p, model: null });
@@ -391,9 +455,9 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
     throw new Error(`Unbekannter Style: ${request.style}`);
   }
 
-  const providerList = await getStyleTransferProviderList((resolvedPrompt as any).providerId || null);
-  if (providerList.length === 0) throw new Error('Kein AI-Provider für Style Transfer konfiguriert.');
   if (!photo || !photo.url) throw new Error('Foto nicht gefunden');
+  const providerList = await getStyleTransferProviderList((resolvedPrompt as any).providerId || null, photo.url);
+  if (providerList.length === 0) throw new Error('Kein AI-Provider für Style Transfer konfiguriert.');
 
   logger.info('[StyleTransfer] Prompt resolved', { feature: promptFeature, source: resolvedPrompt.source, providers: providerList.map(p => p.provider.slug) });
 
