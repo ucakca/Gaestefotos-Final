@@ -1730,6 +1730,30 @@ router.post(
   }
 );
 
+// POST /bulk/approve — Approve all pending photos for an event
+router.post(
+  '/bulk/approve',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.body;
+      if (!eventId) return res.status(400).json({ error: 'eventId erforderlich' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const result = await prisma.photo.updateMany({
+        where: { eventId, status: 'PENDING', deletedAt: null },
+        data: { status: 'APPROVED' as any },
+      });
+
+      logger.info('Bulk approve photos', { eventId, count: result.count, userId: req.userId });
+      res.json({ approved: result.count });
+    } catch (error: any) {
+      logger.error('Bulk approve error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Freigeben' });
+    }
+  }
+);
+
 // POST /bulk/restore — Restore bulk-deleted photos back to APPROVED
 router.post(
   '/bulk/restore',
