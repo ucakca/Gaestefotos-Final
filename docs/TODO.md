@@ -241,6 +241,12 @@
 | S26-50 | **Admin Host-Reassign** | ✅ erledigt (20.02.2026) | PATCH /admin/events/:id/reassign-host (AuditLog) |
 | S26-51 | **Duplikat-Merge System** | ✅ erledigt | duplicates.ts: keep-best, mark-all, full group management |
 | S26-52 | **Download-Counter** | ✅ erledigt (20.02.2026) | photo.views++ nach jedem Download (non-blocking) |
+| S26-53 | **CDN views-Counter** | ✅ erledigt (20.02.2026) | imageCdn.ts: views++ bei GET >= 400px (non-blocking) |
+| S26-54 | **Gäste Server-Search** | ✅ erledigt (20.02.2026) | GET /events/:id/guests?search=max (firstName/lastName/email insensitive) |
+| S26-55 | **Gäste Pagination** | ✅ erledigt (20.02.2026) | GET /events/:id/guests?page=1&limit=50 + total in Response |
+| S26-56 | **maxUploadsPerGuest** | ✅ erledigt | uploads.ts: Upload-Limit per Guest bereits mit 429 Error |
+| S26-57 | **Live-Stats Endpoint** | ✅ erledigt | GET /photos/live-stats: todayCount, topUploaders, lastPhotoAt |
+| S26-58 | **Admin Host-Reassign** | ✅ erledigt (20.02.2026) | PATCH /admin/events/:id/reassign-host mit AuditLog |
 
 ---
 
