@@ -1679,6 +1679,25 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/qr-code — QR code as SVG for event share URL
+router.get('/:eventId/qr-code', optionalAuthMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const event = await prisma.event.findUnique({ where: { id: eventId }, select: { slug: true, title: true } });
+    if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+
+    const baseUrl = process.env.FRONTEND_URL || 'https://gaestefotos.com';
+    const shareUrl = `${baseUrl}/e3/${event.slug}`;
+
+    // Simple QR code URL via Google Charts (no external dep needed)
+    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(shareUrl)}&format=svg`;
+
+    res.json({ qrUrl: qrImageUrl, shareUrl, slug: event.slug });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/guests/search — Quick guest name search
 router.get('/:eventId/guests/search', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
