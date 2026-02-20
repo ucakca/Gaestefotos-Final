@@ -408,6 +408,13 @@
 | S26-217 | **Kommentar-Moderation** | ✅ erledigt (20.02.2026) | GET /events/:id/comments?status=PENDING (Host-only endpoint) |
 | S26-218 | **qualityScore Sort** | ✅ erledigt (20.02.2026) | rating_desc als Alias fuer quality_desc in Photos-Sort |
 | S26-219 | **Photo-Tags Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/tags (unique sorted, optionalAuth) |
+| S26-220 | **Fotos CSV-Export** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/export-csv (ID/Uploader/Status/Datum/Views/Tags) |
+| S26-221 | **Bulk-Restore** | ✅ erledigt (20.02.2026) | POST /photos/bulk/restore (DELETED -> APPROVED + deletedAt=null) |
+| S26-222 | **Live-Polling 30s** | ✅ erledigt (20.02.2026) | Dashboard: setInterval 30s pendingCount + clearInterval cleanup |
+| S26-223 | **Check-In Stats** | ✅ erledigt (20.02.2026) | GET /events/:id/guests/checkin-stats (total/checkedIn/rate%) |
+| S26-224 | **Photo Title/Desc** | ✅ erledigt (20.02.2026) | GalleryTabV2 Lightbox: title + description ueber Bottom-Info |
+| S26-225 | **Tags Pills Hover** | ✅ erledigt (20.02.2026) | GalleryTabV2: Tags als #pills (max 2) bei Hover |
+| S26-226 | **Tags Click Filter** | ✅ erledigt (20.02.2026) | Tags Pill Click -> selectedTag Filter setzen |
 
 ---
 
