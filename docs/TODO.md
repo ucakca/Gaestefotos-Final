@@ -181,9 +181,20 @@
 |---|---------|--------|-----------|--------------|
 | NF-1 | **Admin Log-System** | ✅ erledigt | HIGH | auditLogger Service + Hooks in auth/events/photos/uploads/guestbook/adminUsers. Fire-and-forget Logging in QaLogEvent. Admin UI unter /system/logs. |
 | NF-2 | **Workflow Builder Erweiterung** | ✅ erledigt (20.02.2026) | — | Lock/Unlock, Duplikat, Backup/Restore, Export/Import, Undo/Redo, Simulation, Analytics. FACE_SEARCH Flow aktiv für app.gästefotos.com. |
-| NF-3 | **SMS Sharing** | ⏳ offen | MEDIUM | Noch zu besprechen: Wie funktioniert SMS-Versand? Gateway? Kosten? |
+| NF-3 | **SMS Sharing** | ✅ erledigt | — | smsService.ts (Twilio + 46elks), smsShare.ts API Routen, Admin UI /manage/sms |
 | NF-4 | **Face Recognition Erweiterung** | ✅ erledigt (20.02.2026) | — | TinyFaceDetector: inputSize 416, scoreThreshold 0.35 (besserer Recall). Single-Pass in getFaceDetectionMetadata (keine doppelte Erkennung mehr). |
 | NF-5 | **Storage Subdomain** | ⏳ offen | LOW | Neue Subdomain für Zugriff auf Gäste-Speicher. USB-Export Möglichkeit. |
+
+### Neue Features (Sprint 20.02.2026)
+
+| # | Feature | Status | Beschreibung |
+|---|---------|--------|--------------|
+| S26-1 | **Bulk Photo ZIP-Download** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/download-zip via archiver; Frontend Button in Photos-Header |
+| S26-2 | **Dashboard Live-Stats Widget** | ✅ erledigt (20.02.2026) | Fotos heute + Top Uploader Balkendiagramm; GET /events/:id/photos/live-stats |
+| S26-3 | **Guest Invitation Email** | ✅ erledigt (20.02.2026) | POST /guests/:id/email + Bulk /email-all; Styled HTML-Template; Gäste-Seite Button |
+| S26-4 | **Alle E-Mail Templates** | ✅ erledigt (20.02.2026) | sendInvitation(), sendCohostInvite(), sendCustomEmail() alle auf Pink/Gold/Indigo Gradient |
+| S26-5 | **Grok als primärer LLM** | ✅ erledigt (20.02.2026) | 22 Feature-Mappings migriert; Fallback-Kette Grok→Groq→Ollama |
+| S26-6 | **AI Provider Monitor** | ✅ erledigt (20.02.2026) | /manage/ai-monitoring: Latenz, Fehlerrate, Requests, Kosten pro Provider |
 
 ---
 
