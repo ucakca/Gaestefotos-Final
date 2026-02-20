@@ -79,7 +79,7 @@ router.get('/email', authMiddleware, requireRole('ADMIN'), async (_req: AuthRequ
     const cfg = row.value as any;
     res.json({
       configured: true,
-      connected: await emailService.testConnection(),
+      connected: null,
       config: {
         host: cfg.host,
         port: cfg.port,
@@ -87,6 +87,7 @@ router.get('/email', authMiddleware, requireRole('ADMIN'), async (_req: AuthRequ
         user: cfg.user,
         password: '••••••••',
         from: cfg.from || cfg.user,
+        servername: cfg.servername || '',
       },
     });
   } catch (err: any) {

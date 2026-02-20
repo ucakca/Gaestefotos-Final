@@ -39,7 +39,8 @@ export default function EmailSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [configured, setConfigured] = useState(false);
-  const [connected, setConnected] = useState(false);
+  const [connected, setConnected] = useState<boolean | null>(null);
+  const [pinging, setPinging] = useState(false);
   const [config, setConfig] = useState<SmtpConfig>(EMPTY);
   const [original, setOriginal] = useState<SmtpConfig>(EMPTY);
   const [showPw, setShowPw] = useState(false);
@@ -52,7 +53,7 @@ export default function EmailSettingsPage() {
         '/admin/settings/email'
       );
       setConfigured(res.data.configured);
-      setConnected(res.data.connected ?? false);
+      setConnected(res.data.connected ?? null);
       if (res.data.config) {
         setConfig(res.data.config);
         setOriginal(res.data.config);
@@ -140,25 +141,51 @@ export default function EmailSettingsPage() {
       </div>
 
       {/* Status Banner */}
-      <div className={`rounded-xl border p-4 flex items-center gap-3 ${
-        configured && connected
+      <div className={`rounded-xl border p-4 flex items-center justify-between gap-3 ${
+        connected === true
           ? 'border-green-500/30 bg-green-500/5 text-green-400'
+          : connected === false
+          ? 'border-red-500/30 bg-red-500/5 text-red-400'
           : configured
           ? 'border-yellow-500/30 bg-yellow-500/5 text-yellow-400'
-          : 'border-red-500/30 bg-red-500/5 text-red-400'
+          : 'border-app-border bg-app-card text-app-muted'
       }`}>
-        {configured && connected ? (
-          <CheckCircle className="w-5 h-5 shrink-0" />
-        ) : (
-          <XCircle className="w-5 h-5 shrink-0" />
+        <div className="flex items-center gap-3">
+          {connected === true ? (
+            <CheckCircle className="w-5 h-5 shrink-0" />
+          ) : connected === false ? (
+            <XCircle className="w-5 h-5 shrink-0" />
+          ) : (
+            <Mail className="w-5 h-5 shrink-0 opacity-50" />
+          )}
+          <span className="text-sm font-medium">
+            {connected === true
+              ? 'SMTP verbunden — E-Mails werden gesendet'
+              : connected === false
+              ? 'Verbindung fehlgeschlagen — Credentials oder Port prüfen'
+              : configured
+              ? 'SMTP konfiguriert — Verbindung noch nicht geprüft'
+              : 'Kein SMTP konfiguriert — E-Mails werden nicht gesendet'}
+          </span>
+        </div>
+        {configured && (
+          <button
+            onClick={async () => {
+              setPinging(true);
+              try {
+                const res = await api.post<{ success: boolean; connected: boolean }>('/admin/settings/email', { ...config, password: undefined });
+                setConnected(res.data.connected);
+                if (res.data.connected) toast.success('Verbindung OK');
+                else toast.error('Verbindung fehlgeschlagen');
+              } catch { toast.error('Fehler beim Test'); }
+              finally { setPinging(false); }
+            }}
+            disabled={pinging}
+            className="text-xs px-3 py-1.5 rounded-lg border border-current/30 hover:bg-current/10 transition-colors shrink-0"
+          >
+            {pinging ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Verbindung testen'}
+          </button>
         )}
-        <span className="text-sm font-medium">
-          {configured && connected
-            ? 'SMTP verbunden — E-Mails werden gesendet'
-            : configured
-            ? 'SMTP konfiguriert, aber Verbindung fehlgeschlagen — Credentials prüfen'
-            : 'Kein SMTP konfiguriert — E-Mails werden nicht gesendet'}
-        </span>
       </div>
 
       {/* Provider Presets */}

@@ -550,7 +550,10 @@ Fotos ansehen: ${photosUrl}
     }
 
     try {
-      await this.transporter.verify();
+      await Promise.race([
+        this.transporter.verify(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
+      ]);
       return true;
     } catch {
       return false;
