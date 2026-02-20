@@ -5,6 +5,7 @@ import { resolvePrompt } from './promptTemplates';
 import axios from 'axios';
 import FormData from 'form-data';
 import { storageService } from './storage';
+import { spawn } from 'child_process';
 
 // Graceful sharp import
 let sharp: any;
@@ -309,51 +310,38 @@ async function callFlux1Dev(apiKey: string, imageBuffer: Buffer, prompt: string,
   return pollReplicateResult(apiKey, resp.data.id);
 }
 
-// ── Face Detection — lokal via Ollama Vision (llava) oder GPT-4o-mini ────────
+// ── Face Detection — OpenCV Haar Cascade (lokal, ~50-300ms, $0) ──────────────
+
+const FACE_DETECTOR_SCRIPT = '/opt/gaestefotos/detect_faces.py';
+
+async function countFacesLocal(photoUrl: string): Promise<number> {
+  return new Promise((resolve) => {
+    const proc = spawn('python3', [FACE_DETECTOR_SCRIPT, photoUrl], { timeout: 12000 });
+    let stdout = '';
+    proc.stdout.on('data', (d) => { stdout += d.toString(); });
+    proc.on('close', (code) => {
+      try {
+        const result = JSON.parse(stdout.trim());
+        if (typeof result.count === 'number' && result.count >= 0) {
+          logger.info('[StyleTransfer] Face count via OpenCV', { count: result.count, ms: result.ms });
+          resolve(result.count);
+        } else {
+          resolve(-1);
+        }
+      } catch {
+        resolve(-1);
+      }
+    });
+    proc.on('error', () => resolve(-1));
+  });
+}
+
 async function countFaces(photoUrl: string): Promise<number> {
-  // 1. Try Ollama vision (free, local) first
-  try {
-    const ollamaResp = await axios.post(
-      'http://localhost:11434/api/chat',
-      {
-        model: 'llava:7b',
-        stream: false,
-        messages: [{
-          role: 'user',
-          content: 'Count the number of human faces clearly visible in this image. Reply with ONLY a single integer (0, 1, 2, 3...). No other text.',
-          images: [] as string[],
-        }],
-      },
-      { timeout: 5000 }, // fast timeout — if model not loaded, skip immediately
-    );
-    // If llava is available and responds, download image and send as base64
-    const imgRes = await axios.get(photoUrl, { responseType: 'arraybuffer', timeout: 8000 });
-    const base64 = Buffer.from(imgRes.data).toString('base64');
+  // 1. OpenCV Haar Cascade — kostenlos, lokal, <300ms
+  const localCount = await countFacesLocal(photoUrl);
+  if (localCount >= 0) return localCount;
 
-    const visionResp = await axios.post(
-      'http://localhost:11434/api/chat',
-      {
-        model: 'llava:7b',
-        stream: false,
-        messages: [{
-          role: 'user',
-          content: 'Count the number of human faces clearly visible in this image. Reply with ONLY a single integer (0, 1, 2, 3...). No other text.',
-          images: [base64],
-        }],
-      },
-      { timeout: 30000 },
-    );
-    const text = visionResp.data?.message?.content?.trim() || '-1';
-    const count = parseInt(text, 10);
-    if (!isNaN(count) && count >= 0) {
-      logger.info('[StyleTransfer] Face count via Ollama/llava', { count });
-      return count;
-    }
-  } catch {
-    // llava not available → fall through to OpenAI
-  }
-
-  // 2. Fallback: GPT-4o-mini Vision (~$0.001 per call)
+  // 2. Fallback: GPT-4o-mini Vision (~$0.001) — nur wenn Python-Script fehlschlägt
   try {
     const openAiProvider = await prisma.aiProvider.findFirst({
       where: { isActive: true, slug: { contains: 'openai' } },
@@ -380,7 +368,7 @@ async function countFaces(photoUrl: string): Promise<number> {
       { headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 10000 },
     );
     const count = parseInt(resp.data.choices[0]?.message?.content?.trim() || '-1', 10);
-    logger.info('[StyleTransfer] Face count via GPT-4o-mini', { count });
+    logger.info('[StyleTransfer] Face count via GPT-4o-mini (fallback)', { count });
     return isNaN(count) ? -1 : count;
   } catch (err: any) {
     logger.warn('[StyleTransfer] Face detection failed (non-fatal)', { err: err.message });
