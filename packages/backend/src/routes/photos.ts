@@ -140,7 +140,7 @@ const uploadSinglePhoto = (req: AuthRequest, res: Response, next: any) => {
 router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
-    const { status, limit, skip, categoryId } = req.query;
+    const { status, limit, skip, categoryId, sort } = req.query;
 
     const where: any = { eventId, isStoryOnly: false, deletedAt: null };
 
@@ -166,6 +166,13 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
 
     const limitNum = limit ? Math.min(parseInt(limit as string, 10) || 100, 200) : undefined;
     const skipNum = skip ? parseInt(skip as string, 10) || 0 : 0;
+
+    const sortValue = typeof sort === 'string' ? sort : 'date_desc';
+    const orderBy: any =
+      sortValue === 'likes_desc' ? [{ likeCount: 'desc' }, { createdAt: 'desc' }] :
+      sortValue === 'faces_desc' ? [{ faceCount: 'desc' }, { createdAt: 'desc' }] :
+      sortValue === 'date_asc' ? { createdAt: 'asc' } :
+      { createdAt: 'desc' }; // default: date_desc
 
     const photos = await prisma.photo.findMany({
       where,
@@ -195,9 +202,7 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
           },
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy,
       ...(limitNum ? { take: limitNum + 1, skip: skipNum } : {}),
     });
 
