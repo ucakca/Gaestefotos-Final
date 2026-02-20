@@ -275,6 +275,12 @@
 | S26-84 | **Photos by Uploader** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/by-uploader (groupBy uploadedBy desc) |
 | S26-85 | **Admin User-Stats API** | ✅ erledigt (20.02.2026) | GET /admin/users/stats (total, hosts, admins, locked, newToday, newWeek) |
 | S26-86 | **Event-Klon FeaturesConfig** | ✅ erledigt | POST /events/:id/clone bereits mit featuresConfig + designConfig |
+| S26-87 | **Gästebuch CSV-Export Backend** | ✅ erledigt (20.02.2026) | GET /events/:id/guestbook/export-csv (BOM-UTF-8, Host-only) |
+| S26-88 | **Gästebuch CSV-Export Button** | ✅ erledigt (20.02.2026) | guestbook/page.tsx: CSV-Button fuer Host mit fetch+Auth |
+| S26-89 | **qualityScore Badge PhotoCard** | ✅ erledigt (20.02.2026) | PhotoCard Hover: gruen/gelb/rot ★N% + faceCount cyan Badge |
+| S26-90 | **Custom Hashtag SetupTabV2** | ✅ erledigt (20.02.2026) | Hash-Icon SetupRow mit prompt() Dialog fuer featuresConfig.customHashtag |
+| S26-91 | **Admin Dashboard User-Stats** | ✅ erledigt (20.02.2026) | 6-Felder Widget mit /admin/users/stats |
+| S26-92 | **Gästebuch PDF bereits** | ✅ erledigt | GET /events/:id/guestbook/export-pdf (generateGuestbookPdf) |
 
 ---
 
