@@ -311,6 +311,12 @@
 | S26-120 | **Admin Foto-Suche** | ✅ erledigt (20.02.2026) | GET /admin/events/:id/photos (uploadedBy/tag/status Filter) |
 | S26-121 | **Cursor-Pagination** | ✅ erledigt (20.02.2026) | GET /photos?cursor=<id> + nextCursor in Pagination Response |
 | S26-122 | **Gäste-Bulk-Import JSON** | ✅ erledigt (20.02.2026) | POST /guests/import: created/updated/failed Statistik |
+| S26-123 | **Gast Delete-Own** | ✅ erledigt (20.02.2026) | POST /photos/:id/delete-own (featuresConfig.allowDeleteOwn + Uploader-Check) |
+| S26-124 | **allowDeleteOwn Toggle** | ✅ erledigt (20.02.2026) | SetupTabV2: Trash2 Toggle fuer featuresConfig.allowDeleteOwn |
+| S26-125 | **Dashboard Gäste-Stats v2** | ✅ erledigt (20.02.2026) | withEmail + Begleitpersonen + Gesamt Footer-Zeile |
+| S26-126 | **Photo-Stats Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/stats (total/approved/pending/favorites/today/totalViews) |
+| S26-127 | **Bulk AI-Caption** | ✅ erledigt (20.02.2026) | POST /photos/bulk/ai-caption (max 100, overwrite param) |
+| S26-128 | **Admin Event-Notizen** | ⏳ Schema-Änderung nötig | adminNotes Feld nicht im Prisma Schema vorhanden |
 
 ---
 
