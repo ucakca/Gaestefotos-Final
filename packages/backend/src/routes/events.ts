@@ -1667,6 +1667,54 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/trends — Photo upload trends for last N days
+router.get(
+  '/:eventId/trends',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+
+      const days = Math.min(30, Math.max(3, parseInt(req.query.days as string, 10) || 7));
+      const since = new Date();
+      since.setDate(since.getDate() - days);
+      since.setHours(0, 0, 0, 0);
+
+      const photos = await prisma.photo.findMany({
+        where: { eventId, createdAt: { gte: since }, deletedAt: null },
+        select: { createdAt: true, status: true },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      // Group by date
+      const byDate: Record<string, { date: string; total: number; approved: number; pending: number }> = {};
+      for (let i = 0; i < days; i++) {
+        const d = new Date(since);
+        d.setDate(d.getDate() + i);
+        const key = d.toISOString().split('T')[0];
+        byDate[key] = { date: key, total: 0, approved: 0, pending: 0 };
+      }
+
+      for (const photo of photos) {
+        const key = new Date(photo.createdAt).toISOString().split('T')[0];
+        if (byDate[key]) {
+          byDate[key].total++;
+          if ((photo.status as string) === 'APPROVED') byDate[key].approved++;
+          else if ((photo.status as string) === 'PENDING') byDate[key].pending++;
+        }
+      }
+
+      res.json({ trends: Object.values(byDate), days });
+    } catch (error: any) {
+      logger.error('Trends error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Laden der Trends' });
+    }
+  }
+);
+
 // GET /api/events/:eventId/stats — Realtime stats for dashboard
 router.get(
   '/:eventId/stats',
