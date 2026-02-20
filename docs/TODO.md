@@ -317,6 +317,13 @@
 | S26-126 | **Photo-Stats Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/stats (total/approved/pending/favorites/today/totalViews) |
 | S26-127 | **Bulk AI-Caption** | ✅ erledigt (20.02.2026) | POST /photos/bulk/ai-caption (max 100, overwrite param) |
 | S26-128 | **Admin Event-Notizen** | ⏳ Schema-Änderung nötig | adminNotes Feld nicht im Prisma Schema vorhanden |
+| S26-129 | **Lightbox Delete-Own** | ✅ erledigt (20.02.2026) | Trash2-Button in Lightbox wenn allowDeleteOwn + eigener Uploader |
+| S26-130 | **allowDeleteOwn Toggle** | ✅ erledigt (20.02.2026) | SetupTabV2: Trash2 Toggle fuer featuresConfig.allowDeleteOwn |
+| S26-131 | **allowDeleteOwn Passthrough** | ✅ erledigt (20.02.2026) | e3/[slug]/page.tsx: allowDeleteOwn + guestUploaderName an Lightbox |
+| S26-132 | **Top-10 Fotos Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/top (views_desc, limit max 50) |
+| S26-133 | **Gästebuch Bulk-Moderation** | ✅ erledigt (20.02.2026) | POST /events/:id/guestbook/bulk-moderate (approve/reject/delete) |
+| S26-134 | **Gäste-Bulk-Import** | ✅ erledigt (20.02.2026) | POST /events/:id/guests/import (JSON Array, upsert-by-email) |
+| S26-135 | **Gast Delete-Own** | ✅ erledigt (20.02.2026) | POST /photos/:id/delete-own (featuresConfig.allowDeleteOwn + Name-Check) |
 
 ---
 
