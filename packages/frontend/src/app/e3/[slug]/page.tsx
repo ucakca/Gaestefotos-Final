@@ -715,6 +715,8 @@ export default function PublicEventPageV2() {
         onNext={() => setSelectedPhotoIndex(prev => prev !== null && prev < filteredPhotos.length - 1 ? prev + 1 : prev)}
         allowDownloads={featuresConfig?.allowDownloads !== false}
         allowComments={featuresConfig?.allowComments}
+        allowDeleteOwn={!!(featuresConfig?.allowDeleteOwn)}
+        uploaderName={typeof window !== 'undefined' ? localStorage.getItem('guestUploaderName') || undefined : undefined}
         eventSlug={slug}
         eventTitle={event?.title}
         onLikeChange={(photoId, liked, count) => {
