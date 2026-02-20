@@ -1524,6 +1524,30 @@ router.post(
   }
 );
 
+// POST /bulk/favorite — Set isFavorite on multiple photos at once
+router.post(
+  '/bulk/favorite',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoIds, isFavorite, eventId } = req.body;
+      if (!Array.isArray(photoIds) || photoIds.length === 0) return res.status(400).json({ error: 'photoIds erforderlich' });
+      if (!eventId) return res.status(400).json({ error: 'eventId erforderlich' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const result = await prisma.photo.updateMany({
+        where: { id: { in: photoIds }, eventId },
+        data: { isFavorite: isFavorite !== false },
+      });
+
+      res.json({ updated: result.count, isFavorite: isFavorite !== false });
+    } catch (error: any) {
+      logger.error('Bulk favorite error', { error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
 // POST /bulk/tag — assign tags to multiple photos at once
 router.post(
   '/bulk/tag',

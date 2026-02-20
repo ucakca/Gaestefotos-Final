@@ -707,4 +707,42 @@ router.post('/bulk-status', authMiddleware, requireRole('ADMIN'), async (req: Au
   }
 });
 
+// GET /storage-stats — Top events + users by storage usage
+router.get('/storage-stats', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const limit = Math.min(50, parseInt(req.query.limit as string, 10) || 20);
+
+    const [topEvents, totalPhotos, totalSizeResult] = await Promise.all([
+      prisma.event.findMany({
+        where: { deletedAt: null },
+        select: {
+          id: true, title: true, slug: true,
+          host: { select: { email: true, name: true } },
+          _count: { select: { photos: { where: { deletedAt: null } } } },
+        },
+        orderBy: { photos: { _count: 'desc' } },
+        take: limit,
+      }),
+      prisma.photo.count({ where: { deletedAt: null } }),
+      prisma.photo.aggregate({ where: { deletedAt: null }, _sum: { sizeBytes: true } }),
+    ]);
+
+    const totalBytes = Number(totalSizeResult._sum.sizeBytes || 0);
+
+    res.json({
+      ok: true,
+      summary: { totalPhotos, totalBytes, totalMB: Math.round(totalBytes / 1024 / 1024) },
+      topEvents: topEvents.map((e: any) => ({
+        id: e.id,
+        title: e.title,
+        slug: e.slug,
+        host: e.host?.email || e.host?.name || '—',
+        photoCount: e._count.photos,
+      })),
+    });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
