@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -15,6 +15,7 @@ import {
   Trophy,
   Star,
 } from 'lucide-react';
+
 import StarRating from '@/components/ui/StarRating';
 import { Photo } from '@gaestefotos/shared';
 import { useTranslations } from '@/components/I18nProvider';
@@ -23,6 +24,14 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { buildApiUrl } from '@/lib/api';
 import api from '@/lib/api';
+
+const REACTIONS = [
+  { key: 'heart', emoji: '❤️' },
+  { key: 'fire',  emoji: '🔥' },
+  { key: 'laugh', emoji: '😂' },
+  { key: 'wow',   emoji: '😮' },
+  { key: 'clap',  emoji: '👏' },
+];
 
 // Helper: Get the real photo ID for API calls (challenge photos have fake IDs)
 const getRealPhotoId = (photo: any): string | null => {
@@ -121,6 +130,10 @@ export default function PhotoLightbox({
   const t = useTranslations('photos');
   const [likedPhotos, setLikedPhotos] = useState<Set<string>>(new Set());
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [userReactions, setUserReactions] = useState<Record<string, string>>({});
+  const [reactionCountsMap, setReactionCountsMap] = useState<Record<string, Record<string, number>>>({});
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
   const [commentText, setCommentText] = useState('');
   const [authorName, setAuthorName] = useState('');
@@ -165,15 +178,16 @@ export default function PhotoLightbox({
       const realId = getRealPhotoId(currentPhoto);
       if (!realId) return;
       try {
-        // Load likes
+        // Load likes + reactions
         const likesRes = await api.get(`/photos/${realId}/likes`);
-        setLikeCounts((prev) => ({
-          ...prev,
-          [currentPhoto.id]: likesRes.data.likeCount || 0,
-        }));
-        const liked = likesRes.data?.liked ?? likesRes.data?.isLiked;
-        if (liked) {
+        setLikeCounts((prev) => ({ ...prev, [currentPhoto.id]: likesRes.data.likeCount || 0 }));
+        if (likesRes.data?.reactionCounts) {
+          setReactionCountsMap((prev) => ({ ...prev, [currentPhoto.id]: likesRes.data.reactionCounts }));
+        }
+        const myReaction = likesRes.data?.myReaction || (likesRes.data?.liked ? 'heart' : null);
+        if (myReaction) {
           setLikedPhotos((prev) => new Set(prev).add(currentPhoto.id));
+          setUserReactions((prev) => ({ ...prev, [currentPhoto.id]: myReaction }));
         }
 
         // Load comments (if enabled)
@@ -209,34 +223,40 @@ export default function PhotoLightbox({
     loadPhotoData();
   }, [currentPhoto, allowComments]);
 
-  // Toggle like
-  const toggleLike = useCallback(async () => {
+  // Toggle like with reactionType
+  const toggleLike = useCallback(async (reactionType = 'heart') => {
     if (!currentPhoto) return;
     const realId = getRealPhotoId(currentPhoto);
     if (!realId) return;
-
     try {
-      const response = await api.post(`/photos/${realId}/like`);
+      const response = await api.post(`/photos/${realId}/like`, { reactionType });
       setLikedPhotos((prev) => {
         const newSet = new Set(prev);
-        if (response.data.liked) {
-          newSet.add(currentPhoto.id);
-        } else {
-          newSet.delete(currentPhoto.id);
-        }
+        if (response.data.liked) { newSet.add(currentPhoto.id); } else { newSet.delete(currentPhoto.id); }
         return newSet;
       });
       const newLikeCount = response.data.likeCount || 0;
-      setLikeCounts((prev) => ({
-        ...prev,
-        [currentPhoto.id]: newLikeCount,
-      }));
-      // Notify parent about like change
+      setLikeCounts((prev) => ({ ...prev, [currentPhoto.id]: newLikeCount }));
+      if (response.data.liked) {
+        setUserReactions((prev) => ({ ...prev, [currentPhoto.id]: reactionType }));
+      } else {
+        setUserReactions((prev) => { const n = { ...prev }; delete n[currentPhoto.id]; return n; });
+      }
+      if (response.data?.reactionCounts) {
+        setReactionCountsMap((prev) => ({ ...prev, [currentPhoto.id]: response.data.reactionCounts }));
+      }
       onLikeChange?.(currentPhoto.id, response.data.liked, newLikeCount);
     } catch (err) {
       void err;
     }
   }, [currentPhoto, onLikeChange]);
+
+  const handlePressStart = useCallback(() => {
+    longPressRef.current = setTimeout(() => setPickerOpen(true), 500);
+  }, []);
+  const handlePressEnd = useCallback(() => {
+    if (longPressRef.current) { clearTimeout(longPressRef.current); longPressRef.current = null; }
+  }, []);
 
   // Submit comment
   const submitComment = useCallback(async () => {
@@ -475,39 +495,52 @@ export default function PhotoLightbox({
               {/* Action Buttons Row */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  {/* Like — with particle burst */}
-                  <motion.button
-                    onClick={toggleLike}
-                    className="p-1 relative"
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <motion.div
-                      animate={isLiked ? { scale: [1, 1.35, 1] } : { scale: 1 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-                    >
-                      <Heart
-                        className={`w-7 h-7 transition-colors duration-200 ${isLiked ? 'fill-red-500 text-destructive' : 'text-white'}`}
-                      />
-                    </motion.div>
-                    {/* Particle burst on like */}
+                  {/* Like/Reaction — long-press for picker */}
+                  <div className="relative">
+                    {/* Reaction Picker */}
                     <AnimatePresence>
-                      {isLiked && Array.from({ length: 8 }).map((_, i) => (
+                      {pickerOpen && (
                         <motion.div
-                          key={`p-${i}`}
-                          className="absolute top-1/2 left-1/2 w-1.5 h-1.5 rounded-full bg-destructive/80"
-                          initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
-                          animate={{
-                            x: Math.cos((i / 8) * Math.PI * 2) * 22,
-                            y: Math.sin((i / 8) * Math.PI * 2) * 22,
-                            scale: 0,
-                            opacity: 0,
-                          }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.45, ease: 'easeOut' }}
-                        />
-                      ))}
+                          initial={{ opacity: 0, scale: 0.8, y: 8 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.8, y: 8 }}
+                          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                          className="absolute bottom-10 left-0 z-30 flex gap-2 bg-white/10 backdrop-blur-md px-3 py-2 rounded-full shadow-xl border border-white/20"
+                        >
+                          {REACTIONS.map((r) => (
+                            <motion.button
+                              key={r.key}
+                              whileTap={{ scale: 1.3 }}
+                              onClick={() => { toggleLike(r.key); setPickerOpen(false); }}
+                              className={`text-2xl p-1 rounded-full transition-transform hover:scale-125 ${userReactions[currentPhoto.id] === r.key ? 'ring-2 ring-white/60 bg-white/10' : ''}`}
+                            >
+                              {r.emoji}
+                            </motion.button>
+                          ))}
+                        </motion.div>
+                      )}
                     </AnimatePresence>
-                  </motion.button>
+                    <motion.button
+                      onClick={() => { handlePressEnd(); toggleLike(userReactions[currentPhoto.id] || 'heart'); }}
+                      onMouseDown={handlePressStart}
+                      onMouseUp={handlePressEnd}
+                      onMouseLeave={handlePressEnd}
+                      onTouchStart={handlePressStart}
+                      onTouchEnd={handlePressEnd}
+                      className="p-1 relative select-none"
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <motion.div
+                        animate={isLiked ? { scale: [1, 1.35, 1] } : { scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                      >
+                        {isLiked && userReactions[currentPhoto.id]
+                          ? <span className="text-2xl leading-none">{REACTIONS.find(r => r.key === userReactions[currentPhoto.id])?.emoji || '❤️'}</span>
+                          : <Heart className={`w-7 h-7 transition-colors duration-200 ${isLiked ? 'fill-red-500 text-destructive' : 'text-white'}`} />
+                        }
+                      </motion.div>
+                    </motion.button>
+                  </div>
 
                   {/* Comment Icon - Shows count */}
                   {allowComments && (
@@ -535,13 +568,36 @@ export default function PhotoLightbox({
                 )}
               </div>
 
-              {/* Like Count - always show line, changes based on count */}
-              <p className="text-white font-semibold text-sm">
-                {likeCount > 0 
-                  ? (likeCount === 1 ? t('likedByOne', { count: String(likeCount) }) : t('likedByMany', { count: String(likeCount) }))
-                  : t('beFirstLike')
-                }
-              </p>
+              {/* Like Count + Reaction Chips */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-white font-semibold text-sm">
+                  {likeCount > 0
+                    ? (likeCount === 1 ? t('likedByOne', { count: String(likeCount) }) : t('likedByMany', { count: String(likeCount) }))
+                    : t('beFirstLike')
+                  }
+                </p>
+                {reactionCountsMap[currentPhoto.id] && Object.keys(reactionCountsMap[currentPhoto.id]).length > 0 && (
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {Object.entries(reactionCountsMap[currentPhoto.id])
+                      .sort(([, a], [, b]) => b - a)
+                      .slice(0, 5)
+                      .map(([key, count]) => (
+                        <button
+                          key={key}
+                          onClick={() => toggleLike(key)}
+                          className={`flex items-center gap-0.5 text-[12px] rounded-full px-2 py-0.5 transition-colors ${
+                            userReactions[currentPhoto.id] === key
+                              ? 'bg-white/20 border border-white/40'
+                              : 'bg-white/10 border border-white/10 hover:bg-white/20'
+                          }`}
+                        >
+                          <span>{REACTIONS.find(r => r.key === key)?.emoji || '❤️'}</span>
+                          <span className="text-white/80 ml-0.5">{count}</span>
+                        </button>
+                      ))}
+                  </div>
+                )}
+              </div>
 
               {/* Star Rating */}
               <div className="flex items-center gap-2 py-1">
