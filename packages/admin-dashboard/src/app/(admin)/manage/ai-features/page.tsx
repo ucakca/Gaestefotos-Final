@@ -323,43 +323,61 @@ export default function AiFeaturesPage() {
 
         {/* Style Transfer Provider Routing Card */}
         <ModernCard className="p-5 border border-pink-500/20">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-1">
             <Wand2 className="w-5 h-5 text-pink-400" />
-            <h2 className="text-white font-semibold">Style Transfer — Provider-Priorisierung</h2>
+            <h2 className="text-white font-semibold">Style Transfer — Provider-Routing</h2>
             <span className="ml-2 text-xs text-gray-400 bg-gray-700 rounded px-2 py-0.5">auto-fallback</span>
           </div>
-          <p className="text-xs text-gray-400 mb-4">
-            Priorität 1 wird zuerst versucht. Bei Fehler automatisch Fallback auf Priorität 2 → 3.
-            Der Provider-Slug muss mit dem Slug in <span className="text-gray-300">AI Providers</span> übereinstimmen.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-            {(['Priorität 1 (Primär)', 'Priorität 2 (Fallback)', 'Priorität 3 (Notfall)'] as const).map((label, idx) => (
-              <div key={idx}>
-                <label className="text-xs text-gray-400 block mb-1">{label}</label>
-                <select
-                  value={priority[idx]}
-                  onChange={e => setPriority(prev => { const n = [...prev] as [string,string,string]; n[idx] = e.target.value; return n; })}
-                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/40"
-                >
-                  <option value="">(keiner)</option>
-                  {imageGenProviders.map(p => (
-                    <option key={p.slug} value={p.slug}>{p.name} [{p.slug}]</option>
-                  ))}
-                </select>
-              </div>
-            ))}
-          </div>
-          {/* Face-Count Routing */}
-          <div className="mb-4 p-3 bg-gray-800/60 rounded-lg border border-gray-700">
-            <p className="text-xs text-gray-300 font-medium mb-2">Automatisches Face-Routing (GPT-4o-mini erkennt Gesichter, ~$0.001/Bild)</p>
+
+          {/* Section 1: Standard Priority */}
+          <div className="mt-4 mb-1">
+            <p className="text-xs text-gray-400 font-medium mb-3">
+              Standard-Priorisierung — Priorität 1 zuerst, bei Fehler automatisch weiter
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {([['Einzelporträt (1 Gesicht)', 'single'], ['Gruppe (2+ Gesichter)', 'multi'], ['Kein Gesicht erkannt', 'none']] as const).map(([label, key]) => (
+              {([
+                ['Priorität 1 (Primär)', 'Empfohlen: PuLID — maximale Qualität'],
+                ['Priorität 2 (Fallback)', 'Empfohlen: OpenAI — zuverlässig, multi-face'],
+                ['Priorität 3 (Notfall)', 'Empfohlen: Replicate — günstigster Fallback'],
+              ] as const).map(([label, hint], idx) => (
+                <div key={idx}>
+                  <label className="text-xs text-gray-400 block mb-0.5">{label}</label>
+                  <p className="text-[10px] text-gray-600 mb-1">{hint}</p>
+                  <select
+                    value={priority[idx]}
+                    onChange={e => setPriority(prev => { const n = [...prev] as [string,string,string]; n[idx] = e.target.value; return n; })}
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/40"
+                  >
+                    <option value="">(keiner)</option>
+                    {imageGenProviders.map(p => (
+                      <option key={p.slug} value={p.slug}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="my-4 border-t border-gray-700/60" />
+
+          {/* Section 2: Face-Count Routing */}
+          <div className="mb-4">
+            <p className="text-xs text-gray-400 font-medium mb-0.5">Gesichts-basiertes Routing</p>
+            <p className="text-[10px] text-gray-600 mb-3">Überschreibt die Standard-Priorisierung. Gesichtserkennung läuft lokal via llava oder als Fallback über GPT-4o-mini.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {([
+                ['1 Gesicht erkannt', 'Empfohlen: PuLID — beste Gesichtstreue', 'single'],
+                ['2+ Gesichter erkannt', 'Empfohlen: Replicate — günstig, multi-face', 'multi'],
+                ['Kein Gesicht erkannt', 'Empfohlen: Flux.1 — hohe Stilqualität', 'none'],
+              ] as const).map(([label, hint, key]) => (
                 <div key={key}>
-                  <label className="text-xs text-gray-500 block mb-1">{label}</label>
+                  <label className="text-xs text-gray-400 block mb-0.5">{label}</label>
+                  <p className="text-[10px] text-gray-600 mb-1">{hint}</p>
                   <select
                     value={faceRouting[key]}
                     onChange={e => setFaceRouting(prev => ({ ...prev, [key]: e.target.value }))}
-                    className="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/40"
+                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/40"
                   >
                     <option value="">(deaktiviert)</option>
                     {imageGenProviders.map(p => (
@@ -369,13 +387,9 @@ export default function AiFeaturesPage() {
                 </div>
               ))}
             </div>
-            <p className="text-xs text-gray-500 mt-2">Wenn kein Face-Routing gesetzt → Standard-Priorisierung wird genutzt.</p>
           </div>
 
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <p className="text-xs text-gray-500">
-              PuLID = Einzelporträt · OpenAI = Gruppe · Flux.1 = hohe Qualität · SDXL = günstigster Fallback
-            </p>
+          <div className="flex items-center justify-end">
             <button
               onClick={async () => {
                 setSavingPriority(true);
