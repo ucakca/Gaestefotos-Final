@@ -148,8 +148,9 @@ export async function detectFaces(buffer: Buffer): Promise<Array<{
     ctx.drawImage(img, 0, 0);
 
     // Detect faces using face-api
+    // threshold 0.35 = higher recall (catches more faces), default 0.5 = higher precision
     const detections = await faceapi
-      .detectAllFaces(canvas as any, new faceapi.TinyFaceDetectorOptions())
+      .detectAllFaces(canvas as any, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.35 }))
       .withFaceLandmarks()
       .withFaceDescriptors();
 
@@ -211,7 +212,7 @@ export async function extractFaceDescriptor(buffer: Buffer): Promise<{
 
     // Detect single face with descriptor
     const detection = await faceapi
-      .detectSingleFace(canvas as any, new faceapi.TinyFaceDetectorOptions())
+      .detectSingleFace(canvas as any, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.35 }))
       .withFaceLandmarks()
       .withFaceDescriptor();
 
@@ -296,25 +297,26 @@ export async function getFaceDetectionMetadata(buffer: Buffer): Promise<FaceDete
       };
     }
 
-    const faces = await detectFaces(buffer);
-    
-    // Extract descriptors for all faces
-    const descriptors: number[][] = [];
-    if (faces.length > 0) {
-      const img = await loadImage(buffer);
-      const canvas = createCanvas(img.width, img.height);
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
+    // Single pass: detect all faces + descriptors at once (avoids double-detection)
+    const img = await loadImage(buffer);
+    const canvas = createCanvas(img.width, img.height);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
 
-      const detections = await faceapi
-        .detectAllFaces(canvas as any, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks()
-        .withFaceDescriptors();
+    const allDetections = await faceapi
+      .detectAllFaces(canvas as any, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.35 }))
+      .withFaceLandmarks()
+      .withFaceDescriptors();
 
-      for (const detection of detections) {
-        descriptors.push(Array.from(((detection as any).descriptor as Iterable<number>)));
-      }
-    }
+    const faces = allDetections.map((d: any) => ({
+      x: Math.round(d.detection.box.x),
+      y: Math.round(d.detection.box.y),
+      width: Math.round(d.detection.box.width),
+      height: Math.round(d.detection.box.height),
+      confidence: d.detection.score || 0.9,
+    }));
+
+    const descriptors: number[][] = allDetections.map((d: any) => Array.from(d.descriptor as Iterable<number>));
     
     return {
       faceCount: faces.length,
