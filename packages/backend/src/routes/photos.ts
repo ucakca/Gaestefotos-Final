@@ -167,6 +167,12 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
     const limitNum = limit ? Math.min(parseInt(limit as string, 10) || 100, 200) : undefined;
     const skipNum = skip ? parseInt(skip as string, 10) || 0 : 0;
 
+    // Tag filter
+    const tagFilter = typeof req.query.tag === 'string' && req.query.tag.trim() ? req.query.tag.trim() : null;
+    if (tagFilter) {
+      where.tags = { has: tagFilter };
+    }
+
     const sortValue = typeof sort === 'string' ? sort : 'date_desc';
     const orderBy: any =
       sortValue === 'likes_desc' ? [{ likeCount: 'desc' }, { createdAt: 'desc' }] :
