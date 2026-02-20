@@ -1,5 +1,5 @@
 import { logger } from '../utils/logger';
-import { getDefaultConfig, chatCompletion, getActiveProviderInfo, type ChatMessage, type LLMResponse } from './llmClient';
+import { getDefaultConfig, chatCompletion, chatCompletionWithFallback, getActiveProviderInfo, type ChatMessage, type LLMResponse } from './llmClient';
 import { withKnowledge, type KnowledgeFeature } from '../services/cache/knowledgeStore';
 
 interface AIResponse {
@@ -31,7 +31,7 @@ export async function generateCompletion(
   }
   messages.push({ role: 'user', content: prompt });
 
-  const result: LLMResponse = await chatCompletion(config, messages, {
+  const result: LLMResponse = await chatCompletionWithFallback(config, messages, {
     maxTokens: options?.maxTokens,
     temperature: options?.temperature,
   });

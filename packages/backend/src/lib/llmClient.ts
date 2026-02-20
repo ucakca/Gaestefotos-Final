@@ -164,6 +164,12 @@ export async function chatCompletion(
 
   if (!resp.ok) {
     const body = await resp.text().catch(() => '');
+    // 429 from Groq = daily/minute rate limit hit — signal for Ollama fallback
+    if (resp.status === 429 && config.provider === 'groq') {
+      const err = new Error(`GROQ_RATE_LIMIT: ${resp.status}`) as any;
+      err.isRateLimit = true;
+      throw err;
+    }
     logger.error('LLM API error', { provider: config.provider, status: resp.status, body: body.slice(0, 500) });
     throw new Error(`LLM API Fehler (${config.provider}): ${resp.status} ${resp.statusText}`);
   }
@@ -181,6 +187,34 @@ export async function chatCompletion(
       total_tokens: data.usage.total_tokens ?? 0,
     } : undefined,
   };
+}
+
+// ─── Auto-Fallback Wrapper ──────────────────────────────────────────────────
+
+/**
+ * Chat completion with automatic Groq → Ollama fallback on rate limit (429).
+ * Ollama runs locally — zero cost, no external dependency.
+ */
+export async function chatCompletionWithFallback(
+  config: LLMConfig,
+  messages: ChatMessage[],
+  options?: { maxTokens?: number; temperature?: number },
+): Promise<LLMResponse> {
+  try {
+    return await chatCompletion(config, messages, options);
+  } catch (err: any) {
+    if (err?.isRateLimit) {
+      logger.warn('[LLM] Groq rate limit hit — falling back to Ollama (local)', { model: config.model });
+      const ollamaConfig: LLMConfig = {
+        provider: 'ollama',
+        apiKey: 'ollama',
+        baseUrl: PROVIDER_DEFAULTS.ollama.baseUrl,
+        model: PROVIDER_DEFAULTS.ollama.model,
+      };
+      return chatCompletion(ollamaConfig, messages, options);
+    }
+    throw err;
+  }
 }
 
 // ─── Convenience Helpers ────────────────────────────────────────────────────

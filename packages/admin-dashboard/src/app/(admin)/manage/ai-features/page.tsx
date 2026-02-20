@@ -364,7 +364,7 @@ export default function AiFeaturesPage() {
           {/* Section 2: Face-Count Routing */}
           <div className="mb-4">
             <p className="text-xs text-gray-400 font-medium mb-0.5">Gesichts-basiertes Routing</p>
-            <p className="text-[10px] text-gray-600 mb-3">Überschreibt die Standard-Priorisierung. Gesichtserkennung läuft lokal via llava oder als Fallback über GPT-4o-mini.</p>
+            <p className="text-[10px] text-gray-600 mb-3">Überschreibt die Standard-Priorisierung. Gesichtserkennung läuft lokal via MediaPipe BlazeFace ($0, ~400ms) oder als Fallback über GPT-4o-mini.</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {([
                 ['1 Gesicht erkannt', 'Empfohlen: PuLID — beste Gesichtstreue', 'single'],
