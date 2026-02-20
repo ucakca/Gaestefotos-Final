@@ -70,6 +70,7 @@ export default function PublicEventPageV2() {
   const [liveSheetOpen, setLiveSheetOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [faceSearchOpen, setFaceSearchOpen] = useState(false);
+  const [faceFilterPhotoIds, setFaceFilterPhotoIds] = useState<string[] | null>(null);
   const [styleTransferOpen, setStyleTransferOpen] = useState(false);
   const [aiGamesOpen, setAiGamesOpen] = useState(false);
   const [aiEffectsOpen, setAiEffectsOpen] = useState(false);
@@ -442,7 +443,23 @@ export default function PublicEventPageV2() {
             </Section>
           )}
 
-          {/* Face Search now handled by WorkflowFaceSearchModal below */}
+          {/* Face Filter Active Banner */}
+          {faceFilterPhotoIds && (
+            <div className="mx-4 mt-2 mb-1 flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🔍</span>
+                <span className="text-sm font-medium text-cyan-700 dark:text-cyan-300">
+                  {faceFilterPhotoIds.length} Foto{faceFilterPhotoIds.length !== 1 ? 's' : ''} mit dir
+                </span>
+              </div>
+              <button
+                onClick={() => setFaceFilterPhotoIds(null)}
+                className="text-xs text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1"
+              >
+                <X className="w-3.5 h-3.5" /> Filter löschen
+              </button>
+            </div>
+          )}
 
           {/* V0 Photo Grid (Masonry) */}
           <div className="px-4 pt-4 pb-24">
@@ -456,7 +473,9 @@ export default function PublicEventPageV2() {
               </Container>
             ) : (
               <PhotoGrid
-                photos={filteredPhotos as any}
+                photos={(faceFilterPhotoIds
+                  ? filteredPhotos.filter((p: any) => faceFilterPhotoIds.includes(p.id))
+                  : filteredPhotos) as any}
                 eventId={event.id}
                 eventSlug={slug}
                 allowDownloads={featuresConfig?.allowDownloads !== false}
@@ -700,6 +719,7 @@ export default function PublicEventPageV2() {
         isOpen={faceSearchOpen && featuresConfig?.faceSearch !== false}
         onClose={() => setFaceSearchOpen(false)}
         eventId={event?.id || ''}
+        onResults={(ids) => { setFaceFilterPhotoIds(ids); setActiveTab('feed'); }}
       />
 
       <QuickUploadModal

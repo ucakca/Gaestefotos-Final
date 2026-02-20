@@ -17,18 +17,24 @@ interface WorkflowFaceSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   eventId: string;
+  onResults?: (photoIds: string[]) => void;
 }
 
 export default function WorkflowFaceSearchModal({
   isOpen,
   onClose,
   eventId,
+  onResults,
 }: WorkflowFaceSearchModalProps) {
   const { definition, loading: wfLoading, error: wfError } = useWorkflow(isOpen ? 'FACE_SEARCH' : null);
 
-  const handleComplete = useCallback((_collectedData: Record<string, any>) => {
+  const handleComplete = useCallback((collectedData: Record<string, any>) => {
+    const results: any[] = collectedData.faceSearchResults || [];
+    if (results.length > 0 && onResults) {
+      onResults(results.map((r: any) => r.photoId).filter(Boolean));
+    }
     onClose();
-  }, [onClose]);
+  }, [onClose, onResults]);
 
   // Fallback: If no workflow definition found, use standalone FaceSearch component
   if (wfError || (!wfLoading && !definition && isOpen)) {

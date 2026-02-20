@@ -1,24 +1,20 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import api from '@/lib/api';
 import { Event as EventType } from '@gaestefotos/shared';
 import { useToastStore } from '@/store/toastStore';
-import { Save, X, Download, Eye, Camera, Edit2, QrCode, Smartphone } from 'lucide-react';
+import { Save, X, Eye, Camera, QrCode, Smartphone } from 'lucide-react';
 import DashboardFooter from '@/components/DashboardFooter';
 import AppLayout from '@/components/AppLayout';
-import dynamic from 'next/dynamic';
 import { DESIGN_PRESETS, getDesignPreset } from '@/lib/designPresets';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
-import { IconButton } from '@/components/ui/IconButton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { Slider } from '@/components/ui/Slider';
 import { ColorInput } from '@/components/ui/ColorInput';
 
 function isWizardMode(): boolean {
@@ -28,16 +24,6 @@ function isWizardMode(): boolean {
   } catch {
     return false;
   }
-}
-
-const QRCodeSVG = dynamic(() => import('qrcode.react').then(mod => mod.QRCodeSVG), {
-  ssr: false,
-});
-
-function resolveRootCssVar(name: string, fallback: string): string {
-  if (typeof window === 'undefined') return fallback;
-  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  return v || fallback;
 }
 
 export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id: string }> }) {
@@ -62,15 +48,7 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
   const [saving, setSaving] = useState(false);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('mobile');
   const [editingField, setEditingField] = useState<string | null>(null);
-  const [showQRCode, setShowQRCode] = useState(false);
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
-  const [qrCodeConfig, setQrCodeConfig] = useState({
-    fgColor: resolveRootCssVar('--foreground', '#000000'),
-    bgColor: resolveRootCssVar('--card', '#FFFFFF'),
-    size: 200,
-    level: 'M' as 'L' | 'M' | 'Q' | 'H',
-  });
-  
   const profileImageInputRef = useRef<HTMLInputElement>(null);
   const coverImageInputRef = useRef<HTMLInputElement>(null);
   const logoImageInputRef = useRef<HTMLInputElement>(null);
@@ -84,16 +62,6 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
       const { data } = await api.get(`/events/${eventId}`);
       setEvent(data.event);
 
-      const nextDesignConfig = (data?.event?.designConfig as any) || {};
-      const persistedQr = nextDesignConfig?.qrCodeConfig;
-      if (persistedQr && typeof persistedQr === 'object') {
-        setQrCodeConfig((prev) => ({
-          fgColor: typeof persistedQr.fgColor === 'string' ? persistedQr.fgColor : prev.fgColor,
-          bgColor: typeof persistedQr.bgColor === 'string' ? persistedQr.bgColor : prev.bgColor,
-          size: typeof persistedQr.size === 'number' ? persistedQr.size : prev.size,
-          level: ['L', 'M', 'Q', 'H'].includes(persistedQr.level) ? persistedQr.level : prev.level,
-        }));
-      }
     } catch (err) {
       showToast('Fehler beim Laden', 'error');
     } finally {
@@ -170,106 +138,6 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
     }
   };
 
-  const downloadQRCode = () => {
-    const svg = document.getElementById('qr-code-svg');
-    if (!svg) return;
-    
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    
-    canvas.width = 200;
-    canvas.height = 200;
-    
-    img.onload = () => {
-      ctx?.drawImage(img, 0, 0);
-      const url = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = `qr-code-${event?.slug || eventId}.png`;
-      link.href = url;
-      link.click();
-    };
-    
-    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
-  };
-
-  const saveQrCodeConfig = async () => {
-    await updateDesignConfig({ qrCodeConfig });
-  };
-
-  const downloadA5StandeePdf = () => {
-    const svg = document.getElementById('qr-code-svg');
-    if (!svg) return;
-
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const qrSizePx = 800;
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    canvas.width = qrSizePx;
-    canvas.height = qrSizePx;
-
-    img.onload = () => {
-      ctx?.drawImage(img, 0, 0, qrSizePx, qrSizePx);
-      const qrPng = canvas.toDataURL('image/png');
-
-      const w = window.open('', '_blank');
-      if (!w) {
-        showToast('Popup blockiert (bitte erlauben)', 'error');
-        return;
-      }
-
-      const title = (event?.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      const url = (typeof window !== 'undefined' ? `${window.location.origin}/e2/${event?.slug || ''}` : '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-      w.document.open();
-      w.document.write(`<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Aufsteller A5</title>
-    <style>
-      @page { size: A5 portrait; margin: 0; }
-      html, body { width: 148mm; height: 210mm; margin: 0; padding: 0; }
-      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
-      .page { box-sizing: border-box; width: 148mm; height: 210mm; padding: 12mm; display: flex; flex-direction: column; justify-content: space-between; }
-      .header { text-align: center; }
-      .title { font-size: 18pt; font-weight: 800; margin: 0; }
-      .subtitle { font-size: 11pt; margin: 6mm 0 0 0; color: var(--muted-foreground); }
-      .qrWrap { display: flex; align-items: center; justify-content: center; margin: 10mm 0; }
-      .qr { width: 92mm; height: 92mm; border: 2mm solid var(--foreground); border-radius: 6mm; padding: 4mm; background: var(--card); box-sizing: border-box; }
-      .qr img { width: 100%; height: 100%; object-fit: contain; }
-      .footer { text-align: center; font-size: 9pt; color: var(--muted-foreground); }
-      .url { margin-top: 3mm; font-size: 9pt; word-break: break-all; color: var(--foreground); }
-    </style>
-  </head>
-  <body>
-    <div class="page">
-      <div class="header">
-        <p class="title">${title || 'Gästefotos'}</p>
-        <p class="subtitle">Scanne den QR-Code und lade deine Fotos hoch</p>
-      </div>
-      <div class="qrWrap">
-        <div class="qr">
-          <img src="${qrPng}" alt="QR" />
-        </div>
-      </div>
-      <div class="footer">
-        <div>Keine App nötig • Einfach im Browser</div>
-        <div class="url">${url}</div>
-      </div>
-    </div>
-    <script>
-      window.onload = () => { window.focus(); window.print(); };
-    </script>
-  </body>
-</html>`);
-      w.document.close();
-    };
-
-    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
-  };
 
   if (loading || !eventId) {
     return <FullPageLoader label="Lade..." />;
@@ -369,7 +237,7 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-background"></div>
                         ) : (
                           <div className="text-background text-sm font-medium flex items-center gap-2">
-                            <Edit2 className="w-4 h-4" />
+                            <Camera className="w-4 h-4" />
                             Titelbild ändern
                           </div>
                         )}
@@ -413,7 +281,7 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
                             {uploadingImage === 'profile' ? (
                               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-background"></div>
                             ) : (
-                              <Edit2 className="w-6 h-6 text-background" />
+                              <Camera className="w-6 h-6 text-background" />
                             )}
                           </div>
                           <Input
@@ -565,25 +433,24 @@ export default function DesignLiveBuilderPage({ params }: { params: Promise<{ id
               </div>
             </div>
 
-            {/* QR Code — Compact with link to dashboard */}
+            {/* QR Code — Link to dedicated QR-Styler */}
             <div className="rounded-2xl border border-border bg-card p-5">
               <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                 <QrCode className="w-4 h-4 text-primary" />
-                QR-Code
+                QR-Code Designer
               </h3>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="bg-background p-2 rounded-xl border border-border">
-                  <QRCodeSVG id="qr-code-svg" value={eventUrl} size={80} fgColor={qrCodeConfig.fgColor} bgColor={qrCodeConfig.bgColor} level={qrCodeConfig.level} />
-                </div>
-                <div className="flex-1 space-y-1.5">
-                  <Button type="button" size="sm" variant="outline" onClick={downloadQRCode} className="w-full gap-1.5 text-xs">
-                    <Download className="w-3.5 h-3.5" /> PNG Download
-                  </Button>
-                  <Button type="button" size="sm" variant="outline" onClick={downloadA5StandeePdf} className="w-full gap-1.5 text-xs">
-                    <Download className="w-3.5 h-3.5" /> A5 Aufsteller
-                  </Button>
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Gestalte deinen QR-Code mit Logos, Farben, Rahmen und lade ihn als Druck-PDF herunter.
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                variant="primary"
+                onClick={() => router.push(`/events/${eventId}/qr-styler`)}
+                className="w-full gap-2"
+              >
+                <QrCode className="w-4 h-4" /> QR-Code Designer öffnen
+              </Button>
             </div>
 
             {/* Event URL */}
