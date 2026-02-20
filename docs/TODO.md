@@ -422,6 +422,13 @@
 | S26-231 | **Live-Polling** | ✅ erledigt (20.02.2026) | setInterval 30s pendingCount + clearInterval cleanup |
 | S26-232 | **Check-In Stats** | ✅ erledigt (20.02.2026) | GET /events/:id/guests/checkin-stats (total/checkedIn/rate%) |
 | S26-233 | **Kommentar-Stats** | ✅ erledigt (20.02.2026) | GET /events/:id/comments?status=PENDING + commentsPending State |
+| S26-234 | **Alle-Laden Button** | ✅ erledigt (20.02.2026) | GalleryTabV2 Pagination: 'Alle laden' Button neben Spinner |
+| S26-235 | **Gast-Filter Dropdown** | ✅ erledigt (20.02.2026) | GalleryTabV2: select Dropdown bei >8 Gaesten statt Pills |
+| S26-236 | **Einladungs-Stats** | ✅ erledigt (20.02.2026) | GET /events/:id/invitation-stats (total/withEmail/invited) |
+| S26-237 | **Photo-Pinning** | ✅ erledigt (20.02.2026) | POST /photos/:id/pin (isFavorite toggle, Host-only) |
+| S26-238 | **Fotos CSV-Export** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/export-csv (CSV mit Views/Tags) |
+| S26-239 | **Bulk-Restore** | ✅ erledigt (20.02.2026) | POST /photos/bulk/restore (DELETED->APPROVED) |
+| S26-240 | **Sprint S26 Final** | ✅ erledigt (21.02.2026) | 240+ Sprint-Tasks implementiert, deployed, committed |
 
 ---
 
