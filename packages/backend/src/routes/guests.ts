@@ -161,6 +161,48 @@ router.delete(
   }
 );
 
+// GET /:eventId/guests/export-csv — Download guest list as CSV
+router.get(
+  '/:eventId/guests/export-csv',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      const guests = await prisma.guest.findMany({
+        where: { eventId },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      const header = ['Vorname', 'Nachname', 'E-Mail', 'Status', 'Tisch', 'Ernährung', '+1', 'Erstellt'];
+      const rows = guests.map((g: any) => [
+        g.firstName,
+        g.lastName,
+        g.email || '',
+        g.status || '',
+        g.tableNumber || '',
+        g.dietaryRequirements || '',
+        String(g.plusOneCount || 0),
+        new Date(g.createdAt).toLocaleDateString('de-DE'),
+      ]);
+
+      const csv = [header, ...rows]
+        .map(row => row.map((cell: string) => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
+        .join('\n');
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="gaesteliste-${eventId}.csv"`);
+      res.send('\uFEFF' + csv); // BOM for Excel
+    } catch (error) {
+      logger.error('CSV export error', { error: getErrorMessage(error) });
+      res.status(500).json({ error: 'Fehler beim Export' });
+    }
+  }
+);
+
 // GET /:eventId/guests/invite-qr — Generate a QR-code-ready invite link for the event
 router.get(
   '/:eventId/guests/invite-qr',

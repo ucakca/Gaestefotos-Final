@@ -483,6 +483,29 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   type="button"
+                  onClick={() => {
+                    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+                    const link = document.createElement('a');
+                    link.href = `${process.env.NEXT_PUBLIC_API_URL || ''}/api/events/${eventId}/guests/export-csv`;
+                    link.setAttribute('download', 'gaesteliste.csv');
+                    // Use fetch with auth header
+                    fetch(link.href, { headers: { Authorization: `Bearer ${token}` } })
+                      .then(r => r.blob()).then(blob => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url; a.download = `gaesteliste.csv`; a.click();
+                        URL.revokeObjectURL(url);
+                      }).catch(() => showToast('Export fehlgeschlagen', 'error'));
+                  }}
+                  variant="secondary"
+                >
+                  <FileText className="h-4 w-4" />
+                  CSV
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  type="button"
                   onClick={() => { setShowImportForm(!showImportForm); setShowAddForm(false); }}
                   variant="secondary"
                 >
