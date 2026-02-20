@@ -492,6 +492,13 @@
 | S26-301 | **GalleryFilter hidden** | ✅ erledigt (21.02.2026) | GalleryFilter Typ + dashboard/page.tsx um 'hidden' ergaenzt |
 | S26-302 | **Tags Pills Filter** | ✅ erledigt (21.02.2026) | GalleryTabV2: #tag Pills bei Hover, Click setzt selectedTag |
 | S26-303 | **Photo Title/Desc** | ✅ erledigt (21.02.2026) | GalleryTabV2 Lightbox: title + description anzeigen |
+| S26-304 | **Gaesteliste CSV** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/export-csv (CSV mit Status/Allergien) |
+| S26-305 | **Photo Activity** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/activity (uploaded/approved/rejected) |
+| S26-306 | **QR-Code** | ✅ erledigt (21.02.2026) | GET /events/:id/qr-code (shareUrl + qrUrl via qrserver.com) |
+| S26-307 | **Gast Bulk-Status** | ✅ erledigt (21.02.2026) | PATCH /events/:id/guests/bulk-status (updateMany status) |
+| S26-308 | **Gast-Suche** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/search?q= (firstName/lastName/email) |
+| S26-309 | **Invitation Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/invitation-stats (withEmail/invited/notInvited) |
+| S26-310 | **Sprint S26 Checkpoint** | ✅ erledigt (21.02.2026) | 310 Features in Sprint S26 implementiert + deployed |
 
 ---
 
