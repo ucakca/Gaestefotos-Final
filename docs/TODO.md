@@ -464,6 +464,13 @@
 | S26-273 | **Photo-Pinning** | ✅ erledigt (21.02.2026) | POST /photos/:id/pin (isFavorite toggle) |
 | S26-274 | **Bulk-Restore** | ✅ erledigt (21.02.2026) | POST /photos/bulk/restore (DELETED -> APPROVED) |
 | S26-275 | **Fotos CSV** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/export-csv |
+| S26-276 | **Status-Timeline** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/status-timeline (status/updatedAt top 100) |
+| S26-277 | **hiddenPhotos Tab** | ✅ erledigt (21.02.2026) | GalleryTabV2: 'Versteckt' Filter-Tab mit Eye Icon |
+| S26-278 | **Tags Pills** | ✅ erledigt (21.02.2026) | GalleryTabV2: #tag Pills bei Hover + Click->Filter |
+| S26-279 | **Photo Title/Desc** | ✅ erledigt (21.02.2026) | Lightbox Footer: title + description anzeigen |
+| S26-280 | **qualityFilter** | ✅ erledigt (21.02.2026) | GalleryTabV2: qualityScore Filter (all/high/medium/low) |
+| S26-281 | **Alle-Laden Button** | ✅ erledigt (21.02.2026) | GalleryTabV2: setVisibleCount(filteredPhotos.length) |
+| S26-282 | **Gast-Dropdown** | ✅ erledigt (21.02.2026) | GalleryTabV2: select Dropdown bei >8 Gaesten |
 
 ---
 
