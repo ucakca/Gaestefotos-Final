@@ -135,9 +135,22 @@ export async function consumeCredits(
     return { success: true, remainingBalance: balance.balance };
   }
 
+  // Ensure balance record exists
   const balance = await getOrCreateCreditBalance(userId);
 
-  if (balance.balance < cost) {
+  // Atomic update with RETURNING: deduct + get new balance in ONE query (was 3 queries)
+  const rows = await prisma.$queryRaw<{ id: string; balance: number }[]>`
+    UPDATE "credit_balances"
+    SET "balance" = "balance" - ${cost},
+        "totalConsumed" = "totalConsumed" + ${cost},
+        "updatedAt" = NOW()
+    WHERE "userId" = ${userId}
+      AND "balance" >= ${cost}
+    RETURNING "id", "balance"
+  `;
+
+  if (rows.length === 0) {
+    // Insufficient balance or race condition
     return {
       success: false,
       remainingBalance: balance.balance,
@@ -145,39 +158,19 @@ export async function consumeCredits(
     };
   }
 
-  // Atomic update: only decrement if balance is still sufficient (prevents race condition)
-  const rowsAffected = await prisma.$executeRaw`
-    UPDATE "credit_balances"
-    SET "balance" = "balance" - ${cost},
-        "totalConsumed" = "totalConsumed" + ${cost},
-        "updatedAt" = NOW()
-    WHERE "userId" = ${userId}
-      AND "balance" >= ${cost}
-  `;
+  const remainingBalance = rows[0].balance;
 
-  if (rowsAffected === 0) {
-    // Another concurrent request consumed the credits first
-    const refreshed = await getOrCreateCreditBalance(userId);
-    return {
-      success: false,
-      remainingBalance: refreshed.balance,
-      error: `Nicht genügend Credits. Benötigt: ${cost}, Verfügbar: ${refreshed.balance}`,
-    };
-  }
-
-  const updated = await prisma.creditBalance.findUnique({ where: { userId } });
-  const remainingBalance = updated?.balance ?? 0;
-
-  await prisma.creditTransaction.create({
+  // Log the transaction (non-blocking for response speed)
+  prisma.creditTransaction.create({
     data: {
-      balanceId: balance.id,
+      balanceId: rows[0].id,
       type: 'CONSUME',
       amount: -cost,
       feature,
       eventId,
       description: `AI Feature: ${feature} (-${cost} Credits)`,
     },
-  });
+  }).catch(err => logger.warn('Credit transaction log failed', { userId, feature, error: err }));
 
   logger.info('Credits consumed', { userId, feature, cost, remaining: remainingBalance });
 

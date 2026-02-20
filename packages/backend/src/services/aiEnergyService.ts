@@ -68,6 +68,9 @@ const FEATURE_TO_COST_CATEGORY: Record<string, EnergyCostCategory> = {
   ai_superlatives: 'llm_game',
   ai_photo_critic: 'llm_game',
   ai_couple_match: 'llm_game',
+  persona_quiz: 'llm_game',
+  wedding_speech: 'llm_game',
+  ai_stories: 'llm_game',
   // Image effects → image_effect
   ai_oldify: 'image_effect',
   ai_cartoon: 'image_effect',
@@ -78,14 +81,18 @@ const FEATURE_TO_COST_CATEGORY: Record<string, EnergyCostCategory> = {
   emoji_me: 'image_effect',
   miniature: 'image_effect',
   bg_removal: 'image_effect',
+  gif_morph: 'image_effect',
+  gif_aging: 'image_effect',
   // Style transfer
   style_transfer: 'style_transfer',
   // Face swap
   face_switch: 'face_swap',
   // GIF/Video
   highlight_reel: 'video',
+  ai_video: 'video',
   // Trading card type
   drawbot: 'trading_card',
+  trading_card: 'trading_card',
 };
 
 // Reward types that are truly one-time (not per-instance)

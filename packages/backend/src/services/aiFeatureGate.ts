@@ -11,6 +11,7 @@
 
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
+import { cacheGet, cacheSet } from './cache/redis';
 import {
   AiFeature,
   AiFeatureDefinition,
@@ -64,6 +65,11 @@ export async function getAiFeatureGate(
   eventId: string,
   deviceType: DeviceType = 'guest_app',
 ): Promise<AiFeatureGateResult> {
+  // Redis cache: avoid repeated DB queries for the same event+device
+  const cacheKey = `event:${eventId}:ai-gate:${deviceType}`;
+  const cached = await cacheGet<AiFeatureGateResult>(cacheKey);
+  if (cached) return cached;
+
   // 1. Load package definition
   const { pkg } = await getEventPackageDefinition(eventId);
 
@@ -143,12 +149,17 @@ export async function getAiFeatureGate(
   const maxAiCreditsPerEvent = pkg ? ((pkg as any).maxAiCreditsPerEvent ?? null) : 0;
   const maxAiPlaysPerGuest = pkg ? ((pkg as any).maxAiPlaysPerGuest ?? null) : 3;
 
-  return {
+  const result: AiFeatureGateResult = {
     features,
     allowedFeatures,
     limits: { maxAiCreditsPerEvent, maxAiPlaysPerGuest },
     deviceType,
   };
+
+  // Cache for 30 seconds — balances freshness vs DB load
+  await cacheSet(cacheKey, result, 30);
+
+  return result;
 }
 
 /**
