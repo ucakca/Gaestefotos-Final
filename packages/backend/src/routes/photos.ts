@@ -1255,6 +1255,31 @@ router.post(
   }
 );
 
+// Toggle favorite
+router.post(
+  '/:photoId/favorite',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoId } = req.params;
+      const photo = await prisma.photo.findUnique({ where: { id: photoId }, select: { id: true, eventId: true, isFavorite: true } });
+      if (!photo) return res.status(404).json({ error: 'Foto nicht gefunden' });
+      if (!(await hasEventManageAccess(req, photo.eventId))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      const updated = await prisma.photo.update({
+        where: { id: photoId },
+        data: { isFavorite: !photo.isFavorite },
+        select: { id: true, isFavorite: true },
+      });
+      res.json({ isFavorite: updated.isFavorite });
+    } catch (error: any) {
+      logger.error('Favorite toggle error', { error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
 // Reject photo
 router.post(
   '/:photoId/reject',
