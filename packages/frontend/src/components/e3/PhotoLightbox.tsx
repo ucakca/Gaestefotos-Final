@@ -629,6 +629,11 @@ export default function PhotoLightbox({
                     👤 {(currentPhoto as any).faceCount}
                   </span>
                 )}
+                {(currentPhoto as any)?.views > 0 && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white/50 shrink-0">
+                    ↓ {(currentPhoto as any).views}
+                  </span>
+                )}
               </div>
 
               {/* Comments Section - Always show first 5 */}
