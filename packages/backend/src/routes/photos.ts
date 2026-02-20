@@ -185,6 +185,8 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
     const orderBy: any =
       sortValue === 'likes_desc' ? [{ likeCount: 'desc' }, { createdAt: 'desc' }] :
       sortValue === 'faces_desc' ? [{ faceCount: 'desc' }, { createdAt: 'desc' }] :
+      sortValue === 'views_desc' ? [{ views: 'desc' }, { createdAt: 'desc' }] :
+      sortValue === 'quality_desc' ? [{ qualityScore: 'desc' }, { createdAt: 'desc' }] :
       sortValue === 'date_asc' ? { createdAt: 'asc' } :
       { createdAt: 'desc' }; // default: date_desc
 
