@@ -286,6 +286,11 @@
 | S26-95 | **Gäste Check-In Toggle** | ✅ erledigt (20.02.2026) | PATCH /guests/:id/checkin + GuestActionMenu CheckCircle2 |
 | S26-96 | **Photos by Uploader** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/by-uploader (top-100 groupBy) |
 | S26-97 | **qualityScore + faceCount Hover** | ✅ erledigt (20.02.2026) | PhotoCard Hover: ★N% gruen/gelb/rot + 👤N cyan Badge |
+| S26-98 | **commentCount in Photos-API** | ✅ erledigt (20.02.2026) | _count.comments flatten als commentCount in Photos-Response |
+| S26-99 | **Cover-Image Upload** | ✅ erledigt | wizardUpload + designConfig coverImageUrl bereits vorhanden |
+| S26-100 | **Push-Notif History** | ⏳ Schema-Änderung nötig | PushNotification Tabelle fehlt im Prisma Schema |
+| S26-101 | **Gäste-Stats Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/guests/stats (accepted/declined/pending/plusOnes) |
+| S26-102 | **ZIP Progress Toast** | ✅ erledigt (20.02.2026) | photos/page.tsx: info-Toast vor + success-Toast nach ZIP-Download |
 
 ---
 
