@@ -485,6 +485,13 @@
 | S26-294 | **hiddenPhotos Tab** | ✅ erledigt (21.02.2026) | GalleryTabV2: 'Versteckt' Filter-Tab (nur wenn > 0) |
 | S26-295 | **Gast-Dropdown >8** | ✅ erledigt (21.02.2026) | GalleryTabV2: select Dropdown statt Pills bei >8 |
 | S26-296 | **Alle-Laden Button** | ✅ erledigt (21.02.2026) | GalleryTabV2: 'Alle laden' Button neben Pagination-Spinner |
+| S26-297 | **Photo Activity** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/activity (action/uploadedBy/at/photoUrl) |
+| S26-298 | **Gast Bulk-Status** | ✅ erledigt (21.02.2026) | PATCH /events/:id/guests/bulk-status (ACCEPTED/DECLINED/PENDING) |
+| S26-299 | **QR-Code** | ✅ erledigt (21.02.2026) | GET /events/:id/qr-code (qrUrl + shareUrl) |
+| S26-300 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 300 Sprint-Tasks implementiert, deployed, committed |
+| S26-301 | **GalleryFilter hidden** | ✅ erledigt (21.02.2026) | GalleryFilter Typ + dashboard/page.tsx um 'hidden' ergaenzt |
+| S26-302 | **Tags Pills Filter** | ✅ erledigt (21.02.2026) | GalleryTabV2: #tag Pills bei Hover, Click setzt selectedTag |
+| S26-303 | **Photo Title/Desc** | ✅ erledigt (21.02.2026) | GalleryTabV2 Lightbox: title + description anzeigen |
 
 ---
 
