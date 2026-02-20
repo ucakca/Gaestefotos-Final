@@ -338,6 +338,19 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
               .catch(() => showToast('Fehler', 'error'));
           }}
         />
+        <SetupRow
+          icon={Mail}
+          label="E-Mail-Benachrichtigungen"
+          value={featuresConfig.disableEmailNotifications === true ? 'Deaktiviert' : 'Aktiv'}
+          onClick={() => {
+            const newVal = !featuresConfig.disableEmailNotifications;
+            const updated = { ...featuresConfig, disableEmailNotifications: newVal };
+            setFeaturesConfig(updated);
+            api.put(`/events/${eventId}`, { featuresConfig: updated })
+              .then(() => { showToast(newVal ? 'Benachrichtigungen deaktiviert' : 'Benachrichtigungen aktiviert', 'success'); onEventUpdate?.(); })
+              .catch(() => showToast('Fehler', 'error'));
+          }}
+        />
         <SetupRow icon={Eye} label="Erweiterte Optionen" onClick={() => setActiveSheet('advanced')} />
       </div>
 

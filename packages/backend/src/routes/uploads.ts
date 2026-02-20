@@ -430,7 +430,8 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
 
         // Rate-limited email notification to host (max 1/hour per event)
         const lastNotify = photoEmailNotifyMap.get(eventId) || 0;
-        if (Date.now() - lastNotify > PHOTO_EMAIL_NOTIFY_INTERVAL_MS) {
+        const notificationsEnabled = featuresConfig?.disableEmailNotifications !== true;
+        if (notificationsEnabled && Date.now() - lastNotify > PHOTO_EMAIL_NOTIFY_INTERVAL_MS) {
           photoEmailNotifyMap.set(eventId, Date.now());
           (async () => {
             try {
