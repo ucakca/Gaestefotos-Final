@@ -961,6 +961,12 @@ router.get(
     res.setHeader('X-GF-Quality', isManager && photo.storagePathOriginal ? 'original' : 'optimized');
     res.setHeader('X-GF-Branding', isManager ? 'none' : 'gaestefotos');
     res.send(fileBuffer);
+
+    // Non-blocking: increment download/view counter
+    prisma.photo.update({
+      where: { id: photoId },
+      data: { views: { increment: 1 } },
+    }).catch(() => {});
   } catch (error: any) {
     logger.error('Download photo error', { error: error.message, stack: error.stack, photoId: req.params.photoId });
     res.status(500).json({ error: 'Internal server error' });
