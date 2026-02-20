@@ -44,6 +44,7 @@ import {
   Layers,
   Contact,
   Upload,
+  Trash2,
 } from 'lucide-react';
 import { usePackageFeatures, FeatureKey, FEATURE_DESCRIPTIONS } from '@/hooks/usePackageFeatures';
 import { Event as EventType } from '@gaestefotos/shared';
@@ -349,6 +350,19 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
             setFeaturesConfig(updated);
             api.put(`/events/${eventId}`, { featuresConfig: updated })
               .then(() => { showToast(newVal ? 'Benachrichtigungen deaktiviert' : 'Benachrichtigungen aktiviert', 'success'); onEventUpdate?.(); })
+              .catch(() => showToast('Fehler', 'error'));
+          }}
+        />
+        <SetupRow
+          icon={Trash2}
+          label="Gäste dürfen eigene Fotos löschen"
+          value={featuresConfig.allowDeleteOwn ? 'Aktiviert' : 'Deaktiviert'}
+          onClick={() => {
+            const newVal = !featuresConfig.allowDeleteOwn;
+            const updated = { ...featuresConfig, allowDeleteOwn: newVal };
+            setFeaturesConfig(updated);
+            api.put(`/events/${eventId}`, { featuresConfig: updated })
+              .then(() => { showToast(newVal ? 'Eigene Fotos löschen aktiviert' : 'Eigene Fotos löschen deaktiviert', 'success'); onEventUpdate?.(); })
               .catch(() => showToast('Fehler', 'error'));
           }}
         />
