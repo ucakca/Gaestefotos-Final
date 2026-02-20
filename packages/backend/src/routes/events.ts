@@ -1679,6 +1679,33 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/guests/search — Quick guest name search
+router.get('/:eventId/guests/search', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const q = (req.query.q as string || '').trim();
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+    if (!q) return res.json({ guests: [] });
+
+    const guests = await prisma.guest.findMany({
+      where: {
+        eventId,
+        OR: [
+          { firstName: { contains: q, mode: 'insensitive' } },
+          { lastName: { contains: q, mode: 'insensitive' } },
+          { email: { contains: q, mode: 'insensitive' } },
+        ],
+      },
+      select: { id: true, firstName: true, lastName: true, email: true, status: true },
+      take: 20,
+    });
+
+    res.json({ guests });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/status-timeline — Photos with status change timeline
 router.get('/:eventId/photos/status-timeline', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
