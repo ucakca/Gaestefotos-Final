@@ -1230,6 +1230,7 @@ function OverviewTab({
           { label: 'KI-Kunst', sub: 'AI Style Transfer', icon: Sparkles, href: `/events/${eventId}/ki-booth`, gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20', featureKey: 'aiEffects' as const },
           { label: 'Foto-Spiele', sub: 'Face Switch & mehr', icon: Gamepad2, href: `/events/${eventId}/booth-games`, gradient: 'from-emerald-500 to-teal-500', shadow: 'shadow-emerald-500/20', featureKey: 'boothGames' as const },
           { label: 'Live-Analytics', sub: 'Echtzeit-Statistiken', icon: Activity, href: `/events/${eventId}/live-analytics`, gradient: 'from-cyan-500 to-blue-500', shadow: 'shadow-cyan-500/20', featureKey: null },
+          { label: 'QR-Designer', sub: 'Print-Ready QR-Code', icon: QrCode, href: `/events/${eventId}/qr-styler`, gradient: 'from-gray-600 to-gray-800', shadow: 'shadow-gray-500/20', featureKey: null },
           { label: 'Paket', sub: 'Upgrade & Wechsel', icon: Package, href: `/events/${eventId}/package`, gradient: 'from-amber-500 to-orange-500', shadow: 'shadow-amber-500/20', featureKey: null },
         ];
         return (
