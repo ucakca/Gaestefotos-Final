@@ -387,6 +387,7 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
   }
 
   const filteredPhotos = photos.filter(photo => {
+    if (filter === 'favorites' && !(photo as any).isFavorite) return false;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const uploader = (photo as any).uploadedBy || '';
@@ -501,6 +502,7 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
               pending: photos.filter(p => (p.status as string)?.toLowerCase() === 'pending').length,
               approved: photos.filter(p => (p.status as string)?.toLowerCase() === 'approved').length,
               rejected: photos.filter(p => (p.status as string)?.toLowerCase() === 'rejected').length,
+              favorites: photos.filter(p => (p as any).isFavorite).length,
             }}
           />
 

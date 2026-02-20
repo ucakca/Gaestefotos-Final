@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Check, X, Clock, Search, Filter } from 'lucide-react';
+import { Check, X, Clock, Search, Filter, Heart } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 
@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/Button';
  * Filter pills + Search
  */
 
-export type PhotoFilterStatus = 'all' | 'pending' | 'approved' | 'rejected';
+export type PhotoFilterStatus = 'all' | 'pending' | 'approved' | 'rejected' | 'favorites';
 
 export interface PhotoFilterBarProps {
   activeFilter: PhotoFilterStatus;
@@ -23,6 +23,7 @@ export interface PhotoFilterBarProps {
     pending: number;
     approved: number;
     rejected: number;
+    favorites?: number;
   };
 }
 
@@ -31,6 +32,7 @@ const FILTERS = [
   { id: 'pending' as const, label: 'Ausstehend', icon: Clock },
   { id: 'approved' as const, label: 'Freigegeben', icon: Check },
   { id: 'rejected' as const, label: 'Abgelehnt', icon: X },
+  { id: 'favorites' as const, label: 'Favoriten', icon: Heart },
 ];
 
 export default function PhotoFilterBar({
