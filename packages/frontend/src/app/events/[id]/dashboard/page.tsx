@@ -51,6 +51,7 @@ import {
   Activity,
   Film,
   Wifi,
+  TrendingUp,
 } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
@@ -851,11 +852,15 @@ function OverviewTab({
   const [showAllSteps, setShowAllSteps] = useState(completedSteps < totalSteps); // Open until complete
   const currentStep = onboardingSteps.find(s => s.current);
   const [liveStats, setLiveStats] = useState<{ todayCount: number; topUploaders: { name: string; count: number }[]; lastPhotoAt: string | null } | null>(null);
+  const [trends, setTrends] = useState<{ date: string; total: number }[]>([]);
 
   useEffect(() => {
     if (!eventId) return;
     api.get(`/events/${eventId}/photos/live-stats`)
       .then(r => setLiveStats(r.data))
+      .catch(() => {});
+    api.get(`/events/${eventId}/trends?days=7`)
+      .then(r => setTrends(r.data.trends || []))
       .catch(() => {});
   }, [eventId, stats.photos]);
   
@@ -1007,6 +1012,33 @@ function OverviewTab({
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Trend-Sparkline letzten 7 Tage */}
+      {trends.length > 0 && trends.some(t => t.total > 0) && (
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-xs font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
+            <TrendingUp className="w-3.5 h-3.5" /> Fotos letzte 7 Tage
+          </p>
+          <div className="flex items-end gap-1 h-12">
+            {(() => {
+              const max = Math.max(...trends.map(t => t.total), 1);
+              return trends.map((t, i) => (
+                <div key={t.date} className="flex-1 flex flex-col items-center gap-1">
+                  <div
+                    className={`w-full rounded-sm transition-all ${t.total > 0 ? 'bg-primary/70' : 'bg-muted'}`}
+                    style={{ height: `${Math.max(2, (t.total / max) * 100)}%` }}
+                  />
+                  {i % 2 === 0 && (
+                    <span className="text-[9px] text-muted-foreground/60">
+                      {new Date(t.date).getDate()}
+                    </span>
+                  )}
+                </div>
+              ));
+            })()}
           </div>
         </div>
       )}
