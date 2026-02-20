@@ -478,6 +478,13 @@
 | S26-287 | **Download-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/download-stats (top 20 by views) |
 | S26-288 | **Admin Storage-Stats** | ✅ erledigt (21.02.2026) | GET /admin/events/storage-stats (topEvents by photoCount) |
 | S26-289 | **Bulk Approve/Reject/Restore** | ✅ erledigt (21.02.2026) | POST /photos/bulk/approve + /reject + /restore |
+| S26-290 | **QR-Code Endpoint** | ✅ erledigt (21.02.2026) | GET /events/:id/qr-code (qrUrl via qrserver.com + shareUrl) |
+| S26-291 | **Gast Bulk-Status** | ✅ erledigt (21.02.2026) | PATCH /events/:id/guests/bulk-status (ACCEPTED/DECLINED/PENDING) |
+| S26-292 | **Gast-Suche** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/search?q= (firstName/lastName/email) |
+| S26-293 | **Status-Timeline** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/status-timeline (updatedAt desc, top 100) |
+| S26-294 | **hiddenPhotos Tab** | ✅ erledigt (21.02.2026) | GalleryTabV2: 'Versteckt' Filter-Tab (nur wenn > 0) |
+| S26-295 | **Gast-Dropdown >8** | ✅ erledigt (21.02.2026) | GalleryTabV2: select Dropdown statt Pills bei >8 |
+| S26-296 | **Alle-Laden Button** | ✅ erledigt (21.02.2026) | GalleryTabV2: 'Alle laden' Button neben Pagination-Spinner |
 
 ---
 
