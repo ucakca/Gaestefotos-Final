@@ -159,9 +159,9 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
         }
       }
     }
-    // Safety net: never return DELETED photos unless explicitly requested
+    // Safety net: never return DELETED or HIDDEN photos unless explicitly requested (or manager)
     if (!where.status) {
-      where.status = { not: 'DELETED' };
+      where.status = { notIn: ['DELETED', 'HIDDEN'] as any };
     }
 
     const limitNum = limit ? Math.min(parseInt(limit as string, 10) || 100, 200) : undefined;
