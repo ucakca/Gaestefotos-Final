@@ -1930,6 +1930,36 @@ router.get('/:eventId/photos/top', optionalAuthMiddleware, async (req: AuthReque
   }
 });
 
+// GET /api/events/:eventId/photos/tags — All unique tags used in event photos
+router.get('/:eventId/photos/tags', optionalAuthMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const isManager = req.userId ? await hasEventManageAccess(req, eventId) : false;
+
+    const photos = await prisma.photo.findMany({
+      where: {
+        eventId,
+        deletedAt: null,
+        status: isManager ? { not: 'DELETED' as any } : 'APPROVED' as any,
+      },
+      select: { tags: true },
+    });
+
+    const tagSet = new Set<string>();
+    for (const photo of photos) {
+      for (const tag of (photo.tags || [])) {
+        if (tag) tagSet.add(tag);
+      }
+    }
+
+    const tags = Array.from(tagSet).sort();
+    res.json({ tags, count: tags.length });
+  } catch (error: any) {
+    logger.error('Tags list error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 // GET /api/events/:eventId/photos/stats — Photo counts breakdown
 router.get('/:eventId/photos/stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
