@@ -1035,4 +1035,38 @@ router.get('/:eventId/guestbook/export-pdf', authMiddleware, async (req: AuthReq
   }
 });
 
+// GET /:eventId/guestbook/export-csv — Export guestbook entries as CSV
+router.get('/:eventId/guestbook/export-csv', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const event = await prisma.event.findUnique({ where: { id: eventId }, select: { id: true, hostId: true, title: true, slug: true } });
+    if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+    if (req.userId !== event.hostId && req.userRole !== 'ADMIN') return res.status(403).json({ error: 'Kein Zugriff' });
+
+    const entries = await prisma.guestbookEntry.findMany({
+      where: { eventId },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true, authorName: true, message: true, createdAt: true },
+    });
+
+    const header = ['Name', 'Nachricht', 'Datum'];
+    const rows = entries.map((e: any) => [
+      e.authorName || '',
+      e.message || '',
+      new Date(e.createdAt).toLocaleDateString('de-DE'),
+    ]);
+
+    const csv = [header, ...rows]
+      .map(row => row.map((cell: string) => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
+      .join('\n');
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="gaestebuch-${event.slug}.csv"`);
+    res.send('\uFEFF' + csv);
+  } catch (error) {
+    logger.error('Guestbook CSV export failed', { message: getErrorMessage(error) });
+    res.status(500).json({ error: 'CSV-Export fehlgeschlagen' });
+  }
+});
+
 export default router;
