@@ -60,7 +60,7 @@ export async function generateImageToVideo(request: ImageToVideoRequest): Promis
   const imageUrl = photo.url || await storageService.getFileUrl(photo.storagePath);
 
   // Try Runway first, then LumaAI
-  const provider = await resolveProvider('highlight_reel');
+  const provider = await resolveProvider('ai_video');
   if (!provider) throw new Error('Kein Video-Provider konfiguriert');
 
   videoJobs.set(jobId, { id: jobId, status: 'processing' });
