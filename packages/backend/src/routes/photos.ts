@@ -1229,6 +1229,19 @@ router.post(
       }).catch(() => {});
 
       res.json({ photo: updatedPhoto });
+
+      // Non-blocking: track approval in audit log (already done above)
+      // Also notify host of newly approved photo via push (non-blocking)
+      if (photo.status === 'PENDING') {
+        const uploaderName = (photo as any).uploadedBy || 'Gast';
+        import('../services/pushNotification').then(async (m) => {
+          m.notifyEventHost(photo.eventId, {
+            title: '✅ Foto freigegeben',
+            body: `Foto von ${uploaderName} wurde freigegeben`,
+            data: { type: 'photo_approved', eventId: photo.eventId },
+          }).catch(() => {});
+        }).catch(() => {});
+      }
     } catch (error: any) {
       logger.error('Approve photo error', { error: error.message, stack: error.stack, photoId: req.params.photoId });
       res.status(500).json({ error: 'Internal server error' });
