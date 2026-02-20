@@ -198,6 +198,26 @@ router.patch(
   }
 );
 
+// GET /:eventId/guests/checkin-stats — Check-in statistics for event
+router.get(
+  '/:eventId/guests/checkin-stats',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const total = await prisma.guest.count({ where: { eventId } });
+      const checkedIn = await prisma.guest.count({ where: { eventId, isCheckedIn: true } as any }).catch(() => 0);
+
+      res.json({ total, checkedIn, notCheckedIn: total - checkedIn, rate: total > 0 ? Math.round((checkedIn / total) * 100) : 0 });
+    } catch (error) {
+      logger.error('Checkin stats error', { error: getErrorMessage(error) });
+      res.status(500).json({ error: 'Fehler beim Laden' });
+    }
+  }
+);
+
 // POST /:eventId/guests/import — Bulk import guests from JSON array
 router.post(
   '/:eventId/guests/import',
