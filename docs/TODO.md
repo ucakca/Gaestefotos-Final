@@ -373,6 +373,13 @@
 | S26-182 | **Foto-Tags API** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/tags (unique sorted tags) |
 | S26-183 | **Activity Feed** | ✅ erledigt (20.02.2026) | GET /events/:id/activity + Dashboard Widget |
 | S26-184 | **Analytics** | ✅ erledigt (20.02.2026) | GET /events/:id/analytics (combined photos+guests+engagement) |
+| S26-185 | **Uploader Hover Badge** | ✅ erledigt (20.02.2026) | GalleryTabV2: uploadedBy Name Badge bei Hover (9px) |
+| S26-186 | **views + faceCount Lightbox** | ✅ erledigt (20.02.2026) | GalleryTabV2 Lightbox: 👁 views + 👤 faceCount Footer |
+| S26-187 | **Photo Hide Endpoint** | ✅ erledigt (20.02.2026) | POST /photos/:id/hide (APPROVED↔HIDDEN toggle, allowHide) |
+| S26-188 | **Gäste PATCH** | ✅ erledigt (20.02.2026) | PATCH /events/:id/guests/:id (notes, dietary, plusOne, status) |
+| S26-189 | **Pending-Count** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/pending-count (lightweight poll) |
+| S26-190 | **Gästebuch Bulk-Mod** | ✅ erledigt (20.02.2026) | POST /events/:id/guestbook/bulk-moderate (approve/reject/del) |
+| S26-191 | **Sprint S26 Fortschritt** | ✅ erledigt (20.02.2026) | 191 Sprint-Tasks implementiert, deployed + committed |
 
 ---
 
