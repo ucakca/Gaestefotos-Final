@@ -195,6 +195,13 @@
 | S26-4 | **Alle E-Mail Templates** | ✅ erledigt (20.02.2026) | sendInvitation(), sendCohostInvite(), sendCustomEmail() alle auf Pink/Gold/Indigo Gradient |
 | S26-5 | **Grok als primärer LLM** | ✅ erledigt (20.02.2026) | 22 Feature-Mappings migriert; Fallback-Kette Grok→Groq→Ollama |
 | S26-6 | **AI Provider Monitor** | ✅ erledigt (20.02.2026) | /manage/ai-monitoring: Latenz, Fehlerrate, Requests, Kosten pro Provider |
+| S26-7 | **Event-Klonen** | ✅ erledigt (20.02.2026) | POST /events/:id/clone; Copy-Button im EventCard Hover-Overlay |
+| S26-8 | **Foto-Kommentar Benachrichtigung** | ✅ erledigt (20.02.2026) | comments.ts: fire-and-forget E-Mail an Host bei neuem Kommentar (Indigo-Template) |
+| S26-9 | **Upload-Limit pro Gast** | ✅ erledigt (20.02.2026) | featuresConfig.maxUploadsPerGuest; Toggle im SetupTabV2 (0/5/10/20/50) |
+| S26-10 | **Neues-Foto E-Mail** | ✅ erledigt (20.02.2026) | uploads.ts: rate-limited E-Mail an Host (max 1x/Stunde per Event) |
+| S26-11 | **Event-Report JSON-Export** | ✅ erledigt (20.02.2026) | GET /events/:id/export; Export Button im Dashboard Hero |
+| S26-12 | **Storage Ablauf-Erinnerung** | ✅ erledigt (20.02.2026) | retentionPurge.ts: tägliche E-Mail 7 Tage vor Speicher-Ablauf (Amber/Red-Template) |
+| S26-13 | **SetupTabV2 Einstellungen** | ✅ erledigt (20.02.2026) | Kommentar-Moderation Toggle + Max-Upload-Limit Toggle |
 
 ---
 
