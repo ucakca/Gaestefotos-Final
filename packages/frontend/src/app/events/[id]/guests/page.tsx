@@ -16,7 +16,7 @@ import {
 } from '@tanstack/react-table';
 import api from '@/lib/api';
 import { Guest, Event as EventType } from '@gaestefotos/shared';
-import { Trash2, Mail, UserPlus, Upload, FileText, ArrowUpDown, ChevronLeft, ChevronRight, User, X } from 'lucide-react';
+import { Trash2, Mail, UserPlus, Upload, FileText, ArrowUpDown, ChevronLeft, ChevronRight, User, X, QrCode } from 'lucide-react';
 import GuestStatusBadge, { type GuestStatus } from '@/components/dashboard/GuestStatusBadge';
 import GuestActionMenu from '@/components/dashboard/GuestActionMenu';
 import BulkActionsToolbar from '@/components/dashboard/BulkActionsToolbar';
@@ -464,6 +464,22 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
                   </motion.div>
                 </div>
               )}
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    api.get(`/events/${eventId}/guests/invite-qr`).then(r => {
+                      const url = r.data.url;
+                      navigator.clipboard.writeText(url);
+                      showToast('Einladungs-Link kopiert!', 'success');
+                    }).catch(() => showToast('Fehler', 'error'));
+                  }}
+                  variant="secondary"
+                >
+                  <QrCode className="h-4 w-4" />
+                  QR-Link
+                </Button>
+              </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   type="button"
