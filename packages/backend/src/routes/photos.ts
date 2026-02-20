@@ -1708,6 +1708,33 @@ router.post(
   }
 );
 
+// POST /bulk/delete — Bulk soft-delete photos
+router.post(
+  '/bulk/delete',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoIds, eventId } = req.body;
+      if (!Array.isArray(photoIds) || photoIds.length === 0) {
+        return res.status(400).json({ error: 'photoIds erforderlich' });
+      }
+      if (!eventId) return res.status(400).json({ error: 'eventId erforderlich' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const result = await prisma.photo.updateMany({
+        where: { id: { in: photoIds }, eventId },
+        data: { status: 'DELETED' as any, deletedAt: new Date() },
+      });
+
+      logger.info('Bulk delete photos', { eventId, count: result.count, userId: req.userId });
+      res.json({ deleted: result.count });
+    } catch (error: any) {
+      logger.error('Bulk delete error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Löschen' });
+    }
+  }
+);
+
 // POST /bulk/ai-caption — Generate context captions for multiple photos
 router.post(
   '/bulk/ai-caption',
