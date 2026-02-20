@@ -267,6 +267,12 @@ export default function EventCard({ event, index = 0, photoCount = 0, guestCount
                 <span>{visitCount}</span>
               </div>
             )}
+            {pendingCount > 0 && (
+              <div className="flex items-center gap-1.5 bg-orange-500/10 text-orange-500 px-2 py-1 rounded-md">
+                <Clock className="w-3.5 h-3.5" />
+                <span>{pendingCount}</span>
+              </div>
+            )}
           </div>
 
           {/* Deletion Warning */}
