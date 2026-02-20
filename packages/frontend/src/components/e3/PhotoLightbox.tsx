@@ -10,6 +10,7 @@ import {
   MessageCircle,
   Share2,
   Download,
+  Flag,
   Send,
   User,
   Trophy,
@@ -566,6 +567,24 @@ export default function PhotoLightbox({
                     <Download className="w-7 h-7 text-white" />
                   </motion.button>
                 )}
+
+                {/* Report */}
+                <motion.button
+                  onClick={() => {
+                    const reason = window.prompt('Grund melden (optional):');
+                    if (reason === null) return;
+                    fetch(`/api/photos/${currentPhoto.id}/report`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ reason: reason || '' }),
+                    }).then(() => alert('Gemeldet. Danke!')).catch(() => {});
+                  }}
+                  className="p-1 opacity-40 hover:opacity-70 transition-opacity"
+                  whileTap={{ scale: 0.9 }}
+                  title="Foto melden"
+                >
+                  <Flag className="w-5 h-5 text-white" />
+                </motion.button>
               </div>
 
               {/* Like Count + Reaction Chips */}
