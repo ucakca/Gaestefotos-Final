@@ -1574,6 +1574,64 @@ router.put(
   }
 );
 
+// POST /api/events/:eventId/send-password — Send event password via email to guests list
+router.post(
+  '/:eventId/send-password',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+
+      const event = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: { id: true, title: true, slug: true, password: true },
+      });
+      if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+      if (!event.password) return res.status(400).json({ error: 'Dieses Event hat kein Passwort' });
+
+      const { to } = req.body;
+      if (!to || typeof to !== 'string') return res.status(400).json({ error: 'E-Mail-Adresse erforderlich' });
+
+      const { emailService } = await import('../services/email');
+      const connected = await emailService.testConnection();
+      if (!connected) return res.status(503).json({ error: 'E-Mail-Service nicht konfiguriert' });
+
+      const frontendUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
+      const eventUrl = `${frontendUrl}/e3/${event.slug}`;
+
+      await emailService.sendCustomEmail({
+        to,
+        subject: `🔑 Zugang zu "${event.title}"`,
+        text: `Hallo!\n\nHier ist dein Zugangspasswort für das Event "${event.title}":\n\nPasswort: ${event.password}\n\nLink: ${eventUrl}\n\nViel Spaß!`,
+        html: `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 16px"><tr><td align="center">
+<table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden">
+<tr><td style="background:linear-gradient(135deg,#e879a6,#f9a825);padding:32px;text-align:center">
+  <h2 style="margin:0;color:#fff;font-size:22px">🔑 Zugang zu ${event.title}</h2>
+</td></tr>
+<tr><td style="padding:32px">
+  <p style="color:#374151">Dein Zugangspasswort:</p>
+  <div style="background:#f3f4f6;border:2px dashed #6366f1;border-radius:12px;padding:16px;text-align:center;margin:16px 0">
+    <span style="font-size:24px;font-weight:900;letter-spacing:4px;color:#374151">${event.password}</span>
+  </div>
+  <div style="text-align:center;margin:24px 0">
+    <a href="${eventUrl}" style="display:inline-block;background:linear-gradient(135deg,#e879a6,#f9a825);color:#fff;text-decoration:none;padding:12px 28px;border-radius:50px;font-weight:700">Event öffnen 📸</a>
+  </div>
+</td></tr></table></td></tr></table></body></html>`,
+      });
+
+      logger.info('Event password sent', { eventId, to });
+      res.json({ success: true, sentTo: to });
+    } catch (error: any) {
+      logger.error('Send password error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Senden' });
+    }
+  }
+);
+
 // GET /api/events/:eventId/stats — Realtime stats for dashboard
 router.get(
   '/:eventId/stats',
