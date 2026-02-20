@@ -140,7 +140,7 @@ const uploadSinglePhoto = (req: AuthRequest, res: Response, next: any) => {
 router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
-    const { status, limit, skip, categoryId, sort, isFavorite, minQuality } = req.query;
+    const { status, limit, skip, categoryId, sort, isFavorite, minQuality, cursor } = req.query;
 
     const where: any = { eventId, isStoryOnly: false, deletedAt: null };
 
@@ -166,6 +166,9 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
 
     const limitNum = limit ? Math.min(parseInt(limit as string, 10) || 100, 200) : undefined;
     const skipNum = skip ? parseInt(skip as string, 10) || 0 : 0;
+
+    // Cursor-based pagination support (overrides skip if provided)
+    const cursorId = typeof cursor === 'string' && cursor.trim() ? cursor.trim() : null;
 
     // Tag filter
     const tagFilter = typeof req.query.tag === 'string' && req.query.tag.trim() ? req.query.tag.trim() : null;
@@ -222,7 +225,8 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
         },
       },
       orderBy,
-      ...(limitNum ? { take: limitNum + 1, skip: skipNum } : {}),
+      ...(limitNum ? { take: limitNum + 1 } : {}),
+      ...(cursorId ? { cursor: { id: cursorId }, skip: 1 } : { skip: skipNum }),
     });
 
     const hasMore = limitNum ? photos.length > limitNum : false;
