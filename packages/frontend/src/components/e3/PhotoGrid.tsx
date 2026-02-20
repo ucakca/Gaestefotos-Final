@@ -270,12 +270,12 @@ export default function PhotoGrid({
               <div className="relative overflow-hidden rounded-2xl bg-card text-card-foreground shadow-lg hover:shadow-2xl transition-all duration-300">
                 {/* Image */}
                 <img
-                  src={photo.url}
+                  src={photo.url || ''}
                   alt={t('photoN', { n: String(index + 1) })}
                   loading="lazy"
                   className="w-full h-auto object-cover"
                   onError={() => {
-                    setBrokenImages(prev => new Set(prev).add(photo.id));
+                    if (photo.url) setBrokenImages(prev => new Set(prev).add(photo.id));
                   }}
                 />
 

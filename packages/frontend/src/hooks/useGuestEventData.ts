@@ -166,7 +166,14 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
 
       if (reset) {
         try {
-          const feedResponse = await api.get(`/events/${eventId}/feed`);
+          const [feedResponse, challengesResponse] = await Promise.all([
+            api.get(`/events/${eventId}/feed`),
+            api.get(`/events/${eventId}/challenges`, { params: { public: 'true' } }),
+          ]);
+
+          const activeChallenges = challengesResponse.data?.challenges || [];
+          setChallenges(Array.isArray(activeChallenges) ? activeChallenges : []);
+
           const feedEntries = feedResponse.data?.entries || [];
           const feedPhotos = (Array.isArray(feedEntries) ? feedEntries : []).map((entry: any) => ({
             id: `guestbook-${entry.id}`,
@@ -185,15 +192,6 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
             isGuestbookEntry: true,
           }));
           feedPhotosRef.current = feedPhotos;
-        } catch {
-          feedPhotosRef.current = [];
-        }
-
-        try {
-          const challengesResponse = await api.get(`/events/${eventId}/challenges`, {
-            params: { public: 'true' },
-          });
-          const activeChallenges = challengesResponse.data?.challenges || [];
 
           const challengePhotos = (Array.isArray(activeChallenges) ? activeChallenges : [])
             .filter((challenge: any) => challenge?.isVisible !== false && Array.isArray(challenge?.completions) && challenge.completions.length > 0)
@@ -236,6 +234,7 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
 
           challengePhotosRef.current = challengePhotos;
         } catch {
+          feedPhotosRef.current = [];
           challengePhotosRef.current = [];
         }
       }
@@ -345,7 +344,6 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
   useEffect(() => {
     if (!event?.id) return;
     loadCategories(event.id);
-    loadChallenges(event.id);
     loadPhotos(event.id, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id]);
@@ -354,7 +352,7 @@ export function useGuestEventData(slug: string, selectedAlbum: string | null) {
     if (!event?.id) return;
     loadPhotos(event.id, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedAlbum, event?.id]);
+  }, [selectedAlbum]);
 
   const filteredPhotos = useMemo(() => {
     if (!selectedAlbum) return photos;

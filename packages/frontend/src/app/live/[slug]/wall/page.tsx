@@ -140,7 +140,7 @@ export default function LiveWallPage() {
 
     try {
       const { data } = await api.get(`/events/${event.id}/photos`, {
-        params: { status: 'APPROVED' },
+        params: { status: 'APPROVED', limit: 300, skip: 0 },
       });
       setPhotos(data.photos || []);
     } catch (err) {
