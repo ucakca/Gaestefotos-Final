@@ -849,6 +849,14 @@ function OverviewTab({
   const [showStatusInfo, setShowStatusInfo] = useState(false);
   const [showAllSteps, setShowAllSteps] = useState(completedSteps < totalSteps); // Open until complete
   const currentStep = onboardingSteps.find(s => s.current);
+  const [liveStats, setLiveStats] = useState<{ todayCount: number; topUploaders: { name: string; count: number }[]; lastPhotoAt: string | null } | null>(null);
+
+  useEffect(() => {
+    if (!eventId) return;
+    api.get(`/events/${eventId}/photos/live-stats`)
+      .then(r => setLiveStats(r.data))
+      .catch(() => {});
+  }, [eventId, stats.photos]);
   
   // Determine event status for hero card color
   const isActive = (event as any).isActive !== false;
@@ -944,6 +952,46 @@ function OverviewTab({
         <StatCard icon={Trophy} value={stats.challenges} label="FOTO-SPIELE" color="purple" onClick={() => onStatClick('challenges')} />
         <StatCard icon={Clock} value={stats.pending} label="AUSSTEHEND" color="yellow" highlight={stats.pending > 0} onClick={() => onStatClick('pending')} />
       </div>
+
+      {/* Live Stats — Fotos heute + Top Uploader */}
+      {liveStats && (liveStats.todayCount > 0 || liveStats.topUploaders.length > 0) && (
+        <div className="rounded-2xl border border-border bg-card p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Activity className="w-4 h-4 text-green-500" />
+              Live-Aktivität
+            </h3>
+            {liveStats.lastPhotoAt && (
+              <span className="text-[11px] text-muted-foreground">
+                Zuletzt: {new Date(liveStats.lastPhotoAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex-1 bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-center">
+              <p className="text-2xl font-bold text-green-500">{liveStats.todayCount}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">Fotos heute</p>
+            </div>
+            {liveStats.topUploaders.length > 0 && (
+              <div className="flex-2 space-y-1">
+                {liveStats.topUploaders.slice(0, 3).map((u, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="text-[10px] w-4 text-muted-foreground font-mono">#{i + 1}</span>
+                    <div className="flex-1 bg-border/50 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 rounded-full"
+                        style={{ width: `${Math.round((u.count / liveStats.topUploaders[0].count) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-[11px] text-foreground font-medium w-16 truncate">{u.name}</span>
+                    <span className="text-[11px] text-muted-foreground w-6 text-right">{u.count}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions — Briefing + AI */}
       <div className="grid grid-cols-2 gap-3">
