@@ -168,6 +168,33 @@ router.delete(
   }
 );
 
+// PATCH /:eventId/guests/:guestId/checkin — Quick check-in toggle
+router.patch(
+  '/:eventId/guests/:guestId/checkin',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId, guestId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const guest = await prisma.guest.findFirst({ where: { id: guestId, eventId } });
+      if (!guest) return res.status(404).json({ error: 'Gast nicht gefunden' });
+
+      const newStatus = (guest as any).status === 'ACCEPTED' ? 'PENDING' : 'ACCEPTED';
+      const updated = await prisma.guest.update({
+        where: { id: guestId },
+        data: { status: newStatus },
+        select: { id: true, firstName: true, lastName: true, status: true },
+      });
+
+      res.json({ guest: updated });
+    } catch (error) {
+      logger.error('Check-in error', { error: getErrorMessage(error) });
+      res.status(500).json({ error: 'Fehler beim Check-in' });
+    }
+  }
+);
+
 // GET /:eventId/guests/export-csv — Download guest list as CSV
 router.get(
   '/:eventId/guests/export-csv',

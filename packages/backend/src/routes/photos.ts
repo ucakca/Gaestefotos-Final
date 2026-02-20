@@ -1761,6 +1761,32 @@ router.delete(
   }
 );
 
+// GET /api/events/:eventId/photos/by-uploader — Photo counts grouped by uploader name
+router.get('/:eventId/photos/by-uploader', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const groups = await prisma.photo.groupBy({
+      by: ['uploadedBy'],
+      where: { eventId, deletedAt: null, status: { not: 'DELETED' as any } },
+      _count: true,
+      orderBy: { _count: { uploadedBy: 'desc' } },
+      take: 100,
+    });
+
+    res.json({
+      uploaders: groups.map(g => ({
+        name: g.uploadedBy || 'Anonym',
+        count: g._count,
+      })),
+    });
+  } catch (error: any) {
+    logger.error('By-uploader error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 // GET /api/events/:eventId/photos/live-stats — Fotos heute, top Uploader
 router.get('/:eventId/photos/live-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
