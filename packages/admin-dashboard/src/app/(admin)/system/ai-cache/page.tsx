@@ -168,7 +168,7 @@ export default function AiCachePage() {
               Hit Rate
             </div>
             <div className={`text-2xl font-bold ${hitRateColor(stats.hitRate)}`}>
-              {stats.hitRate.toFixed(1)}%
+              {(stats.hitRate ?? 0).toFixed(1)}%
             </div>
           </div>
           <div className="rounded-xl border border-app-border bg-app-card p-4">
@@ -195,7 +195,7 @@ export default function AiCachePage() {
               Avg Response
             </div>
             <div className="text-2xl font-bold text-app-fg">
-              {stats.avgResponseTime.toFixed(0)}ms
+              {(stats.avgResponseTime ?? 0).toFixed(0)}ms
             </div>
           </div>
         </div>

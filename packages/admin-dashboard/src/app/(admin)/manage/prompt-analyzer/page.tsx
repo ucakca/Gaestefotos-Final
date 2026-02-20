@@ -231,11 +231,11 @@ function Img2PromptTab() {
             </div>
             <div className="p-3 rounded-lg bg-muted/30 text-center">
               <p className="text-xs text-muted-foreground">Dauer</p>
-              <p className="text-sm font-medium mt-1">{(result.metadata.durationMs / 1000).toFixed(1)}s</p>
+              <p className="text-sm font-medium mt-1">{((result.metadata?.durationMs ?? 0) / 1000).toFixed(1)}s</p>
             </div>
             <div className="p-3 rounded-lg bg-muted/30 text-center">
               <p className="text-xs text-muted-foreground">Kosten</p>
-              <p className="text-sm font-medium mt-1">~${(result.metadata.costEstimateCents / 100).toFixed(3)}</p>
+              <p className="text-sm font-medium mt-1">~${((result.metadata?.costEstimateCents ?? 0) / 100).toFixed(3)}</p>
             </div>
           </div>
 
@@ -297,7 +297,7 @@ function MetadataTab() {
               <div className="p-2 rounded bg-muted/30"><span className="text-muted-foreground">Farbraum:</span> {result.basic.space}</div>
               <div className="p-2 rounded bg-muted/30"><span className="text-muted-foreground">Kanäle:</span> {result.basic.channels}</div>
               <div className="p-2 rounded bg-muted/30"><span className="text-muted-foreground">Alpha:</span> {result.basic.hasAlpha ? 'Ja' : 'Nein'}</div>
-              <div className="p-2 rounded bg-muted/30"><span className="text-muted-foreground">Bytes:</span> {(result.basic.fileSize / 1024).toFixed(0)} KB</div>
+              <div className="p-2 rounded bg-muted/30"><span className="text-muted-foreground">Bytes:</span> {((result.basic?.fileSize ?? 0) / 1024).toFixed(0)} KB</div>
             </div>
           </div>
 

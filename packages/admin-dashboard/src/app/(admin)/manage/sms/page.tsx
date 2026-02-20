@@ -317,7 +317,7 @@ export default function SmsAdminPage() {
                 </div>
                 <div className="bg-card rounded-xl border p-5 shadow-sm">
                   <div className="text-xs text-muted-foreground mb-1">Kosten (geschätzt)</div>
-                  <div className="text-2xl font-bold text-foreground">{(stats.costCents / 100).toFixed(2)} €</div>
+                  <div className="text-2xl font-bold text-foreground">{((stats.costCents ?? 0) / 100).toFixed(2)} €</div>
                 </div>
               </div>
 
@@ -327,11 +327,11 @@ export default function SmsAdminPage() {
                   <div className="w-full bg-muted/80 rounded-full h-4 overflow-hidden">
                     <div
                       className="h-full bg-success/100 rounded-full transition-all"
-                      style={{ width: `${(stats.totalDelivered / stats.totalSent * 100).toFixed(1)}%` }}
+                      style={{ width: `${(stats.totalSent ? (stats.totalDelivered / stats.totalSent * 100) : 0).toFixed(1)}%` }}
                     />
                   </div>
                   <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-                    <span>{(stats.totalDelivered / stats.totalSent * 100).toFixed(1)}% Zustellrate</span>
+                    <span>{(stats.totalSent ? (stats.totalDelivered / stats.totalSent * 100) : 0).toFixed(1)}% Zustellrate</span>
                     <span>{stats.totalDelivered} / {stats.totalSent}</span>
                   </div>
                 </div>

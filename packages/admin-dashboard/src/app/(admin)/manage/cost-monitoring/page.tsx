@@ -184,7 +184,7 @@ function TimelineChart({ data }: { data: TimelineBucket[] }) {
           const label = time.getHours() + ':00';
 
           return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-0.5 group relative" title={`${time.toLocaleDateString('de-DE')} ${label}\n${(bucket.costCents / 100).toFixed(2)}€ | ${bucket.requests} Req | ${bucket.errors} Err`}>
+            <div key={i} className="flex-1 flex flex-col items-center gap-0.5 group relative" title={`${time.toLocaleDateString('de-DE')} ${label}\n${((bucket.costCents ?? 0) / 100).toFixed(2)}€ | ${bucket.requests ?? 0} Req | ${bucket.errors ?? 0} Err`}>
               <div className="w-full flex gap-px items-end h-28">
                 <div className="flex-1 rounded-t bg-violet-500/80" style={{ height: `${Math.max(costPct, 2)}%` }} />
                 <div className="flex-1 rounded-t bg-blue-400/60" style={{ height: `${Math.max(reqPct, 2)}%` }} />
@@ -249,8 +249,8 @@ export default function CostMonitoringPage() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const fmt = (cents: number) => `${(cents / 100).toFixed(2)}€`;
-  const fmtK = (n: number) => n >= 1000000 ? `${(n / 1000000).toFixed(1)}M` : n >= 1000 ? `${(n / 1000).toFixed(1)}K` : String(n);
+  const fmt = (cents: number) => `${((cents ?? 0) / 100).toFixed(2)}€`;
+  const fmtK = (n: number) => { const v = n ?? 0; return v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(1)}K` : String(v); };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

@@ -616,11 +616,11 @@ export default function PartnersPage() {
                             <div className="flex items-center justify-between text-xs">
                               <div>
                                 <span className="text-app-muted">Umsatz:</span>{' '}
-                                <span className="font-medium text-app-fg">{bp.totalRevenue.toFixed(2)} €</span>
+                                <span className="font-medium text-app-fg">{(bp.totalRevenue ?? 0).toFixed(2)} €</span>
                                 <span className="text-app-muted ml-2">Provision ({bp.commissionPct}%):</span>{' '}
-                                <span className="font-medium text-app-fg">{bp.commissionAmount.toFixed(2)} €</span>
+                                <span className="font-medium text-app-fg">{(bp.commissionAmount ?? 0).toFixed(2)} €</span>
                                 <span className="text-app-muted ml-2">Auszahlung:</span>{' '}
-                                <span className="font-bold text-emerald-600">{bp.partnerPayout.toFixed(2)} €</span>
+                                <span className="font-bold text-emerald-600">{(bp.partnerPayout ?? 0).toFixed(2)} €</span>
                               </div>
                             </div>
                             {bp.status === 'DRAFT' && (
