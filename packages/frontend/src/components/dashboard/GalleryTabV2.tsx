@@ -912,8 +912,16 @@ export default function GalleryTabV2({
               </button>
             </div>
 
+            {/* Photo title/description */}
+            {((lightboxPhoto as any).title || (lightboxPhoto as any).description) && (
+              <div className="px-4 pb-1 z-10" onClick={e => e.stopPropagation()}>
+                {(lightboxPhoto as any).title && <p className="text-white text-sm font-semibold">{(lightboxPhoto as any).title}</p>}
+                {(lightboxPhoto as any).description && <p className="text-white/60 text-xs">{(lightboxPhoto as any).description}</p>}
+              </div>
+            )}
+
             {/* Bottom info */}
-            <div className="flex items-center justify-center gap-4 px-4 py-3 z-10" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-center gap-4 px-4 py-3 z-10 flex-wrap" onClick={e => e.stopPropagation()}>
               <span className="text-white/60 text-sm">
                 {lightboxPhoto.uploadedBy || 'Unbekannt'} &bull; {new Date(lightboxPhoto.createdAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </span>
