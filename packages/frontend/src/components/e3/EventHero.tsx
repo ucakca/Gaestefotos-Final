@@ -356,6 +356,11 @@ export default function EventHero({
               {welcomeMessage}
             </p>
           )}
+          {(event as any).description && (event as any).description !== welcomeMessage && (
+            <p className="mt-1.5 text-xs text-muted-foreground/70 leading-relaxed whitespace-pre-line">
+              {(event as any).description}
+            </p>
+          )}
         </div>
 
         {(isStorageLocked || (uploadDisabled && uploadDisabledReason)) && (
