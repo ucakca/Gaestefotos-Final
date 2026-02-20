@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { PrismaClient, DrawbotStatus, DrawbotStyle } from '@prisma/client';
 import { createDrawing, getDrawbotStyles, type DrawbotStyle as ServiceStyle } from '../services/drawbot';
+import { checkAndSpendEnergy } from '../middleware/energyCheck';
+import { assertAiFeatureAllowed } from '../services/aiFeatureGate';
 import { logger } from '../utils/logger';
 import axios from 'axios';
 import fs from 'fs/promises';
@@ -84,6 +86,17 @@ router.post('/events/:eventId/drawbot', async (req: Request, res: Response) => {
 
     if (!sourceImageUrl) {
       return res.status(400).json({ error: 'Bild-URL erforderlich' });
+    }
+
+    // Feature gate + energy check
+    try {
+      await assertAiFeatureAllowed(eventId, 'drawbot');
+    } catch (gateErr: any) {
+      return res.status(gateErr.httpStatus || 403).json({ error: gateErr.message, code: gateErr.code });
+    }
+    const energyResult = await checkAndSpendEnergy(req, eventId, 'drawbot');
+    if (!energyResult.success) {
+      return res.status(429).json({ error: 'Nicht genug AI-Energie', code: 'INSUFFICIENT_ENERGY', energy: energyResult });
     }
 
     const comp = Math.max(1, Math.min(100, complexity || 50));

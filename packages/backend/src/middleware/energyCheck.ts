@@ -18,6 +18,7 @@ import { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils/logger';
 import { spendEnergy, getOrCreateBalance } from '../services/aiEnergyService';
 import { AiFeature } from '../services/aiFeatureRegistry';
+import { isAiFeatureAllowed } from '../services/aiFeatureGate';
 
 /**
  * Extract device ID from request (header > query > cookie > body).
@@ -91,6 +92,20 @@ export function withEnergyCheck(featureKey: AiFeature) {
     }
 
     try {
+      // Feature gate: check package + host config + device before spending energy
+      const gateResult = await isAiFeatureAllowed(eventId, featureKey);
+      if (!gateResult.allowed) {
+        return res.status(403).json({
+          error: gateResult.reason === 'package'
+            ? 'Feature nicht in deinem Paket verfügbar'
+            : gateResult.reason === 'event_config'
+            ? 'Feature vom Veranstalter deaktiviert'
+            : 'Feature auf diesem Gerät nicht verfügbar',
+          code: 'AI_FEATURE_NOT_AVAILABLE',
+          reason: gateResult.reason,
+        });
+      }
+
       const result = await spendEnergy(eventId, deviceId, featureKey);
 
       if (!result.success) {

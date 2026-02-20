@@ -673,7 +673,7 @@ Mach es witzig und kreativ!`;
 });
 
 // POST /api/booth-games/gif-morph — Create animated GIF morph (Original → Style1 → Style2)
-router.post('/gif-morph', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/gif-morph', authMiddleware, withEnergyCheck('ai_oldify'), async (req: AuthRequest, res: Response) => {
   try {
     const { photoId, eventId, styles, frameDelay, width } = req.body;
 
@@ -704,7 +704,7 @@ router.post('/gif-morph', authMiddleware, async (req: AuthRequest, res: Response
 });
 
 // POST /api/booth-games/gif-aging — Generate aging progression GIF (4 frames: 30→50→70→90)
-router.post('/gif-aging', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/gif-aging', authMiddleware, withEnergyCheck('ai_oldify'), async (req: AuthRequest, res: Response) => {
   try {
     const { photoId, eventId } = req.body;
 
@@ -728,7 +728,7 @@ router.post('/gif-aging', authMiddleware, async (req: AuthRequest, res: Response
 });
 
 // POST /api/booth-games/ai-video — Generate AI video from a photo (Runway/LumaAI)
-router.post('/ai-video', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/ai-video', authMiddleware, withEnergyCheck('highlight_reel'), async (req: AuthRequest, res: Response) => {
   try {
     const { photoId, eventId, prompt, duration } = req.body;
 

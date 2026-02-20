@@ -342,6 +342,20 @@ export const pushSubscribeLimiter: any = rateLimit({
   },
 });
 
+// Energy reward limiter — prevent spam of reward claims
+export const energyRewardLimiter: any = rateLimit({
+  windowMs: 60 * 1000, // 1 Minute
+  max: devMultiplier(10), // 10 reward claims per minute per IP
+  message: 'Zu viele Energie-Anfragen.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: createRedisStore('energy-reward'),
+  handler: (req: Request, res: Response) => {
+    logRateLimitHit('energy:reward', req);
+    res.status(429).json({ error: 'Zu viele Energie-Anfragen, bitte versuchen Sie es später erneut.' });
+  },
+});
+
 // Analytics limiter — prevent expensive query spam
 export const analyticsLimiter: any = rateLimit({
   windowMs: 60 * 1000, // 1 Minute

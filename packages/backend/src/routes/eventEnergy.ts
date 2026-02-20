@@ -13,6 +13,7 @@
 
 import { Router, Request, Response } from 'express';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
+import { energyRewardLimiter } from '../middleware/rateLimit';
 import { logger } from '../utils/logger';
 import {
   getOrCreateBalance,
@@ -93,7 +94,7 @@ router.get('/:eventId/energy/config', async (req: Request, res: Response) => {
  * Claim an energy reward for a specific activity.
  * Body: { rewardType: string, instanceId?: string }
  */
-router.post('/:eventId/energy/reward', async (req: Request, res: Response) => {
+router.post('/:eventId/energy/reward', energyRewardLimiter, async (req: Request, res: Response) => {
   try {
     const { eventId } = req.params;
     const deviceId = getDeviceId(req);

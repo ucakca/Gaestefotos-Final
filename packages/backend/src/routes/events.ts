@@ -709,6 +709,13 @@ router.post(
         }
       }
 
+      // Create default EventAiConfig for energy system (non-blocking)
+      prisma.eventAiConfig.upsert({
+        where: { eventId: event.id },
+        create: { eventId: event.id },
+        update: {},
+      }).catch((err: any) => logger.warn('EventAiConfig creation failed', { eventId: event.id, error: err.message }));
+
       auditLog({ type: AuditType.EVENT_CREATED, message: `Event erstellt: ${event.title}`, eventId: event.id, req });
 
       // Auto-assign automations based on event settings (non-blocking)

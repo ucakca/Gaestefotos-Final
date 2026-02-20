@@ -160,7 +160,7 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
   const [step, setStep] = useState<Step>('select');
   const [selectedGame, setSelectedGame] = useState<GameDef | null>(null);
   const [energyError, setEnergyError] = useState<string | null>(null);
-  const { energy, balance, isEnabled, cooldownActive, cooldownEndsAt, handleEnergyError, refreshAfterSpend } = useAiEnergy(eventId);
+  const { energy, config, balance, isEnabled, cooldownActive, cooldownEndsAt, handleEnergyError, refreshAfterSpend, getCost } = useAiEnergy(eventId);
   const [guestName, setGuestName] = useState(() =>
     typeof window !== 'undefined' ? localStorage.getItem('guestUploaderName') || '' : ''
   );
@@ -433,7 +433,7 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                 {/* Energy Bar */}
                 {isEnabled && (
                   <div className="px-2 py-2 rounded-xl bg-black/5 dark:bg-white/5">
-                    <EnergyBar balance={balance} cooldownActive={cooldownActive} cooldownEndsAt={cooldownEndsAt} enabled={isEnabled} />
+                    <EnergyBar balance={balance} maxEstimate={config?.startBalance || 30} cooldownActive={cooldownActive} cooldownEndsAt={cooldownEndsAt} enabled={isEnabled} />
                   </div>
                 )}
 
@@ -462,7 +462,7 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="font-bold text-foreground">{game.name}</p>
-                        <EnergyCostBadge cost={1} balance={balance} enabled={isEnabled} />
+                        <EnergyCostBadge cost={getCost('llm_game')} balance={balance} enabled={isEnabled} />
                       </div>
                       <p className="text-sm text-muted-foreground mt-0.5">{game.description}</p>
                     </div>

@@ -187,7 +187,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
   const [step, setStep] = useState<Step>('photo');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [energyError, setEnergyError] = useState<string | null>(null);
-  const { balance, isEnabled, cooldownActive, cooldownEndsAt, handleEnergyError, refreshAfterSpend } = useAiEnergy(eventId);
+  const { config, balance, isEnabled, cooldownActive, cooldownEndsAt, handleEnergyError, refreshAfterSpend, getCost } = useAiEnergy(eventId);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedEffect, setSelectedEffect] = useState<EffectDef | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -484,7 +484,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-bold text-foreground">{effect.name}</p>
-                          <EnergyCostBadge cost={effect.key === 'ai_video' ? 5 : effect.key === 'face_switch' ? 3 : effect.key === 'gif_morph' || effect.key === 'gif_aging' ? 3 : 2} balance={balance} enabled={isEnabled} />
+                          <EnergyCostBadge cost={effect.key === 'face_switch' ? getCost('face_swap') : effect.key === 'gif_morph' || effect.key === 'gif_aging' ? getCost('gif') : effect.key === 'trading_card' ? getCost('trading_card') : getCost('image_effect')} balance={balance} enabled={isEnabled} />
                         </div>
                         <p className="text-sm text-muted-foreground mt-0.5">{effect.description}</p>
                       </div>

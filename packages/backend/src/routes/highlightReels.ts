@@ -1,5 +1,7 @@
 import { Router, Response } from 'express';
 import { authMiddleware, AuthRequest, hasEventManageAccess } from '../middleware/auth';
+import { checkAndSpendEnergy } from '../middleware/energyCheck';
+import { assertAiFeatureAllowed } from '../services/aiFeatureGate';
 import { generateHighlightReel, getReelProgress, listEventReels, deleteReel, HighlightReelOptions } from '../services/highlightReel';
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
@@ -20,6 +22,17 @@ router.post('/:eventId/generate', authMiddleware, async (req: AuthRequest, res: 
 
     if (!(await hasEventManageAccess(req, eventId))) {
       return res.status(403).json({ error: 'Keine Berechtigung' });
+    }
+
+    // Feature gate + energy check
+    try {
+      await assertAiFeatureAllowed(eventId, 'highlight_reel');
+    } catch (gateErr: any) {
+      return res.status(gateErr.httpStatus || 403).json({ error: gateErr.message, code: gateErr.code });
+    }
+    const energyResult = await checkAndSpendEnergy(req, eventId, 'highlight_reel');
+    if (!energyResult.success) {
+      return res.status(429).json({ error: 'Nicht genug AI-Energie', code: 'INSUFFICIENT_ENERGY', energy: energyResult });
     }
 
     const options: HighlightReelOptions = {
