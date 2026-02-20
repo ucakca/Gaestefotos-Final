@@ -707,6 +707,41 @@ router.post('/bulk-status', authMiddleware, requireRole('ADMIN'), async (req: Au
   }
 });
 
+// GET /:id/photos — Admin photo search for a specific event
+router.get('/:id/photos', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id: eventId } = req.params;
+    const { uploadedBy, tag, status, limit, skip } = req.query;
+
+    const where: any = { eventId, deletedAt: null };
+    if (typeof uploadedBy === 'string' && uploadedBy.trim()) {
+      where.uploadedBy = { contains: uploadedBy.trim(), mode: 'insensitive' };
+    }
+    if (typeof tag === 'string' && tag.trim()) where.tags = { has: tag.trim() };
+    if (typeof status === 'string' && ['PENDING', 'APPROVED', 'REJECTED', 'DELETED'].includes(status)) {
+      where.status = status;
+    }
+
+    const limitNum = Math.min(100, parseInt(limit as string, 10) || 50);
+    const skipNum = parseInt(skip as string, 10) || 0;
+
+    const [photos, total] = await Promise.all([
+      prisma.photo.findMany({
+        where,
+        select: { id: true, uploadedBy: true, status: true, url: true, createdAt: true, tags: true, views: true, isFavorite: true },
+        orderBy: { createdAt: 'desc' },
+        take: limitNum,
+        skip: skipNum,
+      }),
+      prisma.photo.count({ where }),
+    ]);
+
+    return res.json({ ok: true, total, photos: photos.map((p: any) => ({ ...p, url: `/cdn/${p.id}` })) });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /storage-stats — Top events + users by storage usage
 router.get('/storage-stats', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
   try {
