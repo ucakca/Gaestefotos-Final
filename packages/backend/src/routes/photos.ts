@@ -1882,6 +1882,28 @@ router.delete(
   }
 );
 
+// GET /api/events/:eventId/photos/ratings — Aggregate photo ratings/votes
+router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const votes = await (prisma as any).photoVote.groupBy({
+      by: ['photoId'],
+      where: { eventId },
+      _avg: { rating: true },
+      _count: { rating: true },
+      orderBy: { _avg: { rating: 'desc' } },
+      take: 50,
+    });
+
+    res.json({ ratings: votes.map((v: any) => ({ photoId: v.photoId, avgRating: v._avg.rating || 0, voteCount: v._count.rating })) });
+  } catch (error: any) {
+    logger.error('Ratings aggregate error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top — Top N photos by likes
 router.get('/:eventId/photos/top', optionalAuthMiddleware, async (req: AuthRequest, res: Response) => {
   try {
