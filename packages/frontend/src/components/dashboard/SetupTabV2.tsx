@@ -30,6 +30,7 @@ import {
   ExternalLink,
   Lock,
   Zap,
+  Hash,
   Video,
   Download,
   ScanFace,
@@ -348,6 +349,20 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
             setFeaturesConfig(updated);
             api.put(`/events/${eventId}`, { featuresConfig: updated })
               .then(() => { showToast(newVal ? 'Benachrichtigungen deaktiviert' : 'Benachrichtigungen aktiviert', 'success'); onEventUpdate?.(); })
+              .catch(() => showToast('Fehler', 'error'));
+          }}
+        />
+        <SetupRow
+          icon={Hash}
+          label="Custom Hashtag"
+          value={featuresConfig.customHashtag || 'Nicht gesetzt'}
+          onClick={() => {
+            const val = window.prompt('Custom Hashtag (z.B. #MeineHochzeit):', featuresConfig.customHashtag || '');
+            if (val === null) return;
+            const updated = { ...featuresConfig, customHashtag: val.trim() || undefined };
+            setFeaturesConfig(updated);
+            api.put(`/events/${eventId}`, { featuresConfig: updated })
+              .then(() => { showToast(val.trim() ? `Hashtag gesetzt: ${val.trim()}` : 'Hashtag entfernt', 'success'); onEventUpdate?.(); })
               .catch(() => showToast('Fehler', 'error'));
           }}
         />
