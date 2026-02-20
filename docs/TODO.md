@@ -365,6 +365,14 @@
 | S26-174 | **Tag-Filter Backend** | ✅ erledigt (20.02.2026) | GET /events/:id/photos?tag=xyz (has: filter) |
 | S26-175 | **Cursor-Pagination** | ✅ erledigt (20.02.2026) | ?cursor=<id> + nextCursor in Photos-Response |
 | S26-176 | **allowDeleteOwn komplett** | ✅ erledigt (20.02.2026) | Backend+Toggle+Lightbox-Trash+Passthrough vollst. integriert |
+| S26-177 | **Pending-Count Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/pending-count (lightweight single count) |
+| S26-178 | **Gäste PATCH** | ✅ erledigt (20.02.2026) | PATCH /events/:id/guests/:id (notes, dietary, plusOneCount, status) |
+| S26-179 | **Photo Hide** | ✅ erledigt (20.02.2026) | POST /photos/:id/hide (APPROVED<->HIDDEN toggle, allowHide featureFlag) |
+| S26-180 | **🎲 Shuffle Sort** | ✅ erledigt (20.02.2026) | 6. Sort-Option in Gast-Galerie (Math.random) |
+| S26-181 | **pendingCount Badge EventCard** | ✅ erledigt (20.02.2026) | Clock-Icon Badge orange in EventCard Meta-Row |
+| S26-182 | **Foto-Tags API** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/tags (unique sorted tags) |
+| S26-183 | **Activity Feed** | ✅ erledigt (20.02.2026) | GET /events/:id/activity + Dashboard Widget |
+| S26-184 | **Analytics** | ✅ erledigt (20.02.2026) | GET /events/:id/analytics (combined photos+guests+engagement) |
 
 ---
 
