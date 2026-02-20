@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import {
   Database,
   RefreshCw,
@@ -94,8 +95,9 @@ export default function AiCachePage() {
       });
       setLastWarmUp(res.data);
       await loadStats();
-    } catch (err) {
-      console.error('Warm-up failed:', err);
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || 'Warm-up fehlgeschlagen';
+      toast.error(msg);
       setLastWarmUp({ success: false, cached: 0, errors: 1 });
     } finally {
       setWarmingUp(false);

@@ -492,7 +492,7 @@ export default function AiProvidersPage() {
                 const [pRes, mRes, sRes] = await Promise.all([
                   api.get('/admin/ai-providers'),
                   api.get('/admin/ai-providers/features/mappings'),
-                  api.get('/admin/ai-providers/usage'),
+                  api.get('/admin/ai-providers/usage/stats?days=30'),
                 ]);
                 setProviders(pRes.data.providers || []);
                 setMappings(mRes.data.mappings || []);
