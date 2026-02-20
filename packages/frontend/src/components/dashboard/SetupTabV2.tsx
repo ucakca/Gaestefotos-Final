@@ -42,6 +42,7 @@ import {
   BarChart3,
   Layers,
   Contact,
+  Upload,
 } from 'lucide-react';
 import { usePackageFeatures, FeatureKey, FEATURE_DESCRIPTIONS } from '@/hooks/usePackageFeatures';
 import { Event as EventType } from '@gaestefotos/shared';
@@ -308,6 +309,35 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
           </h3>
         </div>
         <SetupRow icon={Wifi} label="WLAN für Gäste" link={`/events/${eventId}/wifi`} />
+        <SetupRow
+          icon={Shield}
+          label="Kommentar-Moderation"
+          value={featuresConfig.moderateComments === true ? 'Aktiv' : 'Deaktiviert'}
+          onClick={() => {
+            const newVal = !featuresConfig.moderateComments;
+            const updated = { ...featuresConfig, moderateComments: newVal };
+            setFeaturesConfig(updated);
+            api.put(`/events/${eventId}`, { featuresConfig: updated })
+              .then(() => { showToast(newVal ? 'Kommentare werden moderiert' : 'Kommentare auto-freigegeben', 'success'); onEventUpdate?.(); })
+              .catch(() => showToast('Fehler', 'error'));
+          }}
+        />
+        <SetupRow
+          icon={Upload}
+          label="Max. Uploads pro Gast"
+          value={featuresConfig.maxUploadsPerGuest ? `${featuresConfig.maxUploadsPerGuest} Fotos` : 'Unbegrenzt'}
+          onClick={() => {
+            const current = featuresConfig.maxUploadsPerGuest || 0;
+            const options = [0, 5, 10, 20, 50];
+            const nextIdx = (options.indexOf(current) + 1) % options.length;
+            const newVal = options[nextIdx];
+            const updated = { ...featuresConfig, maxUploadsPerGuest: newVal || undefined };
+            setFeaturesConfig(updated);
+            api.put(`/events/${eventId}`, { featuresConfig: updated })
+              .then(() => { showToast(newVal ? `Max. ${newVal} Fotos pro Gast` : 'Upload-Limit aufgehoben', 'success'); onEventUpdate?.(); })
+              .catch(() => showToast('Fehler', 'error'));
+          }}
+        />
         <SetupRow icon={Eye} label="Erweiterte Optionen" onClick={() => setActiveSheet('advanced')} />
       </div>
 
