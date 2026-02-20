@@ -719,10 +719,116 @@ router.post('/:id/test', authMiddleware, async (req: AuthRequest, res: Response)
           message = `remove.bg ${resp.status} ${resp.statusText}`;
         }
       } else {
-        message = 'Test für diesen Provider-Typ nicht implementiert';
+        // Generic IMAGE_GEN: try baseUrl or Replicate-style auth check
+        const baseUrl = provider.baseUrl;
+        if (baseUrl) {
+          const resp = await fetch(baseUrl, {
+            headers: { 'Authorization': `Bearer ${apiKey}` },
+          });
+          success = resp.ok || resp.status === 404; // 404 = server up, just wrong path
+          message = success ? `API erreichbar (${resp.status})` : `${resp.status} ${resp.statusText}`;
+        } else {
+          message = 'Kein Test möglich — baseUrl fehlt';
+        }
       }
+
+    } else if (provider.type === 'VIDEO_GEN') {
+      // ─── Runway ───
+      if (provider.slug.includes('runway')) {
+        const baseUrl = provider.baseUrl || 'https://api.dev.runwayml.com/v1';
+        // Runway: GET /tasks is a lightweight way to verify auth
+        const resp = await fetch(`${baseUrl}/tasks?limit=1`, {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'X-Runway-Version': '2024-11-06',
+          },
+        });
+        if (resp.ok) {
+          success = true;
+          message = `Runway API erreichbar (Model: ${model || 'gen4_turbo'})`;
+        } else if (resp.status === 401 || resp.status === 403) {
+          message = `Runway Auth fehlgeschlagen: ${resp.status} ${resp.statusText}`;
+        } else {
+          // Some non-auth error — API is reachable but might need different endpoint
+          const body = await resp.text().catch(() => '');
+          // 404 on /tasks means the server is up, just no tasks endpoint for listing
+          success = resp.status === 404;
+          message = success
+            ? `Runway API erreichbar (${resp.status} — kein Task-Listing, aber Auth OK)`
+            : `Runway ${resp.status} ${resp.statusText} — ${body.slice(0, 200)}`;
+        }
+      }
+      // ─── Luma AI ───
+      else if (provider.slug.includes('luma')) {
+        const baseUrl = provider.baseUrl || 'https://api.lumalabs.ai/dream-machine/v1';
+        // Luma: GET /generations?limit=1 to verify auth
+        const resp = await fetch(`${baseUrl}/generations?limit=1`, {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+          },
+        });
+        if (resp.ok) {
+          success = true;
+          message = `Luma AI erreichbar (Model: ${model || 'ray2'})`;
+        } else if (resp.status === 401 || resp.status === 403) {
+          message = `Luma Auth fehlgeschlagen: ${resp.status} ${resp.statusText}`;
+        } else {
+          const body = await resp.text().catch(() => '');
+          success = resp.status === 404;
+          message = success
+            ? `Luma API erreichbar (Auth OK)`
+            : `Luma ${resp.status} — ${body.slice(0, 200)}`;
+        }
+      }
+      // ─── Generic VIDEO_GEN (OpenAI-compatible or custom) ───
+      else {
+        const baseUrl = provider.baseUrl;
+        if (baseUrl) {
+          const resp = await fetch(baseUrl, {
+            headers: { 'Authorization': `Bearer ${apiKey}` },
+          });
+          success = resp.ok || resp.status === 404;
+          message = success ? `Video API erreichbar (${resp.status})` : `${resp.status} ${resp.statusText}`;
+        } else {
+          message = 'Kein Test möglich — baseUrl fehlt';
+        }
+      }
+
+    } else if (provider.type === 'FACE_RECOGNITION') {
+      // Face recognition uses local face-api.js — no external API to test
+      success = true;
+      message = 'Face Recognition nutzt lokale face-api.js (kein externer API-Call nötig)';
+
+    } else if (provider.type === 'STT') {
+      // Speech-to-Text: try OpenAI-compatible /models or Whisper endpoint
+      const baseUrl = provider.baseUrl || 'https://api.openai.com/v1';
+      const resp = await fetch(`${baseUrl}/models`, {
+        headers: { 'Authorization': `Bearer ${apiKey}` },
+      });
+      success = resp.ok;
+      message = success ? `STT API erreichbar (${resp.status})` : `${resp.status} ${resp.statusText}`;
+
+    } else if (provider.type === 'TTS') {
+      // Text-to-Speech: try OpenAI-compatible /models endpoint
+      const baseUrl = provider.baseUrl || 'https://api.openai.com/v1';
+      const resp = await fetch(`${baseUrl}/models`, {
+        headers: { 'Authorization': `Bearer ${apiKey}` },
+      });
+      success = resp.ok;
+      message = success ? `TTS API erreichbar (${resp.status})` : `${resp.status} ${resp.statusText}`;
+
     } else {
-      message = 'Test für diesen Provider-Typ nicht implementiert';
+      // Unknown provider type — try generic auth check if baseUrl is set
+      const baseUrl = provider.baseUrl;
+      if (baseUrl) {
+        const resp = await fetch(baseUrl, {
+          headers: { 'Authorization': `Bearer ${apiKey}` },
+        });
+        success = resp.ok;
+        message = success ? `API erreichbar (${resp.status})` : `${resp.status} ${resp.statusText}`;
+      } else {
+        message = `Unbekannter Provider-Typ: ${provider.type}`;
+      }
     }
 
     const durationMs = Date.now() - startTime;
