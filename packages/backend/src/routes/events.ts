@@ -1679,6 +1679,53 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/analytics — Combined analytics for host dashboard
+router.get(
+  '/:eventId/analytics',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - 7);
+      weekStart.setHours(0, 0, 0, 0);
+
+      const [
+        totalPhotos, approvedPhotos, pendingPhotos, todayPhotos, weekPhotos,
+        totalGuests, acceptedGuests, declinedGuests,
+        totalViews, favoritePhotos, guestbookCount,
+      ] = await Promise.all([
+        prisma.photo.count({ where: { eventId, deletedAt: null } }),
+        prisma.photo.count({ where: { eventId, status: 'APPROVED', deletedAt: null } }),
+        prisma.photo.count({ where: { eventId, status: 'PENDING', deletedAt: null } }),
+        prisma.photo.count({ where: { eventId, createdAt: { gte: todayStart }, deletedAt: null } }),
+        prisma.photo.count({ where: { eventId, createdAt: { gte: weekStart }, deletedAt: null } }),
+        prisma.guest.count({ where: { eventId } }),
+        prisma.guest.count({ where: { eventId, status: 'ACCEPTED' as any } }),
+        prisma.guest.count({ where: { eventId, status: 'DECLINED' as any } }),
+        prisma.photo.aggregate({ where: { eventId, deletedAt: null }, _sum: { views: true } }),
+        prisma.photo.count({ where: { eventId, isFavorite: true, deletedAt: null } }),
+        prisma.guestbookEntry.count({ where: { eventId } }),
+      ]);
+
+      res.json({
+        photos: { total: totalPhotos, approved: approvedPhotos, pending: pendingPhotos, today: todayPhotos, thisWeek: weekPhotos, favorites: favoritePhotos },
+        guests: { total: totalGuests, accepted: acceptedGuests, declined: declinedGuests, pending: totalGuests - acceptedGuests - declinedGuests },
+        engagement: { totalViews: totalViews._sum.views || 0, guestbookEntries: guestbookCount },
+      });
+    } catch (error: any) {
+      logger.error('Analytics error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Laden der Analytics' });
+    }
+  }
+);
+
 // GET /api/events/:eventId/summary — Compact event overview for external integrations
 router.get(
   '/:eventId/summary',
