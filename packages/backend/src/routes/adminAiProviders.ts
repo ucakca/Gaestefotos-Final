@@ -624,15 +624,19 @@ router.post('/:id/test', authMiddleware, async (req: AuthRequest, res: Response)
       return res.status(404).json({ error: 'Provider nicht gefunden' });
     }
 
-    if (!provider.apiKeyEncrypted || !provider.apiKeyIv || !provider.apiKeyTag) {
+    const isOllama = provider.slug?.toLowerCase().includes('ollama') || provider.slug?.toLowerCase().includes('local-llm');
+
+    if (!isOllama && (!provider.apiKeyEncrypted || !provider.apiKeyIv || !provider.apiKeyTag)) {
       return res.status(400).json({ error: 'Kein API Key konfiguriert' });
     }
 
-    const apiKey = decryptValue({
-      encrypted: provider.apiKeyEncrypted,
-      iv: provider.apiKeyIv,
-      tag: provider.apiKeyTag,
-    });
+    const apiKey = isOllama
+      ? 'ollama'
+      : decryptValue({
+          encrypted: provider.apiKeyEncrypted!,
+          iv: provider.apiKeyIv!,
+          tag: provider.apiKeyTag!,
+        });
 
     const startTime = Date.now();
     let success = false;
@@ -640,7 +644,23 @@ router.post('/:id/test', authMiddleware, async (req: AuthRequest, res: Response)
     let model = provider.defaultModel || '';
 
     if (provider.type === 'LLM') {
-      if (provider.slug === 'groq' || provider.slug.includes('groq')) {
+      if (isOllama) {
+        // Ollama — test local endpoint
+        const baseUrl = provider.baseUrl || 'http://localhost:11434/v1';
+        try {
+          const resp = await fetch(`${baseUrl.replace('/v1', '')}/api/tags`);
+          if (resp.ok) {
+            const data = await resp.json() as any;
+            const models = (data.models || []).map((m: any) => m.name).join(', ');
+            success = true;
+            message = `Ollama lokal erreichbar. Modelle: ${models || '(keine installiert)'}`;
+          } else {
+            message = `Ollama nicht erreichbar: ${resp.status} — starte mit: ollama serve`;
+          }
+        } catch {
+          message = 'Ollama nicht erreichbar — läuft der Dienst? (systemctl status ollama)';
+        }
+      } else if (provider.slug === 'groq' || provider.slug.includes('groq')) {
         const { default: Groq } = await import('groq-sdk');
         const client = new Groq({ apiKey });
         const completion = await client.chat.completions.create({

@@ -15,7 +15,7 @@ import { logger } from '../utils/logger';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export type LLMProviderType = 'groq' | 'grok' | 'openai' | 'generic';
+export type LLMProviderType = 'groq' | 'grok' | 'openai' | 'ollama' | 'generic';
 
 export interface LLMConfig {
   provider: LLMProviderType;
@@ -43,9 +43,10 @@ export interface LLMResponse {
 // ─── Provider Defaults ──────────────────────────────────────────────────────
 
 const PROVIDER_DEFAULTS: Record<LLMProviderType, { baseUrl: string; model: string }> = {
-  groq:    { baseUrl: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile' },
-  grok:    { baseUrl: 'https://api.x.ai/v1',            model: 'grok-3-mini' },
-  openai:  { baseUrl: 'https://api.openai.com/v1',      model: 'gpt-4o-mini' },
+  groq:    { baseUrl: 'https://api.groq.com/openai/v1',  model: 'llama-3.3-70b-versatile' },
+  grok:    { baseUrl: 'https://api.x.ai/v1',             model: 'grok-3-mini' },
+  openai:  { baseUrl: 'https://api.openai.com/v1',       model: 'gpt-4o-mini' },
+  ollama:  { baseUrl: 'http://localhost:11434/v1',        model: 'llama3.2:3b' },
   generic: { baseUrl: '',                                model: '' },
 };
 
@@ -59,6 +60,7 @@ export function detectProvider(slug: string): LLMProviderType {
   if (s.includes('grok') || s.includes('xai') || s.includes('x-ai')) return 'grok';
   if (s.includes('groq')) return 'groq';
   if (s.includes('openai') || s.includes('gpt')) return 'openai';
+  if (s.includes('ollama') || s.includes('local')) return 'ollama';
   return 'generic';
 }
 
@@ -137,7 +139,8 @@ export async function chatCompletion(
   if (!baseUrl) {
     throw new Error(`Kein API-Endpoint konfiguriert für LLM Provider: ${config.provider}`);
   }
-  if (!config.apiKey) {
+  // Ollama runs locally — no API key required
+  if (!config.apiKey && config.provider !== 'ollama') {
     throw new Error(`Kein API Key konfiguriert für LLM Provider: ${config.provider}`);
   }
 

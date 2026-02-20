@@ -70,16 +70,20 @@ export async function resolveProvider(feature: AiFeature): Promise<ResolvedProvi
     return null;
   }
 
-  if (!provider.apiKeyEncrypted || !provider.apiKeyIv || !provider.apiKeyTag) {
+  // Ollama runs locally — no API key needed
+  const isOllama = provider.slug?.toLowerCase().includes('ollama') || provider.slug?.toLowerCase().includes('local-llm');
+  if (!isOllama && (!provider.apiKeyEncrypted || !provider.apiKeyIv || !provider.apiKeyTag)) {
     logger.warn(`AI provider ${provider.slug} has no API key configured`);
     return null;
   }
 
-  const apiKey = decryptValue({
-    encrypted: provider.apiKeyEncrypted,
-    iv: provider.apiKeyIv,
-    tag: provider.apiKeyTag,
-  });
+  const apiKey = isOllama
+    ? 'ollama'
+    : decryptValue({
+        encrypted: provider.apiKeyEncrypted!,
+        iv: provider.apiKeyIv!,
+        tag: provider.apiKeyTag!,
+      });
 
   return {
     id: provider.id,
