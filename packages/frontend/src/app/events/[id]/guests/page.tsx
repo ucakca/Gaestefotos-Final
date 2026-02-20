@@ -103,6 +103,8 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
   const [detailGuest, setDetailGuest] = useState<Guest | null>(null);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [bulkSending, setBulkSending] = useState(false);
+  const [showBulkEmailForm, setShowBulkEmailForm] = useState(false);
+  const [bulkEmailMessage, setBulkEmailMessage] = useState('');
 
   useEffect(() => {
     if (eventId) loadData();
@@ -394,24 +396,73 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
                   <Button
                     type="button"
                     disabled={bulkSending}
-                    onClick={async () => {
-                      if (!window.confirm(`Einladungs-E-Mail an alle ${guests.filter(g => g.email).length} Gäste mit E-Mail-Adresse senden?`)) return;
-                      setBulkSending(true);
-                      try {
-                        const res = await api.post(`/events/${eventId}/guests/email-all`, {});
-                        showToast(`${res.data.sent} E-Mail${res.data.sent !== 1 ? 's' : ''} gesendet${res.data.failed > 0 ? `, ${res.data.failed} fehlgeschlagen` : ''}`, res.data.sent > 0 ? 'success' : 'error');
-                      } catch (err: any) {
-                        showToast(err?.response?.data?.error || 'Fehler beim Massen-Versand', 'error');
-                      } finally {
-                        setBulkSending(false);
-                      }
-                    }}
+                    onClick={() => setShowBulkEmailForm(true)}
                     variant="secondary"
                   >
                     <Mail className="h-4 w-4" />
                     {bulkSending ? 'Sende...' : `Alle einladen (${guests.filter(g => g.email).length})`}
                   </Button>
                 </motion.div>
+              )}
+
+              {/* Bulk Email Form Dialog */}
+              {showBulkEmailForm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black/50" onClick={() => setShowBulkEmailForm(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="relative bg-card rounded-2xl shadow-xl border border-border p-6 w-full max-w-md mx-4 z-10"
+                  >
+                    <button onClick={() => setShowBulkEmailForm(false)} className="absolute top-4 right-4 p-1 rounded-lg hover:bg-muted">
+                      <X className="w-5 h-5 text-muted-foreground" />
+                    </button>
+                    <h3 className="text-lg font-semibold text-foreground mb-4">Alle Gäste einladen</h3>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {guests.filter(g => g.email).length} Gäste mit E-Mail-Adresse erhalten eine Einladung.
+                    </p>
+                    <Textarea
+                      value={bulkEmailMessage}
+                      onChange={(e) => setBulkEmailMessage(e.target.value)}
+                      placeholder="Persönliche Nachricht (optional)..."
+                      rows={4}
+                      className="mb-4"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => setShowBulkEmailForm(false)}
+                        className="flex-1"
+                      >
+                        Abbrechen
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="primary"
+                        disabled={bulkSending}
+                        onClick={async () => {
+                          setBulkSending(true);
+                          try {
+                            const res = await api.post(`/events/${eventId}/guests/email-all`, {
+                              message: bulkEmailMessage || undefined,
+                            });
+                            showToast(`${res.data.sent} E-Mail${res.data.sent !== 1 ? 's' : ''} gesendet`, res.data.sent > 0 ? 'success' : 'error');
+                            setShowBulkEmailForm(false);
+                            setBulkEmailMessage('');
+                          } catch (err: any) {
+                            showToast(err?.response?.data?.error || 'Fehler beim Versand', 'error');
+                          } finally {
+                            setBulkSending(false);
+                          }
+                        }}
+                        className="flex-1"
+                      >
+                        {bulkSending ? 'Sende...' : 'E-Mails senden'}
+                      </Button>
+                    </div>
+                  </motion.div>
+                </div>
               )}
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
