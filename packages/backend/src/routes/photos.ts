@@ -1343,6 +1343,41 @@ router.post(
   }
 );
 
+// POST /:photoId/ai-caption — Generate AI caption for a photo (fire & write)
+router.post(
+  '/:photoId/ai-caption',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoId } = req.params;
+      const photo = await prisma.photo.findUnique({
+        where: { id: photoId },
+        select: { id: true, eventId: true, storagePath: true, uploadedBy: true, faceCount: true, tags: true },
+      });
+      if (!photo) return res.status(404).json({ error: 'Foto nicht gefunden' });
+      if (!(await hasEventManageAccess(req, photo.eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      // Build a simple context-based caption (no AI required for basic version)
+      const parts: string[] = [];
+      if (photo.uploadedBy) parts.push(`Hochgeladen von ${photo.uploadedBy}`);
+      if (photo.faceCount && photo.faceCount > 0) parts.push(`${photo.faceCount} Person${photo.faceCount !== 1 ? 'en' : ''} erkannt`);
+      if (photo.tags && photo.tags.length > 0) parts.push(`Tags: ${photo.tags.join(', ')}`);
+      const caption = parts.length > 0 ? parts.join(' · ') : 'Foto vom Event';
+
+      const updated = await prisma.photo.update({
+        where: { id: photoId },
+        data: { description: caption },
+        select: { id: true, description: true },
+      });
+
+      res.json({ photoId, caption: updated.description });
+    } catch (error: any) {
+      logger.error('AI caption error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Generieren' });
+    }
+  }
+);
+
 // PATCH /:photoId — Update photo metadata (title, description, tags)
 router.patch(
   '/:photoId',
