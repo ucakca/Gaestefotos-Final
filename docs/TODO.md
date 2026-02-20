@@ -401,6 +401,13 @@
 | S26-210 | **Cursor-Pagination** | ✅ erledigt (20.02.2026) | GET /photos?cursor=<id> + nextCursor in Response |
 | S26-211 | **Admin Foto-Suche** | ✅ erledigt (20.02.2026) | GET /admin/events/:id/photos (uploadedBy/tag/status Filter) |
 | S26-212 | **Gästebuch Bulk-Mod** | ✅ erledigt (20.02.2026) | POST /guestbook/bulk-moderate (approve/reject/delete) |
+| S26-213 | **Tags Pills Hover** | ✅ erledigt (20.02.2026) | GalleryTabV2: #tag Pills (max 2) + Click -> selectedTag Filter |
+| S26-214 | **commentsPending State** | ✅ erledigt (20.02.2026) | Dashboard: GET /events/:id/comments?status=PENDING count |
+| S26-215 | **qualityScore Filter** | ✅ erledigt (20.02.2026) | GalleryTabV2: qualityFilter (all/high/medium/low) |
+| S26-216 | **ZIP Download Button** | ✅ erledigt (20.02.2026) | Dashboard Hero: ZIP Button via buildApiUrl + Download Icon |
+| S26-217 | **Kommentar-Moderation** | ✅ erledigt (20.02.2026) | GET /events/:id/comments?status=PENDING (Host-only endpoint) |
+| S26-218 | **qualityScore Sort** | ✅ erledigt (20.02.2026) | rating_desc als Alias fuer quality_desc in Photos-Sort |
+| S26-219 | **Photo-Tags Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/tags (unique sorted, optionalAuth) |
 
 ---
 
