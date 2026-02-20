@@ -312,8 +312,14 @@ export default function PhotoGrid({
                   </div>
                 )}
 
-                {/* Gradient Overlay (appears on hover) */}
-                <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 ${(photo as any).challengeId ? 'opacity-0' : 'opacity-0'} group-hover:opacity-100 transition-opacity duration-300`} />
+                {/* Gradient Overlay + description (appears on hover) */}
+                <div className={`absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                {((photo as any).title || (photo as any).description) && (
+                  <div className="absolute bottom-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                    {(photo as any).title && <p className="text-white text-xs font-semibold truncate">{(photo as any).title}</p>}
+                    {(photo as any).description && <p className="text-white/80 text-[10px] truncate">{(photo as any).description}</p>}
+                  </div>
+                )}
 
                 {/* Reaction Picker (long-press) */}
                 <AnimatePresence>
