@@ -163,10 +163,10 @@ export default function SystemAnalysisPage() {
           {!loadS && stats && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                {label:'Benutzer',val:stats.total.users.toLocaleString('de-DE'),icon:Users,color:'text-blue-500'},
-                {label:'Events',val:stats.total.events.toLocaleString('de-DE'),icon:Calendar,color:'text-green-500'},
-                {label:'Fotos',val:stats.total.photos.toLocaleString('de-DE'),icon:Image,color:'text-amber-500'},
-                {label:'Storage',val:formatBytes(stats.storage.totalBytes),icon:HardDrive,color:'text-purple-500'},
+                {label:'Benutzer',val:(stats.total?.users ?? 0).toLocaleString('de-DE'),icon:Users,color:'text-blue-500'},
+                {label:'Events',val:(stats.total?.events ?? 0).toLocaleString('de-DE'),icon:Calendar,color:'text-green-500'},
+                {label:'Fotos',val:(stats.total?.photos ?? 0).toLocaleString('de-DE'),icon:Image,color:'text-amber-500'},
+                {label:'Storage',val:formatBytes(stats.storage?.totalBytes ?? 0),icon:HardDrive,color:'text-purple-500'},
               ].map(({label,val,icon:Icon,color})=>(
                 <div key={label} className="rounded-xl border border-border bg-card p-4">
                   <Icon className={`w-4 h-4 ${color} mb-1`}/>

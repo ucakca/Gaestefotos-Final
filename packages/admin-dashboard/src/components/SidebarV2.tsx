@@ -40,6 +40,7 @@ import {
   Wand2,
   BarChart3,
   ScanSearch,
+  Bug,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -109,6 +110,7 @@ const navigation: NavGroup[] = [
       { name: 'Embed Code', href: '/manage/embed', icon: Code2 },
       { name: 'Slideshow', href: '/manage/slideshow', icon: Presentation },
       { name: 'SMS Sharing', href: '/manage/sms', icon: MessageSquare },
+      { name: 'Woo Inbox', href: '/settings/woo', icon: ShoppingCart },
     ],
   },
   {
@@ -123,6 +125,8 @@ const navigation: NavGroup[] = [
       { name: 'Redis AI Cache', href: '/system/ai-cache', icon: HardDrive },
       { name: 'Rate Limits', href: '/system/rate-limits', icon: Shield },
       { name: 'Backups', href: '/system/backups', icon: RefreshCw },
+      { name: 'Debug Console', href: '/system/debug', icon: Bug },
+      { name: 'Wartungsmodus', href: '/settings/maintenance', icon: Wrench },
     ],
   },
   {
@@ -132,7 +136,6 @@ const navigation: NavGroup[] = [
       { name: 'Allgemein', href: '/settings/general', icon: Settings },
       { name: 'Theme', href: '/design/theme', icon: Palette },
       { name: 'API Keys', href: '/settings/api-keys', icon: KeyRound },
-      { name: 'Woo Inbox', href: '/settings/woo', icon: ShoppingCart },
     ],
   },
 ];
