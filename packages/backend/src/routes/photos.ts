@@ -1708,6 +1708,30 @@ router.post(
   }
 );
 
+// POST /bulk/restore — Restore bulk-deleted photos back to APPROVED
+router.post(
+  '/bulk/restore',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoIds, eventId } = req.body;
+      if (!Array.isArray(photoIds) || photoIds.length === 0) return res.status(400).json({ error: 'photoIds erforderlich' });
+      if (!eventId) return res.status(400).json({ error: 'eventId erforderlich' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const result = await prisma.photo.updateMany({
+        where: { id: { in: photoIds }, eventId },
+        data: { status: 'APPROVED' as any, deletedAt: null },
+      });
+
+      res.json({ restored: result.count });
+    } catch (error: any) {
+      logger.error('Bulk restore error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Wiederherstellen' });
+    }
+  }
+);
+
 // POST /bulk/delete — Bulk soft-delete photos
 router.post(
   '/bulk/delete',
@@ -1968,6 +1992,33 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   } catch (error: any) {
     logger.error('Ratings aggregate error', { error: error.message });
     res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
+// GET /api/events/:eventId/photos/export-csv — Export photo list as CSV
+router.get('/:eventId/photos/export-csv', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { id: true, uploadedBy: true, status: true, createdAt: true, views: true, tags: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const lines = ['ID,Uploader,Status,Datum,Views,Tags'];
+    for (const p of photos) {
+      const date = new Date(p.createdAt).toISOString().split('T')[0];
+      lines.push(`${p.id},"${(p.uploadedBy || '').replace(/"/g, '')}",${p.status},${date},${p.views || 0},"${(p.tags || []).join(';')}"`);
+    }
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="photos-${eventId}.csv"`);
+    res.send(lines.join('\n'));
+  } catch (error: any) {
+    logger.error('Photos CSV export error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Export' });
   }
 });
 
