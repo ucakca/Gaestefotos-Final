@@ -1679,6 +1679,34 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/webhook-logs — Recent webhook delivery logs
+router.get(
+  '/:eventId/webhook-logs',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+
+      const limit = Math.min(50, parseInt(req.query.limit as string, 10) || 20);
+
+      const logs = await (prisma as any).webhookLog.findMany({
+        where: { eventId },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        select: { id: true, url: true, event: true, status: true, responseCode: true, createdAt: true },
+      }).catch(() => []);
+
+      res.json({ logs });
+    } catch (error: any) {
+      logger.error('Webhook logs error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Laden der Webhook-Logs' });
+    }
+  }
+);
+
 // GET /api/events/:eventId/analytics — Combined analytics for host dashboard
 router.get(
   '/:eventId/analytics',
