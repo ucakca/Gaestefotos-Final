@@ -1679,6 +1679,18 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/photos/pending-count — Lightweight pending count
+router.get('/:eventId/photos/pending-count', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+    const count = await prisma.photo.count({ where: { eventId, status: 'PENDING', deletedAt: null } });
+    res.json({ pendingCount: count });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/activity — Recent activity feed
 router.get(
   '/:eventId/activity',
