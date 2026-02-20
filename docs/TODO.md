@@ -216,6 +216,11 @@
 | S26-25 | **Bulk-E-Mail Dialog** | ✅ erledigt (20.02.2026) | Textarea-Dialog fuer optionale persoenliche Nachricht beim Bulk-Invite |
 | S26-26 | **EventCard visitCount** | ✅ erledigt (20.02.2026) | Eye-Badge fuer Besucherzahlen im EventCard Meta-Info |
 | S26-27 | **Foto-Sortierung Backend+UI** | ✅ erledigt (20.02.2026) | ?sort=likes_desc|faces_desc|date_asc; Sort-Buttons in Gast-Galerie |
+| S26-28 | **Foto Download-Counter** | ✅ erledigt (20.02.2026) | photo.views++ nach jedem Download (non-blocking) |
+| S26-29 | **Views Badge Lightbox** | ✅ erledigt (20.02.2026) | '↓N' Badge neben faceCount in PhotoLightbox |
+| S26-30 | **QR-Designer Quick-Action** | ✅ erledigt (20.02.2026) | Dashboard Quick-Actions: QR-Designer Link fuer Print-Ready QR-Code |
+| S26-31 | **EventCard visitCount** | ✅ erledigt (20.02.2026) | Eye-Badge fuer Besucher-Anzahl in EventCard Meta-Info |
+| S26-32 | **Socket.IO Realtime** | ✅ erledigt | useRealtimeNotifications, newPhotoCount, clearNewPhotos bereits aktiv |
 
 ---
 
