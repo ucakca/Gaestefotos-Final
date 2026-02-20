@@ -387,6 +387,13 @@
 | S26-196 | **Gäste PATCH** | ✅ erledigt (20.02.2026) | PATCH /events/:id/guests/:id (notes, dietary, plusOneCount) |
 | S26-197 | **Photo Hide** | ✅ erledigt (20.02.2026) | POST /photos/:id/hide (APPROVED↔HIDDEN, allowHide featureFlag) |
 | S26-198 | **Pending-Count Poll** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/pending-count (lightweight poll-Endpunkt) |
+| S26-199 | **ZIP Download Button** | ✅ erledigt (20.02.2026) | Dashboard: Download-ZIP Button neben Export (buildApiUrl) |
+| S26-200 | **Kommentar-Moderation** | ✅ erledigt (20.02.2026) | GET /events/:id/comments?status=PENDING (Host-only) |
+| S26-201 | **Admin Storage Stats** | ✅ erledigt | GET /admin/events/storage-stats (topEvents, totalPhotos, totalSize) |
+| S26-202 | **Bulk-Delete** | ✅ erledigt (20.02.2026) | POST /photos/bulk/delete (soft-delete updateMany) |
+| S26-203 | **HIDDEN Filter** | ✅ erledigt (20.02.2026) | Photos-API notIn ['DELETED','HIDDEN'] als Safety-Net |
+| S26-204 | **Uploader Hover Badge** | ✅ erledigt (20.02.2026) | GalleryTabV2 Foto-Karte: uploadedBy bei Hover |
+| S26-205 | **Sprint S26 Meilenstein** | ✅ erledigt (20.02.2026) | 205+ Sprint-Tasks implementiert, deployed, committed |
 
 ---
 
