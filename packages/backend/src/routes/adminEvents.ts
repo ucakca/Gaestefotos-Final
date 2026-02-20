@@ -661,4 +661,23 @@ router.put('/:id/workflow', authMiddleware, requireRole('ADMIN'), async (req: Au
   }
 });
 
+// POST /bulk-status — Activate or deactivate multiple events
+router.post('/bulk-status', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { ids, isActive } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ error: 'ids erforderlich' });
+    if (typeof isActive !== 'boolean') return res.status(400).json({ error: 'isActive muss boolean sein' });
+
+    const result = await prisma.event.updateMany({
+      where: { id: { in: ids }, deletedAt: null },
+      data: { isActive },
+    });
+
+    auditLog({ type: AuditType.ADMIN_EVENT_STATUS, message: `Bulk ${isActive ? 'aktiviert' : 'deaktiviert'}: ${result.count} Events`, data: { ids, isActive }, req });
+    return res.json({ ok: true, updated: result.count });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
