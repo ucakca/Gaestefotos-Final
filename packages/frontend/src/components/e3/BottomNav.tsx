@@ -25,6 +25,7 @@ export interface BottomNavProps {
   onLivePress?: () => void;
   challengeCount?: number;
   guestbookCount?: number;
+  newPhotosCount?: number;
   showFotoSpass?: boolean;
   showStyleTransfer?: boolean;
   showAiGames?: boolean;
@@ -39,6 +40,7 @@ export default function BottomNav({
   onLivePress,
   challengeCount = 0,
   guestbookCount = 0,
+  newPhotosCount = 0,
   showFotoSpass = true,
   showStyleTransfer = true,
   showAiGames = true,
@@ -76,7 +78,7 @@ export default function BottomNav({
   const renderTab = (tab: { id: TabId; label: string; icon: any }) => {
     const Icon = tab.icon;
     const isActive = activeTab === tab.id;
-    const count = tab.id === 'guestbook' ? guestbookCount : 0;
+    const count = tab.id === 'guestbook' ? guestbookCount : tab.id === 'feed' ? (isActive ? 0 : newPhotosCount) : 0;
 
     return (
       <motion.button

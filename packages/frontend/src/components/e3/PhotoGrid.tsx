@@ -78,9 +78,13 @@ export default function PhotoGrid({
 }: PhotoGridProps) {
   const t = useTranslations('photos');
 
-  // Like state
+  // Like + reaction state
   const [likedPhotos, setLikedPhotos] = useState<Set<string>>(new Set());
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [userReactions, setUserReactions] = useState<Record<string, string>>({});
+  const [reactionCountsMap, setReactionCountsMap] = useState<Record<string, Record<string, number>>>({});
+  const [pickerPhotoId, setPickerPhotoId] = useState<string | null>(null);
+  const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
 
   // Sync external like updates from Lightbox
@@ -107,47 +111,65 @@ export default function PhotoGrid({
   // Infinite scroll
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  // Load like count for a photo
+  const REACTIONS = [
+    { key: 'heart', emoji: '❤️' },
+    { key: 'fire',  emoji: '🔥' },
+    { key: 'laugh', emoji: '😂' },
+    { key: 'wow',   emoji: '😮' },
+    { key: 'clap',  emoji: '👏' },
+  ];
+
+  // Load like count + reaction breakdown for a photo
   const loadLikeCount = useCallback(async (photoId: string, photo?: any) => {
     const realId = photo ? getRealPhotoId(photo) : photoId;
     if (!realId) return;
     try {
       const response = await api.get(`/photos/${realId}/likes`);
-      setLikeCounts((prev) => ({
-        ...prev,
-        [photoId]: response.data.likeCount || 0,
-      }));
-      const liked = response.data?.liked ?? response.data?.isLiked;
-      if (liked) {
+      setLikeCounts((prev) => ({ ...prev, [photoId]: response.data.likeCount || 0 }));
+      if (response.data?.reactionCounts) {
+        setReactionCountsMap((prev) => ({ ...prev, [photoId]: response.data.reactionCounts }));
+      }
+      const myReaction = response.data?.myReaction || (response.data?.liked ? 'heart' : null);
+      if (myReaction) {
         setLikedPhotos((prev) => new Set(prev).add(photoId));
+        setUserReactions((prev) => ({ ...prev, [photoId]: myReaction }));
       }
     } catch (err) {
       void err;
     }
   }, []);
 
-  // Toggle like
-  const toggleLike = useCallback(async (photoId: string, photo?: any) => {
+  // Toggle like with optional reactionType (default: heart)
+  const toggleLike = useCallback(async (photoId: string, photo?: any, reactionType = 'heart') => {
     const realId = photo ? getRealPhotoId(photo) : photoId;
     if (!realId) return;
     try {
-      const response = await api.post(`/photos/${realId}/like`);
+      const response = await api.post(`/photos/${realId}/like`, { reactionType });
       setLikedPhotos((prev) => {
         const newSet = new Set(prev);
-        if (response.data.liked) {
-          newSet.add(photoId);
-        } else {
-          newSet.delete(photoId);
-        }
+        if (response.data.liked) { newSet.add(photoId); } else { newSet.delete(photoId); }
         return newSet;
       });
-      setLikeCounts((prev) => ({
-        ...prev,
-        [photoId]: response.data.likeCount || 0,
-      }));
+      setLikeCounts((prev) => ({ ...prev, [photoId]: response.data.likeCount || 0 }));
+      if (response.data.liked) {
+        setUserReactions((prev) => ({ ...prev, [photoId]: reactionType }));
+      } else {
+        setUserReactions((prev) => { const n = { ...prev }; delete n[photoId]; return n; });
+      }
+      if (response.data?.reactionCounts) {
+        setReactionCountsMap((prev) => ({ ...prev, [photoId]: response.data.reactionCounts }));
+      }
     } catch (err) {
       void err;
     }
+  }, []);
+
+  // Long-press to open reaction picker
+  const handlePressStart = useCallback((photoId: string) => {
+    longPressRef.current = setTimeout(() => setPickerPhotoId(photoId), 500);
+  }, []);
+  const handlePressEnd = useCallback(() => {
+    if (longPressRef.current) { clearTimeout(longPressRef.current); longPressRef.current = null; }
   }, []);
 
   // Handle double-tap like
@@ -204,11 +226,6 @@ export default function PhotoGrid({
     }
   }, [eventSlug]);
 
-  // Like button click (for hover state)
-  const handleLikeClick = useCallback((photo: Photo, e: React.MouseEvent) => {
-    e.stopPropagation();
-    toggleLike(photo.id, photo);
-  }, [toggleLike]);
 
   // Load likes lazily - only when user interacts, not on mount
   // This prevents browser overload from too many concurrent requests
@@ -298,49 +315,65 @@ export default function PhotoGrid({
                 {/* Gradient Overlay (appears on hover) */}
                 <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 ${(photo as any).challengeId ? 'opacity-0' : 'opacity-0'} group-hover:opacity-100 transition-opacity duration-300`} />
 
+                {/* Reaction Picker (long-press) */}
+                <AnimatePresence>
+                  {pickerPhotoId === photo.id && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8, y: 8 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.8, y: 8 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                      className="absolute bottom-14 left-2 z-20 flex gap-1.5 bg-card/90 backdrop-blur-md px-3 py-2 rounded-full shadow-xl border border-border/30"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {REACTIONS.map((r) => (
+                        <motion.button
+                          key={r.key}
+                          whileTap={{ scale: 1.3 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleLike(photo.id, photo, r.key);
+                            setPickerPhotoId(null);
+                          }}
+                          className={`text-xl p-1 rounded-full transition-transform hover:scale-125 ${userReactions[photo.id] === r.key ? 'ring-2 ring-primary bg-primary/10' : ''}`}
+                        >
+                          {r.emoji}
+                        </motion.button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 {/* Hover Actions (bottom) */}
                 <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                   <div className="flex items-center justify-between">
-                    {/* Like Button — with particle burst */}
+                    {/* Reaction Button — long-press for picker, tap for heart */}
                     <motion.button
-                      onClick={(e) => handleLikeClick(photo, e)}
-                      className="relative flex items-center gap-2 px-3 py-2 bg-card/20 backdrop-blur-md rounded-full text-white hover:bg-card/30 transition-colors"
+                      onClick={(e) => { e.stopPropagation(); handlePressEnd(); toggleLike(photo.id, photo, userReactions[photo.id] || 'heart'); }}
+                      onMouseDown={() => handlePressStart(photo.id)}
+                      onMouseUp={handlePressEnd}
+                      onMouseLeave={handlePressEnd}
+                      onTouchStart={() => handlePressStart(photo.id)}
+                      onTouchEnd={handlePressEnd}
+                      className="relative flex items-center gap-2 px-3 py-2 bg-card/20 backdrop-blur-md rounded-full text-white hover:bg-card/30 transition-colors select-none"
                       whileTap={{ scale: 0.95 }}
                     >
                       <motion.div
                         animate={isLiked ? { scale: [1, 1.3, 1] } : { scale: 1 }}
                         transition={{ type: 'spring', stiffness: 400, damping: 10 }}
                       >
-                        <Heart
-                          className={`w-5 h-5 transition-colors duration-200 ${isLiked ? 'fill-red-500 text-destructive' : ''}`}
-                        />
+                        {isLiked && userReactions[photo.id]
+                          ? <span className="text-lg leading-none">{REACTIONS.find(r => r.key === userReactions[photo.id])?.emoji || '❤️'}</span>
+                          : <Heart className="w-5 h-5" />
+                        }
                       </motion.div>
                       {likeCount > 0 && (
                         <span className="text-sm font-medium">{likeCount}</span>
                       )}
-                      {/* Particle burst */}
-                      <AnimatePresence>
-                        {isLiked && Array.from({ length: 6 }).map((_, i) => (
-                          <motion.div
-                            key={`pb-${photo.id}-${i}`}
-                            className="absolute top-1/2 left-4 w-1 h-1 rounded-full bg-destructive/80"
-                            initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
-                            animate={{
-                              x: Math.cos((i / 6) * Math.PI * 2) * 16,
-                              y: Math.sin((i / 6) * Math.PI * 2) * 16,
-                              scale: 0,
-                              opacity: 0,
-                            }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.4, ease: 'easeOut' }}
-                          />
-                        ))}
-                      </AnimatePresence>
                     </motion.button>
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-2">
-                      {/* Comment Icon (if enabled) */}
                       {allowComments && (
                         <motion.button
                           className="p-2 bg-card/20 backdrop-blur-md rounded-full text-white hover:bg-card/30 transition-colors"
@@ -349,8 +382,6 @@ export default function PhotoGrid({
                           <MessageCircle className="w-5 h-5" />
                         </motion.button>
                       )}
-
-                      {/* Share */}
                       <motion.button
                         onClick={(e) => handleShare(photo, e)}
                         className="p-2 bg-card/20 backdrop-blur-md rounded-full text-white hover:bg-card/30 transition-colors"
@@ -358,8 +389,6 @@ export default function PhotoGrid({
                       >
                         <Share2 className="w-5 h-5" />
                       </motion.button>
-
-                      {/* Download (if enabled) */}
                       {allowDownloads && (
                         <motion.button
                           onClick={(e) => handleDownload(photo, e)}
@@ -371,6 +400,21 @@ export default function PhotoGrid({
                       )}
                     </div>
                   </div>
+
+                  {/* Top Reactions strip (visible when there are reactions) */}
+                  {reactionCountsMap[photo.id] && Object.keys(reactionCountsMap[photo.id]).length > 0 && (
+                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                      {Object.entries(reactionCountsMap[photo.id])
+                        .sort(([, a], [, b]) => b - a)
+                        .slice(0, 3)
+                        .map(([key, count]) => (
+                          <span key={key} className="flex items-center gap-0.5 text-[11px] text-white bg-black/40 backdrop-blur-sm rounded-full px-2 py-0.5">
+                            {REACTIONS.find(r => r.key === key)?.emoji || '❤️'}
+                            <span>{count}</span>
+                          </span>
+                        ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Like Animation (Double-tap feedback) — enhanced */}

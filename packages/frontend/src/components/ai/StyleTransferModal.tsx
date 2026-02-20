@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Camera, ImagePlus, Loader2, ArrowLeft, Download, RotateCcw,
-  Sparkles, CheckCircle, AlertTriangle, Wand2,
+  Sparkles, CheckCircle, AlertTriangle, Wand2, Zap, Clock,
 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import api from '@/lib/api';
@@ -68,6 +68,7 @@ export default function StyleTransferModal({ isOpen, onClose, eventId, onComplet
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  const [countdown, setCountdown] = useState(25);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -80,6 +81,15 @@ export default function StyleTransferModal({ isOpen, onClose, eventId, onComplet
       .catch(() => setStyles([]))
       .finally(() => setStylesLoading(false));
   }, [isOpen]);
+
+  // Countdown timer during processing
+  useEffect(() => {
+    if (step !== 'processing') { setCountdown(25); return; }
+    const interval = setInterval(() => {
+      setCountdown(prev => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [step]);
 
   // Reset on close
   const handleClose = useCallback(() => {
@@ -331,7 +341,7 @@ export default function StyleTransferModal({ isOpen, onClose, eventId, onComplet
 
             {/* ═══ Step 3: Processing ═══ */}
             {step === 'processing' && (
-              <motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-12 px-6 gap-5">
+              <motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-10 px-6 gap-5">
                 {/* Animated icon */}
                 <div className="relative">
                   <motion.div
@@ -350,10 +360,16 @@ export default function StyleTransferModal({ isOpen, onClose, eventId, onComplet
                   </motion.div>
                 </div>
 
+                {/* GPT-image-1 badge */}
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                  <Zap className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-[11px] font-semibold text-emerald-600">GPT-image-1 — Gesichtstreue KI</span>
+                </div>
+
                 <div className="text-center">
                   <p className="text-foreground font-bold text-lg">KI zaubert...</p>
                   <p className="text-muted-foreground text-sm mt-1">
-                    Dein Foto wird in <span className="font-semibold text-foreground">{styles.find(s => s.key === selectedStyle)?.name || selectedStyle}</span> verwandelt
+                    Stil: <span className="font-semibold text-foreground">{styles.find(s => s.key === selectedStyle)?.name || selectedStyle}</span>
                   </p>
                 </div>
 
@@ -366,10 +382,23 @@ export default function StyleTransferModal({ isOpen, onClose, eventId, onComplet
                       transition={{ duration: 0.3 }}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground text-center mt-2">
-                    {progress < 40 ? 'Foto wird hochgeladen...' : progress < 90 ? 'KI verarbeitet Bild...' : 'Fast fertig...'}
-                  </p>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-muted-foreground">
+                      {progress < 40 ? 'Foto wird hochgeladen...' : progress < 90 ? 'KI verarbeitet Bild...' : 'Fast fertig...'}
+                    </p>
+                    {countdown > 0 && (
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="w-3 h-3" />
+                        <span>~{countdown}s</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
+
+                {/* Fun fact while waiting */}
+                <p className="text-xs text-muted-foreground text-center max-w-xs italic">
+                  GPT-image-1 erkennt Gesichter und behält deine Identität — viel besser als normale Bildgeneratoren!
+                </p>
               </motion.div>
             )}
 
@@ -382,11 +411,17 @@ export default function StyleTransferModal({ isOpen, onClose, eventId, onComplet
                     alt="KI-Ergebnis"
                     className="w-full max-h-[50vh] object-contain rounded-2xl"
                   />
-                  <div className="absolute top-2 right-2 px-2.5 py-1 bg-black/60 backdrop-blur rounded-full flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3 text-purple-300" />
-                    <span className="text-[11px] text-white font-medium">
-                      {styles.find(s => s.key === selectedStyle)?.name || selectedStyle}
-                    </span>
+                  <div className="absolute top-2 right-2 flex gap-1.5">
+                    <div className="px-2 py-1 bg-black/60 backdrop-blur rounded-full flex items-center gap-1">
+                      <Zap className="w-3 h-3 text-emerald-400" />
+                      <span className="text-[10px] text-emerald-300 font-semibold">GPT-image-1</span>
+                    </div>
+                    <div className="px-2.5 py-1 bg-black/60 backdrop-blur rounded-full flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3 text-purple-300" />
+                      <span className="text-[11px] text-white font-medium">
+                        {styles.find(s => s.key === selectedStyle)?.name || selectedStyle}
+                      </span>
+                    </div>
                   </div>
                 </div>
 

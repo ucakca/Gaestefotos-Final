@@ -82,6 +82,7 @@ export default function PublicEventPageV2() {
   const [forceShowWifi, setForceShowWifi] = useState(false);
   const [mosaicPrintEnabled, setMosaicPrintEnabled] = useState(false);
   const [quickUploadOpen, setQuickUploadOpen] = useState(false);
+  const didDeeplinkRef = useRef(false);
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const { isHeaderVisible, showJumpToTop, scrollToTop } = useScrollHeader(300);
@@ -152,6 +153,24 @@ export default function PublicEventPageV2() {
     newPhotoCount,
     clearNewPhotos,
   } = useRealtimeNotifications(event?.id || '');
+
+  // Deeplink: ?photo=<id> → open lightbox on that photo
+  useEffect(() => {
+    if (didDeeplinkRef.current) return;
+    if (!filteredPhotos.length) return;
+    if (typeof window === 'undefined') return;
+    const photoId = new URLSearchParams(window.location.search).get('photo');
+    if (!photoId) return;
+    const idx = filteredPhotos.findIndex((p: any) => p.id === photoId);
+    if (idx !== -1) {
+      didDeeplinkRef.current = true;
+      setSelectedPhotoIndex(idx);
+      const url = new URL(window.location.href);
+      url.searchParams.delete('photo');
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredPhotos]);
 
   // Check if mosaic wall is active for this event
   useEffect(() => {
@@ -483,7 +502,7 @@ export default function PublicEventPageV2() {
       {/* V0 Bottom Nav */}
       <BottomNav
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={(tab) => { setActiveTab(tab); if (tab === 'feed') clearNewPhotos(); }}
         onLivePress={() => {
           if (hasMosaicWall) {
             setLiveSheetOpen(true);
@@ -521,6 +540,7 @@ export default function PublicEventPageV2() {
         }}
         challengeCount={challenges?.filter((c: any) => c?.isActive).length || 0}
         guestbookCount={guestbookEntries.length}
+        newPhotosCount={newPhotoCount}
         showFotoSpass={featuresConfig?.enableFotoSpass !== false && featuresConfig?.challengesEnabled !== false}
         showStyleTransfer={featuresConfig?.enableFotoSpass !== false && featuresConfig?.enableStyleTransfer !== false}
         showAiGames={featuresConfig?.enableFotoSpass !== false && featuresConfig?.enableAiGames !== false}
