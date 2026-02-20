@@ -225,6 +225,11 @@
 | S26-34 | **Gäste QR-Link Button** | ✅ erledigt (20.02.2026) | Gästeliste Header: QR-Link kopiert via invite-qr API |
 | S26-35 | **Kategorie-Count Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/categories/count (photo counts per category) |
 | S26-36 | **Guest Invite QR API** | ✅ erledigt (20.02.2026) | GET /events/:id/guests/invite-qr liefert Einladungs-URL |
+| S26-37 | **Foto Favorit-Toggle** | ✅ erledigt (20.02.2026) | POST /photos/:id/favorite; isFavorite flip-flop fuer Host |
+| S26-38 | **Favoriten-Filter Host-Galerie** | ✅ erledigt (20.02.2026) | PhotoFilterBar: Heart-Pill + photos/page.tsx isFavorite Filter |
+| S26-39 | **Event-Beschreibung Hero** | ✅ erledigt (20.02.2026) | EventHero.tsx: event.description unter welcomeMessage |
+| S26-40 | **Foto Tag-Filter** | ✅ erledigt (20.02.2026) | GET /events/:id/photos?tag=xyz (Array has: Filter) |
+| S26-41 | **Kategorie-Count Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/categories/count (photo counts per category) |
 
 ---
 
