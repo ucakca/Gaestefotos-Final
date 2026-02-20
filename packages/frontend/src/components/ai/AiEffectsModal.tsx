@@ -9,7 +9,26 @@ import {
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import api from '@/lib/api';
 import { useAiEnergy } from '@/hooks/useAiEnergy';
+import { useAiFeatureGate } from '@/hooks/useAiFeatureGate';
 import { EnergyBar, EnergyCostBadge, InsufficientEnergyOverlay } from './EnergyBar';
+
+// Map frontend effect keys to backend registry feature keys
+const EFFECT_TO_REGISTRY_KEY: Record<string, string> = {
+  ai_oldify: 'ai_oldify',
+  ai_cartoon: 'ai_cartoon',
+  ai_style_pop: 'ai_style_pop',
+  face_switch: 'face_switch',
+  bg_removal: 'bg_removal',
+  gif_morph: 'ai_oldify',
+  gif_aging: 'ai_oldify',
+  ai_video: 'highlight_reel',
+  trading_card: 'drawbot',
+  time_machine: 'time_machine',
+  pet_me: 'pet_me',
+  yearbook: 'yearbook',
+  emoji_me: 'emoji_me',
+  miniature: 'miniature',
+};
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -188,6 +207,10 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [energyError, setEnergyError] = useState<string | null>(null);
   const { config, balance, isEnabled, cooldownActive, cooldownEndsAt, handleEnergyError, refreshAfterSpend, getCost } = useAiEnergy(eventId);
+  const { isAllowed } = useAiFeatureGate(eventId);
+
+  // Filter effects to only show allowed ones
+  const availableEffects = EFFECTS.filter(e => isAllowed(EFFECT_TO_REGISTRY_KEY[e.key] || e.key));
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedEffect, setSelectedEffect] = useState<EffectDef | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -448,6 +471,13 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
                   )}
                 </AnimatePresence>
 
+                {/* Energy Bar */}
+                {isEnabled && (
+                  <div className="px-2 py-2 rounded-xl bg-black/5 dark:bg-white/5 mb-3">
+                    <EnergyBar balance={balance} maxEstimate={config?.startBalance || 30} cooldownActive={cooldownActive} cooldownEndsAt={cooldownEndsAt} enabled={isEnabled} />
+                  </div>
+                )}
+
                 {photoPreview && (
                   <div className="flex items-center gap-3 mb-4 p-2 rounded-xl bg-muted/30">
                     <img src={photoPreview} alt="Dein Foto" className="w-12 h-12 rounded-lg object-cover" />
@@ -459,7 +489,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
                 )}
 
                 <div className="space-y-3">
-                  {EFFECTS.map((effect, i) => (
+                  {availableEffects.map((effect, i) => (
                     <motion.button
                       key={effect.key}
                       initial={{ opacity: 0, y: 10 }}

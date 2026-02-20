@@ -709,12 +709,43 @@ router.post(
         }
       }
 
-      // Create default EventAiConfig for energy system (non-blocking)
-      prisma.eventAiConfig.upsert({
-        where: { eventId: event.id },
-        create: { eventId: event.id },
-        update: {},
-      }).catch((err: any) => logger.warn('EventAiConfig creation failed', { eventId: event.id, error: err.message }));
+      // Create EventAiConfig inheriting energy defaults from PackageDefinition (non-blocking)
+      (async () => {
+        try {
+          // Find package defaults from entitlement → PackageDefinition
+          let pkgDefaults: Record<string, any> = {};
+          const entitlement = await prisma.eventEntitlement.findFirst({
+            where: { eventId: event.id, status: 'ACTIVE' },
+            select: { wcSku: true },
+          });
+          if (entitlement?.wcSku) {
+            const pkg = await prisma.packageDefinition.findUnique({
+              where: { sku: entitlement.wcSku },
+            });
+            if (pkg) {
+              pkgDefaults = {
+                energyEnabled: pkg.defaultEnergyEnabled,
+                energyStartBalance: pkg.defaultEnergyStartBalance,
+                energyCooldownSeconds: pkg.defaultEnergyCooldown,
+                energyCostLlmGame: pkg.defaultCostLlmGame,
+                energyCostImageEffect: pkg.defaultCostImageEffect,
+                energyCostStyleTransfer: pkg.defaultCostStyleTransfer,
+                energyCostFaceSwap: pkg.defaultCostFaceSwap,
+                energyCostGif: pkg.defaultCostGif,
+                energyCostVideo: pkg.defaultCostVideo,
+                energyCostTradingCard: pkg.defaultCostTradingCard,
+              };
+            }
+          }
+          await prisma.eventAiConfig.upsert({
+            where: { eventId: event.id },
+            create: { eventId: event.id, ...pkgDefaults },
+            update: {},
+          });
+        } catch (err: any) {
+          logger.warn('EventAiConfig creation failed', { eventId: event.id, error: err.message });
+        }
+      })();
 
       auditLog({ type: AuditType.EVENT_CREATED, message: `Event erstellt: ${event.title}`, eventId: event.id, req });
 

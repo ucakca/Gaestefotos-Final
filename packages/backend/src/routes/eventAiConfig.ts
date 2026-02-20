@@ -6,7 +6,7 @@
  * PUT  /api/events/:eventId/ai-config    — Update event AI config (host only)
  */
 
-import { Router, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { logger } from '../utils/logger';
 import prisma from '../config/database';
@@ -18,10 +18,10 @@ const router = Router();
 /**
  * GET /api/events/:eventId/ai-features
  * Returns all AI features with access status for the given event + device.
- * Used by guest app, booth, and admin to know which features to show.
+ * PUBLIC — no auth required (guests need this to render UI).
  * Accepts ?device=guest_app|photo_booth|mirror_booth|ki_booth|admin_dashboard
  */
-router.get('/:eventId/ai-features', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.get('/:eventId/ai-features', async (req: Request, res: Response) => {
   try {
     const { eventId } = req.params;
     const deviceParam = (req.query.device as string) || req.headers['x-device-type'] as string || 'guest_app';
