@@ -9,6 +9,10 @@ interface EmailConfig {
   user: string;
   password: string;
   from: string;
+  tlsOptions?: {
+    rejectUnauthorized?: boolean;
+    servername?: string;
+  };
 }
 
 class EmailService {
@@ -100,6 +104,7 @@ class EmailService {
         user: config.user,
         pass: config.password,
       },
+      tls: config.tlsOptions ?? {},
     });
   }
 

@@ -15,11 +15,15 @@ interface SmtpConfig {
   user: string;
   password: string;
   from: string;
+  servername?: string;
 }
 
-const EMPTY: SmtpConfig = { host: '', port: 587, secure: false, user: '', password: '', from: '' };
+const EMPTY: SmtpConfig = { host: '', port: 587, secure: false, user: '', password: '', from: '', servername: '' };
 
-const PRESETS: { label: string; host: string; port: number; secure: boolean }[] = [
+const PLESK_DOMAIN = 'xn--gstefotos-v2a.com';
+
+const PRESETS: { label: string; host: string; port: number; secure: boolean; servername?: string; highlight?: boolean }[] = [
+  { label: '⭐ Plesk (dieser Server)', host: 'localhost', port: 465, secure: true, servername: PLESK_DOMAIN, highlight: true },
   { label: 'Gmail', host: 'smtp.gmail.com', port: 587, secure: false },
   { label: 'Gmail (SSL)', host: 'smtp.gmail.com', port: 465, secure: true },
   { label: 'Outlook / Hotmail', host: 'smtp-mail.outlook.com', port: 587, secure: false },
@@ -65,7 +69,7 @@ export default function EmailSettingsPage() {
   const hasChanges = JSON.stringify(config) !== JSON.stringify(original);
 
   const applyPreset = (preset: typeof PRESETS[0]) => {
-    setConfig(c => ({ ...c, host: preset.host, port: preset.port, secure: preset.secure }));
+    setConfig(c => ({ ...c, host: preset.host, port: preset.port, secure: preset.secure, servername: preset.servername || '' }));
   };
 
   const handleSave = async () => {
@@ -165,7 +169,11 @@ export default function EmailSettingsPage() {
             <button
               key={p.label}
               onClick={() => applyPreset(p)}
-              className="px-3 py-1.5 text-xs rounded-lg border border-app-border bg-app-bg hover:border-blue-500/50 hover:text-blue-400 transition-colors"
+              className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
+                p.highlight
+                  ? 'border-green-500/50 bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                  : 'border-app-border bg-app-bg hover:border-blue-500/50 hover:text-blue-400'
+              }`}
             >
               {p.label}
             </button>
@@ -252,6 +260,20 @@ export default function EmailSettingsPage() {
           />
           <p className="text-xs text-app-muted mt-1">Leer lassen = SMTP-Benutzername wird als Absender verwendet</p>
         </div>
+
+        {(config.host === 'localhost' || config.host === '127.0.0.1') && (
+          <div>
+            <label className="text-sm font-medium mb-2 block">TLS Servername <span className="text-yellow-400 text-xs">(für lokalen Server erforderlich)</span></label>
+            <Input
+              value={config.servername || ''}
+              onChange={e => setConfig(c => ({ ...c, servername: e.target.value }))}
+              placeholder="xn--gstefotos-v2a.com"
+            />
+            <p className="text-xs text-app-muted mt-1">
+              Der Domain-Name des SSL-Zertifikats auf diesem Server (Plesk-Domain). Wird für SSL-Verifikation bei localhost verwendet.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Test E-Mail */}

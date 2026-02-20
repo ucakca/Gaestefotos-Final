@@ -840,7 +840,9 @@ try {
       const cfg = row.value as any;
       if (cfg.passwordEnc) {
         const pw = dv(JSON.parse(cfg.passwordEnc));
-        await es.configure({ host: cfg.host, port: cfg.port, secure: cfg.secure, user: cfg.user, password: pw, from: cfg.from || cfg.user });
+        const isLocal = cfg.host === 'localhost' || cfg.host === '127.0.0.1' || cfg.host === '::1';
+        const tlsOpts = isLocal ? { rejectUnauthorized: false, ...(cfg.servername ? { servername: cfg.servername } : {}) } : undefined;
+        await es.configure({ host: cfg.host, port: cfg.port, secure: cfg.secure, user: cfg.user, password: pw, from: cfg.from || cfg.user, tlsOptions: tlsOpts });
         logger.info('SMTP configured from database');
       }
     }

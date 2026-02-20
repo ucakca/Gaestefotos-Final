@@ -58,7 +58,19 @@ const smtpSchema = z.object({
   user: z.string().min(1),
   password: z.string().optional(),
   from: z.string().optional(),
+  servername: z.string().optional(),
 });
+
+function isLocalHost(host: string): boolean {
+  return host === 'localhost' || host === '127.0.0.1' || host === '::1';
+}
+
+function buildTlsOptions(host: string, servername?: string) {
+  if (isLocalHost(host)) {
+    return { rejectUnauthorized: false, ...(servername ? { servername } : {}) };
+  }
+  return undefined;
+}
 
 router.get('/email', authMiddleware, requireRole('ADMIN'), async (_req: AuthRequest, res: Response) => {
   try {
@@ -101,7 +113,9 @@ router.post('/email', authMiddleware, requireRole('ADMIN'), async (req: AuthRequ
 
     if (!passwordEnc) return res.status(400).json({ error: 'Passwort ist erforderlich' });
 
-    const configToStore = { host, port, secure, user, from: from || user, passwordEnc };
+    const { servername } = parsed.data;
+    const tlsOptions = buildTlsOptions(host, servername);
+    const configToStore = { host, port, secure, user, from: from || user, passwordEnc, servername: servername || null };
     await prisma.appSetting.upsert({
       where: { key: SMTP_KEY },
       create: { key: SMTP_KEY, value: configToStore as any },
@@ -109,7 +123,7 @@ router.post('/email', authMiddleware, requireRole('ADMIN'), async (req: AuthRequ
     });
 
     const plainPw = decryptValue(JSON.parse(passwordEnc));
-    await emailService.configure({ host, port, secure, user, password: plainPw, from: from || user });
+    await emailService.configure({ host, port, secure, user, password: plainPw, from: from || user, tlsOptions });
 
     auditLog({ type: AuditType.ADMIN_SETTINGS_CHANGED, message: 'SMTP Einstellungen geändert', data: { host, port, secure, user }, req });
     res.json({ success: true, connected: await emailService.testConnection() });
