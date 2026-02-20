@@ -344,6 +344,13 @@
 | S26-153 | **Tags Edit Lightbox** | ✅ erledigt (20.02.2026) | 🏷️ Button im Lightbox fuer Tag-Bearbeitung via prompt() |
 | S26-154 | **Kategorie-Schnellwechsel** | ✅ erledigt (20.02.2026) | GalleryTabV2 Lightbox: categories prop + Select-Dropdown |
 | S26-155 | **allowDeleteOwn vollst.** | ✅ erledigt (20.02.2026) | Backend + SetupToggle + Lightbox-Button + e3/[slug] Passthrough |
+| S26-156 | **Activity Feed** | ✅ erledigt (20.02.2026) | GET /events/:id/activity (photo_upload + guest_added, chrono) |
+| S26-157 | **Top-Uploaders** | ✅ erledigt (20.02.2026) | GET /events/:id/top-uploaders (medal 🥇🥈🥉, limit max 50) |
+| S26-158 | **Webhook-Logs** | ✅ erledigt (20.02.2026) | GET /events/:id/webhook-logs (graceful fallback) |
+| S26-159 | **Tags Edit Lightbox** | ✅ erledigt (20.02.2026) | 🏷️ Button in GalleryTabV2 Lightbox fuer Tag-Bearbeitung |
+| S26-160 | **Tag-Filter GalleryV2** | ✅ erledigt (20.02.2026) | selectedTag State + filteredPhotos Filter |
+| S26-161 | **Gästebuch CSV** | ✅ erledigt (20.02.2026) | GET /events/:id/guestbook/export-csv + Frontend Button |
+| S26-162 | **Photo-Tags API** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/tags (unique sorted, optionalAuth) |
 
 ---
 
