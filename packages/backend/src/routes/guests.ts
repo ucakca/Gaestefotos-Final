@@ -198,6 +198,37 @@ router.patch(
   }
 );
 
+// GET /:eventId/guests/export-csv — Export guest list as CSV
+router.get(
+  '/:eventId/guests/export-csv',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const guests = await prisma.guest.findMany({
+        where: { eventId },
+        select: { id: true, firstName: true, lastName: true, email: true, status: true, plusOneCount: true, dietaryRequirements: true, createdAt: true },
+        orderBy: { lastName: 'asc' },
+      });
+
+      const lines = ['ID,Vorname,Nachname,Email,Status,PlusOnes,Allergien,Erstellt'];
+      for (const g of guests) {
+        const date = new Date(g.createdAt).toISOString().split('T')[0];
+        lines.push(`${g.id},"${g.firstName}","${g.lastName}","${g.email || ''}",${g.status},${g.plusOneCount},"${(g.dietaryRequirements || '').replace(/"/g, '')}",${date}`);
+      }
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="gaesteliste-${eventId}.csv"`);
+      res.send(lines.join('\n'));
+    } catch (error) {
+      logger.error('Guest CSV export error', { error: getErrorMessage(error) });
+      res.status(500).json({ error: 'Fehler beim Export' });
+    }
+  }
+);
+
 // PATCH /:eventId/guests/bulk-status — Bulk update status for multiple guests
 router.patch(
   '/:eventId/guests/bulk-status',
