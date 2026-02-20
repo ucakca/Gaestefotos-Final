@@ -618,6 +618,18 @@ export default function PhotoLightbox({
                 )}
               </div>
 
+              {/* Photo Title + Description */}
+              {((currentPhoto as any)?.title || (currentPhoto as any)?.description) && (
+                <div className="space-y-0.5">
+                  {(currentPhoto as any).title && (
+                    <p className="text-white font-semibold text-sm">{(currentPhoto as any).title}</p>
+                  )}
+                  {(currentPhoto as any).description && (
+                    <p className="text-white/70 text-xs leading-relaxed">{(currentPhoto as any).description}</p>
+                  )}
+                </div>
+              )}
+
               {/* Star Rating */}
               <div className="flex items-center gap-2 py-1">
                 <span className="text-white/60 text-sm">{t('rate')}</span>
