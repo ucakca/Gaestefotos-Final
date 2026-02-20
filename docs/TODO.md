@@ -471,6 +471,13 @@
 | S26-280 | **qualityFilter** | ✅ erledigt (21.02.2026) | GalleryTabV2: qualityScore Filter (all/high/medium/low) |
 | S26-281 | **Alle-Laden Button** | ✅ erledigt (21.02.2026) | GalleryTabV2: setVisibleCount(filteredPhotos.length) |
 | S26-282 | **Gast-Dropdown** | ✅ erledigt (21.02.2026) | GalleryTabV2: select Dropdown bei >8 Gaesten |
+| S26-283 | **Gast-Suche** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/search?q= (firstName/lastName/email) |
+| S26-284 | **Status-Timeline** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/status-timeline (updatedAt desc, 100) |
+| S26-285 | **Invitation-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/invitation-stats (withEmail/invited) |
+| S26-286 | **Checkin-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/checkin-stats (checkedIn/rate%) |
+| S26-287 | **Download-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/download-stats (top 20 by views) |
+| S26-288 | **Admin Storage-Stats** | ✅ erledigt (21.02.2026) | GET /admin/events/storage-stats (topEvents by photoCount) |
+| S26-289 | **Bulk Approve/Reject/Restore** | ✅ erledigt (21.02.2026) | POST /photos/bulk/approve + /reject + /restore |
 
 ---
 
