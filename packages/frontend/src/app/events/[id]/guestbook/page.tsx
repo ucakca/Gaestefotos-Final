@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react';
 import React from 'react';
 import { motion } from 'framer-motion';
+import { FileText } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import DashboardFooter from '@/components/DashboardFooter';
 import Guestbook from '@/components/Guestbook';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
+import { Button } from '@/components/ui/Button';
 import api from '@/lib/api';
 import { Event as EventType } from '@gaestefotos/shared';
 import { useAuthStore } from '@/store/authStore';
@@ -49,12 +51,33 @@ export default function GuestbookPage({ params }: { params: Promise<{ id: string
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <h1 className="text-2xl font-bold text-foreground mb-2">
-            Gästebuch
-          </h1>
-          <p className="text-muted-foreground">
-            {isHost ? 'Verwalte dein Gästebuch' : 'Hinterlasse eine Nachricht für die Gastgeber'}
-          </p>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground mb-2">Gästebuch</h1>
+              <p className="text-muted-foreground">
+                {isHost ? 'Verwalte dein Gästebuch' : 'Hinterlasse eine Nachricht für die Gastgeber'}
+              </p>
+            </div>
+            {isHost && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
+                  fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/events/${eventId}/guestbook/export-csv`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                  }).then(r => r.blob()).then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url; a.download = 'gaestebuch.csv'; a.click();
+                    URL.revokeObjectURL(url);
+                  }).catch(() => {});
+                }}
+              >
+                <FileText className="h-4 w-4" />
+                CSV
+              </Button>
+            )}
+          </div>
         </motion.div>
 
         <motion.div
