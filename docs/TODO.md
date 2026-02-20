@@ -351,6 +351,13 @@
 | S26-160 | **Tag-Filter GalleryV2** | ✅ erledigt (20.02.2026) | selectedTag State + filteredPhotos Filter |
 | S26-161 | **Gästebuch CSV** | ✅ erledigt (20.02.2026) | GET /events/:id/guestbook/export-csv + Frontend Button |
 | S26-162 | **Photo-Tags API** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/tags (unique sorted, optionalAuth) |
+| S26-163 | **Activity Feed Widget** | ✅ erledigt (20.02.2026) | Dashboard: recentActivity via GET /events/:id/activity?limit=5 |
+| S26-164 | **Foto-Beschreibung Hover** | ✅ erledigt (20.02.2026) | PhotoGrid: title + description im Hover-Overlay |
+| S26-165 | **Admin Event-Suche** | ✅ erledigt | adminEvents.ts: q sucht in title + slug (insensitive) |
+| S26-166 | **Admin Event-Fotos** | ✅ erledigt (20.02.2026) | GET /admin/events/:id/photos (uploadedBy/tag/status Filter) |
+| S26-167 | **Analytics Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/analytics (photos+guests+engagement combined) |
+| S26-168 | **Top-Uploaders** | ✅ erledigt (20.02.2026) | GET /events/:id/top-uploaders (medal 🥇🥈🥉) |
+| S26-169 | **Webhook-Logs** | ✅ erledigt (20.02.2026) | GET /events/:id/webhook-logs (graceful .catch([])) |
 
 ---
 
