@@ -198,6 +198,32 @@ router.patch(
   }
 );
 
+// PATCH /:eventId/guests/bulk-status — Bulk update status for multiple guests
+router.patch(
+  '/:eventId/guests/bulk-status',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const { guestIds, status } = req.body;
+      if (!Array.isArray(guestIds) || guestIds.length === 0) return res.status(400).json({ error: 'guestIds erforderlich' });
+      if (!['ACCEPTED', 'DECLINED', 'PENDING'].includes(status)) return res.status(400).json({ error: 'Ungültiger Status' });
+
+      const result = await prisma.guest.updateMany({
+        where: { id: { in: guestIds }, eventId },
+        data: { status },
+      });
+
+      res.json({ updated: result.count });
+    } catch (error) {
+      logger.error('Bulk status error', { error: getErrorMessage(error) });
+      res.status(500).json({ error: 'Fehler' });
+    }
+  }
+);
+
 // GET /:eventId/guests/checkin-stats — Check-in statistics for event
 router.get(
   '/:eventId/guests/checkin-stats',
