@@ -26,6 +26,42 @@ const listSchema = z.object({
   offset: z.coerce.number().int().min(0).optional().default(0),
 });
 
+// GET /admin/events/storage-stats — Storage statistics per user/event
+router.get('/storage-stats', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const limit = Math.min(50, parseInt(req.query.limit as string, 10) || 20);
+
+    const [totalPhotos, totalEvents, topEvents] = await Promise.all([
+      prisma.photo.count({ where: { deletedAt: null } }),
+      prisma.event.count({ where: { deletedAt: null } }),
+      prisma.event.findMany({
+        where: { deletedAt: null },
+        select: {
+          id: true, title: true, slug: true,
+          _count: { select: { photos: true } },
+          host: { select: { id: true, email: true, name: true } },
+        },
+        orderBy: { photos: { _count: 'desc' } },
+        take: limit,
+      }),
+    ]);
+
+    res.json({
+      totalPhotos,
+      totalEvents,
+      topEvents: topEvents.map((e: any) => ({
+        id: e.id,
+        title: e.title,
+        slug: e.slug,
+        photoCount: e._count.photos,
+        host: e.host,
+      })),
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 router.get('/', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
   const parsed = listSchema.safeParse(req.query);
   if (!parsed.success) {
