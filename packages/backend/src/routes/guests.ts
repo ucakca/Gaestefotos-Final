@@ -168,6 +168,80 @@ router.delete(
   }
 );
 
+// POST /:eventId/guests/import — Bulk import guests from JSON array
+router.post(
+  '/:eventId/guests/import',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const { guests: importList } = req.body;
+      if (!Array.isArray(importList) || importList.length === 0) {
+        return res.status(400).json({ error: 'guests Array erforderlich' });
+      }
+      if (importList.length > 500) return res.status(400).json({ error: 'Max 500 Gäste pro Import' });
+
+      let created = 0;
+      let updated = 0;
+      let failed = 0;
+
+      for (const item of importList) {
+        if (!item.firstName || !item.lastName) { failed++; continue; }
+        try {
+          if (item.email) {
+            // Upsert by email
+            const existing = await prisma.guest.findFirst({ where: { eventId, email: item.email } });
+            if (existing) {
+              await prisma.guest.update({
+                where: { id: existing.id },
+                data: {
+                  firstName: sanitizeText(item.firstName),
+                  lastName: sanitizeText(item.lastName),
+                  dietaryRequirements: item.dietaryRequirements || undefined,
+                  plusOneCount: item.plusOneCount || 0,
+                },
+              });
+              updated++;
+            } else {
+              await prisma.guest.create({
+                data: {
+                  eventId,
+                  firstName: sanitizeText(item.firstName),
+                  lastName: sanitizeText(item.lastName),
+                  email: item.email,
+                  dietaryRequirements: item.dietaryRequirements || undefined,
+                  plusOneCount: item.plusOneCount || 0,
+                  accessToken: randomString(32),
+                },
+              });
+              created++;
+            }
+          } else {
+            await prisma.guest.create({
+              data: {
+                eventId,
+                firstName: sanitizeText(item.firstName),
+                lastName: sanitizeText(item.lastName),
+                dietaryRequirements: item.dietaryRequirements || undefined,
+                plusOneCount: item.plusOneCount || 0,
+                accessToken: randomString(32),
+              },
+            });
+            created++;
+          }
+        } catch { failed++; }
+      }
+
+      res.json({ created, updated, failed, total: created + updated });
+    } catch (error) {
+      logger.error('Bulk import error', { error: getErrorMessage(error) });
+      res.status(500).json({ error: 'Fehler beim Import' });
+    }
+  }
+);
+
 // PATCH /:eventId/guests/:guestId/checkin — Quick check-in toggle
 router.patch(
   '/:eventId/guests/:guestId/checkin',
