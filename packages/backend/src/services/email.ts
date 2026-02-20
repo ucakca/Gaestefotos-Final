@@ -208,42 +208,32 @@ class EmailService {
     const safeGuestName = this.escapeHtml(options.guestName);
     const safeEventUrl = this.escapeHtml(eventUrl);
 
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #295B4D; color: white; padding: 20px; text-align: center; }
-            .content { background-color: #F9F5F2; padding: 30px; }
-            .button { display: inline-block; padding: 12px 24px; background-color: #EAA48F; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-            .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>${safeEventTitle}</h1>
-            </div>
-            <div class="content">
-              <p>Hallo ${safeGuestName},</p>
-              <p>Du bist herzlich eingeladen zu unserem Event: <strong>${safeEventTitle}</strong></p>
-              <p>Klicke auf den Button unten, um zur Event-Seite zu gelangen und deine Teilnahme zu bestätigen:</p>
-              <p style="text-align: center;">
-                <a href="${safeEventUrl}" class="button">Zur Event-Seite</a>
-              </p>
-              <p>Oder kopiere diesen Link in deinen Browser:</p>
-              <p style="word-break: break-all; color: #295B4D;">${safeEventUrl}</p>
-            </div>
-            <div class="footer">
-              <p>Diese Einladung wurde von Gästefotos versendet.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
+    const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 16px">
+<tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.08)">
+<tr><td style="background:linear-gradient(135deg,#e879a6,#f9a825);padding:32px;text-align:center">
+  <h1 style="margin:0;color:#fff;font-size:24px;font-weight:800">📸 ${safeEventTitle}</h1>
+  <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:15px">Du bist eingeladen!</p>
+</td></tr>
+<tr><td style="padding:32px">
+  <p style="margin:0 0 16px;color:#374151;font-size:16px">Hallo <strong>${safeGuestName}</strong>,</p>
+  <p style="margin:0 0 24px;color:#6b7280;font-size:15px;line-height:1.6">
+    Du bist herzlich eingeladen zu unserem Event: <strong>${safeEventTitle}</strong>.<br>
+    Lade deine Fotos hoch und sieh dir die Galerie aller Gäste an!
+  </p>
+  <div style="text-align:center;margin:32px 0">
+    <a href="${safeEventUrl}" style="display:inline-block;background:linear-gradient(135deg,#e879a6,#f9a825);color:#fff;text-decoration:none;padding:14px 32px;border-radius:50px;font-size:16px;font-weight:700">Zur Event-Seite 📸</a>
+  </div>
+  <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center">Oder diesen Link öffnen: <a href="${safeEventUrl}" style="color:#e879a6">${safeEventUrl}</a></p>
+</td></tr>
+<tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;text-align:center">
+  <p style="margin:0;color:#9ca3af;font-size:12px">Diese Einladung wurde von g&auml;stefotos.com versendet.</p>
+</td></tr>
+</table></td></tr></table>
+</body></html>`;
 
     const text = `
 Hallo ${options.guestName},
