@@ -77,6 +77,16 @@ async function getUniqueEventSlug(preferredSlug: string): Promise<string> {
 
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
+    const { dateFrom, dateTo, search } = req.query;
+
+    const dateFilter: any = {};
+    if (typeof dateFrom === 'string' && dateFrom) dateFilter.gte = new Date(dateFrom);
+    if (typeof dateTo === 'string' && dateTo) dateFilter.lte = new Date(dateTo);
+
+    const searchFilter = typeof search === 'string' && search.trim()
+      ? { title: { contains: search.trim(), mode: 'insensitive' as const } }
+      : {};
+
     const events = await prisma.event.findMany({
       where: {
         deletedAt: null,
@@ -84,6 +94,8 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
           { hostId: req.userId },
           { members: { some: { userId: req.userId } } },
         ],
+        ...(Object.keys(dateFilter).length ? { dateTime: dateFilter } : {}),
+        ...searchFilter,
       },
       include: {
         _count: {
