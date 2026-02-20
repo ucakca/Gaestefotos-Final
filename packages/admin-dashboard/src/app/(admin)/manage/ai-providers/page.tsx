@@ -543,8 +543,8 @@ export default function AiProvidersPage() {
           <StatCard
             icon={Zap}
             label="Requests (Monat)"
-            value={stats.monthly.requests.toLocaleString()}
-            change={{ value: `${stats.monthly.tokens.toLocaleString()} Tokens`, positive: true }}
+            value={(stats.monthly?.requests ?? 0).toLocaleString()}
+            change={{ value: `${(stats.monthly?.tokens ?? 0).toLocaleString()} Tokens`, positive: true }}
             gradient="from-violet-500 to-purple-500"
           />
           <StatCard
@@ -852,8 +852,8 @@ export default function AiProvidersPage() {
                       return (
                         <tr key={row.providerId} className="border-b border-app-border/50 last:border-0 hover:bg-app-surface/50 transition-colors">
                           <td className="px-4 py-3 font-medium text-app-fg">{prov?.name || row.providerId}</td>
-                          <td className="px-4 py-3 text-right">{row._count.toLocaleString()}</td>
-                          <td className="px-4 py-3 text-right">{(row._sum.inputTokens || 0).toLocaleString()}</td>
+                          <td className="px-4 py-3 text-right">{(row._count ?? 0).toLocaleString()}</td>
+                          <td className="px-4 py-3 text-right">{(row._sum?.inputTokens || 0).toLocaleString()}</td>
                           <td className="px-4 py-3 text-right">{(row._sum.outputTokens || 0).toLocaleString()}</td>
                           <td className="px-4 py-3 text-right font-medium">{(row._sum.totalTokens || 0).toLocaleString()}</td>
                           <td className="px-4 py-3 text-right">{formatCents(row._sum.costCents || 0)}</td>
@@ -895,8 +895,8 @@ export default function AiProvidersPage() {
                             <span className="font-medium text-app-fg">{feat?.label || row.feature}</span>
                             <span className="text-xs text-app-muted ml-2 font-mono">{row.feature}</span>
                           </td>
-                          <td className="px-4 py-3 text-right">{row._count.toLocaleString()}</td>
-                          <td className="px-4 py-3 text-right">{(row._sum.totalTokens || 0).toLocaleString()}</td>
+                          <td className="px-4 py-3 text-right">{(row._count ?? 0).toLocaleString()}</td>
+                          <td className="px-4 py-3 text-right">{(row._sum?.totalTokens || 0).toLocaleString()}</td>
                           <td className="px-4 py-3 text-right">{formatCents(row._sum.costCents || 0)}</td>
                           <td className="px-4 py-3 text-right">{Math.round(row._avg.durationMs || 0)}ms</td>
                         </tr>

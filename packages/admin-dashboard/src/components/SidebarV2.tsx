@@ -119,7 +119,8 @@ const navigation: NavGroup[] = [
       { name: 'Health & Status', href: '/system/health', icon: Server },
       { name: 'Logs', href: '/system/logs', icon: FileText },
       { name: 'AI Logs', href: '/system/ai-logs', icon: Bot },
-      { name: 'AI Cache', href: '/system/ai-cache', icon: HardDrive },
+      { name: 'AI Log Analyse', href: '/system/ai-analyse', icon: ScanSearch },
+      { name: 'Redis AI Cache', href: '/system/ai-cache', icon: HardDrive },
       { name: 'Rate Limits', href: '/system/rate-limits', icon: Shield },
       { name: 'Backups', href: '/system/backups', icon: RefreshCw },
     ],
@@ -292,7 +293,7 @@ export default function SidebarV2({
           className="w-full h-9 rounded-lg text-xs"
         >
           <RefreshCw className="w-3 h-3 mr-1.5" />
-          Cache leeren
+          Seite neu laden
         </Button>
 
         <Button

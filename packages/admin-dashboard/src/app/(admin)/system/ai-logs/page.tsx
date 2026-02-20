@@ -380,7 +380,7 @@ export default function AILogsPage() {
 function StatCard({ label, value, icon, color }: { label: string; value: number; icon: React.ReactNode; color: string }) {
   return (
     <div className="rounded-xl border border-app-border bg-app-card p-4 text-center">
-      <div className={`flex items-center justify-center gap-1.5 ${color} mb-1`}>{icon}<span className="text-2xl font-bold">{value.toLocaleString()}</span></div>
+      <div className={`flex items-center justify-center gap-1.5 ${color} mb-1`}>{icon}<span className="text-2xl font-bold">{(value ?? 0).toLocaleString()}</span></div>
       <div className="text-xs text-app-muted">{label}</div>
     </div>
   );

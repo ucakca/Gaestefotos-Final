@@ -194,19 +194,19 @@ export default function CreditsPage() {
             <div className="flex items-center gap-2 text-app-muted text-sm mb-1">
               <Zap className="w-4 h-4 text-amber-500" /> Gesamt-Balance
             </div>
-            <div className="text-2xl font-bold text-amber-600">{overview.totals.totalBalance.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-amber-600">{(overview.totals?.totalBalance ?? 0).toLocaleString()}</div>
           </div>
           <div className="bg-app-card border border-app-border rounded-lg p-4">
             <div className="flex items-center gap-2 text-app-muted text-sm mb-1">
               <ArrowUpRight className="w-4 h-4 text-success" /> Gesamt gekauft
             </div>
-            <div className="text-2xl font-bold text-success">{overview.totals.totalPurchased.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-success">{(overview.totals?.totalPurchased ?? 0).toLocaleString()}</div>
           </div>
           <div className="bg-app-card border border-app-border rounded-lg p-4">
             <div className="flex items-center gap-2 text-app-muted text-sm mb-1">
               <ArrowDownRight className="w-4 h-4 text-destructive" /> Gesamt verbraucht
             </div>
-            <div className="text-2xl font-bold text-destructive">{overview.totals.totalConsumed.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-destructive">{(overview.totals?.totalConsumed ?? 0).toLocaleString()}</div>
           </div>
         </div>
       )}

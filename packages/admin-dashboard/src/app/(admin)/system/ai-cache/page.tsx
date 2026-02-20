@@ -136,8 +136,8 @@ export default function AiCachePage() {
             <Database className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-app-fg">AI Cache Verwaltung</h1>
-            <p className="text-sm text-app-muted">Offline-Fähigkeit und Cache-Performance verwalten</p>
+            <h1 className="text-2xl font-bold tracking-tight text-app-fg">Redis AI Cache</h1>
+            <p className="text-sm text-app-muted">AI-Antworten in Redis (≠ Cloudflare CDN Cache)</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -177,7 +177,7 @@ export default function AiCachePage() {
               Cache Einträge
             </div>
             <div className="text-2xl font-bold text-app-fg">
-              {stats.cacheSize.toLocaleString('de-DE')}
+              {(stats.cacheSize ?? 0).toLocaleString('de-DE')}
             </div>
           </div>
           <div className="rounded-xl border border-app-border bg-app-card p-4">
@@ -186,7 +186,7 @@ export default function AiCachePage() {
               Cache Hits
             </div>
             <div className="text-2xl font-bold text-success">
-              {stats.totalHits.toLocaleString('de-DE')}
+              {(stats.totalHits ?? 0).toLocaleString('de-DE')}
             </div>
           </div>
           <div className="rounded-xl border border-app-border bg-app-card p-4">
@@ -315,11 +315,12 @@ export default function AiCachePage() {
 
       {/* Info Box */}
       <div className="rounded-xl border border-app-border bg-app-card p-6">
-        <h3 className="font-semibold text-app-fg mb-3">Über den AI-Cache</h3>
+        <h3 className="font-semibold text-app-fg mb-3">Über den Redis AI Cache</h3>
         <div className="text-sm text-app-muted space-y-2">
           <p>
-            Der AI-Cache speichert generierte Antworten für häufige Anfragen (z.B. Album-Vorschläge,
-            Überschriften, Hashtags) in Redis mit einem TTL von 30 Tagen.
+            Der Redis AI Cache speichert generierte AI-Antworten für häufige Anfragen (z.B. Album-Vorschläge,
+            Überschriften, Hashtags) serverseitig in Redis mit Tier-abhängigem TTL (14–90 Tage).
+            <strong> Dieser Cache ist unabhängig vom Cloudflare CDN Cache.</strong>
           </p>
           <p>
             <strong>Offline-Modus:</strong> Bei schlechter Internetverbindung auf Events
