@@ -854,6 +854,7 @@ function OverviewTab({
   const [liveStats, setLiveStats] = useState<{ todayCount: number; topUploaders: { name: string; count: number }[]; lastPhotoAt: string | null } | null>(null);
   const [trends, setTrends] = useState<{ date: string; total: number }[]>([]);
   const [guestStats, setGuestStats] = useState<{ total: number; accepted: number; declined: number; pending: number; withEmail: number; plusOnes: number; totalWithPlusOnes?: number } | null>(null);
+  const [recentActivity, setRecentActivity] = useState<{ type: string; name: string; at: string }[]>([]);
 
   useEffect(() => {
     if (!eventId) return;
@@ -865,6 +866,9 @@ function OverviewTab({
       .catch(() => {});
     api.get(`/events/${eventId}/guests/stats`)
       .then(r => setGuestStats(r.data))
+      .catch(() => {});
+    api.get(`/events/${eventId}/activity?limit=5`)
+      .then(r => setRecentActivity(r.data?.activity || []))
       .catch(() => {});
   }, [eventId, stats.photos]);
   
@@ -1044,6 +1048,24 @@ function OverviewTab({
             <span>{guestStats.withEmail} mit E-Mail</span>
             {guestStats.plusOnes > 0 && <span>+{guestStats.plusOnes} Begl.</span>}
             <span className="font-medium">Σ {guestStats.total}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Letzte Aktivitäten */}
+      {recentActivity.length > 0 && (
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-xs font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
+            <Activity className="w-3.5 h-3.5" /> Letzte Aktivitäten
+          </p>
+          <div className="space-y-2">
+            {recentActivity.slice(0, 5).map((a, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs">
+                <span className="text-base">{a.type === 'photo_upload' ? '📸' : '👤'}</span>
+                <span className="text-foreground flex-1 truncate">{a.name}</span>
+                <span className="text-muted-foreground shrink-0">{new Date(a.at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}
