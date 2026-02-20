@@ -337,6 +337,13 @@
 | S26-146 | **Kategorie-Schnellwechsel** | ✅ erledigt (20.02.2026) | GalleryTabV2 Lightbox: Select-Dropdown + categories prop |
 | S26-147 | **Foto-Bewertungs-Aggregat** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/ratings (avgRating, voteCount groupBy) |
 | S26-148 | **Top-10 Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/top (views_desc, optionalAuth, limit 50) |
+| S26-149 | **Photo-Tags Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/tags (unique sorted tags, count) |
+| S26-150 | **Analytics Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/analytics (photos+guests+engagement) |
+| S26-151 | **⭐ Top Sort** | ✅ erledigt (20.02.2026) | rating_desc Sort-Toggle in Gast-Galerie (qualityScore) |
+| S26-152 | **Tag-Filter GalleryTabV2** | ✅ erledigt (20.02.2026) | selectedTag State + filteredPhotos Tag-Filter |
+| S26-153 | **Tags Edit Lightbox** | ✅ erledigt (20.02.2026) | 🏷️ Button im Lightbox fuer Tag-Bearbeitung via prompt() |
+| S26-154 | **Kategorie-Schnellwechsel** | ✅ erledigt (20.02.2026) | GalleryTabV2 Lightbox: categories prop + Select-Dropdown |
+| S26-155 | **allowDeleteOwn vollst.** | ✅ erledigt (20.02.2026) | Backend + SetupToggle + Lightbox-Button + e3/[slug] Passthrough |
 
 ---
 
