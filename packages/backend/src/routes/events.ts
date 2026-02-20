@@ -1574,5 +1574,50 @@ router.put(
   }
 );
 
+// POST /api/events/:eventId/clone — Clone an event (settings + config, no photos)
+router.post(
+  '/:eventId/clone',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+
+      const source = await prisma.event.findUnique({
+        where: { id: eventId },
+        select: {
+          title: true, designConfig: true,
+          featuresConfig: true, themeId: true, customThemeData: true,
+        },
+      });
+      if (!source) return res.status(404).json({ error: 'Event nicht gefunden' });
+
+      const newTitle = req.body.title || `${source.title} (Kopie)`;
+      const slug = `${newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}-${Date.now().toString(36)}`;
+
+      const cloned = await prisma.event.create({
+        data: {
+          title: newTitle,
+          slug,
+          hostId: req.userId!,
+          designConfig: source.designConfig as any,
+          featuresConfig: source.featuresConfig as any,
+          themeId: source.themeId,
+          customThemeData: source.customThemeData as any,
+          isActive: false,
+        },
+      });
+
+      logger.info('Event cloned', { sourceId: eventId, cloneId: cloned.id, userId: req.userId });
+      res.status(201).json({ event: cloned, message: 'Event geklont' });
+    } catch (error: any) {
+      logger.error('Event clone error', { error: error.message, eventId: req.params.eventId });
+      res.status(500).json({ error: 'Fehler beim Klonen' });
+    }
+  }
+);
+
 export default router;
 
