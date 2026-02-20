@@ -126,6 +126,7 @@ export default function DashboardPage() {
   const [backend, setBackend] = useState<BackendVersionResponse | null>(null);
   const [server, setServer] = useState<OpsServerResponse | null>(null);
   const [stats, setStats] = useState<StatsResponse | null>(null);
+  const [userStats, setUserStats] = useState<{ total: number; hosts: number; admins: number; locked: number; newToday: number; newThisWeek: number } | null>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
 
   const load = useCallback(async () => {
@@ -141,8 +142,12 @@ export default function DashboardPage() {
 
       // Try to load stats
       try {
-        const statsRes = await api.get<StatsResponse>('/admin/dashboard/stats');
+        const [statsRes, userStatsRes] = await Promise.all([
+          api.get<StatsResponse>('/admin/dashboard/stats'),
+          api.get('/admin/users/stats'),
+        ]);
         setStats(statsRes.data);
+        setUserStats(userStatsRes.data?.stats || null);
       } catch {
         // Stats endpoint might not exist yet
       }
@@ -433,6 +438,25 @@ export default function DashboardPage() {
           <StatCard icon={Calendar} label="Events" value={stats.stats?.total?.events ?? 0} todayValue={stats.stats?.today?.events} growth={stats.stats?.growth?.eventsGrowth} color="pink" />
           <StatCard icon={ImageIcon} label="Fotos" value={stats.stats?.total?.photos ?? 0} todayValue={stats.stats?.today?.photos} growth={stats.stats?.growth?.photosGrowth} color="cyan" />
           <StatCard icon={Activity} label="Aktive Events" value={stats.stats?.total?.activeEvents ?? 0} color="green" />
+        </div>
+      )}
+
+      {/* User Stats widget */}
+      {userStats && (
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+          {[
+            { label: 'Gesamt', value: userStats.total, color: 'text-app-fg' },
+            { label: 'Hosts', value: userStats.hosts, color: 'text-pink-500' },
+            { label: 'Admins', value: userStats.admins, color: 'text-purple-500' },
+            { label: 'Gesperrt', value: userStats.locked, color: userStats.locked > 0 ? 'text-red-500' : 'text-app-muted' },
+            { label: 'Heute neu', value: userStats.newToday, color: 'text-green-500' },
+            { label: 'Woche neu', value: userStats.newThisWeek, color: 'text-cyan-500' },
+          ].map(({ label, value, color }) => (
+            <div key={label} className="bg-app-surface rounded-xl border border-app-border p-3 text-center">
+              <p className={`text-2xl font-bold ${color}`}>{value}</p>
+              <p className="text-[11px] text-app-muted mt-0.5">{label}</p>
+            </div>
+          ))}
         </div>
       )}
 
