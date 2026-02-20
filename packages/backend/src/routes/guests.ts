@@ -161,5 +161,51 @@ router.delete(
   }
 );
 
+// POST /:eventId/guests/:guestId/email — Send invitation email to a guest
+router.post(
+  '/:eventId/guests/:guestId/email',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId, guestId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      const [guest, event] = await Promise.all([
+        prisma.guest.findFirst({ where: { id: guestId, eventId } }),
+        prisma.event.findUnique({ where: { id: eventId } }),
+      ]);
+
+      if (!guest) return res.status(404).json({ error: 'Gast nicht gefunden' });
+      if (!guest.email) return res.status(400).json({ error: 'Gast hat keine E-Mail-Adresse' });
+      if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+
+      const { emailService } = await import('../services/email');
+      const connected = await emailService.testConnection();
+      if (!connected) {
+        return res.status(503).json({ error: 'E-Mail-Service nicht konfiguriert. Bitte SMTP in den Admin-Einstellungen einrichten.' });
+      }
+
+      const eventUrl = `${process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com'}/e3/${event.slug}`;
+      const subject = req.body.subject || `Du bist eingeladen: ${event.title}`;
+      const message = req.body.message || `Hallo ${guest.firstName},\n\ndu wurdest zum Event "${event.title}" eingeladen!\n\nFotos hochladen und ansehen:\n${eventUrl}\n\nWir freuen uns auf dich!`;
+
+      await emailService.sendCustomEmail({
+        to: guest.email,
+        subject,
+        text: message,
+        html: `<p>${message.replace(/\n/g, '<br>')}</p>`,
+      });
+
+      logger.info('Guest invitation email sent', { guestId, email: guest.email, eventId });
+      res.json({ success: true, sentTo: guest.email });
+    } catch (error) {
+      logger.error('Guest email error', { error: getErrorMessage(error) });
+      res.status(500).json({ error: getErrorMessage(error) || 'E-Mail konnte nicht gesendet werden' });
+    }
+  }
+);
+
 export default router;
 

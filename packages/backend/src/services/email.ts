@@ -544,6 +544,19 @@ Fotos ansehen: ${photosUrl}
     });
   }
 
+  async sendCustomEmail(options: { to: string; subject: string; text: string; html?: string }): Promise<void> {
+    if (!this.transporter || !this.config) {
+      throw new Error('E-Mail-Service nicht konfiguriert');
+    }
+    await this.transporter.sendMail({
+      from: this.config.from || this.config.user,
+      to: options.to,
+      subject: options.subject,
+      text: options.text,
+      html: options.html || options.text,
+    });
+  }
+
   async testConnection(): Promise<boolean> {
     if (!this.transporter) {
       return false;

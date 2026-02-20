@@ -101,6 +101,7 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
     plusOneCount: 0,
   });
   const [detailGuest, setDetailGuest] = useState<Guest | null>(null);
+  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
 
   useEffect(() => {
     if (eventId) loadData();
@@ -293,12 +294,23 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
       cell: ({ row }) => (
         <GuestActionMenu
           onDelete={() => handleDelete(row.original.id)}
-          onSendEmail={() => {
+          onSendEmail={async () => {
             const g = row.original;
-            const email = g.email;
-            if (!email) { showToast('Keine E-Mail-Adresse hinterlegt', 'error'); return; }
-            const subject = encodeURIComponent(`Einladung: ${event?.title || ''}`);
-            window.location.href = `mailto:${email}?subject=${subject}`;
+            if (!g.email) { showToast('Keine E-Mail-Adresse hinterlegt', 'error'); return; }
+            setSendingEmail(g.id);
+            try {
+              await api.post(`/events/${eventId}/guests/${g.id}/email`, {});
+              showToast(`Einladung an ${g.email} gesendet`, 'success');
+            } catch (err: any) {
+              const msg = err?.response?.data?.error || 'Fehler beim Senden';
+              if (msg.includes('nicht konfiguriert')) {
+                showToast('SMTP nicht konfiguriert — bitte in Admin-Einstellungen einrichten', 'error');
+              } else {
+                showToast(msg, 'error');
+              }
+            } finally {
+              setSendingEmail(null);
+            }
           }}
           onViewDetails={() => setDetailGuest(row.original)}
         />
@@ -659,13 +671,21 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={() => {
-                    const subject = encodeURIComponent(`Einladung: ${event?.title || ''}`);
-                    window.location.href = `mailto:${detailGuest.email}?subject=${subject}`;
+                  disabled={sendingEmail === detailGuest.id}
+                  onClick={async () => {
+                    setSendingEmail(detailGuest.id);
+                    try {
+                      await api.post(`/events/${eventId}/guests/${detailGuest.id}/email`, {});
+                      showToast(`Einladung an ${detailGuest.email} gesendet`, 'success');
+                    } catch (err: any) {
+                      showToast(err?.response?.data?.error || 'Fehler beim Senden', 'error');
+                    } finally {
+                      setSendingEmail(null);
+                    }
                   }}
                   className="flex-1"
                 >
-                  <Mail className="w-4 h-4 mr-1" /> E-Mail
+                  <Mail className="w-4 h-4 mr-1" /> {sendingEmail === detailGuest.id ? 'Sende...' : 'E-Mail'}
                 </Button>
               )}
               <Button variant="danger" size="sm" onClick={() => { handleDelete(detailGuest.id); setDetailGuest(null); }} className="flex-1">
