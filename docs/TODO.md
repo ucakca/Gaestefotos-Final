@@ -380,6 +380,13 @@
 | S26-189 | **Pending-Count** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/pending-count (lightweight poll) |
 | S26-190 | **Gästebuch Bulk-Mod** | ✅ erledigt (20.02.2026) | POST /events/:id/guestbook/bulk-moderate (approve/reject/del) |
 | S26-191 | **Sprint S26 Fortschritt** | ✅ erledigt (20.02.2026) | 191 Sprint-Tasks implementiert, deployed + committed |
+| S26-192 | **Bulk-Delete** | ✅ erledigt (20.02.2026) | POST /photos/bulk/delete (soft-delete, eventId + photoIds Array) |
+| S26-193 | **HIDDEN Filter Fix** | ✅ erledigt (20.02.2026) | Photos-API: notIn ['DELETED','HIDDEN'] als Safety-Net |
+| S26-194 | **Uploader-Badge** | ✅ erledigt (20.02.2026) | GalleryTabV2: uploadedBy hover Badge (9px, black/60) |
+| S26-195 | **views + faceCount** | ✅ erledigt (20.02.2026) | GalleryTabV2 Lightbox Footer: 👁 views + 👤 faceCount |
+| S26-196 | **Gäste PATCH** | ✅ erledigt (20.02.2026) | PATCH /events/:id/guests/:id (notes, dietary, plusOneCount) |
+| S26-197 | **Photo Hide** | ✅ erledigt (20.02.2026) | POST /photos/:id/hide (APPROVED↔HIDDEN, allowHide featureFlag) |
+| S26-198 | **Pending-Count Poll** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/pending-count (lightweight poll-Endpunkt) |
 
 ---
 
