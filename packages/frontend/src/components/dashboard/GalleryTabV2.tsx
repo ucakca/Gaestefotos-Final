@@ -46,6 +46,7 @@ export default function GalleryTabV2({
   const [sortMode, setSortMode] = useState<SortMode>('newest');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [downloadingAll, setDownloadingAll] = useState(false);
   const [exportingUsb, setExportingUsb] = useState(false);
   const [favLoading, setFavLoading] = useState<Set<string>>(new Set());
@@ -151,6 +152,11 @@ export default function GalleryTabV2({
       return true;
     });
 
+    // Tag filter
+    if (selectedTag) {
+      result = result.filter(p => (p.tags || []).includes(selectedTag));
+    }
+
     // Search filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -175,7 +181,7 @@ export default function GalleryTabV2({
     });
 
     return result;
-  }, [photos, filter, selectedAlbum, selectedGuest, sortMode, searchQuery]);
+  }, [photos, filter, selectedAlbum, selectedGuest, sortMode, searchQuery, selectedTag]);
 
   const displayedPhotos = filteredPhotos.slice(0, visibleCount);
   const hasMore = visibleCount < filteredPhotos.length;
