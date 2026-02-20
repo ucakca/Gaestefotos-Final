@@ -136,7 +136,8 @@ router.post(
     res.status(201).json({ comment });
 
     // Non-blocking: notify host via email (fire-and-forget)
-    if (initialStatus === 'APPROVED' && !isHost) {
+    const notificationsEnabled = !((featuresConfig as any)?.disableEmailNotifications === true);
+    if (notificationsEnabled && initialStatus === 'APPROVED' && !isHost) {
       (async () => {
         try {
           const host = await prisma.user.findUnique({ where: { id: photo.event.hostId }, select: { email: true, name: true } });
