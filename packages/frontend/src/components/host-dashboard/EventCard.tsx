@@ -14,9 +14,10 @@ interface EventCardProps {
   photoCount?: number;
   guestCount?: number;
   pendingCount?: number;
+  visitCount?: number;
 }
 
-export default function EventCard({ event, index = 0, photoCount = 0, guestCount = 0, pendingCount = 0 }: EventCardProps) {
+export default function EventCard({ event, index = 0, photoCount = 0, guestCount = 0, pendingCount = 0, visitCount = 0 }: EventCardProps) {
   const router = useRouter();
   const [cloning, setCloning] = useState(false);
 
@@ -260,6 +261,12 @@ export default function EventCard({ event, index = 0, photoCount = 0, guestCount
               <Users className="w-3.5 h-3.5" />
               <span>{guestCount}</span>
             </div>
+            {visitCount > 0 && (
+              <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-md">
+                <Eye className="w-3.5 h-3.5" />
+                <span>{visitCount}</span>
+              </div>
+            )}
           </div>
 
           {/* Deletion Warning */}
