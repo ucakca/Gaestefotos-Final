@@ -1523,5 +1523,71 @@ router.delete(
   }
 );
 
+// GET /api/events/:eventId/photos/download-zip — Download all event photos as ZIP
+router.get(
+  '/:eventId/photos/download-zip',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      const event = await prisma.event.findUnique({ where: { id: eventId }, select: { id: true, title: true, slug: true } });
+      if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+
+      const photos = await prisma.photo.findMany({
+        where: { eventId, deletedAt: null, status: { not: 'DELETED' as any } },
+        orderBy: { createdAt: 'asc' },
+        select: { id: true, storagePath: true, url: true, createdAt: true },
+      });
+
+      if (photos.length === 0) {
+        return res.status(404).json({ error: 'Keine Fotos zum Herunterladen' });
+      }
+
+      const archiver = require('archiver');
+      const safeName = (event.slug || event.id).replace(/[^a-zA-Z0-9-_]/g, '_');
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', `attachment; filename="${safeName}-fotos.zip"`);
+
+      const archive = archiver('zip', { zlib: { level: 1 } }); // level 1 = fast (photos already compressed)
+      archive.on('error', (err: Error) => {
+        logger.error('ZIP archive error', { err: err.message, eventId });
+        if (!res.headersSent) res.status(500).json({ error: 'ZIP-Fehler' });
+      });
+
+      archive.pipe(res);
+
+      let added = 0;
+      for (const photo of photos) {
+        try {
+          if (photo.storagePath) {
+            const buffer = await storageService.getFile(photo.storagePath);
+            const ext = photo.storagePath.split('.').pop() || 'jpg';
+            archive.append(buffer, { name: `foto-${String(added + 1).padStart(4, '0')}.${ext}` });
+            added++;
+          } else if (photo.url) {
+            const { default: axios } = await import('axios');
+            const res2 = await axios.get(photo.url, { responseType: 'arraybuffer', timeout: 10000 });
+            const ext = photo.url.split('.').pop()?.split('?')[0] || 'jpg';
+            archive.append(Buffer.from(res2.data), { name: `foto-${String(added + 1).padStart(4, '0')}.${ext}` });
+            added++;
+          }
+        } catch (err: any) {
+          logger.warn('Skip photo in ZIP', { photoId: photo.id, err: err.message });
+        }
+      }
+
+      await archive.finalize();
+      logger.info('ZIP download complete', { eventId, photoCount: added });
+    } catch (error: any) {
+      logger.error('ZIP download error', { error: error.message, eventId: req.params.eventId });
+      if (!res.headersSent) res.status(500).json({ error: 'Fehler beim ZIP-Download' });
+    }
+  }
+);
+
 export default router;
 

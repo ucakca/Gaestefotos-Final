@@ -440,6 +440,24 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
                 <ScanFace className="h-5 w-5" />
                 <span className="hidden sm:inline">Gesichtserkennung</span>
               </Button>
+              {photos.length > 0 && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    const url = buildApiUrl(`/events/${eventId}/photos/download-zip`);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = '';
+                    a.click();
+                  }}
+                  className="gap-2"
+                >
+                  <FileDown className="h-4 w-4" />
+                  <span className="hidden sm:inline">ZIP ({photos.length})</span>
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="primary"
