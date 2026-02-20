@@ -217,6 +217,9 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
             },
           },
         },
+        _count: {
+          select: { comments: true },
+        },
       },
       orderBy,
       ...(limitNum ? { take: limitNum + 1, skip: skipNum } : {}),
@@ -235,6 +238,8 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
         challengeId: challengeCompletion?.challengeId || null,
         challengeTitle: challengeCompletion?.challenge?.title || null,
         challengeCompletions: undefined, // Remove nested object
+        commentCount: photo._count?.comments || 0,
+        _count: undefined,
       };
     });
 
