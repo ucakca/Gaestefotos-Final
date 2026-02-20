@@ -254,6 +254,13 @@
 | S26-63 | **Bulk-Favorite** | ✅ erledigt (20.02.2026) | POST /photos/bulk/favorite (isFavorite auf mehrere Fotos) |
 | S26-64 | **Admin Storage-Stats** | ✅ erledigt (20.02.2026) | GET /admin/events/storage-stats (totalPhotos, totalBytes, topEvents) |
 | S26-65 | **Event Trends Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/trends?days=7 (date-grouped upload counts) |
+| S26-66 | **isFavorite + minQuality Filter** | ✅ erledigt (20.02.2026) | GET /events/:id/photos?isFavorite=true&minQuality=0.7 |
+| S26-67 | **views_desc + quality_desc Sort** | ✅ erledigt (20.02.2026) | ?sort=views_desc|quality_desc fuer Photos-Endpoint |
+| S26-68 | **Event Summary Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/summary (compact overview: photos, guests, pending, url) |
+| S26-69 | **Bulk-Favorite** | ✅ erledigt (20.02.2026) | POST /photos/bulk/favorite (isFavorite auf viele Fotos gleichzeitig) |
+| S26-70 | **Admin Storage-Stats** | ✅ erledigt (20.02.2026) | GET /admin/events/storage-stats (topEvents by photo count, totalMB) |
+| S26-71 | **Bulk-Move-Category** | ✅ erledigt (20.02.2026) | POST /photos/bulk/move-category (categoryId oder null) |
+| S26-72 | **Foto Caption Lightbox** | ✅ erledigt (20.02.2026) | title + description in PhotoLightbox anzeigen |
 
 ---
 
