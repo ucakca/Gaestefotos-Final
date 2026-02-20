@@ -1807,6 +1807,33 @@ router.delete(
   }
 );
 
+// GET /api/events/:eventId/photos/stats — Photo counts breakdown
+router.get('/:eventId/photos/stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const [total, approved, pending, rejected, deleted, favorites, today, totalViews] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, status: 'APPROVED', deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, status: 'PENDING', deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, status: 'REJECTED', deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, status: 'DELETED' } }),
+      prisma.photo.count({ where: { eventId, isFavorite: true, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, createdAt: { gte: todayStart }, deletedAt: null } }),
+      prisma.photo.aggregate({ where: { eventId, deletedAt: null }, _sum: { views: true } }),
+    ]);
+
+    res.json({ total, approved, pending, rejected, deleted, favorites, today, totalViews: totalViews._sum.views || 0 });
+  } catch (error: any) {
+    logger.error('Photo stats error', { error: error.message });
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /api/events/:eventId/photos/by-uploader — Photo counts grouped by uploader name
 router.get('/:eventId/photos/by-uploader', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
