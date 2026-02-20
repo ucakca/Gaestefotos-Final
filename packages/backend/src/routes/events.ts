@@ -1632,6 +1632,41 @@ router.post(
   }
 );
 
+// GET /api/events/:eventId/share-link — Generate UTM-tracked shareable link
+router.get(
+  '/:eventId/share-link',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      const { source = 'host', medium = 'share', campaign } = req.query;
+
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+      const event = await prisma.event.findUnique({ where: { id: eventId }, select: { slug: true, title: true } });
+      if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+
+      const frontendUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
+      const base = `${frontendUrl}/e3/${event.slug}`;
+      const params = new URLSearchParams({
+        utm_source: String(source),
+        utm_medium: String(medium),
+        utm_campaign: String(campaign || event.slug),
+      });
+
+      res.json({
+        url: `${base}?${params.toString()}`,
+        shortUrl: base, // Without UTM for display
+        utmParams: { source, medium, campaign: campaign || event.slug },
+      });
+    } catch (error: any) {
+      logger.error('Share link error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Generieren' });
+    }
+  }
+);
+
 // GET /api/events/:eventId/stats — Realtime stats for dashboard
 router.get(
   '/:eventId/stats',
