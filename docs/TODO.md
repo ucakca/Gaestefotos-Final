@@ -209,6 +209,13 @@
 | S26-18 | **Event Stats API** | ✅ erledigt (20.02.2026) | GET /events/:id/stats (photos/today/pending, guests, guestbook, visitors) |
 | S26-19 | **Visitor-Count Dashboard** | ✅ erledigt (20.02.2026) | visitCount als BESUCHER StatCard; 2x3 Grid Layout |
 | S26-20 | **Admin Events verbessert** | ✅ erledigt (20.02.2026) | isActive Badge, FileDown Export-Button, isActive+host im select (kein N+1) |
+| S26-21 | **Event-Passwort E-Mail** | ✅ erledigt (20.02.2026) | POST /events/:id/send-password; gestyltes HTML-Template mit Passwort-Box |
+| S26-22 | **Admin Bulk-Activate** | ✅ erledigt (20.02.2026) | POST /admin/events/bulk-status (Activate/Deactivate mehrere Events) |
+| S26-23 | **Shareable Event-Link UTM** | ✅ erledigt (20.02.2026) | GET /events/:id/share-link?source=whatsapp&medium=social |
+| S26-24 | **Foto-Freigabe Push** | ✅ erledigt (20.02.2026) | Push-Benachrichtigung an Host bei Foto-Freigabe (PENDING → APPROVED) |
+| S26-25 | **Bulk-E-Mail Dialog** | ✅ erledigt (20.02.2026) | Textarea-Dialog fuer optionale persoenliche Nachricht beim Bulk-Invite |
+| S26-26 | **EventCard visitCount** | ✅ erledigt (20.02.2026) | Eye-Badge fuer Besucherzahlen im EventCard Meta-Info |
+| S26-27 | **Foto-Sortierung Backend+UI** | ✅ erledigt (20.02.2026) | ?sort=likes_desc|faces_desc|date_asc; Sort-Buttons in Gast-Galerie |
 
 ---
 
