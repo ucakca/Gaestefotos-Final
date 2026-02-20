@@ -326,6 +326,17 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
         const moderationRequired = featuresConfig?.moderationRequired === true;
         const photoStatus = moderationRequired ? 'PENDING' : 'APPROVED';
 
+        // Check upload limit per guest (if configured)
+        const maxUploadsPerGuest = featuresConfig?.maxUploadsPerGuest;
+        if (maxUploadsPerGuest && typeof maxUploadsPerGuest === 'number' && maxUploadsPerGuest > 0 && uploadedBy) {
+          const existingCount = await prisma.photo.count({
+            where: { eventId, uploadedBy, deletedAt: null },
+          });
+          if (existingCount >= maxUploadsPerGuest) {
+            throw { status_code: 429, body: `Upload-Limit erreicht (max. ${maxUploadsPerGuest} Fotos pro Gast)` };
+          }
+        }
+
         // Standard TUS upload: create new photo record
         const photo = await prisma.photo.create({
           data: {
