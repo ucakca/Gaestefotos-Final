@@ -114,7 +114,23 @@ export default function PhotoCard({
         />
 
         {/* Hover Overlay with Stats */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 hover:opacity-100 transition-opacity flex items-end p-3">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-end justify-between p-2">
+          {/* Quality + faces top-right */}
+          <div className="flex flex-col items-end gap-1">
+            {(photo as any).qualityScore != null && (
+              <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
+                (photo as any).qualityScore >= 0.7 ? 'bg-green-500/80 text-white' :
+                (photo as any).qualityScore >= 0.4 ? 'bg-yellow-500/80 text-white' :
+                'bg-red-500/80 text-white'
+              }`}>
+                ★{Math.round((photo as any).qualityScore * 100)}
+              </span>
+            )}
+            {(photo as any).faceCount > 0 && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/80 text-white">👤{(photo as any).faceCount}</span>
+            )}
+          </div>
+          {/* Likes + comments bottom-left */}
           <div className="flex items-center gap-3 text-white text-sm">
             <div className="flex items-center gap-1">
               <Heart className="w-4 h-4" />
