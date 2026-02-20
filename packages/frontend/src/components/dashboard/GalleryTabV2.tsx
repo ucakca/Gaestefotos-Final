@@ -62,6 +62,7 @@ export default function GalleryTabV2({
   const topPhotos = useMemo(() => photos.filter(p => p.isFavorite || p.likes > 0), [photos]);
   const trashedPhotos = useMemo(() => photos.filter(p => p.status === 'REJECTED' || p.status === 'DELETED'), [photos]);
   const favoriteCount = useMemo(() => photos.filter(p => p.isFavorite).length, [photos]);
+  const hiddenPhotos = useMemo(() => photos.filter(p => (p.status as string) === 'HIDDEN'), [photos]);
 
   // Albums
   const albums = useMemo(() => {
@@ -103,6 +104,7 @@ export default function GalleryTabV2({
     { id: 'top', label: 'Favoriten', icon: Heart, count: topPhotos.length },
     { id: 'pending', label: 'Freigabe', icon: Clock, count: pendingCount },
     { id: 'trash', label: 'Papierkorb', icon: Trash2, count: trashedPhotos.length },
+    ...(hiddenPhotos.length > 0 ? [{ id: 'hidden' as GalleryFilter, label: 'Versteckt', icon: Eye, count: hiddenPhotos.length }] : []),
   ];
 
   // Reset on filter change
