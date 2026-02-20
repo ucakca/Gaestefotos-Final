@@ -429,6 +429,13 @@
 | S26-238 | **Fotos CSV-Export** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/export-csv (CSV mit Views/Tags) |
 | S26-239 | **Bulk-Restore** | ✅ erledigt (20.02.2026) | POST /photos/bulk/restore (DELETED->APPROVED) |
 | S26-240 | **Sprint S26 Final** | ✅ erledigt (21.02.2026) | 240+ Sprint-Tasks implementiert, deployed, committed |
+| S26-241 | **Bulk-Approve** | ✅ erledigt (21.02.2026) | POST /photos/bulk/approve (alle PENDING -> APPROVED) |
+| S26-242 | **Bulk-Reject** | ✅ erledigt (21.02.2026) | POST /photos/bulk/reject (PENDING oder IDs -> REJECTED) |
+| S26-243 | **Gast-Filter Dropdown** | ✅ erledigt (21.02.2026) | GalleryTabV2: select Dropdown bei >8 Gaesten |
+| S26-244 | **Alle-Laden Button** | ✅ erledigt (21.02.2026) | GalleryTabV2: setVisibleCount(filteredPhotos.length) |
+| S26-245 | **Photo-Pinning** | ✅ erledigt (21.02.2026) | POST /photos/:id/pin (isFavorite toggle) |
+| S26-246 | **Einladungs-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/invitation-stats |
+| S26-247 | **Check-In Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/checkin-stats |
 
 ---
 
