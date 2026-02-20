@@ -62,6 +62,10 @@ router.get('/', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, r
         slug: true,
         dateTime: true,
         createdAt: true,
+        isActive: true,
+        host: {
+          select: { id: true, email: true, name: true },
+        },
         _count: {
           select: {
             photos: true,
