@@ -1631,6 +1631,44 @@ router.post(
   }
 );
 
+// POST /bulk/ai-caption — Generate context captions for multiple photos
+router.post(
+  '/bulk/ai-caption',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId, overwrite = false } = req.body;
+      if (!eventId) return res.status(400).json({ error: 'eventId erforderlich' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const where: any = { eventId, deletedAt: null };
+      if (!overwrite) where.description = null;
+
+      const photos = await prisma.photo.findMany({
+        where,
+        select: { id: true, uploadedBy: true, faceCount: true, tags: true },
+        take: 100,
+      });
+
+      let updated = 0;
+      for (const photo of photos) {
+        const parts: string[] = [];
+        if (photo.uploadedBy) parts.push(`Hochgeladen von ${photo.uploadedBy}`);
+        if (photo.faceCount && photo.faceCount > 0) parts.push(`${photo.faceCount} Person${photo.faceCount !== 1 ? 'en' : ''}`);
+        if (photo.tags && photo.tags.length > 0) parts.push(photo.tags.join(', '));
+        const caption = parts.length > 0 ? parts.join(' · ') : 'Foto vom Event';
+        await prisma.photo.update({ where: { id: photo.id }, data: { description: caption } });
+        updated++;
+      }
+
+      res.json({ updated, total: photos.length });
+    } catch (error: any) {
+      logger.error('Bulk AI caption error', { error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
 // POST /bulk/approve-all — approve all pending photos for an event
 router.post(
   '/bulk/approve-all',
