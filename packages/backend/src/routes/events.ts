@@ -1679,6 +1679,24 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/invitation-stats — Invitation email stats
+router.get('/:eventId/invitation-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, withEmail, sent] = await Promise.all([
+      prisma.guest.count({ where: { eventId } }),
+      prisma.guest.count({ where: { eventId, email: { not: null } } }),
+      prisma.guest.count({ where: { eventId, inviteSentAt: { not: null } } as any }),
+    ]);
+
+    res.json({ total, withEmail, invited: sent, notInvited: withEmail - sent });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/pending-count — Lightweight pending count
 router.get('/:eventId/photos/pending-count', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
