@@ -415,6 +415,13 @@
 | S26-224 | **Photo Title/Desc** | ✅ erledigt (20.02.2026) | GalleryTabV2 Lightbox: title + description ueber Bottom-Info |
 | S26-225 | **Tags Pills Hover** | ✅ erledigt (20.02.2026) | GalleryTabV2: Tags als #pills (max 2) bei Hover |
 | S26-226 | **Tags Click Filter** | ✅ erledigt (20.02.2026) | Tags Pill Click -> selectedTag Filter setzen |
+| S26-227 | **Einladungs-Stats** | ✅ erledigt (20.02.2026) | GET /events/:id/invitation-stats (total/withEmail/invited) |
+| S26-228 | **Foto-Pinning** | ✅ erledigt (20.02.2026) | POST /photos/:id/pin (isFavorite toggle, Host-only) |
+| S26-229 | **Bulk-Restore** | ✅ erledigt (20.02.2026) | POST /photos/bulk/restore (DELETED->APPROVED, deletedAt=null) |
+| S26-230 | **Fotos CSV-Export** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/export-csv (CSV Response) |
+| S26-231 | **Live-Polling** | ✅ erledigt (20.02.2026) | setInterval 30s pendingCount + clearInterval cleanup |
+| S26-232 | **Check-In Stats** | ✅ erledigt (20.02.2026) | GET /events/:id/guests/checkin-stats (total/checkedIn/rate%) |
+| S26-233 | **Kommentar-Stats** | ✅ erledigt (20.02.2026) | GET /events/:id/comments?status=PENDING + commentsPending State |
 
 ---
 
