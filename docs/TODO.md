@@ -268,6 +268,13 @@
 | S26-77 | **views_desc Sort** | ✅ erledigt (20.02.2026) | Sort-Toggle '👁 Meistgesehen' in Gast-Galerie |
 | S26-78 | **Foto-Filter isFav+Quality** | ✅ erledigt (20.02.2026) | GET /photos?isFavorite=true&minQuality=0.7 |
 | S26-79 | **Event Summary** | ✅ erledigt (20.02.2026) | GET /events/:id/summary (photos, guests, pending, url, visitors) |
+| S26-80 | **Admin User-Stats Widget** | ✅ erledigt (20.02.2026) | Admin Dashboard: 6-Felder Widget (total/hosts/admins/locked/heute/woche) |
+| S26-81 | **Custom Hashtag SetupRow** | ✅ erledigt (20.02.2026) | SetupTabV2: Custom Hashtag Row mit prompt() Dialog |
+| S26-82 | **Check-In Button** | ✅ erledigt (20.02.2026) | GuestActionMenu: CheckCircle2 Check-In (gruen) + PATCH /guests/:id/checkin |
+| S26-83 | **Slideshow Speed Prop** | ✅ erledigt (20.02.2026) | SlideshowMode: slideshowSpeed prop (2-30 Sek, clamp) |
+| S26-84 | **Photos by Uploader** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/by-uploader (groupBy uploadedBy desc) |
+| S26-85 | **Admin User-Stats API** | ✅ erledigt (20.02.2026) | GET /admin/users/stats (total, hosts, admins, locked, newToday, newWeek) |
+| S26-86 | **Event-Klon FeaturesConfig** | ✅ erledigt | POST /events/:id/clone bereits mit featuresConfig + designConfig |
 
 ---
 
