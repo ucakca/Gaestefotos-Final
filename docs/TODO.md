@@ -291,6 +291,12 @@
 | S26-100 | **Push-Notif History** | ⏳ Schema-Änderung nötig | PushNotification Tabelle fehlt im Prisma Schema |
 | S26-101 | **Gäste-Stats Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/guests/stats (accepted/declined/pending/plusOnes) |
 | S26-102 | **ZIP Progress Toast** | ✅ erledigt (20.02.2026) | photos/page.tsx: info-Toast vor + success-Toast nach ZIP-Download |
+| S26-103 | **Events-Liste Filter** | ✅ erledigt (20.02.2026) | GET /events?dateFrom=&dateTo=&search= (dateTime gte/lte + title contains) |
+| S26-104 | **Dashboard Gäste-Stats** | ✅ erledigt (20.02.2026) | guestStats Widget: Zusagen/Absagen/Ausstehend + Begleitpersonen |
+| S26-105 | **commentCount Photos-API** | ✅ erledigt (20.02.2026) | _count.comments flatten als commentCount in Photos-Response |
+| S26-106 | **Gäste-Stats Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/guests/stats (total/accepted/declined/pending/withEmail/plusOnes) |
+| S26-107 | **Photos-Filter** | ✅ erledigt (20.02.2026) | GET /photos?isFavorite=true&minQuality=0.7&tag=xyz&sort=views_desc |
+| S26-108 | **Event Summary** | ✅ erledigt (20.02.2026) | GET /events/:id/summary (compact overview fuer externe Integrationen) |
 
 ---
 
