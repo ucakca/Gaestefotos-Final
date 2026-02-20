@@ -517,7 +517,7 @@ export async function processWooOrderPaidWebhook(params: {
         select: { title: true, eventCode: true, id: true },
       }).then(async (ev) => {
         if (!ev) return;
-        const frontendUrl = (process.env.FRONTEND_URL || 'https://dash.xn--gstefotos-v2a.com').replace(/\/$/, '');
+        const frontendUrl = (process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com').replace(/\/$/, '');
         const briefingUrl = `${frontendUrl}/events/${ev.id}/briefing`;
         const dashboardUrl = `${frontendUrl}/events/${ev.id}/dashboard`;
         const packageName = pkg?.name || pkg?.resultingTier || 'Standard';

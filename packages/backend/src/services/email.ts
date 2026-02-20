@@ -171,7 +171,7 @@ class EmailService {
 
     const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const inviteFragment = options.inviteToken ? `#invite=${encodeURIComponent(options.inviteToken)}` : '';
-    const eventUrl = `${baseUrl}/e2/${options.eventSlug}/invitation${inviteFragment}`;
+    const eventUrl = `${baseUrl}/e3/${options.eventSlug}${inviteFragment}`;
 
     const tpl = await this.getActiveTemplate('INVITATION');
     if (tpl) {

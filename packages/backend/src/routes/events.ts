@@ -685,7 +685,7 @@ router.post(
             
             const frontendBaseUrl = process.env.FRONTEND_URL || process.env.PUBLIC_URL || '';
             const inviteUrl = event.slug
-              ? `${frontendBaseUrl}/e2/${event.slug}?cohostInvite=${encodeURIComponent(inviteToken)}`
+              ? `${frontendBaseUrl}/e3/${event.slug}?cohostInvite=${encodeURIComponent(inviteToken)}`
               : '';
             
             if (inviteUrl) {
@@ -1135,7 +1135,7 @@ router.post('/:id/invite-token', authMiddleware, async (req: AuthRequest, res: R
 
     const frontendBaseUrl = process.env.FRONTEND_URL || process.env.PUBLIC_URL || '';
     const shareUrl = event.slug
-      ? `${frontendBaseUrl}/e2/${event.slug}?invite=${encodeURIComponent(inviteToken)}`
+      ? `${frontendBaseUrl}/e3/${event.slug}?invite=${encodeURIComponent(inviteToken)}`
       : null;
 
     return res.json({ ok: true, eventId, inviteToken, shareUrl });

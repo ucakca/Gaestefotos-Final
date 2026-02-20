@@ -132,7 +132,7 @@ router.post('/events/:eventId/spinner/:id/share', async (req: Request, res: Resp
     if (!existing) return res.status(404).json({ error: 'Session nicht gefunden' });
     if (existing.status !== 'READY') return res.status(400).json({ error: 'Video noch nicht bereit' });
 
-    const shareUrl = `${process.env.FRONTEND_URL || 'https://gaestefotos.com'}/s/spinner/${id}`;
+    const shareUrl = `${process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com'}/s/spinner/${id}`;
 
     const session = await prisma.spinnerSession.update({
       where: { id },

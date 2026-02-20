@@ -58,7 +58,7 @@ export default function LiveAnalyticsPage({ params }: { params: Promise<{ id: st
     try {
       const [eventRes, statsRes] = await Promise.all([
         api.get(`/events/${eventId}`),
-        api.get(`/statistics/events/${eventId}/statistics`),
+        api.get(`/events/${eventId}/statistics`),
       ]);
       setEvent(eventRes.data.event || eventRes.data);
 

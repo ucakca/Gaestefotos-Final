@@ -315,7 +315,7 @@ router.post('/:eventId/cohosts/invite-token', authMiddleware, async (req: AuthRe
 
     const frontendBaseUrl = process.env.FRONTEND_URL || process.env.PUBLIC_URL || '';
     const shareUrl = event.slug
-      ? `${frontendBaseUrl}/e2/${event.slug}?cohostInvite=${encodeURIComponent(inviteToken)}`
+      ? `${frontendBaseUrl}/e3/${event.slug}?cohostInvite=${encodeURIComponent(inviteToken)}`
       : null;
 
     // Send email if requested

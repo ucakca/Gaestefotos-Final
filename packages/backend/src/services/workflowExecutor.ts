@@ -296,7 +296,7 @@ async function sendToSingleRecipient(
       to: toEmail,
       template: {
         subject,
-        html: body || `<p>${subject}</p><p>Event: {{eventTitle}}</p><p><a href="https://app.xn--gstefotos-v2a.com/e2/{{eventSlug}}">Zur Galerie</a></p>`,
+        html: body || `<p>${subject}</p><p>Event: {{eventTitle}}</p><p><a href="https://app.xn--gstefotos-v2a.com/e3/{{eventSlug}}">Zur Galerie</a></p>`,
         text: null,
       },
       variables,
