@@ -161,6 +161,65 @@ router.delete(
   }
 );
 
+// POST /:eventId/guests/email-all — Send invitation email to ALL guests with email addresses
+router.post(
+  '/:eventId/guests/email-all',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      const event = await prisma.event.findUnique({ where: { id: eventId } });
+      if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+
+      const guests = await prisma.guest.findMany({ where: { eventId, email: { not: null } } });
+      const withEmail = guests.filter(g => g.email);
+      if (withEmail.length === 0) return res.status(400).json({ error: 'Keine Gäste mit E-Mail-Adresse' });
+
+      const { emailService } = await import('../services/email');
+      const connected = await emailService.testConnection();
+      if (!connected) {
+        return res.status(503).json({ error: 'E-Mail-Service nicht konfiguriert' });
+      }
+
+      const eventUrl = `${process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com'}/e3/${event.slug}`;
+      const customSubject = req.body.subject;
+      const customMessage = req.body.message;
+
+      let sent = 0;
+      let failed = 0;
+      const errors: string[] = [];
+
+      for (const guest of withEmail) {
+        try {
+          const subject = customSubject || `Du bist eingeladen: ${event.title}`;
+          const message = customMessage
+            || `Hallo ${guest.firstName},\n\ndu wurdest zum Event "${event.title}" eingeladen!\n\nFotos hochladen und ansehen:\n${eventUrl}\n\nWir freuen uns auf dich!`;
+          await emailService.sendCustomEmail({
+            to: guest.email!,
+            subject,
+            text: message,
+            html: `<p>${message.replace(/\n/g, '<br>')}</p>`,
+          });
+          sent++;
+        } catch (err: any) {
+          failed++;
+          errors.push(`${guest.email}: ${err.message}`);
+        }
+      }
+
+      logger.info('Bulk guest emails sent', { eventId, sent, failed });
+      res.json({ success: true, sent, failed, total: withEmail.length, errors: errors.slice(0, 5) });
+    } catch (error) {
+      logger.error('Bulk guest email error', { error: getErrorMessage(error) });
+      res.status(500).json({ error: getErrorMessage(error) || 'Fehler beim Massen-Versand' });
+    }
+  }
+);
+
 // POST /:eventId/guests/:guestId/email — Send invitation email to a guest
 router.post(
   '/:eventId/guests/:guestId/email',

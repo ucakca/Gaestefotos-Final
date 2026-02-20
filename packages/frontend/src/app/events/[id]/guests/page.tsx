@@ -102,6 +102,7 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
   });
   const [detailGuest, setDetailGuest] = useState<Guest | null>(null);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+  const [bulkSending, setBulkSending] = useState(false);
 
   useEffect(() => {
     if (eventId) loadData();
@@ -388,6 +389,30 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
               </p>
             </div>
             <div className="flex gap-2">
+              {guests.filter(g => g.email).length > 0 && (
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    type="button"
+                    disabled={bulkSending}
+                    onClick={async () => {
+                      if (!window.confirm(`Einladungs-E-Mail an alle ${guests.filter(g => g.email).length} Gäste mit E-Mail-Adresse senden?`)) return;
+                      setBulkSending(true);
+                      try {
+                        const res = await api.post(`/events/${eventId}/guests/email-all`, {});
+                        showToast(`${res.data.sent} E-Mail${res.data.sent !== 1 ? 's' : ''} gesendet${res.data.failed > 0 ? `, ${res.data.failed} fehlgeschlagen` : ''}`, res.data.sent > 0 ? 'success' : 'error');
+                      } catch (err: any) {
+                        showToast(err?.response?.data?.error || 'Fehler beim Massen-Versand', 'error');
+                      } finally {
+                        setBulkSending(false);
+                      }
+                    }}
+                    variant="secondary"
+                  >
+                    <Mail className="h-4 w-4" />
+                    {bulkSending ? 'Sende...' : `Alle einladen (${guests.filter(g => g.email).length})`}
+                  </Button>
+                </motion.div>
+              )}
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button
                   type="button"
