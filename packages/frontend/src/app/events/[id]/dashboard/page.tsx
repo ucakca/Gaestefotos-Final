@@ -875,6 +875,14 @@ function OverviewTab({
     api.get(`/events/${eventId}/comments?status=PENDING&limit=1`)
       .then(r => setCommentsPending(r.data?.total || 0))
       .catch(() => {});
+
+    // Polling alle 30s fuer pendingCount
+    const poll = setInterval(() => {
+      api.get(`/events/${eventId}/photos/pending-count`)
+        .then(r => { /* stats update via parent */ })
+        .catch(() => {});
+    }, 30000);
+    return () => clearInterval(poll);
   }, [eventId, stats.photos]);
   
   // Determine event status for hero card color
