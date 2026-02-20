@@ -370,6 +370,34 @@ router.put(
   }
 );
 
+// GET /:eventId/categories/count — Photo counts per category (lightweight)
+router.get('/:eventId/categories/count', optionalAuthMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const isManager = req.userId ? await hasEventManageAccess(req, eventId) : false;
+
+    const categories = await prisma.category.findMany({
+      where: { eventId, isVisible: true },
+      select: {
+        id: true,
+        name: true,
+        iconKey: true,
+        _count: {
+          select: {
+            photos: { where: { status: isManager ? undefined : 'APPROVED', deletedAt: null } },
+          },
+        },
+      },
+      orderBy: { order: 'asc' },
+    });
+
+    res.json({ categories: categories.map((c: any) => ({ id: c.id, name: c.name, iconKey: c.iconKey, count: c._count.photos })) });
+  } catch (error) {
+    logger.error('Category count error', { error: getErrorMessage(error) });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 export default router;
 
 
