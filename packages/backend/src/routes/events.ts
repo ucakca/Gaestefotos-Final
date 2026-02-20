@@ -1679,6 +1679,47 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/activity — Recent activity feed
+router.get(
+  '/:eventId/activity',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+
+      const limit = Math.min(50, parseInt(req.query.limit as string, 10) || 20);
+
+      const [recentPhotos, recentGuests] = await Promise.all([
+        prisma.photo.findMany({
+          where: { eventId, deletedAt: null },
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+          select: { id: true, uploadedBy: true, createdAt: true, status: true },
+        }),
+        prisma.guest.findMany({
+          where: { eventId },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          select: { id: true, firstName: true, lastName: true, createdAt: true, status: true },
+        }),
+      ]);
+
+      const activity = [
+        ...recentPhotos.map((p: any) => ({ type: 'photo_upload', id: p.id, name: p.uploadedBy || 'Anonym', at: p.createdAt, meta: { status: p.status, url: `/cdn/${p.id}` } })),
+        ...recentGuests.map((g: any) => ({ type: 'guest_added', id: g.id, name: `${g.firstName} ${g.lastName}`, at: g.createdAt, meta: { status: g.status } })),
+      ].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()).slice(0, limit);
+
+      res.json({ activity });
+    } catch (error: any) {
+      logger.error('Activity error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Laden der Aktivitäten' });
+    }
+  }
+);
+
 // GET /api/events/:eventId/top-uploaders — Top uploaders with photo counts
 router.get(
   '/:eventId/top-uploaders',
