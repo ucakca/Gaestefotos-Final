@@ -1679,6 +1679,41 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/top-uploaders — Top uploaders with photo counts
+router.get(
+  '/:eventId/top-uploaders',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+
+      const limit = Math.min(50, parseInt(req.query.limit as string, 10) || 10);
+
+      const groups = await prisma.photo.groupBy({
+        by: ['uploadedBy'],
+        where: { eventId, deletedAt: null, status: { not: 'DELETED' as any } },
+        _count: true,
+        orderBy: { _count: { uploadedBy: 'desc' } },
+        take: limit,
+      });
+
+      res.json({
+        uploaders: groups.map((g: any) => ({
+          name: g.uploadedBy || 'Anonym',
+          count: g._count,
+          medal: g._count >= 10 ? '🥇' : g._count >= 5 ? '🥈' : '🥉',
+        })),
+      });
+    } catch (error: any) {
+      logger.error('Top uploaders error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Laden' });
+    }
+  }
+);
+
 // GET /api/events/:eventId/webhook-logs — Recent webhook delivery logs
 router.get(
   '/:eventId/webhook-logs',
