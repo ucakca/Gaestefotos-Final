@@ -124,9 +124,10 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
     }
   };
 
-  const loadGuests = async () => {
+  const loadGuests = async (search?: string) => {
     try {
-      const { data } = await api.get(`/events/${eventId}/guests`);
+      const params = search ? `?search=${encodeURIComponent(search)}` : '';
+      const { data } = await api.get(`/events/${eventId}/guests${params}`);
       setGuests(data.guests || []);
     } catch (err) {
       void err;
