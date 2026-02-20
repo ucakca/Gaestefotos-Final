@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Calendar, Search, RefreshCw, Image, Users, Loader2, ExternalLink, UserPlus } from 'lucide-react';
+import { Calendar, Search, RefreshCw, Image, Users, Loader2, ExternalLink, UserPlus, FileDown, CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { PageTransition } from '@/components/ui/PageTransition';
@@ -14,6 +14,7 @@ interface Event {
   slug: string | null;
   dateTime: string | null;
   createdAt: string;
+  isActive?: boolean;
   _count?: {
     photos: number;
     guests: number;
@@ -150,6 +151,24 @@ export default function EventsPage() {
                         {event._count?.guests || 0}
                       </span>
                     </div>
+                    {event.isActive !== undefined && (
+                      event.isActive
+                        ? <CheckCircle className="w-4 h-4 text-green-500" aria-label="Aktiv" />
+                        : <XCircle className="w-4 h-4 text-red-400" aria-label="Gesperrt" />
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const a = document.createElement('a');
+                        a.href = `/api/events/${event.id}/export`;
+                        a.download = `event-${event.slug || event.id}.json`;
+                        a.click();
+                      }}
+                      className="p-2 rounded-lg hover:bg-app-bg transition-colors"
+                      title="Event-Daten exportieren"
+                    >
+                      <FileDown className="w-4 h-4 text-app-muted" />
+                    </button>
                     <a
                       href={`https://app.xn--gstefotos-v2a.com/events/${event.id}/dashboard`}
                       target="_blank"
