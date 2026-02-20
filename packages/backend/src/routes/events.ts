@@ -1574,6 +1574,84 @@ router.put(
   }
 );
 
+// GET /api/events/:eventId/export — Export event stats as JSON
+router.get(
+  '/:eventId/export',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+
+      const [event, photos, guests, guestbook] = await Promise.all([
+        prisma.event.findUnique({
+          where: { id: eventId },
+          select: { id: true, title: true, slug: true, dateTime: true, createdAt: true, visitCount: true },
+        }),
+        prisma.photo.findMany({
+          where: { eventId, deletedAt: null },
+          select: { id: true, uploadedBy: true, createdAt: true, status: true, sizeBytes: true },
+          orderBy: { createdAt: 'asc' },
+        }),
+        prisma.guest.findMany({
+          where: { eventId },
+          select: { firstName: true, lastName: true, email: true, createdAt: true },
+          orderBy: { createdAt: 'asc' },
+        }),
+        prisma.guestbookEntry.count({ where: { eventId } }),
+      ]);
+
+      if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+
+      const approved = photos.filter(p => p.status === 'APPROVED').length;
+      const pending = photos.filter(p => p.status === 'PENDING').length;
+      const totalBytes = photos.reduce((sum, p) => sum + (Number(p.sizeBytes) || 0), 0);
+
+      // Top uploaders
+      const uploaderMap: Record<string, number> = {};
+      for (const p of photos) {
+        const name = p.uploadedBy || 'Anonym';
+        uploaderMap[name] = (uploaderMap[name] || 0) + 1;
+      }
+      const topUploaders = Object.entries(uploaderMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([name, count]) => ({ name, count }));
+
+      res.json({
+        exportedAt: new Date().toISOString(),
+        event: {
+          id: event.id,
+          title: event.title,
+          slug: event.slug,
+          date: event.dateTime,
+          createdAt: event.createdAt,
+          visitCount: event.visitCount,
+        },
+        stats: {
+          totalPhotos: photos.length,
+          approvedPhotos: approved,
+          pendingPhotos: pending,
+          totalGuestbookEntries: guestbook,
+          totalGuests: guests.length,
+          storageMB: Math.round(totalBytes / 1024 / 1024 * 100) / 100,
+        },
+        topUploaders,
+        guests: guests.map(g => ({
+          name: `${g.firstName} ${g.lastName}`.trim(),
+          email: g.email,
+          addedAt: g.createdAt,
+        })),
+      });
+    } catch (error: any) {
+      logger.error('Event export error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Export' });
+    }
+  }
+);
+
 // POST /api/events/:eventId/clone — Clone an event (settings + config, no photos)
 router.post(
   '/:eventId/clone',
