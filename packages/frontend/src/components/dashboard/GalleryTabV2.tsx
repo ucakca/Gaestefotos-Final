@@ -754,10 +754,19 @@ export default function GalleryTabV2({
                 {(photo.status === 'REJECTED' || photo.status === 'DELETED') && (
                   <div className="absolute inset-0 bg-red-500/20" />
                 )}
-                {/* Uploader name badge on hover */}
-                {photo.uploadedBy && (
-                  <div className="absolute bottom-0 left-0 right-0 px-1.5 py-1 bg-black/60 text-white/80 text-[9px] truncate opacity-0 group-hover:opacity-100 transition-opacity">
-                    {photo.uploadedBy}
+                {/* Tags + Uploader name badge on hover */}
+                {(photo.uploadedBy || (photo.tags && photo.tags.length > 0)) && (
+                  <div className="absolute bottom-0 left-0 right-0 px-1.5 py-1 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {photo.tags && photo.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-0.5 mb-0.5">
+                        {photo.tags.slice(0, 2).map((tag: string) => (
+                          <span key={tag} className="text-[8px] bg-white/20 text-white px-1 rounded-sm cursor-pointer" onClick={e => { e.stopPropagation(); setSelectedTag(tag); }}>
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {photo.uploadedBy && <p className="text-white/80 text-[9px] truncate">{photo.uploadedBy}</p>}
                   </div>
                 )}
                 {/* Video Overlay */}
