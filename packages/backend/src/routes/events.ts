@@ -1574,6 +1574,44 @@ router.put(
   }
 );
 
+// GET /api/events/:eventId/stats — Realtime stats for dashboard
+router.get(
+  '/:eventId/stats',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
+      const [totalPhotos, approvedPhotos, pendingPhotos, todayPhotos, totalGuests, guestbookCount, visitCount] = await Promise.all([
+        prisma.photo.count({ where: { eventId, deletedAt: null, status: { not: 'DELETED' as any } } }),
+        prisma.photo.count({ where: { eventId, deletedAt: null, status: 'APPROVED' as any } }),
+        prisma.photo.count({ where: { eventId, deletedAt: null, status: 'PENDING' as any } }),
+        prisma.photo.count({ where: { eventId, deletedAt: null, createdAt: { gte: todayStart } } }),
+        prisma.guest.count({ where: { eventId } }),
+        prisma.guestbookEntry.count({ where: { eventId } }),
+        prisma.event.findUnique({ where: { id: eventId }, select: { visitCount: true } }).then(e => e?.visitCount || 0),
+      ]);
+
+      res.json({
+        photos: { total: totalPhotos, approved: approvedPhotos, pending: pendingPhotos, today: todayPhotos },
+        guests: totalGuests,
+        guestbook: guestbookCount,
+        visitors: visitCount,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (error: any) {
+      logger.error('Stats error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Laden der Statistiken' });
+    }
+  }
+);
+
 // GET /api/events/:eventId/export — Export event stats as JSON
 router.get(
   '/:eventId/export',
