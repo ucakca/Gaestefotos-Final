@@ -202,6 +202,13 @@
 | S26-11 | **Event-Report JSON-Export** | ✅ erledigt (20.02.2026) | GET /events/:id/export; Export Button im Dashboard Hero |
 | S26-12 | **Storage Ablauf-Erinnerung** | ✅ erledigt (20.02.2026) | retentionPurge.ts: tägliche E-Mail 7 Tage vor Speicher-Ablauf (Amber/Red-Template) |
 | S26-13 | **SetupTabV2 Einstellungen** | ✅ erledigt (20.02.2026) | Kommentar-Moderation Toggle + Max-Upload-Limit Toggle |
+| S26-14 | **E-Mail-Benachrichtigungen Toggle** | ✅ erledigt (20.02.2026) | disableEmailNotifications in featuresConfig + uploads.ts/comments.ts respektieren |
+| S26-15 | **Event-Klonen** | ✅ erledigt (20.02.2026) | POST /events/:id/clone + Copy-Button in EventCard Hover-Overlay |
+| S26-16 | **FaceCount Badge** | ✅ erledigt (20.02.2026) | Cyan Badge 👤N im Photo-Lightbox neben Uploader-Name |
+| S26-17 | **Photo-Sortierung** | ✅ erledigt (20.02.2026) | Backend ?sort=likes_desc|faces_desc|date_asc; Sort-Toggle in Gast-Galerie |
+| S26-18 | **Event Stats API** | ✅ erledigt (20.02.2026) | GET /events/:id/stats (photos/today/pending, guests, guestbook, visitors) |
+| S26-19 | **Visitor-Count Dashboard** | ✅ erledigt (20.02.2026) | visitCount als BESUCHER StatCard; 2x3 Grid Layout |
+| S26-20 | **Admin Events verbessert** | ✅ erledigt (20.02.2026) | isActive Badge, FileDown Export-Button, isActive+host im select (kein N+1) |
 
 ---
 
