@@ -168,6 +168,36 @@ router.delete(
   }
 );
 
+// PATCH /:eventId/guests/:guestId — Update guest fields (notes, dietary, plusOne)
+router.patch(
+  '/:eventId/guests/:guestId',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId, guestId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const { notes, dietaryRequirements, plusOneCount, status } = req.body;
+      const updateData: any = {};
+      if (notes !== undefined) updateData.notes = notes || null;
+      if (dietaryRequirements !== undefined) updateData.dietaryRequirements = dietaryRequirements || null;
+      if (typeof plusOneCount === 'number') updateData.plusOneCount = plusOneCount;
+      if (status !== undefined) updateData.status = status;
+
+      const updated = await prisma.guest.update({
+        where: { id: guestId },
+        data: updateData,
+        select: { id: true, firstName: true, lastName: true, status: true, dietaryRequirements: true, plusOneCount: true },
+      });
+
+      res.json({ guest: updated });
+    } catch (error) {
+      logger.error('Update guest error', { error: getErrorMessage(error) });
+      res.status(500).json({ error: 'Fehler beim Aktualisieren' });
+    }
+  }
+);
+
 // POST /:eventId/guests/import — Bulk import guests from JSON array
 router.post(
   '/:eventId/guests/import',
