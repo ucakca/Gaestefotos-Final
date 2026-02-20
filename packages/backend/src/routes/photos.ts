@@ -1457,6 +1457,33 @@ router.post(
   }
 );
 
+// POST /bulk/tag — assign tags to multiple photos at once
+router.post(
+  '/bulk/tag',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoIds, tags, eventId } = req.body;
+      if (!Array.isArray(photoIds) || photoIds.length === 0) return res.status(400).json({ error: 'photoIds erforderlich' });
+      if (!Array.isArray(tags)) return res.status(400).json({ error: 'tags Array erforderlich' });
+      if (!eventId) return res.status(400).json({ error: 'eventId erforderlich' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const cleanTags = tags.filter((t: any) => typeof t === 'string' && t.trim()).map((t: string) => t.trim());
+
+      const result = await prisma.photo.updateMany({
+        where: { id: { in: photoIds }, eventId },
+        data: { tags: cleanTags },
+      });
+
+      res.json({ updated: result.count, tags: cleanTags });
+    } catch (error: any) {
+      logger.error('Bulk tag error', { error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
 // POST /bulk/approve-all — approve all pending photos for an event
 router.post(
   '/bulk/approve-all',
