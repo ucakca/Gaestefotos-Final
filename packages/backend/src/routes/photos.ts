@@ -2068,6 +2068,27 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/download-stats — Top downloaded photos
+router.get('/:eventId/photos/download-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { id: true, uploadedBy: true, views: true, likes: true, createdAt: true },
+      orderBy: { views: 'desc' },
+      take: 20,
+    });
+
+    const totalViews = photos.reduce((s, p) => s + (p.views || 0), 0);
+    res.json({ topPhotos: photos, totalViews });
+  } catch (error: any) {
+    logger.error('Download stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 // GET /api/events/:eventId/photos/export-csv — Export photo list as CSV
 router.get('/:eventId/photos/export-csv', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
