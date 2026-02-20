@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { withEnergyCheck } from '../middleware/energyCheck';
+import prisma from '../config/database';
 import { enrichSystemPrompt } from '../services/eventPromptContext';
 import { logger } from '../utils/logger';
 import {
@@ -611,8 +612,6 @@ router.post('/trading-card', authMiddleware, async (req: AuthRequest, res: Respo
     }
 
     // 1. Fetch photo
-    const { PrismaClient } = await import('@prisma/client');
-    const prisma = new PrismaClient();
     const photo = await prisma.photo.findUnique({ where: { id: photoId } });
     if (!photo || !photo.url) {
       return res.status(404).json({ error: 'Foto nicht gefunden' });
@@ -622,7 +621,7 @@ router.post('/trading-card', authMiddleware, async (req: AuthRequest, res: Respo
     const photoResponse = await fetch(photo.url);
     const photoBuffer = Buffer.from(await photoResponse.arrayBuffer());
 
-    // 3. Generate stats via LLM
+    // 3. Generate stats via LLM (uses Grok → Groq → Ollama fallback chain)
     const { generateCompletion } = await import('../lib/groq');
     const nameStr = guestName || 'Mystery Guest';
 

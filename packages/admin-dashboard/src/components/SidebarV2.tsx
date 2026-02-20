@@ -41,6 +41,7 @@ import {
   BarChart3,
   ScanSearch,
   Bug,
+  Activity,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -95,6 +96,7 @@ const navigation: NavGroup[] = [
     icon: Brain,
     items: [
       { name: 'Kosten-Monitor', href: '/manage/cost-monitoring', icon: BarChart3 },
+      { name: 'Provider Monitor', href: '/manage/ai-monitoring', icon: Activity },
       { name: 'AI Features', href: '/manage/ai-features', icon: Sparkles },
       { name: 'AI Provider', href: '/manage/ai-providers', icon: Brain },
       { name: 'Prompt Studio', href: '/manage/prompt-templates', icon: ScrollText },

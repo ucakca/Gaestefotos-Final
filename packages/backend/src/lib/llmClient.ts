@@ -192,8 +192,10 @@ export async function chatCompletion(
 // ─── Auto-Fallback Wrapper ──────────────────────────────────────────────────
 
 /**
- * Chat completion with automatic Groq → Ollama fallback on rate limit (429).
- * Ollama runs locally — zero cost, no external dependency.
+ * Chat completion with automatic fallback chain:
+ * - Primary (Grok/Groq): normal call
+ * - On Grok rate limit → try Groq
+ * - On Groq rate limit (or Grok unavailable + Groq also fails) → Ollama (local, free)
  */
 export async function chatCompletionWithFallback(
   config: LLMConfig,
@@ -202,9 +204,30 @@ export async function chatCompletionWithFallback(
 ): Promise<LLMResponse> {
   try {
     return await chatCompletion(config, messages, options);
-  } catch (err: any) {
-    if (err?.isRateLimit) {
-      logger.warn('[LLM] Groq rate limit hit — falling back to Ollama (local)', { model: config.model });
+  } catch (primaryErr: any) {
+    const isRateLimit = primaryErr?.isRateLimit || primaryErr?.message?.includes('429');
+    const isGrok = config.provider === 'grok';
+    const isGroq = config.provider === 'groq';
+
+    // Grok failure → try Groq (if GROQ_API_KEY set)
+    if (isGrok && process.env.GROQ_API_KEY) {
+      try {
+        logger.warn('[LLM] Grok failed — falling back to Groq', { error: primaryErr.message });
+        const groqConfig: LLMConfig = {
+          provider: 'groq',
+          apiKey: process.env.GROQ_API_KEY,
+          baseUrl: PROVIDER_DEFAULTS.groq.baseUrl,
+          model: PROVIDER_DEFAULTS.groq.model,
+        };
+        return await chatCompletion(groqConfig, messages, options);
+      } catch (groqErr: any) {
+        logger.warn('[LLM] Groq also failed — falling back to Ollama', { error: groqErr.message });
+      }
+    }
+
+    // Groq rate limit → Ollama
+    if (isRateLimit && (isGroq || isGrok)) {
+      logger.warn('[LLM] Rate limit hit — falling back to Ollama (local)');
       const ollamaConfig: LLMConfig = {
         provider: 'ollama',
         apiKey: 'ollama',
@@ -213,7 +236,8 @@ export async function chatCompletionWithFallback(
       };
       return chatCompletion(ollamaConfig, messages, options);
     }
-    throw err;
+
+    throw primaryErr;
   }
 }
 
