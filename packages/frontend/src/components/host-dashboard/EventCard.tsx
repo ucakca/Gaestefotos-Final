@@ -1,9 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Camera, Users, ChevronRight, Clock, Package, Trash2, Settings, Eye, Image } from 'lucide-react';
+import { Calendar, MapPin, Camera, Users, ChevronRight, Clock, Package, Trash2, Settings, Eye, Image, Copy, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Event as EventType } from '@gaestefotos/shared';
+import api from '@/lib/api';
 
 interface EventCardProps {
   event: EventType;
@@ -14,6 +17,20 @@ interface EventCardProps {
 }
 
 export default function EventCard({ event, index = 0, photoCount = 0, guestCount = 0, pendingCount = 0 }: EventCardProps) {
+  const router = useRouter();
+  const [cloning, setCloning] = useState(false);
+
+  const handleClone = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCloning(true);
+    try {
+      const res = await api.post(`/events/${event.id}/clone`, {});
+      router.push(`/events/${res.data.event.id}/dashboard`);
+    } catch {
+      setCloning(false);
+    }
+  };
   const designConfig = (event.designConfig as any) || {};
   
   const profileImageStoragePath = designConfig.profileImageStoragePath;
@@ -174,6 +191,14 @@ export default function EventCard({ event, index = 0, photoCount = 0, guestCount
             >
               <Settings className="w-5 h-5 text-white" />
             </a>
+            <button
+              onClick={handleClone}
+              disabled={cloning}
+              className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl hover:bg-white/30 transition-colors disabled:opacity-50"
+              title="Event klonen"
+            >
+              {cloning ? <Loader2 className="w-5 h-5 text-white animate-spin" /> : <Copy className="w-5 h-5 text-white" />}
+            </button>
           </div>
 
           {/* Locked Overlay */}
