@@ -450,6 +450,13 @@
 | S26-259 | **Tags Click->Filter** | ✅ erledigt (21.02.2026) | Tags Pill Click setzt selectedTag Filter |
 | S26-260 | **Gast-Dropdown >8** | ✅ erledigt (21.02.2026) | GalleryTabV2: select Dropdown bei >8 Gaesten |
 | S26-261 | **Alle-Laden Button** | ✅ erledigt (21.02.2026) | GalleryTabV2: 'Alle laden' Button neben Spinner |
+| S26-262 | **Admin Storage-Stats** | ✅ erledigt (21.02.2026) | GET /admin/events/storage-stats (totalPhotos/Events/topEvents) |
+| S26-263 | **HIDDEN Filter** | ✅ erledigt (21.02.2026) | GalleryTabV2: 'hidden' in GalleryFilter + filteredPhotos |
+| S26-264 | **Foto-Beschreibung Hover** | ✅ erledigt (21.02.2026) | PhotoGrid: title + description im Hover-Overlay |
+| S26-265 | **rating_desc Sort** | ✅ erledigt (21.02.2026) | ⭐ Top Sort in Gast-Galerie (qualityScore desc) |
+| S26-266 | **🎲 Shuffle Sort** | ✅ erledigt (21.02.2026) | Gast-Galerie Sort-Toggle Math.random shuffle |
+| S26-267 | **Foto-Tags Endpoint** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/tags (unique sorted, optionalAuth) |
+| S26-268 | **Sprint S26 Abschluss** | ✅ erledigt (21.02.2026) | 268 Features in Sprint S26 implementiert + deployed |
 
 ---
 
