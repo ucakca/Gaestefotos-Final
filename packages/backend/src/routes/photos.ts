@@ -1730,6 +1730,33 @@ router.post(
   }
 );
 
+// POST /bulk/reject — Reject pending photos (all or by ID list)
+router.post(
+  '/bulk/reject',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId, photoIds } = req.body;
+      if (!eventId) return res.status(400).json({ error: 'eventId erforderlich' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const where: any = { eventId, deletedAt: null };
+      if (Array.isArray(photoIds) && photoIds.length > 0) where.id = { in: photoIds };
+      else where.status = 'PENDING';
+
+      const result = await prisma.photo.updateMany({
+        where,
+        data: { status: 'REJECTED' as any },
+      });
+
+      res.json({ rejected: result.count });
+    } catch (error: any) {
+      logger.error('Bulk reject error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Ablehnen' });
+    }
+  }
+);
+
 // POST /bulk/approve — Approve all pending photos for an event
 router.post(
   '/bulk/approve',
