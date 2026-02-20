@@ -317,6 +317,15 @@ export default function GuestManagementPage({ params }: { params: Promise<{ id: 
             }
           }}
           onViewDetails={() => setDetailGuest(row.original)}
+          onCheckin={async () => {
+            try {
+              await api.patch(`/events/${eventId}/guests/${row.original.id}/checkin`, {});
+              showToast(`${row.original.firstName} eingecheckt`, 'success');
+              loadGuests();
+            } catch {
+              showToast('Fehler beim Check-In', 'error');
+            }
+          }}
         />
       ),
     },

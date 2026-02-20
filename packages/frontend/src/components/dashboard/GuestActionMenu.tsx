@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MoreVertical, Edit, Mail, FileText, Trash2 } from 'lucide-react';
+import { MoreVertical, Edit, Mail, FileText, Trash2, CheckCircle2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +21,7 @@ export interface GuestActionMenuProps {
   onEdit?: () => void;
   onSendEmail?: () => void;
   onViewDetails?: () => void;
+  onCheckin?: () => void;
   onDelete?: () => void;
 }
 
@@ -28,6 +29,7 @@ export default function GuestActionMenu({
   onEdit,
   onSendEmail,
   onViewDetails,
+  onCheckin,
   onDelete,
 }: GuestActionMenuProps) {
   const [open, setOpen] = useState(false);
@@ -45,6 +47,15 @@ export default function GuestActionMenu({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-48">
+        {onCheckin && (
+          <DropdownMenuItem
+            onClick={() => { onCheckin(); setOpen(false); }}
+            className="cursor-pointer text-green-600"
+          >
+            <CheckCircle2 className="w-4 h-4 mr-2" />
+            <span>Check-In</span>
+          </DropdownMenuItem>
+        )}
         {onEdit && (
           <DropdownMenuItem
             onClick={() => {
