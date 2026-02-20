@@ -24,6 +24,7 @@ interface GalleryTabV2Props {
   pendingCount: number;
   eventId: string;
   onPhotosChanged?: () => void;
+  categories?: { id: string; name: string }[];
 }
 
 export default function GalleryTabV2({
@@ -33,6 +34,7 @@ export default function GalleryTabV2({
   pendingCount,
   eventId,
   onPhotosChanged,
+  categories = [],
 }: GalleryTabV2Props) {
   const { showToast } = useToastStore();
   const [selectedAlbum, setSelectedAlbum] = useState<string | null>(null);
@@ -898,8 +900,24 @@ export default function GalleryTabV2({
               {lightboxPhoto.likes > 0 && (
                 <span className="text-yellow-400 text-xs flex items-center gap-1"><Star className="w-3 h-3 fill-yellow-400" /> {lightboxPhoto.likes}</span>
               )}
-              {lightboxPhoto.category?.name && (
-                <span className="text-white/40 text-xs">{lightboxPhoto.category.name}</span>
+              {categories.length > 0 && (
+                <select
+                  value={lightboxPhoto.categoryId || ''}
+                  onChange={async (e) => {
+                    const catId = e.target.value || null;
+                    try {
+                      await api.patch(`/photos/${lightboxPhoto.id}`, { categoryId: catId });
+                      onPhotosChanged?.();
+                    } catch { /* silent */ }
+                  }}
+                  onClick={e => e.stopPropagation()}
+                  className="text-xs bg-white/10 text-white/70 border border-white/20 rounded px-2 py-0.5"
+                >
+                  <option value="">Kein Album</option>
+                  {categories.map((c: any) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
               )}
             </div>
           </motion.div>
