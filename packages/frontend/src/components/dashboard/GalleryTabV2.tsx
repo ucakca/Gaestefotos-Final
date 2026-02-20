@@ -748,6 +748,12 @@ export default function GalleryTabV2({
                 {(photo.status === 'REJECTED' || photo.status === 'DELETED') && (
                   <div className="absolute inset-0 bg-red-500/20" />
                 )}
+                {/* Uploader name badge on hover */}
+                {photo.uploadedBy && (
+                  <div className="absolute bottom-0 left-0 right-0 px-1.5 py-1 bg-black/60 text-white/80 text-[9px] truncate opacity-0 group-hover:opacity-100 transition-opacity">
+                    {photo.uploadedBy}
+                  </div>
+                )}
                 {/* Video Overlay */}
                 {photo.type === 'VIDEO' && (
                   <div className="absolute inset-0 flex items-center justify-center">
