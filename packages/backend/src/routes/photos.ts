@@ -1523,6 +1523,47 @@ router.delete(
   }
 );
 
+// GET /api/events/:eventId/photos/live-stats — Fotos heute, top Uploader
+router.get('/:eventId/photos/live-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const [todayCount, topUploaders, recentActivity] = await Promise.all([
+      prisma.photo.count({
+        where: { eventId, createdAt: { gte: todayStart }, deletedAt: null },
+      }),
+      prisma.photo.groupBy({
+        by: ['uploadedBy'],
+        where: { eventId, deletedAt: null, uploadedBy: { not: null } },
+        _count: true,
+        orderBy: { _count: { uploadedBy: 'desc' } },
+        take: 5,
+      }),
+      prisma.photo.findMany({
+        where: { eventId, deletedAt: null },
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: { createdAt: true },
+      }),
+    ]);
+
+    res.json({
+      todayCount,
+      topUploaders: topUploaders.map(u => ({ name: u.uploadedBy || 'Anonym', count: u._count })),
+      lastPhotoAt: recentActivity[0]?.createdAt || null,
+    });
+  } catch (error: any) {
+    logger.error('Live stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Laden der Live-Stats' });
+  }
+});
+
 // GET /api/events/:eventId/photos/download-zip — Download all event photos as ZIP
 router.get(
   '/:eventId/photos/download-zip',
