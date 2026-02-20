@@ -71,7 +71,7 @@ export default function PublicEventPageV2() {
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [faceSearchOpen, setFaceSearchOpen] = useState(false);
   const [faceFilterPhotoIds, setFaceFilterPhotoIds] = useState<string[] | null>(null);
-  const [photoSort, setPhotoSort] = useState<'date_desc' | 'likes_desc' | 'faces_desc'>('date_desc');
+  const [photoSort, setPhotoSort] = useState<'date_desc' | 'likes_desc' | 'faces_desc' | 'views_desc'>('date_desc');
   const [styleTransferOpen, setStyleTransferOpen] = useState(false);
   const [aiGamesOpen, setAiGamesOpen] = useState(false);
   const [aiEffectsOpen, setAiEffectsOpen] = useState(false);
@@ -421,7 +421,7 @@ export default function PublicEventPageV2() {
           {/* Sort Toggle */}
           {filteredPhotos.length > 5 && (
             <div className="flex items-center gap-1.5 px-4 pt-2">
-              {(['date_desc', 'likes_desc', 'faces_desc'] as const).map(s => (
+              {(['date_desc', 'likes_desc', 'faces_desc', 'views_desc'] as const).map(s => (
                 <button
                   key={s}
                   onClick={() => setPhotoSort(s)}
@@ -431,7 +431,7 @@ export default function PublicEventPageV2() {
                       : 'border-border text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  {s === 'date_desc' ? '🕐 Neu' : s === 'likes_desc' ? '❤️ Beliebt' : '👥 Gruppen'}
+                  {s === 'date_desc' ? '🕐 Neu' : s === 'likes_desc' ? '❤️ Beliebt' : s === 'faces_desc' ? '👥 Gruppen' : '👁 Meistgesehen'}
                 </button>
               ))}
             </div>
@@ -499,6 +499,7 @@ export default function PublicEventPageV2() {
                 ).slice().sort((a: any, b: any) => {
                   if (photoSort === 'likes_desc') return (b.likeCount || 0) - (a.likeCount || 0);
                   if (photoSort === 'faces_desc') return (b.faceCount || 0) - (a.faceCount || 0);
+                  if (photoSort === 'views_desc') return (b.views || 0) - (a.views || 0);
                   return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
                 })) as any}
                 eventId={event.id}
