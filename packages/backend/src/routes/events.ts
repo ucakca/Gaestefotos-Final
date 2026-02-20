@@ -1667,6 +1667,49 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/summary — Compact event overview for external integrations
+router.get(
+  '/:eventId/summary',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+
+      const [event, photoCount, guestCount, pendingCount] = await Promise.all([
+        prisma.event.findUnique({
+          where: { id: eventId },
+          select: { id: true, title: true, slug: true, dateTime: true, isActive: true, visitCount: true, featuresConfig: true },
+        }),
+        prisma.photo.count({ where: { eventId, deletedAt: null, status: { not: 'DELETED' as any } } }),
+        prisma.guest.count({ where: { eventId } }),
+        prisma.photo.count({ where: { eventId, status: 'PENDING' as any, deletedAt: null } }),
+      ]);
+
+      if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+
+      const frontendUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
+      res.json({
+        id: event.id,
+        title: event.title,
+        slug: event.slug,
+        url: `${frontendUrl}/e3/${event.slug}`,
+        dateTime: event.dateTime,
+        isActive: event.isActive,
+        visitors: event.visitCount || 0,
+        photos: photoCount,
+        guests: guestCount,
+        pendingModeration: pendingCount,
+      });
+    } catch (error: any) {
+      logger.error('Summary error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Laden der Zusammenfassung' });
+    }
+  }
+);
+
 // GET /api/events/:eventId/trends — Photo upload trends for last N days
 router.get(
   '/:eventId/trends',
