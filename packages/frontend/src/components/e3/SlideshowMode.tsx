@@ -35,6 +35,7 @@ interface SlideshowModeProps {
   eventTitle?: string;
   eventSlug?: string;
   eventId?: string;
+  slideshowSpeed?: number;
 }
 
 interface FloatingHeart {
@@ -56,10 +57,11 @@ export default function SlideshowMode({
   eventTitle = '',
   eventSlug = '',
   eventId = '',
+  slideshowSpeed = 7,
 }: SlideshowModeProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [intervalSeconds] = useState(7);
+  const [intervalSeconds] = useState(Math.max(2, Math.min(30, slideshowSpeed)));
   const [showControls, setShowControls] = useState(true);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [floatingHearts, setFloatingHearts] = useState<FloatingHeart[]>([]);
