@@ -145,10 +145,10 @@ export default function SystemAnalysisPage() {
           {loadH ? <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground"/></div> : health ? (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { label:'API Server', icon:Server, color:'text-primary', status:health.status, extra:formatUptime(health.uptime) },
-                { label:'PostgreSQL', icon:Database, color:'text-blue-500', status:health.checks.database.status, extra:`${health.checks.database.latencyMs??'?'}ms` },
-                { label:'Redis', icon:Radio, color:'text-red-500', status:health.checks.redis.status, extra:`${health.checks.redis.latencyMs??'?'}ms` },
-                { label:'Storage (S3)', icon:HardDrive, color:'text-purple-500', status:health.checks.storage.status, extra:'' },
+                { label:'API Server', icon:Server, color:'text-primary', status:health.status, extra:formatUptime(health.uptime ?? 0) },
+                { label:'PostgreSQL', icon:Database, color:'text-blue-500', status:health.checks?.database?.status ?? 'unknown', extra:`${health.checks?.database?.latencyMs??'?'}ms` },
+                { label:'Redis', icon:Radio, color:'text-red-500', status:health.checks?.redis?.status ?? 'unknown', extra:`${health.checks?.redis?.latencyMs??'?'}ms` },
+                { label:'Storage (S3)', icon:HardDrive, color:'text-purple-500', status:health.checks?.storage?.status ?? 'unknown', extra:'' },
               ].map(({label,icon:Icon,color,status,extra})=>(
                 <div key={label} className="rounded-xl border border-border bg-card p-4 text-center">
                   <Icon className={`w-6 h-6 mx-auto mb-2 ${color}`}/>

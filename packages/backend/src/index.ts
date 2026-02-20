@@ -473,13 +473,10 @@ app.use((req, res, next) => {
 // Maintenance mode gate (must be after request parsing, before routes)
 app.use(maintenanceModeMiddleware);
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'healthy', version: '2.0.0' });
-});
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'healthy', version: '2.0.0' });
+// Health check: handled by healthRoutes (/api/health) registered below.
+// A simple /health alias is kept for load-balancer probes that hit the root path.
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok' });
 });
 
 app.get('/api/version', (_req, res) => {
