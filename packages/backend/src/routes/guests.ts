@@ -195,6 +195,40 @@ router.patch(
   }
 );
 
+// GET /:eventId/guests/stats — Guest counts by status
+router.get(
+  '/:eventId/guests/stats',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const [total, accepted, declined, pending, withEmail, plusOnes] = await Promise.all([
+        prisma.guest.count({ where: { eventId } }),
+        prisma.guest.count({ where: { eventId, status: 'ACCEPTED' as any } }),
+        prisma.guest.count({ where: { eventId, status: 'DECLINED' as any } }),
+        prisma.guest.count({ where: { eventId, status: 'PENDING' as any } }),
+        prisma.guest.count({ where: { eventId, email: { not: null } } }),
+        prisma.guest.aggregate({ where: { eventId }, _sum: { plusOneCount: true } }),
+      ]);
+
+      res.json({
+        total,
+        accepted,
+        declined,
+        pending,
+        withEmail,
+        plusOnes: plusOnes._sum.plusOneCount || 0,
+        totalWithPlusOnes: total + (plusOnes._sum.plusOneCount || 0),
+      });
+    } catch (error) {
+      logger.error('Guest stats error', { error: getErrorMessage(error) });
+      res.status(500).json({ error: 'Fehler beim Laden' });
+    }
+  }
+);
+
 // GET /:eventId/guests/export-csv — Download guest list as CSV
 router.get(
   '/:eventId/guests/export-csv',
