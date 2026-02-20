@@ -443,6 +443,13 @@
 | S26-252 | **qualityFilter** | ✅ erledigt (21.02.2026) | GalleryTabV2: qualityScore Filter (all/high/medium/low) |
 | S26-253 | **Foto Title/Desc Lightbox** | ✅ erledigt (21.02.2026) | GalleryTabV2 Lightbox: title + description anzeigen |
 | S26-254 | **Sprint S26 Milestone** | ✅ erledigt (21.02.2026) | 254 Sprint-Tasks implementiert, deployed, committed |
+| S26-255 | **HIDDEN Filter Tab** | ✅ erledigt (21.02.2026) | GalleryTabV2: 'hidden' in GalleryFilter Union + filteredPhotos |
+| S26-256 | **Download-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/download-stats (topPhotos by views) |
+| S26-257 | **Bulk-Approve/Reject** | ✅ erledigt (21.02.2026) | POST /photos/bulk/approve + /bulk/reject Endpoints |
+| S26-258 | **qualityFilter** | ✅ erledigt (21.02.2026) | GalleryTabV2 qualityScore Filter (all/high/medium/low) |
+| S26-259 | **Tags Click->Filter** | ✅ erledigt (21.02.2026) | Tags Pill Click setzt selectedTag Filter |
+| S26-260 | **Gast-Dropdown >8** | ✅ erledigt (21.02.2026) | GalleryTabV2: select Dropdown bei >8 Gaesten |
+| S26-261 | **Alle-Laden Button** | ✅ erledigt (21.02.2026) | GalleryTabV2: 'Alle laden' Button neben Spinner |
 
 ---
 
