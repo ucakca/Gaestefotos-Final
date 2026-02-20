@@ -71,6 +71,7 @@ export default function PublicEventPageV2() {
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [faceSearchOpen, setFaceSearchOpen] = useState(false);
   const [faceFilterPhotoIds, setFaceFilterPhotoIds] = useState<string[] | null>(null);
+  const [photoSort, setPhotoSort] = useState<'date_desc' | 'likes_desc' | 'faces_desc'>('date_desc');
   const [styleTransferOpen, setStyleTransferOpen] = useState(false);
   const [aiGamesOpen, setAiGamesOpen] = useState(false);
   const [aiEffectsOpen, setAiEffectsOpen] = useState(false);
@@ -417,6 +418,25 @@ export default function PublicEventPageV2() {
             </div>
           )}
 
+          {/* Sort Toggle */}
+          {filteredPhotos.length > 5 && (
+            <div className="flex items-center gap-1.5 px-4 pt-2">
+              {(['date_desc', 'likes_desc', 'faces_desc'] as const).map(s => (
+                <button
+                  key={s}
+                  onClick={() => setPhotoSort(s)}
+                  className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
+                    photoSort === s
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {s === 'date_desc' ? '🕐 Neu' : s === 'likes_desc' ? '❤️ Beliebt' : '👥 Gruppen'}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* V0 Album Filter (Pills) - only on Feed */}
           <AlbumFilter
             categories={categories.map(cat => ({
@@ -473,9 +493,14 @@ export default function PublicEventPageV2() {
               </Container>
             ) : (
               <PhotoGrid
-                photos={(faceFilterPhotoIds
+                photos={((faceFilterPhotoIds
                   ? filteredPhotos.filter((p: any) => faceFilterPhotoIds.includes(p.id))
-                  : filteredPhotos) as any}
+                  : filteredPhotos
+                ).slice().sort((a: any, b: any) => {
+                  if (photoSort === 'likes_desc') return (b.likeCount || 0) - (a.likeCount || 0);
+                  if (photoSort === 'faces_desc') return (b.faceCount || 0) - (a.faceCount || 0);
+                  return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                })) as any}
                 eventId={event.id}
                 eventSlug={slug}
                 allowDownloads={featuresConfig?.allowDownloads !== false}
