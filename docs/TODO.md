@@ -221,6 +221,10 @@
 | S26-30 | **QR-Designer Quick-Action** | ✅ erledigt (20.02.2026) | Dashboard Quick-Actions: QR-Designer Link fuer Print-Ready QR-Code |
 | S26-31 | **EventCard visitCount** | ✅ erledigt (20.02.2026) | Eye-Badge fuer Besucher-Anzahl in EventCard Meta-Info |
 | S26-32 | **Socket.IO Realtime** | ✅ erledigt | useRealtimeNotifications, newPhotoCount, clearNewPhotos bereits aktiv |
+| S26-33 | **Gästeliste CSV-Export** | ✅ erledigt (20.02.2026) | GET /events/:id/guests/export-csv; BOM-UTF-8 fuer Excel; Frontend Button |
+| S26-34 | **Gäste QR-Link Button** | ✅ erledigt (20.02.2026) | Gästeliste Header: QR-Link kopiert via invite-qr API |
+| S26-35 | **Kategorie-Count Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/categories/count (photo counts per category) |
+| S26-36 | **Guest Invite QR API** | ✅ erledigt (20.02.2026) | GET /events/:id/guests/invite-qr liefert Einladungs-URL |
 
 ---
 
