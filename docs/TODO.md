@@ -330,7 +330,13 @@
 | S26-139 | **Top-10 Fotos** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/top (views_desc, optionalAuth) |
 | S26-140 | **G\u00e4stebuch Bulk-Moderate** | \u2705 erledigt (20.02.2026) | POST /events/:id/guestbook/bulk-moderate (approve/reject/delete) |
 | S26-141 | **allowDeleteOwn Lightbox** | \u2705 erledigt (20.02.2026) | Trash2-Button in Lightbox + e3/[slug] Passthrough via localStorage |
-| S26-142 | **Sprint S26 ABGESCHLOSSEN** | \u2705 erledigt (20.02.2026) | 142 Features/Fixes implementiert, deployed, committed |
+| S26-142 | **Sprint S26 ABGESCHLOSSEN** | ✅ erledigt (20.02.2026) | 142 Features/Fixes implementiert, deployed, committed |
+| S26-143 | **Photo-Tags Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/tags (unique tags sorted, optionalAuth) |
+| S26-144 | **Analytics Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/analytics (photos+guests+engagement in einem Call) |
+| S26-145 | **⭐ Top Sort** | ✅ erledigt (20.02.2026) | rating_desc Sort-Toggle in Gast-Galerie (qualityScore desc) |
+| S26-146 | **Kategorie-Schnellwechsel** | ✅ erledigt (20.02.2026) | GalleryTabV2 Lightbox: Select-Dropdown + categories prop |
+| S26-147 | **Foto-Bewertungs-Aggregat** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/ratings (avgRating, voteCount groupBy) |
+| S26-148 | **Top-10 Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/top (views_desc, optionalAuth, limit 50) |
 
 ---
 
