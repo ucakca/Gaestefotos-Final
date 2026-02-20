@@ -261,36 +261,91 @@ async function callOpenAIImageEdit(
   return Buffer.from(b64, 'base64');
 }
 
-// Get the configured AI provider for style transfer
-// Priority: 1) PromptTemplate.providerId → 2) AiFeatureMapping → 3) any active IMAGE_GEN
-async function getStyleTransferProvider(promptProviderId?: string | null) {
-  // 1. If the prompt template specifies a provider, use it
-  if (promptProviderId) {
-    const provider = await prisma.aiProvider.findUnique({
-      where: { id: promptProviderId },
-    });
-    if (provider?.isActive) {
-      return { provider, model: null };
+// ── Shared Replicate polling ──────────────────────────────────────────────────
+async function pollReplicateResult(apiKey: string, predictionId: string): Promise<Buffer> {
+  for (let i = 0; i < 90; i++) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const poll = await axios.get(
+      `https://api.replicate.com/v1/predictions/${predictionId}`,
+      { headers: { Authorization: `Token ${apiKey}` } },
+    );
+    if (poll.data.status === 'succeeded') {
+      const url = Array.isArray(poll.data.output) ? poll.data.output[0] : poll.data.output;
+      const imgRes = await axios.get(url, { responseType: 'arraybuffer', timeout: 30000 });
+      return Buffer.from(imgRes.data);
     }
+    if (poll.data.status === 'failed') throw new Error(`Replicate: ${poll.data.error || 'unknown'}`);
+  }
+  throw new Error('Replicate timeout (90s)');
+}
+
+// ── PuLID — Flux.1 [dev] + face identity preservation ────────────────────────
+async function callPuLID(apiKey: string, imageBuffer: Buffer, prompt: string, versionHash: string): Promise<Buffer> {
+  const dataUri = `data:image/jpeg;base64,${imageBuffer.toString('base64')}`;
+  const resp = await axios.post(
+    'https://api.replicate.com/v1/predictions',
+    {
+      version: versionHash,
+      input: { main_face_image: dataUri, prompt, num_steps: 20, start_step: 4, guidance_scale: 4, true_cfg: 1, max_sequence_length: 128 },
+    },
+    { headers: { Authorization: `Token ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 15000 },
+  );
+  logger.info('[StyleTransfer] PuLID prediction started', { id: resp.data.id });
+  return pollReplicateResult(apiKey, resp.data.id);
+}
+
+// ── Flux.1 [dev] img2img — höhere Qualität als SDXL ──────────────────────────
+async function callFlux1Dev(apiKey: string, imageBuffer: Buffer, prompt: string, strength: number, versionHash: string): Promise<Buffer> {
+  const dataUri = `data:image/jpeg;base64,${imageBuffer.toString('base64')}`;
+  const resp = await axios.post(
+    'https://api.replicate.com/v1/predictions',
+    {
+      version: versionHash,
+      input: { image: dataUri, prompt, strength, num_inference_steps: 28, guidance: 3.5, output_format: 'jpeg', output_quality: 90 },
+    },
+    { headers: { Authorization: `Token ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 15000 },
+  );
+  logger.info('[StyleTransfer] Flux.1-dev prediction started', { id: resp.data.id });
+  return pollReplicateResult(apiKey, resp.data.id);
+}
+
+// ── Provider Priority List — reads config.providerPriority from feature mapping
+interface ProviderConfig { provider: any; model: string | null; }
+
+async function getStyleTransferProviderList(promptProviderId?: string | null): Promise<ProviderConfig[]> {
+  const results: ProviderConfig[] = [];
+
+  if (promptProviderId) {
+    const p = await prisma.aiProvider.findUnique({ where: { id: promptProviderId } });
+    if (p?.isActive) results.push({ provider: p, model: null });
   }
 
-  // 2. Check feature mapping
   const mapping = await prisma.aiFeatureMapping.findUnique({
     where: { feature: 'style_transfer' },
     include: { provider: true },
   });
 
-  if (mapping?.isEnabled && mapping.provider.isActive) {
-    return { provider: mapping.provider, model: mapping.model };
+  if (mapping) {
+    const priority: string[] = (mapping.config as any)?.providerPriority || [];
+    if (priority.length > 0) {
+      const allProviders = await prisma.aiProvider.findMany({ where: { isActive: true } });
+      const bySlug = Object.fromEntries(allProviders.map(p => [p.slug, p]));
+      for (const slug of priority) {
+        const p = bySlug[slug];
+        if (p && !results.find(r => r.provider.id === p.id)) results.push({ provider: p, model: mapping.model });
+      }
+    }
+    if (mapping.isEnabled && mapping.provider?.isActive && !results.find(r => r.provider.id === mapping.provider.id)) {
+      results.push({ provider: mapping.provider, model: mapping.model });
+    }
   }
 
-  // 3. Fallback: find any active IMAGE_GEN provider
-  const provider = await prisma.aiProvider.findFirst({
-    where: { type: 'IMAGE_GEN', isActive: true },
-    orderBy: { isDefault: 'desc' },
-  });
+  if (results.length === 0) {
+    const p = await prisma.aiProvider.findFirst({ where: { type: 'IMAGE_GEN', isActive: true } });
+    if (p) results.push({ provider: p, model: null });
+  }
 
-  return provider ? { provider, model: null } : null;
+  return results;
 }
 
 // Execute style transfer via the configured provider
@@ -336,65 +391,72 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
     throw new Error(`Unbekannter Style: ${request.style}`);
   }
 
-  // Get provider (prompt-level → feature-mapping → fallback)
-  const config = await getStyleTransferProvider((resolvedPrompt as any).providerId || null);
-  if (!config) {
-    throw new Error('Kein AI-Provider für Style Transfer konfiguriert. Bitte in Admin > AI Provider einrichten.');
-  }
+  const providerList = await getStyleTransferProviderList((resolvedPrompt as any).providerId || null);
+  if (providerList.length === 0) throw new Error('Kein AI-Provider für Style Transfer konfiguriert.');
+  if (!photo || !photo.url) throw new Error('Foto nicht gefunden');
 
-  const { provider, model } = config;
+  logger.info('[StyleTransfer] Prompt resolved', { feature: promptFeature, source: resolvedPrompt.source, providers: providerList.map(p => p.provider.slug) });
 
-  logger.info('[StyleTransfer] Prompt resolved', {
-    feature: promptFeature,
-    source: resolvedPrompt.source,
-    provider: provider.slug,
-  });
-
-  if (!photo || !photo.url) {
-    throw new Error('Foto nicht gefunden');
-  }
-
-  // Decrypt API key
-  let apiKey = '';
-  if (provider.apiKeyEncrypted && provider.apiKeyIv && provider.apiKeyTag) {
-    apiKey = decryptValue({ encrypted: provider.apiKeyEncrypted, iv: provider.apiKeyIv, tag: provider.apiKeyTag });
-  }
-
-  const effectiveModel = model || provider.defaultModel || 'stable-diffusion-xl-1024-v1-0';
   const strength = request.strength ?? style.strength;
-  const finalPrompt = request.prompt
-    ? `${request.prompt}, ${style.prompt}`
-    : style.prompt;
+  const finalPrompt = request.prompt ? `${request.prompt}, ${style.prompt}` : style.prompt;
 
   // ── 3. Preprocess image ──
   const t2 = Date.now();
-  const providerSlug = provider.slug.toLowerCase();
-  // For OpenAI gpt-image-1: use PNG, max 1024px; for others: JPEG
-  const imageBuffer = await preprocessImage(photo.url, providerSlug.includes('openai'));
+  const firstSlug = providerList[0].provider.slug.toLowerCase();
+  const imageBuffer = await preprocessImage(photo.url, firstSlug.includes('openai'));
   timings.preprocess = Date.now() - t2;
 
-  // ── 4. Call AI provider ──
+  // ── 4. Call AI with priority fallback ──
   const t3 = Date.now();
-  let resultBuffer: Buffer;
-  if (providerSlug.includes('openai')) {
-    // gpt-image-1: instruction-style edit prompt preserves face identity
-    const editPrompt = style.editPrompt || finalPrompt;
-    resultBuffer = await callOpenAIImageEdit(apiKey, imageBuffer, editPrompt);
-  } else if (providerSlug.includes('stability') || providerSlug.includes('stable')) {
-    resultBuffer = await callStabilityAI(apiKey, imageBuffer, finalPrompt, style.negativePrompt, strength, effectiveModel);
-  } else if (providerSlug.includes('replicate')) {
-    resultBuffer = await callReplicate(apiKey, imageBuffer, finalPrompt, style.negativePrompt, strength, effectiveModel);
-  } else {
-    throw new Error(`Style Transfer wird für Provider "${provider.name}" nicht unterstützt. Nutze OpenAI, Stability AI oder Replicate.`);
+  let resultBuffer: Buffer | null = null;
+  let usedProvider = providerList[0].provider;
+  let usedModel = '';
+  let lastError: Error | null = null;
+
+  for (const { provider, model } of providerList) {
+    const slug = provider.slug.toLowerCase();
+    let apiKey = '';
+    if (provider.apiKeyEncrypted && provider.apiKeyIv && provider.apiKeyTag) {
+      apiKey = decryptValue({ encrypted: provider.apiKeyEncrypted, iv: provider.apiKeyIv, tag: provider.apiKeyTag });
+    }
+    const effectiveModel = model || provider.defaultModel || 'stable-diffusion-xl-1024-v1-0';
+    try {
+      logger.info(`[StyleTransfer] Trying provider: ${provider.slug}`);
+      if (slug.includes('openai')) {
+        const pngBuf = slug === firstSlug ? imageBuffer : await preprocessImage(photo.url, true);
+        resultBuffer = await callOpenAIImageEdit(apiKey, pngBuf, style.editPrompt || finalPrompt);
+      } else if (slug.includes('pulid')) {
+        resultBuffer = await callPuLID(apiKey, imageBuffer, style.editPrompt || finalPrompt, effectiveModel);
+      } else if (slug.includes('flux')) {
+        resultBuffer = await callFlux1Dev(apiKey, imageBuffer, style.editPrompt || finalPrompt, strength, effectiveModel);
+      } else if (slug.includes('stability') || slug.includes('stable')) {
+        resultBuffer = await callStabilityAI(apiKey, imageBuffer, finalPrompt, style.negativePrompt, strength, effectiveModel);
+      } else if (slug.includes('replicate')) {
+        resultBuffer = await callReplicate(apiKey, imageBuffer, finalPrompt, style.negativePrompt, strength, effectiveModel);
+      } else {
+        throw new Error(`Provider "${provider.name}" für Style Transfer nicht unterstützt.`);
+      }
+      usedProvider = provider;
+      usedModel = effectiveModel;
+      break;
+    } catch (err: any) {
+      lastError = err;
+      logger.warn(`[StyleTransfer] ${provider.slug} failed → trying fallback`, { err: err.message });
+    }
   }
+
+  if (!resultBuffer) throw lastError || new Error('Alle Provider fehlgeschlagen.');
   timings.aiCall = Date.now() - t3;
+
+  const provider = usedProvider;
+  const effectiveModel = usedModel;
 
   // ── 5. Store result to SeaweedFS ──
   const t4 = Date.now();
   const storageKey = await storageService.uploadFile(
     request.eventId,
     `ai-style-${request.style}-${request.photoId}.jpg`,
-    resultBuffer,
+    resultBuffer!,
     'image/jpeg',
   );
   const outputUrl = await storageService.getFileUrl(storageKey, 7200);
@@ -419,7 +481,7 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
       model: effectiveModel,
       durationMs,
       success: true,
-      costCents: estimateCost(providerSlug),
+      costCents: estimateCost(provider.slug),
     },
   }).catch(err => logger.error('[StyleTransfer] Failed to log usage', { err }));
 
@@ -470,67 +532,29 @@ async function callStabilityAI(
   throw new Error('Stability AI: Keine Bilddaten in der Antwort');
 }
 
-// Replicate img2img (accepts preprocessed Buffer, returns Buffer)
+// Replicate SDXL img2img — uses shared polling helper
 async function callReplicate(
   apiKey: string, imageBuffer: Buffer, prompt: string,
   negativePrompt: string | undefined, strength: number, _model: string
 ): Promise<Buffer> {
-  // Convert buffer to data URI for Replicate API
   const dataUri = `data:image/jpeg;base64,${imageBuffer.toString('base64')}`;
-
-  // Use SDXL instead of old SD 1.5 — faster cold-start, better quality, fewer steps needed
   const response = await axios.post(
     'https://api.replicate.com/v1/predictions',
     {
       version: '39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b', // SDXL img2img
-      input: {
-        image: dataUri,
-        prompt,
-        negative_prompt: negativePrompt || '',
-        prompt_strength: strength,
-        num_inference_steps: 20,
-        guidance_scale: 7.5,
-      },
+      input: { image: dataUri, prompt, negative_prompt: negativePrompt || '', prompt_strength: strength, num_inference_steps: 20, guidance_scale: 7.5 },
     },
-    {
-      headers: {
-        Authorization: `Token ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      timeout: 15000,
-    },
+    { headers: { Authorization: `Token ${apiKey}`, 'Content-Type': 'application/json' }, timeout: 15000 },
   );
-
-  const predictionId = response.data.id;
-  logger.info('[StyleTransfer] Replicate prediction started', { predictionId });
-
-  // Poll every 1s (was 2s), max 60s (was 120s)
-  for (let i = 0; i < 60; i++) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const pollRes = await axios.get(
-      `https://api.replicate.com/v1/predictions/${predictionId}`,
-      { headers: { Authorization: `Token ${apiKey}` } },
-    );
-
-    if (pollRes.data.status === 'succeeded') {
-      const output = pollRes.data.output;
-      const outputUrl = Array.isArray(output) ? output[0] : output;
-      // Download result image as Buffer
-      const imgRes = await axios.get(outputUrl, { responseType: 'arraybuffer', timeout: 15000 });
-      return Buffer.from(imgRes.data);
-    }
-    if (pollRes.data.status === 'failed') {
-      throw new Error(`Replicate error: ${pollRes.data.error || 'Unknown'}`);
-    }
-  }
-
-  throw new Error('Style Transfer Timeout (60s)');
+  logger.info('[StyleTransfer] SDXL prediction started', { id: response.data.id });
+  return pollReplicateResult(apiKey, response.data.id);
 }
 
 function estimateCost(slug: string): number {
-  if (slug.includes('openai')) return 12;    // ~$0.10-0.15 per gpt-image-1 medium
-  if (slug.includes('stability')) return 3;  // ~$0.03 per image
-  if (slug.includes('replicate')) return 2;  // ~$0.02 per image
+  if (slug.includes('openai')) return 12;     // ~$0.12 per gpt-image-1 medium
+  if (slug.includes('pulid')) return 6;       // ~$0.05-0.08 per image (Flux+PuLID)
+  if (slug.includes('flux')) return 4;        // ~$0.03-0.05 per image (Flux.1-dev)
+  if (slug.includes('stability')) return 3;   // ~$0.03 per image
+  if (slug.includes('replicate')) return 2;   // ~$0.02 per image (SDXL)
   return 5;
 }

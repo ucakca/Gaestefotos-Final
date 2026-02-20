@@ -159,6 +159,12 @@ export default function AiFeaturesPage() {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
+  // Provider priority routing for style_transfer
+  const [priority, setPriority] = useState<[string, string, string]>(['', '', '']);
+  const [savingPriority, setSavingPriority] = useState(false);
+
+  const imageGenProviders = providers.filter(p => p.type === 'IMAGE_GEN');
+
   const loadData = useCallback(async () => {
     try {
       const [featRes, mapRes, provRes, promptRes] = await Promise.all([
@@ -169,8 +175,17 @@ export default function AiFeaturesPage() {
       ]);
       setFeatures(featRes.data.features || []);
       setMappings(mapRes.data.mappings || []);
-      setProviders((provRes.data.providers || []).filter((p: AiProvider) => p.isActive));
+      const activeProviders = (provRes.data.providers || []).filter((p: AiProvider) => p.isActive);
+      setProviders(activeProviders);
       setPrompts(promptRes.data.templates || []);
+      // Load existing priority from style_transfer mapping config
+      const stMap = (mapRes.data.mappings || []).find((m: any) => m.feature === 'style_transfer');
+      const existingPriority: string[] = (stMap?.config as any)?.providerPriority || [];
+      setPriority([
+        existingPriority[0] || stMap?.provider?.slug || '',
+        existingPriority[1] || '',
+        existingPriority[2] || '',
+      ]);
     } catch (err) {
       toast.error('Fehler beim Laden der AI-Features');
     } finally {
@@ -302,6 +317,61 @@ export default function AiFeaturesPage() {
             <div className="text-xs text-gray-400 mt-0.5">Style-Transfer-Stile</div>
           </ModernCard>
         </div>
+
+        {/* Style Transfer Provider Routing Card */}
+        <ModernCard className="p-5 border border-pink-500/20">
+          <div className="flex items-center gap-2 mb-4">
+            <Wand2 className="w-5 h-5 text-pink-400" />
+            <h2 className="text-white font-semibold">Style Transfer — Provider-Priorisierung</h2>
+            <span className="ml-2 text-xs text-gray-400 bg-gray-700 rounded px-2 py-0.5">auto-fallback</span>
+          </div>
+          <p className="text-xs text-gray-400 mb-4">
+            Priorität 1 wird zuerst versucht. Bei Fehler automatisch Fallback auf Priorität 2 → 3.
+            Der Provider-Slug muss mit dem Slug in <span className="text-gray-300">AI Providers</span> übereinstimmen.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            {(['Priorität 1 (Primär)', 'Priorität 2 (Fallback)', 'Priorität 3 (Notfall)'] as const).map((label, idx) => (
+              <div key={idx}>
+                <label className="text-xs text-gray-400 block mb-1">{label}</label>
+                <select
+                  value={priority[idx]}
+                  onChange={e => setPriority(prev => { const n = [...prev] as [string,string,string]; n[idx] = e.target.value; return n; })}
+                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/40"
+                >
+                  <option value="">(keiner)</option>
+                  {imageGenProviders.map(p => (
+                    <option key={p.slug} value={p.slug}>{p.name} [{p.slug}]</option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <p className="text-xs text-gray-500">
+              PuLID = beste Gesichtstreue (Einzelporträt) · Flux.1 = hohe Qualität · OpenAI = Multi-Gesicht · SDXL = günstigster Fallback
+            </p>
+            <button
+              onClick={async () => {
+                setSavingPriority(true);
+                try {
+                  const slugs = priority.filter(Boolean);
+                  const stMap = mappings.find(m => m.feature === 'style_transfer');
+                  await api.put('/admin/ai-providers/features/mappings/style_transfer', {
+                    providerId: stMap?.provider?.id || imageGenProviders[0]?.id,
+                    config: { providerPriority: slugs },
+                  });
+                  toast.success('Routing gespeichert ✓');
+                  loadData();
+                } catch { toast.error('Fehler beim Speichern'); } finally { setSavingPriority(false); }
+              }}
+              disabled={savingPriority}
+              className="flex items-center gap-2 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-sm rounded-lg transition-colors disabled:opacity-50"
+            >
+              {savingPriority ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+              Speichern
+            </button>
+          </div>
+        </ModernCard>
 
         {/* Search + Filter */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
