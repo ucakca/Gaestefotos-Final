@@ -1285,6 +1285,49 @@ router.post(
   }
 );
 
+// POST /:photoId/report — Guest reports a photo to host
+router.post(
+  '/:photoId/report',
+  optionalAuthMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoId } = req.params;
+      const { reason } = req.body;
+
+      const photo = await prisma.photo.findUnique({
+        where: { id: photoId },
+        include: { event: { select: { id: true, hostId: true, title: true, slug: true } } },
+      });
+      if (!photo || photo.deletedAt) return res.status(404).json({ error: 'Foto nicht gefunden' });
+
+      // Non-blocking: notify host
+      (async () => {
+        try {
+          const host = await prisma.user.findUnique({ where: { id: photo.event.hostId }, select: { email: true } });
+          if (!host?.email) return;
+          const { emailService } = await import('../services/email');
+          if (!(await emailService.testConnection())) return;
+          const frontendUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
+          await emailService.sendCustomEmail({
+            to: host.email,
+            subject: `⚠️ Foto gemeldet: "${photo.event.title}"`,
+            text: `Ein Gast hat ein Foto in deinem Event "${photo.event.title}" gemeldet.\n\nGrund: ${reason || 'Kein Grund angegeben'}\nFoto-ID: ${photoId}\n\nEvent: ${frontendUrl}/events/${photo.event.id}/photos`,
+            html: `<p>Ein Gast hat ein Foto in <strong>${photo.event.title}</strong> gemeldet.</p><p><strong>Grund:</strong> ${reason || 'Kein Grund angegeben'}</p><p><a href="${frontendUrl}/events/${photo.event.id}/photos">Fotos moderieren</a></p>`,
+          });
+        } catch (err: any) {
+          logger.warn('Report notification failed', { error: err.message });
+        }
+      })();
+
+      logger.info('Photo reported', { photoId, eventId: photo.eventId, reason });
+      res.json({ reported: true });
+    } catch (error: any) {
+      logger.error('Report error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Melden' });
+    }
+  }
+);
+
 // PATCH /:photoId — Update photo metadata (title, description, tags)
 router.patch(
   '/:photoId',
