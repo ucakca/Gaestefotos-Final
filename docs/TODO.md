@@ -457,6 +457,13 @@
 | S26-266 | **🎲 Shuffle Sort** | ✅ erledigt (21.02.2026) | Gast-Galerie Sort-Toggle Math.random shuffle |
 | S26-267 | **Foto-Tags Endpoint** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/tags (unique sorted, optionalAuth) |
 | S26-268 | **Sprint S26 Abschluss** | ✅ erledigt (21.02.2026) | 268 Features in Sprint S26 implementiert + deployed |
+| S26-269 | **hiddenPhotos Tab** | ✅ erledigt (21.02.2026) | GalleryTabV2: 'Versteckt' Tab + Eye Icon + Count (nur wenn > 0) |
+| S26-270 | **Admin Storage-Stats** | ✅ erledigt (21.02.2026) | GET /admin/events/storage-stats (topEvents by photoCount) |
+| S26-271 | **Bulk-Approve** | ✅ erledigt (21.02.2026) | POST /photos/bulk/approve (alle PENDING -> APPROVED) |
+| S26-272 | **Bulk-Reject** | ✅ erledigt (21.02.2026) | POST /photos/bulk/reject (alle PENDING oder ID-Liste) |
+| S26-273 | **Photo-Pinning** | ✅ erledigt (21.02.2026) | POST /photos/:id/pin (isFavorite toggle) |
+| S26-274 | **Bulk-Restore** | ✅ erledigt (21.02.2026) | POST /photos/bulk/restore (DELETED -> APPROVED) |
+| S26-275 | **Fotos CSV** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/export-csv |
 
 ---
 
