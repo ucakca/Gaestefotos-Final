@@ -480,6 +480,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
                 challenges: challengesCompleted,
                 pending: photoStats.pending,
                 guests: guestCount,
+                visitors: (event as any)?.visitCount || 0,
               }}
               storageUsed={storageUsed}
               storageLimit={usage?.limit || 0}
@@ -822,7 +823,7 @@ function OverviewTab({
   event: EventType;
   eventDate: string | null;
   designConfig: any;
-  stats: { photos: number; videos: number; guestbook: number; challenges: number; pending: number; guests: number };
+  stats: { photos: number; videos: number; guestbook: number; challenges: number; pending: number; guests: number; visitors?: number };
   storageUsed: number;
   storageLimit: number;
   recentPhotos: any[];
@@ -956,11 +957,15 @@ function OverviewTab({
         </div>
       </div>
 
-      {/* Quick Stats - 2 rows on mobile (3+3), 1 row on desktop */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+      {/* Quick Stats */}
+      <div className="grid grid-cols-3 gap-2">
         <StatCard icon={Camera} value={stats.photos} label="FOTOS" color="blue" onClick={() => onStatClick('photos')} />
         <StatCard icon={Video} value={stats.videos} label="VIDEOS" color="purple" onClick={() => onStatClick('videos')} />
-        <StatCard icon={Users} value={stats.guests} label="GÄSTE" color="cyan" onClick={() => onStatClick('guests')} />
+        {typeof stats.visitors === 'number'
+          ? <StatCard icon={Eye} value={stats.visitors} label="BESUCHER" color="cyan" />
+          : <StatCard icon={Users} value={stats.guests} label="GÄSTE" color="cyan" onClick={() => onStatClick('guests')} />}
+      </div>
+      <div className="grid grid-cols-3 gap-2">
         <StatCard icon={BookOpen} value={stats.guestbook} label="GÄSTEBUCH" color="green" onClick={onGoToGuestbook} />
         <StatCard icon={Trophy} value={stats.challenges} label="FOTO-SPIELE" color="purple" onClick={() => onStatClick('challenges')} />
         <StatCard icon={Clock} value={stats.pending} label="AUSSTEHEND" color="yellow" highlight={stats.pending > 0} onClick={() => onStatClick('pending')} />
