@@ -180,9 +180,9 @@
 | # | Feature | Status | Priorität | Beschreibung |
 |---|---------|--------|-----------|--------------|
 | NF-1 | **Admin Log-System** | ✅ erledigt | HIGH | auditLogger Service + Hooks in auth/events/photos/uploads/guestbook/adminUsers. Fire-and-forget Logging in QaLogEvent. Admin UI unter /system/logs. |
-| NF-2 | **Workflow Builder Erweiterung** | ⏳ offen | HIGH | Alle existierenden Workflows über Builder bearbeitbar. Fixe Workflows sperren mit Entsperr-Option. Multi-Session Support für Events mit mehreren Geräten. Auch für `app.gästefotos.com` aktiv. |
+| NF-2 | **Workflow Builder Erweiterung** | ✅ erledigt (20.02.2026) | — | Lock/Unlock, Duplikat, Backup/Restore, Export/Import, Undo/Redo, Simulation, Analytics. FACE_SEARCH Flow aktiv für app.gästefotos.com. |
 | NF-3 | **SMS Sharing** | ⏳ offen | MEDIUM | Noch zu besprechen: Wie funktioniert SMS-Versand? Gateway? Kosten? |
-| NF-4 | **Face Recognition Erweiterung** | ⏳ offen | MEDIUM | Face-Api/DeepFace erweitern — bessere Genauigkeit, mehr Features |
+| NF-4 | **Face Recognition Erweiterung** | ✅ erledigt (20.02.2026) | — | TinyFaceDetector: inputSize 416, scoreThreshold 0.35 (besserer Recall). Single-Pass in getFaceDetectionMetadata (keine doppelte Erkennung mehr). |
 | NF-5 | **Storage Subdomain** | ⏳ offen | LOW | Neue Subdomain für Zugriff auf Gäste-Speicher. USB-Export Möglichkeit. |
 
 ---
@@ -222,12 +222,12 @@
 
 | # | Aufgabe | Status | Datei | Beschreibung |
 |---|---------|--------|-------|--------------|
-| TD-1 | **Sentry Integration** | ⏳ offen | `ErrorBoundary.tsx` | Production Error-Tracking einrichten |
+| TD-1 | **Sentry Integration** | ✅ erledigt | — | @sentry/node + @sentry/nextjs installiert, init() in backend index.ts, sentry.client/server.config.ts im Frontend, SENTRY_DSN in .env gesetzt |
 | TD-2 | **Invitation Canvas Elements** | ⏳ offen | `InvitationCanvas.tsx` | Element-Rendering für Einladungs-Designer |
-| TD-3 | **QR Design DB-Table** | ⏳ offen | `events.ts` | `qrDesign` Table fehlt im Schema, läuft auf Mock |
-| TD-4 | **Guest Email senden** | ⏳ offen | `guests/page.tsx` | E-Mail-Funktion für Gäste implementieren |
-| TD-5 | **Guest Details anzeigen** | ⏳ offen | `guests/page.tsx` | Detail-Modal für Gäste |
-| TD-6 | **Upload Confetti** | ⏳ offen | `UploadButton.tsx` | Confetti-Animation bei Upload wieder aktivieren |
+| TD-3 | **QR Design DB-Table** | ✅ erledigt | — | QrDesign Model in Prisma, Table in DB. QR-Styler speichert via PUT /events/:id/qr/config in qrTemplateConfig JSON-Field |
+| TD-4 | **Guest Email senden** | ✅ erledigt (20.02.2026) | — | POST /events/:id/guests/:guestId/email + POST /events/:id/guests/email-all (Bulk). emailService.sendCustomEmail() Methode. Frontend Button pro Gast + 'Alle einladen' |
+| TD-5 | **Guest Details anzeigen** | ✅ erledigt | — | Detail-Modal mit Gast-Info, E-Mail-Button, Löschen-Button |
+| TD-6 | **Upload Confetti** | ✅ erledigt (20.02.2026) | — | triggerUploadConfetti() jetzt auch im TUS-Upload-Pfad (war nur im Fallback-Pfad) |}
 | TD-7 | **Select All Shortcuts** | ⏳ offen | `useKeyboardShortcuts.ts` | Cmd+A für alle Elemente im Editor |
 
 ---
