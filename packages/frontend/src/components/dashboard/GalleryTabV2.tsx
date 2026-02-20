@@ -912,6 +912,12 @@ export default function GalleryTabV2({
               {lightboxPhoto.likes > 0 && (
                 <span className="text-yellow-400 text-xs flex items-center gap-1"><Star className="w-3 h-3 fill-yellow-400" /> {lightboxPhoto.likes}</span>
               )}
+              {(lightboxPhoto as any).views > 0 && (
+                <span className="text-white/40 text-xs">👁 {(lightboxPhoto as any).views}</span>
+              )}
+              {(lightboxPhoto as any).faceCount > 0 && (
+                <span className="text-white/40 text-xs">👤 {(lightboxPhoto as any).faceCount}</span>
+              )}
               <button
                 onClick={async () => {
                   const val = window.prompt('Tags (kommagetrennt):', (lightboxPhoto.tags || []).join(', '));
