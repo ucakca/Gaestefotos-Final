@@ -1385,6 +1385,28 @@ router.post(
   }
 );
 
+// POST /:photoId/pin — Toggle pin status (host only)
+router.post(
+  '/:photoId/pin',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoId } = req.params;
+      const photo = await prisma.photo.findUnique({ where: { id: photoId }, select: { id: true, eventId: true, isFavorite: true } });
+      if (!photo) return res.status(404).json({ error: 'Foto nicht gefunden' });
+      if (!(await hasEventManageAccess(req, photo.eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      // Use isFavorite as pin indicator (no isPinned field in schema)
+      const pinned = !photo.isFavorite;
+      await prisma.photo.update({ where: { id: photoId }, data: { isFavorite: pinned } });
+      res.json({ pinned, photoId });
+    } catch (error: any) {
+      logger.error('Pin photo error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Pinnen' });
+    }
+  }
+);
+
 // POST /:photoId/hide — Hide/unhide own photo from gallery (if allowHide is enabled)
 router.post(
   '/:photoId/hide',
