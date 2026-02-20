@@ -247,6 +247,13 @@
 | S26-56 | **maxUploadsPerGuest** | ✅ erledigt | uploads.ts: Upload-Limit per Guest bereits mit 429 Error |
 | S26-57 | **Live-Stats Endpoint** | ✅ erledigt | GET /photos/live-stats: todayCount, topUploaders, lastPhotoAt |
 | S26-58 | **Admin Host-Reassign** | ✅ erledigt (20.02.2026) | PATCH /admin/events/:id/reassign-host mit AuditLog |
+| S26-59 | **Dashboard Trend-Sparkline** | ✅ erledigt (20.02.2026) | 7-Tage Bar-Chart via GET /events/:id/trends in OverviewTab |
+| S26-60 | **Foto Caption Lightbox** | ✅ erledigt (20.02.2026) | title + description in PhotoLightbox unter Reactions |
+| S26-61 | **Kategorien Bulk-Reorder** | ✅ erledigt (20.02.2026) | PUT /events/:id/categories/reorder (Array {id, order}) |
+| S26-62 | **Bulk-Move-Category** | ✅ erledigt (20.02.2026) | POST /photos/bulk/move-category (categoryId oder null) |
+| S26-63 | **Bulk-Favorite** | ✅ erledigt (20.02.2026) | POST /photos/bulk/favorite (isFavorite auf mehrere Fotos) |
+| S26-64 | **Admin Storage-Stats** | ✅ erledigt (20.02.2026) | GET /admin/events/storage-stats (totalPhotos, totalBytes, topEvents) |
+| S26-65 | **Event Trends Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/trends?days=7 (date-grouped upload counts) |
 
 ---
 
