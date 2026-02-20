@@ -161,6 +161,29 @@ router.delete(
   }
 );
 
+// GET /:eventId/guests/invite-qr — Generate a QR-code-ready invite link for the event
+router.get(
+  '/:eventId/guests/invite-qr',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      const event = await prisma.event.findUnique({ where: { id: eventId }, select: { slug: true } });
+      if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+
+      const frontendUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
+      const inviteUrl = `${frontendUrl}/e3/${event.slug}`;
+      res.json({ url: inviteUrl, slug: event.slug });
+    } catch (error) {
+      logger.error('Invite QR error', { error: getErrorMessage(error) });
+      res.status(500).json({ error: 'Fehler beim Generieren' });
+    }
+  }
+);
+
 // POST /:eventId/guests/email-all — Send invitation email to ALL guests with email addresses
 router.post(
   '/:eventId/guests/email-all',
