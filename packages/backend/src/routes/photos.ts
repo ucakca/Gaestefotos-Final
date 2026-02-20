@@ -140,7 +140,7 @@ const uploadSinglePhoto = (req: AuthRequest, res: Response, next: any) => {
 router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
-    const { status, limit, skip, categoryId, sort } = req.query;
+    const { status, limit, skip, categoryId, sort, isFavorite, minQuality } = req.query;
 
     const where: any = { eventId, isStoryOnly: false, deletedAt: null };
 
@@ -169,8 +169,16 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
 
     // Tag filter
     const tagFilter = typeof req.query.tag === 'string' && req.query.tag.trim() ? req.query.tag.trim() : null;
-    if (tagFilter) {
-      where.tags = { has: tagFilter };
+    if (tagFilter) { where.tags = { has: tagFilter }; }
+
+    // isFavorite filter
+    if (isFavorite === 'true') where.isFavorite = true;
+    else if (isFavorite === 'false') where.isFavorite = false;
+
+    // Quality filter
+    const minQualityNum = minQuality ? parseFloat(minQuality as string) : null;
+    if (minQualityNum !== null && Number.isFinite(minQualityNum)) {
+      where.qualityScore = { gte: minQualityNum };
     }
 
     const sortValue = typeof sort === 'string' ? sort : 'date_desc';
