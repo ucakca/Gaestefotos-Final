@@ -131,27 +131,38 @@ class EmailService {
         },
       });
     } else {
-      const subject = `Einladung als Co-Host: ${options.eventTitle}`;
-      const html = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>Du wurdest als Co-Host eingeladen!</h2>
-          <p>Du wurdest eingeladen, das Event <strong>${this.escapeHtml(options.eventTitle)}</strong> als Co-Host zu verwalten.</p>
-          <p>Als Co-Host kannst du:</p>
-          <ul>
-            <li>Fotos genehmigen und moderieren</li>
-            <li>QR-Codes herunterladen</li>
-            <li>Gäste verwalten</li>
-          </ul>
-          <p>
-            <a href="${this.escapeHtml(options.inviteUrl)}" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
-              Einladung annehmen
-            </a>
-          </p>
-          <p style="color: #666; font-size: 12px; margin-top: 24px;">
-            Oder kopiere diesen Link: ${this.escapeHtml(options.inviteUrl)}
-          </p>
-        </div>
-      `;
+      const subject = `Co-Host Einladung: ${options.eventTitle}`;
+      const safeTitle = this.escapeHtml(options.eventTitle);
+      const safeUrl = this.escapeHtml(options.inviteUrl);
+      const safeHost = options.hostName ? this.escapeHtml(options.hostName) : 'Der Veranstalter';
+      const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 16px">
+<tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.08)">
+<tr><td style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:32px;text-align:center">
+  <h1 style="margin:0;color:#fff;font-size:24px;font-weight:800">🤝 Co-Host Einladung</h1>
+  <p style="margin:8px 0 0;color:rgba(255,255,255,0.9);font-size:15px">${safeTitle}</p>
+</td></tr>
+<tr><td style="padding:32px">
+  <p style="color:#374151;font-size:16px"><strong>${safeHost}</strong> hat dich eingeladen, das Event <strong>${safeTitle}</strong> als Co-Host zu verwalten.</p>
+  <p style="color:#6b7280;font-size:14px;line-height:1.6">Als Co-Host kannst du:</p>
+  <ul style="color:#6b7280;font-size:14px;line-height:1.8;padding-left:20px">
+    <li>Fotos genehmigen und moderieren</li>
+    <li>QR-Codes herunterladen</li>
+    <li>Gäste verwalten</li>
+    <li>Event-Einstellungen anpassen</li>
+  </ul>
+  <div style="text-align:center;margin:32px 0">
+    <a href="${safeUrl}" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;text-decoration:none;padding:14px 32px;border-radius:50px;font-size:16px;font-weight:700">Einladung annehmen 🤝</a>
+  </div>
+  <p style="color:#9ca3af;font-size:12px;text-align:center">Oder diesen Link öffnen: <a href="${safeUrl}" style="color:#6366f1">${safeUrl}</a></p>
+</td></tr>
+<tr><td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;text-align:center">
+  <p style="margin:0;color:#9ca3af;font-size:12px">Diese Einladung wurde von g&auml;stefotos.com generiert.</p>
+</td></tr>
+</table></td></tr></table></body></html>`;
       const text = `Du wurdest als Co-Host für das Event "${options.eventTitle}" eingeladen.\n\nKlicke auf diesen Link, um die Einladung anzunehmen:\n${options.inviteUrl}`;
       await this.transporter.sendMail({
         from: this.config.from,
