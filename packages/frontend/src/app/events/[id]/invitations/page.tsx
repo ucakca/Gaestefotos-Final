@@ -582,15 +582,32 @@ export default function InvitationsPage({ params }: { params: Promise<{ id: stri
                                       </button>
                                     </div>
                                     {editHasPassword && (
-                                      <Button
-                                        variant="danger"
-                                        size="sm"
-                                        className="mt-2"
-                                        onClick={() => saveInvitation(inv.id, { removePassword: true })}
-                                        disabled={saving}
-                                      >
-                                        Passwort entfernen
-                                      </Button>
+                                      <div className="flex gap-2 mt-2 flex-wrap">
+                                        <Button
+                                          variant="danger"
+                                          size="sm"
+                                          onClick={() => saveInvitation(inv.id, { removePassword: true })}
+                                          disabled={saving}
+                                        >
+                                          Passwort entfernen
+                                        </Button>
+                                        <Button
+                                          variant="secondary"
+                                          size="sm"
+                                          onClick={async () => {
+                                            const email = window.prompt('E-Mail-Adresse:');
+                                            if (!email) return;
+                                            try {
+                                              await api.post(`/events/${eventId}/send-password`, { to: email });
+                                              showToast('Passwort gesendet!', 'success');
+                                            } catch {
+                                              showToast('Fehler beim Senden', 'error');
+                                            }
+                                          }}
+                                        >
+                                          📧 Per E-Mail senden
+                                        </Button>
+                                      </div>
                                     )}
                                   </div>
 
