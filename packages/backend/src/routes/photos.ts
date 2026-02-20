@@ -565,6 +565,30 @@ router.post(
         }).catch(() => {});
       }
 
+      // Webhook: fire-and-forget POST to external URL if configured
+      if ((featuresConfig as any)?.webhookUrl) {
+        const webhookUrl = String((featuresConfig as any).webhookUrl);
+        (async () => {
+          try {
+            await fetch(webhookUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-GF-Event': 'photo.uploaded' },
+              body: JSON.stringify({
+                event: 'photo.uploaded',
+                eventId,
+                photoId: photo.id,
+                uploadedBy: photo.uploadedBy || null,
+                status: photo.status,
+                timestamp: new Date().toISOString(),
+              }),
+              signal: AbortSignal.timeout(5000),
+            });
+          } catch (err: any) {
+            logger.warn('Webhook delivery failed', { webhookUrl, error: err.message });
+          }
+        })();
+      }
+
       // Face Detection: extract faces + descriptors for face search (async, non-blocking)
       (async () => {
         try {
