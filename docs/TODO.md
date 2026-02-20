@@ -281,6 +281,11 @@
 | S26-90 | **Custom Hashtag SetupTabV2** | ✅ erledigt (20.02.2026) | Hash-Icon SetupRow mit prompt() Dialog fuer featuresConfig.customHashtag |
 | S26-91 | **Admin Dashboard User-Stats** | ✅ erledigt (20.02.2026) | 6-Felder Widget mit /admin/users/stats |
 | S26-92 | **Gästebuch PDF bereits** | ✅ erledigt | GET /events/:id/guestbook/export-pdf (generateGuestbookPdf) |
+| S26-93 | **Gäste-Stats Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/guests/stats (total, accepted, declined, pending, plusOnes) |
+| S26-94 | **ZIP-Download Progress Toast** | ✅ erledigt (20.02.2026) | photos/page.tsx: info Toast vor + success Toast nach Bulk-Download |
+| S26-95 | **Gäste Check-In Toggle** | ✅ erledigt (20.02.2026) | PATCH /guests/:id/checkin + GuestActionMenu CheckCircle2 |
+| S26-96 | **Photos by Uploader** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/by-uploader (top-100 groupBy) |
+| S26-97 | **qualityScore + faceCount Hover** | ✅ erledigt (20.02.2026) | PhotoCard Hover: ★N% gruen/gelb/rot + 👤N cyan Badge |
 
 ---
 
