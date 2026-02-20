@@ -1385,6 +1385,45 @@ router.post(
   }
 );
 
+// POST /:photoId/hide — Hide/unhide own photo from gallery (if allowHide is enabled)
+router.post(
+  '/:photoId/hide',
+  optionalAuthMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoId } = req.params;
+      const { uploaderName } = req.body;
+
+      const photo = await prisma.photo.findUnique({
+        where: { id: photoId },
+        include: { event: { select: { featuresConfig: true } } },
+      });
+      if (!photo || photo.deletedAt) return res.status(404).json({ error: 'Foto nicht gefunden' });
+
+      const fc = (photo.event?.featuresConfig || {}) as any;
+      if (!fc.allowHide && !req.userId) return res.status(403).json({ error: 'Verbergen nicht erlaubt' });
+
+      // If authenticated manager, allow directly
+      const canHide = req.userId
+        ? await hasEventManageAccess(req, photo.eventId)
+        : (uploaderName && photo.uploadedBy?.toLowerCase() === uploaderName.trim().toLowerCase() && fc.allowHide);
+
+      if (!canHide) return res.status(403).json({ error: 'Kein Zugriff' });
+
+      const newStatus = (photo.status as any) === 'HIDDEN' ? 'APPROVED' : 'HIDDEN';
+      await prisma.photo.update({
+        where: { id: photoId },
+        data: { status: newStatus as any },
+      });
+
+      res.json({ hidden: newStatus === 'HIDDEN', status: newStatus });
+    } catch (error: any) {
+      logger.error('Hide photo error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Verbergen' });
+    }
+  }
+);
+
 // POST /:photoId/delete-own — Guest deletes their own photo (if allowDeleteOwn is enabled)
 router.post(
   '/:photoId/delete-own',
