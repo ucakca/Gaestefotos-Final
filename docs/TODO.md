@@ -234,6 +234,13 @@
 | S26-43 | **Foto-Metadata PATCH** | ✅ erledigt (20.02.2026) | PATCH /photos/:id (title, description, tags); nur Manager |
 | S26-44 | **Foto Favorit-Toggle** | ✅ erledigt (20.02.2026) | POST /photos/:id/favorite + Favoriten-Filter in Host-Galerie |
 | S26-45 | **Foto Tag-Filter** | ✅ erledigt (20.02.2026) | GET /events/:id/photos?tag=xyz (Prisma Array has: Filter) |
+| S26-46 | **Foto melden Backend** | ✅ erledigt (20.02.2026) | POST /photos/:id/report; E-Mail an Host (non-blocking) |
+| S26-47 | **Report-Button Lightbox** | ✅ erledigt (20.02.2026) | Flag-Icon in PhotoLightbox (subtil opacity-40) |
+| S26-48 | **Bulk-Tag Endpoint** | ✅ erledigt (20.02.2026) | POST /photos/bulk/tag; Tags an mehrere Fotos gleichzeitig |
+| S26-49 | **Passwort E-Mail Button** | ✅ erledigt (20.02.2026) | invitations/page.tsx: '📧 Per E-Mail senden' Button |
+| S26-50 | **Admin Host-Reassign** | ✅ erledigt (20.02.2026) | PATCH /admin/events/:id/reassign-host (AuditLog) |
+| S26-51 | **Duplikat-Merge System** | ✅ erledigt | duplicates.ts: keep-best, mark-all, full group management |
+| S26-52 | **Download-Counter** | ✅ erledigt (20.02.2026) | photo.views++ nach jedem Download (non-blocking) |
 
 ---
 
