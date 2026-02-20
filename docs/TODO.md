@@ -230,6 +230,10 @@
 | S26-39 | **Event-Beschreibung Hero** | ✅ erledigt (20.02.2026) | EventHero.tsx: event.description unter welcomeMessage |
 | S26-40 | **Foto Tag-Filter** | ✅ erledigt (20.02.2026) | GET /events/:id/photos?tag=xyz (Array has: Filter) |
 | S26-41 | **Kategorie-Count Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/categories/count (photo counts per category) |
+| S26-42 | **Webhook bei Upload** | ✅ erledigt (20.02.2026) | fire-and-forget POST bei featuresConfig.webhookUrl; X-GF-Event Header |
+| S26-43 | **Foto-Metadata PATCH** | ✅ erledigt (20.02.2026) | PATCH /photos/:id (title, description, tags); nur Manager |
+| S26-44 | **Foto Favorit-Toggle** | ✅ erledigt (20.02.2026) | POST /photos/:id/favorite + Favoriten-Filter in Host-Galerie |
+| S26-45 | **Foto Tag-Filter** | ✅ erledigt (20.02.2026) | GET /events/:id/photos?tag=xyz (Prisma Array has: Filter) |
 
 ---
 
