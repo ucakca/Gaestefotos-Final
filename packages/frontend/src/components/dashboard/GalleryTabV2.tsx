@@ -567,21 +567,36 @@ export default function GalleryTabV2({
 
       {/* Guest sub-filter */}
       {filter === 'guests' && guests.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-hide">
-          <button
-            onClick={() => setSelectedGuest(null)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-              !selectedGuest ? 'bg-emerald-500 text-white' : 'bg-emerald-50 border border-emerald-200 text-emerald-600'
-            }`}
-          >Alle Gäste</button>
-          {guests.map(g => (
-            <button key={g.id} onClick={() => setSelectedGuest(g.id)}
+        guests.length > 8 ? (
+          <div className="mb-3">
+            <select
+              value={selectedGuest || ''}
+              onChange={e => setSelectedGuest(e.target.value || null)}
+              className="text-xs border border-border rounded-lg px-3 py-1.5 bg-background text-foreground w-full max-w-xs"
+            >
+              <option value="">Alle Gäste ({guests.reduce((s, g) => s + g.count, 0)})</option>
+              {guests.map(g => (
+                <option key={g.id} value={g.id}>{g.name} ({g.count})</option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div className="flex gap-2 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-hide">
+            <button
+              onClick={() => setSelectedGuest(null)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-                selectedGuest === g.id ? 'bg-emerald-500 text-white' : 'bg-emerald-50 border border-emerald-200 text-emerald-600'
+                !selectedGuest ? 'bg-emerald-500 text-white' : 'bg-emerald-50 border border-emerald-200 text-emerald-600'
               }`}
-            >{g.name} <span className="opacity-70">({g.count})</span></button>
-          ))}
-        </div>
+            >Alle Gäste</button>
+            {guests.map(g => (
+              <button key={g.id} onClick={() => setSelectedGuest(g.id)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                  selectedGuest === g.id ? 'bg-emerald-500 text-white' : 'bg-emerald-50 border border-emerald-200 text-emerald-600'
+                }`}
+              >{g.name} <span className="opacity-70">({g.count})</span></button>
+            ))}
+          </div>
+        )
       )}
 
       {/* Select Mode Toggle + Bulk Action Bar */}
