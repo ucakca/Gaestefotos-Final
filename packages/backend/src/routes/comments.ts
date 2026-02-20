@@ -134,6 +134,45 @@ router.post(
     });
 
     res.status(201).json({ comment });
+
+    // Non-blocking: notify host via email (fire-and-forget)
+    if (initialStatus === 'APPROVED' && !isHost) {
+      (async () => {
+        try {
+          const host = await prisma.user.findUnique({ where: { id: photo.event.hostId }, select: { email: true, name: true } });
+          if (!host?.email) return;
+
+          const { emailService } = await import('../services/email');
+          const connected = await emailService.testConnection();
+          if (!connected) return;
+
+          const frontendUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
+          const photoLink = `${frontendUrl}/events/${photo.eventId}/photos`;
+          const safeAuthor = sanitizeText(data.authorName);
+          const safeComment = sanitizeText(data.comment).slice(0, 200);
+
+          await emailService.sendCustomEmail({
+            to: host.email,
+            subject: `💬 Neuer Kommentar von ${safeAuthor}`,
+            text: `${safeAuthor} hat ein Foto in deinem Event kommentiert:\n\n"${safeComment}"\n\nFotos ansehen:\n${photoLink}`,
+            html: `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:24px 16px"><tr><td align="center">
+<table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden">
+<tr><td style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:24px 32px;text-align:center">
+  <h2 style="margin:0;color:#fff;font-size:18px">💬 Neuer Kommentar</h2>
+</td></tr>
+<tr><td style="padding:24px 32px">
+  <p style="color:#374151"><strong>${safeAuthor}</strong> hat ein Foto kommentiert:</p>
+  <blockquote style="margin:16px 0;padding:12px 16px;background:#f3f4f6;border-left:4px solid #6366f1;border-radius:4px;color:#374151;font-style:italic">${safeComment}</blockquote>
+  <a href="${photoLink}" style="display:inline-block;background:#6366f1;color:#fff;text-decoration:none;padding:10px 24px;border-radius:8px;font-weight:600">Fotos ansehen</a>
+</td></tr></table></td></tr></table></body></html>`,
+          });
+        } catch (err: any) {
+          logger.debug('Comment notification failed (non-critical)', { err: err.message });
+        }
+      })();
+    }
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: error.errors });
