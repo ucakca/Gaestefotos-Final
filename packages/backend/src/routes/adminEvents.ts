@@ -661,6 +661,33 @@ router.put('/:id/workflow', authMiddleware, requireRole('ADMIN'), async (req: Au
   }
 });
 
+// PATCH /:id/reassign-host — Reassign event to a different host user
+router.patch('/:id/reassign-host', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { newHostId } = req.body;
+    if (!newHostId) return res.status(400).json({ error: 'newHostId erforderlich' });
+
+    const [event, newHost] = await Promise.all([
+      prisma.event.findUnique({ where: { id }, select: { id: true, title: true, hostId: true } }),
+      prisma.user.findUnique({ where: { id: newHostId }, select: { id: true, email: true, name: true } }),
+    ]);
+    if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+    if (!newHost) return res.status(404).json({ error: 'User nicht gefunden' });
+
+    const updated = await prisma.event.update({
+      where: { id },
+      data: { hostId: newHostId },
+      select: { id: true, title: true, hostId: true },
+    });
+
+    auditLog({ type: AuditType.ADMIN_EVENT_STATUS, message: `Event "${event.title}" Host geändert auf ${newHost.email}`, eventId: id, data: { oldHostId: event.hostId, newHostId }, req });
+    return res.json({ ok: true, event: updated, newHost });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // POST /bulk-status — Activate or deactivate multiple events
 router.post('/bulk-status', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
   try {
