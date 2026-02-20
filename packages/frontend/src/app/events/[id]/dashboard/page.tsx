@@ -938,6 +938,19 @@ function OverviewTab({
                 <Palette className="w-3.5 h-3.5" />
                 Design
               </Link>
+              <button
+                onClick={() => {
+                  const url = `/api/events/${eventId}/export`;
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `event-export-${event.slug}.json`;
+                  a.click();
+                }}
+                className="px-3 py-1.5 rounded-full bg-card/20 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1 hover:bg-card/30 transition-colors"
+              >
+                <Film className="w-3.5 h-3.5" />
+                Export
+              </button>
             </div>
           </div>
         </div>
