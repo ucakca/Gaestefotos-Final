@@ -337,6 +337,7 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
 
   const handleBulkDownload = async () => {
     if (selectedPhotos.size === 0) return;
+    showToast(`${selectedPhotos.size} Fotos werden verpackt...`, 'info');
     try {
       const response = await api.post('/photos/bulk/download', {
         photoIds: Array.from(selectedPhotos),
@@ -352,7 +353,7 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      showToast('Fotos heruntergeladen', 'success');
+      showToast(`${selectedPhotos.size} Fotos heruntergeladen ✓`, 'success');
     } catch (err: any) {
       showToast('Fehler beim Download', 'error');
     }
