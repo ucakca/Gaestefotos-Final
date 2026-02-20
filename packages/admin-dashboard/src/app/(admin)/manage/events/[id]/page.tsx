@@ -1091,6 +1091,25 @@ export default function EventDetailPage() {
                           {cat.features.map(feat => {
                             const isOff = disabled.includes(feat.key);
                             const override = promptOverrides.find((t: any) => t.feature === feat.key);
+                            // Map feature → cost category → aiConfigForm field
+                            const FEAT_TO_FORM: Record<string, string> = {
+                              compliment_mirror: 'energyCostLlmGame', fortune_teller: 'energyCostLlmGame', ai_roast: 'energyCostLlmGame',
+                              caption_suggest: 'energyCostLlmGame', celebrity_lookalike: 'energyCostLlmGame', ai_bingo: 'energyCostLlmGame',
+                              ai_dj: 'energyCostLlmGame', ai_meme: 'energyCostLlmGame', ai_superlatives: 'energyCostLlmGame',
+                              ai_photo_critic: 'energyCostLlmGame', ai_couple_match: 'energyCostLlmGame',
+                              ai_oldify: 'energyCostImageEffect', ai_cartoon: 'energyCostImageEffect', ai_style_pop: 'energyCostImageEffect',
+                              time_machine: 'energyCostImageEffect', pet_me: 'energyCostImageEffect', yearbook: 'energyCostImageEffect',
+                              emoji_me: 'energyCostImageEffect', miniature: 'energyCostImageEffect', bg_removal: 'energyCostImageEffect',
+                              style_transfer: 'energyCostStyleTransfer',
+                              face_switch: 'energyCostFaceSwap',
+                              highlight_reel: 'energyCostVideo',
+                              drawbot: 'energyCostTradingCard',
+                            };
+                            const formField = FEAT_TO_FORM[feat.key] || null;
+                            const FORM_DEFAULTS: Record<string, number> = {
+                              energyCostLlmGame: 1, energyCostImageEffect: 2, energyCostStyleTransfer: 2,
+                              energyCostFaceSwap: 3, energyCostGif: 3, energyCostVideo: 5, energyCostTradingCard: 2,
+                            };
                             return (
                               <div key={feat.key} className={`px-3 py-2 flex items-center gap-2 ${isOff ? 'bg-gray-50 dark:bg-gray-900/30' : ''}`}>
                                 {/* Toggle */}
@@ -1113,18 +1132,22 @@ export default function EventDetailPage() {
                                     <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-40 transition-opacity" />
                                   )}
                                 </button>
-                                {/* Energy cost input */}
-                                <div className="flex-shrink-0 flex items-center gap-1">
-                                  <Zap className="w-3 h-3 text-amber-500" />
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    max={20}
-                                    value={(aiConfigForm as any)[`energyCost_${feat.key}`] ?? 1}
-                                    onChange={e => setAiConfigForm(f => ({ ...f, [`energyCost_${feat.key}`]: Number(e.target.value) }))}
-                                    className="w-10 text-center text-xs font-bold rounded border border-app-border bg-app-card text-app-fg py-0.5 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
-                                  />
-                                </div>
+                                {/* Energy cost input (per cost category) */}
+                                {formField ? (
+                                  <div className="flex-shrink-0 flex items-center gap-1">
+                                    <Zap className="w-3 h-3 text-amber-500" />
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      max={20}
+                                      value={(aiConfigForm as any)[formField] ?? FORM_DEFAULTS[formField] ?? 1}
+                                      onChange={e => setAiConfigForm(f => ({ ...f, [formField]: Number(e.target.value) }))}
+                                      className="w-10 text-center text-xs font-bold rounded border border-app-border bg-app-card text-app-fg py-0.5 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+                                    />
+                                  </div>
+                                ) : (
+                                  <span className="text-[10px] text-green-500 font-medium">frei</span>
+                                )}
                               </div>
                             );
                           })}
