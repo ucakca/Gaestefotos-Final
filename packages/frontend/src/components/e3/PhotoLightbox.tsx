@@ -612,17 +612,24 @@ export default function PhotoLightbox({
               </div>
 
               {/* Uploader attribution - always visible */}
-              <p className="text-white/80 text-sm">
-                <span className="text-white/60">{t('sharedBy')} </span>
-                <span className="font-medium">
-                  {(currentPhoto as any)?.uploader?.firstName 
-                    ? `${(currentPhoto as any).uploader.firstName}${(currentPhoto as any).uploader.lastName ? ` ${(currentPhoto as any).uploader.lastName}` : ''}`
-                    : (currentPhoto as any)?.completion?.uploaderName 
-                      || (currentPhoto as any)?.uploadedBy 
-                      || (currentPhoto as any)?.uploaderName 
-                      || t('anonymousUser')}
-                </span>
-              </p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-white/80 text-sm">
+                  <span className="text-white/60">{t('sharedBy')} </span>
+                  <span className="font-medium">
+                    {(currentPhoto as any)?.uploader?.firstName 
+                      ? `${(currentPhoto as any).uploader.firstName}${(currentPhoto as any).uploader.lastName ? ` ${(currentPhoto as any).uploader.lastName}` : ''}`
+                      : (currentPhoto as any)?.completion?.uploaderName 
+                        || (currentPhoto as any)?.uploadedBy 
+                        || (currentPhoto as any)?.uploaderName 
+                        || t('anonymousUser')}
+                  </span>
+                </p>
+                {(currentPhoto as any)?.faceCount > 0 && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shrink-0">
+                    👤 {(currentPhoto as any).faceCount}
+                  </span>
+                )}
+              </div>
 
               {/* Comments Section - Always show first 5 */}
               {allowComments && (
