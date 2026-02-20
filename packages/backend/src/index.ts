@@ -830,6 +830,25 @@ try {
   logger.warn('BullMQ workers not started (Redis may not be available)', { error: err.message });
 }
 
+// Load SMTP config from DB (non-blocking, overrides env-based init if set in DB)
+(async () => {
+  try {
+    const { emailService: es } = await import('./services/email');
+    const { decryptValue: dv } = await import('./utils/encryption');
+    const row = await prisma.appSetting.findUnique({ where: { key: 'smtp_config' } });
+    if (row) {
+      const cfg = row.value as any;
+      if (cfg.passwordEnc) {
+        const pw = dv(JSON.parse(cfg.passwordEnc));
+        await es.configure({ host: cfg.host, port: cfg.port, secure: cfg.secure, user: cfg.user, password: pw, from: cfg.from || cfg.user });
+        logger.info('SMTP configured from database');
+      }
+    }
+  } catch (err: any) {
+    logger.warn('SMTP DB init failed (non-critical)', { error: err.message });
+  }
+})();
+
 // Start server - listen on all interfaces for external access
 server = httpServer.listen(Number(PORT), '::', () => {
   logger.info(`Server running on http://[::]:${PORT}`);

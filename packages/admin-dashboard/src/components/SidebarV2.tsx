@@ -134,6 +134,7 @@ const navigation: NavGroup[] = [
     icon: Settings,
     items: [
       { name: 'Allgemein', href: '/settings/general', icon: Settings },
+      { name: 'E-Mail (SMTP)', href: '/settings/email', icon: Mail },
       { name: 'Theme', href: '/design/theme', icon: Palette },
       { name: 'API Keys', href: '/settings/api-keys', icon: KeyRound },
     ],
