@@ -853,7 +853,7 @@ function OverviewTab({
   const currentStep = onboardingSteps.find(s => s.current);
   const [liveStats, setLiveStats] = useState<{ todayCount: number; topUploaders: { name: string; count: number }[]; lastPhotoAt: string | null } | null>(null);
   const [trends, setTrends] = useState<{ date: string; total: number }[]>([]);
-  const [guestStats, setGuestStats] = useState<{ total: number; accepted: number; declined: number; pending: number; withEmail: number; plusOnes: number } | null>(null);
+  const [guestStats, setGuestStats] = useState<{ total: number; accepted: number; declined: number; pending: number; withEmail: number; plusOnes: number; totalWithPlusOnes?: number } | null>(null);
 
   useEffect(() => {
     if (!eventId) return;
@@ -1040,9 +1040,11 @@ function OverviewTab({
               <p className="text-[10px] text-muted-foreground">Ausstehend</p>
             </div>
           </div>
-          {guestStats.plusOnes > 0 && (
-            <p className="text-[11px] text-muted-foreground mt-2 text-center">+{guestStats.plusOnes} Begleitpersonen</p>
-          )}
+          <div className="flex justify-between text-[11px] text-muted-foreground mt-2 pt-2 border-t border-border">
+            <span>{guestStats.withEmail} mit E-Mail</span>
+            {guestStats.plusOnes > 0 && <span>+{guestStats.plusOnes} Begl.</span>}
+            <span className="font-medium">Σ {guestStats.total}</span>
+          </div>
         </div>
       )}
 
