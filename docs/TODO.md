@@ -324,6 +324,13 @@
 | S26-133 | **Gästebuch Bulk-Moderation** | ✅ erledigt (20.02.2026) | POST /events/:id/guestbook/bulk-moderate (approve/reject/delete) |
 | S26-134 | **Gäste-Bulk-Import** | ✅ erledigt (20.02.2026) | POST /events/:id/guests/import (JSON Array, upsert-by-email) |
 | S26-135 | **Gast Delete-Own** | ✅ erledigt (20.02.2026) | POST /photos/:id/delete-own (featuresConfig.allowDeleteOwn + Name-Check) |
+| S26-136 | **Foto-Bewertungs-Aggregat** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/ratings (avgRating + voteCount top-50) |
+| S26-137 | **Kategorie-Schnellwechsel** | ✅ erledigt (20.02.2026) | GalleryTabV2 Lightbox: Select-Dropdown fuer Kategorie-Wechsel |
+| S26-138 | **rating_desc Sort** | ✅ erledigt (20.02.2026) | ?sort=rating_desc als Alias fuer quality_desc in Photos-API |
+| S26-139 | **Top-10 Fotos** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/top (views_desc, optionalAuth) |
+| S26-140 | **G\u00e4stebuch Bulk-Moderate** | \u2705 erledigt (20.02.2026) | POST /events/:id/guestbook/bulk-moderate (approve/reject/delete) |
+| S26-141 | **allowDeleteOwn Lightbox** | \u2705 erledigt (20.02.2026) | Trash2-Button in Lightbox + e3/[slug] Passthrough via localStorage |
+| S26-142 | **Sprint S26 ABGESCHLOSSEN** | \u2705 erledigt (20.02.2026) | 142 Features/Fixes implementiert, deployed, committed |
 
 ---
 
