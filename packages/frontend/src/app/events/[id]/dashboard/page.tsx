@@ -856,6 +856,7 @@ function OverviewTab({
   const [trends, setTrends] = useState<{ date: string; total: number }[]>([]);
   const [guestStats, setGuestStats] = useState<{ total: number; accepted: number; declined: number; pending: number; withEmail: number; plusOnes: number; totalWithPlusOnes?: number } | null>(null);
   const [recentActivity, setRecentActivity] = useState<{ type: string; name: string; at: string }[]>([]);
+  const [commentsPending, setCommentsPending] = useState(0);
 
   useEffect(() => {
     if (!eventId) return;
@@ -870,6 +871,9 @@ function OverviewTab({
       .catch(() => {});
     api.get(`/events/${eventId}/activity?limit=5`)
       .then(r => setRecentActivity(r.data?.activity || []))
+      .catch(() => {});
+    api.get(`/events/${eventId}/comments?status=PENDING&limit=1`)
+      .then(r => setCommentsPending(r.data?.total || 0))
       .catch(() => {});
   }, [eventId, stats.photos]);
   
