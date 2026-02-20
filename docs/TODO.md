@@ -261,6 +261,13 @@
 | S26-70 | **Admin Storage-Stats** | ✅ erledigt (20.02.2026) | GET /admin/events/storage-stats (topEvents by photo count, totalMB) |
 | S26-71 | **Bulk-Move-Category** | ✅ erledigt (20.02.2026) | POST /photos/bulk/move-category (categoryId oder null) |
 | S26-72 | **Foto Caption Lightbox** | ✅ erledigt (20.02.2026) | title + description in PhotoLightbox anzeigen |
+| S26-73 | **Admin User-Stats** | ✅ erledigt (20.02.2026) | GET /admin/users/stats (total, hosts, admins, locked, newToday, newThisWeek) |
+| S26-74 | **Guest Check-In Toggle** | ✅ erledigt (20.02.2026) | PATCH /guests/:id/checkin (PENDING<->ACCEPTED toggle) |
+| S26-75 | **Photos by Uploader** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/by-uploader (groupBy uploadedBy) |
+| S26-76 | **Slideshow Speed Prop** | ✅ erledigt (20.02.2026) | SlideshowMode.tsx: slideshowSpeed prop (2-30 Sek) |
+| S26-77 | **views_desc Sort** | ✅ erledigt (20.02.2026) | Sort-Toggle '👁 Meistgesehen' in Gast-Galerie |
+| S26-78 | **Foto-Filter isFav+Quality** | ✅ erledigt (20.02.2026) | GET /photos?isFavorite=true&minQuality=0.7 |
+| S26-79 | **Event Summary** | ✅ erledigt (20.02.2026) | GET /events/:id/summary (photos, guests, pending, url, visitors) |
 
 ---
 
