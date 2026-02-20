@@ -805,11 +805,17 @@ export default function GalleryTabV2({
           </div>
           {/* Infinite scroll sentinel */}
           {hasMore && (
-            <div ref={sentinelRef} className="flex items-center justify-center py-6">
+            <div ref={sentinelRef} className="flex items-center justify-center gap-4 py-6">
               <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
-              <span className="ml-2 text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground">
                 {displayedPhotos.length} von {filteredPhotos.length} geladen
               </span>
+              <button
+                onClick={() => setVisibleCount(filteredPhotos.length)}
+                className="text-xs text-primary underline hover:no-underline"
+              >
+                Alle laden
+              </button>
             </div>
           )}
           {!hasMore && filteredPhotos.length > PAGE_SIZE && (
