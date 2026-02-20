@@ -18,28 +18,35 @@ const createGuestSchema = z.object({
   plusOneCount: z.number().int().min(0).default(0),
 });
 
-// Get all guests for an event
+// Get all guests for an event (with optional ?search= and ?page= + ?limit=)
 router.get('/:eventId/guests', async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
+    const { search, page, limit } = req.query;
 
-    // Check if event exists
-    const event = await prisma.event.findUnique({
-      where: { id: eventId },
-    });
+    const event = await prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) return res.status(404).json({ error: 'Event not found' });
 
-    if (!event) {
-      return res.status(404).json({ error: 'Event not found' });
+    const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+    const limitNum = Math.min(500, Math.max(1, parseInt(limit as string, 10) || 500));
+    const skip = (pageNum - 1) * limitNum;
+
+    const where: any = { eventId };
+    if (typeof search === 'string' && search.trim()) {
+      const q = search.trim();
+      where.OR = [
+        { firstName: { contains: q, mode: 'insensitive' } },
+        { lastName: { contains: q, mode: 'insensitive' } },
+        { email: { contains: q, mode: 'insensitive' } },
+      ];
     }
 
-    const guests = await prisma.guest.findMany({
-      where: { eventId },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const [guests, total] = await Promise.all([
+      prisma.guest.findMany({ where, orderBy: { createdAt: 'desc' }, skip, take: limitNum }),
+      prisma.guest.count({ where }),
+    ]);
 
-    res.json({ guests });
+    res.json({ guests, total, page: pageNum, limit: limitNum });
   } catch (error) {
     logger.error('Get guests error', { error: getErrorMessage(error), eventId: req.params.eventId });
     res.status(500).json({ error: 'Internal server error' });
