@@ -47,6 +47,7 @@ export default function GalleryTabV2({
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [qualityFilter, setQualityFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
   const [downloadingAll, setDownloadingAll] = useState(false);
   const [exportingUsb, setExportingUsb] = useState(false);
   const [favLoading, setFavLoading] = useState<Set<string>>(new Set());
@@ -157,6 +158,11 @@ export default function GalleryTabV2({
       result = result.filter(p => (p.tags || []).includes(selectedTag));
     }
 
+    // Quality filter
+    if (qualityFilter === 'high') result = result.filter(p => (p as any).qualityScore >= 0.7);
+    else if (qualityFilter === 'medium') result = result.filter(p => (p as any).qualityScore >= 0.4 && (p as any).qualityScore < 0.7);
+    else if (qualityFilter === 'low') result = result.filter(p => (p as any).qualityScore < 0.4 && (p as any).qualityScore > 0);
+
     // Search filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -181,7 +187,7 @@ export default function GalleryTabV2({
     });
 
     return result;
-  }, [photos, filter, selectedAlbum, selectedGuest, sortMode, searchQuery, selectedTag]);
+  }, [photos, filter, selectedAlbum, selectedGuest, sortMode, searchQuery, selectedTag, qualityFilter]);
 
   const displayedPhotos = filteredPhotos.slice(0, visibleCount);
   const hasMore = visibleCount < filteredPhotos.length;
