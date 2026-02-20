@@ -297,6 +297,13 @@
 | S26-106 | **Gäste-Stats Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/guests/stats (total/accepted/declined/pending/withEmail/plusOnes) |
 | S26-107 | **Photos-Filter** | ✅ erledigt (20.02.2026) | GET /photos?isFavorite=true&minQuality=0.7&tag=xyz&sort=views_desc |
 | S26-108 | **Event Summary** | ✅ erledigt (20.02.2026) | GET /events/:id/summary (compact overview fuer externe Integrationen) |
+| S26-109 | **AI Caption Endpoint** | ✅ erledigt (20.02.2026) | POST /photos/:id/ai-caption (context-basiert: uploadedBy+faceCount+tags) |
+| S26-110 | **Cursor-Pagination** | ✅ erledigt (20.02.2026) | GET /photos?cursor=<id> + nextCursor in pagination Response |
+| S26-111 | **Admin Foto-Suche** | ✅ erledigt (20.02.2026) | GET /admin/events/:id/photos (uploadedBy, tag, status Filter) |
+| S26-112 | **Events-Filter** | ✅ erledigt (20.02.2026) | GET /events?dateFrom=&dateTo=&search= Filter |
+| S26-113 | **Dashboard Gäste-Stats** | ✅ erledigt (20.02.2026) | 3-Spalten Widget: Zusagen/Absagen/Ausstehend + Begleitpersonen |
+| S26-114 | **visitCount Increment** | ✅ erledigt | GET /events/by-slug: visitCount++  (Zeile 363) |
+| S26-115 | **commentCount Photos** | ✅ erledigt (20.02.2026) | _count.comments flatten als commentCount in Photos-API |
 
 ---
 
