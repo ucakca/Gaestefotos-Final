@@ -29,12 +29,20 @@ export interface AiFeatureAccess {
   key: AiFeature;
   label: string;
   description: string;
-  emoji?: string;
   allowed: boolean;
   reason?: 'package' | 'event_config' | 'device' | 'disabled';
   creditCost: number;
   category: string;
   packageCategory: AiPackageCategory;
+  // UI metadata for dynamic frontend rendering
+  emoji?: string;
+  gradient?: string;
+  guestDescription?: string;
+  endpoint?: string;
+  uiGroup?: string;
+  inputFlow?: string;
+  energyCostCategory?: string;
+  sortOrder?: number;
 }
 
 export interface AiFeatureGateResult {
@@ -117,6 +125,15 @@ export async function getAiFeatureGate(
       creditCost: def.creditCost,
       category: def.category,
       packageCategory: def.packageCategory,
+      // UI metadata
+      emoji: def.emoji,
+      gradient: def.gradient,
+      guestDescription: def.guestDescription,
+      endpoint: def.endpoint,
+      uiGroup: def.uiGroup,
+      inputFlow: def.inputFlow,
+      energyCostCategory: def.energyCostCategory,
+      sortOrder: def.sortOrder,
     };
   });
 

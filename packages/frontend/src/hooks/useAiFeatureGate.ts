@@ -1,13 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '@/lib/api';
 
 /**
- * useAiFeatureGate — Loads allowed AI features for an event from the backend.
- * Used by AiGamesModal and AiEffectsModal to filter out disabled/unavailable features.
+ * useAiFeatureGate — Single Source of Truth for guest-facing AI features.
  * 
- * The backend /ai-features endpoint is PUBLIC (no auth required).
+ * Loads the full AI Feature Registry + gate status from the backend.
+ * The backend populates UI metadata (emoji, gradient, endpoint, inputFlow, etc.)
+ * so the frontend needs ZERO hardcoded feature lists.
+ * 
+ * Adding a new AI feature to the backend registry automatically makes it
+ * appear in the correct guest modal (games or effects).
  */
 
 export interface AiFeatureAccess {
@@ -19,6 +23,15 @@ export interface AiFeatureAccess {
   creditCost: number;
   category: string;
   packageCategory: string;
+  // UI metadata from backend registry
+  emoji?: string;
+  gradient?: string;
+  guestDescription?: string;
+  endpoint?: string;
+  uiGroup?: string;
+  inputFlow?: string;
+  energyCostCategory?: string;
+  sortOrder?: number;
 }
 
 export interface AiFeatureGateResult {
@@ -79,12 +92,32 @@ export function useAiFeatureGate(eventId: string | null) {
     return feat?.reason;
   }, [gate]);
 
+  // ─── Dynamic Feature Lists (replaces hardcoded GAMES[] / EFFECTS[]) ───
+
+  // All allowed games with UI metadata, sorted by sortOrder
+  const games = useMemo(() => {
+    if (!gate) return [];
+    return gate.features
+      .filter(f => f.allowed && f.uiGroup === 'game' && f.emoji && f.endpoint)
+      .sort((a, b) => (a.sortOrder || 99) - (b.sortOrder || 99));
+  }, [gate]);
+
+  // All allowed effects with UI metadata, sorted by sortOrder
+  const effects = useMemo(() => {
+    if (!gate) return [];
+    return gate.features
+      .filter(f => f.allowed && f.uiGroup === 'effect' && f.emoji && f.endpoint)
+      .sort((a, b) => (a.sortOrder || 99) - (b.sortOrder || 99));
+  }, [gate]);
+
   return {
     gate,
     loading,
     isAllowed,
     getBlockReason,
     allowedFeatures: gate?.allowedFeatures || [],
+    games,
+    effects,
     refresh: fetchGate,
   };
 }

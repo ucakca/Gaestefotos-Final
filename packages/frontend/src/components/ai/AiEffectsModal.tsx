@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Camera, ImagePlus, Loader2, ArrowLeft, Download, RotateCcw,
@@ -11,24 +11,6 @@ import api from '@/lib/api';
 import { useAiEnergy } from '@/hooks/useAiEnergy';
 import { useAiFeatureGate } from '@/hooks/useAiFeatureGate';
 import { EnergyBar, EnergyCostBadge, InsufficientEnergyOverlay } from './EnergyBar';
-
-// Map frontend effect keys to backend registry feature keys
-const EFFECT_TO_REGISTRY_KEY: Record<string, string> = {
-  ai_oldify: 'ai_oldify',
-  ai_cartoon: 'ai_cartoon',
-  ai_style_pop: 'ai_style_pop',
-  face_switch: 'face_switch',
-  bg_removal: 'bg_removal',
-  gif_morph: 'ai_oldify',
-  gif_aging: 'ai_oldify',
-  ai_video: 'highlight_reel',
-  trading_card: 'drawbot',
-  time_machine: 'time_machine',
-  pet_me: 'pet_me',
-  yearbook: 'yearbook',
-  emoji_me: 'emoji_me',
-  miniature: 'miniature',
-};
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -207,10 +189,22 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [energyError, setEnergyError] = useState<string | null>(null);
   const { config, balance, isEnabled, cooldownActive, cooldownEndsAt, handleEnergyError, refreshAfterSpend, getCost } = useAiEnergy(eventId);
-  const { isAllowed } = useAiFeatureGate(eventId);
+  const { effects: apiEffects } = useAiFeatureGate(eventId);
 
-  // Filter effects to only show allowed ones
-  const availableEffects = EFFECTS.filter(e => isAllowed(EFFECT_TO_REGISTRY_KEY[e.key] || e.key));
+  // Dynamic effects: prefer API data, fallback to hardcoded EFFECTS[] while loading
+  const availableEffects = useMemo((): EffectDef[] => {
+    if (apiEffects.length > 0) {
+      return apiEffects.map(e => ({
+        key: e.key as EffectKey,
+        name: e.label,
+        emoji: e.emoji || '\u2728',
+        description: e.guestDescription || e.description,
+        gradient: e.gradient || 'from-gray-500 to-gray-700',
+        endpoint: e.endpoint || '',
+      }));
+    }
+    return EFFECTS; // Fallback while API loading
+  }, [apiEffects]);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedEffect, setSelectedEffect] = useState<EffectDef | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);

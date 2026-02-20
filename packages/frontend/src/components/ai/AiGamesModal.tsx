@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Camera, ImagePlus, Loader2, ArrowLeft, RotateCcw,
@@ -11,25 +11,6 @@ import api from '@/lib/api';
 import { useAiEnergy } from '@/hooks/useAiEnergy';
 import { useAiFeatureGate } from '@/hooks/useAiFeatureGate';
 import { EnergyBar, EnergyCostBadge, InsufficientEnergyOverlay } from './EnergyBar';
-
-// Map frontend game keys to backend registry feature keys
-// Games that share a backend feature use the same registry key
-const GAME_TO_REGISTRY_KEY: Record<string, string> = {
-  compliment_mirror: 'compliment_mirror',
-  fortune_teller: 'fortune_teller',
-  ai_roast: 'ai_roast',
-  caption_generator: 'caption_suggest',
-  persona_quiz: 'compliment_mirror',
-  wedding_speech: 'compliment_mirror',
-  ai_stories: 'compliment_mirror',
-  celebrity_lookalike: 'celebrity_lookalike',
-  ai_bingo: 'ai_bingo',
-  ai_dj: 'ai_dj',
-  ai_meme: 'ai_meme',
-  ai_superlatives: 'ai_superlatives',
-  ai_photo_critic: 'ai_photo_critic',
-  ai_couple_match: 'ai_couple_match',
-};
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -181,10 +162,22 @@ export default function AiGamesModal({ isOpen, onClose, eventId, eventType, even
   const [selectedGame, setSelectedGame] = useState<GameDef | null>(null);
   const [energyError, setEnergyError] = useState<string | null>(null);
   const { energy, config, balance, isEnabled, cooldownActive, cooldownEndsAt, handleEnergyError, refreshAfterSpend, getCost } = useAiEnergy(eventId);
-  const { isAllowed, loading: gateLoading } = useAiFeatureGate(eventId);
+  const { games: apiGames, loading: gateLoading } = useAiFeatureGate(eventId);
 
-  // Filter games to only show allowed ones
-  const availableGames = GAMES.filter(g => isAllowed(GAME_TO_REGISTRY_KEY[g.key] || g.key));
+  // Dynamic games: prefer API data, fallback to hardcoded GAMES[] while loading
+  const availableGames = useMemo((): GameDef[] => {
+    if (apiGames.length > 0) {
+      return apiGames.map(g => ({
+        key: g.key as GameKey,
+        name: g.label,
+        emoji: g.emoji || '\u{1F916}',
+        description: g.guestDescription || g.description,
+        gradient: g.gradient || 'from-gray-500 to-gray-700',
+        endpoint: g.endpoint || '',
+      }));
+    }
+    return GAMES; // Fallback while API loading
+  }, [apiGames]);
   const [guestName, setGuestName] = useState(() =>
     typeof window !== 'undefined' ? localStorage.getItem('guestUploaderName') || '' : ''
   );
