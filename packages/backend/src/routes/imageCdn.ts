@@ -158,6 +158,11 @@ router.get('/:photoId', optionalAuthMiddleware, async (req: AuthRequest, res: Re
     res.setHeader('Vary', 'Accept');
 
     res.send(buffer);
+
+    // Non-blocking: increment view counter (skip for thumbnail/tiny requests)
+    if (!params.width || params.width >= 400) {
+      prisma.photo.update({ where: { id: photoId }, data: { views: { increment: 1 } } }).catch(() => {});
+    }
   } catch (error: any) {
     const msg = error.message || '';
     // S3/SeaweedFS "NoSuchKey" or similar → return 404, not 500
