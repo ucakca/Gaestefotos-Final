@@ -853,6 +853,7 @@ function OverviewTab({
   const currentStep = onboardingSteps.find(s => s.current);
   const [liveStats, setLiveStats] = useState<{ todayCount: number; topUploaders: { name: string; count: number }[]; lastPhotoAt: string | null } | null>(null);
   const [trends, setTrends] = useState<{ date: string; total: number }[]>([]);
+  const [guestStats, setGuestStats] = useState<{ total: number; accepted: number; declined: number; pending: number; withEmail: number; plusOnes: number } | null>(null);
 
   useEffect(() => {
     if (!eventId) return;
@@ -861,6 +862,9 @@ function OverviewTab({
       .catch(() => {});
     api.get(`/events/${eventId}/trends?days=7`)
       .then(r => setTrends(r.data.trends || []))
+      .catch(() => {});
+    api.get(`/events/${eventId}/guests/stats`)
+      .then(r => setGuestStats(r.data))
       .catch(() => {});
   }, [eventId, stats.photos]);
   
@@ -1013,6 +1017,32 @@ function OverviewTab({
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Gäste-Stats Widget */}
+      {guestStats && guestStats.total > 0 && (
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <p className="text-xs font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
+            <Users className="w-3.5 h-3.5" /> Gäste-Übersicht
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="text-center">
+              <p className="text-xl font-bold text-green-500">{guestStats.accepted}</p>
+              <p className="text-[10px] text-muted-foreground">Zusagen</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold text-red-500">{guestStats.declined}</p>
+              <p className="text-[10px] text-muted-foreground">Absagen</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold text-yellow-500">{guestStats.pending}</p>
+              <p className="text-[10px] text-muted-foreground">Ausstehend</p>
+            </div>
+          </div>
+          {guestStats.plusOnes > 0 && (
+            <p className="text-[11px] text-muted-foreground mt-2 text-center">+{guestStats.plusOnes} Begleitpersonen</p>
+          )}
         </div>
       )}
 
