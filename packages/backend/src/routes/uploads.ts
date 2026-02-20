@@ -18,6 +18,10 @@ import { io } from '../index';
 import rateLimit from 'express-rate-limit';
 import { sanitizeText } from '../utils/sanitize';
 
+// Rate-limit map: eventId → last notification timestamp
+const photoEmailNotifyMap = new Map<string, number>();
+const PHOTO_EMAIL_NOTIFY_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
+
 const router = Router();
 
 const TUS_UPLOAD_DIR = process.env.TUS_UPLOAD_DIR || '/tmp/tus-uploads';
@@ -423,6 +427,32 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
             m.notifyEventHost(eventId, m.pushTemplates.hostNewUpload(eventForPush.title, 1)).catch(() => {});
           }
         }).catch(() => {});
+
+        // Rate-limited email notification to host (max 1/hour per event)
+        const lastNotify = photoEmailNotifyMap.get(eventId) || 0;
+        if (Date.now() - lastNotify > PHOTO_EMAIL_NOTIFY_INTERVAL_MS) {
+          photoEmailNotifyMap.set(eventId, Date.now());
+          (async () => {
+            try {
+              const { emailService } = await import('../services/email');
+              const connected = await emailService.testConnection();
+              if (!connected) return;
+              const event = await prisma.event.findUnique({ where: { id: eventId }, select: { title: true, slug: true, hostId: true } });
+              if (!event) return;
+              const host = await prisma.user.findUnique({ where: { id: event.hostId }, select: { email: true } });
+              if (!host?.email) return;
+              const totalCount = await prisma.photo.count({ where: { eventId, deletedAt: null } });
+              const frontendUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
+              const link = `${frontendUrl}/events/${eventId}/photos`;
+              await emailService.sendCustomEmail({
+                to: host.email,
+                subject: `📸 Neues Foto bei "${event.title}" (${totalCount} gesamt)`,
+                text: `${uploadedBy || 'Ein Gast'} hat ein Foto hochgeladen.\n\nFotos ansehen:\n${link}`,
+                html: `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,sans-serif"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:24px 16px"><tr><td align="center"><table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden"><tr><td style="background:linear-gradient(135deg,#e879a6,#f9a825);padding:24px 32px;text-align:center"><h2 style="margin:0;color:#fff;font-size:18px">📸 Neues Foto hochgeladen</h2></td></tr><tr><td style="padding:24px 32px"><p style="color:#374151"><strong>${uploadedBy || 'Ein Gast'}</strong> hat ein Foto bei <strong>${event.title}</strong> hochgeladen.</p><p style="color:#6b7280">Insgesamt ${totalCount} Foto${totalCount !== 1 ? 's' : ''} in der Galerie.</p><a href="${link}" style="display:inline-block;background:linear-gradient(135deg,#e879a6,#f9a825);color:#fff;text-decoration:none;padding:10px 24px;border-radius:8px;font-weight:600">Fotos ansehen</a></td></tr></table></td></tr></table></body></html>`,
+              });
+            } catch { /* non-critical */ }
+          })();
+        }
 
         // Mosaic auto-hook (non-blocking)
         if (photoStatus === 'APPROVED') {
