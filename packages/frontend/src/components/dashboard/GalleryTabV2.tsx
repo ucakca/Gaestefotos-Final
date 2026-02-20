@@ -906,6 +906,21 @@ export default function GalleryTabV2({
               {lightboxPhoto.likes > 0 && (
                 <span className="text-yellow-400 text-xs flex items-center gap-1"><Star className="w-3 h-3 fill-yellow-400" /> {lightboxPhoto.likes}</span>
               )}
+              <button
+                onClick={async () => {
+                  const val = window.prompt('Tags (kommagetrennt):', (lightboxPhoto.tags || []).join(', '));
+                  if (val === null) return;
+                  const tags = val.split(',').map((t: string) => t.trim()).filter(Boolean);
+                  try {
+                    await api.patch(`/photos/${lightboxPhoto.id}`, { tags });
+                    onPhotosChanged?.();
+                  } catch { /* silent */ }
+                }}
+                className="text-xs text-white/50 hover:text-white/80 transition-colors px-1"
+                title="Tags bearbeiten"
+              >
+                🏷️
+              </button>
               {categories.length > 0 && (
                 <select
                   value={lightboxPhoto.categoryId || ''}
