@@ -1679,6 +1679,25 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/photos/status-timeline — Photos with status change timeline
+router.get('/:eventId/photos/status-timeline', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { id: true, status: true, createdAt: true, updatedAt: true, uploadedBy: true },
+      orderBy: { updatedAt: 'desc' },
+      take: 100,
+    });
+
+    res.json({ photos });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/invitation-stats — Invitation email stats
 router.get('/:eventId/invitation-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
