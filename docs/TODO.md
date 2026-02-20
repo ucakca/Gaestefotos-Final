@@ -358,6 +358,13 @@
 | S26-167 | **Analytics Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/analytics (photos+guests+engagement combined) |
 | S26-168 | **Top-Uploaders** | ✅ erledigt (20.02.2026) | GET /events/:id/top-uploaders (medal 🥇🥈🥉) |
 | S26-169 | **Webhook-Logs** | ✅ erledigt (20.02.2026) | GET /events/:id/webhook-logs (graceful .catch([])) |
+| S26-170 | **🎲 Shuffle Sort** | ✅ erledigt (20.02.2026) | Sort-Toggle '🎲 Shuffle' in Gast-Galerie (Math.random) |
+| S26-171 | **pendingCount Badge** | ✅ erledigt (20.02.2026) | EventCard: Clock-Icon Badge (orange) fuer pendingCount > 0 |
+| S26-172 | **Foto-Beschreibung Hover** | ✅ erledigt (20.02.2026) | PhotoGrid: title + description im Hover-Overlay (group-hover) |
+| S26-173 | **Activity Feed Widget** | ✅ erledigt (20.02.2026) | Dashboard OverviewTab: recentActivity 📸/👤 Liste |
+| S26-174 | **Tag-Filter Backend** | ✅ erledigt (20.02.2026) | GET /events/:id/photos?tag=xyz (has: filter) |
+| S26-175 | **Cursor-Pagination** | ✅ erledigt (20.02.2026) | ?cursor=<id> + nextCursor in Photos-Response |
+| S26-176 | **allowDeleteOwn komplett** | ✅ erledigt (20.02.2026) | Backend+Toggle+Lightbox-Trash+Passthrough vollst. integriert |
 
 ---
 
