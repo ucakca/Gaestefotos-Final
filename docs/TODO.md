@@ -394,6 +394,13 @@
 | S26-203 | **HIDDEN Filter** | ✅ erledigt (20.02.2026) | Photos-API notIn ['DELETED','HIDDEN'] als Safety-Net |
 | S26-204 | **Uploader Hover Badge** | ✅ erledigt (20.02.2026) | GalleryTabV2 Foto-Karte: uploadedBy bei Hover |
 | S26-205 | **Sprint S26 Meilenstein** | ✅ erledigt (20.02.2026) | 205+ Sprint-Tasks implementiert, deployed, committed |
+| S26-206 | **qualityScore Filter** | ✅ erledigt (20.02.2026) | GalleryTabV2: qualityFilter State (all/high/medium/low) |
+| S26-207 | **Gäste-Bulk-Import** | ✅ erledigt (20.02.2026) | POST /events/:id/guests/import (JSON, upsert-by-email, max 500) |
+| S26-208 | **AI Caption Bulk** | ✅ erledigt (20.02.2026) | POST /photos/bulk/ai-caption (max 100, overwrite param) |
+| S26-209 | **Photo-Stats** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/stats (approved/pending/favorites/today/views) |
+| S26-210 | **Cursor-Pagination** | ✅ erledigt (20.02.2026) | GET /photos?cursor=<id> + nextCursor in Response |
+| S26-211 | **Admin Foto-Suche** | ✅ erledigt (20.02.2026) | GET /admin/events/:id/photos (uploadedBy/tag/status Filter) |
+| S26-212 | **Gästebuch Bulk-Mod** | ✅ erledigt (20.02.2026) | POST /guestbook/bulk-moderate (approve/reject/delete) |
 
 ---
 
