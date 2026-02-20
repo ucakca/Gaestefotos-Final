@@ -1384,6 +1384,43 @@ router.post(
   }
 );
 
+// POST /:photoId/delete-own — Guest deletes their own photo (if allowDeleteOwn is enabled)
+router.post(
+  '/:photoId/delete-own',
+  optionalAuthMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoId } = req.params;
+      const { uploaderName } = req.body;
+
+      const photo = await prisma.photo.findUnique({
+        where: { id: photoId },
+        include: { event: { select: { featuresConfig: true, isActive: true, deletedAt: true } } },
+      });
+      if (!photo || photo.deletedAt) return res.status(404).json({ error: 'Foto nicht gefunden' });
+      if (!photo.event.isActive || photo.event.deletedAt) return res.status(404).json({ error: 'Event nicht gefunden' });
+
+      const fc = (photo.event.featuresConfig || {}) as any;
+      if (!fc.allowDeleteOwn) return res.status(403).json({ error: 'Löschen nicht erlaubt' });
+
+      // Verify ownership by uploader name
+      if (!uploaderName || photo.uploadedBy?.toLowerCase() !== uploaderName.trim().toLowerCase()) {
+        return res.status(403).json({ error: 'Kein Zugriff — falscher Uploader-Name' });
+      }
+
+      await prisma.photo.update({
+        where: { id: photoId },
+        data: { status: 'DELETED', deletedAt: new Date() },
+      });
+
+      res.json({ deleted: true });
+    } catch (error: any) {
+      logger.error('Delete-own error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Löschen' });
+    }
+  }
+);
+
 // PATCH /:photoId — Update photo metadata (title, description, tags)
 router.patch(
   '/:photoId',
