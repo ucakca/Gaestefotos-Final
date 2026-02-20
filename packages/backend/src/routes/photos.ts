@@ -1285,6 +1285,37 @@ router.post(
   }
 );
 
+// PATCH /:photoId — Update photo metadata (title, description, tags)
+router.patch(
+  '/:photoId',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoId } = req.params;
+      const { title, description, tags } = req.body;
+
+      const photo = await prisma.photo.findUnique({ where: { id: photoId }, select: { id: true, eventId: true } });
+      if (!photo) return res.status(404).json({ error: 'Foto nicht gefunden' });
+      if (!(await hasEventManageAccess(req, photo.eventId))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      const updates: any = {};
+      if (typeof title === 'string') updates.title = title.trim() || null;
+      if (typeof description === 'string') updates.description = description.trim() || null;
+      if (Array.isArray(tags)) updates.tags = tags.filter((t: any) => typeof t === 'string' && t.trim()).map((t: string) => t.trim());
+
+      if (Object.keys(updates).length === 0) return res.status(400).json({ error: 'Keine Daten zum Aktualisieren' });
+
+      const updated = await prisma.photo.update({ where: { id: photoId }, data: updates });
+      res.json({ photo: updated });
+    } catch (error: any) {
+      logger.error('Photo patch error', { error: error.message });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
 // Toggle favorite
 router.post(
   '/:photoId/favorite',
