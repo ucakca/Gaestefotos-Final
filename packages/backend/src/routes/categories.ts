@@ -370,6 +370,31 @@ router.put(
   }
 );
 
+// PUT /:eventId/categories/reorder — Bulk update category sort order
+router.put('/:eventId/categories/reorder', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const { order } = req.body; // Array of { id, order }
+    if (!Array.isArray(order) || order.length === 0) return res.status(400).json({ error: 'order Array erforderlich' });
+
+    await Promise.all(
+      order.map((item: { id: string; order: number }) =>
+        prisma.category.updateMany({
+          where: { id: item.id, eventId },
+          data: { order: item.order },
+        })
+      )
+    );
+
+    res.json({ updated: order.length });
+  } catch (error) {
+    logger.error('Category reorder error', { error: getErrorMessage(error) });
+    res.status(500).json({ error: 'Fehler beim Sortieren' });
+  }
+});
+
 // GET /:eventId/categories/count — Photo counts per category (lightweight)
 router.get('/:eventId/categories/count', optionalAuthMiddleware, async (req: AuthRequest, res: Response) => {
   try {
