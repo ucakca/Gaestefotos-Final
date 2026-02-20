@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from '@/lib/api';
+import api, { buildApiUrl } from '@/lib/api';
 import { QRCodeSVG } from 'qrcode.react';
 import { Event as EventType } from '@gaestefotos/shared';
 import {
@@ -52,6 +52,7 @@ import {
   Film,
   Wifi,
   TrendingUp,
+  Download,
 } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
@@ -964,6 +965,19 @@ function OverviewTab({
               >
                 <Film className="w-3.5 h-3.5" />
                 Export
+              </button>
+              <button
+                onClick={async () => {
+                  const url = buildApiUrl(`/events/${eventId}/photos/download-zip`);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.target = '_blank';
+                  a.click();
+                }}
+                className="px-3 py-1.5 rounded-full bg-card/20 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1 hover:bg-card/30 transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" />
+                ZIP
               </button>
             </div>
           </div>
