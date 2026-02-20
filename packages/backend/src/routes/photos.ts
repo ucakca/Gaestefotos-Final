@@ -247,9 +247,11 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
       };
     });
 
+    const nextCursor = hasMore && resultPhotos.length > 0 ? resultPhotos[resultPhotos.length - 1].id : null;
+
     res.json({
       photos: serializeBigInt(photosWithProxyUrls),
-      pagination: { hasMore, skip: skipNum, limit: limitNum || resultPhotos.length },
+      pagination: { hasMore, skip: skipNum, limit: limitNum || resultPhotos.length, nextCursor },
     });
   } catch (error: any) {
     logger.error('Get photos error', { error: error.message, stack: error.stack });
