@@ -316,7 +316,7 @@ const FACE_DETECTOR_SCRIPT = '/opt/gaestefotos/detect_faces.py';
 
 async function countFacesLocal(photoUrl: string): Promise<number> {
   return new Promise((resolve) => {
-    const proc = spawn('python3', [FACE_DETECTOR_SCRIPT, photoUrl], { timeout: 12000 });
+    const proc = spawn('python3', [FACE_DETECTOR_SCRIPT, photoUrl], { timeout: 12000, stdio: ['ignore', 'pipe', 'ignore'] });
     let stdout = '';
     proc.stdout.on('data', (d) => { stdout += d.toString(); });
     proc.on('close', (code) => {
