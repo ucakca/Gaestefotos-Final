@@ -165,4 +165,28 @@ router.get('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest
   }
 });
 
+// GET /stats — User counts by role + new users today/week
+router.get('/stats', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - 7);
+    weekStart.setHours(0, 0, 0, 0);
+
+    const [total, hosts, admins, lockedCount, todayNew, weekNew] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({ where: { role: 'HOST' } }),
+      prisma.user.count({ where: { role: 'ADMIN' } }),
+      prisma.user.count({ where: { isLocked: true } }),
+      prisma.user.count({ where: { createdAt: { gte: todayStart } } }),
+      prisma.user.count({ where: { createdAt: { gte: weekStart } } }),
+    ]);
+
+    return res.json({ ok: true, stats: { total, hosts, admins, locked: lockedCount, newToday: todayNew, newThisWeek: weekNew } });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
