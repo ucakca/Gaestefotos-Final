@@ -997,6 +997,33 @@ router.get(
   }
 });
 
+// POST /:eventId/guestbook/bulk-moderate — Approve or reject multiple entries
+router.post('/:eventId/guestbook/bulk-moderate', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const { ids, action } = req.body;
+
+    if (req.userId === undefined) return res.status(401).json({ error: 'Nicht authentifiziert' });
+    const event = await prisma.event.findUnique({ where: { id: eventId }, select: { hostId: true } });
+    if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+    if (req.userId !== event.hostId && req.userRole !== 'ADMIN') return res.status(403).json({ error: 'Kein Zugriff' });
+
+    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ error: 'ids erforderlich' });
+    if (!['approve', 'reject', 'delete'].includes(action)) return res.status(400).json({ error: 'Ungültige Aktion' });
+
+    const status = action === 'approve' ? 'APPROVED' : action === 'reject' ? 'REJECTED' : 'DELETED';
+    const result = await prisma.guestbookEntry.updateMany({
+      where: { id: { in: ids }, eventId },
+      data: { status: status as any },
+    });
+
+    res.json({ updated: result.count, action });
+  } catch (error) {
+    logger.error('Guestbook bulk moderate error', { message: getErrorMessage(error) });
+    res.status(500).json({ error: 'Fehler bei der Massenmoderation' });
+  }
+});
+
 // ─── GET /:eventId/guestbook/export-pdf ─────────────────────────────────────
 // Export guestbook entries as a formatted PDF (host/admin only)
 router.get('/:eventId/guestbook/export-pdf', authMiddleware, async (req: AuthRequest, res: Response) => {
