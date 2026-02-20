@@ -11,6 +11,7 @@ import {
   Share2,
   Download,
   Flag,
+  Trash2,
   Send,
   User,
   Trophy,
@@ -65,6 +66,8 @@ export interface PhotoLightboxProps {
   eventTitle?: string;
   allowDownloads?: boolean;
   allowComments?: boolean;
+  allowDeleteOwn?: boolean;
+  uploaderName?: string;
   onClose: () => void;
   onNext?: () => void;
   onPrev?: () => void;
@@ -123,6 +126,8 @@ export default function PhotoLightbox({
   eventTitle,
   allowDownloads = true,
   allowComments = true,
+  allowDeleteOwn = false,
+  uploaderName,
   onClose,
   onNext,
   onPrev,
@@ -565,6 +570,25 @@ export default function PhotoLightbox({
                     whileTap={{ scale: 0.9 }}
                   >
                     <Download className="w-7 h-7 text-white" />
+                  </motion.button>
+                )}
+
+                {/* Delete-Own (if enabled + own photo) */}
+                {allowDeleteOwn && uploaderName && (currentPhoto as any).uploadedBy?.toLowerCase() === uploaderName.toLowerCase() && (
+                  <motion.button
+                    onClick={() => {
+                      if (!window.confirm('Dein Foto wirklich löschen?')) return;
+                      fetch(`/api/photos/${currentPhoto.id}/delete-own`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uploaderName }),
+                      }).then(() => { alert('Foto gelöscht.'); onClose(); }).catch(() => {});
+                    }}
+                    className="p-1 opacity-50 hover:opacity-90 transition-opacity"
+                    whileTap={{ scale: 0.9 }}
+                    title="Eigenes Foto löschen"
+                  >
+                    <Trash2 className="w-5 h-5 text-red-400" />
                   </motion.button>
                 )}
 
