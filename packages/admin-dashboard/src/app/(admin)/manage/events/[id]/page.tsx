@@ -1020,7 +1020,7 @@ export default function EventDetailPage() {
                   max={50}
                   value={aiConfigForm.energyStartBalance}
                   onChange={e => setAiConfigForm(f => ({ ...f, energyStartBalance: Number(e.target.value) }))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                  className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-purple-500"
                   disabled={!aiConfigForm.energyEnabled}
                 />
                 <div className="flex justify-between text-[10px] text-app-muted mt-1">

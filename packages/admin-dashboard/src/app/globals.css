@@ -75,26 +75,28 @@ body {
 }
 
 /* ═══ Form Element Color Fix ═══ */
-/* Ensures all inputs/textareas/selects always have proper contrast */
-input,
+/* Ensures text-based inputs always have proper contrast in dark mode */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="url"],
+input[type="tel"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+input[type="month"],
+input[type="week"],
 textarea,
 select {
   color: var(--app-fg);
-  background-color: var(--app-card);
 }
-/* Dark mode: tell browser to render native controls (spinners, date pickers, scrollbars) in dark */
+/* Dark mode: native controls (spinners, date pickers) rendered in dark */
 @media (prefers-color-scheme: dark) {
-  input,
-  textarea,
-  select {
+  input, textarea, select {
     color-scheme: dark;
   }
-}
-input[type="range"],
-input[type="checkbox"],
-input[type="radio"],
-input[type="color"] {
-  background-color: transparent;
 }
 
 /* ═══ Modern Utility Classes ═══ */
