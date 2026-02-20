@@ -67,7 +67,7 @@ import { usePackageFeatures } from '@/hooks/usePackageFeatures';
 import type { PackageInfo } from '@/hooks/usePackageFeatures';
 
 type TabType = 'overview' | 'gallery' | 'guestbook' | 'setup';
-type GalleryFilter = 'all' | 'photos' | 'videos' | 'albums' | 'guests' | 'challenges' | 'top' | 'pending' | 'trash';
+type GalleryFilter = 'all' | 'photos' | 'videos' | 'albums' | 'guests' | 'challenges' | 'top' | 'pending' | 'trash' | 'hidden';
 
 interface PhotoStats {
   total: number;

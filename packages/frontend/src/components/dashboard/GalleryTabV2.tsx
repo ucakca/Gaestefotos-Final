@@ -12,7 +12,7 @@ import {
   MousePointerClick,
 } from 'lucide-react';
 
-type GalleryFilter = 'all' | 'photos' | 'videos' | 'albums' | 'guests' | 'challenges' | 'top' | 'pending' | 'trash';
+type GalleryFilter = 'all' | 'photos' | 'videos' | 'albums' | 'guests' | 'challenges' | 'top' | 'pending' | 'trash' | 'hidden';
 type SortMode = 'newest' | 'oldest' | 'most-liked' | 'favorites-first';
 
 const PAGE_SIZE = 36;
@@ -150,6 +150,7 @@ export default function GalleryTabV2({
       if (filter === 'top') return (p.isFavorite || p.likes > 0) && p.status === 'APPROVED';
       if (filter === 'pending') return p.status === 'PENDING';
       if (filter === 'trash') return p.status === 'REJECTED' || p.status === 'DELETED';
+      if (filter === 'hidden') return (p.status as string) === 'HIDDEN';
       return true;
     });
 
