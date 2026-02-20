@@ -1882,6 +1882,31 @@ router.delete(
   }
 );
 
+// GET /api/events/:eventId/photos/top — Top N photos by likes
+router.get('/:eventId/photos/top', optionalAuthMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const limit = Math.min(50, parseInt(req.query.limit as string, 10) || 10);
+    const isManager = req.userId ? await hasEventManageAccess(req, eventId) : false;
+
+    const photos = await prisma.photo.findMany({
+      where: {
+        eventId,
+        status: isManager ? { not: 'DELETED' as any } : 'APPROVED' as any,
+        deletedAt: null,
+      },
+      select: { id: true, url: true, views: true, uploadedBy: true, createdAt: true },
+      orderBy: [{ views: 'desc' }, { createdAt: 'desc' }],
+      take: limit,
+    });
+
+    res.json({ photos: photos.map((p: any) => ({ ...p, url: `/cdn/${p.id}` })) });
+  } catch (error: any) {
+    logger.error('Top photos error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 // GET /api/events/:eventId/photos/stats — Photo counts breakdown
 router.get('/:eventId/photos/stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
