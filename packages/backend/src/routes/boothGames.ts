@@ -514,7 +514,8 @@ router.post('/ai-bingo', authMiddleware, withEnergyCheck('ai_bingo'), async (req
     const systemPrompt = `Du bist ein Party-Spiele-Meister auf einer ${eventType || 'Feier'}.
 Erstelle eine 3x3 Bingo-Karte mit lustigen Foto-Aufgaben für Gäste.
 Jede Aufgabe soll mit einem Selfie oder Foto erfüllbar sein.
-Antworte NUR mit JSON: {"title": "Lustiger Bingo-Titel", "tasks": ["Aufgabe 1", "Aufgabe 2", ... "Aufgabe 9"], "bonusTask": "Eine extra schwere Bonus-Aufgabe", "emoji": "passendes Emoji"}
+Mindestens 2 Aufgaben sollen eine Personenanzahl enthalten (z.B. "Foto mit 3 Personen", "Selfie mit 5+ Leuten").
+Antworte NUR mit JSON: {"title": "Lustiger Bingo-Titel", "tasks": ["Aufgabe 1", "Aufgabe 2", ... "Aufgabe 9"], "bonusTask": "Eine extra schwere Bonus-Aufgabe mit 7+ Personen", "emoji": "passendes Emoji"}
 Die 9 Aufgaben sollen kurz (max 6 Wörter) und lustig sein!`;
 
     const userPrompt = `Erstelle eine Foto-Bingo-Karte für "${eventTitle || 'die Party'}". Die Aufgaben sollen lustig, machbar und party-tauglich sein! Gast: ${guestName || 'Ein Partygast'}`;

@@ -67,7 +67,7 @@
 | AI-2 | **AI-Cache-System** | ✅ erledigt | — | Redis-basiertes Cache mit 30d TTL, Hit-Tracking, Fallbacks |
 | AI-3 | **Grok (xAI) API-Key** | ⏳ offen | MEDIUM | `XAI_API_KEY` in .env setzen, Seed ausführen |
 | AI-4 | **OpenAI API-Key** | ⏳ offen | LOW | `OPENAI_API_KEY` in .env setzen, als Fallback |
-| AI-5 | **AiFeatureMapping DB** | ⏳ offen | LOW | Feature→Provider Zuordnungen in Admin-Dashboard anlegen |
+| AI-5 | **AiFeatureMapping DB** | ✅ erledigt (20.02.2026) | — | 40 Mappings in DB, Auto-Setup Button im Admin Dashboard |
 
 ### AI Backend Erweiterungen
 
@@ -75,8 +75,8 @@
 |---|---------|--------|-----------|--------------|
 | AI-6 | **Warm-Up Endpoint** | ✅ erledigt | — | `POST /api/ai/cache/warm-up` implementiert |
 | AI-7 | **Cache-Stats Endpoint** | ✅ erledigt | — | `GET /api/ai/cache/stats` + `/online-status` + `DELETE /cache` |
-| AI-8 | **Ollama Integration** | ⏳ offen | LOW | Lokaler LLM-Fallback auf Server (Llama 3.1/3.3) |
-| AI-9 | **Redis AOF Persistenz** | ⏳ offen | LOW | Redis-Config für persistenten AI-Cache |
+| AI-8 | **Ollama Integration** | ✅ erledigt (20.02.2026) | — | ollama-local Provider konfiguriert (llama3.2:3b, localhost:11434) |
+| AI-9 | **Redis AOF Persistenz** | ✅ erledigt (20.02.2026) | — | appendonly=yes, appendfsync=everysec, CONFIG REWRITE |
 
 ### AI Admin Dashboard
 
@@ -90,19 +90,19 @@
 | # | Aufgabe | Status | Priorität | Beschreibung |
 |---|---------|--------|-----------|--------------|
 | AI-12 | **Bild-KI Provider** | ⏳ offen | MEDIUM | Replicate, Stability AI, oder fal.ai evaluieren |
-| AI-13 | **BG Removal** | ⏳ offen | MEDIUM | Hintergrund entfernen für Booth-Fotos |
-| AI-14 | **AI Oldify/Cartoon** | ⏳ offen | LOW | Alterungs- und Cartoon-Effekte |
+| AI-13 | **BG Removal** | ✅ erledigt (20.02.2026) | — | bgRemoval.ts Service + /booth-games/bg-removal Route + AiEffectsModal UI |
+| AI-14 | **AI Oldify/Cartoon** | ✅ erledigt | — | Implementiert via aiStyleEffects.ts |
 | AI-15 | **Style Transfer** | ⏳ offen | LOW | Erweiterte Kunststile (über aktuelle 10 hinaus) |
 
 ### Zusammenfassung AI
 
 | Kategorie | Erledigt | Offen |
 |-----------|----------|-------|
-| Provider Setup | 2 | 3 |
-| Backend | 2 | 2 |
+| Provider Setup | 3 | 2 |
+| Backend | 4 | 0 |
 | Admin UI | 1 | 1 |
-| Bild-KI | 0 | 4 |
-| **Gesamt** | **5** | **10** |
+| Bild-KI | 2 | 2 |
+| **Gesamt** | **10** | **5** |
 
 ---
 
