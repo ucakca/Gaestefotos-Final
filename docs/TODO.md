@@ -304,6 +304,13 @@
 | S26-113 | **Dashboard Gäste-Stats** | ✅ erledigt (20.02.2026) | 3-Spalten Widget: Zusagen/Absagen/Ausstehend + Begleitpersonen |
 | S26-114 | **visitCount Increment** | ✅ erledigt | GET /events/by-slug: visitCount++  (Zeile 363) |
 | S26-115 | **commentCount Photos** | ✅ erledigt (20.02.2026) | _count.comments flatten als commentCount in Photos-API |
+| S26-116 | **Gäste-Bulk-Import** | ✅ erledigt (20.02.2026) | POST /events/:id/guests/import (JSON Array, upsert-by-email, max 500) |
+| S26-117 | **Photo-Stats Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/stats (total/approved/pending/favorites/today/totalViews) |
+| S26-118 | **Bulk AI-Caption** | ✅ erledigt (20.02.2026) | POST /photos/bulk/ai-caption (max 100, overwrite param) |
+| S26-119 | **AI Caption Endpoint** | ✅ erledigt (20.02.2026) | POST /photos/:id/ai-caption (einzelnes Foto) |
+| S26-120 | **Admin Foto-Suche** | ✅ erledigt (20.02.2026) | GET /admin/events/:id/photos (uploadedBy/tag/status Filter) |
+| S26-121 | **Cursor-Pagination** | ✅ erledigt (20.02.2026) | GET /photos?cursor=<id> + nextCursor in Pagination Response |
+| S26-122 | **Gäste-Bulk-Import JSON** | ✅ erledigt (20.02.2026) | POST /guests/import: created/updated/failed Statistik |
 
 ---
 
