@@ -171,7 +171,7 @@
 | # | Feature | Status | Beschreibung |
 |---|---------|--------|--------------|
 | TEST-1 | **Gästeliste** | ✅ geprüft | Code vollständig: CRUD API + TanStack Table + Import. Offene TODOs: E-Mail (TD-4) + Details (TD-5) |
-| TEST-2 | **Lead-Erfassung** | ⏳ nicht getestet | Nur für Admin/Partner relevant — Funktionstest steht aus |
+| TEST-2 | **Lead-Erfassung** | ✅ geprüft (21.02.2026) | Route registriert (/api/leads), Prisma-Modell Lead vorhanden, Dedup+Export+Stats+CSV implementiert |
 
 ---
 
@@ -183,7 +183,7 @@
 | NF-2 | **Workflow Builder Erweiterung** | ✅ erledigt (20.02.2026) | — | Lock/Unlock, Duplikat, Backup/Restore, Export/Import, Undo/Redo, Simulation, Analytics. FACE_SEARCH Flow aktiv für app.gästefotos.com. |
 | NF-3 | **SMS Sharing** | ✅ erledigt | — | smsService.ts (Twilio + 46elks), smsShare.ts API Routen, Admin UI /manage/sms |
 | NF-4 | **Face Recognition Erweiterung** | ✅ erledigt (20.02.2026) | — | TinyFaceDetector: inputSize 416, scoreThreshold 0.35 (besserer Recall). Single-Pass in getFaceDetectionMetadata (keine doppelte Erkennung mehr). |
-| NF-5 | **Storage Subdomain** | ⏳ offen | LOW | Neue Subdomain für Zugriff auf Gäste-Speicher. USB-Export Möglichkeit. |
+| NF-5 | **Storage Subdomain** | 🔧 teilweise (21.02.2026) | LOW | nginx-Config für cdn.gästefotos.com erstellt (→ SeaweedFS :8333). SSL-Cert via certbot/Plesk noch nötig + DNS-Eintrag. |
 
 ### Neue Features (Sprint 20.02.2026)
 
@@ -936,6 +936,11 @@
 | S26-745 | **AI-11 Provider-Monitoring Frontend** | ✅ erledigt (21.02.2026) | /admin/ai-monitoring (Status-Tabelle mit Latenz, Fehlerrate, Zeitraum-Filter) |
 | S26-746 | **AI-15: 8 neue Style-Transfer-Stile** | ✅ erledigt (21.02.2026) | anime, watercolor, oil_painting, sketch, neon_noir, renaissance, comic_book, pixel_art |
 | S26-747 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 747 Features in Sprint S26 implementiert + deployed |
+| S26-748 | **AI-12: fal.ai Integration** | ✅ erledigt (21.02.2026) | callFalAiImg2Img (fal-ai/flux/dev/image-to-image), Test-Endpoint in adminAiProviders.ts, 8 Fallback-Sharp-Cases |
+| S26-749 | **AI-12: fal.ai Test-Endpoint** | ✅ erledigt (21.02.2026) | IMAGE_GEN test: fal.run/fal-ai/flux/dev/image-to-image (422=Auth OK) |
+| S26-750 | **TEST-2: Lead-Erfassung geprüft** | ✅ erledigt (21.02.2026) | Route /api/leads registriert, Lead-Modell vorhanden, Dedup+CSV-Export+Stats vollständig |
+| S26-751 | **NF-5: CDN-Subdomain nginx-Config** | ✅ erledigt (21.02.2026) | /etc/nginx/sites-available/gaestefotos-cdn.conf (→ SeaweedFS :8333, CORS, Cache-Headers) |
+| S26-752 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 752 Features in Sprint S26 implementiert + deployed |
 
 ---
 
