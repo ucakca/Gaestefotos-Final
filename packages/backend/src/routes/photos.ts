@@ -2069,6 +2069,119 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/top-commented-today — Top10 photos by comments added today
+router.get('/:eventId/photos/top-commented-today', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const grouped = await prisma.photoComment.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, deletedAt: null }, createdAt: { gte: startOfDay } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 10,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true, status: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      ...(photos.find((p) => p.id === g.photoId) || {}),
+      commentsToday: g._count.id,
+    }));
+
+    res.json({ photos: result, date: startOfDay.toISOString().slice(0, 10) });
+  } catch (error: any) {
+    logger.error('Top commented today error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/category-size-total — Total file size per category in MB
+router.get('/:eventId/photos/category-size-total', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['categoryId'],
+      where: { eventId, deletedAt: null, sizeBytes: { not: null } },
+      _sum: { sizeBytes: true },
+      _count: { id: true },
+      orderBy: { _sum: { sizeBytes: 'desc' } },
+      take: 20,
+    });
+
+    const catIds = (grouped as any[]).map((g) => g.categoryId).filter(Boolean) as string[];
+    const categories = catIds.length > 0 ? await prisma.category.findMany({
+      where: { id: { in: catIds } },
+      select: { id: true, name: true },
+    }) : [];
+
+    const stats = (grouped as any[]).map((g) => ({
+      categoryId: g.categoryId,
+      categoryName: categories.find((c) => c.id === g.categoryId)?.name || null,
+      photoCount: g._count.id,
+      totalBytes: Number(g._sum.sizeBytes || 0),
+      totalMB: Math.round(Number(g._sum.sizeBytes || 0) / 1_048_576 * 100) / 100,
+    }));
+
+    res.json({ stats });
+  } catch (error: any) {
+    logger.error('Category size total error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/guest-engagement-score — Top20 guests by combined engagement (likes+comments+votes on their photos)
+router.get('/:eventId/photos/guest-engagement-score', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, guestId: { not: null } },
+      select: {
+        guestId: true,
+        _count: { select: { likes: true, comments: true, votes: true } },
+        views: true,
+      },
+    });
+
+    const guestMap: Record<string, { likes: number; comments: number; votes: number; views: number; photos: number }> = {};
+    for (const p of photos) {
+      const gid = p.guestId as string;
+      if (!guestMap[gid]) guestMap[gid] = { likes: 0, comments: 0, votes: 0, views: 0, photos: 0 };
+      guestMap[gid].photos++;
+      guestMap[gid].likes += p._count.likes;
+      guestMap[gid].comments += p._count.comments;
+      guestMap[gid].votes += p._count.votes;
+      guestMap[gid].views += p.views;
+    }
+
+    const result = Object.entries(guestMap)
+      .map(([guestId, d]) => ({
+        guestId,
+        ...d,
+        score: d.likes * 3 + d.comments * 2 + d.votes + Math.floor(d.views / 10),
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20);
+
+    res.json({ guests: result });
+  } catch (error: any) {
+    logger.error('Guest engagement score error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/comment-per-photo-avg — Avg comments per photo overall + per category
 router.get('/:eventId/photos/comment-per-photo-avg', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
