@@ -237,29 +237,34 @@ export default function PartnerDashboardPage() {
                 ) : (
                   <div className="divide-y">
                     {events.slice(0, 10).map((event) => (
-                      <Link
-                        key={event.id}
-                        href={`/events/${event.id}/dashboard`}
-                        className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-foreground truncate">{event.title}</span>
-                            {event.isActive && (
-                              <span className="text-xs px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Live</span>
-                            )}
+                      <div key={event.id} className="flex items-center gap-2 p-4 hover:bg-muted/50 transition-colors">
+                        <Link href={`/events/${event.id}/dashboard`} className="flex-1 min-w-0 flex items-center gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-foreground truncate">{event.title}</span>
+                              {event.isActive && (
+                                <span className="text-xs px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Live</span>
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              {event.host?.name} · {event.dateTime ? new Date(event.dateTime).toLocaleDateString('de-DE') : 'Kein Datum'}
+                            </div>
                           </div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            {event.host?.name} · {event.dateTime ? new Date(event.dateTime).toLocaleDateString('de-DE') : 'Kein Datum'}
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground/70">
+                            <span className="flex items-center gap-1">
+                              <ImageIcon className="w-3 h-3" /> {event._count?.photos || 0}
+                            </span>
+                            <ChevronRight className="w-4 h-4" />
                           </div>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground/70">
-                          <span className="flex items-center gap-1">
-                            <ImageIcon className="w-3 h-3" /> {event._count?.photos || 0}
-                          </span>
-                          <ChevronRight className="w-4 h-4" />
-                        </div>
-                      </Link>
+                        </Link>
+                        <Link
+                          href={`/partner/events/${event.id}/ai-config`}
+                          className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/30 dark:hover:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 text-xs font-medium transition-colors"
+                          title="KI-Konfiguration"
+                        >
+                          <Zap className="w-3 h-3" /> KI
+                        </Link>
+                      </div>
                     ))}
                   </div>
                 )}

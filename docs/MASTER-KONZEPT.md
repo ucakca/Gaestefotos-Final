@@ -564,8 +564,8 @@ WooCommerce Buchung → Webhook → Backend
 
 ### Was noch fehlt
 
-- [ ] Briefing-E-Mail nach erfolgreicher Buchung
-- [ ] EventAiConfig automatisch aus Paket-Defaults erstellen
+- [x] Briefing-E-Mail nach erfolgreicher Buchung ✅ (21.02.2026 — woocommerceWebhooks.ts P1-1)
+- [x] EventAiConfig automatisch aus Paket-Defaults erstellen ✅ (21.02.2026 — woocommerceWebhooks.ts P1-2)
 - [ ] Produktiv-Test mit echter WooCommerce-Bestellung
 - [ ] Custom AI-Theme Addon in WooCommerce anlegen (SKU: `addon-custom-ai-theme`)
 
@@ -598,7 +598,7 @@ WooCommerce Buchung → Webhook → Backend
 
 - [x] AI-Config-Zugriff für Partner (Sprint 13 ✅ — GET/PUT ai-config, briefing, finalize via `/api/partner/`)
 - [x] Partner-Briefing-Flow (Sprint 13 ✅ — Partner kann Briefing einsehen, bearbeiten, finalisieren)
-- [ ] Partner-Dashboard **Frontend** für AI-Konfiguration (Backend fertig, UI fehlt)
+- [x] Partner-Dashboard **Frontend** für AI-Konfiguration ✅ (21.02.2026 — /partner/events/[eventId]/ai-config)
 
 ---
 
