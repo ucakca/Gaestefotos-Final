@@ -3,6 +3,7 @@ import multer from 'multer';
 import { io } from '../index';
 import { bufferedEmit } from '../services/wsBuffer';
 import prisma from '../config/database';
+import { Prisma } from '@prisma/client';
 import { authMiddleware, requireRole, AuthRequest, optionalAuthMiddleware, requireEventAccess, hasEventAccess, hasEventManageAccess, hasEventPermission, isPrivilegedRole } from '../middleware/auth';
 import { storageService } from '../services/storage';
 import { imageProcessor } from '../services/imageProcessor';
@@ -2065,6 +2066,84 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   } catch (error: any) {
     logger.error('Ratings aggregate error', { error: error.message });
     res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
+// GET /api/events/:eventId/photos/exif-stats — EXIF data availability statistics
+router.get('/:eventId/photos/exif-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, withExif, withGps, withFaceData] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, exifData: { not: Prisma.JsonNull } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, latitude: { not: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, faceCount: { not: null } } }),
+    ]);
+
+    res.json({
+      total,
+      withExif, exifRate: total > 0 ? Math.round((withExif / total) * 100) : 0,
+      withGps, gpsRate: total > 0 ? Math.round((withGps / total) * 100) : 0,
+      withFaceData, faceDataRate: total > 0 ? Math.round((withFaceData / total) * 100) : 0,
+    });
+  } catch (error: any) {
+    logger.error('EXIF stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/geo-coverage — Bounding box of all GPS photos
+router.get('/:eventId/photos/geo-coverage', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const result = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null, latitude: { not: null }, longitude: { not: null } },
+      _min: { latitude: true, longitude: true },
+      _max: { latitude: true, longitude: true },
+      _count: { id: true },
+    });
+
+    if (result._count.id === 0) return res.json({ hasGps: false, total: 0 });
+
+    const centerLat = ((result._min.latitude || 0) + (result._max.latitude || 0)) / 2;
+    const centerLng = ((result._min.longitude || 0) + (result._max.longitude || 0)) / 2;
+
+    res.json({
+      hasGps: true,
+      total: result._count.id,
+      bounds: {
+        minLat: result._min.latitude, maxLat: result._max.latitude,
+        minLng: result._min.longitude, maxLng: result._max.longitude,
+      },
+      center: { lat: Math.round(centerLat * 10000) / 10000, lng: Math.round(centerLng * 10000) / 10000 },
+    });
+  } catch (error: any) {
+    logger.error('Geo coverage error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/caption-leader — Top20 titled photos by views
+router.get('/:eventId/photos/caption-leader', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, title: { not: null } },
+      select: { id: true, url: true, title: true, description: true, views: true, uploadedBy: true },
+      orderBy: { views: 'desc' },
+      take: 20,
+    });
+
+    res.json({ photos });
+  } catch (error: any) {
+    logger.error('Caption leader error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
   }
 });
 
