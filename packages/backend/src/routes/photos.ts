@@ -2069,6 +2069,105 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/top-viewed-this-week — Top20 most viewed photos in last 7 days
+router.get('/:eventId/photos/top-viewed-this-week', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, updatedAt: { gte: since }, views: { gt: 0 } },
+      select: { id: true, url: true, title: true, views: true, qualityScore: true, status: true, uploadedBy: true },
+      orderBy: { views: 'desc' },
+      take: 20,
+    });
+
+    res.json({ photos, since: since.toISOString().slice(0, 10) });
+  } catch (error: any) {
+    logger.error('Top viewed this week error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/guest-upload-rank — All guests ranked by upload count
+router.get('/:eventId/photos/guest-upload-rank', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['guestId'],
+      where: { eventId, deletedAt: null, guestId: { not: null } },
+      _count: { id: true },
+      _avg: { qualityScore: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 50,
+    });
+
+    const result = (grouped as any[]).map((g, i) => ({
+      rank: i + 1,
+      guestId: g.guestId,
+      uploadCount: g._count.id,
+      avgQuality: g._avg.qualityScore ? Math.round(g._avg.qualityScore * 10) / 10 : null,
+    }));
+
+    res.json({ guests: result });
+  } catch (error: any) {
+    logger.error('Guest upload rank error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/photo-age-distribution — Photos grouped by age in days (<1/1-7/7-30/30-90/90+)
+router.get('/:eventId/photos/photo-age-distribution', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true, status: true },
+    });
+
+    const now = Date.now();
+    const buckets = [
+      { label: '<1 day', max: 1, count: 0, approved: 0 },
+      { label: '1-7 days', max: 7, count: 0, approved: 0 },
+      { label: '7-30 days', max: 30, count: 0, approved: 0 },
+      { label: '30-90 days', max: 90, count: 0, approved: 0 },
+      { label: '90+ days', max: Infinity, count: 0, approved: 0 },
+    ];
+
+    for (const p of photos) {
+      const ageDays = (now - p.createdAt.getTime()) / 86_400_000;
+      let prev = 0;
+      for (const b of buckets) {
+        if (ageDays < b.max && ageDays >= prev) {
+          b.count++;
+          if (p.status === 'APPROVED') b.approved++;
+          break;
+        }
+        prev = b.max === Infinity ? b.max : b.max;
+      }
+    }
+
+    const total = photos.length;
+    const result = buckets.map((b) => ({
+      label: b.label,
+      count: b.count,
+      approved: b.approved,
+      pct: total > 0 ? Math.round((b.count / total) * 100) : 0,
+    }));
+
+    res.json({ buckets: result, total });
+  } catch (error: any) {
+    logger.error('Photo age distribution error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/quality-tier-breakdown — Photo count per quality tier (0-25/26-50/51-75/76-100)
 router.get('/:eventId/photos/quality-tier-breakdown', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
