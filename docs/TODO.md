@@ -597,6 +597,13 @@
 | S26-406 | **Top-Liked** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-liked (likes._count desc) |
 | S26-407 | **Leaderboard** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/leaderboard (rank/name/count, APPROVED) |
 | S26-408 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 408 Features in Sprint S26 implementiert + deployed |
+| S26-409 | **Votes-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/votes-stats (totalVotes/avgRating) |
+| S26-410 | **Comments-Count** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/comments-count (totalComments) |
+| S26-411 | **Daily-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/daily-stats (dailyMap asc) |
+| S26-412 | **Hourly-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/hourly-stats (array[24] peakHour) |
+| S26-413 | **Tag-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/tag-stats (tagMap count desc) |
+| S26-414 | **Status-Count** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/status-count (groupBy status) |
+| S26-415 | **Sprint S26 Final** | ✅ erledigt (21.02.2026) | 415 Features in Sprint S26 implementiert + deployed |
 
 ---
 
