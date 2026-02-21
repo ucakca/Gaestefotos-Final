@@ -198,6 +198,34 @@ router.patch(
   }
 );
 
+// GET /:eventId/guests/dietary-stats — Dietary requirements statistics
+router.get(
+  '/:eventId/guests/dietary-stats',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const guests = await prisma.guest.findMany({
+        where: { eventId },
+        select: { dietaryRequirements: true, status: true, plusOneCount: true },
+      });
+
+      const total = guests.length;
+      const totalPlusOnes = guests.reduce((s, g) => s + g.plusOneCount, 0);
+      const withDietary = guests.filter(g => g.dietaryRequirements && g.dietaryRequirements.trim()).length;
+      const statusCount: Record<string, number> = {};
+      for (const g of guests) statusCount[g.status] = (statusCount[g.status] || 0) + 1;
+
+      res.json({ total, totalPlusOnes, totalAttendees: total + totalPlusOnes, withDietary, statusCount });
+    } catch (error) {
+      logger.error('Dietary stats error', { error: getErrorMessage(error) });
+      res.status(500).json({ error: 'Fehler' });
+    }
+  }
+);
+
 // GET /:eventId/guests/export-csv — Export guest list as CSV
 router.get(
   '/:eventId/guests/export-csv',
