@@ -2068,6 +2068,36 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/purge-stats — Deleted and purge-scheduled photos
+router.get('/:eventId/photos/purge-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const now = new Date();
+    const [total, deleted, withPurge, expiredPurge] = await Promise.all([
+      prisma.photo.count({ where: { eventId } }),
+      prisma.photo.count({ where: { eventId, deletedAt: { not: null } } }),
+      prisma.photo.count({ where: { eventId, purgeAfter: { not: null } } }),
+      prisma.photo.count({ where: { eventId, purgeAfter: { lte: now } } }),
+    ]);
+
+    const soonPurge = await prisma.photo.count({
+      where: { eventId, purgeAfter: { gte: now, lte: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) } },
+    });
+
+    res.json({
+      total, deleted, active: total - deleted,
+      deleteRate: total > 0 ? Math.round((deleted / total) * 100) : 0,
+      withPurgeSchedule: withPurge,
+      expiredPurge, soonPurgeIn7Days: soonPurge,
+    });
+  } catch (error: any) {
+    logger.error('Purge stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/quality-stats — Quality score distribution
 router.get('/:eventId/photos/quality-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
