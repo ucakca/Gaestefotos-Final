@@ -11,6 +11,8 @@ import {
   Activity,
   Brain,
   Bell,
+  HardDrive,
+  Database,
 } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AppLayout from '@/components/AppLayout';
@@ -35,6 +37,13 @@ const sections: { title: string; items: AdminLink[] }[] = [
     items: [
       { href: '/admin/ai-monitoring', label: 'KI-Provider Monitoring', description: 'API-Status, Latenz (p50/p95), Fehlerrate pro Provider', icon: Activity, color: 'text-indigo-500' },
       { href: '/admin/push-history', label: 'Push-Benachrichtigungen Verlauf', description: 'Gesendete Push-Notifications: Erfolgsrate, Empfänger, Zeitstempel', icon: Bell, color: 'text-violet-500' },
+    ],
+  },
+  {
+    title: 'System',
+    items: [
+      { href: '/admin/storage', label: 'Storage-Statistiken', description: 'Top-Events nach Speicherverbrauch, Gesamt-Storage, Foto-Anzahl', icon: HardDrive, color: 'text-teal-500' },
+      { href: '/admin/ai-monitoring', label: 'KI-Provider Status', description: 'Schnellzugriff: Provider-Monitoring (dupliziert für System-Überblick)', icon: Database, color: 'text-cyan-500' },
     ],
   },
   {
