@@ -2069,6 +2069,101 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/category-like-total — Total likes per category sorted desc
+router.get('/:eventId/photos/category-like-total', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoLike.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, deletedAt: null } },
+      _count: { id: true },
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, categoryId: true },
+    }) : [];
+
+    const catMap: Record<string, number> = {};
+    for (const g of grouped as any[]) {
+      const photo = photos.find((p) => p.id === g.photoId);
+      if (photo?.categoryId) {
+        catMap[photo.categoryId] = (catMap[photo.categoryId] || 0) + g._count.id;
+      }
+    }
+
+    const catIds = Object.keys(catMap);
+    const categories = catIds.length > 0 ? await prisma.category.findMany({
+      where: { id: { in: catIds } },
+      select: { id: true, name: true },
+    }) : [];
+
+    const result = Object.entries(catMap)
+      .map(([catId, total]) => ({
+        categoryId: catId,
+        categoryName: categories.find((c) => c.id === catId)?.name || null,
+        likeCount: total,
+      }))
+      .sort((a, b) => b.likeCount - a.likeCount)
+      .slice(0, 20);
+
+    res.json({ categories: result });
+  } catch (error: any) {
+    logger.error('Category like total error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/top-viewed-approved — Top20 approved photos by view count
+router.get('/:eventId/photos/top-viewed-approved', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, status: 'APPROVED' },
+      select: { id: true, url: true, title: true, views: true, qualityScore: true, uploadedBy: true },
+      orderBy: { views: 'desc' },
+      take: 20,
+    });
+
+    res.json({ photos });
+  } catch (error: any) {
+    logger.error('Top viewed approved error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/guest-like-rank — Top20 guests by like count given
+router.get('/:eventId/photos/guest-like-rank', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoLike.groupBy({
+      by: ['guestId'],
+      where: { photo: { eventId, deletedAt: null }, guestId: { not: null } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const result = (grouped as any[]).map((g, i) => ({
+      rank: i + 1,
+      guestId: g.guestId,
+      likeCount: g._count.id,
+    }));
+
+    res.json({ guests: result });
+  } catch (error: any) {
+    logger.error('Guest like rank error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top-commented-approved — Top20 approved photos by comment count
 router.get('/:eventId/photos/top-commented-approved', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
