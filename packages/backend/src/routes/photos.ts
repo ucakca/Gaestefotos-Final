@@ -8607,6 +8607,50 @@ router.patch(
   }
 );
 
+// GET /:eventId/photos/tag-suggestions — Autocomplete: most-used tags in event
+router.get(
+  '/:eventId/photos/tag-suggestions',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      const q = typeof req.query.q === 'string' ? req.query.q.toLowerCase().trim() : '';
+      const limit = Math.min(20, parseInt(req.query.limit as string, 10) || 10);
+
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Kein Zugriff' });
+      }
+
+      // Get all tags used in this event
+      const photos = await prisma.photo.findMany({
+        where: { eventId, deletedAt: null, tags: { isEmpty: false } },
+        select: { tags: true },
+      });
+
+      // Count tag frequency
+      const tagMap = new Map<string, number>();
+      photos.forEach(({ tags }) => {
+        tags.forEach(tag => {
+          const t = tag.toLowerCase().trim();
+          if (t) tagMap.set(t, (tagMap.get(t) || 0) + 1);
+        });
+      });
+
+      // Filter by query and sort by frequency
+      const suggestions = Array.from(tagMap.entries())
+        .filter(([tag]) => !q || tag.includes(q))
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit)
+        .map(([tag, count]) => ({ tag, count }));
+
+      res.json({ suggestions, totalUniqueTags: tagMap.size });
+    } catch (error: any) {
+      logger.error('Tag suggestions error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Laden' });
+    }
+  }
+);
+
 // PATCH /bulk/caption — Set or clear AI captions for multiple photos
 router.patch(
   '/bulk/caption',
