@@ -2069,6 +2069,96 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/top-stories — Top20 story-type photos by views
+router.get('/:eventId/photos/top-stories', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, isStoryOnly: true },
+      select: { id: true, url: true, title: true, views: true, qualityScore: true, status: true, uploadedBy: true },
+      orderBy: { views: 'desc' },
+      take: 20,
+    });
+
+    res.json({ photos });
+  } catch (error: any) {
+    logger.error('Top stories error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/rejection-rate-by-uploader — Top20 uploaders by rejection rate
+router.get('/:eventId/photos/rejection-rate-by-uploader', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, uploadedBy: { not: null } },
+      select: { uploadedBy: true, status: true },
+    });
+
+    const uploaderMap: Record<string, { total: number; rejected: number }> = {};
+    for (const p of photos) {
+      const uid = p.uploadedBy as string;
+      if (!uploaderMap[uid]) uploaderMap[uid] = { total: 0, rejected: 0 };
+      uploaderMap[uid].total++;
+      if (p.status === 'REJECTED') uploaderMap[uid].rejected++;
+    }
+
+    const result = Object.entries(uploaderMap)
+      .filter(([, d]) => d.total >= 2)
+      .map(([uploadedBy, d]) => ({
+        uploadedBy,
+        total: d.total,
+        rejected: d.rejected,
+        rejectionRate: Math.round((d.rejected / d.total) * 100),
+      }))
+      .sort((a, b) => b.rejectionRate - a.rejectionRate)
+      .slice(0, 20);
+
+    res.json({ uploaders: result });
+  } catch (error: any) {
+    logger.error('Rejection rate by uploader error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/view-per-like-ratio — Top20 photos by views-per-like ratio
+router.get('/:eventId/photos/view-per-like-ratio', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoLike.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, deletedAt: null, views: { gt: 0 } } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 100,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => {
+      const p = photos.find((ph) => ph.id === g.photoId);
+      const views = p?.views || 1;
+      return { ...p, likeCount: g._count.id, viewPerLike: Math.round((views / g._count.id) * 10) / 10 };
+    }).sort((a, b) => a.viewPerLike - b.viewPerLike).slice(0, 20);
+
+    res.json({ photos: result });
+  } catch (error: any) {
+    logger.error('View per like ratio error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top-quality-unviewed — Top20 high-quality photos with 0 views
 router.get('/:eventId/photos/top-quality-unviewed', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
