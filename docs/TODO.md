@@ -963,6 +963,9 @@
 | S26-772 | **Admin Storage Stats Frontend** | ✅ erledigt (21.02.2026) | /admin/storage: Top-30 Events (Speicher-Balken, Gesamt-Storage, Foto-Anzahl) |
 | S26-773 | **Admin-Hub System-Sektion** | ✅ erledigt (21.02.2026) | Storage-Stats + KI-Status Links in neuer 'System' Sektion |
 | S26-774 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 774 Features in Sprint S26 implementiert + deployed |
+| S26-775 | **Admin Server-Status Frontend** | ✅ erledigt (21.02.2026) | /admin/ops: RAM/CPU/Disk/Uptime/NodeJS/PostgreSQL/Redis-Status Dashboard |
+| S26-776 | **Admin-Hub System-Sektion erweitert** | ✅ erledigt (21.02.2026) | Server-Status + Storage-Stats + KI-Provider Status in neuer 'System' Sektion |
+| S26-777 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 777 Features in Sprint S26 implementiert + deployed |
 
 ---
 
