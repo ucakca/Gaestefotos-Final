@@ -2069,6 +2069,87 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/comment-timeline — Comments per day timeline
+router.get('/:eventId/photos/comment-timeline', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const comments = await prisma.photoComment.findMany({
+      where: { photo: { eventId } },
+      select: { createdAt: true, status: true },
+    });
+
+    const dayMap: Record<string, { total: number; approved: number; pending: number }> = {};
+    for (const c of comments) {
+      const day = c.createdAt.toISOString().slice(0, 10);
+      if (!dayMap[day]) dayMap[day] = { total: 0, approved: 0, pending: 0 };
+      dayMap[day].total++;
+      if (c.status === 'APPROVED') dayMap[day].approved++;
+      else if (c.status === 'PENDING') dayMap[day].pending++;
+    }
+
+    const timeline = Object.entries(dayMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, counts]) => ({ date, ...counts }));
+
+    res.json({ total: comments.length, timeline });
+  } catch (error: any) {
+    logger.error('Comment timeline error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/quality-top-approved — Top20 approved photos by quality
+router.get('/:eventId/photos/quality-top-approved', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, status: 'APPROVED', qualityScore: { not: null } },
+      select: { id: true, url: true, title: true, qualityScore: true, views: true, uploadedBy: true },
+      orderBy: { qualityScore: 'desc' },
+      take: 20,
+    });
+
+    res.json({ photos });
+  } catch (error: any) {
+    logger.error('Quality top approved error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/hash-collision — Photos sharing perceptualHash (near-dupes)
+router.get('/:eventId/photos/hash-collision', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['perceptualHash'],
+      where: { eventId, deletedAt: null, perceptualHash: { not: null } },
+      _count: { id: true },
+      having: { id: { _count: { gt: 1 } } },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const collisions = await Promise.all((grouped as any[]).map(async (g) => {
+      const members = await prisma.photo.findMany({
+        where: { eventId, perceptualHash: g.perceptualHash, deletedAt: null },
+        select: { id: true, url: true, qualityScore: true, isBestInGroup: true },
+      });
+      return { hash: g.perceptualHash, count: g._count.id, members };
+    }));
+
+    res.json({ collisions, totalCollisionGroups: collisions.length });
+  } catch (error: any) {
+    logger.error('Hash collision error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/tag-stats — Top50 tags by photo count
 router.get('/:eventId/photos/tag-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
