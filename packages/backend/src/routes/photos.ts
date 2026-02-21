@@ -2068,6 +2068,24 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/exif-stats — EXIF data statistics
+router.get('/:eventId/photos/exif-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, withExif] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, exifData: { not: 'JsonNull' as any } } }),
+    ]);
+
+    res.json({ total, withExif, withoutExif: total - withExif, exifRate: total > 0 ? Math.round((withExif / total) * 100) : 0 });
+  } catch (error: any) {
+    logger.error('EXIF stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/geo-stats — Geo-tagged photo statistics
 router.get('/:eventId/photos/geo-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
