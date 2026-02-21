@@ -241,6 +241,29 @@ const listSchema = z.object({
   offset: z.coerce.number().int().min(0).optional().default(0),
 });
 
+// GET /admin/photos/global-stats — Platform-wide photo statistics
+router.get('/global-stats', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const [total, approved, pending, rejected, totalViews, favorites] = await Promise.all([
+      prisma.photo.count({ where: { deletedAt: null } }),
+      prisma.photo.count({ where: { deletedAt: null, status: 'APPROVED' } }),
+      prisma.photo.count({ where: { deletedAt: null, status: 'PENDING' } }),
+      prisma.photo.count({ where: { deletedAt: null, status: 'REJECTED' } }),
+      prisma.photo.aggregate({ where: { deletedAt: null }, _sum: { views: true } }),
+      prisma.photo.count({ where: { deletedAt: null, isFavorite: true } }),
+    ]);
+
+    res.json({
+      total, approved, pending, rejected,
+      totalViews: totalViews._sum.views || 0,
+      favorites,
+      approvalRate: total > 0 ? Math.round((approved / total) * 100) : 0,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 router.get('/', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
   try {
     const parsed = listSchema.safeParse(req.query);
