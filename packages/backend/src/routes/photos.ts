@@ -2068,6 +2068,30 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/guest-stats — Photos per guest
+router.get('/:eventId/photos/guest-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['guestId'],
+      where: { eventId, deletedAt: null },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 50,
+    });
+
+    res.json({
+      guestStats: grouped.map((g: any) => ({ guestId: g.guestId || null, count: g._count.id })),
+      totalGuests: grouped.length,
+    });
+  } catch (error: any) {
+    logger.error('Guest stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/hash-stats — Hash coverage statistics
 router.get('/:eventId/photos/hash-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
