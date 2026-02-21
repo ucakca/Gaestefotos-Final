@@ -843,6 +843,10 @@
 | S26-652 | **Quality-Gap** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/quality-gap (avg quality diff between best/worst category) |
 | S26-653 | **Daily-Engagement** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/daily-engagement (likes+comments+votes per day timeline) |
 | S26-654 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 654 Features in Sprint S26 implementiert + deployed |
+| S26-655 | **GPS-Cluster** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/gps-cluster (count per 1-degree grid cell sorted by density) |
+| S26-656 | **Top-Rated-Guests** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-rated-guests (top20 guests by avg vote rating on their photos) |
+| S26-657 | **Approval-Lag** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/approval-lag (avg/min/max hours from upload to APPROVED status) |
+| S26-658 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 658 Features in Sprint S26 implementiert + deployed |
 
 ---
 
