@@ -681,6 +681,13 @@
 | S26-490 | **Bulk Remove-Tag** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/remove-tag (filter) |
 | S26-491 | **Bulk Add-Tag** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/add-tag (push dedup) |
 | S26-492 | **Sprint S26 Abschluss** | ✅ erledigt (21.02.2026) | 492 Features in Sprint S26 implementiert + deployed |
+| S26-493 | **Status-Timeline** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/status-timeline (updatedAt desc, limit) |
+| S26-494 | **Bulk Restore** | ✅ erledigt (21.02.2026) | POST /photos/bulk/restore (deletedAt = null) |
+| S26-495 | **Bulk Soft-Delete** | ✅ erledigt (21.02.2026) | DELETE /photos/bulk/delete (deletedAt = now) |
+| S26-496 | **Category-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-stats (groupBy name) |
+| S26-497 | **Story-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/stories/stats (active/expired) |
+| S26-498 | **Challenge-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/challenges/stats (completions) |
+| S26-499 | **Sprint S26 Final** | ✅ erledigt (21.02.2026) | 499 Features in Sprint S26 implementiert + deployed |
 
 ---
 
