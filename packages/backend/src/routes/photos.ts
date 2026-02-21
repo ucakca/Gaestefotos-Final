@@ -2068,6 +2068,28 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/recent — Last N uploaded photos
+router.get('/:eventId/photos/recent', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const limit = Math.min(50, parseInt(req.query.limit as string, 10) || 20);
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { id: true, url: true, status: true, uploadedBy: true, createdAt: true, isFavorite: true, views: true },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    res.json({ photos, count: photos.length });
+  } catch (error: any) {
+    logger.error('Recent photos error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top — Top photos sorted by views or likes
 router.get('/:eventId/photos/top', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
