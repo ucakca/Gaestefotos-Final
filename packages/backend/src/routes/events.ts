@@ -1679,6 +1679,24 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/guestbook/stats — Guestbook entry statistics
+router.get('/:eventId/guestbook/stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, approved, pending] = await Promise.all([
+      prisma.guestbookEntry.count({ where: { eventId } }),
+      prisma.guestbookEntry.count({ where: { eventId, status: 'APPROVED' } }),
+      prisma.guestbookEntry.count({ where: { eventId, status: 'PENDING' } }),
+    ]);
+
+    res.json({ total, approved, pending, approvalRate: total > 0 ? Math.round((approved / total) * 100) : 0 });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/stories/stats — Story statistics
 router.get('/:eventId/stories/stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
