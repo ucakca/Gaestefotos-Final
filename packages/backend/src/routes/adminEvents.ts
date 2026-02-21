@@ -26,6 +26,22 @@ const listSchema = z.object({
   offset: z.coerce.number().int().min(0).optional().default(0),
 });
 
+// GET /admin/events/summary-stats — Quick summary of all events
+router.get('/summary-stats', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const [total, active, withPhotos, newThisWeek] = await Promise.all([
+      prisma.event.count({ where: { deletedAt: null } }),
+      prisma.event.count({ where: { deletedAt: null, isActive: true } }),
+      prisma.event.count({ where: { deletedAt: null, photos: { some: {} } } }),
+      prisma.event.count({ where: { deletedAt: null, createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } } }),
+    ]);
+
+    res.json({ total, active, withPhotos, newThisWeek, inactive: total - active });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /admin/events/storage-stats — Storage statistics per user/event
 router.get('/storage-stats', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
   try {
