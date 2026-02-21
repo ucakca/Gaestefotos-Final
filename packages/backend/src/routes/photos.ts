@@ -2068,6 +2068,37 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/quality-stats — Quality score statistics
+router.get('/:eventId/photos/quality-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const result = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null, qualityScore: { not: null } },
+      _avg: { qualityScore: true },
+      _max: { qualityScore: true },
+      _min: { qualityScore: true },
+      _count: { id: true },
+    });
+
+    const withFaces = await prisma.photo.count({
+      where: { eventId, deletedAt: null, faceCount: { gt: 0 } },
+    });
+
+    res.json({
+      avgQualityScore: Math.round(((result._avg.qualityScore || 0) * 100)) / 100,
+      maxQualityScore: result._max.qualityScore || 0,
+      minQualityScore: result._min.qualityScore || 0,
+      photosWithScore: result._count.id,
+      photosWithFaces: withFaces,
+    });
+  } catch (error: any) {
+    logger.error('Quality stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/uploader-stats — Photos grouped by uploadedBy
 router.get('/:eventId/photos/uploader-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
