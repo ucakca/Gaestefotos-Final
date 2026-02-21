@@ -2069,6 +2069,123 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/comment-per-photo-avg — Avg comments per photo overall + per category
+router.get('/:eventId/photos/comment-per-photo-avg', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [totalPhotos, totalComments] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photoComment.count({ where: { photo: { eventId } } }),
+    ]);
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['categoryId'],
+      where: { eventId, deletedAt: null },
+      _count: { id: true },
+    });
+
+    const catIds = (grouped as any[]).map((g) => g.categoryId).filter(Boolean) as string[];
+    const [categories, commentsByCat] = await Promise.all([
+      catIds.length > 0 ? prisma.category.findMany({ where: { id: { in: catIds } }, select: { id: true, name: true } }) : [],
+      prisma.photoComment.groupBy({
+        by: ['photoId'],
+        where: { photo: { eventId, categoryId: { not: null } } },
+        _count: { id: true },
+      }),
+    ]);
+
+    const photosByCat: Record<string, { photoCount: number; commentCount: number; name: string | null }> = {};
+    for (const g of grouped as any[]) {
+      const cid = g.categoryId || '__none__';
+      photosByCat[cid] = { photoCount: g._count.id, commentCount: 0, name: categories.find((c) => c.id === cid)?.name || null };
+    }
+
+    const stats = Object.entries(photosByCat).map(([cid, d]) => ({
+      categoryId: cid === '__none__' ? null : cid,
+      categoryName: d.name,
+      photoCount: d.photoCount,
+      avgComments: totalPhotos > 0 ? Math.round((d.commentCount / d.photoCount) * 100) / 100 : 0,
+    })).sort((a, b) => b.avgComments - a.avgComments);
+
+    res.json({
+      overall: { totalPhotos, totalComments, avgCommentsPerPhoto: totalPhotos > 0 ? Math.round((totalComments / totalPhotos) * 100) / 100 : 0 },
+      byCategory: stats,
+    });
+  } catch (error: any) {
+    logger.error('Comment per photo avg error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/top-liked-guest-photos — Top20 photos uploaded by guests by like count
+router.get('/:eventId/photos/top-liked-guest-photos', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoLike.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, guestId: { not: null }, deletedAt: null } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true, qualityScore: true, status: true, guestId: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      ...(photos.find((p) => p.id === g.photoId) || {}),
+      likeCount: g._count.id,
+    }));
+
+    res.json({ photos: result });
+  } catch (error: any) {
+    logger.error('Top liked guest photos error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/upload-spike — Days where uploads exceed 2x the daily average
+router.get('/:eventId/photos/upload-spike', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+    });
+
+    const dayMap: Record<string, number> = {};
+    for (const p of photos) {
+      const day = p.createdAt.toISOString().slice(0, 10);
+      dayMap[day] = (dayMap[day] || 0) + 1;
+    }
+
+    const days = Object.entries(dayMap);
+    const totalDays = days.length;
+    if (totalDays === 0) return res.json({ spikeDays: [], avgPerDay: 0, total: 0 });
+
+    const avgPerDay = photos.length / totalDays;
+    const threshold = avgPerDay * 2;
+    const spikeDays = days
+      .filter(([, count]) => count >= threshold)
+      .map(([date, count]) => ({ date, count, xAvg: Math.round((count / avgPerDay) * 10) / 10 }))
+      .sort((a, b) => b.count - a.count);
+
+    res.json({ spikeDays, avgPerDay: Math.round(avgPerDay * 10) / 10, threshold: Math.round(threshold * 10) / 10, total: photos.length });
+  } catch (error: any) {
+    logger.error('Upload spike error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top-viewed-today — Top10 photos by views gained today
 router.get('/:eventId/photos/top-viewed-today', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
