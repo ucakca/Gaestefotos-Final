@@ -969,6 +969,8 @@
 | S26-778 | **GET /events/:id/photos/quality-distribution** | ✅ erledigt (21.02.2026) | 10-Bucket Histogramm + poor/fair/good Kategorien + averageScore |
 | S26-779 | **GET /events/:id/guests/engagement** | ✅ erledigt (21.02.2026) | RSVP-Rate/Check-In-Rate/Engagement-Score (0-100) + Guestbook/Upload-Stats |
 | S26-780 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 780 Features in Sprint S26 implementiert + deployed |
+| S26-781 | **GET /events/:id/countdown** | ✅ erledigt (21.02.2026) | Phase-Erkennung (8 Phasen) + days/hours/minutes + deutsches Label |
+| S26-782 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 782 Features in Sprint S26 implementiert + deployed |
 
 ---
 
