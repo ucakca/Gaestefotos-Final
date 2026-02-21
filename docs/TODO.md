@@ -775,6 +775,9 @@
 | S26-584 | **Activity-Feed** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/activity-feed (recentUploads/Likes/Comments limit=100) |
 | S26-585 | **Overview** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/overview (master summary: total/approved/views/likes/MB) |
 | S26-586 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 586 Features in Sprint S26 implementiert + deployed |
+| S26-587 | **Tag-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/tag-stats (top50/uniqueTags/totalTagUsages from tags[]) |
+| S26-588 | **Uploader-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/uploader-stats (uploadedBy top20 with count) |
+| S26-589 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 589 Features in Sprint S26 implementiert + deployed |
 
 ---
 
