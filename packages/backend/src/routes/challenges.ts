@@ -732,5 +732,34 @@ router.post(
   }
 );
 
+// GET /:eventId/challenges/completions — All completions with photos for live-wall display
+router.get(
+  '/:eventId/challenges/completions',
+  optionalAuthMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      const { limit = '100' } = req.query;
+
+      const completions = await prisma.challengeCompletion.findMany({
+        where: { challenge: { eventId }, photo: { status: 'APPROVED' } },
+        take: parseInt(limit as string, 10),
+        orderBy: { completedAt: 'desc' },
+        select: {
+          id: true,
+          completedAt: true,
+          challenge: { select: { title: true, icon: true } },
+          photo: { select: { id: true, url: true, status: true } },
+        },
+      });
+
+      return res.json({ completions });
+    } catch (error) {
+      logger.error('Completions load failed', { message: getErrorMessage(error) });
+      return res.status(500).json({ error: 'Completions konnten nicht geladen werden' });
+    }
+  }
+);
+
 export default router;
 

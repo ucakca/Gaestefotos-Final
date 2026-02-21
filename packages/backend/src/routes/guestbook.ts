@@ -1096,4 +1096,43 @@ router.get('/:eventId/guestbook/export-csv', authMiddleware, async (req: AuthReq
   }
 });
 
+// GET /:eventId/feed — Guestbook entries with photos for guest gallery feed
+router.get(
+  '/:eventId/feed',
+  optionalAuthMiddleware,
+  requireEventAccess((req) => (req as any).params.eventId),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      const { limit = '50' } = req.query;
+
+      const entries = await (prisma as any).guestbookEntry.findMany({
+        where: { eventId, status: 'APPROVED', photoStoragePath: { not: null } },
+        orderBy: { createdAt: 'desc' },
+        take: parseInt(limit as string, 10),
+        select: {
+          id: true,
+          authorName: true,
+          message: true,
+          photoStoragePath: true,
+          photoUrl: true,
+          createdAt: true,
+        },
+      });
+
+      const entriesWithUrls = entries.map((entry: any) => ({
+        ...entry,
+        photoUrl: entry.photoStoragePath
+          ? `/api/events/${eventId}/guestbook/photo/${encodeURIComponent(entry.photoStoragePath)}`
+          : entry.photoUrl,
+      }));
+
+      return res.json({ entries: entriesWithUrls });
+    } catch (error) {
+      logger.error('Feed load failed', { message: getErrorMessage(error) });
+      return res.status(500).json({ error: 'Feed konnte nicht geladen werden' });
+    }
+  }
+);
+
 export default router;

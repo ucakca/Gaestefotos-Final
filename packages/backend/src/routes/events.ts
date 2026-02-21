@@ -1117,6 +1117,41 @@ router.post('/:id/access', async (req: AuthRequest, res: Response) => {
   }
 });
 
+// POST /:id/verify-password — Verify gallery password for password-protected events
+router.post('/:id/verify-password', async (req: AuthRequest, res: Response) => {
+  try {
+    const eventId = req.params.id;
+    const { password } = req.body;
+
+    if (!password) return res.status(400).json({ error: 'Passwort erforderlich' });
+
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, password: true, deletedAt: true, isActive: true },
+    });
+
+    if (!event || event.deletedAt || event.isActive === false) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    if (!event.password) {
+      return res.json({ valid: true });
+    }
+
+    const bcrypt = require('bcryptjs');
+    const valid = await bcrypt.compare(password, event.password);
+    if (!valid) {
+      return res.status(401).json({ error: 'Falsches Passwort', valid: false });
+    }
+
+    issueEventAccessCookie(res, eventId);
+    return res.json({ valid: true });
+  } catch (error) {
+    logger.error('Verify password error', { message: getErrorMessage(error), eventId: req.params.id });
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.post('/:id/invite-token', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const eventId = req.params.id;
