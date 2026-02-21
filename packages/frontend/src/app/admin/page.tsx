@@ -15,6 +15,7 @@ import {
   Database,
   Server,
   Users,
+  Calendar,
 } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AppLayout from '@/components/AppLayout';
@@ -33,6 +34,7 @@ const sections: { title: string; items: AdminLink[] }[] = [
     items: [
       { href: '/dashboard/create-event', label: 'Event für Benutzer erstellen', description: 'Event im Namen eines Hosts anlegen — Host sieht es im Dashboard', icon: UserPlus, color: 'text-blue-500' },
       { href: '/admin/users', label: 'Benutzer-Verwaltung', description: 'Alle Benutzer: Suche, Rollen-Änderung, Sperren/Entsperren', icon: Users, color: 'text-blue-500' },
+      { href: '/admin/events', label: 'Events-Übersicht', description: 'Alle Events: Aktiv-Toggle, Fotos/Gäste-Anzahl, Dashboard-Links', icon: Calendar, color: 'text-emerald-500' },
     ],
   },
   {
