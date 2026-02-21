@@ -2068,6 +2068,51 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/size-distribution — sizeBytes buckets
+router.get('/:eventId/photos/size-distribution', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, sizeBytes: { not: null } },
+      select: { sizeBytes: true },
+    });
+
+    const buckets = [
+      { label: '<100KB', maxBytes: 100 * 1024, count: 0 },
+      { label: '100-500KB', maxBytes: 500 * 1024, count: 0 },
+      { label: '500KB-1MB', maxBytes: 1024 * 1024, count: 0 },
+      { label: '1-3MB', maxBytes: 3 * 1024 * 1024, count: 0 },
+      { label: '3-10MB', maxBytes: 10 * 1024 * 1024, count: 0 },
+      { label: '>10MB', maxBytes: Infinity, count: 0 },
+    ];
+
+    for (const p of photos) {
+      const bytes = Number(p.sizeBytes);
+      const bucket = buckets.find(b => bytes < b.maxBytes) || buckets[buckets.length - 1];
+      bucket.count++;
+    }
+
+    const agg = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null, sizeBytes: { not: null } },
+      _avg: { sizeBytes: true },
+      _sum: { sizeBytes: true },
+      _max: { sizeBytes: true },
+    });
+
+    res.json({
+      buckets: buckets.map(({ label, count }) => ({ label, count })),
+      totalSizeMB: agg._sum.sizeBytes ? Math.round(Number(agg._sum.sizeBytes) / 1024 / 1024 * 100) / 100 : 0,
+      avgSizeKB: agg._avg.sizeBytes ? Math.round(Number(agg._avg.sizeBytes) / 1024 * 10) / 10 : 0,
+      maxSizeMB: agg._max.sizeBytes ? Math.round(Number(agg._max.sizeBytes) / 1024 / 1024 * 100) / 100 : 0,
+    });
+  } catch (error: any) {
+    logger.error('Size distribution error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/geo-cluster — Geographic bounding box + center point
 router.get('/:eventId/photos/geo-cluster', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
