@@ -2069,6 +2069,93 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/tag-stats — Top50 tags by photo count
+router.get('/:eventId/photos/tag-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, tags: { isEmpty: false } },
+      select: { tags: true },
+    });
+
+    const tagMap: Record<string, number> = {};
+    for (const p of photos) {
+      for (const tag of p.tags) {
+        tagMap[tag] = (tagMap[tag] || 0) + 1;
+      }
+    }
+
+    const tags = Object.entries(tagMap)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 50)
+      .map(([tag, count]) => ({ tag, count }));
+
+    res.json({ total: tags.length, uniqueTags: Object.keys(tagMap).length, tags });
+  } catch (error: any) {
+    logger.error('Tag stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/uploader-stats — Top20 uploaders by photo count
+router.get('/:eventId/photos/uploader-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['uploadedBy'],
+      where: { eventId, deletedAt: null, uploadedBy: { not: null } },
+      _count: { id: true },
+      _avg: { qualityScore: true, views: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const stats = (grouped as any[]).map((g) => ({
+      uploadedBy: g.uploadedBy,
+      photoCount: g._count.id,
+      avgQuality: g._avg.qualityScore ? Math.round(g._avg.qualityScore * 10) / 10 : null,
+      avgViews: Math.round((g._avg.views || 0) * 10) / 10,
+    }));
+
+    res.json({ stats });
+  } catch (error: any) {
+    logger.error('Uploader stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/like-timeline — Likes per day
+router.get('/:eventId/photos/like-timeline', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const likes = await prisma.photoLike.findMany({
+      where: { photo: { eventId } },
+      select: { createdAt: true },
+    });
+
+    const dayMap: Record<string, number> = {};
+    for (const l of likes) {
+      const day = l.createdAt.toISOString().slice(0, 10);
+      dayMap[day] = (dayMap[day] || 0) + 1;
+    }
+
+    const timeline = Object.entries(dayMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, count]) => ({ date, count }));
+
+    res.json({ totalLikes: likes.length, timeline });
+  } catch (error: any) {
+    logger.error('Like timeline error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/category-stats — Photo count + avg quality per category
 router.get('/:eventId/photos/category-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
