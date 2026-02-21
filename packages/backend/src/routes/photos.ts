@@ -2068,6 +2068,39 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/retention-stats — Photo age distribution buckets
+router.get('/:eventId/photos/retention-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const now = new Date();
+    const buckets = [
+      { label: '<1h', ms: 3600000 },
+      { label: '1h-24h', ms: 86400000 },
+      { label: '1-7d', ms: 7 * 86400000 },
+      { label: '7-30d', ms: 30 * 86400000 },
+      { label: '30-90d', ms: 90 * 86400000 },
+      { label: '>90d', ms: Infinity },
+    ];
+
+    const counts = await Promise.all(
+      buckets.map((b, i) => {
+        const from = new Date(now.getTime() - b.ms);
+        const to = i > 0 ? new Date(now.getTime() - (buckets[i - 1]?.ms ?? 0)) : now;
+        if (i === 0) return prisma.photo.count({ where: { eventId, deletedAt: null, createdAt: { gte: from } } });
+        if (b.ms === Infinity) return prisma.photo.count({ where: { eventId, deletedAt: null, createdAt: { lt: new Date(now.getTime() - buckets[i - 1].ms) } } });
+        return prisma.photo.count({ where: { eventId, deletedAt: null, createdAt: { gte: from, lt: to } } });
+      })
+    );
+
+    res.json({ buckets: buckets.map((b, i) => ({ label: b.label, count: counts[i] })) });
+  } catch (error: any) {
+    logger.error('Retention stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/category-progress — Photo counts per category with challenge completion
 router.get('/:eventId/photos/category-progress', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
