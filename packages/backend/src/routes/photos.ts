@@ -2069,6 +2069,102 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/status-breakdown — Photo count per status
+router.get('/:eventId/photos/status-breakdown', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['status'],
+      where: { eventId, deletedAt: null },
+      _count: { id: true },
+    });
+
+    const total = (grouped as any[]).reduce((s: number, g: any) => s + g._count.id, 0);
+    const breakdown = (grouped as any[]).map((g) => ({
+      status: g.status,
+      count: g._count.id,
+      pct: total > 0 ? Math.round((g._count.id / total) * 100) : 0,
+    })).sort((a, b) => b.count - a.count);
+
+    res.json({ total, breakdown });
+  } catch (error: any) {
+    logger.error('Status breakdown error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/quality-gap — Avg quality diff between category with most vs least photos
+router.get('/:eventId/photos/quality-gap', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['categoryId'],
+      where: { eventId, deletedAt: null, qualityScore: { not: null }, categoryId: { not: null } },
+      _avg: { qualityScore: true },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+    });
+
+    if (grouped.length < 2) return res.json({ categories: grouped.length, gap: null });
+
+    const sorted = (grouped as any[]).sort((a, b) => (b._avg.qualityScore || 0) - (a._avg.qualityScore || 0));
+    const best = sorted[0];
+    const worst = sorted[sorted.length - 1];
+    const gap = Math.round(((best._avg.qualityScore || 0) - (worst._avg.qualityScore || 0)) * 10) / 10;
+
+    res.json({
+      categories: sorted.length,
+      gap,
+      bestCategoryId: best.categoryId,
+      bestAvgQuality: Math.round((best._avg.qualityScore || 0) * 10) / 10,
+      worstCategoryId: worst.categoryId,
+      worstAvgQuality: Math.round((worst._avg.qualityScore || 0) * 10) / 10,
+    });
+  } catch (error: any) {
+    logger.error('Quality gap error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/daily-engagement — Likes+Comments+Votes per day
+router.get('/:eventId/photos/daily-engagement', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [likes, comments, votes] = await Promise.all([
+      prisma.photoLike.findMany({ where: { photo: { eventId } }, select: { createdAt: true } }),
+      prisma.photoComment.findMany({ where: { photo: { eventId } }, select: { createdAt: true } }),
+      prisma.photoVote.findMany({ where: { photo: { eventId } }, select: { createdAt: true } }),
+    ]);
+
+    const dayMap: Record<string, { likes: number; comments: number; votes: number }> = {};
+    const add = (arr: { createdAt: Date }[], key: 'likes' | 'comments' | 'votes') => {
+      for (const item of arr) {
+        const day = item.createdAt.toISOString().slice(0, 10);
+        if (!dayMap[day]) dayMap[day] = { likes: 0, comments: 0, votes: 0 };
+        dayMap[day][key]++;
+      }
+    };
+    add(likes, 'likes');
+    add(comments, 'comments');
+    add(votes, 'votes');
+
+    const timeline = Object.entries(dayMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, d]) => ({ date, ...d, total: d.likes + d.comments + d.votes }));
+
+    res.json({ timeline, totals: { likes: likes.length, comments: comments.length, votes: votes.length } });
+  } catch (error: any) {
+    logger.error('Daily engagement error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top-commented — Top20 photos by comment count
 router.get('/:eventId/photos/top-commented', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
