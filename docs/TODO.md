@@ -590,6 +590,13 @@
 | S26-399 | **Admin Storage-Stats** | ✅ erledigt (21.02.2026) | GET /admin/events/storage-stats (topEvents by photoCount) |
 | S26-400 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 400 Features in Sprint S26 implementiert + deployed |
 | S26-401 | **Gast Summary** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/summary (total/accepted/plusOnes) |
+| S26-402 | **Comments-Count** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/comments-count (totalComments/photosWithComments) |
+| S26-403 | **Admin Guest Stats** | ✅ erledigt (21.02.2026) | GET guests router /admin/stats (total/accepted/withEmail) |
+| S26-404 | **Admin Global Photo-Stats** | ✅ erledigt (21.02.2026) | GET /admin/photos/global-stats (total/views/approvalRate%) |
+| S26-405 | **Recent Photos** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/recent (createdAt desc, limit 12) |
+| S26-406 | **Top-Liked** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-liked (likes._count desc) |
+| S26-407 | **Leaderboard** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/leaderboard (rank/name/count, APPROVED) |
+| S26-408 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 408 Features in Sprint S26 implementiert + deployed |
 
 ---
 
