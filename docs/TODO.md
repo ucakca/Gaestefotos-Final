@@ -955,6 +955,9 @@
 | S26-764 | **GET /events/:id/readiness** | ✅ erledigt (21.02.2026) | Setup-Checkliste: 9 Checks (title/date/location/cover/active/guests/password/moderation/invitation) + readinessScore 0-100% |
 | S26-765 | **PATCH /photos/bulk/reorder** | ✅ erledigt (21.02.2026) | Photo.displayOrder Schema + prisma db push + Batch-$transaction Update (max 500, Access-Check) |
 | S26-766 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 766 Features in Sprint S26 implementiert + deployed |
+| S26-767 | **PATCH /photos/bulk/caption** | ✅ erledigt (21.02.2026) | Bulk-Set/Clear AI-Captions fuer max 200 Fotos (title field, eventId Access-Check) |
+| S26-768 | **GET /events/:id/photos/geo-stats** | ✅ erledigt (21.02.2026) | GPS-Coverage: total/withGps/withoutGps/gpsCoverage% + top 100 geo-tagged Fotos |
+| S26-769 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 769 Features in Sprint S26 implementiert + deployed |
 
 ---
 
