@@ -2069,6 +2069,95 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/upload-weekday-distribution — Upload count per weekday (0=Sun..6=Sat)
+router.get('/:eventId/photos/upload-weekday-distribution', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+    });
+
+    const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const days = Array.from({ length: 7 }, (_, i) => ({ weekday: i, label: labels[i], count: 0 }));
+    for (const p of photos) {
+      days[p.createdAt.getUTCDay()].count++;
+    }
+
+    const peakDay = days.reduce((max, d) => d.count > max.count ? d : max, days[0]);
+    res.json({ total: photos.length, days, peakDay: peakDay.weekday, peakDayLabel: peakDay.label });
+  } catch (error: any) {
+    logger.error('Upload weekday distribution error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/size-timeline — Total storage bytes per day
+router.get('/:eventId/photos/size-timeline', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, sizeBytes: { not: null } },
+      select: { createdAt: true, sizeBytes: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const dayMap: Record<string, { count: number; bytes: bigint }> = {};
+    for (const p of photos) {
+      const day = p.createdAt.toISOString().slice(0, 10);
+      if (!dayMap[day]) dayMap[day] = { count: 0, bytes: BigInt(0) };
+      dayMap[day].count++;
+      dayMap[day].bytes += BigInt(p.sizeBytes as bigint);
+    }
+
+    const timeline = Object.entries(dayMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, d]) => ({ date, count: d.count, bytes: Number(d.bytes) }));
+
+    const totalBytes = timeline.reduce((s, t) => s + t.bytes, 0);
+    res.json({ totalBytes, timeline });
+  } catch (error: any) {
+    logger.error('Size timeline error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/top-liked-pending — Top20 PENDING photos by like count
+router.get('/:eventId/photos/top-liked-pending', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoLike.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, status: 'PENDING', deletedAt: null } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true, qualityScore: true, uploadedBy: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      ...(photos.find((p) => p.id === g.photoId) || {}),
+      likeCount: g._count.id,
+    }));
+
+    res.json({ photos: result });
+  } catch (error: any) {
+    logger.error('Top liked pending error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/vote-timeline — Votes per day timeline
 router.get('/:eventId/photos/vote-timeline', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
