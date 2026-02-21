@@ -2068,6 +2068,113 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/face-stats — Face detection statistics
+router.get('/:eventId/photos/face-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, withFaces, noFaces] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, faceCount: { gt: 0 } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, faceCount: 0 } }),
+    ]);
+
+    const faceResult = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null, faceCount: { not: null } },
+      _avg: { faceCount: true },
+      _max: { faceCount: true },
+      _sum: { faceCount: true },
+    });
+
+    const faceCountGroups = await prisma.photo.groupBy({
+      by: ['faceCount'],
+      where: { eventId, deletedAt: null, faceCount: { not: null } },
+      _count: { id: true },
+      orderBy: { faceCount: 'asc' },
+    });
+
+    res.json({
+      total, withFaces,
+      faceRate: total > 0 ? Math.round((withFaces / total) * 100) : 0,
+      avgFaces: faceResult._avg.faceCount ? Math.round(faceResult._avg.faceCount * 10) / 10 : 0,
+      maxFaces: faceResult._max.faceCount || 0,
+      totalFaces: faceResult._sum.faceCount || 0,
+      distribution: (faceCountGroups as any[]).map((g) => ({ faceCount: g.faceCount, count: g._count.id })),
+    });
+  } catch (error: any) {
+    logger.error('Face stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/category-leader — Top photo per category by quality
+router.get('/:eventId/photos/category-leader', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const categories = await prisma.category.findMany({
+      where: { eventId },
+      select: { id: true, name: true },
+    });
+
+    const leaders = await Promise.all(categories.map(async (cat) => {
+      const best = await prisma.photo.findFirst({
+        where: { eventId, categoryId: cat.id, deletedAt: null },
+        select: { id: true, url: true, title: true, qualityScore: true, views: true },
+        orderBy: [{ qualityScore: 'desc' }, { views: 'desc' }],
+      });
+      const count = await prisma.photo.count({ where: { eventId, categoryId: cat.id, deletedAt: null } });
+      return { categoryId: cat.id, categoryName: cat.name, count, leader: best };
+    }));
+
+    res.json({ categories: leaders.filter((c) => c.count > 0) });
+  } catch (error: any) {
+    logger.error('Category leader error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/guest-leaderboard — Top20 guests by total engagement
+router.get('/:eventId/photos/guest-leaderboard', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['guestId'],
+      where: { eventId, deletedAt: null, guestId: { not: null } },
+      _count: { id: true },
+      _sum: { views: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const guestIds = (grouped as any[]).map((g) => g.guestId!).filter(Boolean);
+    const guests = guestIds.length > 0 ? await prisma.guest.findMany({
+      where: { id: { in: guestIds } },
+      select: { id: true, firstName: true, lastName: true },
+    }) : [];
+
+    const leaderboard = (grouped as any[]).map((g) => {
+      const guest = guests.find((gu) => gu.id === g.guestId);
+      return {
+        guestId: g.guestId,
+        firstName: guest?.firstName || null,
+        lastName: guest?.lastName || null,
+        photoCount: g._count.id,
+        totalViews: g._sum.views || 0,
+      };
+    });
+
+    res.json({ leaderboard });
+  } catch (error: any) {
+    logger.error('Guest leaderboard error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/purge-upcoming — Photos scheduled for purge in next 7 days
 router.get('/:eventId/photos/purge-upcoming', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
