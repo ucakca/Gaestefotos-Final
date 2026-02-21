@@ -2068,6 +2068,62 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/month-stats — Upload distribution by month (1-12)
+router.get('/:eventId/photos/month-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+    });
+
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const monthMap: Record<number, number> = {};
+    for (let m = 1; m <= 12; m++) monthMap[m] = 0;
+    for (const p of photos) monthMap[p.createdAt.getMonth() + 1]++;
+
+    const months = Object.entries(monthMap).map(([m, count]) => ({ month: parseInt(m), name: monthNames[parseInt(m) - 1], count }));
+    const peakMonth = months.reduce((a, b) => b.count > a.count ? b : a, months[0]);
+
+    res.json({ months, peakMonth: peakMonth.month, peakMonthName: peakMonth.name, peakMonthCount: peakMonth.count });
+  } catch (error: any) {
+    logger.error('Month stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/hash-stats — Perceptual hash / MD5 deduplication stats
+router.get('/:eventId/photos/hash-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, withMd5, withPerceptual, uniqueMd5, uniquePerceptual] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, md5Hash: { not: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, perceptualHash: { not: null } } }),
+      prisma.photo.groupBy({ by: ['md5Hash'], where: { eventId, deletedAt: null, md5Hash: { not: null } }, _count: { id: true } }),
+      prisma.photo.groupBy({ by: ['perceptualHash'], where: { eventId, deletedAt: null, perceptualHash: { not: null } }, _count: { id: true } }),
+    ]);
+
+    const uniqueMd5Count = (uniqueMd5 as any[]).length;
+    const uniquePerceptualCount = (uniquePerceptual as any[]).length;
+
+    res.json({
+      total,
+      withMd5Hash: withMd5, uniqueMd5Hashes: uniqueMd5Count,
+      md5DupeRate: withMd5 > uniqueMd5Count ? Math.round(((withMd5 - uniqueMd5Count) / withMd5) * 100) : 0,
+      withPerceptualHash: withPerceptual, uniquePerceptualHashes: uniquePerceptualCount,
+      perceptualDupeRate: withPerceptual > uniquePerceptualCount ? Math.round(((withPerceptual - uniquePerceptualCount) / withPerceptual) * 100) : 0,
+    });
+  } catch (error: any) {
+    logger.error('Hash stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/favorite-stats — Favorite/story-only photos
 router.get('/:eventId/photos/favorite-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
