@@ -2068,6 +2068,99 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/comment-stats — Comment statistics
+router.get('/:eventId/photos/comment-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, totalComments, approvedComments, pendingComments] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photoComment.count({ where: { photo: { eventId } } }),
+      prisma.photoComment.count({ where: { photo: { eventId }, status: 'APPROVED' as any } }),
+      prisma.photoComment.count({ where: { photo: { eventId }, status: 'PENDING' as any } }),
+    ]);
+
+    const photosWithComments = await prisma.photoComment.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId } },
+      _count: { id: true },
+    });
+
+    const topCommented = photosWithComments.sort((a: any, b: any) => b._count.id - a._count.id)[0];
+
+    res.json({
+      total,
+      totalComments, approvedComments, pendingComments,
+      photosWithComments: photosWithComments.length,
+      commentRate: total > 0 ? Math.round((photosWithComments.length / total) * 100) : 0,
+      avgCommentsPerPhoto: photosWithComments.length > 0 ? Math.round((totalComments / photosWithComments.length) * 10) / 10 : 0,
+      topCommentedPhotoId: topCommented?.photoId || null,
+      topCommentedCount: (topCommented as any)?._count?.id || 0,
+    });
+  } catch (error: any) {
+    logger.error('Comment stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/vote-distribution — Vote rating distribution 1-5
+router.get('/:eventId/photos/vote-distribution', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const votes = await prisma.photoVote.findMany({
+      where: { photo: { eventId } },
+      select: { rating: true },
+    });
+
+    const ratingMap: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    for (const v of votes) ratingMap[v.rating] = (ratingMap[v.rating] || 0) + 1;
+
+    const total = votes.length;
+    const avg = total > 0 ? Math.round(votes.reduce((s, v) => s + v.rating, 0) / total * 10) / 10 : null;
+
+    res.json({
+      total,
+      avg,
+      distribution: Object.entries(ratingMap).map(([r, count]) => ({
+        rating: parseInt(r),
+        count,
+        pct: total > 0 ? Math.round((count / total) * 100) : 0,
+      })),
+    });
+  } catch (error: any) {
+    logger.error('Vote distribution error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/engagement-score — Per-photo engagement score top20
+router.get('/:eventId/photos/engagement-score', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { id: true, url: true, title: true, views: true, _count: { select: { likes: true, comments: true } } },
+      take: 200,
+    });
+
+    const scored = photos.map((p: any) => ({
+      id: p.id, url: p.url, title: p.title,
+      views: p.views, likes: p._count.likes, comments: p._count.comments,
+      engagementScore: Math.round((p.views * 0.1 + p._count.likes * 2 + p._count.comments * 3) * 10) / 10,
+    })).sort((a, b) => b.engagementScore - a.engagementScore).slice(0, 20);
+
+    res.json({ photos: scored });
+  } catch (error: any) {
+    logger.error('Engagement score error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/month-stats — Upload distribution by month (1-12)
 router.get('/:eventId/photos/month-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
