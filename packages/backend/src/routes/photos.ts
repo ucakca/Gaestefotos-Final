@@ -2069,6 +2069,100 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/category-stats — Photo count + avg quality per category
+router.get('/:eventId/photos/category-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['categoryId'],
+      where: { eventId, deletedAt: null },
+      _count: { id: true },
+      _avg: { qualityScore: true, views: true },
+    });
+
+    const catIds = grouped.map((g: any) => g.categoryId).filter(Boolean) as string[];
+    const categories = catIds.length > 0 ? await prisma.category.findMany({
+      where: { id: { in: catIds } },
+      select: { id: true, name: true },
+    }) : [];
+
+    const stats = grouped.map((g: any) => ({
+      categoryId: g.categoryId,
+      categoryName: categories.find((c) => c.id === g.categoryId)?.name || null,
+      photoCount: g._count.id,
+      avgQuality: g._avg.qualityScore ? Math.round(g._avg.qualityScore * 10) / 10 : null,
+      avgViews: g._avg.views ? Math.round(g._avg.views * 10) / 10 : 0,
+    })).sort((a, b) => b.photoCount - a.photoCount);
+
+    res.json({ stats });
+  } catch (error: any) {
+    logger.error('Category stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/quality-percentile — Quality score percentiles P25/P50/P75/P90
+router.get('/:eventId/photos/quality-percentile', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const scores = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, qualityScore: { not: null } },
+      select: { qualityScore: true },
+      orderBy: { qualityScore: 'asc' },
+    });
+
+    if (scores.length === 0) return res.json({ total: 0, percentiles: null });
+
+    const vals = scores.map((s) => s.qualityScore as number);
+    const pct = (p: number) => {
+      const idx = Math.ceil((p / 100) * vals.length) - 1;
+      return Math.round(vals[Math.max(0, idx)] * 10) / 10;
+    };
+
+    res.json({
+      total: vals.length,
+      percentiles: { p25: pct(25), p50: pct(50), p75: pct(75), p90: pct(90), p99: pct(99) },
+      avg: Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 10) / 10,
+    });
+  } catch (error: any) {
+    logger.error('Quality percentile error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/dupe-chain — Duplicate groups with member photo IDs
+router.get('/:eventId/photos/dupe-chain', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['duplicateGroupId'],
+      where: { eventId, deletedAt: null, duplicateGroupId: { not: null } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 30,
+    });
+
+    const chains = await Promise.all((grouped as any[]).map(async (g) => {
+      const members = await prisma.photo.findMany({
+        where: { eventId, duplicateGroupId: g.duplicateGroupId, deletedAt: null },
+        select: { id: true, url: true, qualityScore: true, isBestInGroup: true },
+      });
+      return { groupId: g.duplicateGroupId, size: g._count.id, members };
+    }));
+
+    res.json({ chains });
+  } catch (error: any) {
+    logger.error('Dupe chain error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/thumbnail-coverage — Thumbnail/WebP coverage rates
 router.get('/:eventId/photos/thumbnail-coverage', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
