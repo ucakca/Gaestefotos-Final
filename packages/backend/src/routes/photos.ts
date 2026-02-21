@@ -2068,6 +2068,30 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/by-status — Photos grouped by status
+router.get('/:eventId/photos/by-status', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['status'],
+      where: { eventId, deletedAt: null },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+    });
+
+    const total = grouped.reduce((sum: number, g: any) => sum + g._count.id, 0);
+    res.json({
+      statuses: grouped.map((g: any) => ({ status: g.status, count: g._count.id, rate: total > 0 ? Math.round((g._count.id / total) * 100) : 0 })),
+      total,
+    });
+  } catch (error: any) {
+    logger.error('By-status error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/by-category — Photos grouped by categoryId
 router.get('/:eventId/photos/by-category', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
