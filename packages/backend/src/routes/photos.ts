@@ -2068,6 +2068,83 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/activity-feed — Recent uploads/likes/comments (last 50)
+router.get('/:eventId/photos/activity-feed', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const limit = Math.min(parseInt((req.query.limit as string) || '50', 10), 100);
+
+    const [recentUploads, recentLikes, recentComments] = await Promise.all([
+      prisma.photo.findMany({
+        where: { eventId, deletedAt: null },
+        select: { id: true, url: true, title: true, uploadedBy: true, createdAt: true },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      }),
+      prisma.photoLike.findMany({
+        where: { photo: { eventId } },
+        select: { id: true, photoId: true, guestId: true, createdAt: true },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      }),
+      prisma.photoComment.findMany({
+        where: { photo: { eventId } },
+        select: { id: true, photoId: true, authorName: true, comment: true, createdAt: true },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      }),
+    ]);
+
+    res.json({ recentUploads, recentLikes, recentComments });
+  } catch (error: any) {
+    logger.error('Activity feed error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/overview — Master summary of all photo statistics
+router.get('/:eventId/photos/overview', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, approved, pending, rejected, deleted, withGps, withQuality, totalViews, totalLikes, totalComments] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, status: 'APPROVED' as any } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, status: 'PENDING' as any } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, status: 'REJECTED' as any } }),
+      prisma.photo.count({ where: { eventId, deletedAt: { not: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, latitude: { not: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, qualityScore: { not: null } } }),
+      prisma.photo.aggregate({ where: { eventId, deletedAt: null }, _sum: { views: true } }),
+      prisma.photoLike.count({ where: { photo: { eventId } } }),
+      prisma.photoComment.count({ where: { photo: { eventId } } }),
+    ]);
+
+    const sizeResult = await prisma.photo.aggregate({ where: { eventId, deletedAt: null, sizeBytes: { not: null } }, _sum: { sizeBytes: true } });
+    const qualityResult = await prisma.photo.aggregate({ where: { eventId, deletedAt: null, qualityScore: { not: null } }, _avg: { qualityScore: true } });
+    const newestPhoto = await prisma.photo.findFirst({ where: { eventId, deletedAt: null }, orderBy: { createdAt: 'desc' }, select: { createdAt: true } });
+    const firstPhoto = await prisma.photo.findFirst({ where: { eventId, deletedAt: null }, orderBy: { createdAt: 'asc' }, select: { createdAt: true } });
+
+    res.json({
+      total, approved, pending, rejected, deleted,
+      approvalRate: total > 0 ? Math.round((approved / total) * 100) : 0,
+      withGps, gpsRate: total > 0 ? Math.round((withGps / total) * 100) : 0,
+      withQuality, avgQuality: qualityResult._avg.qualityScore ? Math.round(qualityResult._avg.qualityScore * 10) / 10 : null,
+      totalViews: totalViews._sum.views || 0,
+      totalLikes, totalComments,
+      totalSizeMB: sizeResult._sum.sizeBytes ? Math.round(Number(sizeResult._sum.sizeBytes) / 1024 / 1024 * 100) / 100 : null,
+      firstPhotoAt: firstPhoto?.createdAt || null,
+      newestPhotoAt: newestPhoto?.createdAt || null,
+    });
+  } catch (error: any) {
+    logger.error('Overview error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/daily-stats — Upload distribution by weekday (0=Sun..6=Sat)
 router.get('/:eventId/photos/daily-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
