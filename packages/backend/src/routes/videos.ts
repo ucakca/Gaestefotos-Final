@@ -791,17 +791,40 @@ router.post(
   requireRole('ADMIN'),
   async (req: AuthRequest, res: Response) => {
   try {
-    // ... (rest of the code remains the same)
+    const { videoId, action } = req.params;
+
+    const video = await prisma.video.findUnique({ where: { id: videoId } });
+    if (!video) return res.status(404).json({ error: 'Video nicht gefunden' });
+
+    if (!(await hasEventManageAccess(req, video.eventId))) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const newStatus = action === 'approve' ? 'APPROVED' : 'REJECTED';
+    const updatedVideo = await prisma.video.update({
+      where: { id: videoId },
+      data: { status: newStatus as any },
+    });
+
+    cache.del(`event:${video.eventId}:videos`);
+    return res.json({ video: updatedVideo });
   } catch (error: any) {
     logger.error('Fehler bei Video-Status-Update', { error, videoId: req.params.videoId, action: req.params.action });
     res.status(500).json({ error: 'Ein interner Serverfehler ist aufgetreten' });
   }
 });
 
-// Delete video
+// Delete video (soft delete)
 router.delete('/:videoId', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    // ... (rest of the code remains the same)
+    const { videoId } = req.params;
+    const video = await prisma.video.findUnique({ where: { id: videoId } });
+    if (!video) return res.status(404).json({ error: 'Video nicht gefunden' });
+    if (!(await hasEventManageAccess(req, video.eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    await prisma.video.update({ where: { id: videoId }, data: { deletedAt: new Date() } });
+    cache.del(`event:${video.eventId}:videos`);
+    return res.json({ ok: true });
   } catch (error: any) {
     logger.error('Fehler beim Löschen des Videos', { error, videoId: req.params.videoId });
     res.status(500).json({ error: 'Ein interner Serverfehler ist aufgetreten' });
@@ -811,7 +834,14 @@ router.delete('/:videoId', authMiddleware, async (req: AuthRequest, res: Respons
 // List trashed videos for an event (host only)
 router.get('/:eventId/trash', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    // ... (rest of the code remains the same)
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const videos = await prisma.video.findMany({
+      where: { eventId, deletedAt: { not: null } },
+      orderBy: { deletedAt: 'desc' },
+    });
+    return res.json({ videos });
   } catch (error: any) {
     logger.error('Fehler beim Abrufen des Video-Papierkorbs', { error, eventId: req.params.eventId });
     res.status(500).json({ error: 'Ein interner Serverfehler ist aufgetreten' });
@@ -821,7 +851,14 @@ router.get('/:eventId/trash', authMiddleware, async (req: AuthRequest, res: Resp
 // Restore video from trash
 router.post('/:videoId/restore', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    // ... (rest of the code remains the same)
+    const { videoId } = req.params;
+    const video = await prisma.video.findUnique({ where: { id: videoId } });
+    if (!video) return res.status(404).json({ error: 'Video nicht gefunden' });
+    if (!(await hasEventManageAccess(req, video.eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const restored = await prisma.video.update({ where: { id: videoId }, data: { deletedAt: null } });
+    cache.del(`event:${video.eventId}:videos`);
+    return res.json({ video: restored });
   } catch (error: any) {
     logger.error('Fehler beim Wiederherstellen des Videos', { error, videoId: req.params.videoId });
     res.status(500).json({ error: 'Ein interner Serverfehler ist aufgetreten' });
