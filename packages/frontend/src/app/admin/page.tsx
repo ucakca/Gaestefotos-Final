@@ -8,6 +8,8 @@ import {
   QrCode,
   Shield,
   UserPlus,
+  Activity,
+  Brain,
 } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AppLayout from '@/components/AppLayout';
@@ -25,6 +27,12 @@ const sections: { title: string; items: AdminLink[] }[] = [
     title: 'Event-Verwaltung',
     items: [
       { href: '/dashboard/create-event', label: 'Event für Benutzer erstellen', description: 'Event im Namen eines Hosts anlegen — Host sieht es im Dashboard', icon: UserPlus, color: 'text-blue-500' },
+    ],
+  },
+  {
+    title: 'KI-System',
+    items: [
+      { href: '/admin/ai-monitoring', label: 'KI-Provider Monitoring', description: 'API-Status, Latenz (p50/p95), Fehlerrate pro Provider', icon: Activity, color: 'text-indigo-500' },
     ],
   },
   {

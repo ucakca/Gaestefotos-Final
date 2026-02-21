@@ -956,4 +956,87 @@ router.get('/usage-stats', async (_req: AuthRequest, res: Response) => {
   }
 });
 
+// GET /api/admin/ai-providers/monitoring — Per-provider health: latency, error rate, volume, last seen
+router.get('/monitoring', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!(await requireAdmin(req, res))) return;
+
+    const hours = parseInt(req.query.hours as string) || 24;
+    const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+
+    const providers = await prisma.aiProvider.findMany({
+      orderBy: [{ isActive: 'desc' }, { name: 'asc' }],
+      select: { id: true, slug: true, name: true, type: true, isActive: true, isDefault: true },
+    });
+
+    const [perProvider, lastSeen, p95Raw] = await Promise.all([
+      prisma.aiUsageLog.groupBy({
+        by: ['providerId'],
+        where: { createdAt: { gte: since } },
+        _count: { id: true },
+        _avg: { durationMs: true },
+        _sum: { costCents: true },
+      }),
+      prisma.aiUsageLog.groupBy({
+        by: ['providerId'],
+        _max: { createdAt: true },
+      }),
+      prisma.$queryRaw<Array<{ providerId: string; p50: number; p95: number }>>`
+        SELECT
+          "providerId",
+          PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY "durationMs") AS p50,
+          PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY "durationMs") AS p95
+        FROM ai_usage_logs
+        WHERE "createdAt" >= ${since} AND "durationMs" IS NOT NULL
+        GROUP BY "providerId"
+      `,
+    ]);
+
+    const errorsPerProvider = await prisma.aiUsageLog.groupBy({
+      by: ['providerId'],
+      where: { createdAt: { gte: since }, success: false },
+      _count: { id: true },
+    });
+
+    const p95Map: Record<string, { p50: number; p95: number }> = {};
+    for (const r of p95Raw as any[]) {
+      p95Map[r.providerId] = { p50: Math.round(Number(r.p50) || 0), p95: Math.round(Number(r.p95) || 0) };
+    }
+
+    const lastSeenMap: Record<string, Date | null> = {};
+    for (const r of lastSeen) lastSeenMap[r.providerId] = r._max.createdAt;
+
+    const stats = providers.map((p) => {
+      const usage = perProvider.find((u) => u.providerId === p.id);
+      const errors = errorsPerProvider.find((e) => e.providerId === p.id);
+      const total = usage?._count?.id ?? 0;
+      const errCount = errors?._count?.id ?? 0;
+      const latency = p95Map[p.id] || { p50: 0, p95: 0 };
+      return {
+        id: p.id,
+        slug: p.slug,
+        name: p.name,
+        type: p.type,
+        isActive: p.isActive,
+        isDefault: p.isDefault,
+        period: { hours },
+        requests: total,
+        errors: errCount,
+        errorRatePct: total > 0 ? Math.round((errCount / total) * 1000) / 10 : 0,
+        avgLatencyMs: Math.round(usage?._avg?.durationMs ?? 0),
+        p50LatencyMs: latency.p50,
+        p95LatencyMs: latency.p95,
+        totalCostCents: usage?._sum?.costCents ?? 0,
+        lastSeenAt: lastSeenMap[p.id] ?? null,
+        status: !p.isActive ? 'DISABLED' : total === 0 ? 'IDLE' : errCount / Math.max(total, 1) > 0.5 ? 'DEGRADED' : 'OK',
+      };
+    });
+
+    res.json({ providers: stats, period: { hours, since } });
+  } catch (error: any) {
+    logger.error('Provider monitoring error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 export default router;
