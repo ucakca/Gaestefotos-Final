@@ -966,6 +966,9 @@
 | S26-775 | **Admin Server-Status Frontend** | ✅ erledigt (21.02.2026) | /admin/ops: RAM/CPU/Disk/Uptime/NodeJS/PostgreSQL/Redis-Status Dashboard |
 | S26-776 | **Admin-Hub System-Sektion erweitert** | ✅ erledigt (21.02.2026) | Server-Status + Storage-Stats + KI-Provider Status in neuer 'System' Sektion |
 | S26-777 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 777 Features in Sprint S26 implementiert + deployed |
+| S26-778 | **GET /events/:id/photos/quality-distribution** | ✅ erledigt (21.02.2026) | 10-Bucket Histogramm + poor/fair/good Kategorien + averageScore |
+| S26-779 | **GET /events/:id/guests/engagement** | ✅ erledigt (21.02.2026) | RSVP-Rate/Check-In-Rate/Engagement-Score (0-100) + Guestbook/Upload-Stats |
+| S26-780 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 780 Features in Sprint S26 implementiert + deployed |
 
 ---
 
