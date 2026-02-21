@@ -115,12 +115,19 @@ export class StorageService {
     prefix?: string;
     maxKeys?: number;
     continuationToken?: string;
-  } = {}): Promise<{ items: Array<{ key: string; size: number; lastModified: Date; contentType?: string }>; nextToken?: string; isTruncated: boolean }> {
+    delimiter?: string;
+  } = {}): Promise<{
+    items: Array<{ key: string; size: number; lastModified: Date }>;
+    folders: string[];
+    nextToken?: string;
+    isTruncated: boolean;
+  }> {
     const command = new ListObjectsV2Command({
       Bucket: BUCKET,
       Prefix: options.prefix,
       MaxKeys: options.maxKeys ?? 200,
       ContinuationToken: options.continuationToken,
+      Delimiter: options.delimiter,
     });
 
     const response: any = await s3Client.send(command);
@@ -129,9 +136,13 @@ export class StorageService {
       size: obj.Size ?? 0,
       lastModified: obj.LastModified ?? new Date(),
     }));
+    const folders: string[] = (response.CommonPrefixes ?? []).map(
+      (p: any) => p.Prefix ?? '',
+    ).filter(Boolean);
 
     return {
       items,
+      folders,
       nextToken: response.NextContinuationToken,
       isTruncated: response.IsTruncated ?? false,
     };

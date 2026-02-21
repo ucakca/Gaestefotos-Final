@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { authMiddleware, requireRole } from '../middleware/auth';
 import { storageService } from '../services/storage';
 import { logger } from '../utils/logger';
+import prisma from '../config/database';
 
 const router = Router();
 
@@ -67,76 +68,120 @@ router.get('/verify', async (req: Request, res: Response) => {
   }
 });
 
-// ─── Admin: List files ────────────────────────────────────────────────────────
-
-// GET /api/admin/cdn/files
-// Query: prefix, page, limit, sort (name|size|date), order (asc|desc), type (image|video|audio|pdf|other|all), search
-router.get('/files', authMiddleware, requireRole('ADMIN'), async (req: Request, res: Response) => {
+// ─── Admin: Browse (Explorer-Ansicht mit Ordnern) ─────────────────────────────
+//
+// GET /api/admin/cdn/browse
+// Query: prefix (z.B. "" = Root, "events/abc123/" = Event-Ordner)
+//        sort (name|size|date), order (asc|desc), type (all|image|video|audio|pdf|other), search, page, limit
+//
+// Antwort: { folders: [...], files: [...], breadcrumbs: [...], total, page, pages }
+router.get('/browse', authMiddleware, requireRole('ADMIN'), async (req: Request, res: Response) => {
   try {
-    const prefix = (req.query.prefix as string) || 'events/';
-    const limit = Math.min(parseInt(req.query.limit as string) || 100, 1000);
-    const continuationToken = req.query.cursor as string | undefined;
-    const sort = (req.query.sort as string) || 'date';
-    const order = (req.query.order as string) === 'asc' ? 'asc' : 'desc';
+    const prefix = (req.query.prefix as string) ?? '';
+    const limit = Math.min(parseInt(req.query.limit as string) || 50, 200);
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const sort = (req.query.sort as string) || 'name';
+    const order = (req.query.order as string) === 'desc' ? 'desc' : 'asc';
     const typeFilter = (req.query.type as string) || 'all';
     const search = ((req.query.search as string) || '').toLowerCase();
 
-    const result = await storageService.listFiles({ prefix, maxKeys: 1000, continuationToken });
+    // S3 delimiter listing — liefert CommonPrefixes (Ordner) + Contents (Dateien)
+    const result = await storageService.listFiles({
+      prefix: prefix || undefined,
+      maxKeys: 1000,
+      delimiter: '/',
+    });
 
-    let items = result.items.map((item) => ({
+    // ── Ordner aufbauen ────────────────────────────────────────────────────────
+    let folders = result.folders.map((folderPrefix) => {
+      // "events/abc123/" → name = "abc123", eventId = "abc123" wenn unter events/
+      const parts = folderPrefix.replace(/\/$/, '').split('/');
+      const name = parts[parts.length - 1] ?? folderPrefix;
+      const depth = parts.length - 1;
+      const eventId = depth === 1 && parts[0] === 'events' ? name : null;
+      return { prefix: folderPrefix, name, eventId, depth };
+    });
+
+    // Event-Namen aus DB anreichern wenn wir im Root events/ sind
+    const eventIds = folders.map((f) => f.eventId).filter(Boolean) as string[];
+    let eventNameMap: Record<string, string> = {};
+    if (eventIds.length > 0) {
+      const events = await prisma.event.findMany({
+        where: { id: { in: eventIds } },
+        select: { id: true, title: true, slug: true, dateTime: true, isActive: true },
+      });
+      eventNameMap = Object.fromEntries(events.map((e) => [e.id, e.title]));
+    }
+
+    folders = folders.map((f) => ({
+      ...f,
+      label: f.eventId && eventNameMap[f.eventId]
+        ? `${eventNameMap[f.eventId]} (${f.eventId.slice(0, 8)})`
+        : f.name,
+    }));
+
+    // Sort folders
+    folders.sort((a, b) =>
+      order === 'asc'
+        ? (a as any).label.localeCompare((b as any).label)
+        : (b as any).label.localeCompare((a as any).label),
+    );
+
+    // ── Dateien aufbauen ───────────────────────────────────────────────────────
+    let files = result.items.map((item) => ({
       key: item.key,
       name: item.key.split('/').pop() ?? item.key,
-      path: item.key,
       size: item.size,
       sizeFormatted: formatBytes(item.size),
       lastModified: item.lastModified,
       type: getFileType(item.key),
-      eventId: item.key.split('/')[1] ?? null,
     }));
 
-    // Filter by type
     if (typeFilter !== 'all') {
-      items = items.filter((f) => f.type === typeFilter);
+      files = files.filter((f) => f.type === typeFilter);
     }
-
-    // Filter by search
     if (search) {
-      items = items.filter((f) => f.key.toLowerCase().includes(search));
+      const q = search;
+      files = files.filter((f) => f.name.toLowerCase().includes(q));
+      folders = folders.filter((f) => (f as any).label.toLowerCase().includes(q));
     }
 
-    // Sort
-    items.sort((a, b) => {
+    // Sort files
+    files.sort((a, b) => {
       let cmp = 0;
-      if (sort === 'name') cmp = a.name.localeCompare(b.name);
-      else if (sort === 'size') cmp = a.size - b.size;
-      else cmp = new Date(a.lastModified).getTime() - new Date(b.lastModified).getTime();
+      if (sort === 'size') cmp = a.size - b.size;
+      else if (sort === 'date') cmp = new Date(a.lastModified).getTime() - new Date(b.lastModified).getTime();
+      else cmp = a.name.localeCompare(b.name);
       return order === 'asc' ? cmp : -cmp;
     });
 
-    // Paginate
-    const page = Math.max(1, parseInt(req.query.page as string) || 1);
-    const total = items.length;
-    const paginated = items.slice((page - 1) * limit, page * limit);
+    // Paginate files only (folders always shown)
+    const totalFiles = files.length;
+    const pagedFiles = files.slice((page - 1) * limit, page * limit);
 
-    // Summary stats
-    const totalSize = items.reduce((s, f) => s + f.size, 0);
-    const byType = items.reduce<Record<string, number>>((acc, f) => {
-      acc[f.type] = (acc[f.type] ?? 0) + 1;
-      return acc;
-    }, {});
+    // ── Breadcrumbs ────────────────────────────────────────────────────────────
+    const breadcrumbs: Array<{ label: string; prefix: string }> = [{ label: 'Root', prefix: '' }];
+    const parts = prefix.replace(/\/$/, '').split('/').filter(Boolean);
+    let running = '';
+    for (const part of parts) {
+      running += `${part}/`;
+      const eventName = eventNameMap[part];
+      breadcrumbs.push({ label: eventName ? `${eventName}` : part, prefix: running });
+    }
 
     res.json({
-      files: paginated,
-      total,
-      page,
-      pages: Math.ceil(total / limit),
+      folders,
+      files: pagedFiles,
+      totalFiles,
+      pageFiles: page,
+      pagesFiles: Math.ceil(totalFiles / limit),
+      breadcrumbs,
+      currentPrefix: prefix,
       isTruncated: result.isTruncated,
-      nextCursor: result.nextToken,
-      summary: { totalSize, totalSizeFormatted: formatBytes(totalSize), byType },
     });
   } catch (error: any) {
-    logger.error('CDN file list error', { error: error.message });
-    res.status(500).json({ error: 'Fehler beim Laden der Dateien' });
+    logger.error('CDN browse error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
   }
 });
 
