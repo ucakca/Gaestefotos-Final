@@ -883,6 +883,10 @@
 | S26-692 | **Category-Size-Total** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-size-total (total file size MB per category) |
 | S26-693 | **Guest-Engagement-Score** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/guest-engagement-score (top20 guests by score likes*3+comments*2+votes) |
 | S26-694 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 694 Features in Sprint S26 implementiert + deployed |
+| S26-695 | **Top-Voted-Today** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-voted-today (top10 photos by votes cast today with avgRating) |
+| S26-696 | **Cumulative-Upload-Trend** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/cumulative-upload-trend (daily + cumulative upload count series) |
+| S26-697 | **Approval-Funnel** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/approval-funnel (uploaded→pending→approved→rejected→liked funnel) |
+| S26-698 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 698 Features in Sprint S26 implementiert + deployed |
 
 ---
 
