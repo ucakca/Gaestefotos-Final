@@ -2068,6 +2068,35 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/tag-stats — Tag usage statistics
+router.get('/:eventId/photos/tag-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { tags: true },
+    });
+
+    const tagMap = new Map<string, number>();
+    for (const p of photos) {
+      for (const tag of (p.tags || [])) {
+        tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
+      }
+    }
+
+    const tagStats = Array.from(tagMap.entries())
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count);
+
+    res.json({ tagStats });
+  } catch (error: any) {
+    logger.error('Tag stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 // GET /api/events/:eventId/photos/status-count — Count by status
 router.get('/:eventId/photos/status-count', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
