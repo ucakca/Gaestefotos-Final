@@ -2068,6 +2068,43 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/mime-stats — Photos grouped by MIME type from EXIF
+router.get('/:eventId/photos/mime-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { storagePath: true },
+    });
+
+    const mimeMap: Record<string, number> = {};
+    for (const p of photos) {
+      const ext = p.storagePath.split('.').pop()?.toLowerCase() || 'unknown';
+      const mime = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg'
+        : ext === 'png' ? 'image/png'
+        : ext === 'webp' ? 'image/webp'
+        : ext === 'gif' ? 'image/gif'
+        : ext === 'heic' || ext === 'heif' ? 'image/heic'
+        : ext === 'avif' ? 'image/avif'
+        : ext === 'tiff' || ext === 'tif' ? 'image/tiff'
+        : `other/${ext}`;
+      mimeMap[mime] = (mimeMap[mime] || 0) + 1;
+    }
+
+    const total = photos.length;
+    const mimes = Object.entries(mimeMap)
+      .sort(([, a], [, b]) => b - a)
+      .map(([mime, count]) => ({ mime, count, rate: total > 0 ? Math.round((count / total) * 100) : 0 }));
+
+    res.json({ mimes, total, totalTypes: mimes.length });
+  } catch (error: any) {
+    logger.error('MIME stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/by-orientation — Photos grouped by orientation (portrait/landscape/square)
 router.get('/:eventId/photos/by-orientation', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
