@@ -2068,6 +2068,59 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/tag-stats — Top tags by frequency
+router.get('/:eventId/photos/tag-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { tags: true },
+    });
+
+    const tagMap: Record<string, number> = {};
+    for (const p of photos) {
+      for (const tag of p.tags) {
+        tagMap[tag] = (tagMap[tag] || 0) + 1;
+      }
+    }
+
+    const tags = Object.entries(tagMap)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 50)
+      .map(([tag, count]) => ({ tag, count }));
+
+    res.json({ tags, uniqueTags: Object.keys(tagMap).length, totalTagUsages: Object.values(tagMap).reduce((a, b) => a + b, 0) });
+  } catch (error: any) {
+    logger.error('Tag stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/uploader-stats — Photos by uploader name/ID top20
+router.get('/:eventId/photos/uploader-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['uploadedBy'],
+      where: { eventId, deletedAt: null },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    res.json({
+      uploaders: grouped.map((g: any) => ({ uploadedBy: g.uploadedBy || 'anonymous', count: g._count.id })),
+    });
+  } catch (error: any) {
+    logger.error('Uploader stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/activity-feed — Recent uploads/likes/comments (last 50)
 router.get('/:eventId/photos/activity-feed', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
