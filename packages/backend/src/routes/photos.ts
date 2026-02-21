@@ -2068,6 +2068,24 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/comments-count — Total comments on approved photos
+router.get('/:eventId/photos/comments-count', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [totalComments, photosWithComments] = await Promise.all([
+      prisma.photoComment.count({ where: { photo: { eventId, deletedAt: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, comments: { some: {} } } }),
+    ]);
+
+    res.json({ totalComments, photosWithComments });
+  } catch (error: any) {
+    logger.error('Comments count error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/views-total — Total view count for event
 router.get('/:eventId/photos/views-total', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
