@@ -13,6 +13,23 @@ const listSchema = z.object({
   offset: z.coerce.number().int().min(0).optional().default(0),
 });
 
+// GET /admin/users/stats — User registration statistics
+router.get('/stats', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const [total, locked, withEvents, newThisWeek, admins] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({ where: { isLocked: true } }),
+      prisma.user.count({ where: { events: { some: {} } } }),
+      prisma.user.count({ where: { createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } } }),
+      prisma.user.count({ where: { role: 'ADMIN' } }),
+    ]);
+
+    res.json({ total, locked, withEvents, newThisWeek, admins, active: total - locked });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 router.get('/', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
   const parsed = listSchema.safeParse(req.query);
   if (!parsed.success) {
