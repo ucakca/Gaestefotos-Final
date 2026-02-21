@@ -907,6 +907,10 @@
 | S26-716 | **Upload-By-Weekday** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/upload-by-weekday (upload count per weekday Sun-Sat) |
 | S26-717 | **Like-Velocity** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/like-velocity (top20 photos by likes-per-day since upload) |
 | S26-718 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 718 Features in Sprint S26 implementiert + deployed |
+| S26-719 | **Comment-Velocity** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/comment-velocity (top20 photos by comments-per-day since upload) |
+| S26-720 | **Top-Quality-Today** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-quality-today (top10 photos by quality score uploaded today) |
+| S26-721 | **Upload-Hour-Distribution** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/upload-hour-distribution (upload count per UTC hour 0-23) |
+| S26-722 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 722 Features in Sprint S26 implementiert + deployed |
 
 ---
 
