@@ -8553,5 +8553,59 @@ router.get(
   }
 );
 
+// PATCH /bulk/reorder — Set display order for multiple photos
+router.patch(
+  '/bulk/reorder',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { items } = req.body;
+      if (!Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ error: 'items Array mit {id, displayOrder} erforderlich' });
+      }
+      if (items.length > 500) {
+        return res.status(400).json({ error: 'Max. 500 Fotos pro Aufruf' });
+      }
+
+      // Validate access: all photos must belong to same event and user must have access
+      const photoIds = items.map((i: any) => i.id).filter(Boolean);
+      const photos = await prisma.photo.findMany({
+        where: { id: { in: photoIds }, deletedAt: null },
+        select: { id: true, eventId: true },
+      });
+
+      if (photos.length !== photoIds.length) {
+        return res.status(400).json({ error: 'Eines oder mehrere Fotos nicht gefunden' });
+      }
+
+      const eventIds = [...new Set(photos.map(p => p.eventId))];
+      if (eventIds.length > 1) {
+        return res.status(400).json({ error: 'Alle Fotos müssen zum selben Event gehören' });
+      }
+
+      const eventId = eventIds[0];
+      const { hasEventManageAccess } = await import('../middleware/auth');
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Kein Zugriff' });
+      }
+
+      // Batch update displayOrder
+      await prisma.$transaction(
+        items.map((item: { id: string; displayOrder: number }) =>
+          prisma.photo.update({
+            where: { id: item.id },
+            data: { displayOrder: item.displayOrder },
+          })
+        )
+      );
+
+      res.json({ success: true, updated: items.length });
+    } catch (error: any) {
+      logger.error('Bulk reorder error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Reorder' });
+    }
+  }
+);
+
 export default router;
 
