@@ -2068,6 +2068,38 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/category-stats — Photos grouped by category
+router.get('/:eventId/photos/category-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['categoryId'],
+      where: { eventId, deletedAt: null },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+    });
+
+    const categories = await prisma.category.findMany({
+      where: { eventId },
+      select: { id: true, name: true },
+    });
+
+    const catMap = new Map(categories.map((c: any) => [c.id, c.name]));
+    res.json({
+      categoryStats: grouped.map((g: any) => ({
+        categoryId: g.categoryId,
+        categoryName: g.categoryId ? catMap.get(g.categoryId) || 'Unbekannt' : 'Keine Kategorie',
+        count: g._count.id,
+      })),
+    });
+  } catch (error: any) {
+    logger.error('Category stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/votes-stats — Vote statistics for event
 router.get('/:eventId/photos/votes-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
