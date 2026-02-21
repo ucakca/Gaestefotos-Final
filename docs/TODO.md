@@ -726,6 +726,13 @@
 | S26-535 | **By-Status** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/by-status (groupBy status+rate%) |
 | S26-536 | **By-Orientation** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/by-orientation (EXIF tag 1-8) |
 | S26-537 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 537 Features in Sprint S26 implementiert + deployed |
+| S26-538 | **MIME-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/mime-stats (storagePath ext -> mime) |
+| S26-539 | **Face-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/face-stats (totalFaces/faceRate%) |
+| S26-540 | **Quality-Histogram** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/quality-histogram (11 buckets) |
+| S26-541 | **Best-In-Group** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/best-in-group (duplicateGroupId stats) |
+| S26-542 | **Category-Progress** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-progress (per category count) |
+| S26-543 | **Retention-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/retention-stats (age buckets <1h...>90d) |
+| S26-544 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 544 Features in Sprint S26 implementiert + deployed |
 
 ---
 
