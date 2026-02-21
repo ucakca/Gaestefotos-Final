@@ -863,6 +863,10 @@
 | S26-672 | **Rejection-Rate-By-Uploader** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/rejection-rate-by-uploader (top20 uploaders by rejection rate%) |
 | S26-673 | **View-Per-Like-Ratio** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/view-per-like-ratio (top20 photos by views-per-like ratio) |
 | S26-674 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 674 Features in Sprint S26 implementiert + deployed |
+| S26-675 | **Category-Approval-Rate** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-approval-rate (approval rate per category sorted desc) |
+| S26-676 | **Top-Voted-Rejected** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-voted-rejected (top20 REJECTED photos by vote count + avgRating) |
+| S26-677 | **Monthly-Summary** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/monthly-summary (photo/like/comment/vote totals per calendar month) |
+| S26-678 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 678 Features in Sprint S26 implementiert + deployed |
 
 ---
 
