@@ -55,6 +55,7 @@ import {
   Download,
 } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
+import { useAuthStore } from '@/store/authStore';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
 import { useRealtimePhotos } from '@/hooks/useRealtimePhotos';
 import { AIFloatingButton } from '@/components/ai-chat';
@@ -107,6 +108,12 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
   const [guestCount, setGuestCount] = useState(0);
   
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
+
+  // Admin Notes
+  const { user: authUser } = useAuthStore();
+  const isAdmin = authUser?.role === 'ADMIN';
+  const [adminNotes, setAdminNotes] = useState<string>('');
+  const [adminNotesSaving, setAdminNotesSaving] = useState(false);
   
   // Share Link
   const [shareUrl, setShareUrl] = useState<string | null>(null);
@@ -151,6 +158,26 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
       loadCohosts();
     }
   }, [event]);
+
+  // Load adminNotes from event
+  useEffect(() => {
+    if (event && isAdmin) {
+      setAdminNotes((event as any).adminNotes || '');
+    }
+  }, [event, isAdmin]);
+
+  const saveAdminNotes = async () => {
+    if (!eventId) return;
+    setAdminNotesSaving(true);
+    try {
+      await api.patch(`/events/${eventId}/admin-notes`, { adminNotes });
+      showToast('Admin-Notizen gespeichert', 'success');
+    } catch {
+      showToast('Fehler beim Speichern', 'error');
+    } finally {
+      setAdminNotesSaving(false);
+    }
+  };
 
   // Realtime updates
   useRealtimePhotos({
@@ -526,6 +553,29 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
               }}
             />
           )}
+          {/* Admin-only: Internal Notes */}
+          {activeTab === 'overview' && isAdmin && (
+            <div className="mx-4 mb-4 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">Admin-Notizen (intern)</span>
+              </div>
+              <textarea
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                placeholder="Interne Notizen zu diesem Event (nur für Admins sichtbar)..."
+                rows={3}
+                className="w-full text-sm bg-white dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none focus:ring-1 focus:ring-amber-400"
+              />
+              <button
+                onClick={saveAdminNotes}
+                disabled={adminNotesSaving}
+                className="mt-2 px-3 py-1.5 text-xs font-medium rounded-lg bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white transition-colors"
+              >
+                {adminNotesSaving ? 'Speichert...' : 'Speichern'}
+              </button>
+            </div>
+          )}
+
           {activeTab === 'gallery' && (
             <GalleryTabV2
               key="gallery"
