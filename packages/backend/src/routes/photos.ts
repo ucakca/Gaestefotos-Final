@@ -2069,6 +2069,93 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/comment-velocity — Top20 photos by comments-per-day since upload
+router.get('/:eventId/photos/comment-velocity', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoComment.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, deletedAt: null } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 50,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true, status: true, createdAt: true },
+    }) : [];
+
+    const now = Date.now();
+    const result = (grouped as any[]).map((g) => {
+      const photo = photos.find((p) => p.id === g.photoId);
+      const ageDays = photo ? Math.max((now - photo.createdAt.getTime()) / 86_400_000, 0.01) : 1;
+      const velocity = Math.round((g._count.id / ageDays) * 100) / 100;
+      return { ...(photo || {}), commentCount: g._count.id, ageDays: Math.round(ageDays * 10) / 10, velocity };
+    }).sort((a, b) => b.velocity - a.velocity).slice(0, 20);
+
+    res.json({ photos: result });
+  } catch (error: any) {
+    logger.error('Comment velocity error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/top-quality-today — Top10 photos by quality score uploaded today
+router.get('/:eventId/photos/top-quality-today', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, createdAt: { gte: startOfDay }, qualityScore: { not: null } },
+      select: { id: true, url: true, title: true, qualityScore: true, status: true, views: true, uploadedBy: true },
+      orderBy: { qualityScore: 'desc' },
+      take: 10,
+    });
+
+    res.json({ photos, date: startOfDay.toISOString().slice(0, 10) });
+  } catch (error: any) {
+    logger.error('Top quality today error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/upload-hour-distribution — Upload count per UTC hour (0-23)
+router.get('/:eventId/photos/upload-hour-distribution', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+    });
+
+    const counts = Array.from({ length: 24 }, (_, i) => ({ hour: i, count: 0 }));
+    for (const p of photos) {
+      counts[p.createdAt.getUTCHours()].count++;
+    }
+
+    const total = photos.length;
+    const result = counts.map((c) => ({
+      ...c,
+      pct: total > 0 ? Math.round((c.count / total) * 100) : 0,
+    }));
+
+    res.json({ hours: result, total });
+  } catch (error: any) {
+    logger.error('Upload hour distribution error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top-commented-this-week — Top20 photos by comments in last 7 days
 router.get('/:eventId/photos/top-commented-this-week', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
