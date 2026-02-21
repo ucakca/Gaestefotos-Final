@@ -520,6 +520,13 @@
 | S26-329 | **Photo Activity** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/activity (uploaded/approved/rejected) |
 | S26-330 | **QR-Code** | ✅ erledigt (21.02.2026) | GET /events/:id/qr-code (qrUrl + shareUrl) |
 | S26-331 | **Sprint S26 Abschluss** | ✅ erledigt (21.02.2026) | 331 Features in Sprint S26 implementiert + deployed |
+| S26-332 | **Tag-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/tag-stats (tagMap count desc) |
+| S26-333 | **Status-Count** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/status-count (groupBy status) |
+| S26-334 | **Photos by-Guest** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/by-guest (groupBy uploadedBy) |
+| S26-335 | **Recent Photos** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/recent (limit 12, Manager sieht alle) |
+| S26-336 | **Top-Liked** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-liked (likes._count desc) |
+| S26-337 | **Gaesteliste CSV** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/export-csv (alle Felder) |
+| S26-338 | **Sprint S26 Checkpoint** | ✅ erledigt (21.02.2026) | 338 Features in Sprint S26 implementiert + deployed |
 
 ---
 
