@@ -2068,6 +2068,24 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/geo-stats — Geo-tagged photo statistics
+router.get('/:eventId/photos/geo-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, withGeo] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, latitude: { not: null }, longitude: { not: null } } }),
+    ]);
+
+    res.json({ total, withGeo, withoutGeo: total - withGeo, geoRate: total > 0 ? Math.round((withGeo / total) * 100) : 0 });
+  } catch (error: any) {
+    logger.error('Geo stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/duplicate-stats — Duplicate photo statistics
 router.get('/:eventId/photos/duplicate-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
