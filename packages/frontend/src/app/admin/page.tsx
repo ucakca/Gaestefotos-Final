@@ -13,6 +13,7 @@ import {
   Bell,
   HardDrive,
   Database,
+  Server,
 } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AppLayout from '@/components/AppLayout';
@@ -43,7 +44,8 @@ const sections: { title: string; items: AdminLink[] }[] = [
     title: 'System',
     items: [
       { href: '/admin/storage', label: 'Storage-Statistiken', description: 'Top-Events nach Speicherverbrauch, Gesamt-Storage, Foto-Anzahl', icon: HardDrive, color: 'text-teal-500' },
-      { href: '/admin/ai-monitoring', label: 'KI-Provider Status', description: 'Schnellzugriff: Provider-Monitoring (dupliziert für System-Überblick)', icon: Database, color: 'text-cyan-500' },
+      { href: '/admin/ops', label: 'Server-Status', description: 'RAM, CPU, Disk, Uptime, PostgreSQL & Redis Status', icon: Server, color: 'text-blue-500' },
+      { href: '/admin/ai-monitoring', label: 'KI-Provider Status', description: 'Provider-Monitoring: Latenz, Fehlerrate, API-Status', icon: Database, color: 'text-cyan-500' },
     ],
   },
   {
