@@ -757,6 +757,10 @@
 | S26-566 | **Resolution-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/resolution-stats (MP buckets+avgWidth/Height EXIF) |
 | S26-567 | **Download-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/download-stats (totalViews/seenRate%/topViewed) |
 | S26-568 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 568 Features in Sprint S26 implementiert + deployed |
+| S26-569 | **Quality-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/quality-stats (A-F grade buckets/avgQuality) |
+| S26-570 | **Face-Analysis** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/face-analysis (totalFaces/faceRate%/topFacePhoto) |
+| S26-571 | **Purge-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/purge-stats (deleted/active/expiredPurge) |
+| S26-572 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 572 Features in Sprint S26 implementiert + deployed |
 
 ---
 
