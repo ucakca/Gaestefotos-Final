@@ -2069,6 +2069,81 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/top-commented — Top20 photos by comment count
+router.get('/:eventId/photos/top-commented', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoComment.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, deletedAt: null } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true, qualityScore: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      ...(photos.find((p) => p.id === g.photoId) || {}),
+      commentCount: g._count.id,
+    }));
+
+    res.json({ photos: result });
+  } catch (error: any) {
+    logger.error('Top commented error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/purge-stats — Deleted + purge-scheduled photo stats
+router.get('/:eventId/photos/purge-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const now = new Date();
+    const [total, deleted, purgeScheduled, overdue] = await Promise.all([
+      prisma.photo.count({ where: { eventId } }),
+      prisma.photo.count({ where: { eventId, deletedAt: { not: null } } }),
+      prisma.photo.count({ where: { eventId, purgeAfter: { not: null } } }),
+      prisma.photo.count({ where: { eventId, purgeAfter: { lte: now } } }),
+    ]);
+
+    res.json({ total, deleted, purgeScheduled, overdue, activePhotos: total - deleted });
+  } catch (error: any) {
+    logger.error('Purge stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/first-upload — First and last upload timestamps
+router.get('/:eventId/photos/first-upload', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [first, last, total] = await Promise.all([
+      prisma.photo.findFirst({ where: { eventId, deletedAt: null }, orderBy: { createdAt: 'asc' }, select: { id: true, url: true, createdAt: true, uploadedBy: true } }),
+      prisma.photo.findFirst({ where: { eventId, deletedAt: null }, orderBy: { createdAt: 'desc' }, select: { id: true, url: true, createdAt: true, uploadedBy: true } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+    ]);
+
+    const spanMs = first && last ? last.createdAt.getTime() - first.createdAt.getTime() : null;
+    const spanHours = spanMs !== null ? Math.round(spanMs / 3_600_000 * 10) / 10 : null;
+
+    res.json({ total, first, last, spanHours });
+  } catch (error: any) {
+    logger.error('First upload error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/upload-weekday-distribution — Upload count per weekday (0=Sun..6=Sat)
 router.get('/:eventId/photos/upload-weekday-distribution', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
