@@ -2068,6 +2068,55 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/daily-stats — Upload distribution by weekday (0=Sun..6=Sat)
+router.get('/:eventId/photos/daily-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+    });
+
+    const dayMap: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    for (const p of photos) dayMap[p.createdAt.getDay()]++;
+
+    const days = Object.entries(dayMap).map(([d, count]) => ({ day: parseInt(d), name: dayNames[parseInt(d)], count }));
+    const peakDay = days.reduce((a, b) => b.count > a.count ? b : a, days[0]);
+
+    res.json({ days, peakDay: peakDay.day, peakDayName: peakDay.name, peakDayCount: peakDay.count });
+  } catch (error: any) {
+    logger.error('Daily stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/best-of — Best photo by views, likes, votes, quality
+router.get('/:eventId/photos/best-of', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [mostViewed, mostLiked, bestQuality, newest] = await Promise.all([
+      prisma.photo.findFirst({ where: { eventId, deletedAt: null }, orderBy: { views: 'desc' }, select: { id: true, url: true, title: true, views: true } }),
+      prisma.photo.findFirst({
+        where: { eventId, deletedAt: null },
+        orderBy: { likes: { _count: 'desc' } },
+        select: { id: true, url: true, title: true, _count: { select: { likes: true } } },
+      }),
+      prisma.photo.findFirst({ where: { eventId, deletedAt: null, qualityScore: { not: null } }, orderBy: { qualityScore: 'desc' }, select: { id: true, url: true, title: true, qualityScore: true } }),
+      prisma.photo.findFirst({ where: { eventId, deletedAt: null }, orderBy: { createdAt: 'desc' }, select: { id: true, url: true, title: true, createdAt: true } }),
+    ]);
+
+    res.json({ mostViewed, mostLiked, bestQuality, newest });
+  } catch (error: any) {
+    logger.error('Best-of error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/hourly-stats — Upload distribution by hour (0-23)
 router.get('/:eventId/photos/hourly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
