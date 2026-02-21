@@ -1679,6 +1679,33 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/challenges/stats — Challenge completion statistics
+router.get('/:eventId/challenges/stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [totalChallenges, totalCompletions, uniqueGuests] = await Promise.all([
+      prisma.challenge.count({ where: { eventId } }),
+      prisma.challengeCompletion.count({ where: { challenge: { eventId } } }),
+      prisma.challengeCompletion.findMany({
+        where: { challenge: { eventId } },
+        select: { guestId: true },
+        distinct: ['guestId'],
+      }),
+    ]);
+
+    res.json({
+      totalChallenges,
+      totalCompletions,
+      uniqueParticipants: uniqueGuests.length,
+      avgCompletionsPerChallenge: totalChallenges > 0 ? Math.round((totalCompletions / totalChallenges) * 10) / 10 : 0,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/activity — Recent photo activity (uploads, approvals)
 router.get('/:eventId/photos/activity', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
