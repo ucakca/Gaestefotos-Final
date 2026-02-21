@@ -744,6 +744,11 @@
 | S26-553 | **Tag-Cloud** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/tag-cloud (top 100 lowercase sorted) |
 | S26-554 | **Like-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/like-stats (totalLikes/avgPerPhoto/top5) |
 | S26-555 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 555 Features in Sprint S26 implementiert + deployed |
+| S26-556 | **Comment-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/comment-stats (totalComments/pending/avgPerPhoto/top5) |
+| S26-557 | **Favorite-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/favorite-stats (favoriteRate%/recentFavorites top10) |
+| S26-558 | **Monthly-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/monthly-stats (YYYY-MM asc+peakMonth) |
+| S26-559 | **Weekly-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/weekly-stats (YYYY-Www ISO+peakWeek) |
+| S26-560 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 560 Features in Sprint S26 implementiert + deployed |
 
 ---
 
