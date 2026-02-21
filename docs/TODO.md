@@ -696,6 +696,20 @@
 | S26-505 | **Bulk Set-Category** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/set-category (categoryId) |
 | S26-506 | **Bulk Remove-Tag** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/remove-tag (filter) |
 | S26-507 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 507 Features in Sprint S26 implementiert + deployed |
+| S26-508 | **Monthly-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/monthly-stats (YYYY-MM key) |
+| S26-509 | **Size-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/size-stats (totalSizeMB aggregate) |
+| S26-510 | **Uploader-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/uploader-stats (groupBy uploadedBy) |
+| S26-511 | **Quality-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/quality-stats (qualityScore/faceCount) |
+| S26-512 | **Duplicate-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/duplicate-stats (duplicateGroupId) |
+| S26-513 | **Geo-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/geo-stats (lat/lng geoRate%) |
+| S26-514 | **EXIF-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/exif-stats (exifRate%) |
+| S26-515 | **StoryOnly-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/story-only-stats (isStoryOnly) |
+| S26-516 | **Favorite-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/favorite-stats (favoriteRate%) |
+| S26-517 | **Like-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/like-stats (totalLikes/avgLikes) |
+| S26-518 | **Comment-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/comment-stats (top5/avgComments) |
+| S26-519 | **View-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/view-stats (totalViews/topPhoto) |
+| S26-520 | **Tag-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/tag-stats (top20/totalUniqueTags) |
+| S26-521 | **Deleted-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/deleted-stats (deletedRate%) |
 
 ---
 
