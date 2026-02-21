@@ -2068,6 +2068,40 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/top-rated — Combined quality+votes score top20
+router.get('/:eventId/photos/top-rated', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { id: true, url: true, title: true, qualityScore: true, views: true, uploadedBy: true },
+      orderBy: [{ qualityScore: 'desc' }, { views: 'desc' }],
+      take: 20,
+    });
+
+    const voteTotals = await prisma.photoVote.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId } },
+      _avg: { rating: true },
+      _count: { id: true },
+    });
+    const voteMap = Object.fromEntries(voteTotals.map((v: any) => [v.photoId, { avg: v._avg.rating || 0, count: v._count.id }]));
+
+    res.json({
+      photos: photos.map((p) => {
+        const voteInfo = voteMap[p.id] || { avg: 0, count: 0 };
+        const score = Math.round(((p.qualityScore || 0) * 0.6 + voteInfo.avg * 10 * 0.4) * 10) / 10;
+        return { ...p, voteAvg: Math.round(voteInfo.avg * 10) / 10, voteCount: voteInfo.count, combinedScore: score };
+      }).sort((a, b) => b.combinedScore - a.combinedScore),
+    });
+  } catch (error: any) {
+    logger.error('Top rated error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/guest-stats — Photos per guest top20
 router.get('/:eventId/photos/guest-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
