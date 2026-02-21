@@ -2268,6 +2268,56 @@ router.post(
   }
 );
 
+// GET /api/events/:id/readiness — Setup completeness checklist for hosts
+router.get(
+  '/:id/readiness',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const event = await prisma.event.findUnique({
+        where: { id: req.params.id },
+        select: {
+          id: true, title: true, dateTime: true, locationName: true,
+          isActive: true, password: true, designConfig: true,
+          featuresConfig: true, invitationDesign: true,
+          _count: { select: { photos: true, guests: true, guestbookEntries: true, invitations: true } },
+        },
+      });
+      if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+
+      const design = (event.designConfig as any) || {};
+      const features = (event.featuresConfig as any) || {};
+
+      const checks = [
+        { id: 'title', label: 'Event-Titel gesetzt', done: Boolean(event.title && event.title !== 'Neues Event') },
+        { id: 'date', label: 'Datum & Uhrzeit', done: Boolean(event.dateTime) },
+        { id: 'location', label: 'Veranstaltungsort', done: Boolean(event.locationName) },
+        { id: 'cover', label: 'Cover-Bild hochgeladen', done: Boolean(design.coverImage || design.profileImage) },
+        { id: 'active', label: 'Event aktiv (sichtbar)', done: Boolean(event.isActive) },
+        { id: 'guests', label: 'Gäste eingeladen', done: (event._count?.guests || 0) > 0 },
+        { id: 'password', label: 'Passwort gesetzt (optional)', done: Boolean(event.password), optional: true },
+        { id: 'moderation', label: 'Moderation konfiguriert', done: features.moderationRequired !== undefined },
+        { id: 'invitation', label: 'Einladungsdesign erstellt', done: Boolean(event.invitationDesign) },
+      ];
+
+      const required = checks.filter(c => !c.optional);
+      const completed = required.filter(c => c.done).length;
+      const readinessScore = Math.round((completed / required.length) * 100);
+
+      res.json({
+        eventId: event.id,
+        readinessScore,
+        isReady: readinessScore === 100,
+        checks,
+        stats: event._count,
+      });
+    } catch (error: any) {
+      logger.error('Readiness check error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Laden' });
+    }
+  }
+);
+
 // PATCH /api/events/:id/admin-notes — Admin-only internal notes on an event
 router.patch(
   '/:id/admin-notes',
