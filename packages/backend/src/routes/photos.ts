@@ -2068,6 +2068,48 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/activity — Recent activity feed (uploads, likes, comments)
+router.get('/:eventId/photos/activity', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const limit = Math.min(50, parseInt(req.query.limit as string, 10) || 20);
+
+    const [uploads, likes, comments] = await Promise.all([
+      prisma.photo.findMany({
+        where: { eventId, deletedAt: null },
+        select: { id: true, url: true, uploadedBy: true, createdAt: true },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      }),
+      prisma.photoLike.findMany({
+        where: { photo: { eventId } },
+        select: { id: true, photoId: true, guestId: true, createdAt: true },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      }),
+      prisma.photoComment.findMany({
+        where: { photo: { eventId } },
+        select: { id: true, photoId: true, authorName: true, comment: true, createdAt: true },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      }),
+    ]);
+
+    const feed = [
+      ...uploads.map((u: any) => ({ type: 'upload', id: u.id, photoId: u.id, actor: u.uploadedBy, createdAt: u.createdAt })),
+      ...likes.map((l: any) => ({ type: 'like', id: l.id, photoId: l.photoId, actor: l.guestId, createdAt: l.createdAt })),
+      ...comments.map((c: any) => ({ type: 'comment', id: c.id, photoId: c.photoId, actor: c.authorName, content: c.comment, createdAt: c.createdAt })),
+    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, limit);
+
+    res.json({ feed, count: feed.length });
+  } catch (error: any) {
+    logger.error('Activity feed error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/retention-stats — Photo age distribution buckets
 router.get('/:eventId/photos/retention-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
