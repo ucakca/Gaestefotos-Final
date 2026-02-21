@@ -2068,6 +2068,42 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/by-orientation — Photos grouped by orientation (portrait/landscape/square)
+router.get('/:eventId/photos/by-orientation', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { exifData: true },
+    });
+
+    let portrait = 0, landscape = 0, square = 0, unknown = 0;
+    for (const p of photos) {
+      const exif = p.exifData as any;
+      const orientation = exif?.Orientation ?? exif?.orientation;
+      if (!orientation) { unknown++; continue; }
+      const o = Number(orientation);
+      if (o === 1 || o === 3) landscape++;
+      else if (o === 6 || o === 8) portrait++;
+      else if (o === 5 || o === 7) square++;
+      else unknown++;
+    }
+
+    const total = photos.length;
+    res.json({
+      portrait, landscape, square, unknown,
+      total,
+      portraitRate: total > 0 ? Math.round((portrait / total) * 100) : 0,
+      landscapeRate: total > 0 ? Math.round((landscape / total) * 100) : 0,
+    });
+  } catch (error: any) {
+    logger.error('By-orientation error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/by-status — Photos grouped by status
 router.get('/:eventId/photos/by-status', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
