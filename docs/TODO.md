@@ -660,6 +660,13 @@
 | S26-469 | **Guestbook-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/guestbook/stats (status enum) |
 | S26-470 | **Story-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/stories/stats (expiresAt) |
 | S26-471 | **Sprint S26 Checkpoint** | ✅ erledigt (21.02.2026) | 471 Features in Sprint S26 implementiert + deployed |
+| S26-472 | **Bulk Set-Favorite** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/set-favorite (isFavorite boolean) |
+| S26-473 | **Bulk Set-Category** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/set-category (categoryId nullable) |
+| S26-474 | **Bulk Remove-Tag** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/remove-tag (filter aus Array) |
+| S26-475 | **Bulk Add-Tag** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/add-tag (push + dedup) |
+| S26-476 | **Bulk Approve/Reject** | ✅ erledigt (21.02.2026) | POST /photos/bulk/approve + /reject |
+| S26-477 | **Status-Timeline** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/status-timeline (updatedAt desc) |
+| S26-478 | **Sprint S26 Abschluss** | ✅ erledigt (21.02.2026) | 478 Features in Sprint S26 implementiert + deployed |
 
 ---
 
