@@ -807,6 +807,10 @@
 | S26-616 | **Category-Leader** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-leader (best photo per category by quality+views) |
 | S26-617 | **Guest-Leaderboard** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/guest-leaderboard (top20 guests by photoCount+totalViews) |
 | S26-618 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 618 Features in Sprint S26 implementiert + deployed |
+| S26-619 | **EXIF-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/exif-stats (exifRate%/gpsRate%/faceDataRate%) |
+| S26-620 | **Geo-Coverage** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/geo-coverage (bounding box + center of all GPS photos) |
+| S26-621 | **Caption-Leader** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/caption-leader (top20 titled photos by view count) |
+| S26-622 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 622 Features in Sprint S26 implementiert + deployed |
 
 ---
 
