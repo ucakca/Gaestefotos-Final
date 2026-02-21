@@ -688,6 +688,14 @@
 | S26-497 | **Story-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/stories/stats (active/expired) |
 | S26-498 | **Challenge-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/challenges/stats (completions) |
 | S26-499 | **Sprint S26 Final** | ✅ erledigt (21.02.2026) | 499 Features in Sprint S26 implementiert + deployed |
+| S26-500 | **🏆 500 Features Meilenstein** | ✅ erledigt (21.02.2026) | Weekly-Stats GET /events/:id/photos/weekly-stats (ISO Monday key) |
+| S26-501 | **Status-Timeline** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/status-timeline (updatedAt desc) |
+| S26-502 | **Bulk Restore** | ✅ erledigt (21.02.2026) | POST /photos/bulk/restore (deletedAt = null) |
+| S26-503 | **Bulk Soft-Delete** | ✅ erledigt (21.02.2026) | DELETE /photos/bulk/delete (deletedAt = now) |
+| S26-504 | **Bulk Set-Favorite** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/set-favorite (isFavorite) |
+| S26-505 | **Bulk Set-Category** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/set-category (categoryId) |
+| S26-506 | **Bulk Remove-Tag** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/remove-tag (filter) |
+| S26-507 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 507 Features in Sprint S26 implementiert + deployed |
 
 ---
 
