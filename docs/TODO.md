@@ -781,6 +781,9 @@
 | S26-590 | **Blur-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/blur-stats (quality buckets low/mid/high + avgQualityScore) |
 | S26-591 | **AI-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/ai-stats (title/description/tags/face enrichment rates%) |
 | S26-592 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 592 Features in Sprint S26 implementiert + deployed |
+| S26-593 | **Favorite-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/favorite-stats (favorites/storyOnly/bestInGroup rates%) |
+| S26-594 | **Duplicate-Group-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/duplicate-group-stats (dupeRate%/groupCount/avgGroupSize) |
+| S26-595 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 595 Features in Sprint S26 implementiert + deployed |
 
 ---
 
