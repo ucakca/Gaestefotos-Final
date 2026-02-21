@@ -2068,6 +2068,33 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/like-stats — Like statistics per event
+router.get('/:eventId/photos/like-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const totalLikes = await prisma.photoLike.count({ where: { photo: { eventId } } });
+    const topLiked = await prisma.photoLike.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 5,
+    });
+
+    const totalPhotos = await prisma.photo.count({ where: { eventId, deletedAt: null } });
+    res.json({
+      totalLikes,
+      avgLikesPerPhoto: totalPhotos > 0 ? Math.round((totalLikes / totalPhotos) * 100) / 100 : 0,
+      topLiked: topLiked.map((l: any) => ({ photoId: l.photoId, likeCount: l._count.id })),
+    });
+  } catch (error: any) {
+    logger.error('Like stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/tag-cloud — Top 100 tags sorted by frequency
 router.get('/:eventId/photos/tag-cloud', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
