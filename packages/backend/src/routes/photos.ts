@@ -2068,6 +2068,48 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/summary — Aggregated dashboard summary (all key stats)
+router.get('/:eventId/photos/summary', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [
+      total, approved, pending, rejected,
+      favorites, storyOnly, withGeo, deleted,
+      totalLikes, totalViews,
+    ] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, status: 'APPROVED' } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, status: 'PENDING' } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, status: 'REJECTED' } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, isFavorite: true } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, isStoryOnly: true } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, latitude: { not: null }, longitude: { not: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: { not: null } } }),
+      prisma.photoLike.count({ where: { photo: { eventId } } }),
+      prisma.photo.aggregate({ where: { eventId, deletedAt: null }, _sum: { views: true } }),
+    ]);
+
+    const sizeResult = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null },
+      _sum: { sizeBytes: true },
+    });
+
+    res.json({
+      total, approved, pending, rejected,
+      favorites, storyOnly, withGeo, deleted,
+      totalLikes,
+      totalViews: (totalViews as any)._sum?.views || 0,
+      totalSizeMB: sizeResult._sum.sizeBytes ? Math.round(Number(sizeResult._sum.sizeBytes) / 1024 / 1024 * 100) / 100 : 0,
+      approvalRate: total > 0 ? Math.round((approved / total) * 100) : 0,
+    });
+  } catch (error: any) {
+    logger.error('Summary error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/weekday-stats — Uploads per weekday (0=Sun..6=Sat)
 router.get('/:eventId/photos/weekday-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
