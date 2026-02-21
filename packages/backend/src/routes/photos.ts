@@ -2068,6 +2068,30 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/like-stats — Photo like statistics
+router.get('/:eventId/photos/like-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [totalLikes, photosWithLikes, totalPhotos] = await Promise.all([
+      prisma.photoLike.count({ where: { photo: { eventId } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, likes: { some: {} } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+    ]);
+
+    res.json({
+      totalLikes,
+      photosWithLikes,
+      photosWithoutLikes: totalPhotos - photosWithLikes,
+      avgLikesPerPhoto: totalPhotos > 0 ? Math.round((totalLikes / totalPhotos) * 100) / 100 : 0,
+    });
+  } catch (error: any) {
+    logger.error('Like stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/favorite-stats — Favorite photo statistics
 router.get('/:eventId/photos/favorite-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
