@@ -674,6 +674,13 @@
 | S26-483 | **Bulk Add-Tag** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/add-tag (push + dedup) |
 | S26-484 | **Bulk Approve/Reject** | ✅ erledigt (21.02.2026) | POST /photos/bulk/approve + /reject (updateMany) |
 | S26-485 | **Sprint S26 Final** | ✅ erledigt (21.02.2026) | 485 Features in Sprint S26 implementiert + deployed |
+| S26-486 | **Bulk Restore** | ✅ erledigt (21.02.2026) | POST /photos/bulk/restore (deletedAt = null) |
+| S26-487 | **Bulk Soft-Delete** | ✅ erledigt (21.02.2026) | DELETE /photos/bulk/delete (deletedAt = now) |
+| S26-488 | **Bulk Set-Favorite** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/set-favorite (isFavorite) |
+| S26-489 | **Bulk Set-Category** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/set-category (categoryId) |
+| S26-490 | **Bulk Remove-Tag** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/remove-tag (filter) |
+| S26-491 | **Bulk Add-Tag** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/add-tag (push dedup) |
+| S26-492 | **Sprint S26 Abschluss** | ✅ erledigt (21.02.2026) | 492 Features in Sprint S26 implementiert + deployed |
 
 ---
 
