@@ -2069,6 +2069,96 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/gps-cluster — GPS cluster summary (count per 1-degree grid cell)
+router.get('/:eventId/photos/gps-cluster', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, latitude: { not: null }, longitude: { not: null } },
+      select: { id: true, latitude: true, longitude: true },
+    });
+
+    const cellMap: Record<string, { lat: number; lng: number; count: number }> = {};
+    for (const p of photos) {
+      const cellLat = Math.floor(p.latitude!);
+      const cellLng = Math.floor(p.longitude!);
+      const key = `${cellLat}:${cellLng}`;
+      if (!cellMap[key]) cellMap[key] = { lat: cellLat, lng: cellLng, count: 0 };
+      cellMap[key].count++;
+    }
+
+    const clusters = Object.values(cellMap).sort((a, b) => b.count - a.count);
+    res.json({ total: photos.length, clusters });
+  } catch (error: any) {
+    logger.error('GPS cluster error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/top-rated-guests — Top20 guests by avg vote rating on their photos
+router.get('/:eventId/photos/top-rated-guests', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const votes = await prisma.photoVote.findMany({
+      where: { photo: { eventId, deletedAt: null } },
+      select: { rating: true, photo: { select: { guestId: true } } },
+    });
+
+    const guestMap: Record<string, { ratingSum: number; count: number }> = {};
+    for (const v of votes) {
+      const gid = v.photo.guestId;
+      if (!gid) continue;
+      if (!guestMap[gid]) guestMap[gid] = { ratingSum: 0, count: 0 };
+      guestMap[gid].ratingSum += v.rating;
+      guestMap[gid].count++;
+    }
+
+    const guests = Object.entries(guestMap)
+      .map(([guestId, d]) => ({ guestId, voteCount: d.count, avgRating: Math.round((d.ratingSum / d.count) * 100) / 100 }))
+      .sort((a, b) => b.avgRating - a.avgRating)
+      .slice(0, 20);
+
+    res.json({ guests });
+  } catch (error: any) {
+    logger.error('Top rated guests error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/approval-lag — Avg time (hours) between upload and APPROVED status change
+router.get('/:eventId/photos/approval-lag', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, status: 'APPROVED' },
+      select: { createdAt: true, updatedAt: true },
+    });
+
+    if (photos.length === 0) return res.json({ total: 0, avgLagHours: null });
+
+    const lags = photos.map((p) => (p.updatedAt.getTime() - p.createdAt.getTime()) / 3_600_000);
+    const avgLag = lags.reduce((s, l) => s + l, 0) / lags.length;
+    const minLag = Math.min(...lags);
+    const maxLag = Math.max(...lags);
+
+    res.json({
+      total: photos.length,
+      avgLagHours: Math.round(avgLag * 10) / 10,
+      minLagHours: Math.round(minLag * 10) / 10,
+      maxLagHours: Math.round(maxLag * 10) / 10,
+    });
+  } catch (error: any) {
+    logger.error('Approval lag error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/status-breakdown — Photo count per status
 router.get('/:eventId/photos/status-breakdown', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
