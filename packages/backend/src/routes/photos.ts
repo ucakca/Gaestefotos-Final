@@ -2068,6 +2068,36 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/monthly-stats — Uploads per month
+router.get('/:eventId/photos/monthly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const monthMap: Record<string, number> = {};
+    for (const p of photos) {
+      const d = new Date(p.createdAt);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      monthMap[key] = (monthMap[key] || 0) + 1;
+    }
+
+    const months = Object.entries(monthMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, count]) => ({ month, count }));
+
+    res.json({ months, totalMonths: months.length });
+  } catch (error: any) {
+    logger.error('Monthly stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/weekly-stats — Uploads per week (last 8 weeks)
 router.get('/:eventId/photos/weekly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
