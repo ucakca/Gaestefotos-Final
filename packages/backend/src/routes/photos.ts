@@ -2069,6 +2069,107 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/top-voted-today — Top10 photos by votes cast today
+router.get('/:eventId/photos/top-voted-today', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const grouped = await prisma.photoVote.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, deletedAt: null }, createdAt: { gte: startOfDay } },
+      _count: { id: true },
+      _avg: { rating: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 10,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true, status: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      ...(photos.find((p) => p.id === g.photoId) || {}),
+      votesToday: g._count.id,
+      avgRating: Math.round((g._avg.rating || 0) * 10) / 10,
+    }));
+
+    res.json({ photos: result, date: startOfDay.toISOString().slice(0, 10) });
+  } catch (error: any) {
+    logger.error('Top voted today error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/cumulative-upload-trend — Cumulative upload count per day
+router.get('/:eventId/photos/cumulative-upload-trend', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const dayMap: Record<string, number> = {};
+    for (const p of photos) {
+      const day = p.createdAt.toISOString().slice(0, 10);
+      dayMap[day] = (dayMap[day] || 0) + 1;
+    }
+
+    let cumulative = 0;
+    const trend = Object.entries(dayMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, count]) => {
+        cumulative += count;
+        return { date, dailyCount: count, cumulative };
+      });
+
+    res.json({ trend, total: cumulative });
+  } catch (error: any) {
+    logger.error('Cumulative upload trend error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/approval-funnel — Full approval funnel: uploaded → pending → approved → liked
+router.get('/:eventId/photos/approval-funnel', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, pending, approved, rejected, likedPhotos] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, status: 'PENDING' } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, status: 'APPROVED' } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, status: 'REJECTED' } }),
+      prisma.photoLike.groupBy({ by: ['photoId'], where: { photo: { eventId } }, orderBy: { photoId: 'asc' }, take: 10000 }),
+    ]);
+
+    const photosWithLikes = (likedPhotos as unknown as any[]).length;
+
+    const funnel = [
+      { stage: 'Uploaded', count: total, pct: 100 },
+      { stage: 'Pending Review', count: pending, pct: total > 0 ? Math.round((pending / total) * 100) : 0 },
+      { stage: 'Approved', count: approved, pct: total > 0 ? Math.round((approved / total) * 100) : 0 },
+      { stage: 'Rejected', count: rejected, pct: total > 0 ? Math.round((rejected / total) * 100) : 0 },
+      { stage: 'Received a Like', count: photosWithLikes, pct: approved > 0 ? Math.round((photosWithLikes / approved) * 100) : 0 },
+    ];
+
+    res.json({ funnel });
+  } catch (error: any) {
+    logger.error('Approval funnel error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top-commented-today — Top10 photos by comments added today
 router.get('/:eventId/photos/top-commented-today', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
