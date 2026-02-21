@@ -791,6 +791,10 @@
 | S26-600 | **Vote-Distribution** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/vote-distribution (1-5 buckets+pct%+avg) |
 | S26-601 | **Engagement-Score** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/engagement-score (views*0.1+likes*2+comments*3 top20) |
 | S26-602 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 602 Features in Sprint S26 implementiert + deployed |
+| S26-603 | **Geo-Cluster** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/geo-cluster (lat/lng grid precision=2 top50 clusters+ids) |
+| S26-604 | **Like-Leader** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/like-leader (top20 by like count) |
+| S26-605 | **Status-Timeline** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/status-timeline (per-day PENDING/APPROVED/REJECTED counts) |
+| S26-606 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 606 Features in Sprint S26 implementiert + deployed |
 
 ---
 
