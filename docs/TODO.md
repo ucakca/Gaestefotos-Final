@@ -827,6 +827,10 @@
 | S26-636 | **Quality-Top-Approved** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/quality-top-approved (top20 APPROVED by qualityScore) |
 | S26-637 | **Hash-Collision** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/hash-collision (perceptualHash near-dupe groups top20) |
 | S26-638 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 638 Features in Sprint S26 implementiert + deployed |
+| S26-639 | **Vote-Timeline** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/vote-timeline (votes per day + avgRating per day) |
+| S26-640 | **Upload-Hour-Distribution** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/upload-hour-distribution (upload count per hour 0-23 + peakHour) |
+| S26-641 | **Quality-Distribution** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/quality-distribution (qualityScore histogram 10-point buckets) |
+| S26-642 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 642 Features in Sprint S26 implementiert + deployed |
 
 ---
 
