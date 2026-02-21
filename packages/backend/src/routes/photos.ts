@@ -2068,6 +2068,31 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/random — Random selection of approved photos
+router.get('/:eventId/photos/random', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const count = Math.min(50, parseInt(req.query.count as string, 10) || 12);
+
+    const total = await prisma.photo.count({ where: { eventId, deletedAt: null, status: 'APPROVED' } });
+    const skip = total > count ? Math.floor(Math.random() * (total - count)) : 0;
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, status: 'APPROVED' },
+      select: { id: true, url: true, storagePathThumb: true, uploadedBy: true, createdAt: true },
+      skip,
+      take: count,
+    });
+
+    res.json({ photos, count: photos.length, total });
+  } catch (error: any) {
+    logger.error('Random photos error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/recent — Last N uploaded photos
 router.get('/:eventId/photos/recent', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
