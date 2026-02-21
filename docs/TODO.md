@@ -583,6 +583,13 @@
 | S26-392 | **Daily-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/daily-stats (dailyMap asc) |
 | S26-393 | **Approval-Rate** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/approval-rate (approved/pending) |
 | S26-394 | **Sprint S26 Checkpoint** | ✅ erledigt (21.02.2026) | 394 Features in Sprint S26 implementiert + deployed |
+| S26-395 | **Admin Guest Stats** | ✅ erledigt (21.02.2026) | GET /admin/guests/stats via guests router (total/accepted/withEmail) |
+| S26-396 | **Admin Global Photo-Stats** | ✅ erledigt (21.02.2026) | GET /admin/photos/global-stats (views/approvalRate%) |
+| S26-397 | **Admin Event Summary** | ✅ erledigt (21.02.2026) | GET /admin/events/summary-stats (active/withPhotos) |
+| S26-398 | **Admin User-Stats** | ✅ erledigt (21.02.2026) | GET /admin/users/stats (locked/admins/newThisWeek) |
+| S26-399 | **Admin Storage-Stats** | ✅ erledigt (21.02.2026) | GET /admin/events/storage-stats (topEvents by photoCount) |
+| S26-400 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 400 Features in Sprint S26 implementiert + deployed |
+| S26-401 | **Gast Summary** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/summary (total/accepted/plusOnes) |
 
 ---
 
