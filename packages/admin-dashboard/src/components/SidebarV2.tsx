@@ -42,6 +42,7 @@ import {
   ScanSearch,
   Bug,
   Activity,
+  FolderOpen,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -129,6 +130,8 @@ const navigation: NavGroup[] = [
       { name: 'Backups', href: '/system/backups', icon: RefreshCw },
       { name: 'Debug Console', href: '/system/debug', icon: Bug },
       { name: 'Wartungsmodus', href: '/settings/maintenance', icon: Wrench },
+      { name: 'CDN File Browser', href: '/system/cdn-browser', icon: FolderOpen },
+      { name: 'Domain-Übersicht', href: '/system/domains', icon: Globe },
     ],
   },
   {

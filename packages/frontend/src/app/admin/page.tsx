@@ -52,8 +52,8 @@ const sections: { title: string; items: AdminLink[] }[] = [
       { href: '/admin/storage', label: 'Storage-Statistiken', description: 'Top-Events nach Speicherverbrauch, Gesamt-Storage, Foto-Anzahl', icon: HardDrive, color: 'text-teal-500' },
       { href: '/admin/ops', label: 'Server-Status', description: 'RAM, CPU, Disk, Uptime, PostgreSQL & Redis Status', icon: Server, color: 'text-blue-500' },
       { href: '/admin/ai-monitoring', label: 'KI-Provider Status', description: 'Provider-Monitoring: Latenz, Fehlerrate, API-Status', icon: Database, color: 'text-cyan-500' },
-      { href: '/admin/cdn-browser', label: 'CDN File Browser', description: 'SeaweedFS Dateien durchsuchen, filtern, signierte Links generieren & herunterladen', icon: FolderOpen, color: 'text-blue-400' },
-      { href: '/admin/domains', label: 'Domain-Übersicht', description: 'Alle gästefotos.com Subdomains mit SSL-Status, CDN-Badge & Erreichbarkeits-Check', icon: Globe, color: 'text-purple-400' },
+      { href: 'https://dash.xn--gstefotos-v2a.com/system/cdn-browser', label: 'CDN File Browser', description: 'SeaweedFS Dateien durchsuchen, filtern, signierte Links generieren & herunterladen', icon: FolderOpen, color: 'text-blue-400' },
+      { href: 'https://dash.xn--gstefotos-v2a.com/system/domains', label: 'Domain-Übersicht', description: 'Alle gästefotos.com Subdomains mit SSL-Status, CDN-Badge & Erreichbarkeits-Check', icon: Globe, color: 'text-purple-400' },
     ],
   },
   {

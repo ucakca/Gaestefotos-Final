@@ -8,7 +8,7 @@ import {
   ChevronLeft, ChevronRight, X, Eye
 } from 'lucide-react';
 import api from '@/lib/api';
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -139,7 +139,7 @@ export default function CdnBrowserPage() {
     const keys = Array.from(selected);
     try {
       const { data } = await api.post('/admin/cdn/bulk-sign', { keys });
-      toast.info(`${data.urls.length} Download-Links generiert`);
+      toast(`${data.urls.length} Download-Links generiert`);
       // Download each file
       for (const { url, key } of data.urls) {
         const a = document.createElement('a');
