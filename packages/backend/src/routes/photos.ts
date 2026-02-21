@@ -2068,6 +2068,33 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// PATCH /photos/bulk/set-favorite — Mark multiple photos as favorite
+router.patch('/bulk/set-favorite', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { photoIds, isFavorite } = req.body as { photoIds: string[]; isFavorite: boolean };
+    if (!Array.isArray(photoIds) || !photoIds.length || typeof isFavorite !== 'boolean') {
+      return res.status(400).json({ error: 'photoIds (Array) und isFavorite (boolean) erforderlich' });
+    }
+
+    const photos = await prisma.photo.findMany({
+      where: { id: { in: photoIds } },
+      select: { id: true, eventId: true },
+    });
+
+    let updated = 0;
+    for (const photo of photos) {
+      if (!(await hasEventManageAccess(req, photo.eventId))) continue;
+      await prisma.photo.update({ where: { id: photo.id }, data: { isFavorite } });
+      updated++;
+    }
+
+    res.json({ updated, total: photoIds.length });
+  } catch (error: any) {
+    logger.error('Bulk set-favorite error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // PATCH /photos/bulk/set-category — Set category for multiple photos
 router.patch('/bulk/set-category', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
