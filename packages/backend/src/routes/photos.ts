@@ -2068,6 +2068,33 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/monthly-stats — Photos grouped by YYYY-MM
+router.get('/:eventId/photos/monthly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const monthMap: Record<string, number> = {};
+    for (const p of photos) {
+      const key = p.createdAt.toISOString().slice(0, 7);
+      monthMap[key] = (monthMap[key] || 0) + 1;
+    }
+
+    const months = Object.entries(monthMap).map(([month, count]) => ({ month, count }));
+    const peakMonth = months.reduce((a, b) => b.count > a.count ? b : a, { month: '', count: 0 });
+    res.json({ months, totalMonths: months.length, peakMonth: peakMonth.month, peakMonthCount: peakMonth.count });
+  } catch (error: any) {
+    logger.error('Monthly stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/comment-stats — Comment statistics per event
 router.get('/:eventId/photos/comment-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
