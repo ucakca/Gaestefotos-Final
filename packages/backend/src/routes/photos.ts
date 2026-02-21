@@ -2068,6 +2068,66 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/comment-stats — Comment statistics per event
+router.get('/:eventId/photos/comment-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const totalComments = await prisma.photoComment.count({ where: { photo: { eventId } } });
+    const topCommented = await prisma.photoComment.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 5,
+    });
+
+    const pendingComments = await prisma.photoComment.count({ where: { photo: { eventId }, status: 'PENDING' } });
+    const totalPhotos = await prisma.photo.count({ where: { eventId, deletedAt: null } });
+    res.json({
+      totalComments,
+      pendingComments,
+      avgCommentsPerPhoto: totalPhotos > 0 ? Math.round((totalComments / totalPhotos) * 100) / 100 : 0,
+      topCommented: topCommented.map((c: any) => ({ photoId: c.photoId, commentCount: c._count.id })),
+    });
+  } catch (error: any) {
+    logger.error('Comment stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/favorite-stats — Favorite photo statistics
+router.get('/:eventId/photos/favorite-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, favorites] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, isFavorite: true } }),
+    ]);
+
+    const topFavorites = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, isFavorite: true },
+      select: { id: true, url: true, title: true, uploadedBy: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
+
+    res.json({
+      total,
+      favorites,
+      notFavorites: total - favorites,
+      favoriteRate: total > 0 ? Math.round((favorites / total) * 100) : 0,
+      recentFavorites: topFavorites,
+    });
+  } catch (error: any) {
+    logger.error('Favorite stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/like-stats — Like statistics per event
 router.get('/:eventId/photos/like-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
