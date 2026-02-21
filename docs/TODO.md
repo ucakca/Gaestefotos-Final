@@ -875,6 +875,10 @@
 | S26-684 | **Storage-By-Status** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/storage-by-status (total storage MB per status) |
 | S26-685 | **Vote-Score-Distribution** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/vote-score-distribution (1-5 rating histogram + avgRating) |
 | S26-686 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 686 Features in Sprint S26 implementiert + deployed |
+| S26-687 | **Comment-Per-Photo-Avg** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/comment-per-photo-avg (avg comments per photo overall + per category) |
+| S26-688 | **Top-Liked-Guest-Photos** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-liked-guest-photos (top20 guest-uploaded photos by like count) |
+| S26-689 | **Upload-Spike** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/upload-spike (days with uploads exceeding 2x daily average) |
+| S26-690 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 690 Features in Sprint S26 implementiert + deployed |
 
 ---
 
