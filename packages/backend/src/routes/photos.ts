@@ -8607,5 +8607,36 @@ router.patch(
   }
 );
 
+// PATCH /bulk/caption — Set or clear AI captions for multiple photos
+router.patch(
+  '/bulk/caption',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { photoIds, caption, eventId } = req.body;
+      if (!Array.isArray(photoIds) || photoIds.length === 0) {
+        return res.status(400).json({ error: 'photoIds Array erforderlich' });
+      }
+      if (photoIds.length > 200) {
+        return res.status(400).json({ error: 'Max. 200 Fotos pro Aufruf' });
+      }
+      if (!eventId) return res.status(400).json({ error: 'eventId erforderlich' });
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Kein Zugriff' });
+      }
+
+      const result = await prisma.photo.updateMany({
+        where: { id: { in: photoIds }, eventId, deletedAt: null },
+        data: { title: caption ?? null },
+      });
+
+      res.json({ updated: result.count, caption: caption ?? null });
+    } catch (error: any) {
+      logger.error('Bulk caption error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Aktualisieren' });
+    }
+  }
+);
+
 export default router;
 
