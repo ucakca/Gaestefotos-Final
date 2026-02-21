@@ -710,6 +710,13 @@
 | S26-519 | **View-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/view-stats (totalViews/topPhoto) |
 | S26-520 | **Tag-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/tag-stats (top20/totalUniqueTags) |
 | S26-521 | **Deleted-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/deleted-stats (deletedRate%) |
+| S26-522 | **Purge-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/purge-stats (purgeAfter/overdue) |
+| S26-523 | **Hash-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/hash-stats (md5Rate%/perceptualRate%) |
+| S26-524 | **Guest-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/guest-stats (groupBy guestId top50) |
+| S26-525 | **Daily-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/daily-stats (YYYY-MM-DD key) |
+| S26-526 | **Hourly-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/hourly-stats (0-23 + peakHour) |
+| S26-527 | **Weekday-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/weekday-stats (0-6 + peakDay) |
+| S26-528 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 528 Features in Sprint S26 implementiert + deployed |
 
 ---
 
