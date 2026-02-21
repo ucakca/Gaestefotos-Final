@@ -767,6 +767,8 @@
 | S26-576 | **Top-Rated** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-rated (quality60%+voteAvg40% combinedScore top20) |
 | S26-577 | **Storage-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/storage-stats (totalMB/avgMB/format ext breakdown) |
 | S26-578 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 578 Features in Sprint S26 implementiert + deployed |
+| S26-579 | **Hourly-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/hourly-stats (0-23h buckets/peakHour/quietHour) |
+| S26-580 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 580 Features in Sprint S26 implementiert + deployed |
 
 ---
 
