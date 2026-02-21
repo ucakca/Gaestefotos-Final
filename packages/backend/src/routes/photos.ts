@@ -2068,6 +2068,29 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/by-category — Photos grouped by categoryId
+router.get('/:eventId/photos/by-category', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['categoryId'],
+      where: { eventId, deletedAt: null },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+    });
+
+    res.json({
+      categories: grouped.map((g: any) => ({ categoryId: g.categoryId || null, count: g._count.id })),
+      totalCategories: grouped.length,
+    });
+  } catch (error: any) {
+    logger.error('By-category error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/search — Full-text search by title, description, tags, uploadedBy
 router.get('/:eventId/photos/search', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
