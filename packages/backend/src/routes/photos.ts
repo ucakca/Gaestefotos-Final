@@ -2069,6 +2069,116 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/category-approval-rate — Approval rate per category
+router.get('/:eventId/photos/category-approval-rate', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, categoryId: { not: null } },
+      select: { categoryId: true, status: true },
+    });
+
+    const catMap: Record<string, { total: number; approved: number }> = {};
+    for (const p of photos) {
+      const cid = p.categoryId as string;
+      if (!catMap[cid]) catMap[cid] = { total: 0, approved: 0 };
+      catMap[cid].total++;
+      if (p.status === 'APPROVED') catMap[cid].approved++;
+    }
+
+    const catIds = Object.keys(catMap);
+    const categories = catIds.length > 0 ? await prisma.category.findMany({
+      where: { id: { in: catIds } },
+      select: { id: true, name: true },
+    }) : [];
+
+    const stats = Object.entries(catMap)
+      .map(([cid, d]) => ({
+        categoryId: cid,
+        categoryName: categories.find((c) => c.id === cid)?.name || null,
+        total: d.total,
+        approved: d.approved,
+        approvalRate: Math.round((d.approved / d.total) * 100),
+      }))
+      .sort((a, b) => b.approvalRate - a.approvalRate);
+
+    res.json({ stats });
+  } catch (error: any) {
+    logger.error('Category approval rate error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/top-voted-rejected — Top20 REJECTED photos by vote count
+router.get('/:eventId/photos/top-voted-rejected', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoVote.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, status: 'REJECTED', deletedAt: null } },
+      _count: { id: true },
+      _avg: { rating: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, qualityScore: true, uploadedBy: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      ...(photos.find((p) => p.id === g.photoId) || {}),
+      voteCount: g._count.id,
+      avgRating: Math.round((g._avg.rating || 0) * 10) / 10,
+    }));
+
+    res.json({ photos: result });
+  } catch (error: any) {
+    logger.error('Top voted rejected error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/monthly-summary — Photo/like/comment/vote totals per calendar month
+router.get('/:eventId/photos/monthly-summary', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [photos, likes, comments, votes] = await Promise.all([
+      prisma.photo.findMany({ where: { eventId, deletedAt: null }, select: { createdAt: true } }),
+      prisma.photoLike.findMany({ where: { photo: { eventId } }, select: { createdAt: true } }),
+      prisma.photoComment.findMany({ where: { photo: { eventId } }, select: { createdAt: true } }),
+      prisma.photoVote.findMany({ where: { photo: { eventId } }, select: { createdAt: true } }),
+    ]);
+
+    const monthMap: Record<string, { photos: number; likes: number; comments: number; votes: number }> = {};
+    const addTo = (arr: { createdAt: Date }[], key: 'photos' | 'likes' | 'comments' | 'votes') => {
+      for (const item of arr) {
+        const month = item.createdAt.toISOString().slice(0, 7);
+        if (!monthMap[month]) monthMap[month] = { photos: 0, likes: 0, comments: 0, votes: 0 };
+        monthMap[month][key]++;
+      }
+    };
+    addTo(photos, 'photos'); addTo(likes, 'likes'); addTo(comments, 'comments'); addTo(votes, 'votes');
+
+    const months = Object.entries(monthMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, d]) => ({ month, ...d, total: d.photos + d.likes + d.comments + d.votes }));
+
+    res.json({ months });
+  } catch (error: any) {
+    logger.error('Monthly summary error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top-stories — Top20 story-type photos by views
 router.get('/:eventId/photos/top-stories', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
