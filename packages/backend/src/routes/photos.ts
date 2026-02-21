@@ -2068,6 +2068,33 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/leaderboard — Top uploaders leaderboard
+router.get('/:eventId/photos/leaderboard', optionalAuthMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const limit = Math.min(20, parseInt(req.query.limit as string, 10) || 10);
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['uploadedBy'],
+      where: { eventId, status: 'APPROVED', deletedAt: null },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: limit,
+    });
+
+    res.json({
+      leaderboard: grouped.map((g: any, i: number) => ({
+        rank: i + 1,
+        name: g.uploadedBy || 'Anonym',
+        count: g._count.id,
+      })),
+    });
+  } catch (error: any) {
+    logger.error('Leaderboard error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 // GET /api/events/:eventId/photos/tag-stats — Tag usage statistics
 router.get('/:eventId/photos/tag-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
