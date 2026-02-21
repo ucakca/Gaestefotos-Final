@@ -2068,6 +2068,34 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/weekday-stats — Uploads per weekday (0=Sun..6=Sat)
+router.get('/:eventId/photos/weekday-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+    });
+
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const wdMap: Record<number, number> = {};
+    for (let d = 0; d < 7; d++) wdMap[d] = 0;
+    for (const p of photos) {
+      const wd = new Date(p.createdAt).getDay();
+      wdMap[wd]++;
+    }
+
+    const weekdays = Array.from({ length: 7 }, (_, d) => ({ weekday: d, name: dayNames[d], count: wdMap[d] }));
+
+    res.json({ weekdays, peakDay: weekdays.reduce((a, b) => b.count > a.count ? b : a).name });
+  } catch (error: any) {
+    logger.error('Weekday stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/hourly-stats — Uploads per hour of day (0-23)
 router.get('/:eventId/photos/hourly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
