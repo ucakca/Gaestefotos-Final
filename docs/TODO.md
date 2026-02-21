@@ -911,6 +911,10 @@
 | S26-720 | **Top-Quality-Today** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-quality-today (top10 photos by quality score uploaded today) |
 | S26-721 | **Upload-Hour-Distribution** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/upload-hour-distribution (upload count per UTC hour 0-23) |
 | S26-722 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 722 Features in Sprint S26 implementiert + deployed |
+| S26-723 | **Vote-Velocity** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/vote-velocity (top20 photos by votes-per-day since upload) |
+| S26-724 | **Top-Quality-This-Week** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-quality-this-week (top20 highest quality photos uploaded this week) |
+| S26-725 | **Rejected-By-Category** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/rejected-by-category (rejected count + rejection rate per category) |
+| S26-726 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 726 Features in Sprint S26 implementiert + deployed |
 
 ---
 
