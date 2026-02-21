@@ -2068,6 +2068,31 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/views-total — Total view count for event
+router.get('/:eventId/photos/views-total', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const result = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null },
+      _sum: { views: true },
+      _avg: { views: true },
+      _max: { views: true },
+      _count: { id: true },
+    });
+
+    res.json({
+      totalViews: result._sum.views || 0,
+      avgViews: Math.round((result._avg.views || 0) * 10) / 10,
+      maxViews: result._max.views || 0,
+      photoCount: result._count.id,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/favorites-count — Count of pinned/favorite photos
 router.get('/:eventId/photos/favorites-count', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
