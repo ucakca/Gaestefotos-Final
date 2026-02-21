@@ -726,6 +726,15 @@ router.post('/:id/test', authMiddleware, async (req: AuthRequest, res: Response)
         });
         success = resp.ok;
         message = success ? 'Stability API erreichbar' : `${resp.status} ${resp.statusText}`;
+      } else if (provider.slug.includes('fal')) {
+        const resp = await fetch('https://fal.run/fal-ai/flux/dev/image-to-image', {
+          method: 'POST',
+          headers: { 'Authorization': `Key ${apiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_url: 'https://fal.ai/favicon.ico', prompt: 'test', strength: 0.1, num_images: 1 }),
+        });
+        // 422 = bad input but auth worked; 401/403 = bad key
+        success = resp.ok || resp.status === 422 || resp.status === 400;
+        message = success ? `fal.ai API erreichbar (${resp.status})` : `fal.ai ${resp.status} ${resp.statusText}`;
       } else if (provider.slug.includes('remove') || provider.slug.includes('removebg') || provider.slug.includes('remove-bg')) {
         const resp = await fetch('https://api.remove.bg/v1.0/account', {
           headers: { 'X-Api-Key': apiKey },
