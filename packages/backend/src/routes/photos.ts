@@ -2068,6 +2068,29 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/votes-stats — Vote statistics for event
+router.get('/:eventId/photos/votes-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [totalVotes, photosWithVotes, avgRatingResult] = await Promise.all([
+      prisma.photoVote.count({ where: { photo: { eventId } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, votes: { some: {} } } }),
+      prisma.photoVote.aggregate({ where: { photo: { eventId } }, _avg: { rating: true } }),
+    ]);
+
+    res.json({
+      totalVotes,
+      photosWithVotes,
+      avgRating: Math.round(((avgRatingResult._avg.rating || 0) * 10)) / 10,
+    });
+  } catch (error: any) {
+    logger.error('Votes stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/comments-count — Total comments on approved photos
 router.get('/:eventId/photos/comments-count', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
