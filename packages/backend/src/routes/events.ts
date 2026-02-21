@@ -2349,6 +2349,62 @@ router.patch(
   }
 );
 
+// GET /api/events/:eventId/photos/quality-distribution — Quality score histogram (0-100%)
+router.get(
+  '/:eventId/photos/quality-distribution',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Kein Zugriff' });
+      }
+
+      const photos = await prisma.photo.findMany({
+        where: { eventId, deletedAt: null, qualityScore: { not: null } },
+        select: { qualityScore: true },
+      });
+
+      const total = await prisma.photo.count({ where: { eventId, deletedAt: null } });
+      const withScore = photos.length;
+
+      // Build 10-bucket histogram: 0-9, 10-19, ..., 90-100
+      const buckets = Array.from({ length: 10 }, (_, i) => ({
+        range: `${i * 10}-${i === 9 ? 100 : i * 10 + 9}%`,
+        min: i * 10 / 100,
+        max: i === 9 ? 1.01 : (i * 10 + 10) / 100,
+        count: 0,
+      }));
+
+      photos.forEach(({ qualityScore }) => {
+        if (qualityScore === null || qualityScore === undefined) return;
+        const idx = Math.min(9, Math.floor(qualityScore * 10));
+        buckets[idx].count++;
+      });
+
+      const avg = withScore > 0
+        ? photos.reduce((sum, p) => sum + (p.qualityScore || 0), 0) / withScore
+        : null;
+
+      res.json({
+        total,
+        withScore,
+        withoutScore: total - withScore,
+        averageScore: avg !== null ? Math.round(avg * 100) : null,
+        histogram: buckets.map(({ range, count }) => ({ range, count })),
+        quality: {
+          poor: photos.filter(p => (p.qualityScore || 0) < 0.4).length,
+          fair: photos.filter(p => (p.qualityScore || 0) >= 0.4 && (p.qualityScore || 0) < 0.7).length,
+          good: photos.filter(p => (p.qualityScore || 0) >= 0.7).length,
+        },
+      });
+    } catch (error: any) {
+      logger.error('Quality distribution error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Laden' });
+    }
+  }
+);
+
 // GET /api/events/:eventId/photos/geo-stats — Photos with GPS coordinates
 router.get(
   '/:eventId/photos/geo-stats',
