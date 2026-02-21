@@ -2068,6 +2068,38 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/category-progress — Photo counts per category with challenge completion
+router.get('/:eventId/photos/category-progress', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const categories = await prisma.category.findMany({
+      where: { eventId },
+      select: { id: true, name: true, challengeEnabled: true, _count: { select: { photos: true } } },
+      orderBy: { order: 'asc' },
+    });
+
+    const uncategorized = await prisma.photo.count({
+      where: { eventId, deletedAt: null, categoryId: null },
+    });
+
+    res.json({
+      categories: categories.map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        challengeEnabled: c.challengeEnabled,
+        photoCount: c._count.photos,
+      })),
+      uncategorized,
+      totalCategories: categories.length,
+    });
+  } catch (error: any) {
+    logger.error('Category progress error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/best-in-group — Best photos per duplicate group
 router.get('/:eventId/photos/best-in-group', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
