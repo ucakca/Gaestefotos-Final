@@ -2068,6 +2068,31 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/geo-cluster — Geographic bounding box + center point
+router.get('/:eventId/photos/geo-cluster', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const result = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null, latitude: { not: null }, longitude: { not: null } },
+      _min: { latitude: true, longitude: true },
+      _max: { latitude: true, longitude: true },
+      _avg: { latitude: true, longitude: true },
+      _count: { id: true },
+    });
+
+    res.json({
+      geoPhotos: result._count.id,
+      bbox: { minLat: result._min.latitude, maxLat: result._max.latitude, minLng: result._min.longitude, maxLng: result._max.longitude },
+      center: { lat: result._avg.latitude, lng: result._avg.longitude },
+    });
+  } catch (error: any) {
+    logger.error('Geo cluster error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/uploader-stats — Top uploaders by photo count
 router.get('/:eventId/photos/uploader-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
