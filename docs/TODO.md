@@ -941,6 +941,14 @@
 | S26-750 | **TEST-2: Lead-Erfassung geprüft** | ✅ erledigt (21.02.2026) | Route /api/leads registriert, Lead-Modell vorhanden, Dedup+CSV-Export+Stats vollständig |
 | S26-751 | **NF-5: CDN-Subdomain nginx-Config** | ✅ erledigt (21.02.2026) | /etc/nginx/sites-available/gaestefotos-cdn.conf (→ SeaweedFS :8333, CORS, Cache-Headers) |
 | S26-752 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 752 Features in Sprint S26 implementiert + deployed |
+| S26-753 | **S26-100: PushNotification Tabelle** | ✅ erledigt (21.02.2026) | model PushNotification (title/body/sentBy/recipientCount/successCount/failureCount) + prisma db push |
+| S26-754 | **S26-100: Push History Endpoints** | ✅ erledigt (21.02.2026) | GET /api/push/history (paginated) + POST /api/push/log |
+| S26-755 | **S26-128: adminNotes** | ✅ erledigt (21.02.2026) | Event.adminNotes String? + PATCH /api/events/:id/admin-notes (admin-only) |
+| S26-756 | **Feature 2: EXIF/Metadata Reader** | ✅ erledigt (21.02.2026) | GET /api/photos/:id/exif (sharp.metadata + PNG tEXt Chunk Parser + A1111 SD-Params) |
+| S26-757 | **Push-History Frontend** | ✅ erledigt (21.02.2026) | /admin/push-history (Tabelle: Titel/Empfänger/Erfolg/Fehler/Zeit/Ziel) |
+| S26-758 | **Admin-Hub erweitert** | ✅ erledigt (21.02.2026) | Push-Verlauf Link in KI-System Sektion des Admin-Hubs |
+| S26-759 | **TD-2/TD-7 geprüft** | ✅ erledigt (21.02.2026) | InvitationCanvas: Text/Image/Shape/QR implementiert. useKeyboardShortcuts: Cmd+A vorhanden |
+| S26-760 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 760 Features in Sprint S26 implementiert + deployed |
 
 ---
 
