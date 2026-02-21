@@ -2068,6 +2068,61 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/favorite-stats — Favorite/story-only photos
+router.get('/:eventId/photos/favorite-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, favorites, storyOnly, bestInGroup] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, isFavorite: true } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, isStoryOnly: true } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, isBestInGroup: true } }),
+    ]);
+
+    res.json({
+      total, favorites, storyOnly, bestInGroup,
+      favoriteRate: total > 0 ? Math.round((favorites / total) * 100) : 0,
+      storyOnlyRate: total > 0 ? Math.round((storyOnly / total) * 100) : 0,
+    });
+  } catch (error: any) {
+    logger.error('Favorite stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/duplicate-group-stats — Duplicate group statistics
+router.get('/:eventId/photos/duplicate-group-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, inGroup, uniqueGroups] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, duplicateGroupId: { not: null } } }),
+      prisma.photo.groupBy({
+        by: ['duplicateGroupId'],
+        where: { eventId, deletedAt: null, duplicateGroupId: { not: null } },
+        _count: { id: true },
+      }),
+    ]);
+
+    const groupSizes = uniqueGroups as any[];
+    const avgGroupSize = groupSizes.length > 0 ? Math.round((inGroup / groupSizes.length) * 10) / 10 : 0;
+
+    res.json({
+      total, inDuplicateGroup: inGroup,
+      duplicateGroupCount: groupSizes.length,
+      dupeRate: total > 0 ? Math.round((inGroup / total) * 100) : 0,
+      avgGroupSize,
+    });
+  } catch (error: any) {
+    logger.error('Duplicate group stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/blur-stats — Blur detection statistics
 router.get('/:eventId/photos/blur-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
