@@ -2069,6 +2069,87 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/vote-timeline — Votes per day timeline
+router.get('/:eventId/photos/vote-timeline', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const votes = await prisma.photoVote.findMany({
+      where: { photo: { eventId } },
+      select: { createdAt: true, rating: true },
+    });
+
+    const dayMap: Record<string, { count: number; ratingSum: number }> = {};
+    for (const v of votes) {
+      const day = v.createdAt.toISOString().slice(0, 10);
+      if (!dayMap[day]) dayMap[day] = { count: 0, ratingSum: 0 };
+      dayMap[day].count++;
+      dayMap[day].ratingSum += v.rating;
+    }
+
+    const timeline = Object.entries(dayMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, d]) => ({ date, count: d.count, avgRating: Math.round((d.ratingSum / d.count) * 10) / 10 }));
+
+    res.json({ totalVotes: votes.length, timeline });
+  } catch (error: any) {
+    logger.error('Vote timeline error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/upload-hour-distribution — Upload count per hour-of-day (0-23)
+router.get('/:eventId/photos/upload-hour-distribution', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+    });
+
+    const hours = Array.from({ length: 24 }, (_, i) => ({ hour: i, count: 0 }));
+    for (const p of photos) {
+      hours[p.createdAt.getUTCHours()].count++;
+    }
+
+    const peakHour = hours.reduce((max, h) => h.count > max.count ? h : max, hours[0]);
+    res.json({ total: photos.length, hours, peakHour: peakHour.hour });
+  } catch (error: any) {
+    logger.error('Upload hour distribution error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/quality-distribution — qualityScore histogram (0-100 in 10-point buckets)
+router.get('/:eventId/photos/quality-distribution', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, qualityScore: { not: null } },
+      select: { qualityScore: true },
+    });
+
+    const buckets = Array.from({ length: 10 }, (_, i) => ({ range: `${i * 10}-${(i + 1) * 10}`, min: i * 10, max: (i + 1) * 10, count: 0 }));
+    for (const p of photos) {
+      const idx = Math.min(Math.floor((p.qualityScore as number) / 10), 9);
+      buckets[idx].count++;
+    }
+
+    const total = photos.length;
+    const withScore = buckets.map((b) => ({ ...b, pct: total > 0 ? Math.round((b.count / total) * 100) : 0 }));
+
+    res.json({ total, buckets: withScore });
+  } catch (error: any) {
+    logger.error('Quality distribution error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/comment-timeline — Comments per day timeline
 router.get('/:eventId/photos/comment-timeline', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
