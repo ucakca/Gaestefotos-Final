@@ -2068,6 +2068,24 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/favorite-stats — Favorite photo statistics
+router.get('/:eventId/photos/favorite-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, favorites] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, isFavorite: true } }),
+    ]);
+
+    res.json({ total, favorites, nonFavorites: total - favorites, favoriteRate: total > 0 ? Math.round((favorites / total) * 100) : 0 });
+  } catch (error: any) {
+    logger.error('Favorite stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/story-only-stats — Story-only photo statistics
 router.get('/:eventId/photos/story-only-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
