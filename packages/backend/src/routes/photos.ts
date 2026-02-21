@@ -2068,6 +2068,34 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/daily-stats — Uploads per day
+router.get('/:eventId/photos/daily-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const dailyMap = new Map<string, number>();
+    for (const p of photos) {
+      const day = new Date(p.createdAt).toISOString().split('T')[0];
+      dailyMap.set(day, (dailyMap.get(day) || 0) + 1);
+    }
+
+    res.json({
+      dailyStats: Array.from(dailyMap.entries()).map(([date, count]) => ({ date, count })),
+      totalDays: dailyMap.size,
+    });
+  } catch (error: any) {
+    logger.error('Daily stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 // GET /api/events/:eventId/photos/hourly-stats — Upload distribution by hour of day
 router.get('/:eventId/photos/hourly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
