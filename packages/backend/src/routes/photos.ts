@@ -2068,6 +2068,92 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/exif-stats — EXIF technical statistics (GPS/focal/ISO/shutter)
+router.get('/:eventId/photos/exif-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { exifData: true },
+    });
+
+    let withGps = 0, withFocal = 0, withIso = 0, withShutter = 0;
+    const isoValues: number[] = [];
+    const focalValues: number[] = [];
+
+    for (const p of photos) {
+      const exif = p.exifData as any;
+      if (!exif || typeof exif !== 'object') continue;
+      if (exif.latitude || exif.GPSLatitude) withGps++;
+      if (exif.focalLength || exif.FocalLength) { withFocal++; const v = parseFloat(exif.focalLength || exif.FocalLength); if (!isNaN(v)) focalValues.push(v); }
+      if (exif.iso || exif.ISO) { withIso++; const v = parseInt(exif.iso || exif.ISO, 10); if (!isNaN(v)) isoValues.push(v); }
+      if (exif.shutterSpeed || exif.ExposureTime) withShutter++;
+    }
+
+    const total = photos.length;
+    res.json({
+      total,
+      withGps, gpsRate: total > 0 ? Math.round((withGps / total) * 100) : 0,
+      withFocal, focalRate: total > 0 ? Math.round((withFocal / total) * 100) : 0,
+      withIso, isoRate: total > 0 ? Math.round((withIso / total) * 100) : 0,
+      withShutter, shutterRate: total > 0 ? Math.round((withShutter / total) * 100) : 0,
+      avgIso: isoValues.length > 0 ? Math.round(isoValues.reduce((a, b) => a + b, 0) / isoValues.length) : null,
+      avgFocal: focalValues.length > 0 ? Math.round(focalValues.reduce((a, b) => a + b, 0) / focalValues.length * 10) / 10 : null,
+    });
+  } catch (error: any) {
+    logger.error('EXIF stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/resolution-stats — Image dimension statistics (from exifData)
+router.get('/:eventId/photos/resolution-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { exifData: true },
+    });
+
+    const buckets: Record<string, number> = { '<1MP': 0, '1-4MP': 0, '4-12MP': 0, '12-25MP': 0, '>25MP': 0 };
+    let withDimensions = 0;
+    const widths: number[] = [], heights: number[] = [];
+
+    for (const p of photos) {
+      const exif = p.exifData as any;
+      if (!exif || typeof exif !== 'object') continue;
+      const w = exif.imageWidth || exif.ExifImageWidth || exif.PixelXDimension || exif.width;
+      const h = exif.imageHeight || exif.ExifImageHeight || exif.PixelYDimension || exif.height;
+      if (!w || !h) continue;
+      withDimensions++;
+      widths.push(Number(w)); heights.push(Number(h));
+      const mp = (Number(w) * Number(h)) / 1e6;
+      if (mp < 1) buckets['<1MP']++;
+      else if (mp < 4) buckets['1-4MP']++;
+      else if (mp < 12) buckets['4-12MP']++;
+      else if (mp < 25) buckets['12-25MP']++;
+      else buckets['>25MP']++;
+    }
+
+    const avgWidth = widths.length > 0 ? Math.round(widths.reduce((a, b) => a + b, 0) / widths.length) : null;
+    const avgHeight = heights.length > 0 ? Math.round(heights.reduce((a, b) => a + b, 0) / heights.length) : null;
+
+    res.json({
+      withDimensions, avgWidth, avgHeight,
+      maxWidth: widths.length > 0 ? Math.max(...widths) : null,
+      maxHeight: heights.length > 0 ? Math.max(...heights) : null,
+      megapixelBuckets: Object.entries(buckets).map(([label, count]) => ({ label, count })),
+    });
+  } catch (error: any) {
+    logger.error('Resolution stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/camera-stats — EXIF camera make/model statistics
 router.get('/:eventId/photos/camera-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
