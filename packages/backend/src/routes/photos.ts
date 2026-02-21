@@ -2069,6 +2069,94 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/thumbnail-coverage — Thumbnail/WebP coverage rates
+router.get('/:eventId/photos/thumbnail-coverage', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, withThumb, withWebp, withOriginal] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, storagePathThumb: { not: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, storagePathWebp: { not: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, storagePathOriginal: { not: null } } }),
+    ]);
+
+    res.json({
+      total,
+      withThumb, thumbRate: total > 0 ? Math.round((withThumb / total) * 100) : 0,
+      withWebp, webpRate: total > 0 ? Math.round((withWebp / total) * 100) : 0,
+      withOriginal, originalRate: total > 0 ? Math.round((withOriginal / total) * 100) : 0,
+    });
+  } catch (error: any) {
+    logger.error('Thumbnail coverage error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/view-stats — View count aggregate statistics
+router.get('/:eventId/photos/view-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, withViews, agg] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, views: { gt: 0 } } }),
+      prisma.photo.aggregate({
+        where: { eventId, deletedAt: null },
+        _avg: { views: true },
+        _max: { views: true },
+        _sum: { views: true },
+      }),
+    ]);
+
+    const top10 = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, views: { gt: 0 } },
+      select: { id: true, url: true, title: true, views: true },
+      orderBy: { views: 'desc' },
+      take: 10,
+    });
+
+    res.json({
+      total, withViews,
+      viewRate: total > 0 ? Math.round((withViews / total) * 100) : 0,
+      avgViews: Math.round((agg._avg.views || 0) * 10) / 10,
+      maxViews: agg._max.views || 0,
+      totalViews: agg._sum.views || 0,
+      top10,
+    });
+  } catch (error: any) {
+    logger.error('View stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/story-stats — Story/favorite/bestInGroup flag statistics
+router.get('/:eventId/photos/story-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, storyOnly, favorite, bestInGroup] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, isStoryOnly: true } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, isFavorite: true } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, isBestInGroup: true } }),
+    ]);
+
+    res.json({
+      total, storyOnly, favorite, bestInGroup,
+      storyRate: total > 0 ? Math.round((storyOnly / total) * 100) : 0,
+      favoriteRate: total > 0 ? Math.round((favorite / total) * 100) : 0,
+      bestInGroupRate: total > 0 ? Math.round((bestInGroup / total) * 100) : 0,
+    });
+  } catch (error: any) {
+    logger.error('Story stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/exif-stats — EXIF data availability statistics
 router.get('/:eventId/photos/exif-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
