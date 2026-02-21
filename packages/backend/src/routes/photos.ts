@@ -2068,6 +2068,65 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/blur-stats — Blur detection statistics
+router.get('/:eventId/photos/blur-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, withQuality, lowQuality, midQuality, highQuality] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, qualityScore: { not: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, qualityScore: { lt: 30 } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, qualityScore: { gte: 30, lt: 70 } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, qualityScore: { gte: 70 } } }),
+    ]);
+
+    const qResult = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null, qualityScore: { not: null } },
+      _avg: { qualityScore: true },
+    });
+
+    res.json({
+      total, withQualityScore: withQuality,
+      lowQuality, midQuality, highQuality,
+      lowQualityRate: total > 0 ? Math.round((lowQuality / total) * 100) : 0,
+      avgQualityScore: qResult._avg.qualityScore ? Math.round(qResult._avg.qualityScore * 10) / 10 : null,
+    });
+  } catch (error: any) {
+    logger.error('Blur stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/ai-stats — AI analysis statistics (captions/labels)
+router.get('/:eventId/photos/ai-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, withTitle, withDescription, withTags, withFaceData] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, title: { not: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, description: { not: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, tags: { isEmpty: false } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, faceCount: { gt: 0 } } }),
+    ]);
+
+    res.json({
+      total,
+      withTitle, titleRate: total > 0 ? Math.round((withTitle / total) * 100) : 0,
+      withDescription, descriptionRate: total > 0 ? Math.round((withDescription / total) * 100) : 0,
+      withTags, tagsRate: total > 0 ? Math.round((withTags / total) * 100) : 0,
+      withFaces: withFaceData, faceRate: total > 0 ? Math.round((withFaceData / total) * 100) : 0,
+      enrichedTotal: await prisma.photo.count({ where: { eventId, deletedAt: null, OR: [{ title: { not: null } }, { description: { not: null } }, { faceCount: { gt: 0 } }] } }),
+    });
+  } catch (error: any) {
+    logger.error('AI stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/tag-stats — Top tags by frequency
 router.get('/:eventId/photos/tag-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
