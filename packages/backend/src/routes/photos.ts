@@ -2069,6 +2069,123 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/quality-tier-breakdown — Photo count per quality tier (0-25/26-50/51-75/76-100)
+router.get('/:eventId/photos/quality-tier-breakdown', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, qualityScore: { not: null } },
+      select: { qualityScore: true, status: true },
+    });
+
+    const tiers = [
+      { label: 'Low (0-25)', min: 0, max: 25, count: 0, approved: 0 },
+      { label: 'Medium (26-50)', min: 26, max: 50, count: 0, approved: 0 },
+      { label: 'Good (51-75)', min: 51, max: 75, count: 0, approved: 0 },
+      { label: 'Excellent (76-100)', min: 76, max: 100, count: 0, approved: 0 },
+    ];
+
+    for (const p of photos) {
+      const q = p.qualityScore as number;
+      const tier = tiers.find((t) => q >= t.min && q <= t.max);
+      if (tier) {
+        tier.count++;
+        if (p.status === 'APPROVED') tier.approved++;
+      }
+    }
+
+    const total = photos.length;
+    const result = tiers.map((t) => ({
+      ...t,
+      pct: total > 0 ? Math.round((t.count / total) * 100) : 0,
+      approvalRate: t.count > 0 ? Math.round((t.approved / t.count) * 100) : 0,
+    }));
+
+    res.json({ tiers: result, total });
+  } catch (error: any) {
+    logger.error('Quality tier breakdown error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/top-liked-this-week — Top20 photos by likes in last 7 days
+router.get('/:eventId/photos/top-liked-this-week', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const grouped = await prisma.photoLike.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, deletedAt: null }, createdAt: { gte: since } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true, qualityScore: true, status: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      ...(photos.find((p) => p.id === g.photoId) || {}),
+      likesThisWeek: g._count.id,
+    }));
+
+    res.json({ photos: result, since: since.toISOString().slice(0, 10) });
+  } catch (error: any) {
+    logger.error('Top liked this week error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/category-comment-leader — Top20 categories by total comment count
+router.get('/:eventId/photos/category-comment-leader', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, categoryId: { not: null } },
+      select: {
+        categoryId: true,
+        _count: { select: { comments: true } },
+      },
+    });
+
+    const catMap: Record<string, number> = {};
+    for (const p of photos) {
+      const cid = p.categoryId as string;
+      catMap[cid] = (catMap[cid] || 0) + p._count.comments;
+    }
+
+    const catIds = Object.keys(catMap);
+    const categories = catIds.length > 0 ? await prisma.category.findMany({
+      where: { id: { in: catIds } },
+      select: { id: true, name: true },
+    }) : [];
+
+    const result = Object.entries(catMap)
+      .map(([cid, commentCount]) => ({
+        categoryId: cid,
+        categoryName: categories.find((c) => c.id === cid)?.name || null,
+        commentCount,
+      }))
+      .sort((a, b) => b.commentCount - a.commentCount)
+      .slice(0, 20);
+
+    res.json({ categories: result });
+  } catch (error: any) {
+    logger.error('Category comment leader error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top-voted-today — Top10 photos by votes cast today
 router.get('/:eventId/photos/top-voted-today', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
