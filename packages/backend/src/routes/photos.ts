@@ -2068,6 +2068,23 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/favorites-count — Count of pinned/favorite photos
+router.get('/:eventId/photos/favorites-count', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, favorites] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null, status: 'APPROVED' } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, status: 'APPROVED', isFavorite: true } }),
+    ]);
+
+    res.json({ total, favorites, ratio: total > 0 ? Math.round((favorites / total) * 100) : 0 });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/approval-rate — Approval rate stats
 router.get('/:eventId/photos/approval-rate', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
