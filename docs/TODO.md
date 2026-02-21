@@ -555,6 +555,13 @@
 | S26-364 | **Leaderboard** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/leaderboard (rank/name/count) |
 | S26-365 | **Tag-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/tag-stats (sortiert count desc) |
 | S26-366 | **Sprint S26 Checkpoint** | ✅ erledigt (21.02.2026) | 366 Features in Sprint S26 implementiert + deployed |
+| S26-367 | **Views-Total** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/views-total (sum/avg/max/photoCount) |
+| S26-368 | **Favorites-Count** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/favorites-count (total/favorites/ratio%) |
+| S26-369 | **Approval-Rate** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/approval-rate (approved/pending/rejected) |
+| S26-370 | **Hourly-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/hourly-stats (array[24] + peakHour) |
+| S26-371 | **Daily-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/daily-stats (pro Tag, asc) |
+| S26-372 | **Dietary-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/dietary-stats (withDietary/statusCount) |
+| S26-373 | **Sprint S26 Abschluss** | ✅ erledigt (21.02.2026) | 373 Features in Sprint S26 implementiert + deployed |
 
 ---
 
