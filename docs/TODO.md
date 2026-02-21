@@ -506,6 +506,13 @@
 | S26-315 | **hiddenPhotos Tab** | ✅ erledigt (21.02.2026) | GalleryTabV2: 'Versteckt' Tab + Eye Icon (nur wenn > 0) |
 | S26-316 | **commentsPending** | ✅ erledigt (21.02.2026) | Dashboard: commentsPending State + 30s Poll |
 | S26-317 | **Sprint S26 Abschluss** | ✅ erledigt (21.02.2026) | 317 Features in Sprint S26 implementiert + deployed |
+| S26-318 | **Recent Photos** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/recent (limit 12, Manager sieht alle) |
+| S26-319 | **Top-Liked** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-liked (APPROVED, likes._count desc) |
+| S26-320 | **Gaesteliste CSV** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/export-csv (Status/Allergien/PlusOnes) |
+| S26-321 | **Gast Bulk-Status** | ✅ erledigt (21.02.2026) | PATCH /events/:id/guests/bulk-status (updateMany status) |
+| S26-322 | **Gast-Suche** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/search?q= (insensitive contains) |
+| S26-323 | **Status-Timeline** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/status-timeline (updatedAt desc 100) |
+| S26-324 | **Bulk Approve/Reject** | ✅ erledigt (21.02.2026) | POST /photos/bulk/approve + /reject endpoints |
 
 ---
 
