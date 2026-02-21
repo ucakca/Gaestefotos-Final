@@ -2068,6 +2068,39 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/view-stats — View count statistics
+router.get('/:eventId/photos/view-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const result = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null },
+      _sum: { views: true },
+      _avg: { views: true },
+      _max: { views: true },
+      _count: { id: true },
+    });
+
+    const topPhoto = await prisma.photo.findFirst({
+      where: { eventId, deletedAt: null },
+      select: { id: true, views: true, url: true },
+      orderBy: { views: 'desc' },
+    });
+
+    res.json({
+      totalViews: result._sum.views || 0,
+      avgViews: Math.round(((result._avg.views || 0) * 100)) / 100,
+      maxViews: result._max.views || 0,
+      photoCount: result._count.id,
+      topPhoto,
+    });
+  } catch (error: any) {
+    logger.error('View stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/comment-stats — Comment statistics with top 5 most commented
 router.get('/:eventId/photos/comment-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
