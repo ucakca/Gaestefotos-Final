@@ -83,7 +83,7 @@
 | # | Aufgabe | Status | Priorität | Beschreibung |
 |---|---------|--------|-----------|--------------|
 | AI-10 | **Cache-Verwaltung UI** | ✅ erledigt | — | `/system/ai-cache` mit Stats, Warm-Up, Clear, Event-Type-Auswahl |
-| AI-11 | **Provider-Monitoring** | ⏳ offen | LOW | API-Status, Latenz, Fehlerrate pro Provider |
+| AI-11 | **Provider-Monitoring** | ✅ erledigt (21.02.2026) | — | GET /admin/ai-providers/monitoring (p50/p95 Latenz, Fehlerrate, Status) + /admin/ai-monitoring Frontend |
 
 ### Bild-KI Features (Cloud-only)
 
@@ -92,7 +92,7 @@
 | AI-12 | **Bild-KI Provider** | ⏳ offen | MEDIUM | Replicate, Stability AI, oder fal.ai evaluieren |
 | AI-13 | **BG Removal** | ✅ erledigt (20.02.2026) | — | bgRemoval.ts Service + /booth-games/bg-removal Route + AiEffectsModal UI |
 | AI-14 | **AI Oldify/Cartoon** | ✅ erledigt | — | Implementiert via aiStyleEffects.ts |
-| AI-15 | **Style Transfer** | ⏳ offen | LOW | Erweiterte Kunststile (über aktuelle 10 hinaus) |
+| AI-15 | **Style Transfer** | ⏳ in Bearbeitung (21.02.2026) | LOW | Weitere Kunststile werden ergänzt |
 
 ### Zusammenfassung AI
 

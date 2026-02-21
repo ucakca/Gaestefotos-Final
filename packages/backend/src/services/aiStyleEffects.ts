@@ -14,7 +14,7 @@ import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { prepareAiExecution, logAiUsage, AiFeature } from './aiExecution';
 
-export type StyleEffect = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'time_machine' | 'pet_me' | 'yearbook' | 'emoji_me' | 'miniature';
+export type StyleEffect = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'time_machine' | 'pet_me' | 'yearbook' | 'emoji_me' | 'miniature' | 'anime' | 'watercolor' | 'oil_painting' | 'sketch' | 'neon_noir' | 'renaissance' | 'comic_book' | 'pixel_art';
 
 interface StyleEffectResult {
   outputBuffer: Buffer;
@@ -70,6 +70,46 @@ const STYLE_PROMPTS: Record<StyleEffect, { prompt: string; negativePrompt: strin
     prompt: 'tilt-shift miniature effect, selective focus, toy-like scene, vibrant saturated colors, tiny world effect, diorama photography style',
     negativePrompt: 'normal perspective, flat, dull colors, blurry everywhere',
     strength: 0.5,
+  },
+  anime: {
+    prompt: 'anime manga art style, Studio Ghibli inspired, clean cel-shaded lines, vibrant anime colors, expressive big eyes, detailed anime illustration, high quality digital anime art',
+    negativePrompt: 'realistic, photograph, 3d render, western cartoon, dark, horror',
+    strength: 0.78,
+  },
+  watercolor: {
+    prompt: 'watercolor painting style, soft wet-on-wet technique, delicate color washes, visible paper texture, loose brushstrokes, impressionistic, fine art watercolor portrait',
+    negativePrompt: 'digital, sharp, crisp, photograph, oil paint, acrylic, vector',
+    strength: 0.72,
+  },
+  oil_painting: {
+    prompt: 'classical oil painting portrait, rich textured brushstrokes, Rembrandt lighting, old masters style, warm golden tones, museum quality fine art, detailed impasto technique',
+    negativePrompt: 'photograph, digital, flat, modern, cartoon, anime',
+    strength: 0.68,
+  },
+  sketch: {
+    prompt: 'detailed pencil sketch portrait, graphite drawing, fine hatching and cross-hatching, professional illustrator style, high contrast black and white, artistic sketch',
+    negativePrompt: 'color, photograph, painting, digital, flat shading',
+    strength: 0.75,
+  },
+  neon_noir: {
+    prompt: 'cyberpunk neon noir style, vivid neon lights, rain-slicked streets reflection, dark atmospheric moody lighting, synthwave aesthetic, blade runner inspired, purple and cyan neon glow',
+    negativePrompt: 'bright daylight, natural, pastoral, cheerful, clean, white background',
+    strength: 0.72,
+  },
+  renaissance: {
+    prompt: 'Italian Renaissance portrait painting, Leonardo da Vinci style, sfumato technique, warm amber tones, classical composition, detailed fabric and jewelry, museum masterpiece quality',
+    negativePrompt: 'modern, digital, cartoon, anime, photograph, contemporary',
+    strength: 0.65,
+  },
+  comic_book: {
+    prompt: 'Marvel DC comic book art style, bold ink outlines, halftone dots, dynamic shading, vibrant saturated comic colors, action hero poster style, professional comic illustration',
+    negativePrompt: 'photograph, subtle, muted, realistic, anime, soft',
+    strength: 0.78,
+  },
+  pixel_art: {
+    prompt: '16-bit pixel art portrait, retro video game sprite style, limited color palette, chunky pixels, SNES era game art, detailed pixel illustration, nostalgic retro gaming aesthetic',
+    negativePrompt: 'smooth, anti-aliased, photograph, realistic, 3d render, modern',
+    strength: 0.82,
   },
 };
 
@@ -243,6 +283,14 @@ async function callReplicateImg2Img(
     yearbook: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
     emoji_me: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
     miniature: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    anime: 'cjwbw/anything-v3-better-vae:09a5805203f4c12da649ec1923bb7729517ca25fcac790e640eaa9ed66573b65',
+    watercolor: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    oil_painting: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    sketch: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    neon_noir: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    renaissance: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    comic_book: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    pixel_art: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
   };
 
   const base64 = imageBuffer.toString('base64');
