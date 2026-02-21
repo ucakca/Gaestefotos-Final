@@ -2068,6 +2068,26 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/status-count — Count by status
+router.get('/:eventId/photos/status-count', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['status'],
+      where: { eventId, deletedAt: null },
+      _count: { id: true },
+    });
+
+    const result: Record<string, number> = {};
+    for (const g of grouped) result[g.status] = g._count.id;
+    res.json({ statusCount: result });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/by-guest — Photo count grouped by uploadedBy
 router.get('/:eventId/photos/by-guest', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
