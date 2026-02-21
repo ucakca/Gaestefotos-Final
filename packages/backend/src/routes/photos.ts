@@ -2069,6 +2069,106 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/top-commented-this-week — Top20 photos by comments in last 7 days
+router.get('/:eventId/photos/top-commented-this-week', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const grouped = await prisma.photoComment.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, deletedAt: null }, createdAt: { gte: since } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true, status: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      ...(photos.find((p) => p.id === g.photoId) || {}),
+      commentsThisWeek: g._count.id,
+    }));
+
+    res.json({ photos: result, since: since.toISOString().slice(0, 10) });
+  } catch (error: any) {
+    logger.error('Top commented this week error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/upload-by-weekday — Upload count per weekday (0=Sun to 6=Sat)
+router.get('/:eventId/photos/upload-by-weekday', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+    });
+
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+    for (const p of photos) {
+      counts[p.createdAt.getUTCDay()]++;
+    }
+
+    const result = days.map((name, i) => ({
+      weekday: i,
+      name,
+      count: counts[i],
+      pct: photos.length > 0 ? Math.round((counts[i] / photos.length) * 100) : 0,
+    }));
+
+    res.json({ weekdays: result, total: photos.length });
+  } catch (error: any) {
+    logger.error('Upload by weekday error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/like-velocity — Top20 photos by likes-per-day since upload
+router.get('/:eventId/photos/like-velocity', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoLike.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, deletedAt: null } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 50,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true, status: true, createdAt: true },
+    }) : [];
+
+    const now = Date.now();
+    const result = (grouped as any[]).map((g) => {
+      const photo = photos.find((p) => p.id === g.photoId);
+      const ageDays = photo ? Math.max((now - photo.createdAt.getTime()) / 86_400_000, 0.01) : 1;
+      const velocity = Math.round((g._count.id / ageDays) * 100) / 100;
+      return { ...(photo || {}), likeCount: g._count.id, ageDays: Math.round(ageDays * 10) / 10, velocity };
+    }).sort((a, b) => b.velocity - a.velocity).slice(0, 20);
+
+    res.json({ photos: result });
+  } catch (error: any) {
+    logger.error('Like velocity error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/pending-oldest — Top20 PENDING photos waiting longest for review
 router.get('/:eventId/photos/pending-oldest', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
