@@ -2443,5 +2443,56 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/guests/engagement — How guests interact with the event
+router.get(
+  '/:eventId/guests/engagement',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Kein Zugriff' });
+      }
+
+      const [
+        totalGuests,
+        checkedIn,
+        withEmail,
+        rsvpAccepted,
+        rsvpDeclined,
+        guestbookEntries,
+        photosUploaded,
+      ] = await Promise.all([
+        prisma.guest.count({ where: { eventId } }),
+        prisma.guest.count({ where: { eventId, isCheckedIn: true } as any }).catch(() => 0),
+        prisma.guest.count({ where: { eventId, email: { not: null } } }),
+        prisma.guest.count({ where: { eventId, status: 'ACCEPTED' as any } }),
+        prisma.guest.count({ where: { eventId, status: 'DECLINED' as any } }),
+        prisma.guestbookEntry.count({ where: { eventId } }),
+        prisma.photo.count({ where: { eventId, deletedAt: null, uploadedBy: { not: null } } }),
+      ]);
+
+      const rsvpRate = totalGuests > 0
+        ? Math.round(((rsvpAccepted + rsvpDeclined) / totalGuests) * 100) : 0;
+      const checkInRate = rsvpAccepted > 0
+        ? Math.round((checkedIn / rsvpAccepted) * 100) : 0;
+
+      res.json({
+        totalGuests,
+        withEmail,
+        rsvp: { accepted: rsvpAccepted, declined: rsvpDeclined, pending: totalGuests - rsvpAccepted - rsvpDeclined, rate: rsvpRate },
+        checkedIn,
+        checkInRate,
+        guestbookEntries,
+        photosUploaded,
+        engagementScore: Math.round((rsvpRate * 0.3 + checkInRate * 0.4 + Math.min(100, (guestbookEntries + photosUploaded) * 2) * 0.3)),
+      });
+    } catch (error: any) {
+      logger.error('Guest engagement error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Laden' });
+    }
+  }
+);
+
 export default router;
 
