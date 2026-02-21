@@ -2068,6 +2068,44 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/quality-histogram — Quality score distribution (0-10 buckets)
+router.get('/:eventId/photos/quality-histogram', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, qualityScore: { not: null } },
+      select: { qualityScore: true },
+    });
+
+    const buckets = Array.from({ length: 11 }, (_, i) => ({ bucket: i, label: `${i * 10}-${i * 10 + 9}%`, count: 0 }));
+    for (const p of photos) {
+      const score = p.qualityScore as number;
+      const bucket = Math.min(10, Math.floor((score / 100) * 10));
+      buckets[bucket].count++;
+    }
+
+    const result = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null, qualityScore: { not: null } },
+      _avg: { qualityScore: true },
+      _min: { qualityScore: true },
+      _max: { qualityScore: true },
+    });
+
+    res.json({
+      buckets,
+      avgQuality: Math.round(((result._avg.qualityScore || 0) * 100)) / 100,
+      minQuality: result._min.qualityScore || 0,
+      maxQuality: result._max.qualityScore || 0,
+      analyzedPhotos: photos.length,
+    });
+  } catch (error: any) {
+    logger.error('Quality histogram error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/face-stats — Face detection statistics
 router.get('/:eventId/photos/face-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
