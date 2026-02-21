@@ -2068,6 +2068,26 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/top-liked — Top liked photos
+router.get('/:eventId/photos/top-liked', optionalAuthMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const limit = Math.min(50, parseInt(req.query.limit as string, 10) || 10);
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, status: 'APPROVED', deletedAt: null },
+      select: { id: true, url: true, uploadedBy: true, isFavorite: true, createdAt: true, _count: { select: { likes: true } } },
+      orderBy: { likes: { _count: 'desc' } } as any,
+      take: limit,
+    });
+
+    res.json({ photos });
+  } catch (error: any) {
+    logger.error('Top liked error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 // GET /api/events/:eventId/photos/download-stats — Top downloaded photos
 router.get('/:eventId/photos/download-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
