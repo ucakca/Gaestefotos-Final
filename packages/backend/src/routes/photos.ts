@@ -2069,6 +2069,114 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/top-voted-this-week — Top20 photos by votes cast in last 7 days
+router.get('/:eventId/photos/top-voted-this-week', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const grouped = await prisma.photoVote.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, deletedAt: null }, createdAt: { gte: since } },
+      _count: { id: true },
+      _avg: { rating: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true, status: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      ...(photos.find((p) => p.id === g.photoId) || {}),
+      votesThisWeek: g._count.id,
+      avgRating: Math.round((g._avg.rating || 0) * 10) / 10,
+    }));
+
+    res.json({ photos: result, since: since.toISOString().slice(0, 10) });
+  } catch (error: any) {
+    logger.error('Top voted this week error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/category-view-total — Total views per category sorted desc
+router.get('/:eventId/photos/category-view-total', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['categoryId'],
+      where: { eventId, deletedAt: null },
+      _sum: { views: true },
+      _count: { id: true },
+      orderBy: { _sum: { views: 'desc' } },
+      take: 20,
+    });
+
+    const catIds = (grouped as any[]).map((g) => g.categoryId).filter(Boolean) as string[];
+    const categories = catIds.length > 0 ? await prisma.category.findMany({
+      where: { id: { in: catIds } },
+      select: { id: true, name: true },
+    }) : [];
+
+    const stats = (grouped as any[]).map((g) => ({
+      categoryId: g.categoryId,
+      categoryName: categories.find((c) => c.id === g.categoryId)?.name || null,
+      photoCount: g._count.id,
+      totalViews: g._sum.views || 0,
+      avgViews: g._count.id > 0 ? Math.round((g._sum.views || 0) / g._count.id) : 0,
+    }));
+
+    res.json({ stats });
+  } catch (error: any) {
+    logger.error('Category view total error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/uploader-quality-avg — Top20 uploaders by avg quality score
+router.get('/:eventId/photos/uploader-quality-avg', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['uploadedBy'],
+      where: { eventId, deletedAt: null, uploadedBy: { not: null }, qualityScore: { not: null } },
+      _avg: { qualityScore: true },
+      _count: { id: true },
+      having: { qualityScore: { _count: { gte: 2 } } },
+      orderBy: { _avg: { qualityScore: 'desc' } },
+      take: 20,
+    });
+
+    const userIds = (grouped as any[]).map((g) => g.uploadedBy).filter(Boolean) as string[];
+    const users = userIds.length > 0 ? await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, name: true, email: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      uploadedBy: g.uploadedBy,
+      name: users.find((u) => u.id === g.uploadedBy)?.name || null,
+      photoCount: g._count.id,
+      avgQuality: Math.round((g._avg.qualityScore || 0) * 10) / 10,
+    }));
+
+    res.json({ uploaders: result });
+  } catch (error: any) {
+    logger.error('Uploader quality avg error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top-viewed-this-week — Top20 most viewed photos in last 7 days
 router.get('/:eventId/photos/top-viewed-this-week', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
