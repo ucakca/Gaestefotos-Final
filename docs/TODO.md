@@ -831,6 +831,10 @@
 | S26-640 | **Upload-Hour-Distribution** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/upload-hour-distribution (upload count per hour 0-23 + peakHour) |
 | S26-641 | **Quality-Distribution** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/quality-distribution (qualityScore histogram 10-point buckets) |
 | S26-642 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 642 Features in Sprint S26 implementiert + deployed |
+| S26-643 | **Upload-Weekday-Distribution** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/upload-weekday-distribution (upload count per weekday 0-6 + peakDay) |
+| S26-644 | **Size-Timeline** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/size-timeline (total storage bytes per day + totalBytes) |
+| S26-645 | **Top-Liked-Pending** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-liked-pending (top20 PENDING photos by like count) |
+| S26-646 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 646 Features in Sprint S26 implementiert + deployed |
 
 ---
 
