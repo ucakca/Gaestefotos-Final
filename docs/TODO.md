@@ -855,6 +855,10 @@
 | S26-664 | **Quality-By-Weekday** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/quality-by-weekday (avg qualityScore per weekday 0-6) |
 | S26-665 | **Oldest-Unreviewed** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/oldest-unreviewed (top20 oldest PENDING photos with ageHours) |
 | S26-666 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 666 Features in Sprint S26 implementiert + deployed |
+| S26-667 | **Top-Quality-Unviewed** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-quality-unviewed (top20 high-quality photos with 0 views) |
+| S26-668 | **Category-Engagement** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-engagement (likes+comments sum per category sorted) |
+| S26-669 | **Size-Bucket** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/size-bucket (photo count per file size bucket 0-1/1-5/5-10/10MB+) |
+| S26-670 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 670 Features in Sprint S26 implementiert + deployed |
 
 ---
 
