@@ -2068,6 +2068,39 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/weekly-stats — Uploads per week (last 8 weeks)
+router.get('/:eventId/photos/weekly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const weekMap: Record<string, number> = {};
+    for (const p of photos) {
+      const d = new Date(p.createdAt);
+      const day = d.getDay(); // 0=Sun
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(d.setDate(diff));
+      const key = monday.toISOString().split('T')[0];
+      weekMap[key] = (weekMap[key] || 0) + 1;
+    }
+
+    const weeks = Object.entries(weekMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([week, count]) => ({ week, count }));
+
+    res.json({ weeks, totalWeeks: weeks.length });
+  } catch (error: any) {
+    logger.error('Weekly stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/status-timeline — Recent status changes (updatedAt desc)
 router.get('/:eventId/photos/status-timeline', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
