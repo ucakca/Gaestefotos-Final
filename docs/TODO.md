@@ -887,6 +887,10 @@
 | S26-696 | **Cumulative-Upload-Trend** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/cumulative-upload-trend (daily + cumulative upload count series) |
 | S26-697 | **Approval-Funnel** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/approval-funnel (uploaded→pending→approved→rejected→liked funnel) |
 | S26-698 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 698 Features in Sprint S26 implementiert + deployed |
+| S26-699 | **Quality-Tier-Breakdown** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/quality-tier-breakdown (photo count per quality tier 0-25/26-50/51-75/76-100) |
+| S26-700 | **Top-Liked-This-Week** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-liked-this-week (top20 photos by likes in last 7 days) |
+| S26-701 | **Category-Comment-Leader** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-comment-leader (top20 categories by total comment count) |
+| S26-702 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 702 Features in Sprint S26 implementiert + deployed |
 
 ---
 
