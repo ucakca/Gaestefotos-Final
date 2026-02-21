@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import { randomString } from '@gaestefotos/shared';
 import prisma from '../config/database';
-import { authMiddleware, AuthRequest, hasEventManageAccess } from '../middleware/auth';
+import { authMiddleware, AuthRequest, hasEventManageAccess, requireRole } from '../middleware/auth';
 import { logger } from '../utils/logger';
 import { getErrorMessage } from '../utils/typeHelpers';
 import { sanitizeText } from '../utils/sanitize';
@@ -197,6 +197,24 @@ router.patch(
     }
   }
 );
+
+// GET /admin/stats — Platform-wide guest statistics (used via /admin/guests/stats)
+router.get('/admin/stats', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  try {
+    const [total, accepted, declined, pending, withEmail] = await Promise.all([
+      prisma.guest.count(),
+      prisma.guest.count({ where: { status: 'ACCEPTED' } }),
+      prisma.guest.count({ where: { status: 'DECLINED' } }),
+      prisma.guest.count({ where: { status: 'PENDING' } }),
+      prisma.guest.count({ where: { email: { not: null } } }),
+    ]);
+
+    res.json({ total, accepted, declined, pending, withEmail });
+  } catch (error) {
+    logger.error('Admin guest stats error', { error: getErrorMessage(error) });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
 
 // GET /:eventId/guests/summary — Quick guest summary (total, accepted, plusOnes, etc.)
 router.get(
