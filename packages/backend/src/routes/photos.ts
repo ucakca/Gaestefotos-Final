@@ -2068,6 +2068,76 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/size-bucket — Photos grouped by file size buckets
+router.get('/:eventId/photos/size-bucket', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, sizeBytes: { not: null } },
+      select: { sizeBytes: true },
+    });
+
+    const buckets = { tiny: 0, small: 0, medium: 0, large: 0, huge: 0 };
+    for (const p of photos) {
+      const mb = Number(p.sizeBytes!) / 1024 / 1024;
+      if (mb < 0.5) buckets.tiny++;
+      else if (mb < 2) buckets.small++;
+      else if (mb < 5) buckets.medium++;
+      else if (mb < 10) buckets.large++;
+      else buckets.huge++;
+    }
+
+    res.json({ total: photos.length, buckets });
+  } catch (error: any) {
+    logger.error('Size bucket error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/view-leader — Top20 photos by view count
+router.get('/:eventId/photos/view-leader', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, views: { gt: 0 } },
+      select: { id: true, url: true, title: true, views: true, uploadedBy: true },
+      orderBy: { views: 'desc' },
+      take: 20,
+    });
+
+    res.json({ photos });
+  } catch (error: any) {
+    logger.error('View leader error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/recent-deleted — Recently soft-deleted photos (last 50)
+router.get('/:eventId/photos/recent-deleted', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const limit = Math.min(parseInt((req.query.limit as string) || '50', 10), 100);
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: { not: null } },
+      select: { id: true, url: true, title: true, deletedAt: true, uploadedBy: true, createdAt: true },
+      orderBy: { deletedAt: 'desc' },
+      take: limit,
+    });
+
+    res.json({ photos, total: photos.length });
+  } catch (error: any) {
+    logger.error('Recent deleted error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/geo-cluster — GPS photos grouped by rough lat/lng grid
 router.get('/:eventId/photos/geo-cluster', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
