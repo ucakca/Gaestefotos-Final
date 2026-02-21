@@ -835,6 +835,10 @@
 | S26-644 | **Size-Timeline** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/size-timeline (total storage bytes per day + totalBytes) |
 | S26-645 | **Top-Liked-Pending** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-liked-pending (top20 PENDING photos by like count) |
 | S26-646 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 646 Features in Sprint S26 implementiert + deployed |
+| S26-647 | **Top-Commented** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-commented (top20 photos by comment count) |
+| S26-648 | **Purge-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/purge-stats (deleted/purgeScheduled/overdue/activePhotos counts) |
+| S26-649 | **First-Upload** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/first-upload (first+last upload timestamps + spanHours) |
+| S26-650 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 650 Features in Sprint S26 implementiert + deployed |
 
 ---
 
