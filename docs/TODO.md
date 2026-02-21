@@ -288,7 +288,7 @@
 | S26-97 | **qualityScore + faceCount Hover** | ✅ erledigt (20.02.2026) | PhotoCard Hover: ★N% gruen/gelb/rot + 👤N cyan Badge |
 | S26-98 | **commentCount in Photos-API** | ✅ erledigt (20.02.2026) | _count.comments flatten als commentCount in Photos-Response |
 | S26-99 | **Cover-Image Upload** | ✅ erledigt | wizardUpload + designConfig coverImageUrl bereits vorhanden |
-| S26-100 | **Push-Notif History** | ⏳ Schema-Änderung nötig | PushNotification Tabelle fehlt im Prisma Schema |
+| S26-100 | **Push-Notif History** | ✅ erledigt (21.02.2026) | PushNotification Tabelle + GET /api/push/history + POST /api/push/log |
 | S26-101 | **Gäste-Stats Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/guests/stats (accepted/declined/pending/plusOnes) |
 | S26-102 | **ZIP Progress Toast** | ✅ erledigt (20.02.2026) | photos/page.tsx: info-Toast vor + success-Toast nach ZIP-Download |
 | S26-103 | **Events-Liste Filter** | ✅ erledigt (20.02.2026) | GET /events?dateFrom=&dateTo=&search= (dateTime gte/lte + title contains) |
@@ -316,7 +316,7 @@
 | S26-125 | **Dashboard Gäste-Stats v2** | ✅ erledigt (20.02.2026) | withEmail + Begleitpersonen + Gesamt Footer-Zeile |
 | S26-126 | **Photo-Stats Endpoint** | ✅ erledigt (20.02.2026) | GET /events/:id/photos/stats (total/approved/pending/favorites/today/totalViews) |
 | S26-127 | **Bulk AI-Caption** | ✅ erledigt (20.02.2026) | POST /photos/bulk/ai-caption (max 100, overwrite param) |
-| S26-128 | **Admin Event-Notizen** | ⏳ Schema-Änderung nötig | adminNotes Feld nicht im Prisma Schema vorhanden |
+| S26-128 | **Admin Event-Notizen** | ✅ erledigt (21.02.2026) | adminNotes String? in Event-Modell + PATCH /api/events/:id/admin-notes |
 | S26-129 | **Lightbox Delete-Own** | ✅ erledigt (20.02.2026) | Trash2-Button in Lightbox wenn allowDeleteOwn + eigener Uploader |
 | S26-130 | **allowDeleteOwn Toggle** | ✅ erledigt (20.02.2026) | SetupTabV2: Trash2 Toggle fuer featuresConfig.allowDeleteOwn |
 | S26-131 | **allowDeleteOwn Passthrough** | ✅ erledigt (20.02.2026) | e3/[slug]/page.tsx: allowDeleteOwn + guestUploaderName an Lightbox |
