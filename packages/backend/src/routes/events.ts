@@ -1679,6 +1679,24 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/stories/stats — Story statistics
+router.get('/:eventId/stories/stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [totalStories, activeStories, expiredStories] = await Promise.all([
+      prisma.story.count({ where: { photo: { eventId } } }),
+      prisma.story.count({ where: { photo: { eventId }, expiresAt: { gt: new Date() } } }),
+      prisma.story.count({ where: { photo: { eventId }, expiresAt: { lte: new Date() } } }),
+    ]);
+
+    res.json({ totalStories, activeStories, expiredStories });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/challenges/stats — Challenge completion statistics
 router.get('/:eventId/challenges/stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
