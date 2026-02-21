@@ -374,9 +374,9 @@ Alles konfigurierbar — **nichts hardcoded**:
 | 40 Prompts in DB (18 Style-Transfer + 3 LLM-Games + 7 Suggest + 12 System) | ✅ | DB |
 | 24 Style-Transfer-Stile (hardcoded + DB-Override) | ✅ | `AI_STYLES` + DB |
 
-#### Was FEHLT → 6 geplante Features
+#### ✅ Alle 6 geplanten Features implementiert (21.02.2026)
 
-**Feature 1: Image-to-Prompt Analyzer (img2prompt)** — HIGH Priority
+**Feature 1: Image-to-Prompt Analyzer (img2prompt)** — ✅ erledigt (adminPromptAnalyzer.ts)
 
 Bild hochladen → KI analysiert → gibt wahrscheinlichen Prompt zurück.
 
