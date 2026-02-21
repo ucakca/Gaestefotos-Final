@@ -2068,6 +2068,97 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/purge-upcoming — Photos scheduled for purge in next 7 days
+router.get('/:eventId/photos/purge-upcoming', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const days = parseInt((req.query.days as string) || '7', 10);
+    const cutoff = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+
+    const [upcoming, overdue] = await Promise.all([
+      prisma.photo.findMany({
+        where: { eventId, deletedAt: null, purgeAfter: { lte: cutoff, gt: new Date() } },
+        select: { id: true, url: true, title: true, purgeAfter: true },
+        orderBy: { purgeAfter: 'asc' },
+        take: 50,
+      }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, purgeAfter: { lte: new Date() } } }),
+    ]);
+
+    res.json({ upcoming, overdue, daysWindow: days });
+  } catch (error: any) {
+    logger.error('Purge upcoming error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/trending — Most active photos last 24h (views+likes)
+router.get('/:eventId/photos/trending', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const recentLikes = await prisma.photoLike.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId }, createdAt: { gte: since } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const photoIds = (recentLikes as any[]).map((l) => l.photoId);
+    const photos = photoIds.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: photoIds }, deletedAt: null },
+      select: { id: true, url: true, title: true, views: true },
+    }) : [];
+
+    const result = (recentLikes as any[]).map((l) => ({
+      ...photos.find((p) => p.id === l.photoId),
+      recentLikes: l._count.id,
+    }));
+
+    res.json({ trending: result, since });
+  } catch (error: any) {
+    logger.error('Trending error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/quality-grade-board — Top photo per quality grade A-F
+router.get('/:eventId/photos/quality-grade-board', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grades = [
+      { grade: 'A', min: 80, max: 100 },
+      { grade: 'B', min: 60, max: 80 },
+      { grade: 'C', min: 40, max: 60 },
+      { grade: 'D', min: 20, max: 40 },
+      { grade: 'F', min: 0, max: 20 },
+    ];
+
+    const board = await Promise.all(grades.map(async ({ grade, min, max }) => {
+      const best = await prisma.photo.findFirst({
+        where: { eventId, deletedAt: null, qualityScore: { gte: min, lt: max } },
+        select: { id: true, url: true, title: true, qualityScore: true },
+        orderBy: { qualityScore: 'desc' },
+      });
+      const count = await prisma.photo.count({ where: { eventId, deletedAt: null, qualityScore: { gte: min, lt: max } } });
+      return { grade, min, max, count, best };
+    }));
+
+    res.json({ board });
+  } catch (error: any) {
+    logger.error('Quality grade board error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/size-bucket — Photos grouped by file size buckets
 router.get('/:eventId/photos/size-bucket', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
