@@ -2068,6 +2068,28 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/best-in-group — Best photos per duplicate group
+router.get('/:eventId/photos/best-in-group', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [totalGroups, bestPhotos, photosInGroups] = await Promise.all([
+      prisma.photo.groupBy({
+        by: ['duplicateGroupId'],
+        where: { eventId, deletedAt: null, duplicateGroupId: { not: null } },
+      }).then((g: any[]) => g.length),
+      prisma.photo.count({ where: { eventId, deletedAt: null, isBestInGroup: true } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, duplicateGroupId: { not: null } } }),
+    ]);
+
+    res.json({ totalGroups, bestPhotos, photosInGroups, avgGroupSize: totalGroups > 0 ? Math.round((photosInGroups / totalGroups) * 10) / 10 : 0 });
+  } catch (error: any) {
+    logger.error('Best-in-group error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/quality-histogram — Quality score distribution (0-10 buckets)
 router.get('/:eventId/photos/quality-histogram', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
