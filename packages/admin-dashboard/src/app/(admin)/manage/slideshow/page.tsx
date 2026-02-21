@@ -53,7 +53,7 @@ export default function SlideshowPage() {
   }
 
   const selectedEvent = events.find(e => e.id === selectedEventId);
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin.replace('dash.', '') : 'https://gästefotos.com';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.xn--gstefotos-v2a.com';
 
   function getSlideshowUrl() {
     if (!selectedEvent) return '';
