@@ -761,6 +761,9 @@
 | S26-570 | **Face-Analysis** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/face-analysis (totalFaces/faceRate%/topFacePhoto) |
 | S26-571 | **Purge-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/purge-stats (deleted/active/expiredPurge) |
 | S26-572 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 572 Features in Sprint S26 implementiert + deployed |
+| S26-573 | **Guest-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/guest-stats (top20 guests firstName+lastName+photoCount) |
+| S26-574 | **Category-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-stats (count/pct% per category with name) |
+| S26-575 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 575 Features in Sprint S26 implementiert + deployed |
 
 ---
 
