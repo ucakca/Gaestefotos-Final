@@ -2069,6 +2069,87 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/top-viewed-orphan — Top20 viewed photos without a category
+router.get('/:eventId/photos/top-viewed-orphan', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, categoryId: null, views: { gt: 0 } },
+      select: { id: true, url: true, title: true, views: true, qualityScore: true, status: true },
+      orderBy: { views: 'desc' },
+      take: 20,
+    });
+
+    res.json({ photos });
+  } catch (error: any) {
+    logger.error('Top viewed orphan error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/comment-approval-rate — Approved vs rejected comment rates
+router.get('/:eventId/photos/comment-approval-rate', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoComment.groupBy({
+      by: ['status'],
+      where: { photo: { eventId } },
+      _count: { id: true },
+    });
+
+    const total = (grouped as any[]).reduce((s: number, g: any) => s + g._count.id, 0);
+    const breakdown = (grouped as any[]).map((g) => ({
+      status: g.status,
+      count: g._count.id,
+      pct: total > 0 ? Math.round((g._count.id / total) * 100) : 0,
+    })).sort((a, b) => b.count - a.count);
+
+    res.json({ total, breakdown });
+  } catch (error: any) {
+    logger.error('Comment approval rate error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/category-view-leader — Category with highest total views
+router.get('/:eventId/photos/category-view-leader', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['categoryId'],
+      where: { eventId, deletedAt: null, categoryId: { not: null } },
+      _sum: { views: true },
+      _count: { id: true },
+      orderBy: { _sum: { views: 'desc' } },
+      take: 20,
+    });
+
+    const catIds = (grouped as any[]).map((g) => g.categoryId).filter(Boolean) as string[];
+    const categories = catIds.length > 0 ? await prisma.category.findMany({
+      where: { id: { in: catIds } },
+      select: { id: true, name: true },
+    }) : [];
+
+    const stats = (grouped as any[]).map((g) => ({
+      categoryId: g.categoryId,
+      categoryName: categories.find((c) => c.id === g.categoryId)?.name || null,
+      photoCount: g._count.id,
+      totalViews: g._sum.views || 0,
+    }));
+
+    res.json({ stats });
+  } catch (error: any) {
+    logger.error('Category view leader error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/gps-cluster — GPS cluster summary (count per 1-degree grid cell)
 router.get('/:eventId/photos/gps-cluster', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
