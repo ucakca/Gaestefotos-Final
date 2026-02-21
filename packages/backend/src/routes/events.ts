@@ -2268,5 +2268,36 @@ router.post(
   }
 );
 
+// PATCH /api/events/:id/admin-notes — Admin-only internal notes on an event
+router.patch(
+  '/:id/admin-notes',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+      if (!user || user.role !== 'ADMIN') {
+        return res.status(403).json({ error: 'Nur Admins' });
+      }
+
+      const { adminNotes } = req.body;
+      if (typeof adminNotes !== 'string' && adminNotes !== null) {
+        return res.status(400).json({ error: 'adminNotes muss ein String oder null sein' });
+      }
+
+      const event = await prisma.event.update({
+        where: { id: req.params.id },
+        data: { adminNotes: adminNotes ?? null },
+        select: { id: true, adminNotes: true, updatedAt: true },
+      });
+
+      res.json({ event });
+    } catch (error: any) {
+      if (error.code === 'P2025') return res.status(404).json({ error: 'Event nicht gefunden' });
+      logger.error('Admin notes update error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Speichern' });
+    }
+  }
+);
+
 export default router;
 

@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import prisma from '../config/database';
-import { optionalAuthMiddleware, AuthRequest } from '../middleware/auth';
+import { optionalAuthMiddleware, authMiddleware, AuthRequest } from '../middleware/auth';
 import { logger } from '../utils/logger';
 import { getErrorMessage } from '../utils/typeHelpers';
 import { VAPID_PUBLIC_KEY } from '../services/pushNotification';
@@ -92,5 +92,61 @@ router.delete(
     }
   }
 );
+
+// ─── GET /api/push/history ──────────────────────────────────────────────────
+// Push notification send history (admin-only)
+router.get('/history', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, page = '1', limit = '50' } = req.query;
+    const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
+
+    const where: any = {};
+    if (eventId) where.eventId = eventId;
+
+    const [notifications, total] = await Promise.all([
+      (prisma as any).pushNotification.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: parseInt(limit as string),
+      }),
+      (prisma as any).pushNotification.count({ where }),
+    ]);
+
+    res.json({ notifications, total, page: parseInt(page as string) });
+  } catch (error) {
+    logger.error('Push history failed', { message: getErrorMessage(error) });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
+// ─── POST /api/push/log ──────────────────────────────────────────────────────
+// Log a push send result (called internally after sendPushToEvent etc.)
+router.post('/log', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, title, body, icon, url, targetType, recipientCount, successCount, failureCount } = req.body;
+    if (!title || !body) return res.status(400).json({ error: 'title und body erforderlich' });
+
+    const entry = await (prisma as any).pushNotification.create({
+      data: {
+        eventId: eventId || null,
+        title,
+        body,
+        icon: icon || null,
+        url: url || null,
+        sentBy: req.userId || null,
+        targetType: targetType || 'all',
+        recipientCount: recipientCount || 0,
+        successCount: successCount || 0,
+        failureCount: failureCount || 0,
+      },
+    });
+
+    res.status(201).json({ notification: entry });
+  } catch (error) {
+    logger.error('Push log failed', { message: getErrorMessage(error) });
+    res.status(500).json({ error: 'Fehler beim Loggen' });
+  }
+});
 
 export default router;

@@ -90,6 +90,7 @@ model Event {
   updatedAt               DateTime                    @updatedAt
   password                String?
   guestbookHostMessage    String?
+  adminNotes              String?                     // Internal notes visible only to admins
   deletedAt               DateTime?
   isActive                Boolean                     @default(true)
   purgeAfter              DateTime?
@@ -2051,6 +2052,25 @@ model Leaderboard {
 }
 
 // ─── PUSH NOTIFICATIONS ─────────────────────────────────────────────────────
+
+model PushNotification {
+  id          String    @id @default(uuid())
+  eventId     String?
+  title       String
+  body        String
+  icon        String?
+  url         String?
+  sentBy      String?   // userId who sent it
+  targetType  String    @default("all") // "all" | "event" | "user"
+  recipientCount Int    @default(0)
+  successCount   Int    @default(0)
+  failureCount   Int    @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@index([eventId])
+  @@index([createdAt])
+  @@map("push_notifications")
+}
 
 model PushSubscription {
   id           String   @id @default(uuid())
