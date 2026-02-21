@@ -2068,6 +2068,77 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/guest-stats — Photos per guest top20
+router.get('/:eventId/photos/guest-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['guestId'],
+      where: { eventId, deletedAt: null },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const guestIds = grouped.map((g: any) => g.guestId).filter(Boolean);
+    const guests = guestIds.length > 0
+      ? await prisma.guest.findMany({ where: { id: { in: guestIds } }, select: { id: true, firstName: true, lastName: true } })
+      : [];
+    const guestMap = Object.fromEntries(guests.map((g) => [g.id, g]));
+
+    res.json({
+      guests: grouped.map((g: any) => {
+        const guest = guestMap[g.guestId];
+        return {
+          guestId: g.guestId,
+          name: guest ? `${guest.firstName} ${guest.lastName}`.trim() : null,
+          photoCount: g._count.id,
+        };
+      }),
+    });
+  } catch (error: any) {
+    logger.error('Guest stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/category-stats — Photos per category
+router.get('/:eventId/photos/category-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['categoryId'],
+      where: { eventId, deletedAt: null },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+    });
+
+    const catIds = grouped.map((g: any) => g.categoryId).filter(Boolean);
+    const categories = catIds.length > 0
+      ? await prisma.category.findMany({ where: { id: { in: catIds } }, select: { id: true, name: true } })
+      : [];
+    const catMap = Object.fromEntries(categories.map((c) => [c.id, c]));
+
+    const total = grouped.reduce((s: number, g: any) => s + g._count.id, 0);
+    res.json({
+      categories: grouped.map((g: any) => ({
+        categoryId: g.categoryId,
+        name: catMap[g.categoryId]?.name || 'Uncategorized',
+        count: g._count.id,
+        pct: total > 0 ? Math.round((g._count.id / total) * 100) : 0,
+      })),
+      total,
+    });
+  } catch (error: any) {
+    logger.error('Category stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/purge-stats — Deleted and purge-scheduled photos
 router.get('/:eventId/photos/purge-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
