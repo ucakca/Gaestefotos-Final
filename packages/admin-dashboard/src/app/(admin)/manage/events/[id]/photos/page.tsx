@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft, Image, Download, Trash2, Loader2, RefreshCw,
   ChevronLeft, ChevronRight, HardDrive, Camera, Video,
-  Eye, X, Check, XCircle, Filter, Grid, List,
+  Eye, X, Check, XCircle, Filter, Grid, List, ExternalLink,
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
@@ -196,6 +196,16 @@ export default function EventPhotosPage() {
             Storage-Verwaltung & Foto-Browser
           </p>
         </div>
+        <a
+          href={`https://app.xn--gstefotos-v2a.com/events/${eventId}/photos`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-app-border bg-app-card hover:border-blue-500 hover:text-blue-400 text-app-muted text-sm transition-colors"
+          title="In App öffnen (Host-Ansicht)"
+        >
+          <ExternalLink className="w-3.5 h-3.5" />
+          In App öffnen
+        </a>
         <Button size="sm" variant="outline" onClick={() => { loadStats(); loadPhotos(); }}>
           <RefreshCw className="w-4 h-4" />
         </Button>
