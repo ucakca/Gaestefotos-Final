@@ -216,6 +216,37 @@ router.get('/admin/stats', authMiddleware, requireRole('ADMIN'), async (req: Aut
   }
 });
 
+// GET /:eventId/guests/invitation-log — Guests sorted by createdAt (invitation log)
+router.get(
+  '/:eventId/guests/invitation-log',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const limit = Math.min(100, parseInt(req.query.limit as string, 10) || 50);
+      const offset = parseInt(req.query.offset as string, 10) || 0;
+
+      const [guests, total] = await Promise.all([
+        prisma.guest.findMany({
+          where: { eventId },
+          select: { id: true, firstName: true, lastName: true, email: true, status: true, createdAt: true },
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+          skip: offset,
+        }),
+        prisma.guest.count({ where: { eventId } }),
+      ]);
+
+      res.json({ guests, total, limit, offset });
+    } catch (error) {
+      logger.error('Invitation log error', { error: getErrorMessage(error) });
+      res.status(500).json({ error: 'Fehler' });
+    }
+  }
+);
+
 // GET /:eventId/guests/summary — Quick guest summary (total, accepted, plusOnes, etc.)
 router.get(
   '/:eventId/guests/summary',
