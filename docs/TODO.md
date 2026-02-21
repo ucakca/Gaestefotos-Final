@@ -89,7 +89,7 @@
 
 | # | Aufgabe | Status | Priorität | Beschreibung |
 |---|---------|--------|-----------|--------------|
-| AI-12 | **Bild-KI Provider** | ⏳ offen | MEDIUM | Replicate, Stability AI, oder fal.ai evaluieren |
+| AI-12 | **Bild-KI Provider** | ✅ erledigt (21.02.2026) | — | fal.ai (flux/dev/image-to-image) integriert + Replicate + Stability AI. callFalAiImg2Img + Test-Endpoint in adminAiProviders.ts |
 | AI-13 | **BG Removal** | ✅ erledigt (20.02.2026) | — | bgRemoval.ts Service + /booth-games/bg-removal Route + AiEffectsModal UI |
 | AI-14 | **AI Oldify/Cartoon** | ✅ erledigt | — | Implementiert via aiStyleEffects.ts |
 | AI-15 | **Style Transfer** | ✅ erledigt (21.02.2026) | — | 8 neue Stile: anime, watercolor, oil_painting, sketch, neon_noir, renaissance, comic_book, pixel_art (gesamt: 16) |
@@ -980,12 +980,12 @@
 | # | Aufgabe | Status | Datei | Beschreibung |
 |---|---------|--------|-------|--------------|
 | TD-1 | **Sentry Integration** | ✅ erledigt | — | @sentry/node + @sentry/nextjs installiert, init() in backend index.ts, sentry.client/server.config.ts im Frontend, SENTRY_DSN in .env gesetzt |
-| TD-2 | **Invitation Canvas Elements** | ⏳ offen | `InvitationCanvas.tsx` | Element-Rendering für Einladungs-Designer |
+| TD-2 | **Invitation Canvas Elements** | ✅ geprüft (21.02.2026) | `InvitationCanvas.tsx` | Text/Image/Shape/QR vollständig implementiert via react-konva |
 | TD-3 | **QR Design DB-Table** | ✅ erledigt | — | QrDesign Model in Prisma, Table in DB. QR-Styler speichert via PUT /events/:id/qr/config in qrTemplateConfig JSON-Field |
 | TD-4 | **Guest Email senden** | ✅ erledigt (20.02.2026) | — | POST /events/:id/guests/:guestId/email + POST /events/:id/guests/email-all (Bulk). emailService.sendCustomEmail() Methode. Frontend Button pro Gast + 'Alle einladen' |
 | TD-5 | **Guest Details anzeigen** | ✅ erledigt | — | Detail-Modal mit Gast-Info, E-Mail-Button, Löschen-Button |
 | TD-6 | **Upload Confetti** | ✅ erledigt (20.02.2026) | — | triggerUploadConfetti() jetzt auch im TUS-Upload-Pfad (war nur im Fallback-Pfad) |}
-| TD-7 | **Select All Shortcuts** | ⏳ offen | `useKeyboardShortcuts.ts` | Cmd+A für alle Elemente im Editor |
+| TD-7 | **Select All Shortcuts** | ✅ geprüft (21.02.2026) | `useKeyboardShortcuts.ts` | Cmd+A implementiert (Zeile 105–111), onSelectAll Callback vorhanden |
 
 ---
 
