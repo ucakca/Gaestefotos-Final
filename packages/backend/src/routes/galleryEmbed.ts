@@ -26,7 +26,7 @@ router.get('/events/:eventId/embed', authMiddleware, async (req: AuthRequest, re
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
-    const baseUrl = process.env.FRONTEND_URL || 'https://gästefotos.com';
+    const baseUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
     const galleryUrl = `${baseUrl}/e3/${event.slug}`;
     const embedUrl = `${baseUrl}/embed/${event.slug}`;
 
@@ -84,7 +84,7 @@ router.get('/embed/:slug', async (req: any, res: Response) => {
       select: { id: true, storagePathThumb: true, storagePath: true },
     });
 
-    const baseUrl = process.env.FRONTEND_URL || 'https://gästefotos.com';
+    const baseUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
     const galleryUrl = `${baseUrl}/e3/${event.slug}`;
 
     const photoGrid = photos.map(p => {

@@ -5927,41 +5927,6 @@ router.get('/:eventId/photos/guest-stats', authMiddleware, async (req: AuthReque
   }
 });
 
-// GET /api/events/:eventId/photos/category-stats — Photos per category
-router.get('/:eventId/photos/category-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
-
-    const grouped = await prisma.photo.groupBy({
-      by: ['categoryId'],
-      where: { eventId, deletedAt: null },
-      _count: { id: true },
-      orderBy: { _count: { id: 'desc' } },
-    });
-
-    const catIds = grouped.map((g: any) => g.categoryId).filter(Boolean);
-    const categories = catIds.length > 0
-      ? await prisma.category.findMany({ where: { id: { in: catIds } }, select: { id: true, name: true } })
-      : [];
-    const catMap = Object.fromEntries(categories.map((c) => [c.id, c]));
-
-    const total = grouped.reduce((s: number, g: any) => s + g._count.id, 0);
-    res.json({
-      categories: grouped.map((g: any) => ({
-        categoryId: g.categoryId,
-        name: catMap[g.categoryId]?.name || 'Uncategorized',
-        count: g._count.id,
-        pct: total > 0 ? Math.round((g._count.id / total) * 100) : 0,
-      })),
-      total,
-    });
-  } catch (error: any) {
-    logger.error('Category stats error', { error: error.message });
-    res.status(500).json({ error: 'Fehler' });
-  }
-});
-
 // GET /api/events/:eventId/photos/purge-stats — Deleted and purge-scheduled photos
 router.get('/:eventId/photos/purge-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
@@ -6343,35 +6308,6 @@ router.get('/:eventId/photos/monthly-stats', authMiddleware, async (req: AuthReq
     res.json({ months, totalMonths: months.length, peakMonth: peakMonth.month, peakMonthCount: peakMonth.count });
   } catch (error: any) {
     logger.error('Monthly stats error', { error: error.message });
-    res.status(500).json({ error: 'Fehler' });
-  }
-});
-
-// GET /api/events/:eventId/photos/comment-stats — Comment statistics per event
-router.get('/:eventId/photos/comment-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
-
-    const totalComments = await prisma.photoComment.count({ where: { photo: { eventId } } });
-    const topCommented = await prisma.photoComment.groupBy({
-      by: ['photoId'],
-      where: { photo: { eventId } },
-      _count: { id: true },
-      orderBy: { _count: { id: 'desc' } },
-      take: 5,
-    });
-
-    const pendingComments = await prisma.photoComment.count({ where: { photo: { eventId }, status: 'PENDING' } });
-    const totalPhotos = await prisma.photo.count({ where: { eventId, deletedAt: null } });
-    res.json({
-      totalComments,
-      pendingComments,
-      avgCommentsPerPhoto: totalPhotos > 0 ? Math.round((totalComments / totalPhotos) * 100) / 100 : 0,
-      topCommented: topCommented.map((c: any) => ({ photoId: c.photoId, commentCount: c._count.id })),
-    });
-  } catch (error: any) {
-    logger.error('Comment stats error', { error: error.message });
     res.status(500).json({ error: 'Fehler' });
   }
 });
@@ -7152,33 +7088,6 @@ router.get('/:eventId/photos/weekday-stats', authMiddleware, async (req: AuthReq
   }
 });
 
-// GET /api/events/:eventId/photos/hourly-stats — Uploads per hour of day (0-23)
-router.get('/:eventId/photos/hourly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
-
-    const photos = await prisma.photo.findMany({
-      where: { eventId, deletedAt: null },
-      select: { createdAt: true },
-    });
-
-    const hourMap: Record<number, number> = {};
-    for (let h = 0; h < 24; h++) hourMap[h] = 0;
-    for (const p of photos) {
-      const hour = new Date(p.createdAt).getHours();
-      hourMap[hour]++;
-    }
-
-    const hours = Array.from({ length: 24 }, (_, h) => ({ hour: h, count: hourMap[h] }));
-
-    res.json({ hours, peakHour: hours.reduce((a, b) => b.count > a.count ? b : a).hour });
-  } catch (error: any) {
-    logger.error('Hourly stats error', { error: error.message });
-    res.status(500).json({ error: 'Fehler' });
-  }
-});
-
 // GET /api/events/:eventId/photos/daily-stats — Uploads per day (YYYY-MM-DD)
 router.get('/:eventId/photos/daily-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
@@ -7359,38 +7268,6 @@ router.get('/:eventId/photos/view-stats', authMiddleware, async (req: AuthReques
   }
 });
 
-// GET /api/events/:eventId/photos/comment-stats — Comment statistics with top 5 most commented
-router.get('/:eventId/photos/comment-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
-
-    const [totalComments, photosWithComments, totalPhotos] = await Promise.all([
-      prisma.photoComment.count({ where: { photo: { eventId } } }),
-      prisma.photo.count({ where: { eventId, deletedAt: null, comments: { some: {} } } }),
-      prisma.photo.count({ where: { eventId, deletedAt: null } }),
-    ]);
-
-    const top5 = await prisma.photoComment.groupBy({
-      by: ['photoId'],
-      where: { photo: { eventId } },
-      _count: { id: true },
-      orderBy: { _count: { id: 'desc' } },
-      take: 5,
-    });
-
-    res.json({
-      totalComments,
-      photosWithComments,
-      avgCommentsPerPhoto: totalPhotos > 0 ? Math.round((totalComments / totalPhotos) * 100) / 100 : 0,
-      top5: top5.map((t: any) => ({ photoId: t.photoId, commentCount: t._count.id })),
-    });
-  } catch (error: any) {
-    logger.error('Comment stats error', { error: error.message });
-    res.status(500).json({ error: 'Fehler' });
-  }
-});
-
 // GET /api/events/:eventId/photos/like-stats — Photo like statistics
 router.get('/:eventId/photos/like-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
@@ -7484,25 +7361,6 @@ router.get('/:eventId/photos/geo-stats', authMiddleware, async (req: AuthRequest
     res.json({ total, withGeo, withoutGeo: total - withGeo, geoRate: total > 0 ? Math.round((withGeo / total) * 100) : 0 });
   } catch (error: any) {
     logger.error('Geo stats error', { error: error.message });
-    res.status(500).json({ error: 'Fehler' });
-  }
-});
-
-// GET /api/events/:eventId/photos/duplicate-stats — Duplicate photo statistics
-router.get('/:eventId/photos/duplicate-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
-
-    const [total, withDuplicateGroup, bestInGroup] = await Promise.all([
-      prisma.photo.count({ where: { eventId, deletedAt: null } }),
-      prisma.photo.count({ where: { eventId, deletedAt: null, duplicateGroupId: { not: null } } }),
-      prisma.photo.count({ where: { eventId, deletedAt: null, isBestInGroup: true } }),
-    ]);
-
-    res.json({ total, withDuplicateGroup, bestInGroup, duplicateRate: total > 0 ? Math.round((withDuplicateGroup / total) * 100) : 0 });
-  } catch (error: any) {
-    logger.error('Duplicate stats error', { error: error.message });
     res.status(500).json({ error: 'Fehler' });
   }
 });
@@ -7850,38 +7708,6 @@ router.patch('/bulk/add-tag', authMiddleware, async (req: AuthRequest, res: Resp
   }
 });
 
-// GET /api/events/:eventId/photos/category-stats — Photos grouped by category
-router.get('/:eventId/photos/category-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
-
-    const grouped = await prisma.photo.groupBy({
-      by: ['categoryId'],
-      where: { eventId, deletedAt: null },
-      _count: { id: true },
-      orderBy: { _count: { id: 'desc' } },
-    });
-
-    const categories = await prisma.category.findMany({
-      where: { eventId },
-      select: { id: true, name: true },
-    });
-
-    const catMap = new Map(categories.map((c: any) => [c.id, c.name]));
-    res.json({
-      categoryStats: grouped.map((g: any) => ({
-        categoryId: g.categoryId,
-        categoryName: g.categoryId ? catMap.get(g.categoryId) || 'Unbekannt' : 'Keine Kategorie',
-        count: g._count.id,
-      })),
-    });
-  } catch (error: any) {
-    logger.error('Category stats error', { error: error.message });
-    res.status(500).json({ error: 'Fehler' });
-  }
-});
-
 // GET /api/events/:eventId/photos/votes-stats — Vote statistics for event
 router.get('/:eventId/photos/votes-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
@@ -8009,33 +7835,6 @@ router.get('/:eventId/photos/daily-stats', authMiddleware, async (req: AuthReque
     });
   } catch (error: any) {
     logger.error('Daily stats error', { error: error.message });
-    res.status(500).json({ error: 'Fehler beim Laden' });
-  }
-});
-
-// GET /api/events/:eventId/photos/hourly-stats — Upload distribution by hour of day
-router.get('/:eventId/photos/hourly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
-
-    const photos = await prisma.photo.findMany({
-      where: { eventId, deletedAt: null },
-      select: { createdAt: true },
-    });
-
-    const hourlyMap: number[] = new Array(24).fill(0);
-    for (const p of photos) {
-      const hour = new Date(p.createdAt).getHours();
-      hourlyMap[hour]++;
-    }
-
-    res.json({
-      hourlyStats: hourlyMap.map((count, hour) => ({ hour, count })),
-      peakHour: hourlyMap.indexOf(Math.max(...hourlyMap)),
-    });
-  } catch (error: any) {
-    logger.error('Hourly stats error', { error: error.message });
     res.status(500).json({ error: 'Fehler beim Laden' });
   }
 });

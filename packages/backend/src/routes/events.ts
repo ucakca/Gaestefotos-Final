@@ -1777,7 +1777,7 @@ router.get('/:eventId/qr-code', optionalAuthMiddleware, async (req: AuthRequest,
     const event = await prisma.event.findUnique({ where: { id: eventId }, select: { slug: true, title: true } });
     if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
 
-    const baseUrl = process.env.FRONTEND_URL || 'https://gaestefotos.com';
+    const baseUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
     const shareUrl = `${baseUrl}/e3/${event.slug}`;
 
     // Simple QR code URL via Google Charts (no external dep needed)

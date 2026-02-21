@@ -51,7 +51,7 @@ router.get('/:slug', async (req: any, res: Response) => {
       ? photos.sort(() => Math.random() - 0.5)
       : photos;
 
-    const baseUrl = process.env.FRONTEND_URL || 'https://gästefotos.com';
+    const baseUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
 
     const slides = photoList.map((p) => ({
       id: p.id,
@@ -126,7 +126,7 @@ router.get('/:slug/latest', async (req: any, res: Response) => {
       },
     });
 
-    const baseUrl = process.env.FRONTEND_URL || 'https://gästefotos.com';
+    const baseUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
 
     const slides = newPhotos.map((p) => ({
       id: p.id,
@@ -175,7 +175,7 @@ router.get('/:slug/wall-feed', async (req: any, res: Response) => {
 
     const take = Math.min(parseInt(limit as string) || 50, 200);
     const enabledSources = (sources as string).split(',');
-    const baseUrl = process.env.FRONTEND_URL || 'https://gästefotos.com';
+    const baseUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
 
     const feedItems: any[] = [];
 
