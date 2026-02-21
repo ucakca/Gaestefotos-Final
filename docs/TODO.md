@@ -787,6 +787,10 @@
 | S26-596 | **Month-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/month-stats (1-12 buckets/peakMonth/peakMonthName) |
 | S26-597 | **Hash-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/hash-stats (md5/perceptualHash uniqueness+dupeRate%) |
 | S26-598 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 598 Features in Sprint S26 implementiert + deployed |
+| S26-599 | **Comment-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/comment-stats (total/approved/pending/rate%/avgPerPhoto) |
+| S26-600 | **Vote-Distribution** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/vote-distribution (1-5 buckets+pct%+avg) |
+| S26-601 | **Engagement-Score** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/engagement-score (views*0.1+likes*2+comments*3 top20) |
+| S26-602 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 602 Features in Sprint S26 implementiert + deployed |
 
 ---
 
