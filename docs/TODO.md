@@ -973,6 +973,9 @@
 | S26-782 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 782 Features in Sprint S26 implementiert + deployed |
 | S26-783 | **GET /:eventId/photos/tag-suggestions** | ✅ erledigt (21.02.2026) | Tag-Autocomplete: Top-Tags nach Haeufigkeit, ?q= Filter, totalUniqueTags |
 | S26-784 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 784 Features in Sprint S26 implementiert + deployed |
+| S26-785 | **Admin Benutzer-Verwaltung Frontend** | ✅ erledigt (21.02.2026) | /admin/users: Suche, Rollen-Aenderung, Sperren/Entsperren, Pagination |
+| S26-786 | **Admin-Hub Benutzer-Link** | ✅ erledigt (21.02.2026) | Benutzer-Verwaltung in Event-Verwaltung Sektion des Admin-Hubs |
+| S26-787 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 787 Features in Sprint S26 implementiert + deployed |
 
 ---
 
