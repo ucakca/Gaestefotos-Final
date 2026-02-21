@@ -2068,6 +2068,27 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/status-timeline — Recent status changes (updatedAt desc)
+router.get('/:eventId/photos/status-timeline', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const limit = Math.min(50, parseInt(req.query.limit as string, 10) || 20);
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { id: true, status: true, uploadedBy: true, updatedAt: true, url: true },
+      orderBy: { updatedAt: 'desc' },
+      take: limit,
+    });
+
+    res.json({ photos, count: photos.length });
+  } catch (error: any) {
+    logger.error('Status timeline error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // POST /photos/bulk/restore — Restore soft-deleted photos
 router.post('/bulk/restore', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
