@@ -569,6 +569,13 @@
 | S26-378 | **QR-Code** | ✅ erledigt (21.02.2026) | GET /events/:id/qr-code (qrUrl + shareUrl) |
 | S26-379 | **Gast Summary** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/summary (total/accepted/plusOnes) |
 | S26-380 | **Sprint S26 Final** | ✅ erledigt (21.02.2026) | 380 Features in Sprint S26 implementiert + deployed |
+| S26-381 | **Admin Event Summary** | ✅ erledigt (21.02.2026) | GET /admin/events/summary-stats (total/active/withPhotos) |
+| S26-382 | **Admin User-Stats** | ✅ erledigt (21.02.2026) | GET /admin/users/stats (total/locked/admins/newThisWeek) |
+| S26-383 | **Views-Total** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/views-total (sum/avg/max) |
+| S26-384 | **Status-Count** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/status-count (groupBy status) |
+| S26-385 | **Photos by-Guest** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/by-guest (groupBy uploadedBy) |
+| S26-386 | **Hourly-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/hourly-stats (peakHour) |
+| S26-387 | **Sprint S26 Abschluss** | ✅ erledigt (21.02.2026) | 387 Features in Sprint S26 implementiert + deployed |
 
 ---
 
