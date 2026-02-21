@@ -10,6 +10,7 @@ import {
   UserPlus,
   Activity,
   Brain,
+  Bell,
 } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AppLayout from '@/components/AppLayout';
@@ -33,6 +34,7 @@ const sections: { title: string; items: AdminLink[] }[] = [
     title: 'KI-System',
     items: [
       { href: '/admin/ai-monitoring', label: 'KI-Provider Monitoring', description: 'API-Status, Latenz (p50/p95), Fehlerrate pro Provider', icon: Activity, color: 'text-indigo-500' },
+      { href: '/admin/push-history', label: 'Push-Benachrichtigungen Verlauf', description: 'Gesendete Push-Notifications: Erfolgsrate, Empfänger, Zeitstempel', icon: Bell, color: 'text-violet-500' },
     ],
   },
   {
