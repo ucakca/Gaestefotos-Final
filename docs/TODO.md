@@ -632,6 +632,13 @@
 | S26-441 | **Votes-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/votes-stats (totalVotes/avgRating) |
 | S26-442 | **Comments-Count** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/comments-count (totalComments) |
 | S26-443 | **Sprint S26 Checkpoint** | ✅ erledigt (21.02.2026) | 443 Features in Sprint S26 implementiert + deployed |
+| S26-444 | **Invitation-Log** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/invitation-log (limit/offset/createdAt desc) |
+| S26-445 | **Guestbook-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/guestbook/stats (total/approved/approvalRate%) |
+| S26-446 | **Category-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-stats (groupBy categoryId) |
+| S26-447 | **Story-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/stories/stats (active/expired) |
+| S26-448 | **Challenge-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/challenges/stats (participants) |
+| S26-449 | **Dietary-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/dietary-stats (withDietary) |
+| S26-450 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 450 Features in Sprint S26 implementiert + deployed |
 
 ---
 
