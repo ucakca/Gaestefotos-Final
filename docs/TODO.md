@@ -839,6 +839,10 @@
 | S26-648 | **Purge-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/purge-stats (deleted/purgeScheduled/overdue/activePhotos counts) |
 | S26-649 | **First-Upload** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/first-upload (first+last upload timestamps + spanHours) |
 | S26-650 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 650 Features in Sprint S26 implementiert + deployed |
+| S26-651 | **Status-Breakdown** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/status-breakdown (photo count per status with pct%) |
+| S26-652 | **Quality-Gap** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/quality-gap (avg quality diff between best/worst category) |
+| S26-653 | **Daily-Engagement** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/daily-engagement (likes+comments+votes per day timeline) |
+| S26-654 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 654 Features in Sprint S26 implementiert + deployed |
 
 ---
 
