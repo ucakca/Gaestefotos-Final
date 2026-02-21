@@ -2068,6 +2068,25 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/duplicate-stats — Duplicate photo statistics
+router.get('/:eventId/photos/duplicate-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, withDuplicateGroup, bestInGroup] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, duplicateGroupId: { not: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, isBestInGroup: true } }),
+    ]);
+
+    res.json({ total, withDuplicateGroup, bestInGroup, duplicateRate: total > 0 ? Math.round((withDuplicateGroup / total) * 100) : 0 });
+  } catch (error: any) {
+    logger.error('Duplicate stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/quality-stats — Quality score statistics
 router.get('/:eventId/photos/quality-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
