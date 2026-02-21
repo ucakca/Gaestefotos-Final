@@ -2068,6 +2068,32 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/hourly-stats — Upload distribution by hour (0-23)
+router.get('/:eventId/photos/hourly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+    });
+
+    const hourMap: Record<number, number> = {};
+    for (let h = 0; h < 24; h++) hourMap[h] = 0;
+    for (const p of photos) hourMap[p.createdAt.getHours()]++;
+
+    const hours = Object.entries(hourMap).map(([h, count]) => ({ hour: parseInt(h), count }));
+    const peakHour = hours.reduce((a, b) => b.count > a.count ? b : a, { hour: 0, count: 0 });
+    const quietHour = hours.filter(h => h.count > 0).reduce((a, b) => b.count < a.count ? b : a, { hour: 0, count: Infinity });
+
+    res.json({ hours, peakHour: peakHour.hour, peakHourCount: peakHour.count, quietHour: quietHour.count === Infinity ? null : quietHour.hour });
+  } catch (error: any) {
+    logger.error('Hourly stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/storage-stats — Storage size breakdown
 router.get('/:eventId/photos/storage-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
