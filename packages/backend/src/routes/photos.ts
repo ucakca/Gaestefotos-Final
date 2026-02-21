@@ -2068,6 +2068,36 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// PATCH /photos/bulk/set-category — Set category for multiple photos
+router.patch('/bulk/set-category', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { photoIds, categoryId } = req.body as { photoIds: string[]; categoryId: string | null };
+    if (!Array.isArray(photoIds) || !photoIds.length) {
+      return res.status(400).json({ error: 'photoIds (Array) erforderlich' });
+    }
+
+    const photos = await prisma.photo.findMany({
+      where: { id: { in: photoIds } },
+      select: { id: true, eventId: true },
+    });
+
+    let updated = 0;
+    for (const photo of photos) {
+      if (!(await hasEventManageAccess(req, photo.eventId))) continue;
+      await prisma.photo.update({
+        where: { id: photo.id },
+        data: { categoryId: categoryId || null },
+      });
+      updated++;
+    }
+
+    res.json({ updated, total: photoIds.length });
+  } catch (error: any) {
+    logger.error('Bulk set-category error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // PATCH /photos/bulk/remove-tag — Remove tag from multiple photos
 router.patch('/bulk/remove-tag', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
