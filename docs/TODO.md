@@ -92,7 +92,7 @@
 | AI-12 | **Bild-KI Provider** | ⏳ offen | MEDIUM | Replicate, Stability AI, oder fal.ai evaluieren |
 | AI-13 | **BG Removal** | ✅ erledigt (20.02.2026) | — | bgRemoval.ts Service + /booth-games/bg-removal Route + AiEffectsModal UI |
 | AI-14 | **AI Oldify/Cartoon** | ✅ erledigt | — | Implementiert via aiStyleEffects.ts |
-| AI-15 | **Style Transfer** | ⏳ in Bearbeitung (21.02.2026) | LOW | Weitere Kunststile werden ergänzt |
+| AI-15 | **Style Transfer** | ✅ erledigt (21.02.2026) | — | 8 neue Stile: anime, watercolor, oil_painting, sketch, neon_noir, renaissance, comic_book, pixel_art (gesamt: 16) |
 
 ### Zusammenfassung AI
 
@@ -100,9 +100,9 @@
 |-----------|----------|-------|
 | Provider Setup | 3 | 2 |
 | Backend | 4 | 0 |
-| Admin UI | 1 | 1 |
-| Bild-KI | 2 | 2 |
-| **Gesamt** | **10** | **5** |
+| Admin UI | 2 | 0 |
+| Bild-KI | 3 | 1 |
+| **Gesamt** | **12** | **3** |
 
 ---
 
@@ -931,6 +931,11 @@
 | S26-740 | **Top-Viewed-Approved** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-viewed-approved (top20 approved photos by view count) |
 | S26-741 | **Guest-Like-Rank** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/guest-like-rank (top20 guests by like count given) |
 | S26-742 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 742 Features in Sprint S26 implementiert + deployed |
+| S26-743 | **Partner AI-Config Frontend** | ✅ erledigt (21.02.2026) | /partner/events/[eventId]/ai-config (KI-Einstellungen + Briefing + Energy-System UI) |
+| S26-744 | **AI-11 Provider-Monitoring Backend** | ✅ erledigt (21.02.2026) | GET /admin/ai-providers/monitoring (p50/p95 Latenz, Fehlerrate, Status, Kosten) |
+| S26-745 | **AI-11 Provider-Monitoring Frontend** | ✅ erledigt (21.02.2026) | /admin/ai-monitoring (Status-Tabelle mit Latenz, Fehlerrate, Zeitraum-Filter) |
+| S26-746 | **AI-15: 8 neue Style-Transfer-Stile** | ✅ erledigt (21.02.2026) | anime, watercolor, oil_painting, sketch, neon_noir, renaissance, comic_book, pixel_art |
+| S26-747 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 747 Features in Sprint S26 implementiert + deployed |
 
 ---
 
