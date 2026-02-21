@@ -441,4 +441,35 @@ router.get('/rate-limits', authMiddleware, requireRole('ADMIN'), async (_req: Au
   });
 });
 
+// GET /api/admin/ops/server-info — static server metadata (for Domain Overview page)
+router.get('/server-info', authMiddleware, requireRole('ADMIN'), async (_req: AuthRequest, res: Response) => {
+  res.json({
+    ip: '65.109.71.182',
+    sslProvider: "Let's Encrypt (Plesk)",
+    cdnProvider: 'Cloudflare',
+    hosting: 'Hetzner VPS',
+    location: 'Falkenstein, DE',
+    nodeVersion: process.version,
+    nodeEnv: process.env.NODE_ENV || 'unknown',
+    uptimeSeconds: Math.floor(os.uptime()),
+  });
+});
+
+// GET /api/admin/ops/ping?url=... — reachability check for Domain Overview page
+router.get('/ping', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, res: Response) => {
+  const url = req.query.url as string;
+  if (!url || !url.startsWith('https://')) {
+    return res.status(400).json({ error: 'Ungültige URL' });
+  }
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 5000);
+    const r = await fetch(url, { method: 'HEAD', signal: ctrl.signal, redirect: 'follow' });
+    clearTimeout(timer);
+    return res.json({ ok: r.ok, status: r.status });
+  } catch {
+    return res.status(200).json({ ok: false, status: 0, error: 'Nicht erreichbar' });
+  }
+});
+
 export default router;

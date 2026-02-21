@@ -75,8 +75,8 @@ export default function AdminOpsPage() {
     setRefreshing(true);
     try {
       const [serverRes, healthRes] = await Promise.allSettled([
-        api.get('/ops/server'),
-        api.get('/ops/health'),
+        api.get('/admin/ops/server'),
+        api.get('/admin/ops/health'),
       ]);
       if (serverRes.status === 'fulfilled') setServer(serverRes.value.data);
       if (healthRes.status === 'fulfilled') setHealth(healthRes.value.data);
