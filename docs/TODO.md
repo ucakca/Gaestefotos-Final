@@ -903,6 +903,10 @@
 | S26-712 | **Top-Liked-No-Views** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-liked-no-views (top20 liked photos with zero views - hidden gems) |
 | S26-713 | **Category-Vote-Leader** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-vote-leader (top20 categories by total vote count) |
 | S26-714 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 714 Features in Sprint S26 implementiert + deployed |
+| S26-715 | **Top-Commented-This-Week** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-commented-this-week (top20 photos by comments in last 7 days) |
+| S26-716 | **Upload-By-Weekday** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/upload-by-weekday (upload count per weekday Sun-Sat) |
+| S26-717 | **Like-Velocity** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/like-velocity (top20 photos by likes-per-day since upload) |
+| S26-718 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 718 Features in Sprint S26 implementiert + deployed |
 
 ---
 
