@@ -2503,6 +2503,39 @@ router.get(
   }
 );
 
+// GET /api/events/:eventId/comments/stats — Comment moderation statistics
+router.get(
+  '/:eventId/comments/stats',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) {
+        return res.status(403).json({ error: 'Kein Zugriff' });
+      }
+
+      const [total, pending, approved, rejected] = await Promise.all([
+        prisma.photoComment.count({ where: { photo: { eventId } } }),
+        prisma.photoComment.count({ where: { photo: { eventId }, status: 'PENDING' as any } }),
+        prisma.photoComment.count({ where: { photo: { eventId }, status: 'APPROVED' as any } }),
+        prisma.photoComment.count({ where: { photo: { eventId }, status: 'REJECTED' as any } }),
+      ]);
+
+      res.json({
+        total,
+        pending,
+        approved,
+        rejected,
+        approvalRate: total > 0 ? Math.round((approved / total) * 100) : 0,
+        requiresAction: pending > 0,
+      });
+    } catch (error: any) {
+      logger.error('Comment stats error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Laden' });
+    }
+  }
+);
+
 // GET /api/events/:eventId/guests/engagement — How guests interact with the event
 router.get(
   '/:eventId/guests/engagement',
