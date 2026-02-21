@@ -2068,6 +2068,35 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/uploader-stats — Top uploaders by photo count
+router.get('/:eventId/photos/uploader-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['uploadedBy'],
+      where: { eventId, deletedAt: null },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 50,
+    });
+
+    const total = grouped.reduce((s: number, g: any) => s + g._count.id, 0);
+    res.json({
+      uploaders: grouped.map((g: any) => ({
+        uploadedBy: g.uploadedBy || 'Anonymous',
+        count: g._count.id,
+        rate: total > 0 ? Math.round((g._count.id / total) * 100) : 0,
+      })),
+      totalUploaders: grouped.length,
+    });
+  } catch (error: any) {
+    logger.error('Uploader stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/activity — Recent activity feed (uploads, likes, comments)
 router.get('/:eventId/photos/activity', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
