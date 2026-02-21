@@ -958,6 +958,11 @@
 | S26-767 | **PATCH /photos/bulk/caption** | ✅ erledigt (21.02.2026) | Bulk-Set/Clear AI-Captions fuer max 200 Fotos (title field, eventId Access-Check) |
 | S26-768 | **GET /events/:id/photos/geo-stats** | ✅ erledigt (21.02.2026) | GPS-Coverage: total/withGps/withoutGps/gpsCoverage% + top 100 geo-tagged Fotos |
 | S26-769 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 769 Features in Sprint S26 implementiert + deployed |
+| S26-770 | **PATCH /photos/bulk/caption** | ✅ erledigt (21.02.2026) | Bulk-Set/Clear AI-Captions fuer max 200 Fotos (title field, eventId Access-Check) |
+| S26-771 | **GET /events/:id/photos/geo-stats** | ✅ erledigt (21.02.2026) | GPS-Coverage: total/withGps/withoutGps/gpsCoverage% + top 100 geo-tagged Fotos |
+| S26-772 | **Admin Storage Stats Frontend** | ✅ erledigt (21.02.2026) | /admin/storage: Top-30 Events (Speicher-Balken, Gesamt-Storage, Foto-Anzahl) |
+| S26-773 | **Admin-Hub System-Sektion** | ✅ erledigt (21.02.2026) | Storage-Stats + KI-Status Links in neuer 'System' Sektion |
+| S26-774 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 774 Features in Sprint S26 implementiert + deployed |
 
 ---
 
