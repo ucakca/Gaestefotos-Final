@@ -2068,6 +2068,41 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/camera-stats — EXIF camera make/model statistics
+router.get('/:eventId/photos/camera-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { exifData: true },
+    });
+
+    const makeMap: Record<string, number> = {};
+    const modelMap: Record<string, number> = {};
+    let withExif = 0;
+
+    for (const p of photos) {
+      const exif = p.exifData as any;
+      if (!exif || typeof exif !== 'object') continue;
+      withExif++;
+      const make = exif.make || exif.Make || null;
+      const model = exif.model || exif.Model || null;
+      if (make) makeMap[make] = (makeMap[make] || 0) + 1;
+      if (model) modelMap[model] = (modelMap[model] || 0) + 1;
+    }
+
+    const makes = Object.entries(makeMap).sort(([, a], [, b]) => b - a).slice(0, 20).map(([make, count]) => ({ make, count }));
+    const models = Object.entries(modelMap).sort(([, a], [, b]) => b - a).slice(0, 20).map(([model, count]) => ({ model, count }));
+
+    res.json({ makes, models, withExif, totalPhotos: photos.length });
+  } catch (error: any) {
+    logger.error('Camera stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/duplicate-stats — Duplicate detection statistics
 router.get('/:eventId/photos/duplicate-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
