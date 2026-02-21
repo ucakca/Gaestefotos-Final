@@ -2068,6 +2068,33 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/top — Top photos sorted by views or likes
+router.get('/:eventId/photos/top', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const sortBy = (req.query.sortBy as string) || 'views';
+    const limit = Math.min(50, parseInt(req.query.limit as string, 10) || 10);
+
+    const orderBy: any = sortBy === 'likes'
+      ? { likes: { _count: 'desc' } }
+      : { views: 'desc' };
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { id: true, url: true, views: true, status: true, uploadedBy: true, createdAt: true, _count: { select: { likes: true, comments: true } } },
+      orderBy,
+      take: limit,
+    });
+
+    res.json({ photos, sortBy, count: photos.length });
+  } catch (error: any) {
+    logger.error('Top photos error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/summary — Aggregated dashboard summary (all key stats)
 router.get('/:eventId/photos/summary', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
