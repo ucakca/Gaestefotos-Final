@@ -899,6 +899,10 @@
 | S26-708 | **Category-View-Total** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-view-total (total views per category sorted desc) |
 | S26-709 | **Uploader-Quality-Avg** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/uploader-quality-avg (top20 uploaders by avg quality score min 2 photos) |
 | S26-710 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 710 Features in Sprint S26 implementiert + deployed |
+| S26-711 | **Pending-Oldest** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/pending-oldest (top20 PENDING photos waiting longest for review) |
+| S26-712 | **Top-Liked-No-Views** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-liked-no-views (top20 liked photos with zero views - hidden gems) |
+| S26-713 | **Category-Vote-Leader** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-vote-leader (top20 categories by total vote count) |
+| S26-714 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 714 Features in Sprint S26 implementiert + deployed |
 
 ---
 
