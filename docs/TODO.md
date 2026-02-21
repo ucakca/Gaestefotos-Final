@@ -65,8 +65,8 @@
 |---|---------|--------|-----------|--------------|
 | AI-1 | **Groq Integration** | ✅ erledigt | — | Llama 3.1 70B aktiv, ~$0.00059/1k Tokens |
 | AI-2 | **AI-Cache-System** | ✅ erledigt | — | Redis-basiertes Cache mit 30d TTL, Hit-Tracking, Fallbacks |
-| AI-3 | **Grok (xAI) API-Key** | ⏳ offen | MEDIUM | `XAI_API_KEY` in .env setzen, Seed ausführen |
-| AI-4 | **OpenAI API-Key** | ⏳ offen | LOW | `OPENAI_API_KEY` in .env setzen, als Fallback |
+| AI-3 | **Grok (xAI) API-Key** | ✅ erledigt (21.02.2026) | — | `XAI_API_KEY` aktiv: grok-3-mini, 12 Logs, Default Provider |
+| AI-4 | **OpenAI API-Key** | ✅ erledigt (21.02.2026) | — | `OPENAI_API_KEY` aktiv: gpt-4o-mini, 200 OK, 5€ Budget |
 | AI-5 | **AiFeatureMapping DB** | ✅ erledigt (20.02.2026) | — | 40 Mappings in DB, Auto-Setup Button im Admin Dashboard |
 
 ### AI Backend Erweiterungen
@@ -183,7 +183,7 @@
 | NF-2 | **Workflow Builder Erweiterung** | ✅ erledigt (20.02.2026) | — | Lock/Unlock, Duplikat, Backup/Restore, Export/Import, Undo/Redo, Simulation, Analytics. FACE_SEARCH Flow aktiv für app.gästefotos.com. |
 | NF-3 | **SMS Sharing** | ✅ erledigt | — | smsService.ts (Twilio + 46elks), smsShare.ts API Routen, Admin UI /manage/sms |
 | NF-4 | **Face Recognition Erweiterung** | ✅ erledigt (20.02.2026) | — | TinyFaceDetector: inputSize 416, scoreThreshold 0.35 (besserer Recall). Single-Pass in getFaceDetectionMetadata (keine doppelte Erkennung mehr). |
-| NF-5 | **Storage Subdomain** | 🔧 teilweise (21.02.2026) | LOW | nginx-Config für cdn.gästefotos.com erstellt (→ SeaweedFS :8333). SSL-Cert via certbot/Plesk noch nötig + DNS-Eintrag. |
+| NF-5 | **Storage Subdomain** | ✅ erledigt (21.02.2026) | LOW | cdn.xn--gstefotos-v2a.com: Let's Encrypt Cert (Plesk sslit, R13, Apr 2026), nginx-Config in conf.d, SeaweedFS :8888, HTTP 200 von Cloudflare ✅ |
 
 ### Neue Features (Sprint 20.02.2026)
 
