@@ -859,6 +859,10 @@
 | S26-668 | **Category-Engagement** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-engagement (likes+comments sum per category sorted) |
 | S26-669 | **Size-Bucket** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/size-bucket (photo count per file size bucket 0-1/1-5/5-10/10MB+) |
 | S26-670 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 670 Features in Sprint S26 implementiert + deployed |
+| S26-671 | **Top-Stories** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-stories (top20 story-type photos by views) |
+| S26-672 | **Rejection-Rate-By-Uploader** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/rejection-rate-by-uploader (top20 uploaders by rejection rate%) |
+| S26-673 | **View-Per-Like-Ratio** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/view-per-like-ratio (top20 photos by views-per-like ratio) |
+| S26-674 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 674 Features in Sprint S26 implementiert + deployed |
 
 ---
 
