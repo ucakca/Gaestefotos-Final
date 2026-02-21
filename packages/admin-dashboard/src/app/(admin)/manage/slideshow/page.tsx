@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Presentation, Play, Pause, Settings, ExternalLink, Copy, Check, Monitor, Smartphone } from 'lucide-react';
+import api from '@/lib/api';
 
 interface EventOption {
   id: string;
@@ -44,8 +45,7 @@ export default function SlideshowPage() {
 
   async function fetchEvents() {
     try {
-      const res = await fetch('/api/events?limit=100&active=true', { credentials: 'include' });
-      const data = await res.json();
+      const { data } = await api.get('/admin/events?limit=100&isActive=true');
       setEvents((data.events || data || []).map((e: any) => ({ id: e.id, title: e.title, slug: e.slug })));
     } catch (err) {
       console.error('Failed to load events', err);

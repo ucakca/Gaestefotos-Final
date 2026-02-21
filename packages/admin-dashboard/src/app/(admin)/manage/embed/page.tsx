@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Code2, Copy, Check, ExternalLink, Monitor, Smartphone, Link2, FileCode } from 'lucide-react';
 import { PageTransition } from '@/components/ui/PageTransition';
+import api from '@/lib/api';
 
 interface EmbedData {
   eventId: string;
@@ -33,8 +34,7 @@ export default function EmbedCodePage() {
 
   async function fetchEvents() {
     try {
-      const res = await fetch('/api/events?limit=100&active=true', { credentials: 'include' });
-      const data = await res.json();
+      const { data } = await api.get('/admin/events?limit=100&isActive=true');
       setEvents((data.events || data || []).map((e: any) => ({ id: e.id, title: e.title, slug: e.slug })));
     } catch (err) {
       console.error('Failed to load events', err);
@@ -44,9 +44,7 @@ export default function EmbedCodePage() {
   async function fetchEmbedCode(eventId: string) {
     setLoading(true);
     try {
-      const res = await fetch(`/api/events/${eventId}/embed`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Fehler beim Laden');
-      const data = await res.json();
+      const { data } = await api.get(`/events/${eventId}/embed`);
       setEmbedData(data);
     } catch (err) {
       console.error('Failed to load embed code', err);

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { MessageSquare, Send, Phone, Clock, CheckCircle2, XCircle, Loader2, Search, Download, BarChart3, Settings } from 'lucide-react';
 import { PageTransition } from '@/components/ui/PageTransition';
+import api from '@/lib/api';
 
 interface SmsLog {
   id: string;
@@ -62,24 +63,17 @@ export default function SmsAdminPage() {
       if (statusFilter !== 'all') params.set('status', statusFilter);
 
       const [logsRes, statsRes, configRes] = await Promise.all([
-        fetch(`/api/sms/admin/logs?${params}`, { credentials: 'include' }),
-        fetch('/api/sms/admin/stats', { credentials: 'include' }),
-        fetch('/api/sms/admin/config', { credentials: 'include' }),
+        api.get(`/sms/admin/logs?${params}`).catch(() => null),
+        api.get('/sms/admin/stats').catch(() => null),
+        api.get('/sms/admin/config').catch(() => null),
       ]);
 
-      if (logsRes.ok) {
-        const logsData = await logsRes.json();
-        setLogs(logsData.logs || []);
-        setTotalLogs(logsData.total || 0);
+      if (logsRes) {
+        setLogs(logsRes.data.logs || []);
+        setTotalLogs(logsRes.data.total || 0);
       }
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        setStats(statsData);
-      }
-      if (configRes.ok) {
-        const configData = await configRes.json();
-        setConfig(configData);
-      }
+      if (statsRes) setStats(statsRes.data);
+      if (configRes) setConfig(configRes.data);
     } catch (err) {
       console.error('Failed to load SMS data', err);
     } finally {
@@ -91,22 +85,13 @@ export default function SmsAdminPage() {
     if (!config) return;
     setSaving(true);
     try {
-      const res = await fetch('/api/sms/admin/config', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          twilioAccountSid: config.twilioAccountSid,
-          twilioAuthToken: config.twilioAuthToken,
-          twilioPhoneNumber: config.twilioPhoneNumber,
-          defaultMessage: config.defaultMessage,
-        }),
+      await api.put('/sms/admin/config', {
+        twilioAccountSid: config.twilioAccountSid,
+        twilioAuthToken: config.twilioAuthToken,
+        twilioPhoneNumber: config.twilioPhoneNumber,
+        defaultMessage: config.defaultMessage,
       });
-      if (res.ok) {
-        showToast('Konfiguration gespeichert', 'success');
-      } else {
-        showToast('Fehler beim Speichern', 'error');
-      }
+      showToast('Konfiguration gespeichert', 'success');
     } catch {
       showToast('Netzwerkfehler', 'error');
     } finally {

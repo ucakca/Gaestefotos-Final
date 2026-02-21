@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Shield, Clock, AlertTriangle, RefreshCw, Activity } from 'lucide-react';
 import { PageTransition } from '@/components/ui/PageTransition';
+import api from '@/lib/api';
 
 interface RateLimit {
   name: string;
@@ -43,9 +44,7 @@ export default function RateLimitsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/admin/ops/rate-limits', { credentials: 'include' });
-      if (!res.ok) throw new Error('Fehler beim Laden');
-      const json = await res.json();
+      const { data: json } = await api.get('/admin/ops/rate-limits');
       setData(json);
     } catch (err: any) {
       setError(err?.message || 'Unbekannter Fehler');
