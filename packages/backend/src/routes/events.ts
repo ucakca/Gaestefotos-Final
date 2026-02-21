@@ -2349,6 +2349,66 @@ router.patch(
   }
 );
 
+// GET /api/events/:id/countdown — Time until event start
+router.get(
+  '/:id/countdown',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const event = await prisma.event.findUnique({
+        where: { id: req.params.id },
+        select: { id: true, title: true, dateTime: true, isActive: true },
+      });
+      if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+
+      if (!event.dateTime) {
+        return res.json({ hasDate: false, phase: 'no_date' });
+      }
+
+      const now = new Date();
+      const eventDate = new Date(event.dateTime);
+      const diffMs = eventDate.getTime() - now.getTime();
+      const diffSeconds = Math.floor(diffMs / 1000);
+      const diffMinutes = Math.floor(diffSeconds / 60);
+      const diffHours = Math.floor(diffMinutes / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      let phase: string;
+      if (diffMs < 0) {
+        const hoursAgo = Math.abs(diffHours);
+        phase = hoursAgo < 24 ? 'in_progress' : hoursAgo < 168 ? 'recently_ended' : 'past';
+      } else if (diffDays === 0) {
+        phase = diffHours === 0 ? 'starting_soon' : 'today';
+      } else if (diffDays <= 7) {
+        phase = 'this_week';
+      } else if (diffDays <= 30) {
+        phase = 'this_month';
+      } else {
+        phase = 'future';
+      }
+
+      res.json({
+        hasDate: true,
+        eventDate: event.dateTime,
+        phase,
+        isPast: diffMs < 0,
+        days: Math.abs(diffDays),
+        hours: Math.abs(diffHours % 24),
+        minutes: Math.abs(diffMinutes % 60),
+        totalSeconds: Math.abs(diffSeconds),
+        label: diffMs < 0
+          ? `Vor ${Math.abs(diffDays)} Tagen`
+          : diffDays === 0
+            ? diffHours === 0 ? 'Startet gleich!' : `Heute in ${diffHours}h`
+            : `In ${diffDays} Tagen`,
+      });
+    } catch (error: any) {
+      logger.error('Countdown error', { error: error.message });
+      res.status(500).json({ error: 'Fehler beim Laden' });
+    }
+  }
+);
+
 // GET /api/events/:eventId/photos/quality-distribution — Quality score histogram (0-100%)
 router.get(
   '/:eventId/photos/quality-distribution',
