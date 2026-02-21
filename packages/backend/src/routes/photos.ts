@@ -2069,6 +2069,88 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/top-viewed-today — Top10 photos by views gained today
+router.get('/:eventId/photos/top-viewed-today', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, updatedAt: { gte: startOfDay }, views: { gt: 0 } },
+      select: { id: true, url: true, title: true, views: true, qualityScore: true, status: true },
+      orderBy: { views: 'desc' },
+      take: 10,
+    });
+
+    res.json({ photos, date: startOfDay.toISOString().slice(0, 10) });
+  } catch (error: any) {
+    logger.error('Top viewed today error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/storage-by-status — Total storage bytes per status
+router.get('/:eventId/photos/storage-by-status', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['status'],
+      where: { eventId, deletedAt: null, sizeBytes: { not: null } },
+      _sum: { sizeBytes: true },
+      _count: { id: true },
+    });
+
+    const stats = (grouped as any[]).map((g) => ({
+      status: g.status,
+      photoCount: g._count.id,
+      totalBytes: Number(g._sum.sizeBytes || 0),
+      totalMB: Math.round(Number(g._sum.sizeBytes || 0) / 1_048_576 * 100) / 100,
+    })).sort((a, b) => b.totalBytes - a.totalBytes);
+
+    const totalBytes = stats.reduce((s, g) => s + g.totalBytes, 0);
+    res.json({ stats, totalBytes, totalMB: Math.round(totalBytes / 1_048_576 * 100) / 100 });
+  } catch (error: any) {
+    logger.error('Storage by status error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/vote-score-distribution — Distribution of vote scores 1-5
+router.get('/:eventId/photos/vote-score-distribution', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoVote.groupBy({
+      by: ['rating'],
+      where: { photo: { eventId } },
+      _count: { id: true },
+      orderBy: { rating: 'asc' },
+    });
+
+    const total = (grouped as any[]).reduce((s: number, g: any) => s + g._count.id, 0);
+    const distribution = (grouped as any[]).map((g) => ({
+      rating: g.rating,
+      count: g._count.id,
+      pct: total > 0 ? Math.round((g._count.id / total) * 100) : 0,
+    }));
+
+    const avgRating = total > 0
+      ? Math.round((grouped as any[]).reduce((s: number, g: any) => s + g.rating * g._count.id, 0) / total * 100) / 100
+      : null;
+
+    res.json({ distribution, total, avgRating });
+  } catch (error: any) {
+    logger.error('Vote score distribution error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/uploader-activity-heatmap — Upload count per weekday+hour grid
 router.get('/:eventId/photos/uploader-activity-heatmap', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
