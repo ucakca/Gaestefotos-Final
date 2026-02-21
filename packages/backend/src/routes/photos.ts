@@ -2069,6 +2069,89 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/uploader-activity-heatmap — Upload count per weekday+hour grid
+router.get('/:eventId/photos/uploader-activity-heatmap', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+    });
+
+    const grid: number[][] = Array.from({ length: 7 }, () => new Array(24).fill(0));
+    for (const p of photos) {
+      const wd = p.createdAt.getUTCDay();
+      const hr = p.createdAt.getUTCHours();
+      grid[wd][hr]++;
+    }
+
+    const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const heatmap = grid.map((row, i) => ({ weekday: i, label: labels[i], hours: row }));
+    res.json({ heatmap, total: photos.length });
+  } catch (error: any) {
+    logger.error('Uploader activity heatmap error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/quality-vs-views — Quality score vs views scatter data (sample 200)
+router.get('/:eventId/photos/quality-vs-views', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, qualityScore: { not: null } },
+      select: { id: true, qualityScore: true, views: true, status: true },
+      orderBy: { views: 'desc' },
+      take: 200,
+    });
+
+    const scatter = photos.map((p) => ({ id: p.id, quality: p.qualityScore, views: p.views, status: p.status }));
+    res.json({ scatter, total: scatter.length });
+  } catch (error: any) {
+    logger.error('Quality vs views error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/top-liked-approved-today — Top10 approved photos liked today
+router.get('/:eventId/photos/top-liked-approved-today', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const grouped = await prisma.photoLike.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, status: 'APPROVED', deletedAt: null }, createdAt: { gte: startOfDay } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 10,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true, qualityScore: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      ...(photos.find((p) => p.id === g.photoId) || {}),
+      likesToday: g._count.id,
+    }));
+
+    res.json({ photos: result, date: startOfDay.toISOString().slice(0, 10) });
+  } catch (error: any) {
+    logger.error('Top liked approved today error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/category-approval-rate — Approval rate per category
 router.get('/:eventId/photos/category-approval-rate', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
