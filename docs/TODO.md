@@ -803,6 +803,10 @@
 | S26-612 | **Trending** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/trending (most liked last 24h top20 with recentLikes) |
 | S26-613 | **Quality-Grade-Board** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/quality-grade-board (best photo per grade A-F 0-100) |
 | S26-614 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 614 Features in Sprint S26 implementiert + deployed |
+| S26-615 | **Face-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/face-stats (faceRate%/avgFaces/maxFaces/totalFaces/distribution) |
+| S26-616 | **Category-Leader** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-leader (best photo per category by quality+views) |
+| S26-617 | **Guest-Leaderboard** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/guest-leaderboard (top20 guests by photoCount+totalViews) |
+| S26-618 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 618 Features in Sprint S26 implementiert + deployed |
 
 ---
 
