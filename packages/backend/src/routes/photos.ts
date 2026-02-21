@@ -2068,6 +2068,33 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/hourly-stats — Upload distribution by hour of day
+router.get('/:eventId/photos/hourly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+    });
+
+    const hourlyMap: number[] = new Array(24).fill(0);
+    for (const p of photos) {
+      const hour = new Date(p.createdAt).getHours();
+      hourlyMap[hour]++;
+    }
+
+    res.json({
+      hourlyStats: hourlyMap.map((count, hour) => ({ hour, count })),
+      peakHour: hourlyMap.indexOf(Math.max(...hourlyMap)),
+    });
+  } catch (error: any) {
+    logger.error('Hourly stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 // GET /api/events/:eventId/photos/leaderboard — Top uploaders leaderboard
 router.get('/:eventId/photos/leaderboard', optionalAuthMiddleware, async (req: AuthRequest, res: Response) => {
   try {
