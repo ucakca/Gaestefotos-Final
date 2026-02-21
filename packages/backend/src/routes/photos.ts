@@ -2068,6 +2068,64 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/comment-authors — Top commenters by comment count
+router.get('/:eventId/photos/comment-authors', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoComment.groupBy({
+      by: ['authorName'],
+      where: { photo: { eventId } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 50,
+    });
+
+    res.json({ authors: grouped.map((g: any) => ({ authorName: g.authorName, count: g._count.id })), total: grouped.length });
+  } catch (error: any) {
+    logger.error('Comment authors error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/vote-stats — Voting statistics
+router.get('/:eventId/photos/vote-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const result = await prisma.photoVote.aggregate({
+      where: { photo: { eventId } },
+      _count: { id: true },
+      _avg: { rating: true },
+      _min: { rating: true },
+      _max: { rating: true },
+    });
+
+    const topVoted = await prisma.photoVote.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId } },
+      _avg: { rating: true },
+      _count: { id: true },
+      orderBy: { _avg: { rating: 'desc' } },
+      take: 1,
+    });
+
+    res.json({
+      totalVotes: result._count.id,
+      avgRating: Math.round(((result._avg.rating || 0) * 100)) / 100,
+      minRating: result._min.rating || 0,
+      maxRating: result._max.rating || 0,
+      topPhotoId: topVoted[0]?.photoId || null,
+      topPhotoAvgRating: topVoted[0] ? Math.round(((topVoted[0]._avg.rating || 0) * 100)) / 100 : 0,
+    });
+  } catch (error: any) {
+    logger.error('Vote stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/size-distribution — sizeBytes buckets
 router.get('/:eventId/photos/size-distribution', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
