@@ -2068,6 +2068,26 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/approval-rate — Approval rate stats
+router.get('/:eventId/photos/approval-rate', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, approved, pending, rejected] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, status: 'APPROVED' } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, status: 'PENDING' } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, status: 'REJECTED' } }),
+    ]);
+
+    const approvalRate = total > 0 ? Math.round((approved / total) * 100) : 0;
+    res.json({ total, approved, pending, rejected, approvalRate });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/daily-stats — Uploads per day
 router.get('/:eventId/photos/daily-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
