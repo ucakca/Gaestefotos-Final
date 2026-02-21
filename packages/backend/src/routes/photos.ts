@@ -2069,6 +2069,107 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/pending-oldest — Top20 PENDING photos waiting longest for review
+router.get('/:eventId/photos/pending-oldest', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, status: 'PENDING' },
+      select: { id: true, url: true, title: true, createdAt: true, uploadedBy: true, guestId: true, qualityScore: true },
+      orderBy: { createdAt: 'asc' },
+      take: 20,
+    });
+
+    const now = Date.now();
+    const result = photos.map((p) => ({
+      ...p,
+      waitingHours: Math.round((now - p.createdAt.getTime()) / 3_600_000 * 10) / 10,
+    }));
+
+    res.json({ photos: result, total: result.length });
+  } catch (error: any) {
+    logger.error('Pending oldest error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/top-liked-no-views — Top20 liked photos with zero views (hidden gems)
+router.get('/:eventId/photos/top-liked-no-views', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoLike.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, deletedAt: null, views: 0 } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, status: true, qualityScore: true, views: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      ...(photos.find((p) => p.id === g.photoId) || {}),
+      likeCount: g._count.id,
+    }));
+
+    res.json({ photos: result });
+  } catch (error: any) {
+    logger.error('Top liked no views error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/category-vote-leader — Top20 categories by total vote count
+router.get('/:eventId/photos/category-vote-leader', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, categoryId: { not: null } },
+      select: {
+        categoryId: true,
+        _count: { select: { votes: true } },
+      },
+    });
+
+    const catMap: Record<string, { votes: number }> = {};
+    for (const p of photos) {
+      const cid = p.categoryId as string;
+      if (!catMap[cid]) catMap[cid] = { votes: 0 };
+      catMap[cid].votes += p._count.votes;
+    }
+
+    const catIds = Object.keys(catMap);
+    const categories = catIds.length > 0 ? await prisma.category.findMany({
+      where: { id: { in: catIds } },
+      select: { id: true, name: true },
+    }) : [];
+
+    const result = Object.entries(catMap)
+      .map(([cid, d]) => ({
+        categoryId: cid,
+        categoryName: categories.find((c) => c.id === cid)?.name || null,
+        voteCount: d.votes,
+      }))
+      .sort((a, b) => b.voteCount - a.voteCount)
+      .slice(0, 20);
+
+    res.json({ categories: result });
+  } catch (error: any) {
+    logger.error('Category vote leader error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top-voted-this-week — Top20 photos by votes cast in last 7 days
 router.get('/:eventId/photos/top-voted-this-week', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
