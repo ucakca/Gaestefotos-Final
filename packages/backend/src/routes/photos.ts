@@ -2068,6 +2068,31 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/hash-stats — Hash coverage statistics
+router.get('/:eventId/photos/hash-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, withMd5, withPerceptual] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, md5Hash: { not: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, perceptualHash: { not: null } } }),
+    ]);
+
+    res.json({
+      total,
+      withMd5,
+      withPerceptual,
+      md5Rate: total > 0 ? Math.round((withMd5 / total) * 100) : 0,
+      perceptualRate: total > 0 ? Math.round((withPerceptual / total) * 100) : 0,
+    });
+  } catch (error: any) {
+    logger.error('Hash stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/purge-stats — Photos scheduled for purge
 router.get('/:eventId/photos/purge-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
