@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import crypto from 'crypto';
 import path from 'path';
@@ -109,6 +109,32 @@ export class StorageService {
     });
 
     await s3Client.send(command);
+  }
+
+  async listFiles(options: {
+    prefix?: string;
+    maxKeys?: number;
+    continuationToken?: string;
+  } = {}): Promise<{ items: Array<{ key: string; size: number; lastModified: Date; contentType?: string }>; nextToken?: string; isTruncated: boolean }> {
+    const command = new ListObjectsV2Command({
+      Bucket: BUCKET,
+      Prefix: options.prefix,
+      MaxKeys: options.maxKeys ?? 200,
+      ContinuationToken: options.continuationToken,
+    });
+
+    const response: any = await s3Client.send(command);
+    const items = (response.Contents ?? []).map((obj: any) => ({
+      key: obj.Key ?? '',
+      size: obj.Size ?? 0,
+      lastModified: obj.LastModified ?? new Date(),
+    }));
+
+    return {
+      items,
+      nextToken: response.NextContinuationToken,
+      isTruncated: response.IsTruncated ?? false,
+    };
   }
 
   async ensureBucketExists(): Promise<void> {

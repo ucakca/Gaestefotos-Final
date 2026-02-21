@@ -17,7 +17,7 @@ export interface CDNConfig {
 
 export const CDN_CONFIG: CDNConfig = {
   enabled: process.env.CDN_ENABLED === 'true',
-  domain: process.env.CDN_DOMAIN || 'cdn.gaestefotos.com',
+  domain: process.env.CDN_DOMAIN || 'cdn.xn--gstefotos-v2a.com',
   cacheControl: {
     images: 'public, max-age=31536000, immutable', // 1 year
     videos: 'public, max-age=31536000, immutable', // 1 year

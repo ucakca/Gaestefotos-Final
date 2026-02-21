@@ -63,6 +63,7 @@ import adminUsersRoutes from './routes/adminUsers';
 import adminDashboardRoutes from './routes/adminDashboard';
 import adminSettingsRoutes from './routes/adminSettings';
 import adminBackupsRoutes from './routes/adminBackups';
+import adminCdnRoutes from './routes/adminCdn';
 import cohostInvitesRoutes from './routes/cohostInvites';
 import uploadsRoutes from './routes/uploads';
 import aiRoutes from './routes/ai';
@@ -645,6 +646,8 @@ app.use('/api/admin/users', adminUsersRoutes);
 app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/admin/settings', adminSettingsRoutes);
 app.use('/api/admin/backups', adminBackupsRoutes);
+app.use('/api/admin/cdn', adminCdnRoutes);
+app.use('/api/cdn', adminCdnRoutes); // /api/cdn/verify for nginx auth_request
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
 
 // AI Routes (KI-Assistent)
