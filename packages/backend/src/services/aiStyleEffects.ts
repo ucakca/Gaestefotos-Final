@@ -178,6 +178,8 @@ export async function applyStyleEffect(
       resultBuffer = await callStabilityImg2Img(imageBuffer, provider, styleConfig.prompt, styleConfig.negativePrompt, strength);
     } else if (provider.slug.includes('replicate')) {
       resultBuffer = await callReplicateImg2Img(imageBuffer, provider, effect, styleConfig.prompt, strength);
+    } else if (provider.slug.includes('fal')) {
+      resultBuffer = await callFalAiImg2Img(imageBuffer, provider, styleConfig.prompt, styleConfig.negativePrompt, strength);
     } else {
       resultBuffer = await callGenericImg2Img(imageBuffer, provider, styleConfig.prompt, strength);
     }
@@ -347,6 +349,66 @@ async function callReplicateImg2Img(
 }
 
 /**
+ * Call fal.ai image-to-image endpoint
+ * Uses fal-ai/flux/dev/image-to-image or fal-ai/stable-diffusion-v3-medium
+ */
+async function callFalAiImg2Img(
+  imageBuffer: Buffer,
+  provider: any,
+  prompt: string,
+  negativePrompt: string,
+  strength: number,
+): Promise<Buffer> {
+  const model = provider.model || 'fal-ai/flux/dev/image-to-image';
+  const apiUrl = `https://fal.run/${model}`;
+
+  const base64 = imageBuffer.toString('base64');
+  const dataUri = `data:image/png;base64,${base64}`;
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Key ${provider.apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      image_url: dataUri,
+      prompt,
+      negative_prompt: negativePrompt,
+      strength,
+      num_inference_steps: 28,
+      guidance_scale: 3.5,
+      num_images: 1,
+      output_format: 'jpeg',
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`fal.ai error ${response.status}: ${errText.slice(0, 300)}`);
+  }
+
+  const data: any = await response.json();
+  const outputUrl: string | undefined =
+    data?.images?.[0]?.url ||
+    data?.image?.url ||
+    (typeof data?.image === 'string' ? data.image : undefined);
+
+  if (!outputUrl) {
+    throw new Error('No output image from fal.ai');
+  }
+
+  if (outputUrl.startsWith('data:')) {
+    const b64 = outputUrl.split(',')[1];
+    return Buffer.from(b64, 'base64');
+  }
+
+  const imgRes = await fetch(outputUrl);
+  if (!imgRes.ok) throw new Error(`fal.ai image fetch failed: ${imgRes.status}`);
+  return Buffer.from(await imgRes.arrayBuffer());
+}
+
+/**
  * Generic image-to-image API call
  */
 async function callGenericImg2Img(
@@ -454,6 +516,30 @@ async function fallbackStyleEffect(
         .sharpen(4, 1, 2);
       break;
 
+    case 'anime':
+      processed = sharp(imageBuffer).modulate({ saturation: 1.8, brightness: 1.05 }).sharpen(3, 1, 2);
+      break;
+    case 'watercolor':
+      processed = sharp(imageBuffer).modulate({ saturation: 0.9, brightness: 1.05 }).blur(0.8);
+      break;
+    case 'oil_painting':
+      processed = sharp(imageBuffer).modulate({ saturation: 1.1, brightness: 0.95 }).sharpen(2, 1, 1);
+      break;
+    case 'sketch':
+      processed = sharp(imageBuffer).grayscale().sharpen(8, 2, 4).modulate({ brightness: 1.1 });
+      break;
+    case 'neon_noir':
+      processed = sharp(imageBuffer).modulate({ saturation: 2.5, brightness: 0.8 }).tint({ r: 80, g: 20, b: 160 });
+      break;
+    case 'renaissance':
+      processed = sharp(imageBuffer).modulate({ saturation: 0.8, brightness: 0.9 }).tint({ r: 200, g: 170, b: 120 });
+      break;
+    case 'comic_book':
+      processed = sharp(imageBuffer).modulate({ saturation: 2.0, brightness: 1.1 }).sharpen(6, 2, 3).median(2);
+      break;
+    case 'pixel_art':
+      processed = sharp(imageBuffer).resize(64, 64, { fit: 'inside' }).resize(512, 512, { kernel: 'nearest' }).modulate({ saturation: 1.5 });
+      break;
     default:
       processed = sharp(imageBuffer);
   }
