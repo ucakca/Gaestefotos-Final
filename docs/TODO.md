@@ -952,6 +952,9 @@
 | S26-761 | **adminNotes UI** | ✅ erledigt (21.02.2026) | Event-Dashboard: Admin-only Amber-Widget (Textarea + PATCH /events/:id/admin-notes) |
 | S26-762 | **Feature 2 geprüft** | ✅ erledigt (21.02.2026) | EXIF/Metadata Reader in adminPromptAnalyzer.ts bereits vorhanden (POST /metadata) |
 | S26-763 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 763 Features in Sprint S26 implementiert + deployed |
+| S26-764 | **GET /events/:id/readiness** | ✅ erledigt (21.02.2026) | Setup-Checkliste: 9 Checks (title/date/location/cover/active/guests/password/moderation/invitation) + readinessScore 0-100% |
+| S26-765 | **PATCH /photos/bulk/reorder** | ✅ erledigt (21.02.2026) | Photo.displayOrder Schema + prisma db push + Batch-$transaction Update (max 500, Access-Check) |
+| S26-766 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 766 Features in Sprint S26 implementiert + deployed |
 
 ---
 
