@@ -733,6 +733,11 @@
 | S26-542 | **Category-Progress** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-progress (per category count) |
 | S26-543 | **Retention-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/retention-stats (age buckets <1h...>90d) |
 | S26-544 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 544 Features in Sprint S26 implementiert + deployed |
+| S26-545 | **Activity-Feed** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/activity (upload/like/comment mixed feed) |
+| S26-546 | **Uploader-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/uploader-stats (groupBy uploadedBy top50) |
+| S26-547 | **Geo-Cluster** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/geo-cluster (bbox+center lat/lng) |
+| S26-548 | **Size-Distribution** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/size-distribution (6 buckets <100KB...>10MB) |
+| S26-549 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 549 Features in Sprint S26 implementiert + deployed |
 
 ---
 
