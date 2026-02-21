@@ -653,6 +653,13 @@
 | S26-462 | **Leaderboard** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/leaderboard (APPROVED rank) |
 | S26-463 | **Category-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-stats (name + count) |
 | S26-464 | **Sprint S26 Final** | ✅ erledigt (21.02.2026) | 464 Features in Sprint S26 implementiert + deployed |
+| S26-465 | **Bulk Set-Category** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/set-category (categoryId nullable) |
+| S26-466 | **Bulk Remove-Tag** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/remove-tag (filter aus tags Array) |
+| S26-467 | **Bulk Add-Tag** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/add-tag (push + dedup) |
+| S26-468 | **Invitation-Log** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/invitation-log (paginiert) |
+| S26-469 | **Guestbook-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/guestbook/stats (status enum) |
+| S26-470 | **Story-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/stories/stats (expiresAt) |
+| S26-471 | **Sprint S26 Checkpoint** | ✅ erledigt (21.02.2026) | 471 Features in Sprint S26 implementiert + deployed |
 
 ---
 
