@@ -2068,6 +2068,40 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/search — Full-text search by title, description, tags, uploadedBy
+router.get('/:eventId/photos/search', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const q = (req.query.q as string || '').trim();
+    if (!q) return res.json({ photos: [], count: 0, query: q });
+
+    const limit = Math.min(100, parseInt(req.query.limit as string, 10) || 50);
+
+    const photos = await prisma.photo.findMany({
+      where: {
+        eventId,
+        deletedAt: null,
+        OR: [
+          { title: { contains: q, mode: 'insensitive' } },
+          { description: { contains: q, mode: 'insensitive' } },
+          { uploadedBy: { contains: q, mode: 'insensitive' } },
+          { tags: { has: q } },
+        ],
+      },
+      select: { id: true, url: true, title: true, description: true, uploadedBy: true, tags: true, status: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    res.json({ photos, count: photos.length, query: q });
+  } catch (error: any) {
+    logger.error('Photo search error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/random — Random selection of approved photos
 router.get('/:eventId/photos/random', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
