@@ -2068,6 +2068,66 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/duplicate-stats — Duplicate detection statistics
+router.get('/:eventId/photos/duplicate-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, withMd5, withPerceptual, inGroup] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, md5Hash: { not: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, perceptualHash: { not: null } } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, duplicateGroupId: { not: null } } }),
+    ]);
+
+    const dupeGroups = await prisma.photo.groupBy({
+      by: ['duplicateGroupId'],
+      where: { eventId, deletedAt: null, duplicateGroupId: { not: null } },
+    });
+
+    res.json({
+      total,
+      withMd5, md5Rate: total > 0 ? Math.round((withMd5 / total) * 100) : 0,
+      withPerceptual, perceptualRate: total > 0 ? Math.round((withPerceptual / total) * 100) : 0,
+      inGroup, dupeGroupCount: dupeGroups.length,
+      dupeRate: total > 0 ? Math.round((inGroup / total) * 100) : 0,
+    });
+  } catch (error: any) {
+    logger.error('Duplicate stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/approval-stats — Moderation approval statistics
+router.get('/:eventId/photos/approval-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const statuses = await prisma.photo.groupBy({
+      by: ['status'],
+      where: { eventId, deletedAt: null },
+      _count: { id: true },
+    });
+
+    const total = statuses.reduce((s: number, g: any) => s + g._count.id, 0);
+    const statsMap = Object.fromEntries(statuses.map((s: any) => [s.status, s._count.id]));
+
+    res.json({
+      total,
+      pending: statsMap['PENDING'] || 0,
+      approved: statsMap['APPROVED'] || 0,
+      rejected: statsMap['REJECTED'] || 0,
+      approvalRate: total > 0 ? Math.round(((statsMap['APPROVED'] || 0) / total) * 100) : 0,
+      rejectionRate: total > 0 ? Math.round(((statsMap['REJECTED'] || 0) / total) * 100) : 0,
+    });
+  } catch (error: any) {
+    logger.error('Approval stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/weekly-stats — Photos grouped by ISO week (YYYY-Www)
 router.get('/:eventId/photos/weekly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
