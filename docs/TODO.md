@@ -625,6 +625,13 @@
 | S26-434 | **Comments-Count** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/comments-count (totalComments) |
 | S26-435 | **Leaderboard** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/leaderboard (rank/name/count) |
 | S26-436 | **Sprint S26 Final** | ✅ erledigt (21.02.2026) | 436 Features in Sprint S26 implementiert + deployed |
+| S26-437 | **Guestbook-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/guestbook/stats (total/approved/approvalRate%) |
+| S26-438 | **Category-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-stats (groupBy categoryId) |
+| S26-439 | **Story-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/stories/stats (active/expired expiresAt) |
+| S26-440 | **Challenge-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/challenges/stats (completions/participants) |
+| S26-441 | **Votes-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/votes-stats (totalVotes/avgRating) |
+| S26-442 | **Comments-Count** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/comments-count (totalComments) |
+| S26-443 | **Sprint S26 Checkpoint** | ✅ erledigt (21.02.2026) | 443 Features in Sprint S26 implementiert + deployed |
 
 ---
 
