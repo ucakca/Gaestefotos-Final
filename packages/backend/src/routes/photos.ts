@@ -2068,6 +2068,85 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/quality-stats — Quality score distribution
+router.get('/:eventId/photos/quality-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const result = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null, qualityScore: { not: null } },
+      _avg: { qualityScore: true },
+      _min: { qualityScore: true },
+      _max: { qualityScore: true },
+      _count: { id: true },
+    });
+
+    const total = await prisma.photo.count({ where: { eventId, deletedAt: null } });
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, qualityScore: { not: null } },
+      select: { qualityScore: true },
+    });
+
+    const qBuckets: Record<string, number> = { 'A (90-100)': 0, 'B (70-89)': 0, 'C (50-69)': 0, 'D (30-49)': 0, 'F (<30)': 0 };
+    for (const p of photos) {
+      const q = p.qualityScore || 0;
+      if (q >= 90) qBuckets['A (90-100)']++;
+      else if (q >= 70) qBuckets['B (70-89)']++;
+      else if (q >= 50) qBuckets['C (50-69)']++;
+      else if (q >= 30) qBuckets['D (30-49)']++;
+      else qBuckets['F (<30)']++;
+    }
+
+    res.json({
+      total, withQuality: result._count.id,
+      qualityRate: total > 0 ? Math.round((result._count.id / total) * 100) : 0,
+      avgQuality: result._avg.qualityScore ? Math.round(result._avg.qualityScore * 10) / 10 : null,
+      minQuality: result._min.qualityScore, maxQuality: result._max.qualityScore,
+      gradeBuckets: Object.entries(qBuckets).map(([label, count]) => ({ label, count })),
+    });
+  } catch (error: any) {
+    logger.error('Quality stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/face-analysis — Face detection analysis
+router.get('/:eventId/photos/face-analysis', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const result = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null, faceCount: { not: null } },
+      _avg: { faceCount: true },
+      _max: { faceCount: true },
+      _sum: { faceCount: true },
+      _count: { id: true },
+    });
+
+    const total = await prisma.photo.count({ where: { eventId, deletedAt: null } });
+    const withFaces = await prisma.photo.count({ where: { eventId, deletedAt: null, faceCount: { gt: 0 } } });
+    const topFacePhoto = await prisma.photo.findFirst({
+      where: { eventId, deletedAt: null, faceCount: { gt: 0 } },
+      select: { id: true, url: true, faceCount: true },
+      orderBy: { faceCount: 'desc' },
+    });
+
+    res.json({
+      total, withFaceData: result._count.id,
+      withFaces, faceRate: total > 0 ? Math.round((withFaces / total) * 100) : 0,
+      totalFaces: result._sum.faceCount || 0,
+      avgFaces: result._avg.faceCount ? Math.round(result._avg.faceCount * 10) / 10 : 0,
+      maxFaces: result._max.faceCount || 0,
+      topFacePhoto,
+    });
+  } catch (error: any) {
+    logger.error('Face analysis error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/download-stats — View/download statistics
 router.get('/:eventId/photos/download-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
