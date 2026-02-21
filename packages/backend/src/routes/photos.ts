@@ -2068,6 +2068,36 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/weekly-stats — Photos grouped by ISO week (YYYY-Www)
+router.get('/:eventId/photos/weekly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const weekMap: Record<string, number> = {};
+    for (const p of photos) {
+      const d = p.createdAt;
+      const jan4 = new Date(d.getFullYear(), 0, 4);
+      const weekNum = Math.ceil(((d.getTime() - jan4.getTime()) / 86400000 + jan4.getDay() + 1) / 7);
+      const key = `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+      weekMap[key] = (weekMap[key] || 0) + 1;
+    }
+
+    const weeks = Object.entries(weekMap).map(([week, count]) => ({ week, count }));
+    const peakWeek = weeks.reduce((a, b) => b.count > a.count ? b : a, { week: '', count: 0 });
+    res.json({ weeks, totalWeeks: weeks.length, peakWeek: peakWeek.week, peakWeekCount: peakWeek.count });
+  } catch (error: any) {
+    logger.error('Weekly stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/monthly-stats — Photos grouped by YYYY-MM
 router.get('/:eventId/photos/monthly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
