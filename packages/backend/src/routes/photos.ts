@@ -2068,6 +2068,25 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/story-only-stats — Story-only photo statistics
+router.get('/:eventId/photos/story-only-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const [total, storyOnly, regular] = await Promise.all([
+      prisma.photo.count({ where: { eventId, deletedAt: null } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, isStoryOnly: true } }),
+      prisma.photo.count({ where: { eventId, deletedAt: null, isStoryOnly: false } }),
+    ]);
+
+    res.json({ total, storyOnly, regular, storyOnlyRate: total > 0 ? Math.round((storyOnly / total) * 100) : 0 });
+  } catch (error: any) {
+    logger.error('Story-only stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/exif-stats — EXIF data statistics
 router.get('/:eventId/photos/exif-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
