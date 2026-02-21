@@ -2068,6 +2068,33 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// DELETE /photos/bulk/delete — Bulk soft-delete photos
+router.delete('/bulk/delete', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { photoIds } = req.body as { photoIds: string[] };
+    if (!Array.isArray(photoIds) || !photoIds.length) {
+      return res.status(400).json({ error: 'photoIds (Array) erforderlich' });
+    }
+
+    const photos = await prisma.photo.findMany({
+      where: { id: { in: photoIds }, deletedAt: null },
+      select: { id: true, eventId: true },
+    });
+
+    let deleted = 0;
+    for (const photo of photos) {
+      if (!(await hasEventManageAccess(req, photo.eventId))) continue;
+      await prisma.photo.update({ where: { id: photo.id }, data: { deletedAt: new Date() } });
+      deleted++;
+    }
+
+    res.json({ deleted, total: photoIds.length });
+  } catch (error: any) {
+    logger.error('Bulk delete error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // PATCH /photos/bulk/set-favorite — Mark multiple photos as favorite
 router.patch('/bulk/set-favorite', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
