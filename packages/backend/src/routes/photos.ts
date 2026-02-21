@@ -2069,6 +2069,114 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/vote-velocity — Top20 photos by votes-per-day since upload
+router.get('/:eventId/photos/vote-velocity', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoVote.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, deletedAt: null } },
+      _count: { id: true },
+      _avg: { rating: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 50,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true, status: true, createdAt: true },
+    }) : [];
+
+    const now = Date.now();
+    const result = (grouped as any[]).map((g) => {
+      const photo = photos.find((p) => p.id === g.photoId);
+      const ageDays = photo ? Math.max((now - photo.createdAt.getTime()) / 86_400_000, 0.01) : 1;
+      const velocity = Math.round((g._count.id / ageDays) * 100) / 100;
+      return {
+        ...(photo || {}),
+        voteCount: g._count.id,
+        avgRating: Math.round((g._avg.rating || 0) * 10) / 10,
+        ageDays: Math.round(ageDays * 10) / 10,
+        velocity,
+      };
+    }).sort((a, b) => b.velocity - a.velocity).slice(0, 20);
+
+    res.json({ photos: result });
+  } catch (error: any) {
+    logger.error('Vote velocity error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/top-quality-this-week — Top20 highest quality photos uploaded this week
+router.get('/:eventId/photos/top-quality-this-week', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, createdAt: { gte: since }, qualityScore: { not: null } },
+      select: { id: true, url: true, title: true, qualityScore: true, status: true, views: true, uploadedBy: true, createdAt: true },
+      orderBy: { qualityScore: 'desc' },
+      take: 20,
+    });
+
+    res.json({ photos, since: since.toISOString().slice(0, 10) });
+  } catch (error: any) {
+    logger.error('Top quality this week error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/rejected-by-category — Rejected photo count per category
+router.get('/:eventId/photos/rejected-by-category', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['categoryId'],
+      where: { eventId, deletedAt: null, status: 'REJECTED' },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const catIds = (grouped as any[]).map((g) => g.categoryId).filter(Boolean) as string[];
+    const categories = catIds.length > 0 ? await prisma.category.findMany({
+      where: { id: { in: catIds } },
+      select: { id: true, name: true },
+    }) : [];
+
+    const totalGrouped = await prisma.photo.groupBy({
+      by: ['categoryId'],
+      where: { eventId, deletedAt: null, categoryId: { in: catIds } },
+      _count: { id: true },
+    });
+
+    const result = (grouped as any[]).map((g) => {
+      const total = (totalGrouped as any[]).find((t) => t.categoryId === g.categoryId)?._count.id || 0;
+      return {
+        categoryId: g.categoryId,
+        categoryName: categories.find((c) => c.id === g.categoryId)?.name || null,
+        rejectedCount: g._count.id,
+        totalCount: total,
+        rejectionRate: total > 0 ? Math.round((g._count.id / total) * 100) : 0,
+      };
+    });
+
+    res.json({ categories: result });
+  } catch (error: any) {
+    logger.error('Rejected by category error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/comment-velocity — Top20 photos by comments-per-day since upload
 router.get('/:eventId/photos/comment-velocity', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
