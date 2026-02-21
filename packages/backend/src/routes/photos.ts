@@ -2068,6 +2068,36 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/size-stats — File size statistics for event photos
+router.get('/:eventId/photos/size-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const result = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null },
+      _sum: { sizeBytes: true },
+      _avg: { sizeBytes: true },
+      _max: { sizeBytes: true },
+      _min: { sizeBytes: true },
+      _count: { id: true },
+    });
+
+    const toMB = (n: bigint | number | null) => n ? Math.round(Number(n) / 1024 / 1024 * 100) / 100 : 0;
+
+    res.json({
+      totalSizeMB: toMB(result._sum.sizeBytes),
+      avgSizeMB: toMB(result._avg.sizeBytes),
+      maxSizeMB: toMB(result._max.sizeBytes),
+      minSizeMB: toMB(result._min.sizeBytes),
+      photoCount: result._count.id,
+    });
+  } catch (error: any) {
+    logger.error('Size stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/monthly-stats — Uploads per month
 router.get('/:eventId/photos/monthly-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
