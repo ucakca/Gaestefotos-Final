@@ -2068,6 +2068,36 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/tag-stats — Top tags for event photos
+router.get('/:eventId/photos/tag-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { tags: true },
+    });
+
+    const tagMap: Record<string, number> = {};
+    for (const p of photos) {
+      for (const tag of p.tags) {
+        tagMap[tag] = (tagMap[tag] || 0) + 1;
+      }
+    }
+
+    const topTags = Object.entries(tagMap)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 20)
+      .map(([tag, count]) => ({ tag, count }));
+
+    res.json({ topTags, totalUniqueTags: Object.keys(tagMap).length });
+  } catch (error: any) {
+    logger.error('Tag stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/view-stats — View count statistics
 router.get('/:eventId/photos/view-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
