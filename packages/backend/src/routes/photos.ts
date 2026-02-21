@@ -2069,6 +2069,102 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/approved-by-uploader — Approved photo count per uploader
+router.get('/:eventId/photos/approved-by-uploader', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photo.groupBy({
+      by: ['uploadedBy'],
+      where: { eventId, deletedAt: null, status: 'APPROVED', uploadedBy: { not: null } },
+      _count: { id: true },
+      _avg: { qualityScore: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const userIds = (grouped as any[]).map((g) => g.uploadedBy).filter(Boolean) as string[];
+    const users = userIds.length > 0 ? await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, name: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      uploadedBy: g.uploadedBy,
+      name: users.find((u) => u.id === g.uploadedBy)?.name || null,
+      approvedCount: g._count.id,
+      avgQuality: g._avg.qualityScore ? Math.round(g._avg.qualityScore * 10) / 10 : null,
+    }));
+
+    res.json({ uploaders: result });
+  } catch (error: any) {
+    logger.error('Approved by uploader error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/top-liked-approved — Top20 approved photos by like count
+router.get('/:eventId/photos/top-liked-approved', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoLike.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, deletedAt: null, status: 'APPROVED' } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true, qualityScore: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      ...(photos.find((p) => p.id === g.photoId) || {}),
+      likeCount: g._count.id,
+    }));
+
+    res.json({ photos: result });
+  } catch (error: any) {
+    logger.error('Top liked approved error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/upload-trend-monthly — Monthly upload counts for last 12 months
+router.get('/:eventId/photos/upload-trend-monthly', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const since = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, createdAt: { gte: since } },
+      select: { createdAt: true },
+    });
+
+    const monthMap: Record<string, number> = {};
+    for (const p of photos) {
+      const key = `${p.createdAt.getUTCFullYear()}-${String(p.createdAt.getUTCMonth() + 1).padStart(2, '0')}`;
+      monthMap[key] = (monthMap[key] || 0) + 1;
+    }
+
+    const months = Object.keys(monthMap).sort();
+    const result = months.map((m) => ({ month: m, count: monthMap[m] }));
+
+    res.json({ months: result, total: photos.length });
+  } catch (error: any) {
+    logger.error('Upload trend monthly error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/vote-velocity — Top20 photos by votes-per-day since upload
 router.get('/:eventId/photos/vote-velocity', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
