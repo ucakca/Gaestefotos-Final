@@ -738,6 +738,12 @@
 | S26-547 | **Geo-Cluster** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/geo-cluster (bbox+center lat/lng) |
 | S26-548 | **Size-Distribution** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/size-distribution (6 buckets <100KB...>10MB) |
 | S26-549 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 549 Features in Sprint S26 implementiert + deployed |
+| S26-550 | **Comment-Authors** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/comment-authors (groupBy authorName top50) |
+| S26-551 | **Vote-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/vote-stats (totalVotes/avgRating/topPhotoId) |
+| S26-552 | **Story-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/story-stats (storyRate%/topStoryUploaders) |
+| S26-553 | **Tag-Cloud** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/tag-cloud (top 100 lowercase sorted) |
+| S26-554 | **Like-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/like-stats (totalLikes/avgPerPhoto/top5) |
+| S26-555 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 555 Features in Sprint S26 implementiert + deployed |
 
 ---
 
