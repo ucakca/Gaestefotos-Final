@@ -815,6 +815,10 @@
 | S26-624 | **View-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/view-stats (avg/max/sum views + top10 + viewRate%) |
 | S26-625 | **Story-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/story-stats (storyOnly/favorite/bestInGroup rates%) |
 | S26-626 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 626 Features in Sprint S26 implementiert + deployed |
+| S26-627 | **Category-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-stats (photoCount+avgQuality+avgViews per category) |
+| S26-628 | **Quality-Percentile** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/quality-percentile (P25/P50/P75/P90/P99 quality score) |
+| S26-629 | **Dupe-Chain** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/dupe-chain (top30 duplicate groups with member IDs) |
+| S26-630 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 630 Features in Sprint S26 implementiert + deployed |
 
 ---
 
