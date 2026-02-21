@@ -2069,6 +2069,100 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/top-commented-approved — Top20 approved photos by comment count
+router.get('/:eventId/photos/top-commented-approved', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoComment.groupBy({
+      by: ['photoId'],
+      where: { photo: { eventId, deletedAt: null, status: 'APPROVED' } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const ids = (grouped as any[]).map((g) => g.photoId);
+    const photos = ids.length > 0 ? await prisma.photo.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, url: true, title: true, views: true, qualityScore: true },
+    }) : [];
+
+    const result = (grouped as any[]).map((g) => ({
+      ...(photos.find((p) => p.id === g.photoId) || {}),
+      commentCount: g._count.id,
+    }));
+
+    res.json({ photos: result });
+  } catch (error: any) {
+    logger.error('Top commented approved error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/upload-trend-weekly — Weekly upload counts for last 12 weeks
+router.get('/:eventId/photos/upload-trend-weekly', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const since = new Date(Date.now() - 84 * 24 * 60 * 60 * 1000);
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, createdAt: { gte: since } },
+      select: { createdAt: true },
+    });
+
+    const weekMap: Record<string, number> = {};
+    for (const p of photos) {
+      const d = p.createdAt;
+      const startOfWeek = new Date(d);
+      startOfWeek.setUTCDate(d.getUTCDate() - d.getUTCDay());
+      startOfWeek.setUTCHours(0, 0, 0, 0);
+      const key = startOfWeek.toISOString().slice(0, 10);
+      weekMap[key] = (weekMap[key] || 0) + 1;
+    }
+
+    const weeks = Object.keys(weekMap).sort();
+    const result = weeks.map((w) => ({ weekStart: w, count: weekMap[w] }));
+
+    res.json({ weeks: result, total: photos.length });
+  } catch (error: any) {
+    logger.error('Upload trend weekly error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/guest-vote-rank — Top20 guests by vote count
+router.get('/:eventId/photos/guest-vote-rank', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const grouped = await prisma.photoVote.groupBy({
+      by: ['guestId'],
+      where: { photo: { eventId, deletedAt: null }, guestId: { not: null } },
+      _count: { id: true },
+      _avg: { rating: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 20,
+    });
+
+    const result = (grouped as any[]).map((g, i) => ({
+      rank: i + 1,
+      guestId: g.guestId,
+      voteCount: g._count.id,
+      avgRating: Math.round((g._avg.rating || 0) * 10) / 10,
+    }));
+
+    res.json({ guests: result });
+  } catch (error: any) {
+    logger.error('Guest vote rank error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top-voted-approved — Top20 approved photos by vote count
 router.get('/:eventId/photos/top-voted-approved', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
