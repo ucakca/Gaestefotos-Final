@@ -2068,6 +2068,87 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/geo-cluster — GPS photos grouped by rough lat/lng grid
+router.get('/:eventId/photos/geo-cluster', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, latitude: { not: null }, longitude: { not: null } },
+      select: { id: true, latitude: true, longitude: true },
+    });
+
+    const precision = parseFloat((req.query.precision as string) || '2');
+    const factor = Math.pow(10, precision);
+
+    const clusterMap: Record<string, { lat: number; lng: number; count: number; ids: string[] }> = {};
+    for (const p of photos) {
+      const lat = Math.round(p.latitude! * factor) / factor;
+      const lng = Math.round(p.longitude! * factor) / factor;
+      const key = `${lat},${lng}`;
+      if (!clusterMap[key]) clusterMap[key] = { lat, lng, count: 0, ids: [] };
+      clusterMap[key].count++;
+      if (clusterMap[key].ids.length < 5) clusterMap[key].ids.push(p.id);
+    }
+
+    const clusters = Object.values(clusterMap).sort((a, b) => b.count - a.count);
+    res.json({ total: photos.length, clusters: clusters.slice(0, 50) });
+  } catch (error: any) {
+    logger.error('Geo cluster error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/like-leader — Top20 photos by like count
+router.get('/:eventId/photos/like-leader', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null },
+      select: { id: true, url: true, title: true, uploadedBy: true, _count: { select: { likes: true } } },
+      orderBy: { likes: { _count: 'desc' } },
+      take: 20,
+    });
+
+    res.json({ photos: photos.map((p: any) => ({ ...p, likeCount: p._count.likes, _count: undefined })) });
+  } catch (error: any) {
+    logger.error('Like leader error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/status-timeline — Status changes per day (createdAt)
+router.get('/:eventId/photos/status-timeline', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId },
+      select: { createdAt: true, status: true },
+    });
+
+    const dayMap: Record<string, Record<string, number>> = {};
+    for (const p of photos) {
+      const day = p.createdAt.toISOString().slice(0, 10);
+      if (!dayMap[day]) dayMap[day] = {};
+      dayMap[day][p.status] = (dayMap[day][p.status] || 0) + 1;
+    }
+
+    const timeline = Object.entries(dayMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, counts]) => ({ date, ...counts }));
+
+    res.json({ timeline });
+  } catch (error: any) {
+    logger.error('Status timeline error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/comment-stats — Comment statistics
 router.get('/:eventId/photos/comment-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
