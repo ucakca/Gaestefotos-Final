@@ -2069,6 +2069,104 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/top-quality-unviewed — Top20 high-quality photos with 0 views
+router.get('/:eventId/photos/top-quality-unviewed', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, views: 0, qualityScore: { not: null } },
+      select: { id: true, url: true, title: true, qualityScore: true, status: true, uploadedBy: true },
+      orderBy: { qualityScore: 'desc' },
+      take: 20,
+    });
+
+    res.json({ photos });
+  } catch (error: any) {
+    logger.error('Top quality unviewed error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/category-engagement — Likes+Comments sum per category
+router.get('/:eventId/photos/category-engagement', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, categoryId: { not: null } },
+      select: {
+        categoryId: true,
+        _count: { select: { likes: true, comments: true } },
+      },
+    });
+
+    const catMap: Record<string, { likes: number; comments: number; photos: number }> = {};
+    for (const p of photos) {
+      const cid = p.categoryId as string;
+      if (!catMap[cid]) catMap[cid] = { likes: 0, comments: 0, photos: 0 };
+      catMap[cid].photos++;
+      catMap[cid].likes += p._count.likes;
+      catMap[cid].comments += p._count.comments;
+    }
+
+    const catIds = Object.keys(catMap);
+    const categories = catIds.length > 0 ? await prisma.category.findMany({
+      where: { id: { in: catIds } },
+      select: { id: true, name: true },
+    }) : [];
+
+    const stats = Object.entries(catMap)
+      .map(([cid, d]) => ({
+        categoryId: cid,
+        categoryName: categories.find((c) => c.id === cid)?.name || null,
+        ...d,
+        total: d.likes + d.comments,
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    res.json({ stats });
+  } catch (error: any) {
+    logger.error('Category engagement error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/size-bucket — Photo count per file size bucket (0-1MB, 1-5MB, 5-10MB, 10MB+)
+router.get('/:eventId/photos/size-bucket', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, sizeBytes: { not: null } },
+      select: { sizeBytes: true },
+    });
+
+    const buckets = [
+      { label: '0-1MB', min: 0, max: 1_000_000, count: 0 },
+      { label: '1-5MB', min: 1_000_000, max: 5_000_000, count: 0 },
+      { label: '5-10MB', min: 5_000_000, max: 10_000_000, count: 0 },
+      { label: '10MB+', min: 10_000_000, max: Infinity, count: 0 },
+    ];
+
+    for (const p of photos) {
+      const bytes = Number(p.sizeBytes);
+      const bucket = buckets.find((b) => bytes >= b.min && bytes < b.max);
+      if (bucket) bucket.count++;
+    }
+
+    const total = photos.length;
+    const result = buckets.map((b) => ({ ...b, pct: total > 0 ? Math.round((b.count / total) * 100) : 0 }));
+    res.json({ total, buckets: result });
+  } catch (error: any) {
+    logger.error('Size bucket error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/guest-upload-timeline — Photos uploaded per day per guest (top5 guests)
 router.get('/:eventId/photos/guest-upload-timeline', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
