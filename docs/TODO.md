@@ -823,6 +823,10 @@
 | S26-632 | **Uploader-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/uploader-stats (top20 uploaders by photoCount+avgQuality+avgViews) |
 | S26-633 | **Like-Timeline** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/like-timeline (likes per day sorted timeline) |
 | S26-634 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 634 Features in Sprint S26 implementiert + deployed |
+| S26-635 | **Comment-Timeline** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/comment-timeline (per-day approved/pending split) |
+| S26-636 | **Quality-Top-Approved** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/quality-top-approved (top20 APPROVED by qualityScore) |
+| S26-637 | **Hash-Collision** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/hash-collision (perceptualHash near-dupe groups top20) |
+| S26-638 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 638 Features in Sprint S26 implementiert + deployed |
 
 ---
 
