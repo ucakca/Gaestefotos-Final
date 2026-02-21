@@ -667,6 +667,13 @@
 | S26-476 | **Bulk Approve/Reject** | ✅ erledigt (21.02.2026) | POST /photos/bulk/approve + /reject |
 | S26-477 | **Status-Timeline** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/status-timeline (updatedAt desc) |
 | S26-478 | **Sprint S26 Abschluss** | ✅ erledigt (21.02.2026) | 478 Features in Sprint S26 implementiert + deployed |
+| S26-479 | **Bulk Soft-Delete** | ✅ erledigt (21.02.2026) | DELETE /photos/bulk/delete (deletedAt = now, managerCheck) |
+| S26-480 | **Bulk Set-Favorite** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/set-favorite (isFavorite boolean) |
+| S26-481 | **Bulk Set-Category** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/set-category (categoryId nullable) |
+| S26-482 | **Bulk Remove-Tag** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/remove-tag (filter aus Array) |
+| S26-483 | **Bulk Add-Tag** | ✅ erledigt (21.02.2026) | PATCH /photos/bulk/add-tag (push + dedup) |
+| S26-484 | **Bulk Approve/Reject** | ✅ erledigt (21.02.2026) | POST /photos/bulk/approve + /reject (updateMany) |
+| S26-485 | **Sprint S26 Final** | ✅ erledigt (21.02.2026) | 485 Features in Sprint S26 implementiert + deployed |
 
 ---
 
