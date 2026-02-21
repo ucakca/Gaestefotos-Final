@@ -949,6 +949,9 @@
 | S26-758 | **Admin-Hub erweitert** | ✅ erledigt (21.02.2026) | Push-Verlauf Link in KI-System Sektion des Admin-Hubs |
 | S26-759 | **TD-2/TD-7 geprüft** | ✅ erledigt (21.02.2026) | InvitationCanvas: Text/Image/Shape/QR implementiert. useKeyboardShortcuts: Cmd+A vorhanden |
 | S26-760 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 760 Features in Sprint S26 implementiert + deployed |
+| S26-761 | **adminNotes UI** | ✅ erledigt (21.02.2026) | Event-Dashboard: Admin-only Amber-Widget (Textarea + PATCH /events/:id/admin-notes) |
+| S26-762 | **Feature 2 geprüft** | ✅ erledigt (21.02.2026) | EXIF/Metadata Reader in adminPromptAnalyzer.ts bereits vorhanden (POST /metadata) |
+| S26-763 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 763 Features in Sprint S26 implementiert + deployed |
 
 ---
 
