@@ -499,6 +499,13 @@
 | S26-308 | **Gast-Suche** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/search?q= (firstName/lastName/email) |
 | S26-309 | **Invitation Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/invitation-stats (withEmail/invited/notInvited) |
 | S26-310 | **Sprint S26 Checkpoint** | ✅ erledigt (21.02.2026) | 310 Features in Sprint S26 implementiert + deployed |
+| S26-311 | **Top-Liked Endpoint** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-liked (APPROVED, likes._count desc) |
+| S26-312 | **Gaesteliste CSV** | ✅ erledigt (21.02.2026) | GET /events/:id/guests/export-csv (Vorname/Nachname/Email/Status) |
+| S26-313 | **Photo Activity** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/activity (uploaded/approved/rejected) |
+| S26-314 | **QR-Code** | ✅ erledigt (21.02.2026) | GET /events/:id/qr-code (qrUrl via qrserver.com) |
+| S26-315 | **hiddenPhotos Tab** | ✅ erledigt (21.02.2026) | GalleryTabV2: 'Versteckt' Tab + Eye Icon (nur wenn > 0) |
+| S26-316 | **commentsPending** | ✅ erledigt (21.02.2026) | Dashboard: commentsPending State + 30s Poll |
+| S26-317 | **Sprint S26 Abschluss** | ✅ erledigt (21.02.2026) | 317 Features in Sprint S26 implementiert + deployed |
 
 ---
 
