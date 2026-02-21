@@ -717,6 +717,15 @@
 | S26-526 | **Hourly-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/hourly-stats (0-23 + peakHour) |
 | S26-527 | **Weekday-Stats** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/weekday-stats (0-6 + peakDay) |
 | S26-528 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 528 Features in Sprint S26 implementiert + deployed |
+| S26-529 | **Summary-Dashboard** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/summary (10 Stats in Promise.all) |
+| S26-530 | **Top-Photos** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top (sortBy=views|likes, limit) |
+| S26-531 | **Recent-Photos** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/recent (last N, default 20) |
+| S26-532 | **Random-Photos** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/random (APPROVED, random skip) |
+| S26-533 | **Search-Photos** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/search?q= (title/desc/tags OR) |
+| S26-534 | **By-Category** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/by-category (groupBy categoryId) |
+| S26-535 | **By-Status** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/by-status (groupBy status+rate%) |
+| S26-536 | **By-Orientation** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/by-orientation (EXIF tag 1-8) |
+| S26-537 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 537 Features in Sprint S26 implementiert + deployed |
 
 ---
 
