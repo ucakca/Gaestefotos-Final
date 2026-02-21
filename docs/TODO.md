@@ -891,6 +891,10 @@
 | S26-700 | **Top-Liked-This-Week** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-liked-this-week (top20 photos by likes in last 7 days) |
 | S26-701 | **Category-Comment-Leader** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/category-comment-leader (top20 categories by total comment count) |
 | S26-702 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 702 Features in Sprint S26 implementiert + deployed |
+| S26-703 | **Top-Viewed-This-Week** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-viewed-this-week (top20 most viewed photos in last 7 days) |
+| S26-704 | **Guest-Upload-Rank** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/guest-upload-rank (top50 guests ranked by upload count + avgQuality) |
+| S26-705 | **Photo-Age-Distribution** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/photo-age-distribution (photos grouped by age <1/1-7/7-30/30-90/90+) |
+| S26-706 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 706 Features in Sprint S26 implementiert + deployed |
 
 ---
 
