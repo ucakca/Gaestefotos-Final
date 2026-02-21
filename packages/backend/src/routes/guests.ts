@@ -198,6 +198,35 @@ router.patch(
   }
 );
 
+// GET /:eventId/guests/summary — Quick guest summary (total, accepted, plusOnes, etc.)
+router.get(
+  '/:eventId/guests/summary',
+  authMiddleware,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { eventId } = req.params;
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+      const guests = await prisma.guest.findMany({
+        where: { eventId },
+        select: { status: true, plusOneCount: true, email: true },
+      });
+
+      const total = guests.length;
+      const accepted = guests.filter(g => g.status === 'ACCEPTED').length;
+      const declined = guests.filter(g => g.status === 'DECLINED').length;
+      const pending = guests.filter(g => g.status === 'PENDING').length;
+      const totalPlusOnes = guests.reduce((s, g) => s + g.plusOneCount, 0);
+      const withEmail = guests.filter(g => g.email).length;
+
+      res.json({ total, accepted, declined, pending, totalPlusOnes, totalAttendees: accepted + totalPlusOnes, withEmail });
+    } catch (error) {
+      logger.error('Guest summary error', { error: getErrorMessage(error) });
+      res.status(500).json({ error: 'Fehler' });
+    }
+  }
+);
+
 // GET /:eventId/guests/dietary-stats — Dietary requirements statistics
 router.get(
   '/:eventId/guests/dietary-stats',
