@@ -2068,6 +2068,44 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/download-stats — View/download statistics
+router.get('/:eventId/photos/download-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const result = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null },
+      _sum: { views: true },
+      _avg: { views: true },
+      _max: { views: true },
+      _count: { id: true },
+    });
+
+    const topViewed = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, views: { gt: 0 } },
+      select: { id: true, url: true, title: true, views: true },
+      orderBy: { views: 'desc' },
+      take: 10,
+    });
+
+    const zeroViews = await prisma.photo.count({ where: { eventId, deletedAt: null, views: 0 } });
+    const total = result._count.id;
+
+    res.json({
+      totalViews: result._sum.views || 0,
+      avgViews: result._avg.views ? Math.round(result._avg.views * 10) / 10 : 0,
+      maxViews: result._max.views || 0,
+      zeroViews,
+      seenRate: total > 0 ? Math.round(((total - zeroViews) / total) * 100) : 0,
+      topViewed,
+    });
+  } catch (error: any) {
+    logger.error('Download stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/exif-stats — EXIF technical statistics (GPS/focal/ISO/shutter)
 router.get('/:eventId/photos/exif-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
