@@ -2068,6 +2068,48 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/storage-stats — Storage size breakdown
+router.get('/:eventId/photos/storage-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const result = await prisma.photo.aggregate({
+      where: { eventId, deletedAt: null, sizeBytes: { not: null } },
+      _sum: { sizeBytes: true },
+      _avg: { sizeBytes: true },
+      _max: { sizeBytes: true },
+      _min: { sizeBytes: true },
+      _count: { id: true },
+    });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, sizeBytes: { not: null } },
+      select: { sizeBytes: true, storagePath: true },
+    });
+
+    const formatMap: Record<string, number> = {};
+    for (const p of photos) {
+      const ext = (p.storagePath.split('.').pop() || 'unknown').toLowerCase();
+      formatMap[ext] = (formatMap[ext] || 0) + 1;
+    }
+
+    const toMB = (b: bigint | number | null) => b ? Math.round(Number(b) / 1024 / 1024 * 100) / 100 : null;
+
+    res.json({
+      withSize: result._count.id,
+      totalMB: toMB(result._sum.sizeBytes),
+      avgMB: toMB(result._avg.sizeBytes),
+      maxMB: toMB(result._max.sizeBytes),
+      minMB: toMB(result._min.sizeBytes),
+      formats: Object.entries(formatMap).sort(([, a], [, b]) => b - a).map(([mime, count]) => ({ mime, count })),
+    });
+  } catch (error: any) {
+    logger.error('Storage stats error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top-rated — Combined quality+votes score top20
 router.get('/:eventId/photos/top-rated', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
