@@ -971,6 +971,8 @@
 | S26-780 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 780 Features in Sprint S26 implementiert + deployed |
 | S26-781 | **GET /events/:id/countdown** | ✅ erledigt (21.02.2026) | Phase-Erkennung (8 Phasen) + days/hours/minutes + deutsches Label |
 | S26-782 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 782 Features in Sprint S26 implementiert + deployed |
+| S26-783 | **GET /:eventId/photos/tag-suggestions** | ✅ erledigt (21.02.2026) | Tag-Autocomplete: Top-Tags nach Haeufigkeit, ?q= Filter, totalUniqueTags |
+| S26-784 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 784 Features in Sprint S26 implementiert + deployed |
 
 ---
 
