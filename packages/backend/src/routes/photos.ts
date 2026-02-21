@@ -2069,6 +2069,104 @@ router.get('/:eventId/photos/ratings', authMiddleware, async (req: AuthRequest, 
   }
 });
 
+// GET /api/events/:eventId/photos/guest-upload-timeline — Photos uploaded per day per guest (top5 guests)
+router.get('/:eventId/photos/guest-upload-timeline', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const top5 = await prisma.photo.groupBy({
+      by: ['guestId'],
+      where: { eventId, deletedAt: null, guestId: { not: null } },
+      _count: { id: true },
+      orderBy: { _count: { id: 'desc' } },
+      take: 5,
+    });
+
+    const guestIds = (top5 as any[]).map((g) => g.guestId) as string[];
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, guestId: { in: guestIds } },
+      select: { createdAt: true, guestId: true },
+    });
+
+    const timeline: Record<string, Record<string, number>> = {};
+    for (const p of photos) {
+      const day = p.createdAt.toISOString().slice(0, 10);
+      const gid = p.guestId as string;
+      if (!timeline[day]) timeline[day] = {};
+      timeline[day][gid] = (timeline[day][gid] || 0) + 1;
+    }
+
+    const days = Object.entries(timeline)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, counts]) => ({ date, ...counts }));
+
+    res.json({ guestIds, days });
+  } catch (error: any) {
+    logger.error('Guest upload timeline error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/quality-by-weekday — Avg quality per weekday
+router.get('/:eventId/photos/quality-by-weekday', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, qualityScore: { not: null } },
+      select: { createdAt: true, qualityScore: true },
+    });
+
+    const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const days: { sum: number; count: number }[] = Array.from({ length: 7 }, () => ({ sum: 0, count: 0 }));
+    for (const p of photos) {
+      const d = p.createdAt.getUTCDay();
+      days[d].sum += p.qualityScore as number;
+      days[d].count++;
+    }
+
+    const result = days.map((d, i) => ({
+      weekday: i,
+      label: labels[i],
+      count: d.count,
+      avgQuality: d.count > 0 ? Math.round((d.sum / d.count) * 10) / 10 : null,
+    }));
+
+    res.json({ weekdays: result });
+  } catch (error: any) {
+    logger.error('Quality by weekday error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
+// GET /api/events/:eventId/photos/oldest-unreviewed — Top20 oldest PENDING photos
+router.get('/:eventId/photos/oldest-unreviewed', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+
+    const photos = await prisma.photo.findMany({
+      where: { eventId, deletedAt: null, status: 'PENDING' },
+      select: { id: true, url: true, title: true, createdAt: true, qualityScore: true, uploadedBy: true, guestId: true },
+      orderBy: { createdAt: 'asc' },
+      take: 20,
+    });
+
+    const now = Date.now();
+    const result = photos.map((p) => ({
+      ...p,
+      ageHours: Math.round((now - p.createdAt.getTime()) / 3_600_000 * 10) / 10,
+    }));
+
+    res.json({ photos: result, total: result.length });
+  } catch (error: any) {
+    logger.error('Oldest unreviewed error', { error: error.message });
+    res.status(500).json({ error: 'Fehler' });
+  }
+});
+
 // GET /api/events/:eventId/photos/top-viewed-orphan — Top20 viewed photos without a category
 router.get('/:eventId/photos/top-viewed-orphan', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
