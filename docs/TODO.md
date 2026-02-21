@@ -915,6 +915,10 @@
 | S26-724 | **Top-Quality-This-Week** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-quality-this-week (top20 highest quality photos uploaded this week) |
 | S26-725 | **Rejected-By-Category** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/rejected-by-category (rejected count + rejection rate per category) |
 | S26-726 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 726 Features in Sprint S26 implementiert + deployed |
+| S26-727 | **Approved-By-Uploader** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/approved-by-uploader (approved count + avgQuality per uploader top20) |
+| S26-728 | **Top-Liked-Approved** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/top-liked-approved (top20 approved photos by like count) |
+| S26-729 | **Upload-Trend-Monthly** | ✅ erledigt (21.02.2026) | GET /events/:id/photos/upload-trend-monthly (monthly upload counts for last 12 months) |
+| S26-730 | **Sprint S26 Meilenstein** | ✅ erledigt (21.02.2026) | 730 Features in Sprint S26 implementiert + deployed |
 
 ---
 
