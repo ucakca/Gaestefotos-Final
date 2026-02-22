@@ -23,6 +23,21 @@ import {
 
 const router = Router();
 
+/**
+ * Resolve system prompt for an LLM game feature.
+ * Checks Prompt Studio DB overrides first, falls back to hardcoded prompt.
+ */
+async function resolveSystemPrompt(featureKey: string, eventId: string | undefined, fallback: string): Promise<string> {
+  if (!eventId) return fallback;
+  try {
+    const { resolvePrompt } = await import('../services/promptTemplates');
+    const tpl = await resolvePrompt(featureKey as any, eventId);
+    return tpl?.systemPrompt || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 // GET /api/booth-games/catalog — List all available games
 router.get('/catalog', (_req, res: Response) => {
   res.json({ games: GAME_CATALOG });
@@ -349,9 +364,9 @@ router.post('/persona-quiz', authMiddleware, withEnergyCheck('persona_quiz'), as
 
     const { generateCompletion } = await import('../lib/groq');
 
-    const systemPrompt = `Du bist ein witziger Persönlichkeits-Analyst auf einer ${eventType || 'Party'}. 
+    const systemPrompt = await resolveSystemPrompt('persona_quiz', eventId, `Du bist ein witziger Persönlichkeits-Analyst auf einer ${eventType || 'Party'}. 
 Analysiere die 3 Antworten des Gastes und ordne einen lustigen Persönlichkeitstyp zu.
-Antworte NUR mit einem JSON-Objekt: {"persona": "DER TITEL", "description": "2-3 lustige Sätze", "emoji": "passendes Emoji", "superpower": "witzige Superkraft"}`;
+Antworte NUR mit einem JSON-Objekt: {"persona": "DER TITEL", "description": "2-3 lustige Sätze", "emoji": "passendes Emoji", "superpower": "witzige Superkraft"}`);
 
     const userPrompt = `Gast "${guestName || 'Anonymer Gast'}" auf "${eventTitle || 'Event'}" hat geantwortet:
 1. Lieblingsdrink auf der Party: "${answers[0]}"
@@ -401,10 +416,10 @@ router.post('/wedding-speech', authMiddleware, withEnergyCheck('wedding_speech')
 
     const { generateCompletion } = await import('../lib/groq');
 
-    const systemPrompt = `Du bist ein brillanter Comedy-Redenschreiber auf einer ${eventType || 'Hochzeit'}. 
+    const systemPrompt = await resolveSystemPrompt('wedding_speech', eventId, `Du bist ein brillanter Comedy-Redenschreiber auf einer ${eventType || 'Hochzeit'}. 
 Schreibe eine kurze, witzige Rede (3-4 Sätze) die das Publikum zum Lachen bringt.
 Die Rede soll herzlich, persönlich und ein bisschen frech sein — aber niemals verletzend.
-Antworte NUR mit einem JSON-Objekt: {"speech": "Die komplette Rede", "toast": "Ein kurzer Trinkspruch (1 Satz)", "emoji": "passendes Emoji"}`;
+Antworte NUR mit einem JSON-Objekt: {"speech": "Die komplette Rede", "toast": "Ein kurzer Trinkspruch (1 Satz)", "emoji": "passendes Emoji"}`);
 
     const userPrompt = `Gast "${guestName || 'Ein Gast'}" möchte eine kurze Rede halten auf "${eventTitle || 'der Feier'}".
 ${coupleName ? `Das Brautpaar: ${coupleName}` : ''}
@@ -454,10 +469,10 @@ router.post('/ai-stories', authMiddleware, withEnergyCheck('ai_stories'), async 
 
     const { generateCompletion } = await import('../lib/groq');
 
-    const systemPrompt = `Du bist ein kreativer Geschichtenerzähler auf einer ${eventType || 'Party'}.
+    const systemPrompt = await resolveSystemPrompt('ai_stories', eventId, `Du bist ein kreativer Geschichtenerzähler auf einer ${eventType || 'Party'}.
 Du bekommst 3 Wörter und schreibst daraus eine kurze, witzige Mini-Geschichte (4-6 Sätze).
 Die Geschichte soll zum Event "${eventTitle || 'der Feier'}" passen und lustig sein.
-Antworte NUR mit einem JSON-Objekt: {"title": "Kreativer Titel", "story": "Die Geschichte in 4-6 Sätzen", "genre": "z.B. Krimi, Romanze, Sci-Fi, Fantasy", "emoji": "passendes Emoji"}`;
+Antworte NUR mit einem JSON-Objekt: {"title": "Kreativer Titel", "story": "Die Geschichte in 4-6 Sätzen", "genre": "z.B. Krimi, Romanze, Sci-Fi, Fantasy", "emoji": "passendes Emoji"}`);
 
     const userPrompt = `${guestName || 'Ein Gast'} gibt dir 3 Wörter:
 1. "${words[0]}"
@@ -506,10 +521,10 @@ router.post('/celebrity-lookalike', authMiddleware, withEnergyCheck('celebrity_l
     const { eventId, eventType, eventTitle, guestName } = req.body;
     const { generateCompletion } = await import('../lib/groq');
 
-    const systemPrompt = `Du bist ein witziger Promi-Experte auf einer ${eventType || 'Party'}.
+    const systemPrompt = await resolveSystemPrompt('celebrity_lookalike', eventId, `Du bist ein witziger Promi-Experte auf einer ${eventType || 'Party'}.
 Jemand zeigt dir ein Foto und du sagst, welchem Promi die Person ähnlich sieht.
 Sei kreativ, lustig und schmeichelhaft. Wähle Promis aus verschiedenen Bereichen (Film, Musik, Sport, etc).
-Antworte NUR mit JSON: {"celebrity": "Name des Promis", "similarity": 70-99, "reason": "Witziger Grund in 1-2 Sätzen", "funFact": "Fun Fact über den Promi", "emoji": "passendes Emoji"}`;
+Antworte NUR mit JSON: {"celebrity": "Name des Promis", "similarity": 70-99, "reason": "Witziger Grund in 1-2 Sätzen", "funFact": "Fun Fact über den Promi", "emoji": "passendes Emoji"}`);
 
     const userPrompt = `Der Gast "${guestName || 'Ein geheimnisvoller Gast'}" auf "${eventTitle || 'der Party'}" möchte wissen: Welchem Promi sehe ich ähnlich? Sei kreativ und witzig!`;
 
@@ -541,12 +556,12 @@ router.post('/ai-bingo', authMiddleware, withEnergyCheck('ai_bingo'), async (req
     const { eventId, eventType, eventTitle, guestName } = req.body;
     const { generateCompletion } = await import('../lib/groq');
 
-    const systemPrompt = `Du bist ein Party-Spiele-Meister auf einer ${eventType || 'Feier'}.
+    const systemPrompt = await resolveSystemPrompt('ai_bingo', eventId, `Du bist ein Party-Spiele-Meister auf einer ${eventType || 'Feier'}.
 Erstelle eine 3x3 Bingo-Karte mit lustigen Foto-Aufgaben für Gäste.
 Jede Aufgabe soll mit einem Selfie oder Foto erfüllbar sein.
 Mindestens 2 Aufgaben sollen eine Personenanzahl enthalten (z.B. "Foto mit 3 Personen", "Selfie mit 5+ Leuten").
 Antworte NUR mit JSON: {"title": "Lustiger Bingo-Titel", "tasks": ["Aufgabe 1", "Aufgabe 2", ... "Aufgabe 9"], "bonusTask": "Eine extra schwere Bonus-Aufgabe mit 7+ Personen", "emoji": "passendes Emoji"}
-Die 9 Aufgaben sollen kurz (max 6 Wörter) und lustig sein!`;
+Die 9 Aufgaben sollen kurz (max 6 Wörter) und lustig sein!`);
 
     const userPrompt = `Erstelle eine Foto-Bingo-Karte für "${eventTitle || 'die Party'}". Die Aufgaben sollen lustig, machbar und party-tauglich sein! Gast: ${guestName || 'Ein Partygast'}`;
 
@@ -584,10 +599,10 @@ router.post('/ai-dj', authMiddleware, withEnergyCheck('ai_dj'), async (req: Auth
     const { eventId, eventType, eventTitle, guestName, mood } = req.body;
     const { generateCompletion } = await import('../lib/groq');
 
-    const systemPrompt = `Du bist ein legendärer Party-DJ auf einer ${eventType || 'Feier'}.
+    const systemPrompt = await resolveSystemPrompt('ai_dj', eventId, `Du bist ein legendärer Party-DJ auf einer ${eventType || 'Feier'}.
 Basierend auf der Stimmung schlägst du 5 perfekte Songs vor.
 Antworte NUR mit JSON: {"djName": "Dein lustiger DJ-Name", "songs": [{"title": "Song", "artist": "Künstler", "reason": "Warum dieser Song"}], "vibe": "Beschreibung der Stimmung in 1 Satz", "emoji": "passendes Emoji"}
-Wähle echte, bekannte Songs! Mix aus Deutsch und International.`;
+Wähle echte, bekannte Songs! Mix aus Deutsch und International.`);
 
     const userPrompt = `${guestName || 'Ein Gast'} auf "${eventTitle || 'der Party'}" wünscht sich Musik.
 ${mood ? `Gewünschte Stimmung: ${mood}` : 'Die Party ist in vollem Gange!'}
@@ -806,9 +821,9 @@ router.post('/ai-meme', authMiddleware, withEnergyCheck('ai_meme'), async (req: 
     const { eventId, eventType, eventTitle, guestName } = req.body;
     const { generateCompletion } = await import('../lib/groq');
 
-    const systemPrompt = `Du bist ein Meme-Generator für Party-Events. Erstelle 3 lustige Meme-Captions im Internet-Meme-Stil. 
+    const systemPrompt = await resolveSystemPrompt('ai_meme', eventId, `Du bist ein Meme-Generator für Party-Events. Erstelle 3 lustige Meme-Captions im Internet-Meme-Stil. 
 Die Captions sollen zur Event-Stimmung passen und Party-Humor haben.
-Antworte NUR als JSON: {"captions": [{"top": "oberer Text", "bottom": "unterer Text", "template": "Meme-Template-Name"}], "bestCaption": "der lustigste als Einzeiler", "emoji": "passendes Emoji", "source": "ai"}`;
+Antworte NUR als JSON: {"captions": [{"top": "oberer Text", "bottom": "unterer Text", "template": "Meme-Template-Name"}], "bestCaption": "der lustigste als Einzeiler", "emoji": "passendes Emoji", "source": "ai"}`);
 
     const userPrompt = `Event: ${eventTitle || 'Party'} (${eventType || 'party'})${guestName ? `, Gast: ${guestName}` : ''}. Erstelle 3 lustige Meme-Captions!`;
 
@@ -849,9 +864,9 @@ router.post('/ai-superlatives', authMiddleware, withEnergyCheck('ai_superlatives
     const { eventId, eventType, eventTitle, guestName } = req.body;
     const { generateCompletion } = await import('../lib/groq');
 
-    const systemPrompt = `Du bist ein lustiger Party-Award-Generator. Erstelle 5 kreative "Am ehesten..." / "Most likely to..." Awards für einen Party-Gast.
+    const systemPrompt = await resolveSystemPrompt('ai_superlatives', eventId, `Du bist ein lustiger Party-Award-Generator. Erstelle 5 kreative "Am ehesten..." / "Most likely to..." Awards für einen Party-Gast.
 Die Awards sollen lustig, positiv und party-bezogen sein. Mische deutsch und englisch.
-Antworte NUR als JSON: {"awards": [{"title": "Award-Titel", "reason": "kurze lustige Begründung", "emoji": "passendes Emoji"}], "topAward": "der beste Award als Titel", "source": "ai"}`;
+Antworte NUR als JSON: {"awards": [{"title": "Award-Titel", "reason": "kurze lustige Begründung", "emoji": "passendes Emoji"}], "topAward": "der beste Award als Titel", "source": "ai"}`);
 
     const userPrompt = `Event: ${eventTitle || 'Party'} (${eventType || 'party'})${guestName ? `, Gast: ${guestName}` : ''}. Erstelle 5 lustige Party-Awards!`;
 
@@ -893,9 +908,9 @@ router.post('/ai-photo-critic', authMiddleware, withEnergyCheck('ai_photo_critic
     const { eventId, eventType, eventTitle, guestName } = req.body;
     const { generateCompletion } = await import('../lib/groq');
 
-    const systemPrompt = `Du bist ein humorvoller Foto-Kritiker auf einer Party. Gib eine witzige, übertriebene Foto-Bewertung ab — wie ein Kunstkritiker der ein Selfie bewertet.
+    const systemPrompt = await resolveSystemPrompt('ai_photo_critic', eventId, `Du bist ein humorvoller Foto-Kritiker auf einer Party. Gib eine witzige, übertriebene Foto-Bewertung ab — wie ein Kunstkritiker der ein Selfie bewertet.
 Sei dramatisch, lustig und positiv. Verwende Fachbegriffe aus der Kunst/Fotografie auf lustige Weise.
-Antworte NUR als JSON: {"review": "die lustige Bewertung (2-3 Sätze)", "stars": 4.5, "category": "Bewertungs-Kategorie z.B. Meisterwerk", "technique": "erfundene Technik-Bewertung", "emoji": "passendes Emoji", "verdict": "kurzes Urteil (3-5 Wörter)", "source": "ai"}`;
+Antworte NUR als JSON: {"review": "die lustige Bewertung (2-3 Sätze)", "stars": 4.5, "category": "Bewertungs-Kategorie z.B. Meisterwerk", "technique": "erfundene Technik-Bewertung", "emoji": "passendes Emoji", "verdict": "kurzes Urteil (3-5 Wörter)", "source": "ai"}`);
 
     const userPrompt = `Event: ${eventTitle || 'Party'} (${eventType || 'party'})${guestName ? `, Fotograf/in: ${guestName}` : ''}. Bewerte dieses Party-Foto!`;
 
@@ -1067,9 +1082,9 @@ router.post('/ai-couple-match', authMiddleware, withEnergyCheck('ai_couple_match
 
     const { generateCompletion } = await import('../lib/groq');
 
-    const systemPrompt = `Du bist ein lustiger Liebes-Kompatibilitäts-Rechner auf einer Party. Berechne einen humorvollen Compatibility-Score zwischen zwei Personen.
+    const systemPrompt = await resolveSystemPrompt('ai_couple_match', eventId, `Du bist ein lustiger Liebes-Kompatibilitäts-Rechner auf einer Party. Berechne einen humorvollen Compatibility-Score zwischen zwei Personen.
 Sei lustig, positiv und kreativ. Der Score sollte zwischen 60-99% liegen (immer optimistisch!).
-Antworte NUR als JSON: {"compatibility": 87, "shipName": "kreativer Paar-Name", "strengths": ["Stärke 1", "Stärke 2", "Stärke 3"], "challenge": "eine lustige Herausforderung", "loveLanguage": "gemeinsame Liebessprache", "songForYou": "ein passender Song-Titel", "emoji": "passendes Emoji", "verdict": "kurzes lustiges Urteil", "source": "ai"}`;
+Antworte NUR als JSON: {"compatibility": 87, "shipName": "kreativer Paar-Name", "strengths": ["Stärke 1", "Stärke 2", "Stärke 3"], "challenge": "eine lustige Herausforderung", "loveLanguage": "gemeinsame Liebessprache", "songForYou": "ein passender Song-Titel", "emoji": "passendes Emoji", "verdict": "kurzes lustiges Urteil", "source": "ai"}`);
 
     const userPrompt = `Event: ${eventTitle || 'Party'} (${eventType || 'party'}). Berechne die Kompatibilität zwischen "${guestName}" und "${partnerName}"!`;
 
