@@ -70,12 +70,23 @@ export type AiFeature =
   | 'gif_morph'
   | 'gif_aging'
   | 'ai_video'
-  | 'trading_card';
+  | 'trading_card'
+  | 'cover_shot'
+  | 'ai_slot_machine'
+  | 'photo_strip'
+  | 'anime'
+  | 'watercolor'
+  | 'oil_painting'
+  | 'sketch'
+  | 'neon_noir'
+  | 'renaissance'
+  | 'comic_book'
+  | 'pixel_art';
 
 // ─── Feature Definition ──────────────────────────────────────
 
 // Guest-facing UI input flow types
-export type AiInputFlow = 'name_only' | 'photo_only' | 'name_and_quiz' | 'name_and_wedding' | 'name_and_words' | 'name_and_mood' | 'name_and_partner' | 'photo_and_video_preset' | 'photo_and_decade' | 'none';
+export type AiInputFlow = 'name_only' | 'photo_only' | 'multi_photo' | 'name_and_quiz' | 'name_and_wedding' | 'name_and_words' | 'name_and_mood' | 'name_and_partner' | 'photo_and_video_preset' | 'photo_and_decade' | 'none';
 
 // UI group determines which modal shows the feature
 export type AiUiGroup = 'game' | 'effect' | 'host_tool' | 'system';
@@ -174,10 +185,38 @@ export const AI_FEATURE_REGISTRY: AiFeatureDefinition[] = [
   { key: 'trading_card', label: 'Trading Card', description: 'Party-Sammelkarte mit KI-Stats', category: 'image', providerType: 'IMAGE_GEN', creditCost: 3, isWorkflow: true, allowedDevices: APP_AND_KI, packageCategory: 'games',
     emoji: '\u{1F0CF}', gradient: 'from-yellow-500 to-amber-700', guestDescription: 'Werde zur Party-Sammelkarte mit KI-Stats!', endpoint: '/booth-games/trading-card', uiGroup: 'effect', inputFlow: 'photo_only', energyCostCategory: 'trading_card', sortOrder: 14 },
   { key: 'style_transfer', label: 'Style Transfer', description: 'Foto in Kunststil verwandeln', category: 'image', providerType: 'IMAGE_GEN', creditCost: 5, isWorkflow: true, allowedDevices: APP_AND_KI, packageCategory: 'styleTransfer', uiGroup: 'effect' },
+  { key: 'anime', label: 'Anime', description: 'Foto in Anime/Manga Stil', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true, allowedDevices: APP_AND_BOOTH, packageCategory: 'styleTransfer',
+    emoji: '⛩️', gradient: 'from-pink-400 to-purple-600', guestDescription: 'Werde zum Anime-Charakter!', endpoint: '/booth-games/style-effect', uiGroup: 'effect', inputFlow: 'photo_only', energyCostCategory: 'image_effect', sortOrder: 22 },
+  { key: 'watercolor', label: 'Aquarell', description: 'Foto als Aquarell-Gemälde', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true, allowedDevices: APP_AND_BOOTH, packageCategory: 'styleTransfer',
+    emoji: '🎨', gradient: 'from-cyan-400 to-blue-500', guestDescription: 'Dein Foto als Aquarell-Gemälde!', endpoint: '/booth-games/style-effect', uiGroup: 'effect', inputFlow: 'photo_only', energyCostCategory: 'image_effect', sortOrder: 23 },
+  { key: 'oil_painting', label: 'Ölgemälde', description: 'Foto als klassisches Ölgemälde', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true, allowedDevices: APP_AND_BOOTH, packageCategory: 'styleTransfer',
+    emoji: '🖼️', gradient: 'from-amber-700 to-yellow-600', guestDescription: 'Dein Foto als Rembrand-Ölgemälde!', endpoint: '/booth-games/style-effect', uiGroup: 'effect', inputFlow: 'photo_only', energyCostCategory: 'image_effect', sortOrder: 24 },
+  { key: 'sketch', label: 'Bleistift-Skizze', description: 'Foto als Bleistift-Zeichnung', category: 'image', providerType: 'IMAGE_GEN', creditCost: 3, isWorkflow: true, allowedDevices: APP_AND_BOOTH, packageCategory: 'styleTransfer',
+    emoji: '✏️', gradient: 'from-gray-400 to-gray-700', guestDescription: 'Dein Foto als Künstler-Skizze!', endpoint: '/booth-games/style-effect', uiGroup: 'effect', inputFlow: 'photo_only', energyCostCategory: 'image_effect', sortOrder: 25 },
+  { key: 'neon_noir', label: 'Neon Noir', description: 'Cyberpunk Neon-Noir Stil', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true, allowedDevices: APP_AND_BOOTH, packageCategory: 'styleTransfer',
+    emoji: '🌆', gradient: 'from-purple-900 to-cyan-500', guestDescription: 'Cyberpunk Neon-Noir Look!', endpoint: '/booth-games/style-effect', uiGroup: 'effect', inputFlow: 'photo_only', energyCostCategory: 'image_effect', sortOrder: 26 },
+  { key: 'renaissance', label: 'Renaissance', description: 'Klassisches Renaissance-Gemälde', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true, allowedDevices: APP_AND_BOOTH, packageCategory: 'styleTransfer',
+    emoji: '⚜️', gradient: 'from-amber-800 to-yellow-700', guestDescription: 'Als Renaissance-Gemälde verewigt!', endpoint: '/booth-games/style-effect', uiGroup: 'effect', inputFlow: 'photo_only', energyCostCategory: 'image_effect', sortOrder: 27 },
+  { key: 'comic_book', label: 'Comic', description: 'Foto im Comic-Buch Stil', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true, allowedDevices: APP_AND_BOOTH, packageCategory: 'styleTransfer',
+    emoji: '💥', gradient: 'from-yellow-400 to-red-500', guestDescription: 'Werde zum Comic-Superhelden!', endpoint: '/booth-games/style-effect', uiGroup: 'effect', inputFlow: 'photo_only', energyCostCategory: 'image_effect', sortOrder: 28 },
+  { key: 'pixel_art', label: 'Pixel Art', description: '16-Bit Retro Pixel-Art', category: 'image', providerType: 'IMAGE_GEN', creditCost: 3, isWorkflow: true, allowedDevices: APP_AND_BOOTH, packageCategory: 'styleTransfer',
+    emoji: '👾', gradient: 'from-green-400 to-emerald-600', guestDescription: 'Retro 16-Bit Pixel-Art Version!', endpoint: '/booth-games/style-effect', uiGroup: 'effect', inputFlow: 'photo_only', energyCostCategory: 'image_effect', sortOrder: 29 },
   { key: 'drawbot', label: 'Drawbot', description: 'Line-Art G-Code für Zeichenroboter', category: 'image', providerType: 'IMAGE_GEN', creditCost: 8, isWorkflow: true, allowedDevices: ['ki_booth' as DeviceType], packageCategory: 'advanced', uiGroup: 'system' },
 
   // ═══ Video ═══
   { key: 'highlight_reel', label: 'Highlight Reel', description: 'Automatisches Event-Highlight-Video', category: 'video', providerType: 'VIDEO_GEN', creditCost: 10, isWorkflow: true, allowedDevices: ADMIN_ONLY, packageCategory: 'gifVideo', uiGroup: 'system' },
+
+  // ═══ AI Slot Machine (Image Generation from Emoji Combinations) ═══
+  { key: 'ai_slot_machine', label: 'AI Slot Machine', description: 'Spin the slots — AI generates an image from the emoji combo!', category: 'image', providerType: 'IMAGE_GEN', creditCost: 5, isWorkflow: true, allowedDevices: GUEST_DEVICES, packageCategory: 'games',
+    emoji: '\uD83C\uDFB0', gradient: 'from-violet-600 to-purple-700', guestDescription: 'Spin the slots and watch the AI bring your combo to life!', endpoint: '/booth-games/slot-machine/generate-image', uiGroup: 'game', inputFlow: 'none', energyCostCategory: 'image_effect', sortOrder: 15 },
+
+  // ═══ Photo Strip ═══
+  { key: 'photo_strip', label: 'Photo Strip', description: 'Klassischer 4-er Foto-Streifen im Photo-Booth-Stil', category: 'image', providerType: 'IMAGE_GEN', creditCost: 0, isWorkflow: false, allowedDevices: GUEST_DEVICES, packageCategory: 'imageEffects',
+    emoji: '\uD83D\uDCD3', gradient: 'from-gray-700 to-gray-900', guestDescription: 'Deine 4 besten Fotos als klassischer Foto-Streifen!', endpoint: '/booth-games/photo-strip', uiGroup: 'effect', inputFlow: 'multi_photo', energyCostCategory: 'image_effect', sortOrder: 21 },
+
+  // ═══ Image Overlays / Template-Based ═══
+  { key: 'cover_shot', label: 'Cover-Shooting', description: 'Magazin-Cover Overlay (Vogue, GQ, Rolling Stone, TIME...)', category: 'image', providerType: 'IMAGE_GEN', creditCost: 0, isWorkflow: true, allowedDevices: GUEST_DEVICES, packageCategory: 'imageEffects',
+    emoji: '📸', gradient: 'from-amber-500 to-yellow-400', guestDescription: 'Werde das Cover-Model deines Lieblingsmagazins!', endpoint: '/booth-games/cover-shot', uiGroup: 'effect', inputFlow: 'photo_only', energyCostCategory: 'image_effect', sortOrder: 20 },
 
   // ═══ Recognition ═══
   { key: 'face_search', label: 'Face Search', description: 'Gesichtserkennung "Finde mein Foto"', category: 'recognition', providerType: 'FACE_RECOGNITION', creditCost: 0, isWorkflow: true, allowedDevices: GUEST_DEVICES, packageCategory: 'recognition', uiGroup: 'system' },

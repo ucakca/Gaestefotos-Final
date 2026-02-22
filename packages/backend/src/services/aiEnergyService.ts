@@ -93,6 +93,18 @@ const FEATURE_TO_COST_CATEGORY: Record<string, EnergyCostCategory> = {
   // Trading card type
   drawbot: 'trading_card',
   trading_card: 'trading_card',
+  // New image features
+  ai_slot_machine: 'image_effect',
+  cover_shot: 'image_effect',
+  // Additional effects
+  anime: 'image_effect',
+  watercolor: 'image_effect',
+  oil_painting: 'image_effect',
+  sketch: 'image_effect',
+  neon_noir: 'image_effect',
+  renaissance: 'image_effect',
+  comic_book: 'image_effect',
+  pixel_art: 'image_effect',
 };
 
 // Reward types that are truly one-time (not per-instance)

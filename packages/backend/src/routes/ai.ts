@@ -1,8 +1,14 @@
 import { Router, Request, Response } from 'express';
-import groqService from '../lib/groq';
+import groqService, { generateCompletion } from '../lib/groq';
 import { getActiveProviderInfo } from '../lib/llmClient';
 import { logger } from '../utils/logger';
+import prisma from '../config/database';
 import { getKnowledgeStats, seedKnowledge, knowledgeGet, knowledgeSet, listEntries, migrateFromRedisCache, isAiOnline, type KnowledgeFeature } from '../services/cache/knowledgeStore';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { checkAndSpendEnergy } from '../middleware/energyCheck';
+import { AI_FEATURE_MAP, type AiFeature } from '../services/aiFeatureRegistry';
+import { resolvePrompt, renderPrompt } from '../services/promptTemplates';
+import { enrichSystemPrompt } from '../services/eventPromptContext';
 
 const router = Router();
 
@@ -719,6 +725,230 @@ function getDefaultColorSchemesFallback(eventType: string): { primary: string; s
 }
 
 /**
+ * POST /api/ai/run
+ * Generic LLM runner — executes any LLM-based AI feature from the registry.
+ * Adding a new LLM feature only requires:
+ *   1. Entry in AiFeature union + AI_FEATURE_REGISTRY (aiFeatureRegistry.ts)
+ *   2. Prompt template via Admin UI or seedDefaultPrompts
+ *   3. Done — this endpoint handles everything else automatically.
+ *
+ * Body: { feature: AiFeature, eventId?: string, variables?: Record<string, string> }
+ * Returns: { result: string, feature, source: 'ai' | 'fallback' }
+ */
+router.post('/run', authMiddleware, async (req: AuthRequest, res: Response) => {
+  const { feature, eventId, variables = {} } = req.body as {
+    feature: string;
+    eventId?: string;
+    variables?: Record<string, string>;
+  };
+
+  // 1. Validate feature exists and is LLM-based
+  const def = AI_FEATURE_MAP[feature as AiFeature];
+  if (!def) {
+    return res.status(400).json({ error: `Unbekanntes Feature: "${feature}"` });
+  }
+  if (def.providerType !== 'LLM') {
+    return res.status(400).json({
+      error: `Feature "${feature}" ist kein LLM-Feature (Typ: ${def.providerType}). Nutze den spezifischen Endpoint.`,
+    });
+  }
+
+  // 2. Energy check (respects event package limits per guest)
+  if (eventId) {
+    const energyResult = await checkAndSpendEnergy(req, eventId, feature as AiFeature);
+    if (!energyResult.success) {
+      return res.status(429).json({ error: energyResult.reason || 'Nicht genug Energie', energyResult });
+    }
+  }
+
+  try {
+    // 3. Resolve prompt (event-specific → global DB → hardcoded fallback)
+    const prompt = await resolvePrompt(feature, eventId);
+
+    // 4. Build system prompt (enriched with event context if eventId given)
+    const baseSystem = prompt.systemPrompt ||
+      `Du bist ein KI-Assistent auf einer Party-Foto-App. Antworte auf Deutsch, kurz und kreativ.`;
+    const systemPrompt = eventId
+      ? await enrichSystemPrompt(eventId, baseSystem)
+      : baseSystem;
+
+    // 5. Render user prompt template with provided variables
+    const userPromptTpl = prompt.userPromptTpl || 'Führe das Feature "{{feature}}" aus.';
+    const userPrompt = renderPrompt(userPromptTpl, { feature, ...variables });
+
+    // 6. Call LLM
+    const response = await generateCompletion(userPrompt, systemPrompt, {
+      maxTokens: prompt.maxTokens || 300,
+      temperature: prompt.temperature || 0.85,
+    });
+
+    logger.info('[ai/run] Feature executed', { feature, eventId, source: prompt.source });
+
+    return res.json({
+      result: response.content,
+      feature,
+      source: 'ai' as const,
+      promptSource: prompt.source,
+    });
+  } catch (error) {
+    logger.error('[ai/run] LLM call failed', { feature, error: (error as Error).message });
+    return res.status(500).json({ error: 'KI-Anfrage fehlgeschlagen', feature });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * ╔══════════════════════════════════════════════════════════════════════════════╗
+ * ║         ENTWICKLER-ANLEITUNG: NEUES KI-FEATURE HINZUFÜGEN                  ║
+ * ╚══════════════════════════════════════════════════════════════════════════════╝
+ *
+ * ┌─────────────────────────────────────────────────────────────────────────────┐
+ * │  FALL 1 — Einfaches LLM-Feature (Text-Output, keine Bilddaten)              │
+ * │  → POST /api/ai/run reicht vollständig aus (KEIN eigener Endpoint nötig)    │
+ * └─────────────────────────────────────────────────────────────────────────────┘
+ *
+ * Schritt 1: aiFeatureRegistry.ts
+ *   export type AiFeature = ... | 'mein_neues_feature';
+ *   AI_FEATURE_REGISTRY.push({
+ *     key: 'mein_neues_feature',
+ *     label: 'Mein Feature',
+ *     description: 'Was es macht',
+ *     category: 'text',          // 'text' | 'game' | 'image' | 'video' | 'recognition'
+ *     providerType: 'LLM',
+ *     creditCost: 1,
+ *     isWorkflow: false,
+ *     allowedDevices: ADMIN_ONLY, // oder APP_AND_KI, GUEST_DEVICES, ...
+ *     packageCategory: 'hostTools',
+ *     uiGroup: 'host_tool',
+ *   });
+ *
+ * Schritt 2: Prompt-Template anlegen
+ *   → Admin UI: /admin → Prompt-Studio → "Neues Template"
+ *   → ODER in services/promptTemplates.ts unter FALLBACK_PROMPTS:
+ *     mein_neues_feature: {
+ *       systemPrompt: 'Du bist ein ...',
+ *       userPromptTpl: 'Mach etwas mit {{guestName}} und {{eventType}}.',
+ *       temperature: 0.85,
+ *       maxTokens: 300,
+ *     }
+ *
+ * Schritt 3: Frontend-Aufruf
+ *   const { data } = await api.post('/ai/run', {
+ *     feature: 'mein_neues_feature',
+ *     eventId: 'optional-event-id',
+ *     variables: { guestName: 'Max', eventType: 'wedding', custom: '...' },
+ *   });
+ *   console.log(data.result); // LLM-Ausgabe als String
+ *
+ *
+ * ┌─────────────────────────────────────────────────────────────────────────────┐
+ * │  FALL 2 — IMAGE_GEN / VIDEO_GEN / FACE_RECOGNITION Feature                 │
+ * │  → Eigener Endpoint nötig (API-Aufruf ist provider-spezifisch)              │
+ * └─────────────────────────────────────────────────────────────────────────────┘
+ *
+ * Schritt 1: aiFeatureRegistry.ts (gleich wie Fall 1, aber providerType anpassen)
+ *   providerType: 'IMAGE_GEN',   // oder 'VIDEO_GEN' | 'FACE_RECOGNITION'
+ *   creditCost: 4,               // Bilder/Videos kosten mehr Credits
+ *   endpoint: '/booth-games/mein-bild-feature',  // UI-Routing
+ *
+ * Schritt 2: Endpoint in routes/boothGames.ts (oder neue Route-Datei)
+ *   router.post('/mein-bild-feature', authMiddleware, withEnergyCheck('mein_feature'),
+ *     async (req: AuthRequest, res: Response) => {
+ *       const { photoId, eventId } = req.body;
+ *
+ *       // Provider + Credits auflösen:
+ *       const execution = await prepareAiExecution(req.userId!, 'mein_feature', eventId);
+ *       if (!execution.success) return res.status(402).json({ error: execution.error });
+ *
+ *       // Provider-spezifischer API-Aufruf (Replicate / FAL / Stability / OpenAI):
+ *       const result = await callImageApi(execution.provider, { photoId, ...options });
+ *
+ *       // Usage loggen:
+ *       await logAiUsage(execution.provider!.id, 'mein_feature', {
+ *         durationMs: Date.now() - start,
+ *         success: true,
+ *         eventId,
+ *         userId: req.userId,
+ *       });
+ *
+ *       res.json({ resultUrl: result.url });
+ *     }
+ *   );
+ *
+ * Schritt 3: In index.ts mounten (falls neue Route-Datei)
+ *   app.use('/api/booth-games', aiFeatureLimiter, meinBildFeatureRoutes);
+ *
+ *
+ * ┌─────────────────────────────────────────────────────────────────────────────┐
+ * │  FALL 3 — Komplexe Multi-Step-Logik (z.B. Quiz mit mehreren Antworten)     │
+ * │  → Eigener Endpoint nötig, da /api/ai/run nur einen Request-Response kennt │
+ * └─────────────────────────────────────────────────────────────────────────────┘
+ *
+ * Beispiel: Persona-Quiz (3 Antworten → Analyse)
+ *
+ *   router.post('/persona-quiz', authMiddleware, withEnergyCheck('persona_quiz'),
+ *     async (req: AuthRequest, res: Response) => {
+ *       const { eventId, guestName, answers } = req.body;
+ *       if (!Array.isArray(answers) || answers.length < 3)
+ *         return res.status(400).json({ error: '3 Antworten erforderlich' });
+ *
+ *       const prompt = await resolvePrompt('persona_quiz', eventId);
+ *
+ *       // Antworten in den User-Prompt einbauen (nicht per variables möglich):
+ *       const userPrompt = `Gast "${guestName}" antwortete:
+ *         1. ${answers[0]}
+ *         2. ${answers[1]}
+ *         3. ${answers[2]}`;
+ *
+ *       const response = await generateCompletion(userPrompt,
+ *         await enrichSystemPrompt(eventId, prompt.systemPrompt || 'Du bist...'),
+ *         { maxTokens: 300, temperature: 0.9 });
+ *
+ *       res.json({ result: response.content });
+ *     }
+ *   );
+ *
+ * Faustregel: Wenn du mehr als {{variable}}-Ersetzungen brauchst (z.B. Arrays,
+ * JSON-Parsing, mehrere API-Aufrufe, Conditional Logic) → eigener Endpoint.
+ *
+ *
+ * ┌─────────────────────────────────────────────────────────────────────────────┐
+ * │  FALL 4 — Frontend-UI für Gäste (Guest App / KI-Booth)                     │
+ * │  → Separate Komponente im Frontend nötig                                    │
+ * └─────────────────────────────────────────────────────────────────────────────┘
+ *
+ * Schritt 1: Datei anlegen
+ *   packages/frontend/src/components/games/MeinFeature.tsx
+ *
+ * Schritt 2: Einstiegspunkt je nach inputFlow (aus aiFeatureRegistry.ts):
+ *   'name_only'       → GuestNameInput → api.post('/ai/run', { feature, variables: { guestName } })
+ *   'photo_only'      → PhotoSelector  → api.post('/booth-games/mein-bild-feature', { photoId })
+ *   'name_and_quiz'   → QuizForm       → api.post('/booth-games/persona-quiz', { answers })
+ *   'name_and_words'  → WordsInput     → api.post('/ai/run', { feature, variables: { words } })
+ *
+ * Schritt 3: Im AiGamesModal oder AiEffectsModal registrieren
+ *   Die Komponenten lesen AI_FEATURE_REGISTRY automatisch aus — das Feature
+ *   erscheint sobald der Registry-Eintrag allowedDevices: ['guest_app'] enthält.
+ *   Für die Darstellung: endpoint + uiGroup + emoji + gradient aus Registry nutzen.
+ *
+ *
+ * ┌─────────────────────────────────────────────────────────────────────────────┐
+ * │  CHECKLISTE — Neues Feature vollständig integriert?                         │
+ * └─────────────────────────────────────────────────────────────────────────────┘
+ *
+ *   [ ] aiFeatureRegistry.ts: AiFeature-Union + AI_FEATURE_REGISTRY-Eintrag
+ *   [ ] Prompt-Template: FALLBACK_PROMPTS oder Admin UI / seedDefaultPrompts()
+ *   [ ] Backend: /api/ai/run (LLM, einfach) ODER eigener Endpoint (IMAGE/Multi-Step)
+ *   [ ] index.ts: Route gemountet (nur bei eigenem Endpoint nötig)
+ *   [ ] Frontend-Komponente: (nur bei Gäste-Feature nötig)
+ *   [ ] AiGamesModal / AiEffectsModal: Feature erscheint automatisch via Registry ✓
+ *   [ ] Cost-Monitoring: Usage-Logs erscheinen automatisch via logAiUsage() ✓
+ *   [ ] Feature-Gate: Package-Check läuft automatisch via aiFeatureGate.ts ✓
+ *   [ ] Admin AI-Features Seite: Feature erscheint automatisch via Registry ✓
+ */
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
  * POST /api/ai/cache/migrate
  * Migriert bestehende Redis-Cache-Einträge in den Knowledge Store
  */
@@ -742,6 +972,20 @@ router.get('/cache/online-status', async (_req: Request, res: Response) => {
     res.json({ online });
   } catch (error) {
     res.json({ online: false });
+  }
+});
+
+/**
+ * DELETE /api/ai/cache
+ * Clears all Knowledge Store entries
+ */
+router.delete('/cache', async (_req: Request, res: Response) => {
+  try {
+    const result = await prisma.aiResponseCache.deleteMany({});
+    res.json({ ok: true, deleted: result.count });
+  } catch (error) {
+    logger.error('Error clearing knowledge cache', { error: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Leeren des Caches' });
   }
 });
 

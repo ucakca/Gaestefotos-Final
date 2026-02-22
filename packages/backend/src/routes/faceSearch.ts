@@ -392,20 +392,36 @@ router.post(
         return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
-      // Extract face descriptor from reference image
-      const descriptor = await extractFaceDescriptorFromImage(file.buffer);
+      // Extract face descriptor — try ArcFace 512-dim first, fall back to 128-dim
+      const { resolveProvider } = await import('../services/aiExecution');
+      const { extractArcFaceEmbedding } = await import('../services/faceRecognition');
+      const arcProvider = await resolveProvider('face_search').catch(() => null);
+      const usesArcFace = arcProvider && (arcProvider.slug?.includes('fal') || arcProvider.model?.includes('insightface'));
 
-      if (!descriptor) {
+      let arcDescriptor: number[] | null = null;
+      if (usesArcFace && arcProvider) {
+        arcDescriptor = await extractArcFaceEmbedding(file.buffer, {
+          apiKey: arcProvider.apiKey,
+          model: arcProvider.model ?? undefined,
+          baseUrl: arcProvider.baseUrl ?? undefined,
+        }).catch(() => null);
+      }
+
+      // Only call local face-api if ArcFace is not available or failed
+      const descriptor = (!arcDescriptor) ? await extractFaceDescriptorFromImage(file.buffer) : null;
+
+      if (!descriptor && !arcDescriptor) {
         return res.status(400).json({ 
           error: 'Kein Gesicht im Referenzbild erkannt. Bitte ein Foto mit einem klaren Gesicht verwenden.' 
         });
       }
 
-      // Search for matching photos — try pgvector first, fall back to JS-based
-      let results = await searchByVector(eventId, descriptor.descriptor, minSimilarity);
-      let searchMethod = 'pgvector';
+      // Search for matching photos — prefer 512-dim ArcFace, fall back to 128-dim
+      const searchDescriptor = arcDescriptor ?? descriptor!.descriptor;
+      let results = await searchByVector(eventId, searchDescriptor, minSimilarity);
+      let searchMethod = arcDescriptor ? 'pgvector-arcface-512' : 'pgvector-128';
 
-      if (results.length === 0) {
+      if (results.length === 0 && descriptor) {
         // Fallback to JS-based brute-force search (works without pgvector extension)
         results = await searchPhotosByFace(eventId, descriptor, minSimilarity);
         searchMethod = 'js-fallback';

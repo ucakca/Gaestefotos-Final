@@ -132,6 +132,48 @@ export function spinSlotMachine(): { prop: string; accessory: string; challenge:
   };
 }
 
+// ─── AI SLOT MACHINE (Image Generation) ─────────────────────────────────────
+
+const AI_SLOT_ANIMALS = ['🦁', '🐯', '🐉', '🦄', '🦊', '🐺', '🦋', '🦅', '🐙', '🦈', '🦭', '🐸', '🦩', '🦚'];
+const AI_SLOT_PLACES  = ['🏖️', '🏔️', '🌃', '🏯', '🌌', '🏝️', '🌋', '🌊', '🎪', '🌺', '🏕️', '🗼', '🎠', '🌙'];
+const AI_SLOT_STYLES  = ['🎨', '🖼️', '💎', '🎭', '🚀', '🔮', '🌈', '⚡', '🎸', '🏆', '🎯', '🧪', '🎲', '🌸'];
+
+export interface AiSlotResult {
+  emojis: [string, string, string];
+  subject: string;
+  setting: string;
+  style: string;
+  prompt: string;
+}
+
+export function spinAiSlotMachine(): AiSlotResult {
+  const subject = AI_SLOT_ANIMALS[Math.floor(Math.random() * AI_SLOT_ANIMALS.length)];
+  const setting = AI_SLOT_PLACES[Math.floor(Math.random() * AI_SLOT_PLACES.length)];
+  const style = AI_SLOT_STYLES[Math.floor(Math.random() * AI_SLOT_STYLES.length)];
+
+  const styleDescriptions: Record<string, string> = {
+    '🎨': 'oil painting', '🖼️': 'watercolor', '💎': 'crystal render', '🎭': 'theatrical poster',
+    '🚀': 'sci-fi epic', '🔮': 'magical illustration', '🌈': 'vibrant digital art', '⚡': 'dynamic lightning art',
+    '🎸': 'rock poster art', '🏆': 'trophy illustration', '🎯': 'precision graphic', '🧪': 'scientific art',
+    '🎲': 'game art style', '🌸': 'floral fantasy art',
+  };
+  const subjectDescriptions: Record<string, string> = {
+    '🦁': 'lion', '🐯': 'tiger', '🐉': 'dragon', '🦄': 'unicorn', '🦊': 'fox',
+    '🐺': 'wolf', '🦋': 'butterfly', '🦅': 'eagle', '🐙': 'octopus', '🦈': 'shark',
+    '🦭': 'seal', '🐸': 'frog', '🦩': 'flamingo', '🦚': 'peacock',
+  };
+  const settingDescriptions: Record<string, string> = {
+    '🏖️': 'tropical beach', '🏔️': 'snowy mountain', '🌃': 'neon city at night', '🏯': 'ancient castle',
+    '🌌': 'deep space', '🏝️': 'magical island', '🌋': 'volcanic landscape', '🌊': 'dramatic ocean',
+    '🎪': 'colorful circus', '🌺': 'enchanted garden', '🏕️': 'misty forest', '🗼': 'Paris cityscape',
+    '🎠': 'dreamlike fairground', '🌙': 'moonlit night',
+  };
+
+  const prompt = `A stunning ${styleDescriptions[style] || 'digital art'} of a ${subjectDescriptions[subject] || 'creature'} at a ${settingDescriptions[setting] || 'beautiful location'}. Highly detailed, vibrant colors, cinematic lighting, award-winning art`;
+
+  return { emojis: [subject, setting, style], subject, setting, style, prompt };
+}
+
 // ─── COMPLIMENT MIRROR ──────────────────────────────────────────────────────
 
 const COMPLIMENTS = [

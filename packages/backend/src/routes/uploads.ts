@@ -377,6 +377,23 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
           logger.warn('Failed to emit WebSocket event for TUS upload', { error: wsError.message });
         }
 
+        // Source tagging (booth/mobile/upload) — Phase 1
+        const uploadSource = req.headers['x-upload-source'] as string;
+        if (uploadSource && ['booth', 'mobile', 'upload'].includes(uploadSource)) {
+          prisma.photo.update({ where: { id: photo.id }, data: { tags: { push: [`source:${uploadSource}`] } } }).catch(() => {});
+        }
+
+        // Face-Off team tagging (non-blocking)
+        const deviceIdForTeam = (req.headers['x-device-id'] as string) || (req.query?.deviceId as string) || null;
+        if (deviceIdForTeam) {
+          import('./faceOff').then(({ getTeamForDevice }) => {
+            const teamId = getTeamForDevice(eventId, deviceIdForTeam);
+            if (teamId) {
+              prisma.photo.update({ where: { id: photo.id }, data: { tags: { push: [`team:${teamId}`] } } }).catch(() => {});
+            }
+          }).catch(() => {});
+        }
+
         // Trigger workflow (non-blocking)
         import('../services/workflowExecutor').then(m => m.onPhotoUploaded(eventId, photo.id)).catch(() => {});
 
@@ -410,9 +427,26 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
                 data: { faceCount: faceResult.faceCount, faceData: { faces: faceResult.faces, descriptors: faceResult.descriptors || [] } },
               });
               const { storeFaceEmbedding } = await import('../services/faceSearchPgvector');
+              const { resolveProvider } = await import('../services/aiExecution');
+              const { extractArcFaceEmbedding } = await import('../services/faceRecognition');
+              const arcProvider = await resolveProvider('face_search').catch(() => null);
+              const usesArcFace = arcProvider && (arcProvider.slug?.includes('fal') || arcProvider.model?.includes('insightface'));
               const descriptors = faceResult.descriptors || [];
               for (let i = 0; i < descriptors.length; i++) {
-                storeFaceEmbedding({ photoId: photo.id, eventId, descriptor: descriptors[i], faceIndex: i, box: faceResult.faces[i] }).catch(() => {});
+                let arcEmbedding: number[] | null = null;
+                if (usesArcFace && arcProvider) {
+                  arcEmbedding = await extractArcFaceEmbedding(buffer, {
+                    apiKey: arcProvider.apiKey,
+                    model: arcProvider.model ?? undefined,
+                    baseUrl: arcProvider.baseUrl ?? undefined,
+                  }).catch(() => null);
+                }
+                storeFaceEmbedding({
+                  photoId: photo.id, eventId,
+                  descriptor: descriptors[i],
+                  descriptorArc: arcEmbedding ?? undefined,
+                  faceIndex: i, box: faceResult.faces[i],
+                }).catch(() => {});
               }
             }
           })

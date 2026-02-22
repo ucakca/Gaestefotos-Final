@@ -1,6 +1,8 @@
 import { Router, Response } from 'express';
 import { domainToASCII } from 'node:url';
 import os from 'node:os';
+import path from 'node:path';
+import fs from 'node:fs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { authMiddleware, AuthRequest, requireRole } from '../middleware/auth';
@@ -452,6 +454,38 @@ router.get('/server-info', authMiddleware, requireRole('ADMIN'), async (_req: Au
     nodeVersion: process.version,
     nodeEnv: process.env.NODE_ENV || 'unknown',
     uptimeSeconds: Math.floor(os.uptime()),
+  });
+});
+
+// GET /api/admin/ops/face-models — check if face detection models are present
+router.get('/face-models', authMiddleware, requireRole('ADMIN'), async (_req: AuthRequest, res: Response) => {
+  const modelsPath = path.join(__dirname, '../../models');
+  const requiredFiles = [
+    'tiny_face_detector_model-weights_manifest.json',
+    'tiny_face_detector_model.bin',
+    'face_landmark_68_model-weights_manifest.json',
+    'face_landmark_68_model.bin',
+    'face_recognition_model-weights_manifest.json',
+    'face_recognition_model.bin',
+  ];
+
+  const dirExists = fs.existsSync(modelsPath);
+  const fileStatus = requiredFiles.map(file => ({
+    file,
+    present: dirExists && fs.existsSync(path.join(modelsPath, file)),
+  }));
+  const missingFiles = fileStatus.filter(f => !f.present).map(f => f.file);
+  const allPresent = missingFiles.length === 0;
+
+  res.json({
+    modelsPath,
+    dirExists,
+    allPresent,
+    missingFiles,
+    fileStatus,
+    hint: allPresent
+      ? 'Face Detection ist einsatzbereit.'
+      : 'Modelle fehlen! Ausführen: pnpm --filter backend download-face-models',
   });
 });
 

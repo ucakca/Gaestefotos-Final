@@ -95,6 +95,7 @@ const PROVIDER_TYPES = [
 ];
 
 const AI_FEATURES = [
+  // Host Tools (LLM)
   { key: 'chat', label: 'KI Chat-Assistent', type: 'LLM', credits: 1, workflow: false },
   { key: 'album_suggest', label: 'Album-Vorschläge', type: 'LLM', credits: 1, workflow: false },
   { key: 'description_suggest', label: 'Beschreibungs-Generator', type: 'LLM', credits: 1, workflow: false },
@@ -102,16 +103,55 @@ const AI_FEATURES = [
   { key: 'challenge_suggest', label: 'Challenge-Vorschläge', type: 'LLM', credits: 1, workflow: false },
   { key: 'guestbook_suggest', label: 'Gästebuch-Nachricht', type: 'LLM', credits: 1, workflow: false },
   { key: 'color_scheme', label: 'Farbschema-Generator', type: 'LLM', credits: 1, workflow: false },
+  { key: 'ai_categorize', label: 'AI Kategorisierung', type: 'LLM', credits: 1, workflow: false },
+  // Games (LLM)
   { key: 'compliment_mirror', label: 'Compliment Mirror', type: 'LLM', credits: 2, workflow: true },
-  { key: 'face_search', label: 'Gesichtssuche (Face Search)', type: 'FACE_RECOGNITION', credits: 0, workflow: true },
-  { key: 'style_transfer', label: 'KI Booth — Style Transfer', type: 'IMAGE_GEN', credits: 5, workflow: true },
-  { key: 'face_switch', label: 'Face Switch', type: 'IMAGE_GEN', credits: 5, workflow: true },
+  { key: 'fortune_teller', label: 'Fortune Teller', type: 'LLM', credits: 2, workflow: true },
+  { key: 'ai_roast', label: 'AI Roast', type: 'LLM', credits: 2, workflow: true },
+  { key: 'caption_suggest', label: 'Caption Generator', type: 'LLM', credits: 1, workflow: false },
+  { key: 'celebrity_lookalike', label: 'Promi-Doppelgänger', type: 'LLM', credits: 2, workflow: true },
+  { key: 'ai_bingo', label: 'Foto-Bingo', type: 'LLM', credits: 1, workflow: true },
+  { key: 'ai_dj', label: 'AI DJ', type: 'LLM', credits: 1, workflow: true },
+  { key: 'ai_meme', label: 'Meme Generator', type: 'LLM', credits: 1, workflow: true },
+  { key: 'ai_superlatives', label: 'Party Awards', type: 'LLM', credits: 1, workflow: true },
+  { key: 'ai_photo_critic', label: 'Foto-Kritiker', type: 'LLM', credits: 1, workflow: true },
+  { key: 'ai_couple_match', label: 'Couple Match', type: 'LLM', credits: 2, workflow: true },
+  { key: 'persona_quiz', label: 'Persona Quiz', type: 'LLM', credits: 2, workflow: true },
+  { key: 'wedding_speech', label: 'Hochzeitsrede', type: 'LLM', credits: 2, workflow: true },
+  { key: 'ai_stories', label: 'Story Generator', type: 'LLM', credits: 2, workflow: true },
+  // Image Effects (IMAGE_GEN)
+  { key: 'face_switch', label: 'Face Swap', type: 'IMAGE_GEN', credits: 5, workflow: true },
   { key: 'bg_removal', label: 'Hintergrund entfernen', type: 'IMAGE_GEN', credits: 3, workflow: true },
   { key: 'ai_oldify', label: 'Oldify (Alterung)', type: 'IMAGE_GEN', credits: 4, workflow: true },
-  { key: 'ai_cartoon', label: 'Cartoon-Effekt', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'ai_cartoon', label: 'Pixar Cartoon', type: 'IMAGE_GEN', credits: 4, workflow: true },
   { key: 'ai_style_pop', label: 'Style Pop', type: 'IMAGE_GEN', credits: 4, workflow: true },
-  { key: 'drawbot', label: 'Drawbot — Porträtzeichnung', type: 'IMAGE_GEN', credits: 8, workflow: true },
+  { key: 'time_machine', label: 'Time Machine', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'pet_me', label: 'Pet Me', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'yearbook', label: 'Yearbook', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'emoji_me', label: 'Emoji Me', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'miniature', label: 'Miniature', type: 'IMAGE_GEN', credits: 3, workflow: true },
+  { key: 'gif_morph', label: 'GIF Morph', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'gif_aging', label: 'Aging GIF', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'trading_card', label: 'Trading Card', type: 'IMAGE_GEN', credits: 3, workflow: true },
+  { key: 'anime', label: 'Anime', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'watercolor', label: 'Aquarell', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'oil_painting', label: 'Ölgemälde', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'sketch', label: 'Bleistiftzeichnung', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'neon_noir', label: 'Neon Noir', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'renaissance', label: 'Renaissance', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'comic_book', label: 'Comic Book', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  { key: 'pixel_art', label: 'Pixel Art', type: 'IMAGE_GEN', credits: 4, workflow: true },
+  // AI Slot Machine + Cover-Shooting
+  { key: 'ai_slot_machine', label: 'AI Slot Machine', type: 'IMAGE_GEN', credits: 5, workflow: true },
+  { key: 'cover_shot', label: 'Cover-Shooting', type: 'IMAGE_GEN', credits: 0, workflow: true },
+  { key: 'photo_strip', label: 'Photo Strip', type: 'IMAGE_GEN', credits: 0, workflow: false },
+  { key: 'style_transfer', label: 'Style Transfer (KI Booth)', type: 'IMAGE_GEN', credits: 5, workflow: true },
+  { key: 'drawbot', label: 'Drawbot', type: 'IMAGE_GEN', credits: 8, workflow: true },
+  // Video (VIDEO_GEN)
+  { key: 'ai_video', label: 'AI Video', type: 'VIDEO_GEN', credits: 5, workflow: true },
   { key: 'highlight_reel', label: 'Highlight Reel', type: 'VIDEO_GEN', credits: 10, workflow: true },
+  // Recognition
+  { key: 'face_search', label: 'Gesichtssuche (Face Search)', type: 'FACE_RECOGNITION', credits: 0, workflow: true },
 ];
 
 // Known provider presets for quick setup
@@ -176,6 +216,26 @@ const PROVIDER_PRESETS = [
     envKey: 'REMOVE_BG_API_KEY',
     features: ['bg_removal'],
   },
+  {
+    slug: 'fal-arcface',
+    name: 'FAL.ai InsightFace (ArcFace)',
+    type: 'FACE_RECOGNITION',
+    baseUrl: null,
+    defaultModel: 'fal-ai/insightface',
+    description: '🎯 ArcFace 512-dim — deutlich bessere Gesichtserkennung als lokale face-api.js (128-dim)',
+    envKey: 'FAL_API_KEY',
+    features: ['face_search'],
+  },
+  {
+    slug: 'fal-ai',
+    name: 'FAL.ai',
+    type: 'IMAGE_GEN',
+    baseUrl: null,
+    defaultModel: 'fal-ai/flux/dev/image-to-image',
+    description: '🏆 Empfohlen — schnellste Bildgenerierung + Face Swap (inswapper) + InstantID',
+    envKey: 'FAL_API_KEY',
+    features: ['face_switch', 'ai_oldify', 'ai_cartoon', 'ai_style_pop', 'yearbook', 'time_machine', 'pet_me', 'emoji_me', 'miniature', 'gif_morph', 'gif_aging', 'trading_card', 'bg_removal', 'style_transfer', 'ai_slot_machine', 'cover_shot', 'photo_strip', 'anime', 'watercolor', 'oil_painting', 'sketch', 'neon_noir', 'renaissance', 'comic_book', 'pixel_art'],
+  },
 ];
 
 // Known models per provider slug for quick selection
@@ -200,6 +260,18 @@ const MODEL_LIBRARY: Record<string, { id: string; label: string }[]> = {
   'stability-ai': [
     { id: 'stable-diffusion-xl-1024-v1-0', label: 'SDXL 1.0' },
     { id: 'stable-diffusion-3-medium', label: 'SD 3 Medium' },
+  ],
+  'fal-ai': [
+    { id: 'fal-ai/flux/dev/image-to-image', label: 'FLUX Dev img2img (Empfohlen)' },
+    { id: 'fal-ai/flux-pro', label: 'FLUX Pro (Höchste Qualität)' },
+    { id: 'fal-ai/inswapper', label: 'Inswapper (Face Swap)' },
+    { id: 'fal-ai/instantid', label: 'InstantID (Identity Preservation)' },
+    { id: 'fal-ai/stable-diffusion-v3-medium', label: 'SD 3 Medium' },
+    { id: 'fal-ai/aura-flow', label: 'AuraFlow' },
+  ],
+  'fal-arcface': [
+    { id: 'fal-ai/insightface', label: 'InsightFace (ArcFace 512-dim) — Empfohlen' },
+    { id: 'fal-ai/face-analysis', label: 'Face Analysis (alternative)' },
   ],
 };
 
@@ -778,6 +850,23 @@ export default function AiProvidersPage() {
                         </div>
                         {provider.monthlyBudgetCents && provider.monthlyBudgetCents > 0 && (
                           <BudgetProgressBar usedCents={usedCents} budgetCents={provider.monthlyBudgetCents} />
+                        )}
+                        {/* Stability AI v1 deprecation warning */}
+                        {provider.slug.includes('stability') && (
+                          <div className="mt-2.5 flex items-start gap-2 text-xs px-3 py-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                            <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                            <span>
+                              <strong>Stability AI v1 API wird eingestellt.</strong> Bitte auf FAL.ai (FLUX Dev img2img) oder Stability AI v2 migrieren. 
+                              {' '}<a href="https://platform.stability.ai/docs/deprecations" target="_blank" rel="noreferrer" className="underline">Mehr erfahren →</a>
+                            </span>
+                          </div>
+                        )}
+                        {/* FAL.ai recommended badge */}
+                        {provider.slug.includes('fal') && provider.isActive && (
+                          <div className="mt-2.5 flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                            <span><strong>Empfohlen</strong> — Face Swap (inswapper), InstantID, FLUX Dev. Konfiguriere Features über <em>Auto-Setup</em>.</span>
+                          </div>
                         )}
                         {/* Test result (single or test-all) */}
                         {activeTestResult && (

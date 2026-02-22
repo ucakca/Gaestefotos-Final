@@ -103,6 +103,9 @@ const FEATURE_ICONS: Record<string, any> = {
   drawbot: Pencil,
   highlight_reel: Video,
   face_search: ScanFace,
+  cover_shot: Image,
+  ai_slot_machine: Gamepad2,
+  photo_strip: Image,
   ai_categorize: Layers,
   celebrity_lookalike: Sparkles,
   ai_bingo: Gamepad2,
@@ -151,7 +154,8 @@ export default function AiFeaturesPage() {
   const [providers, setProviders] = useState<AiProvider[]>([]);
   const [prompts, setPrompts] = useState<PromptInfo[]>([]);
   const [loading, setLoading] = useState(true);
-  
+  const [faceModels, setFaceModels] = useState<{ allPresent: boolean; missingFiles: string[]; hint: string } | null>(null);
+
   // AI Feature Registry — loaded dynamically from backend (Single Source of Truth)
   const { registry } = useAiFeatureRegistry();
   const featureMeta = buildFeatureMetaMap(registry);
@@ -197,6 +201,12 @@ export default function AiFeaturesPage() {
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  useEffect(() => {
+    api.get('/admin/ops/face-models')
+      .then(res => setFaceModels(res.data))
+      .catch(() => {}); // non-critical, ignore errors
+  }, []);
 
   const toggleFeature = async (feature: string, currentEnabled: boolean) => {
     setToggling(feature);
@@ -300,6 +310,22 @@ export default function AiFeaturesPage() {
             </button>
           </div>
         </div>
+
+        {/* Face Detection Model Warning */}
+        {faceModels && !faceModels.allPresent && (
+          <div className="flex items-start gap-3 px-4 py-3 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300">
+            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-400" />
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-sm">Face Detection Modelle fehlen</div>
+              <div className="text-xs text-amber-400/80 mt-0.5">
+                Face Search und Face Switch funktionieren nicht. {faceModels.missingFiles.length} Datei(en) fehlen.
+              </div>
+              <code className="text-[10px] mt-1.5 block px-2 py-1 rounded bg-black/30 font-mono text-amber-300">
+                pnpm --filter backend download-face-models
+              </code>
+            </div>
+          </div>
+        )}
 
         {/* Stats Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -472,6 +498,7 @@ export default function AiFeaturesPage() {
                     toggling={toggling === f.feature}
                     onToggle={() => toggleFeature(f.feature, f.isEnabled)}
                     featureMeta={featureMeta}
+                    onReload={loadData}
                   />
                 ))}
               </div>
@@ -499,6 +526,7 @@ function FeatureRow({
   toggling,
   onToggle,
   featureMeta,
+  onReload,
 }: {
   feature: AiFeatureInfo;
   mapping?: FeatureMapping;
@@ -507,14 +535,33 @@ function FeatureRow({
   toggling: boolean;
   onToggle: () => void;
   featureMeta: Record<string, { label: string; description: string; category: string }>;
+  onReload?: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [changingProvider, setChangingProvider] = useState(false);
   const meta = featureMeta[feature.feature] || {
     label: feature.feature,
     category: 'text',
     description: '',
   };
   const Icon = FEATURE_ICONS[feature.feature] || Sparkles;
+
+  const handleProviderChange = async (providerId: string) => {
+    if (!providerId) return;
+    setChangingProvider(true);
+    try {
+      await api.put(`/admin/ai-providers/features/mappings/${feature.feature}`, {
+        providerId,
+        isEnabled: true,
+      });
+      toast.success(`Provider für ${meta.label} geändert`);
+      onReload?.();
+    } catch {
+      toast.error('Fehler beim Ändern des Providers');
+    } finally {
+      setChangingProvider(false);
+    }
+  };
 
   const hasSubFeatures = feature.feature === 'style_transfer';
   const subFeatures = hasSubFeatures ? STYLE_TRANSFER_SUBS : {};
@@ -584,18 +631,30 @@ function FeatureRow({
             )}
           </div>
 
-          {/* Provider */}
-          <div className="hidden sm:flex items-center gap-2 min-w-[130px]">
-            {feature.hasProvider ? (
-              <Badge variant="success">
-                <CheckCircle2 className="w-3 h-3 mr-1" />
-                {feature.providerName}
-              </Badge>
+          {/* Provider — inline change selector */}
+          <div className="flex items-center gap-1 min-w-[160px]">
+            {changingProvider ? (
+              <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
             ) : (
-              <Badge variant="warning">
-                <AlertTriangle className="w-3 h-3 mr-1" />
-                Kein Provider
-              </Badge>
+              <select
+                value={mapping?.providerId || ''}
+                onChange={e => handleProviderChange(e.target.value)}
+                disabled={changingProvider}
+                className={`text-xs bg-gray-800 border rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-purple-500/40 disabled:opacity-50 max-w-[155px] truncate ${
+                  mapping?.providerId
+                    ? 'border-emerald-500/40 text-emerald-300'
+                    : 'border-gray-700 text-gray-400 hover:border-purple-500/50'
+                }`}
+                title={feature.providerName || 'Provider wählen'}
+              >
+                <option value="">— kein Provider —</option>
+                {providers
+                  .filter(p => !feature.providerType || p.type === feature.providerType)
+                  .map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))
+                }
+              </select>
             )}
           </div>
 

@@ -4,9 +4,11 @@ import { withEnergyCheck } from '../middleware/energyCheck';
 import prisma from '../config/database';
 import { enrichSystemPrompt } from '../services/eventPromptContext';
 import { logger } from '../utils/logger';
+import { createPhotoStrip, STRIP_TEMPLATES } from '../services/photoStrip';
 import {
   GAME_CATALOG,
   spinSlotMachine,
+  spinAiSlotMachine,
   generateCompliment,
   generateComplimentAI,
   generateFortuneTellerAI,
@@ -24,6 +26,19 @@ const router = Router();
 // GET /api/booth-games/catalog — List all available games
 router.get('/catalog', (_req, res: Response) => {
   res.json({ games: GAME_CATALOG });
+});
+
+// POST /api/booth-games/slot-machine/ai-spin — Spin AI Slot Machine (emojis for image generation)
+router.post('/slot-machine/ai-spin', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.body;
+    const result = spinAiSlotMachine();
+    const session = createGameSession(eventId, 'slot_machine', result);
+    res.json({ sessionId: session.id, ...result });
+  } catch (error) {
+    logger.error('AI Slot spin error', { message: (error as Error).message });
+    res.status(500).json({ error: 'AI Slot Machine Fehler' });
+  }
 });
 
 // POST /api/booth-games/slot-machine/spin — Spin the virtual slot machine
@@ -203,6 +218,7 @@ router.post('/face-switch', authMiddleware, async (req: AuthRequest, res: Respon
       success: true,
       newPhotoPath: result.newPhotoPath,
       facesSwapped: result.facesSwapped,
+      usedAi: result.usedAi,
     });
   } catch (error) {
     logger.error('Face switch error', { message: (error as Error).message });
@@ -219,7 +235,7 @@ router.post('/style-effect', authMiddleware, withEnergyCheck('ai_oldify'), async
       return res.status(400).json({ error: 'photoId ist erforderlich' });
     }
 
-    const validEffects = ['ai_oldify', 'ai_cartoon', 'ai_style_pop', 'time_machine', 'pet_me', 'yearbook', 'emoji_me', 'miniature'];
+    const validEffects = ['ai_oldify', 'ai_cartoon', 'ai_style_pop', 'time_machine', 'pet_me', 'yearbook', 'emoji_me', 'miniature', 'gif_morph', 'gif_aging', 'trading_card', 'anime', 'watercolor', 'oil_painting', 'sketch', 'neon_noir', 'renaissance', 'comic_book', 'pixel_art'];
     if (!effect || !validEffects.includes(effect)) {
       return res.status(400).json({ error: `Ungültiger Effekt. Erlaubt: ${validEffects.join(', ')}` });
     }
@@ -896,6 +912,137 @@ Antworte NUR als JSON: {"review": "die lustige Bewertung (2-3 Sätze)", "stars":
   }
 });
 
+// POST /api/booth-games/slot-machine/generate-image — Generate AI image from slot combination
+router.post('/slot-machine/generate-image', authMiddleware, withEnergyCheck('ai_slot_machine'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, prompt, emojis, sessionId } = req.body;
+
+    if (!eventId) {
+      return res.status(400).json({ error: 'eventId ist erforderlich' });
+    }
+
+    // Build prompt from emojis if no explicit prompt given
+    const imagePrompt = prompt || (emojis && Array.isArray(emojis)
+      ? `An artistic, detailed illustration of: ${emojis.join(' ')}. Vibrant colors, party atmosphere, photorealistic, high quality digital art`
+      : 'A colorful party scene, vibrant confetti, celebration, digital art');
+
+    const { resolveProvider } = await import('../services/aiExecution');
+    const { storageService } = await import('../services/storage');
+
+    const provider = await resolveProvider('ai_slot_machine');
+    if (!provider) {
+      return res.status(503).json({ error: 'Kein AI Provider für AI Slot Machine konfiguriert' });
+    }
+
+    // Call FAL.ai or Replicate for image generation
+    let imageBuffer: Buffer | null = null;
+    let imageUrl = '';
+
+    if (provider.slug.includes('fal')) {
+      const model = provider.model || 'fal-ai/flux/dev';
+      const resp = await fetch(`https://fal.run/${model}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Key ${provider.apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: imagePrompt,
+          num_images: 1,
+          image_size: 'square',
+          num_inference_steps: 28,
+          guidance_scale: 3.5,
+        }),
+      });
+      if (resp.ok) {
+        const data: any = await resp.json();
+        const outputUrl = data?.images?.[0]?.url || data?.image?.url;
+        if (outputUrl) {
+          if (outputUrl.startsWith('data:')) {
+            imageBuffer = Buffer.from(outputUrl.split(',')[1], 'base64');
+          } else {
+            const imgResp = await fetch(outputUrl);
+            imageBuffer = Buffer.from(await imgResp.arrayBuffer());
+          }
+        }
+      }
+    } else if (provider.slug.includes('replicate')) {
+      const version = provider.model || 'black-forest-labs/flux-schnell';
+      const createResp = await fetch('https://api.replicate.com/v1/predictions', {
+        method: 'POST',
+        headers: { 'Authorization': `Token ${provider.apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ version, input: { prompt: imagePrompt, num_outputs: 1, aspect_ratio: '1:1' } }),
+      });
+      if (createResp.ok) {
+        let pred: any = await createResp.json();
+        for (let i = 0; i < 30 && pred.status !== 'succeeded' && pred.status !== 'failed'; i++) {
+          await new Promise(r => setTimeout(r, 2000));
+          const pollResp = await fetch(pred.urls?.get, { headers: { 'Authorization': `Token ${provider.apiKey}` } });
+          pred = await pollResp.json();
+        }
+        const outputUrl = Array.isArray(pred.output) ? pred.output[0] : pred.output;
+        if (outputUrl) {
+          const imgResp = await fetch(outputUrl);
+          imageBuffer = Buffer.from(await imgResp.arrayBuffer());
+        }
+      }
+    }
+
+    if (!imageBuffer) {
+      return res.status(503).json({ error: 'Bild-Generierung fehlgeschlagen' });
+    }
+
+    // Save generated image to storage
+    const filePath = await storageService.uploadFile(eventId, `slot-${Date.now()}.jpg`, imageBuffer, 'image/jpeg');
+
+    res.json({
+      success: true,
+      imageUrl: filePath,
+      prompt: imagePrompt,
+      sessionId,
+    });
+  } catch (error) {
+    logger.error('Slot machine image error', { message: (error as Error).message });
+    res.status(500).json({ error: (error as Error).message || 'AI Slot Machine Fehler' });
+  }
+});
+
+// GET /api/booth-games/cover-shot/templates — List available magazine cover templates
+router.get('/cover-shot/templates', (_req, res: Response) => {
+  import('../services/coverShot').then(({ COVER_TEMPLATES }) => {
+    res.json({ templates: COVER_TEMPLATES.map(t => ({
+      id: t.id, label: t.label, emoji: t.emoji,
+      defaultCoverLine1: t.defaultCoverLine1, defaultCoverLine2: t.defaultCoverLine2,
+    })) });
+  }).catch(() => res.status(500).json({ error: 'Templates nicht verfügbar' }));
+});
+
+// POST /api/booth-games/cover-shot — Apply magazine cover overlay to a photo
+router.post('/cover-shot', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { photoId, template, coverLine1, coverLine2, guestName, eventTitle } = req.body;
+
+    if (!photoId) {
+      return res.status(400).json({ error: 'photoId ist erforderlich' });
+    }
+
+    const { processCoverShotForPhoto } = await import('../services/coverShot');
+    const result = await processCoverShotForPhoto(photoId, req.userId!, {
+      template: template || 'vogue',
+      coverLine1,
+      coverLine2,
+      guestName,
+      eventTitle,
+    });
+
+    res.json({
+      success: true,
+      newPhotoPath: result.newPhotoPath,
+      template: result.template,
+    });
+  } catch (error) {
+    logger.error('Cover shot error', { message: (error as Error).message });
+    res.status(500).json({ error: (error as Error).message || 'Cover-Shooting Fehler' });
+  }
+});
+
 // POST /api/booth-games/ai-couple-match — Fun compatibility score between two names
 router.post('/ai-couple-match', authMiddleware, withEnergyCheck('ai_couple_match'), async (req: AuthRequest, res: Response) => {
   try {
@@ -943,6 +1090,31 @@ Antworte NUR als JSON: {"compatibility": 87, "shipName": "kreativer Paar-Name", 
   } catch (error) {
     logger.error('AI Couple Match error', { message: (error as Error).message });
     res.status(500).json({ error: 'Couple Match fehlgeschlagen' });
+  }
+});
+
+// GET /api/booth-games/photo-strip/templates
+router.get('/photo-strip/templates', (_req, res: Response) => {
+  res.json({ templates: STRIP_TEMPLATES.map(t => ({
+    id: t.id, label: t.label, emoji: t.emoji,
+  })) });
+});
+
+// POST /api/booth-games/photo-strip
+router.post('/photo-strip', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { photoIds, template, eventTitle, brandColor } = req.body;
+    if (!photoIds || !Array.isArray(photoIds) || photoIds.length < 1 || photoIds.length > 4) {
+      return res.status(400).json({ error: '1-4 photoIds erforderlich' });
+    }
+    // determine eventId from first photo
+    const photo = await prisma.photo.findUnique({ where: { id: photoIds[0] }, select: { eventId: true } });
+    if (!photo) return res.status(404).json({ error: 'Foto nicht gefunden' });
+    const result = await createPhotoStrip(photo.eventId, photoIds, req.userId, { template, eventTitle, brandColor });
+    res.json({ success: true, ...result });
+  } catch (error) {
+    logger.error('Photo Strip error', { message: (error as Error).message });
+    res.status(500).json({ error: (error as Error).message || 'Photo Strip Fehler' });
   }
 });
 

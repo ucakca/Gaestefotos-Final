@@ -51,18 +51,41 @@ export function registerAllWorkers(): void {
       });
 
       // Store embeddings in pgvector
+      // Try ArcFace 512-dim via FAL.ai InsightFace if a FACE_RECOGNITION provider is configured
+      const { resolveProvider } = await import('./aiExecution');
+      const arcProvider = await resolveProvider('face_search').catch(() => null);
+      const usesArcFace = arcProvider?.slug?.includes('fal') || arcProvider?.model?.includes('insightface');
+
+      const { extractArcFaceEmbedding } = await import('./faceRecognition');
       const descriptors = faceResult.descriptors || [];
+
       for (let i = 0; i < descriptors.length; i++) {
+        const face = faceResult.faces[i];
+
+        // Optionally extract face crop for ArcFace (better accuracy than whole image)
+        let arcEmbedding: number[] | null = null;
+        if (usesArcFace && arcProvider) {
+          arcEmbedding = await extractArcFaceEmbedding(buffer, {
+            apiKey: arcProvider.apiKey,
+            model: arcProvider.model ?? undefined,
+            baseUrl: arcProvider.baseUrl ?? undefined,
+          }).catch(() => null);
+        }
+
         await storeFaceEmbedding({
           photoId,
           eventId,
           descriptor: descriptors[i],
+          descriptorArc: arcEmbedding ?? undefined,
           faceIndex: i,
-          box: faceResult.faces[i],
+          box: face,
+          confidence: face.confidence,
         });
       }
 
-      logger.info(`[Worker:FaceDetection] Found ${faceResult.faceCount} faces in photo ${photoId}`);
+      logger.info(`[Worker:FaceDetection] Found ${faceResult.faceCount} faces in photo ${photoId}`, {
+        arcFace: usesArcFace ? 'enabled' : 'disabled',
+      });
     }
 
     return { faceCount: faceResult.faceCount };

@@ -7,43 +7,41 @@ import {
 } from 'lucide-react';
 import api from '@/lib/api';
 
-// ─── Domain Registry ──────────────────────────────────────────────────────────
+// ─── Domain Registry (nur aktive nginx-konfigurierte Domains) ─────────────────
+// Quellen: /etc/nginx/conf.d/*.conf — geprüft Feb 2026
+// Entfernt: ws, ws2 (laufen via app/socket.io), staging.app/.dash (intern, Port 8101),
+//           minio, cloud (keine nginx-Config vorhanden)
 
 const DOMAINS = [
   {
     group: 'Haupt-App',
     color: 'blue',
     entries: [
-      { label: 'App (Frontend)',     domain: 'app.gästefotos.com',     punycode: 'app.xn--gstefotos-v2a.com',     purpose: 'Next.js Frontend (Port 3000)',     ssl: true, cdn: true,  type: 'app' },
-      { label: 'API (Backend)',      domain: 'app.gästefotos.com/api',  punycode: 'app.xn--gstefotos-v2a.com/api', purpose: 'Express Backend (Port 8001)',      ssl: true, cdn: true,  type: 'api' },
-      { label: 'WebSocket',         domain: 'ws.gästefotos.com',       punycode: 'ws.xn--gstefotos-v2a.com',      purpose: 'Socket.IO (Port 8001)',            ssl: true, cdn: false, type: 'ws' },
+      { label: 'App (Frontend)',  domain: 'app.gästefotos.com',    punycode: 'app.xn--gstefotos-v2a.com',    purpose: 'Next.js Frontend (Port 3000)', ssl: true, cdn: true,  type: 'app' },
+      { label: 'API (Backend)',   domain: 'app.gästefotos.com/api', punycode: 'app.xn--gstefotos-v2a.com',   purpose: 'Express Backend (Port 8001)', ssl: true, cdn: true,  type: 'api' },
+      { label: 'WebSocket',       domain: 'app.gästefotos.com/socket.io', punycode: 'app.xn--gstefotos-v2a.com', purpose: 'Socket.IO via app-Domain (kein eigener Subdomain)', ssl: true, cdn: true, type: 'ws' },
     ],
   },
   {
-    group: 'Admin & Dashboard',
+    group: 'Admin & Services',
     color: 'purple',
     entries: [
-      { label: 'Dashboard',         domain: 'dash.gästefotos.com',     punycode: 'dash.xn--gstefotos-v2a.com',    purpose: 'Admin Dashboard',                 ssl: true, cdn: true,  type: 'app' },
-      { label: 'Staging App',       domain: 'staging.app.gästefotos.com', punycode: 'staging.app.xn--gstefotos-v2a.com', purpose: 'Staging Environment',        ssl: true, cdn: false, type: 'app' },
-      { label: 'Staging Dash',      domain: 'staging.dash.gästefotos.com', punycode: 'staging.dash.xn--gstefotos-v2a.com', purpose: 'Staging Dashboard',        ssl: true, cdn: false, type: 'app' },
+      { label: 'Dashboard',      domain: 'dash.gästefotos.com',   punycode: 'dash.xn--gstefotos-v2a.com',   purpose: 'Admin Dashboard (Next.js, Port 3001)', ssl: true, cdn: true,  type: 'app' },
+      { label: 'Print Service',  domain: 'print.gästefotos.com',  punycode: 'print.xn--gstefotos-v2a.com',  purpose: 'Print Terminal Service',              ssl: true, cdn: false, type: 'app' },
     ],
   },
   {
     group: 'Medien & CDN',
     color: 'green',
     entries: [
-      { label: 'CDN / Medien',      domain: 'cdn.gästefotos.com',      punycode: 'cdn.xn--gstefotos-v2a.com',     purpose: 'SeaweedFS Filer (Port 8888) — Auth-geschützt', ssl: true, cdn: true, type: 'cdn' },
-      { label: 'MinIO (S3)',        domain: 'minio.gästefotos.com',    punycode: 'minio.xn--gstefotos-v2a.com',   purpose: 'MinIO Object Storage Admin',      ssl: true, cdn: false, type: 'storage' },
-      { label: 'Print Service',     domain: 'print.gästefotos.com',    punycode: 'print.xn--gstefotos-v2a.com',   purpose: 'Print Terminal Service',          ssl: true, cdn: false, type: 'app' },
+      { label: 'CDN / Medien',   domain: 'cdn.gästefotos.com',    punycode: 'cdn.xn--gstefotos-v2a.com',    purpose: 'SeaweedFS Filer (Port 8888) — Auth via HMAC-SHA256', ssl: true, cdn: true, type: 'cdn' },
     ],
   },
   {
     group: 'Marketing & Public',
     color: 'orange',
     entries: [
-      { label: 'Website',           domain: 'gästefotos.com',          punycode: 'xn--gstefotos-v2a.com',         purpose: 'WordPress Hauptseite',            ssl: true, cdn: true,  type: 'cms' },
-      { label: 'Cloud',             domain: 'cloud.gästefotos.com',    punycode: 'cloud.xn--gstefotos-v2a.com',   purpose: 'Cloud-Service (Nextcloud o.ä.)',  ssl: true, cdn: false, type: 'app' },
-      { label: 'WS2',               domain: 'ws2.gästefotos.com',      punycode: 'ws2.xn--gstefotos-v2a.com',     purpose: 'WebSocket 2 (Backup)',            ssl: true, cdn: false, type: 'ws' },
+      { label: 'Website',        domain: 'gästefotos.com',        punycode: 'xn--gstefotos-v2a.com',        purpose: 'WordPress Hauptseite (Plesk)', ssl: true, cdn: true, type: 'cms' },
     ],
   },
 ];
@@ -151,12 +149,16 @@ export default function DomainsPage() {
 
       {/* Server Info */}
       {serverInfo && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
           {[
-            { label: 'Server-IP', value: '65.109.71.182', icon: <Server className="w-4 h-4 text-blue-400" /> },
-            { label: 'SSL-Provider', value: 'Let\'s Encrypt (Plesk)', icon: <Lock className="w-4 h-4 text-green-400" /> },
-            { label: 'CDN-Provider', value: 'Cloudflare', icon: <Cloud className="w-4 h-4 text-orange-400" /> },
-            { label: 'Hosting', value: 'Hetzner VPS', icon: <Database className="w-4 h-4 text-purple-400" /> },
+            { label: 'Server-IP',    value: serverInfo.ip,          icon: <Server className="w-4 h-4 text-blue-400" /> },
+            { label: 'SSL',          value: serverInfo.sslProvider,  icon: <Lock className="w-4 h-4 text-green-400" /> },
+            { label: 'CDN',          value: serverInfo.cdnProvider,  icon: <Cloud className="w-4 h-4 text-orange-400" /> },
+            { label: 'Hosting',      value: serverInfo.hosting,      icon: <Database className="w-4 h-4 text-purple-400" /> },
+            { label: 'Standort',     value: serverInfo.location,     icon: <Globe className="w-4 h-4 text-cyan-400" /> },
+            { label: 'Uptime',       value: serverInfo.uptimeSeconds != null
+                ? `${Math.floor(serverInfo.uptimeSeconds / 86400)}d ${Math.floor((serverInfo.uptimeSeconds % 86400) / 3600)}h`
+                : '–',                                               icon: <Clock className="w-4 h-4 text-yellow-400" /> },
           ].map((item) => (
             <div key={item.label} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-1">

@@ -113,6 +113,7 @@ import adminAiLogsRoutes from './routes/adminAiLogs';
 import eventThemesRoutes from './routes/themes';
 import imageCdnRoutes from './routes/imageCdn';
 import debugRoutes from './routes/debug';
+import faceOffRoutes from './routes/faceOff';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter, smsLimiter, paymentLimiter, leadLimiter, aiFeatureLimiter, pushSubscribeLimiter, analyticsLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -603,6 +604,7 @@ app.use('/api/photos', photoRoutes); // Photo actions: /api/photos/:photoId/*
 app.use('/api/photos', categoryRoutes); // Photo category assignment: /api/photos/:photoId/category
 app.use('/api/photos', likesRoutes); // Likes: /api/photos/:photoId/like
 app.use('/api/photos', commentsRoutes); // Comments: /api/photos/:photoId/comments
+app.use('/api', commentsRoutes); // Event comments: /api/events/:eventId/comments (moderation)
 app.use('/api/photos', votesRoutes); // Votes: /api/photos/:photoId/vote
 app.use('/api/events', storiesRoutes); // Stories: /api/events/:eventId/stories
 app.use('/api/photos', storiesRoutes); // Story from photo: /api/photos/:photoId/story
@@ -667,6 +669,7 @@ app.use('/api/events', eventAiConfigRoutes); // AI Config: /api/events/:eventId/
 app.use('/api/events', eventEnergyRoutes); // Energy: /api/events/:eventId/energy, energy/reward, energy/stats
 app.use('/api/events', eventBriefingRoutes); // Briefing: /api/events/:eventId/briefing
 app.use('/api/events', gamificationRoutes); // Gamification: /api/events/:eventId/achievements, leaderboard
+app.use('/api/events', faceOffRoutes); // Face-Off: /api/events/:eventId/face-off/*
 app.use('/api/push', pushSubscribeLimiter, pushRoutes); // Push Notifications: /api/push/vapid-key, subscribe
 app.use('/api/events', analyticsLimiter, analyticsRoutes); // Analytics: /api/events/:eventId/analytics
 app.use('/api/hardware', hardwareRoutes); // Hardware: /api/hardware/*

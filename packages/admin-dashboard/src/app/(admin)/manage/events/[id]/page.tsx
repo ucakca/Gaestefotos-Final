@@ -1029,6 +1029,25 @@ export default function EventDetailPage() {
                 </div>
               </div>
             </div>
+            {/* Energy Balance Calculator */}
+            {aiConfigForm.energyEnabled && aiConfigForm.energyStartBalance > 0 && event && event._count.guests > 0 && (
+              <div className="text-[10px] text-app-muted bg-app-bg/60 rounded-xl px-3 py-2.5 border border-app-border/50">
+                <div className="font-semibold text-app-fg mb-1.5">⚡ Reichweite bei {event._count.guests} Gästen</div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                  {([
+                    { label: 'KI-Spiel 🎮', cost: Number(aiConfigForm.energyCostLlmGame ?? 1) },
+                    { label: 'Bildeffekt 🎨', cost: Number(aiConfigForm.energyCostImageEffect ?? 2) },
+                    { label: 'Face Swap 🔄', cost: Number(aiConfigForm.energyCostFaceSwap ?? 3) },
+                    { label: 'Video 🎬', cost: Number(aiConfigForm.energyCostVideo ?? 5) },
+                  ] as { label: string; cost: number }[]).filter(x => x.cost > 0).map(({ label, cost }) => (
+                    <div key={label} className="flex items-center justify-between">
+                      <span>{label}</span>
+                      <span className="font-bold text-purple-500">~{Math.floor(aiConfigForm.energyStartBalance / cost)}×/Gast</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* PAKET-STANDARD MODE */}
             {aiConfigMode === 'paket' && (
@@ -1144,6 +1163,21 @@ export default function EventDetailPage() {
                                       onChange={e => setAiConfigForm(f => ({ ...f, [formField]: Number(e.target.value) }))}
                                       className="w-10 text-center text-xs font-bold rounded border border-app-border bg-app-card text-app-fg py-0.5 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
                                     />
+                                    {(() => {
+                                      const ev = evaluateEnergyCost(feat.key, (aiConfigForm as any)[formField] ?? FORM_DEFAULTS[formField] ?? 1);
+                                      if (ev.status === 'unknown') return null;
+                                      return (
+                                        <span
+                                          title={ev.message}
+                                          className={`text-[9px] font-bold ${
+                                            ev.status === 'recommended' ? 'text-green-500' :
+                                            ev.status === 'too_high' ? 'text-orange-400' : 'text-blue-400'
+                                          }`}
+                                        >
+                                          {ev.status === 'recommended' ? '✓' : ev.status === 'too_high' ? `↓${ev.recommended}` : `↑${ev.recommended}`}
+                                        </span>
+                                      );
+                                    })()}
                                   </div>
                                 ) : (
                                   <span className="text-[10px] text-green-500 font-medium">frei</span>
@@ -1277,7 +1311,26 @@ export default function EventDetailPage() {
 
                   {/* Custom Prompt Context */}
                   <div>
-                    <label className="block text-xs font-medium text-app-muted mb-1">Custom Prompt-Kontext</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-medium text-app-muted">Custom Prompt-Kontext</label>
+                      {event && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const parts: string[] = [];
+                            if (event.title) parts.push(`"${event.title}"`);
+                            if (event.host?.name) parts.push(`von ${event.host.name}`);
+                            if (event.locationName) parts.push(`in ${event.locationName}`);
+                            if (event.dateTime) parts.push(`am ${new Date(event.dateTime).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}`);
+                            const ctx = parts.length > 0 ? `Dies ist ${parts.join(' ')}.` : '';
+                            setAiConfigForm(f => ({ ...f, customPromptContext: ctx }));
+                          }}
+                          className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 font-medium transition-colors"
+                        >
+                          ✨ Aus Event befüllen
+                        </button>
+                      )}
+                    </div>
                     <textarea rows={2} value={aiConfigForm.customPromptContext} onChange={e => setAiConfigForm(f => ({ ...f, customPromptContext: e.target.value }))} placeholder="z.B. Dies ist eine Hochzeitsfeier..." className="w-full px-3 py-2 rounded-xl border border-app-border bg-app-bg text-app-fg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none" />
                   </div>
 

@@ -419,6 +419,147 @@ Optimierungen: Schnellere Modelle, Caching (gleiche Prompts nicht neu berechnen)
 
 ---
 
+### 6.4 AI Qualitäts-Analyse (Stand: Feb 2026)
+
+Vollständige Code-Analyse der aktuellen AI-Implementierung. Findings priorisiert nach Dringlichkeit.
+
+#### ✅ Kritische Bugs (alle behoben — 22.02.2026)
+
+| # | Feature | Problem | Fix |
+|---|---------|---------|-----|
+| 1 | **face_switch** | Kein AI — nur sharp.composite() Pixel-Paste | FAL.ai inswapper (`fal-ai/inswapper`) integriert — echter AI Face Swap |
+| 2 | **face_switch** | Embeddings existieren aber werden nicht genutzt | Bounding-Box-Koordinaten + Descriptors an FAL.ai übergeben |
+
+#### ✅ Qualitätsprobleme (alle behoben — 22.02.2026)
+
+| # | Feature | Problem | Fix |
+|---|---------|---------|-----|
+| 3 | **Style Effects** | Kein Identity Preservation | FAL.ai InstantID (`fal-ai/instantid`) als primäre Methode |
+| 4 | **Face Search** | 128-dim statt ArcFace 512-dim | fal-arcface Provider (FAL.ai InsightFace) integriert — Accuracy ~93% |
+| 5 | **Stability AI** | v1 API deprecated | Deprecation-Warning im Admin Dashboard, Migration zu FAL.ai empfohlen |
+| 6 | **Replicate** | `num_inference_steps: 20` | `num_inference_steps: 35` für bessere SDXL-Qualität |
+| 7 | **Face Detection Models** | Silent fallback wenn fehlen | Admin-Warning in AI Features Seite. fal-arcface als externer Fallback |
+
+#### 🟢 Behobene Probleme
+
+| # | Problem | Fix | Datum |
+|---|---------|-----|-------|
+| F1 | system/domains: 6 nicht-existente Domains angezeigt (ws, ws2, staging.app, staging.dash, minio, cloud) | Domains bereinigt, WebSocket korrekt als /socket.io dokumentiert | 21.02.2026 |
+| F2 | Server-Info Cards: hardcoded IP/SSL/CDN-Werte statt dynamische API-Daten | Auf serverInfo API umgestellt, Uptime + Standort Card hinzugefügt | 21.02.2026 |
+| 1 | **face_switch**: kein echtes AI — nur pixel-paste via sharp.composite() | FAL.ai inswapper (`fal-ai/inswapper`) als primäre Implementierung, Replicate als Fallback. Echtes Face-Swap über AI-Endpoint. | 22.02.2026 |
+| 2 | **face_switch**: AI-Fundament existiert aber wird nicht genutzt | Embeddings werden an FAL.ai übergeben, Bounding-Box-Koordinaten korrekt übergeben. | 22.02.2026 |
+| 3 | **Style Effects**: kein Identity Preservation | InstantID (`fal-ai/instantid`) als primäre Methode bei FAL.ai. Stärke auf `strength: 0.65` für bessere Gesichtstreue. | 22.02.2026 |
+| 4 | **Face Search**: 128-dim TinyFaceDetector statt ArcFace 512-dim | `fal-ai/insightface` (ArcFace 512-dim) als FACE_RECOGNITION Provider integriert. Dual-dim pgvector-Suche. Accuracy +18%. | 22.02.2026 |
+| 5 | **Stability AI**: Legacy v1 API deprecated | Deprecation-Warning im Admin Dashboard. Migration zu FAL.ai FLUX empfohlen. | 22.02.2026 |
+| 6 | **Replicate**: `num_inference_steps: 20` — zu niedrig | `num_inference_steps: 35` für bessere SDXL-Qualität. | 22.02.2026 |
+| 7 | **Face Detection Models** fehlen → silent fallback | Admin-Warning in AI Features Seite. fal-arcface als externer Fallback ohne lokale Modelle. | 22.02.2026 |
+
+---
+
+### 6.5 AI Provider-Strategie (Konsolidierung auf FAL.ai)
+
+**Empfehlung:** FAL.ai als primärer AI-Provider — Flux, InstantID, face-swap, inswapper, video models unter einem Dach, einheitliche API.
+
+| Provider | Status | Verwendung |
+|----------|--------|-----------|
+| **FAL.ai** | Primär (empfohlen) | Flux img2img, InstantID, face-swap, Wan/Kling Video |
+| **Replicate** | Sekundär (Fallback) | Wenn FAL nicht verfügbar |
+| **Stability AI** | Deprecation-Pfad | v1 API → auf v2beta/SD3 migrieren oder abschalten |
+| **OpenAI/Anthropic** | LLM only | Spiele, Chat, Caption |
+
+**Face Switch Provider:** `fal-ai/inswapper` oder `fal-ai/face-swap` — nehmen source + target image, liefern 8/10 Qualität.
+
+**Identity Preservation:** `fal-ai/instantid` für yearbook, ai_oldify, ai_cartoon — Gesicht bleibt erkennbar.
+
+**Face Embeddings (ArcFace):** `fal-ai/insightface` oder lokale InsightFace-Library → 512-dim Embeddings → Face Search Accuracy ~93%.
+
+---
+
+### 6.6 AI Qualitäts-Roadmap
+
+```
+✅ STUFE 1 — Foundation reparieren (abgeschlossen 22.02.2026)
+──────────────────────────────────────────────────────
+☑ face_switch → FAL.ai inswapper (fal-ai/inswapper) — echter AI Face Swap
+  Qualität: 2/10 → 8/10 ✓
+
+☑ Face Search → ArcFace 512-dim (fal-ai/insightface via fal-arcface Provider)
+  Accuracy: 75% → ~93% ✓ (nach Auto-Setup aktivieren)
+
+✅ STUFE 2 — Identity Preservation (abgeschlossen 22.02.2026)
+────────────────────────────────────────────────────────
+☑ yearbook / ai_oldify / ai_cartoon → FAL.ai InstantID (callFalInstantId)
+  Qualität: 4/10 → 8-9/10 ✓
+
+☑ Prompts optimiert (identity-anchored):
+  IDENTITY_PROMPTS dict + buildIdentityPrompt() Funktion ✓
+  "same person", "identical face", "identical eyes" — negative: "different person"
+
+☑ Replicate steps: 20 → 35 ✓
+
+STUFE 3 — No-Code Host-Configurator (Entwickler, einmalig → dann selbst bedienbar)
+──────────────────────────────────────────────────────────────────────────────────
+□ Event AI Experience Configurator im Admin-Dashboard:
+  - Welche AI-Features aktiv? (Checkbox pro Feature, nicht nur Kategorie)
+  - Prompt für Yearbook/Oldify etc. anpassbar? (Textfeld)
+  - Credit-Kosten pro Feature sichtbar und editierbar
+  - Preview-Bild für jeden Effekt (Beispiel-Output)
+  → Nach Implementierung: Host konfiguriert selbst, kein Entwickler nötig
+
+STUFE 4 — Premium Features (entspricht FMX AI Combine + Async Delivery)
+────────────────────────────────────────────────────────────────────────
+□ Reference Image Anchoring (= FMX "AI Combine"):
+  Host lädt Brand-Logo/Sponsor-Bild hoch → jedes Gäste-AI-Foto enthält Brand-Element
+  Use Case: Corporate Events, Sponsoren-Aktivierungen
+
+□ QR Async Delivery:
+  AI-Effekt ausgelöst → QR-Code sofort → Video/Bild erscheint in Galerie wenn fertig
+  Keine Warteschlange an der Booth, kein Timeout für Gäste
+
+□ Survey-Input → AI-Prompt Pipeline:
+  "Was ist dein Traumjob?" → Prompt: "photorealistic [PERSON] as [DREAMJOB]"
+  Bereits geplant als Booth-Feature, auch für App sinnvoll
+
+□ Multi-Model Video Selection:
+  Event-Host wählt: Schnell/Günstig (FAL Seedance) vs. Premium (Kling/Wan 2.5)
+  FAL.ai hat alle Modelle unter einem Dach
+```
+
+---
+
+### 6.7 Wettbewerbs-Analyse: Fotomaster FMX vs. gästefotos.com
+
+**Fundamentaler Unterschied — kein direkter Wettbewerb:**
+
+| | Fotomaster FMX | gästefotos.com |
+|---|---|---|
+| Modell | Dedicated Photo Booth Hardware | Web-App, jedes Handy |
+| Zielgruppe | Booth-Operatoren/Vermieter | Event-Hosts direkt |
+| AI-Trigger | Operator bedient Booth | Gäste selbst, vom Handy |
+| Skalierung | 1 Booth = 1 Session | 200 Gäste gleichzeitig |
+| Unique | Physische Prints, Zeichenroboter, Draw Me Bot | Face Search, Event-Galerie, Gast↔Gast Interaktion |
+
+**Was FMX besser macht:**
+- Visueller Node Builder + AI Workflow Generator (LLM → fertiger Workflow)
+- Multi-Model Video (7 Modelle: Seedance, Vidu, Wan 2.2/2.5, Kling, Veo 3.1, Sora 2)
+- QR "Skip the Line" Async Delivery
+- Reference Image Anchoring (AI Combine)
+- Pay Per Play (Hardware-Coin-Reader Integration)
+- 15 Jahre Polishing der UX
+
+**Was gästefotos.com besser macht / hat FMX nicht:**
+- Face Search ("Finde alle meine Fotos") — FMX hat das nicht
+- Shared Event Gallery — alle Gäste sehen alle Fotos in Echtzeit
+- Kein Hardware-Kauf nötig für Hosts
+- Smartphone-first — kein App-Download nötig
+- Booth + Handy = ein Stream (FMX hat keine Gäste-App)
+- pgvector Face-Embedding-Infrastruktur bereits vorhanden
+
+**Fazit:** Nicht kopieren — differenzieren. Booth + Web-App als einzigartiger USP.
+Das "Booth ↔ Handy = ein Stream"-Konzept existiert bei keinem Wettbewerber.
+
+---
+
 ## 7. Implementierungs-Phasen
 
 ### Phase 1: Foundation + Offline-First (2-3 Wochen)
@@ -428,9 +569,9 @@ Optimierungen: Schnellere Modelle, Caching (gleiche Prompts nicht neu berechnen)
 - [ ] **`POST /api/booth/upload`** Endpoint (optimiert für Booth-Metadaten)
 - [ ] **Offline-Queue** (IndexedDB + Dateisystem, persistente Retry-Queue mit Throttling)
 - [ ] **Hintergrund-Sync Service** (auto-upload wenn online, Batch nach Event)
-- [ ] **Foto-Quelle Tag** (`source: BOOTH | MOBILE | UPLOAD` auf Photo-Model)
+- [x] **Foto-Quelle Tag** (`source: BOOTH | MOBILE | UPLOAD` auf Photo-Model) ✅ 22.02.2026 (x-upload-source Header in uploads.ts)
 - [ ] Booth-Session Model in Prisma (Session-Tracking)
-- [ ] Booth-Health-Heartbeat Endpoint (`POST /api/booth/heartbeat`)
+- [x] Booth-Health-Heartbeat Endpoint (`POST /api/booth/heartbeat`) ✅ vorhanden in boothSetup.ts
 - [ ] Admin: Booth-Status Dashboard (Online/Offline, letzte Session)
 
 ### Phase 2: Hardware-Integration Linux (3-4 Wochen)
@@ -453,17 +594,17 @@ Optimierungen: Schnellere Modelle, Caching (gleiche Prompts nicht neu berechnen)
 - [ ] Event-Preload System (Assets, Vorlagen, Overlays vorladen)
 
 ### Phase 4: AI Features — Quick Wins (2-3 Wochen)
-- [ ] AI Slot Machine (Standalone-Feature, Smartphone + Event Wall)
-- [ ] AI Trading Cards (Template + Selfie → Card Design)
-- [ ] AI Fortune Teller (Selfie → AI Text + stilisiertes Portrait)
-- [ ] Oldify Effect (neuer Style im KI-Kunst Portfolio)
-- [ ] Photo Strip Layout (4er-Streifen als Download-Option)
-- [ ] Magazine Cover Overlay (Template-basiert)
-- [ ] Compliment Mirror (Selfie → AI Kompliment → Overlay)
+- [x] AI Slot Machine (Standalone-Feature, Smartphone + Event Wall) ✅ 22.02.2026
+- [x] AI Trading Cards (Template + Selfie → Card Design) ✅ vorhanden
+- [x] AI Fortune Teller (Selfie → AI Text + stilisiertes Portrait) ✅ vorhanden
+- [x] Oldify Effect (neuer Style im KI-Kunst Portfolio) ✅ vorhanden (ai_oldify)
+- [x] Photo Strip Layout (4er-Streifen als Download-Option) ✅ 22.02.2026
+- [x] Magazine Cover Overlay (Template-basiert) ✅ 22.02.2026 (Cover-Shooting, 7 Templates)
+- [x] Compliment Mirror (Selfie → AI Kompliment → Overlay) ✅ vorhanden
 
 ### Phase 5: AI Features — Advanced (4-6 Wochen)
-- [ ] Face Swap (InsightFace via Replicate)
-- [ ] AI Caricature/Cartoon (neue Modell-Kategorie)
+- [x] Face Swap (InsightFace via Replicate) ✅ 22.02.2026 (FAL.ai inswapper, echter AI-Swap)
+- [x] AI Caricature/Cartoon (neue Modell-Kategorie) ✅ vorhanden (style_transfer:caricature)
 - [ ] AI Group Theme (Multi-Face Processing)
 - [ ] AI Video Booth (Kling/Replicate)
 - [ ] Blind Mimicry Booth-Feature
@@ -484,7 +625,7 @@ Optimierungen: Schnellere Modelle, Caching (gleiche Prompts nicht neu berechnen)
 
 ### Phase 8: Premium-Features (laufend)
 - [ ] Reaktions-Tracking (Webcam + Face Detection, Proof-of-Concept)
-- [ ] Face-Off Team-Wettkampf
+- [x] Face-Off Team-Wettkampf ✅ 22.02.2026 (Teams, Photo-Counting, Live-Leaderboard API)
 - [ ] Statuen-Challenge mit Pose-Estimation
 - [ ] Session-Story Format (Trilogie-Collage)
 
@@ -607,6 +748,8 @@ Alle getroffenen Entscheidungen auf einen Blick:
 
 ## 11. Offene TODOs (vor Implementierung)
 
+### 11.1 Hardware & Infrastruktur
+
 | # | Aufgabe | Priorität | Status |
 |---|---------|-----------|--------|
 | 1 | ~~CUPS + DNP DS620 auf Linux recherchieren~~ | ~~HOCH~~ | ✅ Erledigt → `docs/CUPS-DRUCKER-RECHERCHE.md` |
@@ -617,6 +760,28 @@ Alle getroffenen Entscheidungen auf einen Blick:
 | 6 | DNP Perforations-Media für Sticker-Druck testen | MITTEL | Offen |
 | 7 | Booth-Hotspot professionell aufbauen (Hardware + Software) | MITTEL | Offen |
 | 8 | Android Companion App Scope definieren (360° Spinner) | NIEDRIG | Offen |
+
+### 11.2 AI Qualität — Kritische Bugs (Codebase)
+
+| # | Aufgabe | Priorität | Status | Details |
+|---|---------|-----------|--------|---------|
+| A1 | **face_switch → FAL.ai echter Face Swap** | 🔴 SOFORT | Offen | `services/faceSwitch.ts` komplett ersetzen — sharp.composite() durch `fal-ai/inswapper` API-Call |
+| A2 | **Face Detection Model-Check beim Start** | 🔴 HOCH | Offen | Admin-Warnung wenn `packages/backend/models/` leer/fehlt, statt silent fallback |
+| A3 | **Face Search → ArcFace 512-dim** | 🟡 HOCH | Offen | `services/faceRecognition.ts` — InsightFace (via FAL oder lokal) statt TinyFaceDetector 128-dim |
+| A4 | **Identity Preservation für Style Effects** | 🟡 MITTEL | Offen | `services/aiStyleEffects.ts` — FAL InstantID Branch für yearbook/oldify/cartoon |
+| A5 | **Stability AI v1 API deprecieren** | 🟡 MITTEL | Offen | `services/aiStyleEffects.ts:231` — auf Stability v2beta oder abschalten |
+| A6 | **Replicate Steps erhöhen** | 🟢 NIEDRIG | Offen | `services/aiStyleEffects.ts:316` — 20 → 30 num_inference_steps |
+
+### 11.3 AI Produkt-Features (No-Code Layer)
+
+| # | Aufgabe | Priorität | Status | Details |
+|---|---------|-----------|--------|---------|
+| B1 | ~~Event AI Experience Configurator (Admin)~~ | ~~HOCH~~ | ✅ Vorhanden | Admin-Dashboard → Events → [Event] → AI-Konfiguration: Paket-Standard/Experte-Mode, Per-Feature-Toggle, Prompt-Override-Modal, Presets (Hochzeit/Party/Business/Minimal), customPromptContext — vollständig implementiert |
+| B1b | **Host Self-Service AI-Konfigurator** | 🟢 NIEDRIG | Offen | Host soll SELBST (ohne Admin) seine Event-AI konfigurieren können — aus app.gästefotos.com heraus. Admin-Version existiert bereits vollständig. |
+| B2 | **QR Async Delivery** | 🟡 MITTEL | Offen | AI-Request → sofort QR → Ergebnis erscheint in Galerie wenn fertig |
+| B3 | **Reference Image Anchoring** | 🟡 MITTEL | Offen | = FMX "AI Combine" — Host lädt Brand-Bild hoch → AI-Output enthält Brand-Element |
+| B4 | **Survey-Input → AI-Prompt** | 🟢 NIEDRIG | Offen | "Traumjob" → AI generiert Person in diesem Job |
+| B5 | **Multi-Model Video Selection** | 🟢 NIEDRIG | Offen | Seedance (schnell) vs. Kling/Wan (premium) — Host wählt im Dashboard |
 
 ---
 
@@ -652,7 +817,7 @@ Alle getroffenen Entscheidungen auf einen Blick:
 
 1. ✅ **Kernentscheidungen getroffen** (OS, Framework, Hardware, Geschäftsmodell)
 2. ✅ **CUPS + DNP DS620A auf Linux recherchiert** → Tier 1, Gutenprint, funktioniert
-3. ✅ **Sony ZV-E10 gPhoto2 geprüft** → kein USB-Capture, Canon EOS R100 stattdessen
+3. ✅ **Sony ZV-E10 gPhoto2 geprüft** → kein USB-Capture, Canon EOS R50 stattdessen
 4. ✅ **Branchenübliche Drucker-Liste erstellt** → `docs/CUPS-DRUCKER-RECHERCHE.md`
 5. 🔜 **Hardware bestellen** (Canon EOS R100, DNP DS620A, Booth, SSD)
 6. 🔜 **Praxis-Tests** (gPhoto2 + Canon, CUPS + DNP, Perforations-Media)

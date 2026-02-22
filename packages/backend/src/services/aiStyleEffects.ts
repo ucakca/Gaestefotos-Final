@@ -14,7 +14,7 @@ import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { prepareAiExecution, logAiUsage, AiFeature } from './aiExecution';
 
-export type StyleEffect = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'time_machine' | 'pet_me' | 'yearbook' | 'emoji_me' | 'miniature' | 'anime' | 'watercolor' | 'oil_painting' | 'sketch' | 'neon_noir' | 'renaissance' | 'comic_book' | 'pixel_art';
+export type StyleEffect = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'time_machine' | 'pet_me' | 'yearbook' | 'emoji_me' | 'miniature' | 'anime' | 'watercolor' | 'oil_painting' | 'sketch' | 'neon_noir' | 'renaissance' | 'comic_book' | 'pixel_art' | 'gif_morph' | 'gif_aging' | 'trading_card';
 
 interface StyleEffectResult {
   outputBuffer: Buffer;
@@ -37,8 +37,8 @@ const STYLE_PROMPTS: Record<StyleEffect, { prompt: string; negativePrompt: strin
     strength: 0.65,
   },
   ai_cartoon: {
-    prompt: 'pixar style 3d cartoon character, animated movie character, colorful, expressive, high quality cartoon rendering',
-    negativePrompt: 'realistic, photograph, blurry, low quality, dark',
+    prompt: 'pixar style 3d cartoon character, same person as the original, animated movie character, identical facial features, colorful, expressive, high quality cartoon rendering',
+    negativePrompt: 'realistic, photograph, blurry, low quality, dark, different person',
     strength: 0.75,
   },
   ai_style_pop: {
@@ -57,8 +57,8 @@ const STYLE_PROMPTS: Record<StyleEffect, { prompt: string; negativePrompt: strin
     strength: 0.75,
   },
   yearbook: {
-    prompt: '1990s yearbook photo, school portrait, blue gradient background, soft lighting, retro 90s hairstyle, vintage school photo, slightly overexposed, warm tones',
-    negativePrompt: 'modern, selfie, outdoor, artistic, cartoon',
+    prompt: 'same person as the original, 1990s yearbook photo, school portrait, blue gradient background, soft lighting, retro 90s hairstyle, vintage school photo, identical face and features, slightly overexposed, warm tones',
+    negativePrompt: 'modern, selfie, outdoor, artistic, cartoon, different person, changed face',
     strength: 0.6,
   },
   emoji_me: {
@@ -110,6 +110,21 @@ const STYLE_PROMPTS: Record<StyleEffect, { prompt: string; negativePrompt: strin
     prompt: '16-bit pixel art portrait, retro video game sprite style, limited color palette, chunky pixels, SNES era game art, detailed pixel illustration, nostalgic retro gaming aesthetic',
     negativePrompt: 'smooth, anti-aliased, photograph, realistic, 3d render, modern',
     strength: 0.82,
+  },
+  gif_morph: {
+    prompt: 'smooth morphing transformation, sequential animation frames, dynamic motion, fluid transition effect',
+    negativePrompt: 'static, still, blurry, low quality',
+    strength: 0.6,
+  },
+  gif_aging: {
+    prompt: 'progressive aging transformation, from young to old, realistic aging sequence, wrinkles developing, grey hair',
+    negativePrompt: 'static, unchanged, smooth skin only, young only',
+    strength: 0.65,
+  },
+  trading_card: {
+    prompt: 'collectible trading card portrait, same person as the original, identical face, holographic foil border, dramatic lighting, epic hero card art, premium card game illustration, detailed character art',
+    negativePrompt: 'plain, simple, no border, casual, snapshot, different person, changed face',
+    strength: 0.72,
   },
 };
 
@@ -174,7 +189,13 @@ export async function applyStyleEffect(
   try {
     let resultBuffer: Buffer;
 
-    if (provider.slug.includes('stability') || provider.slug.includes('stable')) {
+    const useInstantId = (provider.model || '').toLowerCase().includes('instantid');
+
+    if (useInstantId) {
+      // Identity-preserving path: FAL.ai InstantID keeps the person's face recognizable
+      const identityPrompt = buildIdentityPrompt(effect, styleConfig.prompt, options.variant);
+      resultBuffer = await callFalInstantId(imageBuffer, provider, identityPrompt.prompt, identityPrompt.negativePrompt);
+    } else if (provider.slug.includes('stability') || provider.slug.includes('stable')) {
       resultBuffer = await callStabilityImg2Img(imageBuffer, provider, styleConfig.prompt, styleConfig.negativePrompt, strength);
     } else if (provider.slug.includes('replicate')) {
       resultBuffer = await callReplicateImg2Img(imageBuffer, provider, effect, styleConfig.prompt, strength);
@@ -293,6 +314,9 @@ async function callReplicateImg2Img(
     renaissance: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
     comic_book: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
     pixel_art: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    gif_morph: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    gif_aging: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
+    trading_card: 'stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
   };
 
   const base64 = imageBuffer.toString('base64');
@@ -312,7 +336,7 @@ async function callReplicateImg2Img(
         image: dataUri,
         prompt,
         strength,
-        num_inference_steps: 20,
+        num_inference_steps: 35,
       },
     }),
   });
@@ -346,6 +370,108 @@ async function callReplicateImg2Img(
   const imgRes = await fetch(outputUrl);
   const arrayBuffer = await imgRes.arrayBuffer();
   return Buffer.from(arrayBuffer);
+}
+
+// ─── Identity-Anchored Prompts (für InstantID) ────────────────────────────────
+
+const IDENTITY_PROMPTS: Partial<Record<StyleEffect, { prompt: string; negativePrompt: string }>> = {
+  yearbook: {
+    prompt: 'same person, identical face, identical eyes and features, 1990s school yearbook portrait photo, blue gradient background, soft studio lighting, retro 90s hairstyle, warm vintage tones',
+    negativePrompt: 'different person, changed face, different identity, modern, selfie, outdoor, cartoon',
+  },
+  ai_oldify: {
+    prompt: 'same person aged 40 years older, identical face structure and bone shape, realistic aging, deep wrinkles, grey hair, photorealistic portrait',
+    negativePrompt: 'different person, different face, cartoon, smooth skin, young',
+  },
+  ai_cartoon: {
+    prompt: 'same person as Pixar 3D animated character, identical facial features and hair color, expressive cartoon, studio lighting, high quality 3D render',
+    negativePrompt: 'different person, changed face, 2D flat, realistic photograph',
+  },
+  pet_me: {
+    prompt: 'same person as adorable anthropomorphic animal character, identical expression and pose, Pixar style, detailed fur, same hair color',
+    negativePrompt: 'human, different person, realistic, horror',
+  },
+  ai_style_pop: {
+    prompt: 'same person in vibrant pop art style, Andy Warhol inspired, bold colors, high contrast, identical face and features',
+    negativePrompt: 'different person, dull, muted, different face',
+  },
+  time_machine: {
+    prompt: 'same person in 1980s retro photo, identical face, big hair, neon colors, VHS aesthetic',
+    negativePrompt: 'different person, modern, changed face',
+  },
+};
+
+/**
+ * Build identity-anchored prompt for InstantID.
+ * Falls back to standard STYLE_PROMPTS if no specific identity prompt exists.
+ */
+function buildIdentityPrompt(effect: StyleEffect, fallbackPrompt: string, variant?: string): { prompt: string; negativePrompt: string } {
+  if (effect === 'time_machine' && variant && TIME_MACHINE_DECADES[variant]) {
+    const decade = TIME_MACHINE_DECADES[variant];
+    return {
+      prompt: `same person, identical face, ${decade.prompt}`,
+      negativePrompt: `different person, different face, ${decade.negativePrompt}`,
+    };
+  }
+  return IDENTITY_PROMPTS[effect] ?? { prompt: fallbackPrompt, negativePrompt: 'different person, changed face, blurry' };
+}
+
+/**
+ * Call FAL.ai InstantID endpoint for identity-preserving style transfer.
+ * InstantID preserves facial identity much better than standard img2img.
+ * Requires provider with model = 'fal-ai/instantid'
+ */
+async function callFalInstantId(
+  imageBuffer: Buffer,
+  provider: any,
+  prompt: string,
+  negativePrompt: string,
+): Promise<Buffer> {
+  const model = provider.model || 'fal-ai/instantid';
+  const apiUrl = `https://fal.run/${model}`;
+
+  const base64 = imageBuffer.toString('base64');
+  const dataUri = `data:image/jpeg;base64,${base64}`;
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Key ${provider.apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      face_image_url: dataUri,
+      prompt,
+      negative_prompt: negativePrompt,
+      num_inference_steps: 30,
+      guidance_scale: 5.0,
+      controlnet_conditioning_scale: 0.8,
+      ip_adapter_scale: 0.8,
+      num_images: 1,
+      output_format: 'jpeg',
+    }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`FAL.ai InstantID error ${response.status}: ${errText.slice(0, 300)}`);
+  }
+
+  const data: any = await response.json();
+  const outputUrl: string | undefined =
+    data?.images?.[0]?.url ||
+    data?.image?.url ||
+    (typeof data?.image === 'string' ? data.image : undefined);
+
+  if (!outputUrl) throw new Error('No output image from FAL.ai InstantID');
+
+  if (outputUrl.startsWith('data:')) {
+    return Buffer.from(outputUrl.split(',')[1], 'base64');
+  }
+
+  const imgRes = await fetch(outputUrl);
+  if (!imgRes.ok) throw new Error(`FAL.ai InstantID result fetch failed: ${imgRes.status}`);
+  return Buffer.from(await imgRes.arrayBuffer());
 }
 
 /**

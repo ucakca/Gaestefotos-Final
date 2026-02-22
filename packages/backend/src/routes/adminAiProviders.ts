@@ -355,9 +355,20 @@ router.post('/auto-setup', authMiddleware, async (req: AuthRequest, res: Respons
         continue;
       }
 
+      // Skip features that don't need AI providers (Sharp-based, free, no workflow)
+      if (feature.creditCost === 0 && !feature.isWorkflow) {
+        results.mappingsSkipped.push(`${feature.key} (no-AI, skipped)`);
+        continue;
+      }
+
       const candidates = providersByType[feature.providerType] || [];
       if (candidates.length === 0) {
-        results.errors.push(`${feature.key}: Kein aktiver ${feature.providerType} Provider`);
+        // Only treat missing VIDEO_GEN as soft warning (optional feature)
+        if (feature.providerType === 'VIDEO_GEN' || feature.providerType === 'STT' || feature.providerType === 'TTS') {
+          results.mappingsSkipped.push(`${feature.key} (no ${feature.providerType} provider — optional)`);
+        } else {
+          results.errors.push(`${feature.key}: Kein aktiver ${feature.providerType} Provider`);
+        }
         continue;
       }
 
@@ -373,7 +384,12 @@ router.post('/auto-setup', authMiddleware, async (req: AuthRequest, res: Respons
         });
         results.mappingsCreated.push(`${feature.key} → ${provider.slug}`);
       } catch (err: any) {
-        results.errors.push(`${feature.key}: ${err.message}`);
+        // P2002 = already exists (race condition) — treat as skipped
+        if (err.code === 'P2002') {
+          results.mappingsSkipped.push(`${feature.key} (already exists)`);
+        } else {
+          results.errors.push(`${feature.key}: ${err.message}`);
+        }
       }
     }
 
@@ -824,9 +840,24 @@ router.post('/:id/test', authMiddleware, async (req: AuthRequest, res: Response)
       }
 
     } else if (provider.type === 'FACE_RECOGNITION') {
-      // Face recognition uses local face-api.js — no external API to test
-      success = true;
-      message = 'Face Recognition nutzt lokale face-api.js (kein externer API-Call nötig)';
+      if (provider.slug.includes('fal')) {
+        // FAL.ai InsightFace: test with minimal API call
+        const falModel = model || 'fal-ai/insightface';
+        const resp = await fetch(`https://fal.run/${falModel}`, {
+          method: 'POST',
+          headers: { 'Authorization': `Key ${apiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_url: 'https://fal.ai/favicon.ico' }),
+        });
+        // 422/400 = bad image (expected, auth worked); 401/403 = bad key
+        success = resp.ok || resp.status === 422 || resp.status === 400;
+        message = success
+          ? `FAL.ai InsightFace erreichbar (${resp.status}) — ArcFace 512-dim aktiv`
+          : `FAL.ai InsightFace ${resp.status} ${resp.statusText} — Key prüfen`;
+      } else {
+        // Local face-api.js — no external API to test
+        success = true;
+        message = 'Face Recognition nutzt lokale face-api.js (kein externer API-Call nötig)';
+      }
 
     } else if (provider.type === 'STT') {
       // Speech-to-Text: try OpenAI-compatible /models or Whisper endpoint

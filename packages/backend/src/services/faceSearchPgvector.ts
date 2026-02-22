@@ -54,25 +54,42 @@ async function checkPgvectorAvailable(): Promise<boolean> {
 export async function storeFaceEmbedding(opts: {
   photoId: string;
   eventId: string;
-  descriptor: number[];
+  descriptor: number[];         // 128-dim (face-api) OR 512-dim (ArcFace)
+  descriptorArc?: number[];     // 512-dim ArcFace embedding (optional, from FAL.ai InsightFace)
   faceIndex: number;
   box?: { x: number; y: number; width: number; height: number };
   confidence?: number;
 }): Promise<void> {
   if (!(await checkPgvectorAvailable())) return;
 
-  const { photoId, eventId, descriptor, faceIndex, box, confidence } = opts;
+  const { photoId, eventId, descriptor, descriptorArc, faceIndex, box, confidence } = opts;
+  const dim = descriptor.length; // 128 or 512
+  const model = descriptorArc ? 'arcface-512' : (dim === 512 ? 'arcface-512' : 'face-api-128');
 
   try {
     const vectorStr = `[${descriptor.join(',')}]`;
-    await prisma.$executeRawUnsafe(
-      `INSERT INTO face_embedding (photo_id, event_id, embedding, face_index, box_x, box_y, box_width, box_height, confidence)
-       VALUES ($1::uuid, $2::uuid, $3::vector(128), $4, $5, $6, $7, $8, $9)
-       ON CONFLICT DO NOTHING`,
-      photoId, eventId, vectorStr, faceIndex,
-      box?.x ?? null, box?.y ?? null, box?.width ?? null, box?.height ?? null,
-      confidence ?? null
-    );
+    const arcStr = descriptorArc ? `[${descriptorArc.join(',')}]` : null;
+
+    if (arcStr) {
+      // Store both: 128-dim in embedding, 512-dim ArcFace in embedding_arc
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO face_embedding (photo_id, event_id, embedding, embedding_arc, face_index, box_x, box_y, box_width, box_height, confidence, model)
+         VALUES ($1::uuid, $2::uuid, $3::vector(128), $4::vector(512), $5, $6, $7, $8, $9, $10, $11)
+         ON CONFLICT DO NOTHING`,
+        photoId, eventId, vectorStr, arcStr, faceIndex,
+        box?.x ?? null, box?.y ?? null, box?.width ?? null, box?.height ?? null,
+        confidence ?? null, model
+      );
+    } else {
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO face_embedding (photo_id, event_id, embedding, face_index, box_x, box_y, box_width, box_height, confidence, model)
+         VALUES ($1::uuid, $2::uuid, $3::vector(128), $4, $5, $6, $7, $8, $9, $10)
+         ON CONFLICT DO NOTHING`,
+        photoId, eventId, vectorStr, faceIndex,
+        box?.x ?? null, box?.y ?? null, box?.width ?? null, box?.height ?? null,
+        confidence ?? null, model
+      );
+    }
   } catch (error) {
     logger.warn('[FaceSearch] Failed to store face embedding', {
       photoId, error: (error as Error).message,
@@ -86,7 +103,7 @@ export async function storeFaceEmbedding(opts: {
  */
 export async function searchByVector(
   eventId: string,
-  descriptor: number[],
+  descriptor: number[],     // accepts 128-dim or 512-dim
   minSimilarity: number = 0.6,
   limit: number = 100
 ): Promise<VectorSearchResult[]> {
@@ -94,22 +111,33 @@ export async function searchByVector(
     return []; // Caller should fall back to JS-based search
   }
 
+  const dim = descriptor.length; // 128 = face-api, 512 = ArcFace
+
   try {
     const vectorStr = `[${descriptor.join(',')}]`;
-    // cosine distance: 1 - cosine_similarity, so we need distance < (1 - minSimilarity)
     const maxDistance = 1 - minSimilarity;
 
-    const results = await prisma.$queryRawUnsafe<{
-      photo_id: string;
-      similarity: number;
-      box_x: number | null;
-      box_y: number | null;
-      box_width: number | null;
-      box_height: number | null;
-      url: string | null;
-      storage_path: string | null;
-    }[]>(
-      `SELECT
+    let sql: string;
+    if (dim === 512) {
+      // ArcFace 512-dim search: use embedding_arc column where available,
+      // fall back to rows where embedding_arc is NULL (old photos only have 128-dim)
+      sql = `SELECT
+         fe.photo_id,
+         1 - (fe.embedding_arc <=> $1::vector(512)) AS similarity,
+         fe.box_x, fe.box_y, fe.box_width, fe.box_height,
+         p.url, p."storagePath" as storage_path
+       FROM face_embedding fe
+       JOIN "Photo" p ON p.id = fe.photo_id
+       WHERE fe.event_id = $2::uuid
+         AND fe.embedding_arc IS NOT NULL
+         AND p."deletedAt" IS NULL
+         AND p.status = 'APPROVED'
+         AND (fe.embedding_arc <=> $1::vector(512)) < $3
+       ORDER BY fe.embedding_arc <=> $1::vector(512)
+       LIMIT $4`;
+    } else {
+      // Legacy 128-dim search (face-api)
+      sql = `SELECT
          fe.photo_id,
          1 - (fe.embedding <=> $1::vector(128)) AS similarity,
          fe.box_x, fe.box_y, fe.box_width, fe.box_height,
@@ -121,9 +149,19 @@ export async function searchByVector(
          AND p.status = 'APPROVED'
          AND (fe.embedding <=> $1::vector(128)) < $3
        ORDER BY fe.embedding <=> $1::vector(128)
-       LIMIT $4`,
-      vectorStr, eventId, maxDistance, limit
-    );
+       LIMIT $4`;
+    }
+
+    const results = await prisma.$queryRawUnsafe<{
+      photo_id: string;
+      similarity: number;
+      box_x: number | null;
+      box_y: number | null;
+      box_width: number | null;
+      box_height: number | null;
+      url: string | null;
+      storage_path: string | null;
+    }[]>(sql, vectorStr, eventId, maxDistance, limit);
 
     return results.map(r => ({
       photoId: r.photo_id,

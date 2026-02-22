@@ -253,4 +253,102 @@ router.post('/heartbeat', async (req: Request, res: Response) => {
   }
 });
 
+// ─── POST /api/booth/upload ────────────────────────────────────────────────
+// Optimized photo upload for booths (no TUS, direct base64 or multipart).
+// Adds source:booth tag automatically.
+
+const boothUploadSchema = z.object({
+  eventId: z.string().uuid(),
+  image: z.string().min(100), // base64-encoded image data (with or without data URI prefix)
+  deviceType: z.enum(['photo_booth', 'mirror_booth', 'ki_booth']).optional(),
+  sessionId: z.string().optional(),
+  position: z.number().int().min(0).max(9).optional(), // position in series (0-indexed)
+  category: z.string().optional(),
+});
+
+router.post('/upload', async (req: Request, res: Response) => {
+  try {
+    const data = boothUploadSchema.parse(req.body);
+
+    // Validate event
+    const event = await prisma.event.findUnique({
+      where: { id: data.eventId },
+      select: { id: true, isActive: true, deletedAt: true, featuresConfig: true },
+    });
+    if (!event || event.deletedAt || event.isActive === false) {
+      return res.status(404).json({ error: 'Event nicht gefunden oder inaktiv' });
+    }
+
+    // Decode base64 image
+    const base64 = data.image.startsWith('data:')
+      ? data.image.split(',')[1]
+      : data.image;
+    const buffer = Buffer.from(base64, 'base64');
+
+    if (buffer.length < 1000) {
+      return res.status(400).json({ error: 'Bild zu klein oder ungültig' });
+    }
+
+    const { storageService } = await import('../services/storage');
+
+    const filename = `booth-${data.sessionId || 'session'}-${data.position ?? 0}-${Date.now()}.jpg`;
+    const storagePath = await storageService.uploadFile(data.eventId, filename, buffer, 'image/jpeg');
+
+    const featuresConfig = event.featuresConfig as any;
+    const moderationRequired = featuresConfig?.moderationRequired === true;
+    const photoStatus = moderationRequired ? 'PENDING' : 'APPROVED';
+
+    const photo = await prisma.photo.create({
+      data: {
+        eventId: data.eventId,
+        storagePath,
+        url: '',
+        status: photoStatus,
+        sizeBytes: BigInt(buffer.length),
+        tags: ['source:booth', ...(data.position !== undefined ? [`series:${data.position}`] : [])],
+      },
+    });
+
+    const updatedPhoto = await prisma.photo.update({
+      where: { id: photo.id },
+      data: { url: `/cdn/${photo.id}` },
+    });
+
+    // Non-blocking: face detection + pgvector embedding
+    import('../services/faceRecognition').then(m =>
+      m.getFaceDetectionMetadata(buffer).then(async (faceResult) => {
+        if (faceResult.faceCount > 0) {
+          await prisma.photo.update({
+            where: { id: photo.id },
+            data: { faceCount: faceResult.faceCount, faceData: { faces: faceResult.faces, descriptors: faceResult.descriptors || [] } },
+          });
+          const { storeFaceEmbedding } = await import('../services/faceSearchPgvector');
+          const descriptors = faceResult.descriptors || [];
+          for (let i = 0; i < descriptors.length; i++) {
+            storeFaceEmbedding({
+              photoId: photo.id, eventId: data.eventId,
+              descriptor: descriptors[i], faceIndex: i, box: faceResult.faces[i],
+            }).catch(() => {});
+          }
+        }
+      })
+    ).catch(() => {});
+
+    logger.info('[Booth] Photo uploaded', { eventId: data.eventId, photoId: photo.id, size: buffer.length });
+
+    res.status(201).json({
+      ok: true,
+      photoId: photo.id,
+      url: updatedPhoto.url,
+      status: photoStatus,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors[0].message });
+    }
+    logger.error('[Booth] Upload error', { error: (error as Error).message });
+    res.status(500).json({ error: 'Booth-Upload fehlgeschlagen' });
+  }
+});
+
 export default router;
