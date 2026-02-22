@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import api from '@/lib/api';
+import AiResultShare from './AiResultShare';
 import { useAiEnergy } from '@/hooks/useAiEnergy';
 import { useAiFeatureGate } from '@/hooks/useAiFeatureGate';
 import { EnergyBar, EnergyCostBadge, InsufficientEnergyOverlay } from './EnergyBar';
@@ -218,6 +219,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedEffect, setSelectedEffect] = useState<EffectDef | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
+  const [resultStoragePath, setResultStoragePath] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [videoPrompt, setVideoPrompt] = useState<string | null>(null);
@@ -235,6 +237,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
     setPhotoPreview(null);
     setSelectedEffect(null);
     setResultUrl(null);
+    setResultStoragePath(null);
     setError(null);
     setProgress(0);
     setVideoPrompt(null);
@@ -346,6 +349,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
       const resultPath = effectRes.data?.outputUrl || effectRes.data?.newPhotoPath || effectRes.data?.gifUrl || effectRes.data?.cardUrl;
       if (effectRes.data?.success && resultPath) {
         setResultUrl(resultPath);
+        setResultStoragePath(effectRes.data?.storagePath || effectRes.data?.newPhotoPath || null);
         setStep('result');
       } else {
         throw new Error('Kein Ergebnis erhalten');
@@ -720,28 +724,29 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
                   </div>
                 )}
 
-                <div className="flex gap-2">
+                <AiResultShare
+                  storagePath={resultStoragePath}
+                  eventId={eventId}
+                  resultUrl={resultUrl}
+                  effectName={selectedEffect?.name}
+                  className="mb-2"
+                />
+
+                <div className="flex gap-2 mt-1">
                   <button
-                    onClick={handleDownload}
-                    className="flex-1 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-                  >
-                    <Download className="w-4 h-4" />
-                    Herunterladen
-                  </button>
-                  <button
-                    onClick={() => { setSelectedEffect(null); setResultUrl(null); setStep('effects'); }}
-                    className="py-3 px-4 bg-muted text-foreground rounded-xl font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                    onClick={() => { setSelectedEffect(null); setResultUrl(null); setResultStoragePath(null); setStep('effects'); }}
+                    className="flex-1 py-2.5 bg-muted text-foreground rounded-xl font-semibold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                   >
                     <RotateCcw className="w-4 h-4" />
+                    Nochmal
+                  </button>
+                  <button
+                    onClick={() => { onComplete?.(); handleClose(); }}
+                    className="flex-1 py-2.5 text-muted-foreground text-sm text-center bg-muted/50 rounded-xl"
+                  >
+                    Fertig
                   </button>
                 </div>
-
-                <button
-                  onClick={() => { onComplete?.(); handleClose(); }}
-                  className="mt-3 w-full py-2.5 text-muted-foreground text-sm text-center"
-                >
-                  Fertig
-                </button>
               </motion.div>
             )}
 

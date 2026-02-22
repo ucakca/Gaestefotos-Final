@@ -1271,4 +1271,121 @@ router.post('/photo-strip', authMiddleware, async (req: AuthRequest, res: Respon
   }
 });
 
+// GET /api/booth-games/ai-result/download — Always downloadable, applies branding overlay
+// AI-generated results are ALWAYS downloadable regardless of allowDownloads event setting.
+// Standard: gästefotos.com overlay | adFree + customHashtag: host overlay | adFree clean: no overlay
+router.get('/ai-result/download', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { storagePath, eventId } = req.query as { storagePath?: string; eventId?: string };
+    if (!storagePath || !eventId) {
+      return res.status(400).json({ error: 'storagePath und eventId erforderlich' });
+    }
+
+    // Validate event exists and user has access
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, deletedAt: true, isActive: true, featuresConfig: true },
+    });
+    if (!event || event.deletedAt || !event.isActive) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    // Get the file from storage
+    const { storageService } = await import('../services/storage');
+    let fileBuffer: Buffer;
+    try {
+      fileBuffer = await storageService.getFile(storagePath);
+    } catch {
+      return res.status(404).json({ error: 'Datei nicht gefunden' });
+    }
+
+    // Branding overlay logic (same as regular photo download)
+    const ext = storagePath.split('.').pop()?.toLowerCase() || 'jpg';
+    if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'webp') {
+      try {
+        const { isFeatureEnabled } = await import('../services/featureGate');
+        const adFree = await isFeatureEnabled(eventId, 'adFree');
+        const fc = (event.featuresConfig || {}) as any;
+        const { addBrandingOverlay, addCustomBrandingOverlay } = await import('../services/logoOverlay');
+
+        if (!adFree) {
+          // Standard: gästefotos.com watermark — free advertising
+          fileBuffer = await addBrandingOverlay(fileBuffer, { hashtag: '#gästefotos' });
+        } else if (fc.customHashtag) {
+          // Premium with custom hashtag: host's branding
+          const logoUrl = fc.brandLogoUrl || undefined;
+          fileBuffer = await addCustomBrandingOverlay(fileBuffer, { hashtag: fc.customHashtag, logoUrl });
+        }
+        // adFree without customHashtag: clean download (premium, no overlay)
+      } catch (brandErr: any) {
+        logger.warn('[AIResult] Branding overlay failed, serving original', { error: brandErr.message });
+      }
+    }
+
+    const contentType = ext === 'png' ? 'image/png' : ext === 'gif' ? 'image/gif' : 'image/jpeg';
+    const filename = `ki-ergebnis-${Date.now()}.${ext === 'png' ? 'png' : 'jpg'}`;
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Cache-Control', 'private, max-age=300');
+    res.send(fileBuffer);
+  } catch (error: any) {
+    logger.error('AI Result download error', { message: error.message });
+    res.status(500).json({ error: error.message || 'Download-Fehler' });
+  }
+});
+
+// GET /api/booth-games/ai-result/share — Returns branded image as data URL for Web Share API / Instagram
+router.get('/ai-result/share', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { storagePath, eventId } = req.query as { storagePath?: string; eventId?: string };
+    if (!storagePath || !eventId) {
+      return res.status(400).json({ error: 'storagePath und eventId erforderlich' });
+    }
+
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { id: true, deletedAt: true, isActive: true, slug: true, title: true, featuresConfig: true },
+    });
+    if (!event || event.deletedAt || !event.isActive) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    const { storageService } = await import('../services/storage');
+    let fileBuffer: Buffer;
+    try {
+      fileBuffer = await storageService.getFile(storagePath);
+    } catch {
+      return res.status(404).json({ error: 'Datei nicht gefunden' });
+    }
+
+    // Always apply branding for shared images
+    const ext = storagePath.split('.').pop()?.toLowerCase() || 'jpg';
+    if (ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'webp') {
+      try {
+        const { isFeatureEnabled } = await import('../services/featureGate');
+        const adFree = await isFeatureEnabled(eventId, 'adFree');
+        const fc = (event.featuresConfig || {}) as any;
+        const { addBrandingOverlay, addCustomBrandingOverlay } = await import('../services/logoOverlay');
+
+        if (!adFree) {
+          fileBuffer = await addBrandingOverlay(fileBuffer, { hashtag: '#gästefotos' });
+        } else if (fc.customHashtag) {
+          fileBuffer = await addCustomBrandingOverlay(fileBuffer, { hashtag: fc.customHashtag });
+        }
+      } catch { /* ignore */ }
+    }
+
+    // Return as inline image for direct preview/share
+    const contentType = ext === 'png' ? 'image/png' : 'image/jpeg';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'private, max-age=300');
+    res.setHeader('Content-Disposition', 'inline');
+    res.send(fileBuffer);
+  } catch (error: any) {
+    logger.error('AI Result share error', { message: error.message });
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
