@@ -395,7 +395,7 @@ Welcher Party-Persönlichkeitstyp ist das?`;
       };
     }
 
-    const session = createGameSession(eventId, 'fortune_teller', result);
+    const session = createGameSession(eventId, 'persona_quiz', result);
     res.json({ sessionId: session.id, ...result, source: 'ai' });
   } catch (error) {
     logger.error('Persona quiz error', { message: (error as Error).message });
@@ -445,7 +445,7 @@ Schreibe eine kurze, lustige Hochzeitsrede!`;
       };
     }
 
-    const session = createGameSession(eventId, 'fortune_teller', result);
+    const session = createGameSession(eventId, 'wedding_speech', result);
     res.json({ sessionId: session.id, ...result, source: 'ai' });
   } catch (error) {
     logger.error('Wedding speech error', { message: (error as Error).message });
@@ -501,7 +501,7 @@ Schreibe eine kurze, lustige Geschichte die ALLE 3 Wörter enthält!`;
       };
     }
 
-    const session = createGameSession(eventId, 'fortune_teller', result);
+    const session = createGameSession(eventId, 'ai_stories', result);
     res.json({ sessionId: session.id, ...result, source: 'ai' });
   } catch (error) {
     logger.error('AI stories error', { message: (error as Error).message });
@@ -539,7 +539,7 @@ Antworte NUR mit JSON: {"celebrity": "Name des Promis", "similarity": 70-99, "re
       result = { celebrity: 'George Clooney', similarity: 87, reason: 'Dieses Charisma ist unverkennbar!', funFact: 'George Clooney wurde 2-mal zum Sexiest Man Alive gewählt.', emoji: '🌟' };
     }
 
-    const session = createGameSession(eventId, 'fortune_teller', result);
+    const session = createGameSession(eventId, 'celebrity_lookalike', result);
     res.json({ sessionId: session.id, ...result, source: 'ai' });
   } catch (error) {
     logger.error('Celebrity lookalike error', { message: (error as Error).message });
@@ -581,7 +581,7 @@ Die 9 Aufgaben sollen kurz (max 6 Wörter) und lustig sein!`);
       };
     }
 
-    const session = createGameSession(eventId, 'fortune_teller', result);
+    const session = createGameSession(eventId, 'ai_bingo', result);
     res.json({ sessionId: session.id, ...result, source: 'ai' });
   } catch (error) {
     logger.error('AI bingo error', { message: (error as Error).message });
@@ -630,7 +630,7 @@ Schlage 5 perfekte Songs vor!`;
       };
     }
 
-    const session = createGameSession(eventId, 'fortune_teller', result);
+    const session = createGameSession(eventId, 'ai_dj', result);
     res.json({ sessionId: session.id, ...result, source: 'ai' });
   } catch (error) {
     logger.error('AI DJ error', { message: (error as Error).message });
