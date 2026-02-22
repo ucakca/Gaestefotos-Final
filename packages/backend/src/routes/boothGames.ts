@@ -657,13 +657,13 @@ router.post('/trading-card', authMiddleware, withEnergyCheck('trading_card'), as
 
     // 1. Fetch photo
     const photo = await prisma.photo.findUnique({ where: { id: photoId } });
-    if (!photo || !photo.url) {
+    if (!photo || !photo.storagePath) {
       return res.status(404).json({ error: 'Foto nicht gefunden' });
     }
 
-    // 2. Download photo buffer
-    const photoResponse = await fetch(photo.url);
-    const photoBuffer = Buffer.from(await photoResponse.arrayBuffer());
+    // 2. Read photo buffer from storage (avoid relative /cdn/ URL in fetch)
+    const { storageService } = await import('../services/storage');
+    const photoBuffer = await storageService.getFile(photo.storagePath);
 
     // 3. Generate stats via LLM (uses Grok → Groq → Ollama fallback chain)
     const { generateCompletion } = await import('../lib/groq');

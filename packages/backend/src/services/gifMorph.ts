@@ -94,7 +94,7 @@ export async function createGifMorph(request: GifMorphRequest): Promise<GifMorph
   });
   if (!photo) throw new Error('Foto nicht gefunden');
 
-  const originalUrl = photo.url || await storageService.getFileUrl(photo.storagePathThumb || photo.storagePath);
+  const originalUrl = await storageService.getFileUrl(photo.storagePathThumb || photo.storagePath || '');
 
   const [originalBuf, frame1Buf, frame2Buf] = await Promise.all([
     fetchAndResize(originalUrl, width),

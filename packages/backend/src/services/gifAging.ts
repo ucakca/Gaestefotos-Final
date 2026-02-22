@@ -156,7 +156,7 @@ export async function createGifAging(request: GifAgingRequest): Promise<GifAging
   const photo = await prisma.photo.findUnique({ where: { id: photoId } });
   if (!photo) throw new Error('Foto nicht gefunden');
 
-  const originalUrl = photo.url || await storageService.getFileUrl(photo.storagePathThumb || photo.storagePath);
+  const originalUrl = await storageService.getFileUrl(photo.storagePathThumb || photo.storagePath || '');
 
   // Fetch and resize all images: original + aging frames
   const urls = [originalUrl, ...validFrames.map(f => f.outputUrl)];

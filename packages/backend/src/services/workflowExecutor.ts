@@ -417,12 +417,12 @@ async function executeQualityGate(ctx: ExecutionContext, _config: any): Promise<
   if (!ctx.photoId) return { success: false, message: 'No photoId in context' };
 
   try {
-    const photo = await prisma.photo.findUnique({ where: { id: ctx.photoId }, select: { url: true } });
-    if (!photo?.url) return { success: false, message: 'Photo not found' };
+    const photo = await prisma.photo.findUnique({ where: { id: ctx.photoId }, select: { url: true, storagePath: true } });
+    if (!photo?.storagePath) return { success: false, message: 'Photo not found' };
 
-    // Download photo buffer
-    const response = await axios.get(photo.url, { responseType: 'arraybuffer', timeout: 15000 });
-    const buffer = Buffer.from(response.data);
+    // Read photo buffer from storage (photo.url may be a relative /cdn/ path)
+    const { storageService } = await import('./storage');
+    const buffer = await storageService.getFile(photo.storagePath);
 
     const { runPhotoQualityGate } = await import('./photoQualityGate');
     const result = await runPhotoQualityGate(ctx.eventId, ctx.photoId, buffer);

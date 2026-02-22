@@ -57,7 +57,7 @@ export async function generateImageToVideo(request: ImageToVideoRequest): Promis
   const photo = await prisma.photo.findUnique({ where: { id: photoId } });
   if (!photo) throw new Error('Foto nicht gefunden');
 
-  const imageUrl = photo.url || await storageService.getFileUrl(photo.storagePath);
+  const imageUrl = await storageService.getFileUrl(photo.storagePath || '');
 
   // Try Runway first, then LumaAI
   const provider = await resolveProvider('ai_video');

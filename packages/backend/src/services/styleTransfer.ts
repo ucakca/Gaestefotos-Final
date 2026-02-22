@@ -204,11 +204,17 @@ function cleanCache() {
 }
 
 // ── Image preprocessing: resize to max 1024px ──────────────────────────────
-async function preprocessImage(imageUrl: string, asPng = false): Promise<Buffer> {
-  const t0 = Date.now();
-  const res = await axios.get(imageUrl, { responseType: 'arraybuffer', timeout: 15000 });
-  const dlMs = Date.now() - t0;
-  const raw = Buffer.from(res.data);
+async function preprocessImage(imageUrlOrBuffer: string | Buffer, asPng = false): Promise<Buffer> {
+  let raw: Buffer;
+  if (Buffer.isBuffer(imageUrlOrBuffer)) {
+    raw = imageUrlOrBuffer;
+  } else {
+    const t0 = Date.now();
+    const res = await axios.get(imageUrlOrBuffer, { responseType: 'arraybuffer', timeout: 15000 });
+    const dlMs = Date.now() - t0;
+    void dlMs;
+    raw = Buffer.from(res.data);
+  };
 
   if (!sharp) {
     logger.warn('[StyleTransfer] sharp unavailable, sending full-res');
@@ -486,8 +492,10 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
     throw new Error(`Unbekannter Style: ${request.style}`);
   }
 
-  if (!photo || !photo.url) throw new Error('Foto nicht gefunden');
-  const providerList = await getStyleTransferProviderList((resolvedPrompt as any).providerId || null, photo.url);
+  if (!photo || !photo.storagePath) throw new Error('Foto nicht gefunden');
+  const { storageService: _ss } = await import('./storage');
+  const _photoBuffer = await _ss.getFile(photo.storagePath);
+  const providerList = await getStyleTransferProviderList((resolvedPrompt as any).providerId || null, photo.url || '');
   if (providerList.length === 0) throw new Error('Kein AI-Provider für Style Transfer konfiguriert.');
 
   logger.info('[StyleTransfer] Prompt resolved', { feature: promptFeature, source: resolvedPrompt.source, providers: providerList.map(p => p.provider.slug) });
@@ -498,7 +506,7 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
   // ── 3. Preprocess image ──
   const t2 = Date.now();
   const firstSlug = providerList[0].provider.slug.toLowerCase();
-  const imageBuffer = await preprocessImage(photo.url, firstSlug.includes('openai'));
+  const imageBuffer = await preprocessImage(_photoBuffer, firstSlug.includes('openai'));
   timings.preprocess = Date.now() - t2;
 
   // ── 4. Call AI with priority fallback ──
@@ -518,7 +526,7 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
     try {
       logger.info(`[StyleTransfer] Trying provider: ${provider.slug}`);
       if (slug.includes('openai')) {
-        const pngBuf = slug === firstSlug ? imageBuffer : await preprocessImage(photo.url, true);
+        const pngBuf = slug === firstSlug ? imageBuffer : await preprocessImage(_photoBuffer, true);
         resultBuffer = await callOpenAIImageEdit(apiKey, pngBuf, style.editPrompt || finalPrompt);
       } else if (slug.includes('pulid')) {
         resultBuffer = await callPuLID(apiKey, imageBuffer, style.editPrompt || finalPrompt, effectiveModel);
