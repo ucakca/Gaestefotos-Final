@@ -246,11 +246,23 @@ export async function saveTrendReport(
 
 export async function runTrendMonitorJob(): Promise<void> {
   try {
-    // Get FAL.ai API key from DB
-    const falProviders: any[] = await prisma.$queryRawUnsafe(
-      `SELECT "apiKey" FROM ai_providers WHERE slug LIKE '%fal%' AND "isActive" = true LIMIT 1`
-    );
-    const falApiKey = falProviders[0]?.apiKey || undefined;
+    // Get FAL.ai API key from DB (encrypted)
+    let falApiKey: string | undefined;
+    try {
+      const falProviders: any[] = await prisma.$queryRawUnsafe(
+        `SELECT "apiKeyEncrypted", "apiKeyIv", "apiKeyTag" FROM ai_providers WHERE slug LIKE '%fal%' AND "isActive" = true LIMIT 1`
+      );
+      if (falProviders[0]?.apiKeyEncrypted) {
+        const { decryptValue } = await import('../utils/encryption');
+        falApiKey = decryptValue({
+          encrypted: falProviders[0].apiKeyEncrypted,
+          iv: falProviders[0].apiKeyIv,
+          tag: falProviders[0].apiKeyTag,
+        });
+      }
+    } catch (e: any) {
+      logger.warn('[TrendMonitor] Could not load FAL API key, skipping FAL models', { error: e.message });
+    }
 
     const { trends, suggestions } = await fetchAllTrends(falApiKey);
 

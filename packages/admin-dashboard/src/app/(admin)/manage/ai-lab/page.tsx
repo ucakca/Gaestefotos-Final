@@ -144,12 +144,19 @@ export default function AiLabPage() {
   const handleUpload = async (file: File) => {
     if (!selectedEventId) { toast.error('Bitte erst Event auswählen'); return; }
     setUploading(true);
-    const form = new FormData();
-    form.append('photo', file);
-    form.append('eventId', selectedEventId);
     try {
-      const r = await api.post('/booth/setup', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      // Convert file to base64 for /booth/upload endpoint
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const r = await api.post('/booth/upload', {
+        eventId: selectedEventId,
+        image: base64,
+        deviceType: 'ki_booth',
+        sessionId: `admin-lab-${Date.now()}`,
       });
       const pid = r.data?.photoId;
       if (pid) {

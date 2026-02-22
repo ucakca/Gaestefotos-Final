@@ -145,8 +145,10 @@ export default function FaceSwapTemplatesPage() {
   };
 
   const handleDelete = async (t: FaceSwapTemplate) => {
-    if (t.isDefault) { toast.error('Standard-Templates können nicht gelöscht werden'); return; }
-    if (!confirm(`"${t.title}" löschen?`)) return;
+    const msg = t.isDefault
+      ? `"${t.title}" ist ein Standard-Template. Trotzdem löschen?`
+      : `"${t.title}" löschen?`;
+    if (!confirm(msg)) return;
     setDeleting(t.id);
     try {
       await api.delete(`/face-swap/templates/${t.id}`);
@@ -330,8 +332,8 @@ export default function FaceSwapTemplatesPage() {
                   <p className="text-xs font-medium text-white truncate">{t.title}</p>
                   <p className="text-[10px] text-gray-400">{CATEGORY_LABELS[t.category] || t.category}</p>
 
-                  {/* Action buttons (visible on hover) */}
-                  <div className="flex gap-1 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Action buttons (always visible) */}
+                  <div className="flex gap-1 mt-1.5">
                     <button
                       onClick={() => startEdit(t)}
                       className="p-1 bg-white/20 hover:bg-white/30 rounded transition-colors"
@@ -355,16 +357,14 @@ export default function FaceSwapTemplatesPage() {
                     >
                       <ExternalLink className="w-3 h-3 text-white" />
                     </a>
-                    {!t.isDefault && (
-                      <button
-                        onClick={() => handleDelete(t)}
-                        disabled={deleting === t.id}
-                        className="p-1 bg-red-500/30 hover:bg-red-500/50 rounded transition-colors"
-                        title="Löschen"
-                      >
-                        {deleting === t.id ? <Loader2 className="w-3 h-3 animate-spin text-red-300" /> : <Trash2 className="w-3 h-3 text-red-300" />}
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleDelete(t)}
+                      disabled={deleting === t.id}
+                      className="p-1 bg-red-500/30 hover:bg-red-500/50 rounded transition-colors"
+                      title="Löschen"
+                    >
+                      {deleting === t.id ? <Loader2 className="w-3 h-3 animate-spin text-red-300" /> : <Trash2 className="w-3 h-3 text-red-300" />}
+                    </button>
                   </div>
                 </div>
               </div>

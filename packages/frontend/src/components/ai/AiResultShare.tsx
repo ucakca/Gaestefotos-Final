@@ -204,9 +204,13 @@ export default function AiResultShare({ storagePath, eventId, resultUrl, effectN
   );
 }
 
-// Helper to get auth token from localStorage/cookie
+// Helper to get auth token — must match frontend api.ts interceptor pattern
 function getAuthToken(): string {
   if (typeof window === 'undefined') return '';
+  // Primary: same as api.ts request interceptor (sessionStorage > localStorage)
+  const direct = sessionStorage.getItem('token') || localStorage.getItem('token');
+  if (direct) return direct;
+  // Fallback: Zustand auth store format
   try {
     const stored = localStorage.getItem('auth-storage');
     if (stored) {

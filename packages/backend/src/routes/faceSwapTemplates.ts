@@ -104,13 +104,12 @@ router.patch('/templates/:id', authMiddleware, async (req: AuthRequest, res: Res
   }
 });
 
-// DELETE /api/face-swap/templates/:id — Admin: delete (only non-default)
+// DELETE /api/face-swap/templates/:id — Admin: delete any template
 router.delete('/templates/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     if (!isPrivilegedRole(req.userRole)) return res.status(403).json({ error: 'Nur Admins' });
     const template = await prisma.faceSwapTemplate.findUnique({ where: { id: req.params.id } });
     if (!template) return res.status(404).json({ error: 'Nicht gefunden' });
-    if (template.isDefault) return res.status(400).json({ error: 'Standard-Templates können nicht gelöscht werden' });
     await prisma.faceSwapTemplate.delete({ where: { id: req.params.id } });
     res.json({ success: true });
   } catch (error: any) {
