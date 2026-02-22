@@ -319,7 +319,7 @@ router.post('/caption-generator', authMiddleware, withEnergyCheck('caption_sugge
     const { resolvePrompt, renderPrompt } = await import('../services/promptTemplates');
     const { generateCompletion } = await import('../lib/groq');
 
-    const prompt = await resolvePrompt('caption_suggest');
+    const prompt = await resolvePrompt('caption_suggest', eventId);
     const systemPrompt = prompt.systemPrompt || 'Du bist ein Social-Media-Experte. Generiere kreative Instagram-Captions auf Deutsch. Antworte NUR mit einem JSON-Array von Strings.';
     const userPromptTpl = prompt.userPromptTpl || 'Generiere 3 Instagram-Captions für ein Foto von "{{eventType}}".';
     const context = eventType || eventTitle || 'Party';
