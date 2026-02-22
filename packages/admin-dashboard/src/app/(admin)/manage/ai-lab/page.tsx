@@ -74,6 +74,14 @@ const LLM_GAMES = [
 
 // ─── Component ───────────────────────────────────────────────
 
+interface FaceSwapTemplate {
+  id: string;
+  title: string;
+  category: string;
+  imageUrl: string;
+  thumbnailUrl?: string;
+}
+
 export default function AiLabPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEventId, setSelectedEventId] = useState('');
@@ -86,6 +94,19 @@ export default function AiLabPage() {
   const [uploadedPhotoId, setUploadedPhotoId] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [faceSwapTemplates, setFaceSwapTemplates] = useState<FaceSwapTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
+
+  // Load face swap templates
+  useEffect(() => {
+    api.get('/face-swap/templates?limit=50')
+      .then(r => {
+        const tpls = r.data?.templates || [];
+        setFaceSwapTemplates(tpls);
+        if (tpls.length > 0) setSelectedTemplateId(tpls[0].id);
+      })
+      .catch(() => {});
+  }, []);
 
   // Load events
   useEffect(() => {
@@ -176,12 +197,12 @@ export default function AiLabPage() {
     }
   };
 
-  const [templateUrl, setTemplateUrl] = useState('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Getting_the_most_out_of_Nikon.jpg/640px-Getting_the_most_out_of_Nikon.jpg');
+  const selectedTemplate = faceSwapTemplates.find(t => t.id === selectedTemplateId);
 
   // ── Run face swap onto template ──
   const runFaceSwitch = async () => {
     if (!activePhotoId || !selectedEventId) { toast.error('Bitte Foto auswählen'); return; }
-    if (!templateUrl.trim()) { toast.error('Bitte Template-URL eingeben'); return; }
+    if (!selectedTemplateId && !selectedTemplate) { toast.error('Bitte Template auswählen'); return; }
     const key = 'face_switch';
     setTesting(key);
     setResults(r => ({ ...r, [key]: { success: false, message: 'Läuft… (30-60s)' } }));
@@ -189,7 +210,7 @@ export default function AiLabPage() {
       const res = await api.post('/booth-games/face-swap-template', {
         photoId: activePhotoId,
         eventId: selectedEventId,
-        templateUrl: templateUrl.trim(),
+        templateId: selectedTemplateId,
       });
       setResults(r => ({
         ...r,
@@ -402,33 +423,37 @@ export default function AiLabPage() {
             Face Swap Template
           </h2>
           <p className="text-xs text-gray-400">
-            Setzt das Gast-Gesicht auf ein Template-Bild (Kostüm, Charakter, etc.). Provider: Replicate/FAL.ai inswapper
+            Setzt das Gast-Gesicht auf ein Template-Bild. Provider: Replicate/FAL.ai inswapper
           </p>
-          <div className="space-y-2">
-            <label className="text-xs text-gray-400">Template-Bild URL (öffentlich zugänglich)</label>
-            <input
-              type="url"
-              value={templateUrl}
-              onChange={e => setTemplateUrl(e.target.value)}
-              placeholder="https://example.com/template.jpg"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500"
-            />
-            <div className="flex flex-wrap gap-2">
-              {[
-                { label: '🤵 Anzug', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400' },
-                { label: '👰 Kleid', url: 'https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=400' },
-                { label: '🦸 Superheld', url: 'https://images.unsplash.com/photo-1608889335941-32ac5f2041b9?w=400' },
-              ].map(({ label, url }) => (
-                <button
-                  key={label}
-                  onClick={() => setTemplateUrl(url)}
-                  className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-xs text-gray-400 transition-colors"
-                >
-                  {label}
-                </button>
-              ))}
+          {faceSwapTemplates.length === 0 ? (
+            <p className="text-xs text-yellow-400">Keine Templates geladen — öffne /manage/face-swap-templates</p>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">Template auswählen ({faceSwapTemplates.length} verfügbar)</label>
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-48 overflow-y-auto">
+                  {faceSwapTemplates.map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => setSelectedTemplateId(t.id)}
+                      className={`relative rounded-lg overflow-hidden border transition-all ${
+                        selectedTemplateId === t.id ? 'border-purple-500 ring-1 ring-purple-500' : 'border-white/10 hover:border-white/30'
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={t.thumbnailUrl || t.imageUrl} alt={t.title} className="w-full aspect-square object-cover" />
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1 py-0.5">
+                        <p className="text-[9px] text-white truncate">{t.title}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {selectedTemplate && (
+                <p className="text-xs text-gray-400">Ausgewählt: <span className="text-white">{selectedTemplate.title}</span> ({selectedTemplate.category})</p>
+              )}
             </div>
-          </div>
+          )}
           <div className="flex gap-3 flex-wrap">
             <button
               onClick={() => runFaceSwitch()}
