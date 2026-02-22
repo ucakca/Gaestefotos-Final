@@ -70,7 +70,7 @@ router.get('/:photoId', optionalAuthMiddleware, async (req: AuthRequest, res: Re
       where: { id: photoId },
       include: {
         event: {
-          select: { deletedAt: true, isActive: true },
+          select: { deletedAt: true, isActive: true, password: true },
         },
       },
     });
@@ -83,10 +83,14 @@ router.get('/:photoId', optionalAuthMiddleware, async (req: AuthRequest, res: Re
       return res.status(404).end();
     }
 
-    // Access check: must have event access
-    const isManager = req.userId ? await hasEventManageAccess(req, photo.eventId) : false;
-    if (!isManager && !hasEventAccess(req, photo.eventId)) {
-      return res.status(404).end();
+    // Access check: public events (no password) are freely accessible.
+    // Password-protected events require event access cookie or manager role.
+    const isPublicEvent = !photo.event.password;
+    if (!isPublicEvent) {
+      const isManager = req.userId ? await hasEventManageAccess(req, photo.eventId) : false;
+      if (!isManager && !hasEventAccess(req, photo.eventId)) {
+        return res.status(404).end();
+      }
     }
 
     // Generate ETag from photo ID + params + updatedAt
