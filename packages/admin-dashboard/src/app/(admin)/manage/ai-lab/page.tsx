@@ -176,32 +176,35 @@ export default function AiLabPage() {
     }
   };
 
-  // ── Run face switch ──
-  const runFaceSwitch = async (targetUrl?: string) => {
+  const [templateUrl, setTemplateUrl] = useState('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Getting_the_most_out_of_Nikon.jpg/640px-Getting_the_most_out_of_Nikon.jpg');
+
+  // ── Run face swap onto template ──
+  const runFaceSwitch = async () => {
     if (!activePhotoId || !selectedEventId) { toast.error('Bitte Foto auswählen'); return; }
+    if (!templateUrl.trim()) { toast.error('Bitte Template-URL eingeben'); return; }
     const key = 'face_switch';
     setTesting(key);
-    setResults(r => ({ ...r, [key]: { success: false, message: 'Läuft…' } }));
+    setResults(r => ({ ...r, [key]: { success: false, message: 'Läuft… (30-60s)' } }));
     try {
-      const res = await api.post('/booth-games/face-switch', {
-        sourcePhotoId: activePhotoId,
+      const res = await api.post('/booth-games/face-swap-template', {
+        photoId: activePhotoId,
         eventId: selectedEventId,
-        targetImageUrl: targetUrl || 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Gatto_europeo4.jpg/320px-Gatto_europeo4.jpg',
+        templateUrl: templateUrl.trim(),
       });
       setResults(r => ({
         ...r,
         [key]: {
           success: true,
-          imageUrl: res.data?.outputUrl || res.data?.resultUrl,
-          message: 'Face Switch erfolgreich',
+          imageUrl: res.data?.outputUrl,
+          message: 'Face Swap Template erfolgreich',
           data: res.data,
         },
       }));
-      toast.success('Face Switch ✓');
+      toast.success('Face Swap Template ✓');
     } catch (e: any) {
       const msg = e.response?.data?.error || e.message || 'Fehler';
       setResults(r => ({ ...r, [key]: { success: false, error: msg } }));
-      toast.error(`Face Switch: ${msg}`);
+      toast.error(`Face Swap: ${msg}`);
     } finally {
       setTesting(null);
     }
@@ -396,11 +399,36 @@ export default function AiLabPage() {
           <h2 className="text-base font-semibold text-white flex items-center gap-2">
             <span className="w-6 h-6 rounded-full bg-purple-500 text-white text-xs flex items-center justify-center font-bold">2</span>
             <ScanFace className="w-4 h-4 text-purple-400" />
-            Face Switch
+            Face Swap Template
           </h2>
           <p className="text-xs text-gray-400">
-            Tauscht das Gesicht des Gastes mit einem Zielbild aus. Provider: Replicate (fal-ai/inswapper)
+            Setzt das Gast-Gesicht auf ein Template-Bild (Kostüm, Charakter, etc.). Provider: Replicate/FAL.ai inswapper
           </p>
+          <div className="space-y-2">
+            <label className="text-xs text-gray-400">Template-Bild URL (öffentlich zugänglich)</label>
+            <input
+              type="url"
+              value={templateUrl}
+              onChange={e => setTemplateUrl(e.target.value)}
+              placeholder="https://example.com/template.jpg"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500"
+            />
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: '🤵 Anzug', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400' },
+                { label: '👰 Kleid', url: 'https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=400' },
+                { label: '🦸 Superheld', url: 'https://images.unsplash.com/photo-1608889335941-32ac5f2041b9?w=400' },
+              ].map(({ label, url }) => (
+                <button
+                  key={label}
+                  onClick={() => setTemplateUrl(url)}
+                  className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-xs text-gray-400 transition-colors"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex gap-3 flex-wrap">
             <button
               onClick={() => runFaceSwitch()}

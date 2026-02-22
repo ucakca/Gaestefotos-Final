@@ -217,6 +217,127 @@ router.post('/vows-and-views', authMiddleware, async (req: AuthRequest, res: Res
   }
 });
 
+// POST /api/booth-games/face-swap-template — Swap guest face onto a template image (Iron Man, wedding etc.)
+router.post('/face-swap-template', authMiddleware, withEnergyCheck('face_switch'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { photoId, eventId, templateUrl, templateId } = req.body;
+    if (!photoId || !eventId) {
+      return res.status(400).json({ error: 'photoId und eventId sind erforderlich' });
+    }
+    if (!templateUrl && !templateId) {
+      return res.status(400).json({ error: 'templateUrl oder templateId ist erforderlich' });
+    }
+
+    // 1. Get source photo (guest face)
+    const photo = await prisma.photo.findUnique({
+      where: { id: photoId },
+      select: { storagePath: true, eventId: true },
+    });
+    if (!photo?.storagePath) return res.status(404).json({ error: 'Foto nicht gefunden' });
+
+    // 2. Resolve template URL
+    let resolvedTemplateUrl = templateUrl;
+    if (templateId) {
+      // TODO: look up FaceSwapTemplate table once built
+      return res.status(400).json({ error: 'templateId noch nicht implementiert — bitte templateUrl senden' });
+    }
+
+    // 3. Prepare AI execution
+    const { prepareAiExecution, logAiUsage } = await import('../services/aiExecution');
+    const execution = await prepareAiExecution(req.userId!, 'face_switch', eventId);
+    if (!execution.success) throw new Error(execution.error || 'AI-Feature nicht verfügbar');
+
+    // 4. Get guest photo buffer
+    const { storageService } = await import('../services/storage');
+    const guestBuffer = await storageService.getFile(photo.storagePath);
+    const guestB64 = guestBuffer.toString('base64');
+
+    // 5. Download template image
+    const templateRes = await fetch(resolvedTemplateUrl);
+    if (!templateRes.ok) throw new Error(`Template konnte nicht geladen werden: ${templateRes.status}`);
+    const templateBuffer = Buffer.from(await templateRes.arrayBuffer());
+    const templateB64 = templateBuffer.toString('base64');
+
+    const provider = execution.provider!;
+    const startTime = Date.now();
+    let outputUrl = '';
+
+    // 6. Call AI provider
+    if (provider.slug?.includes('fal') || provider.baseUrl?.includes('fal.run')) {
+      const model = provider.model || 'fal-ai/inswapper';
+      const apiUrl = `https://fal.run/${model}`;
+      let apiKey = provider.apiKey || '';
+      if (!apiKey && provider.apiKeyEncrypted) {
+        const { decryptValue } = await import('../utils/encryption');
+        apiKey = decryptValue({ encrypted: provider.apiKeyEncrypted, iv: provider.apiKeyIv, tag: provider.apiKeyTag });
+      }
+      const r = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { Authorization: `Key ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          base_image_url: `data:image/jpeg;base64,${templateB64}`,
+          swap_image_url: `data:image/jpeg;base64,${guestB64}`,
+        }),
+      });
+      if (!r.ok) throw new Error(`FAL.ai error ${r.status}: ${(await r.text()).slice(0, 200)}`);
+      const data: any = await r.json();
+      outputUrl = data?.image?.url ?? data?.images?.[0]?.url ?? '';
+    } else {
+      // Replicate
+      const baseUrl = provider.baseUrl || 'https://api.replicate.com';
+      const model = provider.model || 'deepinsight/insightface:35cfef47cf6a671d9a3b4e3ddd3bbd254e4956b35ecdca1d27578d987ae6feae';
+      const version = model.includes(':') ? model.split(':')[1] : model;
+      let apiKey = provider.apiKey || '';
+      if (!apiKey && provider.apiKeyEncrypted) {
+        const { decryptValue } = await import('../utils/encryption');
+        apiKey = decryptValue({ encrypted: provider.apiKeyEncrypted, iv: provider.apiKeyIv, tag: provider.apiKeyTag });
+      }
+      const createRes = await fetch(`${baseUrl}/v1/predictions`, {
+        method: 'POST',
+        headers: { Authorization: `Token ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          version,
+          input: {
+            target_image: `data:image/jpeg;base64,${templateB64}`,
+            source_image: `data:image/jpeg;base64,${guestB64}`,
+          },
+        }),
+      });
+      if (!createRes.ok) throw new Error(`Replicate error ${createRes.status}`);
+      let result: any = await createRes.json();
+      for (let i = 0; i < 60; i++) {
+        if (result.status === 'succeeded') break;
+        if (result.status === 'failed' || result.status === 'canceled') throw new Error(`Replicate: ${result.error}`);
+        await new Promise(r => setTimeout(r, 2000));
+        const poll = await fetch(result.urls.get, { headers: { Authorization: `Token ${apiKey}` } });
+        result = await poll.json();
+      }
+      outputUrl = Array.isArray(result.output) ? result.output[0] : result.output;
+    }
+
+    if (!outputUrl) throw new Error('Kein Output von AI-Provider');
+
+    // 7. Download result + save to storage
+    const resultBuf = outputUrl.startsWith('data:')
+      ? Buffer.from(outputUrl.split(',')[1], 'base64')
+      : Buffer.from(await (await fetch(outputUrl)).arrayBuffer());
+
+    const savedPath = await storageService.uploadFile(eventId, `face-swap-template-${photoId}-${Date.now()}.jpg`, resultBuf, 'image/jpeg');
+    const savedUrl = await storageService.getFileUrl(savedPath);
+
+    await logAiUsage(provider.id, 'face_switch', {
+      providerType: provider.type,
+      durationMs: Date.now() - startTime,
+      success: true,
+    });
+
+    res.json({ success: true, outputUrl: savedUrl, storagePath: savedPath });
+  } catch (error) {
+    logger.error('Face swap template error', { message: (error as Error).message });
+    res.status(500).json({ error: (error as Error).message || 'Face Swap Template Fehler' });
+  }
+});
+
 // POST /api/booth-games/face-switch — Swap faces in a group photo
 router.post('/face-switch', authMiddleware, withEnergyCheck('face_switch'), async (req: AuthRequest, res: Response) => {
   try {
