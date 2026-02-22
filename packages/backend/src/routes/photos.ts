@@ -8225,12 +8225,6 @@ router.get(
             const ext = photo.storagePath.split('.').pop() || 'jpg';
             archive.append(buffer, { name: `foto-${String(added + 1).padStart(4, '0')}.${ext}` });
             added++;
-          } else if (photo.url) {
-            const { default: axios } = await import('axios');
-            const res2 = await axios.get(photo.url, { responseType: 'arraybuffer', timeout: 10000 });
-            const ext = photo.url.split('.').pop()?.split('?')[0] || 'jpg';
-            archive.append(Buffer.from(res2.data), { name: `foto-${String(added + 1).padStart(4, '0')}.${ext}` });
-            added++;
           }
         } catch (err: any) {
           logger.warn('Skip photo in ZIP', { photoId: photo.id, err: err.message });
