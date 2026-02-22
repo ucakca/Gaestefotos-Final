@@ -453,6 +453,13 @@ Vollständige Code-Analyse der aktuellen AI-Implementierung. Findings priorisier
 | 5 | **Stability AI**: Legacy v1 API deprecated | Deprecation-Warning im Admin Dashboard. Migration zu FAL.ai FLUX empfohlen. | 22.02.2026 |
 | 6 | **Replicate**: `num_inference_steps: 20` — zu niedrig | `num_inference_steps: 35` für bessere SDXL-Qualität. | 22.02.2026 |
 | 7 | **Face Detection Models** fehlen → silent fallback | Admin-Warning in AI Features Seite. fal-arcface als externer Fallback ohne lokale Modelle. | 22.02.2026 |
+| 8 | **8 Style Effects** (anime/watercolor/oil_painting/sketch/neon_noir/renaissance/comic_book/pixel_art) fehlten in AiFeature type → falsche Provider-Auflösung (LLM statt IMAGE_GEN) | In AiFeature type + AI_FEATURE_REGISTRY + aiEnergyService + aiFeatureGate ergänzt | 22.02.2026 |
+| 9 | **withEnergyCheck** falsche Keys: wedding-speech/ai-stories/gif-morph/gif-aging/ai-video/trading-card/persona-quiz/face-switch/caption-suggest (9 Bugs) | Alle korrigiert: jede Route nutzt jetzt den korrekten Feature-Key | 22.02.2026 |
+| 10 | **style-effect Route**: statischer Energy-Check 'ai_oldify' für alle Effects | Dynamischer `checkAndSpendEnergy(effect)` — Sketch kostet 3cr, Anime 4cr korrekt | 22.02.2026 |
+| 11 | **createGameSession** falscher Typ 'fortune_teller' in 7 Routes (persona_quiz, wedding_speech, ai_stories, celebrity_lookalike, ai_bingo, ai_dj, caption_suggest) | Korrekte Typen überall gesetzt | 22.02.2026 |
+| 12 | **Prompt Studio**: 12 LLM Games hatten keine FALLBACK_PROMPTS → hosts konnten Prompts nicht editieren | fortune_teller, ai_roast, celebrity_lookalike, persona_quiz, wedding_speech, ai_stories, ai_bingo, ai_dj, ai_meme, ai_superlatives, ai_photo_critic, ai_couple_match in FALLBACK_PROMPTS + seedDefaultPrompts ergänzt | 22.02.2026 |
+| 13 | **10 LLM Game Routes** ignorieren Prompt Studio Overrides | resolveSystemPrompt() helper + Integration in alle 10 Routes — event-spezifische Prompt-Overrides funktionieren jetzt | 22.02.2026 |
+| 14 | **Auto-Setup** versuchte VIDEO_GEN/STT/TTS als Fehler zu markieren wenn kein Provider | Soft-Warning statt Error für optionale Provider-Typen, P2002 dedup, no-AI Features (creditCost:0) werden übersprungen | 22.02.2026 |
 
 ---
 
