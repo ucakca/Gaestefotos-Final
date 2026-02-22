@@ -395,7 +395,7 @@ Welcher Party-Persönlichkeitstyp ist das?`;
 });
 
 // POST /api/booth-games/wedding-speech — AI generates a funny short wedding speech
-router.post('/wedding-speech', authMiddleware, withEnergyCheck('compliment_mirror'), async (req: AuthRequest, res: Response) => {
+router.post('/wedding-speech', authMiddleware, withEnergyCheck('wedding_speech'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName, coupleName, role } = req.body;
 
@@ -444,7 +444,7 @@ Schreibe eine kurze, lustige Hochzeitsrede!`;
 });
 
 // POST /api/booth-games/ai-stories — Guest gives 3 words → AI generates a mini story
-router.post('/ai-stories', authMiddleware, withEnergyCheck('compliment_mirror'), async (req: AuthRequest, res: Response) => {
+router.post('/ai-stories', authMiddleware, withEnergyCheck('ai_stories'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName, words } = req.body;
 
@@ -702,7 +702,7 @@ Mach es witzig und kreativ!`;
 });
 
 // POST /api/booth-games/gif-morph — Create animated GIF morph (Original → Style1 → Style2)
-router.post('/gif-morph', authMiddleware, withEnergyCheck('ai_oldify'), async (req: AuthRequest, res: Response) => {
+router.post('/gif-morph', authMiddleware, withEnergyCheck('gif_morph'), async (req: AuthRequest, res: Response) => {
   try {
     const { photoId, eventId, styles, frameDelay, width } = req.body;
 
@@ -733,7 +733,7 @@ router.post('/gif-morph', authMiddleware, withEnergyCheck('ai_oldify'), async (r
 });
 
 // POST /api/booth-games/gif-aging — Generate aging progression GIF (4 frames: 30→50→70→90)
-router.post('/gif-aging', authMiddleware, withEnergyCheck('ai_oldify'), async (req: AuthRequest, res: Response) => {
+router.post('/gif-aging', authMiddleware, withEnergyCheck('gif_aging'), async (req: AuthRequest, res: Response) => {
   try {
     const { photoId, eventId } = req.body;
 
@@ -757,7 +757,7 @@ router.post('/gif-aging', authMiddleware, withEnergyCheck('ai_oldify'), async (r
 });
 
 // POST /api/booth-games/ai-video — Generate AI video from a photo (Runway/LumaAI)
-router.post('/ai-video', authMiddleware, withEnergyCheck('highlight_reel'), async (req: AuthRequest, res: Response) => {
+router.post('/ai-video', authMiddleware, withEnergyCheck('ai_video'), async (req: AuthRequest, res: Response) => {
   try {
     const { photoId, eventId, prompt, duration } = req.body;
 
