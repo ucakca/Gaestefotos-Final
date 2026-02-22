@@ -164,7 +164,7 @@ const PROVIDER_PRESETS = [
     defaultModel: 'llama-3.1-70b-versatile',
     description: 'Bereits integriert — schnelle LLM-Inferenz mit Llama 3.1',
     envKey: 'GROQ_API_KEY',
-    features: ['chat', 'album_suggest', 'description_suggest', 'invitation_suggest', 'challenge_suggest', 'guestbook_suggest', 'color_scheme', 'compliment_mirror'],
+    features: ['chat', 'album_suggest', 'description_suggest', 'invitation_suggest', 'challenge_suggest', 'guestbook_suggest', 'color_scheme', 'caption_suggest', 'compliment_mirror', 'fortune_teller', 'ai_roast', 'celebrity_lookalike', 'persona_quiz', 'wedding_speech', 'ai_stories', 'ai_bingo', 'ai_dj', 'ai_meme', 'ai_superlatives', 'ai_photo_critic', 'ai_couple_match', 'ai_categorize'],
   },
   {
     slug: 'openai',
