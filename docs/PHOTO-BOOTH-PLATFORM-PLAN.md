@@ -497,14 +497,16 @@ Vollständige Code-Analyse der aktuellen AI-Implementierung. Findings priorisier
 
 ☑ Replicate steps: 20 → 35 ✓
 
-STUFE 3 — No-Code Host-Configurator (Entwickler, einmalig → dann selbst bedienbar)
+✅ STUFE 3 — No-Code Host-Configurator (teilweise abgeschlossen 22.02.2026)
 ──────────────────────────────────────────────────────────────────────────────────
-□ Event AI Experience Configurator im Admin-Dashboard:
-  - Welche AI-Features aktiv? (Checkbox pro Feature, nicht nur Kategorie)
-  - Prompt für Yearbook/Oldify etc. anpassbar? (Textfeld)
-  - Credit-Kosten pro Feature sichtbar und editierbar
-  - Preview-Bild für jeden Effekt (Beispiel-Output)
-  → Nach Implementierung: Host konfiguriert selbst, kein Entwickler nötig
+☑ Welche AI-Features aktiv? → AI Features Seite in Admin Dashboard ✓
+☑ Provider-Selektion per Feature → Dropdown immer sichtbar (hidden sm:flex fix) ✓
+☑ Prompts anpassbar → Prompt Studio + seedDefaultPrompts für ALLE LLM Games ✓
+  resolveSystemPrompt() in allen 10 Game-Routes: event-spezifische Overrides möglich
+  12 neue FALLBACK_PROMPTS: fortune_teller, ai_roast, celebrity_lookalike, persona_quiz,
+  wedding_speech, ai_stories, ai_bingo, ai_dj, ai_meme, ai_superlatives, ai_photo_critic, ai_couple_match
+☑ Credit-Kosten pro Feature sichtbar ✓ (AI Features Seite zeigt Kosten)
+□ Preview-Bild für jeden Effekt (Beispiel-Output) — noch nicht implementiert
 
 STUFE 4 — Premium Features (entspricht FMX AI Combine + Async Delivery)
 ────────────────────────────────────────────────────────────────────────
