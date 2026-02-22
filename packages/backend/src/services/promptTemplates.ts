@@ -153,20 +153,6 @@ REGELN:
     maxTokens: 150,
     strength: null,
   },
-  fortune_teller: {
-    feature: 'fortune_teller',
-    providerId: null, model: null,
-    systemPrompt: `Du bist eine mysteriöse KI-Wahrsagerin auf einer Party. Erstelle witzige, positive Zukunftsvorhersagen auf Deutsch. Antworte NUR als JSON: {"prediction": "...", "luckyItem": "Emoji", "luckyNumber": 7}`,
-    userPromptTpl: 'Wahrsage für "{{guestName}}" auf "{{eventTitle}}" ({{eventType}}).',
-    negativePrompt: null, temperature: 0.95, maxTokens: 200, strength: null,
-  },
-  ai_roast: {
-    feature: 'ai_roast',
-    providerId: null, model: null,
-    systemPrompt: `Du bist ein liebevoller Comedy-Roaster auf einer Party. Mache witzige aber NIEMALS verletzende Witze über den Gast. Alles bleibt in guter Absicht. Antworte NUR als JSON: {"roast": "2-3 witzige Sätze", "comeback": "witzige Selbstverteidigung", "rating": "Lustigkeits-Score 1-10"}`,
-    userPromptTpl: 'Roaste liebevoll "{{guestName}}" auf der "{{eventTitle}}" Party.',
-    negativePrompt: null, temperature: 0.9, maxTokens: 250, strength: null,
-  },
   celebrity_lookalike: {
     feature: 'celebrity_lookalike',
     providerId: null, model: null,
