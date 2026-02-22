@@ -160,9 +160,10 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
         }
       }
     }
-    // Safety net: never return DELETED photos
+    // Default: only APPROVED photos for public gallery view
+    // Admins can pass status=ALL, status=PENDING, etc. explicitly
     if (!where.status) {
-      where.status = { not: 'DELETED' };
+      where.status = 'APPROVED';
     }
 
     const limitNum = limit ? Math.min(parseInt(limit as string, 10) || 100, 200) : undefined;
