@@ -160,12 +160,9 @@ router.get('/:eventId/photos', async (req: AuthRequest, res: Response) => {
         }
       }
     }
-    // Safety net: never return DELETED photos; isVisible:false photos also hidden
+    // Safety net: never return DELETED photos
     if (!where.status) {
       where.status = { not: 'DELETED' };
-    }
-    if (!where.isVisible) {
-      where.isVisible = true;
     }
 
     const limitNum = limit ? Math.min(parseInt(limit as string, 10) || 100, 200) : undefined;
@@ -1436,13 +1433,13 @@ router.post(
 
       if (!canHide) return res.status(403).json({ error: 'Kein Zugriff' });
 
-      const newVisible = !photo.isVisible;
+      const newStatus = photo.status === 'REJECTED' ? 'APPROVED' : 'REJECTED';
       await prisma.photo.update({
         where: { id: photoId },
-        data: { isVisible: newVisible },
+        data: { status: newStatus },
       });
 
-      res.json({ hidden: !newVisible, isVisible: newVisible });
+      res.json({ hidden: newStatus === 'REJECTED', status: newStatus });
     } catch (error: any) {
       logger.error('Hide photo error', { error: error.message });
       res.status(500).json({ error: 'Fehler beim Verbergen' });
