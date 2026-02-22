@@ -14,8 +14,10 @@ import { EnergyBar, EnergyCostBadge, InsufficientEnergyOverlay } from './EnergyB
 
 // ─── Types ──────────────────────────────────────────────────
 
-type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'bg_removal' | 'gif_morph' | 'gif_aging' | 'ai_video' | 'trading_card' | 'time_machine' | 'pet_me' | 'yearbook' | 'emoji_me' | 'miniature';
-type Step = 'photo' | 'effects' | 'video_preset' | 'decade_select' | 'processing' | 'result' | 'error';
+type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'face_swap_template' | 'bg_removal' | 'gif_morph' | 'gif_aging' | 'ai_video' | 'trading_card' | 'time_machine' | 'pet_me' | 'yearbook' | 'emoji_me' | 'miniature';
+type Step = 'photo' | 'effects' | 'video_preset' | 'decade_select' | 'template_select' | 'processing' | 'result' | 'error';
+
+interface FaceSwapTpl { id: string; title: string; category: string; imageUrl: string; thumbnailUrl?: string; }
 
 interface VideoPreset {
   key: string;
@@ -180,6 +182,14 @@ const EFFECTS: EffectDef[] = [
     gradient: 'from-lime-400 to-green-600',
     endpoint: '/booth-games/style-effect',
   },
+  {
+    key: 'face_swap_template',
+    name: 'Werde ein Charakter!',
+    emoji: '🎭',
+    description: 'Setze dein Gesicht auf einen Charakter (Astronaut, Koch, Braut...)',
+    gradient: 'from-purple-500 to-violet-600',
+    endpoint: '/booth-games/face-swap-template',
+  },
 ];
 
 // ─── Component ──────────────────────────────────────────────
@@ -213,6 +223,9 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
   const [videoPrompt, setVideoPrompt] = useState<string | null>(null);
   const videoPromptRef = useRef<string | null>(null);
   const decadeVariantRef = useRef<string | null>(null);
+  const selectedTemplateIdRef = useRef<string | null>(null);
+  const [faceSwapTemplates, setFaceSwapTemplates] = useState<FaceSwapTpl[]>([]);
+  const [templatesLoaded, setTemplatesLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -227,8 +240,18 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
     setVideoPrompt(null);
     videoPromptRef.current = null;
     decadeVariantRef.current = null;
+    selectedTemplateIdRef.current = null;
     onClose();
   }, [onClose]);
+
+  const loadFaceSwapTemplates = useCallback(async () => {
+    if (templatesLoaded) return;
+    try {
+      const r = await api.get('/face-swap/templates?limit=50');
+      setFaceSwapTemplates(r.data?.templates || []);
+      setTemplatesLoaded(true);
+    } catch { /* ignore */ }
+  }, [templatesLoaded]);
 
   const handlePhotoSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -286,6 +309,8 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
         effectRes = await api.post(effect.endpoint, { photoId, eventId });
       } else if (effect.key === 'face_switch' || effect.key === 'bg_removal') {
         effectRes = await api.post(effect.endpoint, { photoId });
+      } else if ((effect.key as string) === 'face_swap_template') {
+        effectRes = await api.post(effect.endpoint, { photoId, eventId, templateId: selectedTemplateIdRef.current });
       } else {
         effectRes = await api.post(effect.endpoint, { photoId, effect: effect.key });
       }
@@ -318,7 +343,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
       clearInterval(progressInterval);
       setProgress(100);
 
-      const resultPath = effectRes.data?.newPhotoPath || effectRes.data?.gifUrl || effectRes.data?.cardUrl;
+      const resultPath = effectRes.data?.outputUrl || effectRes.data?.newPhotoPath || effectRes.data?.gifUrl || effectRes.data?.cardUrl;
       if (effectRes.data?.success && resultPath) {
         setResultUrl(resultPath);
         setStep('result');
@@ -496,6 +521,10 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
                         } else if (effect.key === 'time_machine') {
                           setSelectedEffect(effect);
                           setStep('decade_select');
+                        } else if (effect.key === 'face_swap_template') {
+                          setSelectedEffect(effect);
+                          loadFaceSwapTemplates();
+                          setStep('template_select');
                         } else {
                           handleApplyEffect(effect);
                         }
@@ -588,6 +617,50 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
                     </motion.button>
                   ))}
                 </div>
+              </motion.div>
+            )}
+
+            {/* ═══ Template Select (Face Swap) ═══ */}
+            {step === 'template_select' && selectedEffect && (
+              <motion.div key="template_select" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <button onClick={() => setStep('effects')} className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors">
+                    <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Charakter wählen 🎭</p>
+                    <p className="text-xs text-muted-foreground">Auf wessen Bild soll dein Gesicht?</p>
+                  </div>
+                </div>
+
+                {faceSwapTemplates.length === 0 ? (
+                  <div className="flex flex-col items-center py-8 gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">Templates werden geladen...</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2 max-h-72 overflow-y-auto">
+                    {faceSwapTemplates.map((t, i) => (
+                      <motion.button
+                        key={t.id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.03 }}
+                        onClick={() => {
+                          selectedTemplateIdRef.current = t.id;
+                          handleApplyEffect(selectedEffect);
+                        }}
+                        className="relative rounded-xl overflow-hidden border border-border hover:border-primary/50 active:scale-[0.96] transition-all aspect-square"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={t.thumbnailUrl || t.imageUrl} alt={t.title} className="w-full h-full object-cover" />
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-1.5">
+                          <p className="text-[10px] text-white font-medium leading-tight line-clamp-1">{t.title}</p>
+                        </div>
+                      </motion.button>
+                    ))}
+                  </div>
+                )}
               </motion.div>
             )}
 
