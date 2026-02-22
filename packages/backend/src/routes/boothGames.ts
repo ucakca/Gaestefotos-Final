@@ -339,7 +339,7 @@ router.post('/caption-generator', authMiddleware, withEnergyCheck('caption_sugge
 });
 
 // POST /api/booth-games/persona-quiz — AI analyzes 3 answers → Persona type
-router.post('/persona-quiz', authMiddleware, withEnergyCheck('compliment_mirror'), async (req: AuthRequest, res: Response) => {
+router.post('/persona-quiz', authMiddleware, withEnergyCheck('persona_quiz'), async (req: AuthRequest, res: Response) => {
   try {
     const { eventId, eventType, eventTitle, guestName, answers } = req.body;
 
