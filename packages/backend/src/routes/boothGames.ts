@@ -203,7 +203,7 @@ router.post('/vows-and-views', authMiddleware, async (req: AuthRequest, res: Res
 });
 
 // POST /api/booth-games/face-switch — Swap faces in a group photo
-router.post('/face-switch', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/face-switch', authMiddleware, withEnergyCheck('face_switch'), async (req: AuthRequest, res: Response) => {
   try {
     const { photoId } = req.body;
 
