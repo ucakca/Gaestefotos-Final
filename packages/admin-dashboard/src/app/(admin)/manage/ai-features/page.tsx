@@ -114,6 +114,14 @@ const FEATURE_ICONS: Record<string, any> = {
   ai_superlatives: Sparkles,
   ai_photo_critic: Sparkles,
   ai_couple_match: Sparkles,
+  anime: Wand2,
+  watercolor: Palette,
+  oil_painting: Palette,
+  sketch: Pencil,
+  neon_noir: Wand2,
+  renaissance: Palette,
+  comic_book: Wand2,
+  pixel_art: Gamepad2,
 };
 
 // Sub-features for style_transfer (style names that exist as prompt templates)
