@@ -238,8 +238,12 @@ router.post('/face-swap-template', authMiddleware, withEnergyCheck('face_switch'
     // 2. Resolve template URL
     let resolvedTemplateUrl = templateUrl;
     if (templateId) {
-      // TODO: look up FaceSwapTemplate table once built
-      return res.status(400).json({ error: 'templateId noch nicht implementiert — bitte templateUrl senden' });
+      const rows: any[] = await prisma.$queryRawUnsafe(
+        `SELECT "imageUrl" FROM face_swap_templates WHERE id = $1 AND "isActive" = true LIMIT 1`,
+        templateId
+      );
+      if (!rows[0]) return res.status(404).json({ error: 'Template nicht gefunden' });
+      resolvedTemplateUrl = rows[0].imageUrl;
     }
 
     // 3. Prepare AI execution

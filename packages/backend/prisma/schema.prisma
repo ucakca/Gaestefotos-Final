@@ -2527,3 +2527,30 @@ enum PromptCategory {
 }
 
 // EventLead model removed — merged into Lead model above
+
+// ─────────────────────────────────────────────────────────────
+// Face Swap Template System
+// ─────────────────────────────────────────────────────────────
+
+model FaceSwapTemplate {
+  id            String   @id @default(uuid())
+  title         String                          // "Iron Man", "Braut", "Astronaut"
+  category      String                          // "superhero", "wedding", "profession", "fun", "seasonal"
+  imageUrl      String                          // URL to template image (Envato/AI-generated)
+  thumbnailUrl  String?                         // Smaller preview URL
+  tags          Json     @default("[]")         // ["iron man", "marvel", "superhero"]
+  isActive      Boolean  @default(true)
+  isDefault     Boolean  @default(false)        // Built-in templates shipped with the platform
+  sortOrder     Int      @default(0)
+  usageCount    Int      @default(0)            // How often used (for popularity sorting)
+  source        String   @default("ai")         // "ai", "envato", "custom", "user"
+  licenseType   String   @default("royalty_free") // "royalty_free", "editorial", "custom"
+  createdBy     String?                         // Admin user ID
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([category, isActive])
+  @@index([isDefault])
+  @@index([sortOrder])
+  @@map("face_swap_templates")
+}

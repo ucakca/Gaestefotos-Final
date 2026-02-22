@@ -79,6 +79,7 @@ import { shutdownQueues, getQueueStats } from './services/jobQueue';
 import slideshowRoutes from './routes/slideshow';
 import styleTransferRoutes from './routes/styleTransfer';
 import boothGamesRoutes from './routes/boothGames';
+import faceSwapTemplatesRoutes from './routes/faceSwapTemplates';
 import boothSetupRoutes from './routes/boothSetup';
 import partnerAiConfigRoutes from './routes/partnerAiConfig';
 import adminCostMonitoringRoutes from './routes/adminCostMonitoring';
@@ -663,6 +664,7 @@ app.use('/api', galleryEmbedRoutes);
 app.use('/api/slideshow', slideshowRoutes);
 app.use('/api/style-transfer', aiFeatureLimiter, styleTransferRoutes);
 app.use('/api/booth-games', aiFeatureLimiter, boothGamesRoutes);
+app.use('/api/face-swap', faceSwapTemplatesRoutes);
 app.use('/api/booth', boothSetupRoutes); // Booth Setup: /api/booth/setup, config, heartbeat
 app.use('/api/partner', partnerAiConfigRoutes); // Partner AI Config: /api/partner/events/:eventId/ai-config, briefing
 app.use('/api/events', eventAiConfigRoutes); // AI Config: /api/events/:eventId/ai-features, ai-config
