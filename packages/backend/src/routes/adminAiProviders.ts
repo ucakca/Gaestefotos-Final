@@ -1079,4 +1079,54 @@ router.get('/monitoring', authMiddleware, async (req: AuthRequest, res: Response
   }
 });
 
+// ─── POST /api/admin/ai-providers/categorize/:eventId ────────────────────────
+// AI batch categorization: analyze uncategorized photos and suggest tags/categories
+router.post('/categorize/:eventId', authMiddleware, async (req: AuthRequest, res: Response) => {
+  if (!await requireAdmin(req, res)) return;
+  try {
+    const { eventId } = req.params;
+    const { limit = 20 } = req.body;
+
+    // Verify event exists
+    const event = await prisma.event.findUnique({ where: { id: eventId }, select: { id: true, title: true } });
+    if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+
+    // Get photos without category tags
+    const photos = await prisma.photo.findMany({
+      where: { eventId, status: 'APPROVED', deletedAt: null },
+      select: { id: true, tags: true },
+      take: Math.min(Number(limit), 50),
+      orderBy: { createdAt: 'asc' },
+    });
+
+    if (photos.length === 0) {
+      return res.json({ success: true, processed: 0, message: 'Keine Fotos zum Kategorisieren gefunden' });
+    }
+
+    const { resolvePrompt } = await import('../services/promptTemplates');
+    const { generateCompletion } = await import('../lib/groq');
+    const promptTpl = await resolvePrompt('ai_categorize', eventId);
+    const systemPrompt = promptTpl.systemPrompt || `Du bist ein Foto-Kategorisierungs-Assistent. Analysiere die Foto-Tags und schlage eine Kategorie vor (z.B. "ceremony", "party", "portrait", "group", "details"). Antworte NUR als JSON: {"category": "...", "confidence": 0.85}`;
+
+    const results: { photoId: string; suggestedCategory: string; confidence: number }[] = [];
+    for (const photo of photos) {
+      try {
+        const context = `Tags: ${(photo.tags as string[] || []).join(', ') || 'keine'}`;
+        const response = await generateCompletion(context, systemPrompt, { maxTokens: 60, temperature: 0.3 });
+        const match = response.content.match(/\{[\s\S]*\}/);
+        const parsed = match ? JSON.parse(match[0]) : null;
+        results.push({ photoId: photo.id, suggestedCategory: parsed?.category || 'other', confidence: parsed?.confidence || 0.5 });
+      } catch {
+        results.push({ photoId: photo.id, suggestedCategory: 'other', confidence: 0 });
+      }
+    }
+
+    logger.info('[AI Categorize] Complete', { eventId, processed: results.length });
+    res.json({ success: true, processed: results.length, results });
+  } catch (error: any) {
+    logger.error('AI categorize error', { error: error.message });
+    res.status(500).json({ error: 'AI-Kategorisierung fehlgeschlagen' });
+  }
+});
+
 export default router;
