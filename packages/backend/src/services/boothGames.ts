@@ -15,7 +15,18 @@ export type GameType =
   | 'mystery_overlay'
   | 'mimik_duell'
   | 'face_switch'
-  | 'vows_and_views';
+  | 'vows_and_views'
+  | 'caption_suggest'
+  | 'persona_quiz'
+  | 'wedding_speech'
+  | 'ai_stories'
+  | 'celebrity_lookalike'
+  | 'ai_bingo'
+  | 'ai_dj'
+  | 'ai_meme'
+  | 'ai_superlatives'
+  | 'ai_photo_critic'
+  | 'ai_couple_match';
 
 export interface GameConfig {
   type: GameType;

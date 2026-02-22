@@ -338,7 +338,7 @@ router.post('/caption-generator', authMiddleware, withEnergyCheck('caption_sugge
       captions = [response.content.trim()];
     }
 
-    const session = createGameSession(eventId, 'compliment_mirror', { captions });
+    const session = createGameSession(eventId, 'caption_suggest', { captions });
     res.json({ sessionId: session.id, captions, source: 'ai' });
   } catch (error) {
     logger.error('Caption generator error', { message: (error as Error).message });
