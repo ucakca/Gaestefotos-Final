@@ -68,6 +68,7 @@ const FEATURE_TO_COST_CATEGORY: Record<string, EnergyCostCategory> = {
   ai_superlatives: 'llm_game',
   ai_photo_critic: 'llm_game',
   ai_couple_match: 'llm_game',
+  ai_categorize: 'llm_game',
   persona_quiz: 'llm_game',
   wedding_speech: 'llm_game',
   ai_stories: 'llm_game',
