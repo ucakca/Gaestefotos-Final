@@ -226,10 +226,10 @@ router.post('/face-switch', authMiddleware, async (req: AuthRequest, res: Respon
   }
 });
 
-// POST /api/booth-games/style-effect — Apply AI style effect (oldify, cartoon, style_pop)
-router.post('/style-effect', authMiddleware, withEnergyCheck('ai_oldify'), async (req: AuthRequest, res: Response) => {
+// POST /api/booth-games/style-effect — Apply AI style effect (dynamic energy check per effect)
+router.post('/style-effect', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const { photoId, effect, intensity, outputFormat } = req.body;
+    const { photoId, effect, intensity, outputFormat, eventId } = req.body;
 
     if (!photoId) {
       return res.status(400).json({ error: 'photoId ist erforderlich' });
@@ -238,6 +238,19 @@ router.post('/style-effect', authMiddleware, withEnergyCheck('ai_oldify'), async
     const validEffects = ['ai_oldify', 'ai_cartoon', 'ai_style_pop', 'time_machine', 'pet_me', 'yearbook', 'emoji_me', 'miniature', 'gif_morph', 'gif_aging', 'trading_card', 'anime', 'watercolor', 'oil_painting', 'sketch', 'neon_noir', 'renaissance', 'comic_book', 'pixel_art'];
     if (!effect || !validEffects.includes(effect)) {
       return res.status(400).json({ error: `Ungültiger Effekt. Erlaubt: ${validEffects.join(', ')}` });
+    }
+
+    // Dynamic energy check: use the actual effect key so each effect's cost is charged correctly
+    if (eventId) {
+      const { checkAndSpendEnergy } = await import('../middleware/energyCheck');
+      const energyResult = await checkAndSpendEnergy(req, eventId, effect as any);
+      if (!energyResult.success) {
+        return res.status(429).json({
+          error: 'Nicht genug AI-Energie',
+          code: 'INSUFFICIENT_ENERGY',
+          energy: { cost: energyResult.cost, currentBalance: energyResult.newBalance },
+        });
+      }
     }
 
     const { processStyleEffectForPhoto } = await import('../services/aiStyleEffects');
