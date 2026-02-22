@@ -632,7 +632,7 @@ Schlage 5 perfekte Songs vor!`;
 });
 
 // POST /api/booth-games/trading-card — Generate AI Trading Card from guest photo
-router.post('/trading-card', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.post('/trading-card', authMiddleware, withEnergyCheck('trading_card'), async (req: AuthRequest, res: Response) => {
   try {
     const { photoId, eventId, guestName } = req.body;
 
