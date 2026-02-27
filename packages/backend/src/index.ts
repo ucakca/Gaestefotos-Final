@@ -114,6 +114,12 @@ import imageCdnRoutes from './routes/imageCdn';
 import debugRoutes from './routes/debug';
 import trendMonitorRoutes from './routes/trendMonitor';
 import adminAiSurfacesRoutes from './routes/adminAiSurfaces';
+import adminCdnRoutes from './routes/adminCdn';
+import aiAsyncDeliveryRoutes from './routes/aiAsyncDelivery';
+import aiSurveyPromptRoutes from './routes/aiSurveyPrompt';
+import faceOffRoutes from './routes/faceOff';
+import faceSwapTemplatesRoutes from './routes/faceSwapTemplates';
+import referenceImageRoutes from './routes/referenceImage';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter, smsLimiter, paymentLimiter, leadLimiter, aiFeatureLimiter, pushSubscribeLimiter, analyticsLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -686,6 +692,12 @@ app.use('/api/workflows', workflowsRoutes);
 app.use('/api/debug', debugRoutes); // Debug mode: /api/debug/*
 app.use('/api/admin/trend-monitor', trendMonitorRoutes);
 app.use('/api/admin/ai-surfaces', adminAiSurfacesRoutes);
+app.use('/api/admin/cdn', adminCdnRoutes); // CDN Browser: /api/admin/cdn/browse, sign, bulk-sign
+app.use('/api/ai-jobs', aiAsyncDeliveryRoutes); // Async AI Jobs: /api/ai-jobs/video-models, :shortCode, admin/list
+app.use('/api/face-swap', faceSwapTemplatesRoutes); // Face Swap Templates: /api/face-swap/templates
+app.use('/api/events', aiSurveyPromptRoutes); // Survey Prompts: /api/events/:eventId/survey-prompts
+app.use('/api/events', faceOffRoutes); // Face-Off: /api/events/:eventId/face-off/*
+app.use('/api/events', referenceImageRoutes); // Reference Image: /api/events/:eventId/reference-image
 app.use('/api', downloadsRoutes); // Bulk download ZIP: /api/events/:eventId/download/zip
 app.use('/api', paymentLimiter, paymentsRoutes); // Payment per Session: /api/events/:eventId/payment-sessions
 app.use('/api', spinnerRoutes); // 360° Spinner: /api/events/:eventId/spinner
