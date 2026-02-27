@@ -1,6 +1,6 @@
 # gästefotos.com — Master-TODO
 
-> Stand: 27. Februar 2026
+> Stand: 28. Februar 2026
 > Quelle: Docs-Audit (`DOCS-AUDIT-UND-MASTER-TODO.md`) — alle 58 MD-Dateien analysiert, 20 archiviert, 38 aktiv.
 
 ---
@@ -19,6 +19,11 @@
 | Infra | Repo↔Prod Sync (0 Diffs), Build-Pipeline (`deploy.sh`), 4× @ts-nocheck entfernt, 7 Routes gemountet | 27.02.2026 |
 | Audits | 360°-Audit, Crosscheck, Security Phase 3 — alle abgeschlossen, archiviert | 02/2026 |
 | Docs-Cleanup | 58→38 aktive Docs, 20 archiviert, Master-TODO erstellt | 27.02.2026 |
+| Wizard-Fixes | 5 Bugs gefixt: Zeitplan, Wizard-Reihenfolge, Auto-Entitlement, Wizard-Neustart, Dashboard-Link | 28.02.2026 |
+| T3 App-Bugs | ARCH-001/002 erledigt, Design-Seite→Redirect, dead code entfernt (designPresets.ts, useOfflineGallery.ts), BUGS.md 100% ✅ | 28.02.2026 |
+| T4 WooCommerce (Backend) | eventCode-Generierung, WOOCOMMERCE_WEBHOOK_SECRET, 21 Events gefixt | 28.02.2026 |
+| T6 RunPod (Vorbereitung) | AiJob Prisma Model + DB-Tabelle, runpodService.ts, aiJobWorker.ts, API Routes | 28.02.2026 |
+| T8 Result Page | /r/:shortCode Frontend + Backend (Polling, Download, Share, Branding) | 28.02.2026 |
 
 ---
 
@@ -30,7 +35,7 @@
 |---|------|----------|--------|--------------|
 | T1 | **User-Testing ALLE Features** | — | ⏳ | Alle 30 AI-Effekte, 14 LLM-Spiele, Face Search, Live Wall, Einladungen, QR-Styler, Galerie, Upload auf app/dash.gästefotos.com testen |
 | T2 | **AI Quality Bugs (6 kritisch)** | `PHOTO-BOOTH-PLATFORM-PLAN.md` §11.2 | ⏳ | A1: Face Swap sharp→fal.ai, A2: Face Detection Model-Check, A3: ArcFace 512-dim, A4: Identity Preservation, A5: Stability v1 deprecieren, A6: Replicate Steps erhöhen |
-| T3 | **Offene App-Bugs (3)** | `BUGS.md` | ⚠️ | ARCH-001: doppelte Funktionen eliminieren, ARCH-002: Design-Seite modernisieren/redirect, Unused Code entfernen |
+| T3 | **Offene App-Bugs (3)** | `BUGS.md` | ✅ | ARCH-001: doppelte Funktionen eliminieren, ARCH-002: Design-Seite modernisieren/redirect, Unused Code entfernen |
 | T4 | **WooCommerce offene Punkte (8)** | `woocommerce-setup.md` | ⚠️ | Webhook-Stabilität, Paket-Sync, eventCode-Flow, Abo-Verlängerung |
 | T5 | **Docs Updates** | `MASTER-KONZEPT.md`, `API_MAP.md`, `DEPLOYMENT.md` | ⏳ | Neue Routes + Booth-Experience verlinken + deploy.sh + archivierte Docs-Referenzen aktualisieren |
 
@@ -38,14 +43,14 @@
 
 | # | Task | Dokument | Status | Beschreibung |
 |---|------|----------|--------|--------------|
-| T6 | **RunPod + ComfyUI Setup** | `RUNPOD-COMFYUI-PLAN.md` | ⏳ | Account, Docker Image, Serverless Worker, FAL.ai Anbindung |
+| T6 | **RunPod + ComfyUI Setup** | `RUNPOD-COMFYUI-PLAN.md` | ⏳ | ~~Account~~, Docker Image, Serverless Worker, FAL.ai Anbindung — Backend-Code vorbereitet (AiJob Model, Worker, Routes) |
 | T7 | **FAL.ai Endpoint-Testing** | `AI-EFFEKTE-KATALOG.md` | ⏳ | Echte API-Calls testen: Face Swap (fal-ai/inswapper), Video (Kling/Seedance), Style Transfer |
 
 ### C) Async Delivery (App + Booth)
 
 | # | Task | Dokument | Status | Beschreibung |
 |---|------|----------|--------|--------------|
-| T8 | **`/r/:shortCode` Ergebnis-Seite** | `BOOTH-EXPERIENCE-KONZEPT.md` §4 | ⏳ | Frontend-Seite: Polling, Download (gästefotos.com-branded), Share, Google Review |
+| T8 | **`/r/:shortCode` Ergebnis-Seite** | `BOOTH-EXPERIENCE-KONZEPT.md` §4 | ✅ | Frontend-Seite: Polling, Download (gästefotos.com-branded), Share — Google Review noch offen |
 
 ## 🟡 PRIORITÄT 2 — WICHTIG
 

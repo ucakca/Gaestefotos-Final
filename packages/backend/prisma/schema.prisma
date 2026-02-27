@@ -143,6 +143,7 @@ model Event {
   guestEnergyLogs         GuestEnergyLog[]
   briefing                EventBriefing?
   eventAutomations        EventAutomation[]
+  aiJobs                  AiJob[]
 
   @@index([slug])
   @@index([hostId])
@@ -2559,4 +2560,51 @@ model FaceSwapTemplate {
   @@index([isDefault])
   @@index([sortOrder])
   @@map("face_swap_templates")
+}
+
+// ─────────────────────────────────────────────────────────
+// AI Job Queue (RunPod / ComfyUI async processing)
+// ─────────────────────────────────────────────────────────
+
+model AiJob {
+  id            String       @id @default(uuid())
+  eventId       String
+  event         Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  photoId       String?                          // Source photo (if applicable)
+  guestName     String?                          // Guest who triggered the job
+  guestEmail    String?                          // For notification delivery
+  workflow      String                           // ComfyUI workflow key, e.g. "bfs_head_v5", "style_transfer_pulid"
+  workflowJson  Json?                            // Full ComfyUI workflow JSON (optional override)
+  inputImages   Json         @default("[]")      // Array of StoragePaths for input images
+  parameters    Json?                            // Extra params (style, strength, prompt, etc.)
+  status        AiJobStatus  @default(QUEUED)
+  priority      Int          @default(0)         // Higher = processed first
+  runpodJobId   String?                          // RunPod serverless job ID
+  result        String?                          // StoragePath of result image/video
+  resultUrl     String?                          // Public URL of result (CDN)
+  shortCode     String?      @unique             // For /r/:shortCode delivery page
+  error         String?                          // Error message if FAILED
+  retryCount    Int          @default(0)
+  maxRetries    Int          @default(2)
+  computeTimeMs Int?                             // Actual GPU compute time in ms
+  notified      Boolean      @default(false)     // Whether guest was notified
+  notifiedAt    DateTime?
+  createdAt     DateTime     @default(now())
+  startedAt     DateTime?                        // When processing started
+  completedAt   DateTime?                        // When processing finished
+  updatedAt     DateTime     @updatedAt
+
+  @@index([eventId, status])
+  @@index([status, priority, createdAt])
+  @@index([shortCode])
+  @@index([runpodJobId])
+  @@map("ai_jobs")
+}
+
+enum AiJobStatus {
+  QUEUED
+  PROCESSING
+  DONE
+  FAILED
+  CANCELLED
 }

@@ -33,6 +33,7 @@ import videoRoutes from './routes/videos';
 import cohostsRoutes from './routes/cohosts';
 import packageDefinitionsRoutes from './routes/packageDefinitions';
 import invitationRoutes from './routes/invitations';
+import aiJobsRoutes, { resultRouter as aiResultRouter } from './routes/aiJobs';
 import woocommerceWebhooksRoutes from './routes/woocommerceWebhooks';
 import adminWooWebhooksRoutes from './routes/adminWooWebhooks';
 import adminApiKeysRoutes from './routes/adminApiKeys';
@@ -134,6 +135,7 @@ import { startWorkflowTimerWorker } from './services/workflowTimerWorker';
 import { startFaceSearchConsentRetentionWorker } from './services/faceSearchConsentRetention';
 import { startQaLogRetentionWorker } from './services/qaLogRetention';
 import { startWooLogRetentionWorker } from './services/wooLogRetention';
+import { startAiJobWorker } from './services/aiJobWorker';
 import prisma from './config/database';
 import { hasEventAccess } from './middleware/auth';
 import { maintenanceModeMiddleware } from './middleware/maintenanceMode';
@@ -181,6 +183,7 @@ startWorkflowTimerWorker();
 startFaceSearchConsentRetentionWorker();
 startQaLogRetentionWorker();
 startWooLogRetentionWorker();
+startAiJobWorker();
 
 // Initialize Sentry for error tracking
 if (process.env.SENTRY_DSN) {
@@ -657,6 +660,10 @@ app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/admin/settings', adminSettingsRoutes);
 app.use('/api/admin/backups', adminBackupsRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
+
+// AI Jobs Queue (RunPod/ComfyUI)
+app.use('/api/ai-jobs', aiJobsRoutes);
+app.use('/api/r', aiResultRouter);
 
 // AI Routes (KI-Assistent)
 app.use('/api/ai', aiRoutes);
