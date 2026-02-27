@@ -1,6 +1,6 @@
 # gästefotos.com — Aufgaben-Übersicht
 
-> Stand: 22.02.2026
+> Stand: 27.02.2026
 
 ---
 
@@ -14,14 +14,20 @@
 | Sprint S26 | 400+ Features/Fixes: Bulk-Ops, CSV-Export, Stats-Endpoints, Gästeliste, Leaderboard, QR-Codes, Live-Polling, etc. | 20-21.02.2026 |
 | Bug-Fixes | photo.url relativ→storagePath (6 Services), CDN public access, Face Swap const→let, Trend Monitor apiKey decrypt, AiResultShare auth token | 22.02.2026 |
 | AI UI | Face Swap Templates (25 Portraits, CRUD, Admin+Guest UI), AI Test Lab Upload Fix, Action-Buttons sichtbar, Delete für alle Templates | 22.02.2026 |
+| Sidebar | Restructured: 3 KI-Gruppen (Konfiguration, Prompts & Tools, Monitoring), 5 neue Dashboard-Seiten | 26.02.2026 |
+| Trend Monitor | Erweitert: CivitAI, Hacker News, HuggingFace (Image/Video/LLM) statt kaputte Reddit/Google | 27.02.2026 |
+| Repo↔Prod Sync | 14 fehlende + 55 divergierte Dateien synchronisiert, 0 Diffs, Routes gemountet | 27.02.2026 |
+| Build-Pipeline | `deploy.sh` (Backend + Top-Level): type-check → tsc → rsync src+dist+prisma → restart → health verify | 27.02.2026 |
+| Tech Debt | 4× @ts-nocheck entfernt, TS-Fehler gefixt, Prisma Schema synchron | 27.02.2026 |
 
 ## 🔴 Offen — HIGH
 
 | # | Feature | Beschreibung |
 |---|---------|--------------|
-| 1 | **TypeScript Build-Pipeline** | `src/` → `dist/` automatisch kompilieren (aktuell manuelle dist-Edits) |
-| 2 | **Dev↔Prod Sync** | `/root/gaestefotos-app-v2/` (Dev) ↔ `/opt/gaestefotos/app/` (Prod) automatisieren |
+| 1 | ~~TypeScript Build-Pipeline~~ | ✅ Erledigt — `deploy.sh backend` kompiliert + synct + verifiziert |
+| 2 | ~~Dev↔Prod Sync~~ | ✅ Erledigt — `deploy.sh --status` zeigt Diffs, `deploy.sh` synct alles |
 | 3 | **User-Testing** | Vollständiger Test aller AI-Features auf app/dash.gästefotos.com |
+| 4 | **RunPod + ComfyUI** | Phase 1: Account, Docker Image, Serverless Worker (siehe RUNPOD-COMFYUI-PLAN.md) |
 
 ## 🟡 Offen — MEDIUM
 
@@ -29,7 +35,7 @@
 |---|---------|--------------|
 | 4 | **Multi-Person Group Transform** | Gruppen-Foto Face Swap mit mehreren Personen |
 | 5 | **Processing-Animationen** | Engaging Animationen während AI-Verarbeitung |
-| 6 | **StyleTransfer dist Fix** | `dist/services/styleTransfer.js` preprocessImage Syntax-Fehler |
+| 6 | ~~StyleTransfer dist Fix~~ | ✅ Erledigt — dist/ wird jetzt automatisch aus src/ kompiliert |
 
 ## 🟢 Offen — LOW
 
@@ -53,4 +59,4 @@
 | **AI** | 14 Provider (Grok, Groq, OpenAI, fal.ai, Replicate, etc.), 50 Feature-Mappings |
 | **Prod-Pfad** | `/opt/gaestefotos/app/` |
 | **Dev-Pfad** | `/root/gaestefotos-app-v2/` |
-| **Deploy** | `rsync src → prod` + `next build` + `systemctl restart` |
+| **Deploy** | `./deploy.sh backend` oder `./deploy.sh all` (type-check → build → sync → restart → verify) |
