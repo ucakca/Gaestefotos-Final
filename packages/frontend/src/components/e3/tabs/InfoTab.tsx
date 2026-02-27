@@ -132,7 +132,7 @@ export default function InfoTab({
   const locale = useLocale();
   const dateLocaleMap: Record<string, string> = { de: 'de-DE', en: 'en-US', fr: 'fr-FR', es: 'es-ES', it: 'it-IT' };
   const designConfig = (event.designConfig as any) || {};
-  const schedule = designConfig.schedule || [];
+  const schedule = (event as any).schedule || designConfig.schedule || [];
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-4 pb-24">

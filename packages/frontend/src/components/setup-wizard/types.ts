@@ -147,10 +147,10 @@ export const SETUP_STEPS: SetupStep[] = [
   { id: 'title', phase: 1, title: 'Titel festlegen', status: 'pending', isRequired: true, icon: 'Type' },
   { id: 'date-location', phase: 1, title: 'Datum & Ort', status: 'pending', isRequired: false, icon: 'Calendar' },
   
-  // Phase 2: Gestalten
-  { id: 'event-theme', phase: 2, title: 'Event-Theme', status: 'pending', isRequired: false, icon: 'Palette' },
+  // Phase 2: Gestalten (Bilder zuerst, dann KI-Theme — KI braucht Bilder als Kontext)
   { id: 'cover-image', phase: 2, title: 'Cover-Bild', status: 'pending', isRequired: false, icon: 'Image' },
   { id: 'profile-image', phase: 2, title: 'Profilbild', status: 'pending', isRequired: false, icon: 'User' },
+  { id: 'event-theme', phase: 2, title: 'Event-Theme', status: 'pending', isRequired: false, icon: 'Palette' },
   { id: 'color-scheme', phase: 2, title: 'Farbschema', status: 'pending', isRequired: false, icon: 'Palette' },
   
   // Phase 3: Einrichten

@@ -390,6 +390,7 @@ export default function PublicEventPageV2() {
         uploadDisabledReason={uploadDisabledReason}
         dashboardUrl={`/events/${event.id}/dashboard`}
         onShare={() => setQrCodeOpen(true)}
+        schedule={(event as any).schedule || []}
         hasWifi={!!((event as any).wifiName && (event as any).wifiPassword)}
         onWifiClick={() => setForceShowWifi(true)}
       />

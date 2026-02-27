@@ -53,6 +53,7 @@ import {
   Wifi,
   TrendingUp,
   Download,
+  RotateCcw,
 } from 'lucide-react';
 import { useToastStore } from '@/store/toastStore';
 import { useAuthStore } from '@/store/authStore';
@@ -1302,6 +1303,13 @@ function OverviewTab({
                 <ChevronRight className="w-5 h-5 text-muted-foreground group-hover/step:translate-x-1 group-hover/step:text-warning transition-all" />
               </Link>
             )}
+            <Link
+              href={`/setup?eventId=${eventId}`}
+              className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-warning transition-colors"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Wizard neustarten
+            </Link>
           </div>
         </div>
       )}

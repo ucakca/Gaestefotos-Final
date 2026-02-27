@@ -435,18 +435,7 @@ export default function SetupWizard() {
           />
         );
       
-      // Phase 2: Design
-      case 'event-theme':
-        return (
-          <ThemeSelectionStep
-            eventType={state.eventType}
-            selectedThemeId={state.themeId}
-            onThemeSelect={(themeId, themeData) => updateState({ themeId, themeData })}
-            onNext={() => handleCompleteStep('event-theme')}
-            onBack={() => goToStep('date-location')}
-          />
-        );
-
+      // Phase 2: Design (Bilder zuerst, dann KI-Theme)
       case 'cover-image':
         return (
           <CoverImageStep
@@ -454,7 +443,7 @@ export default function SetupWizard() {
             coverImagePreview={state.coverImagePreview}
             onCoverImageChange={(file, preview) => updateState({ coverImage: file, coverImagePreview: preview })}
             onNext={() => handleCompleteStep('cover-image')}
-            onBack={() => goToStep('event-theme')}
+            onBack={() => goToStep('date-location')}
             onSkip={() => handleCompleteStep('cover-image')}
           />
         );
@@ -470,6 +459,17 @@ export default function SetupWizard() {
             onSkip={() => handleCompleteStep('profile-image')}
           />
         );
+
+      case 'event-theme':
+        return (
+          <ThemeSelectionStep
+            eventType={state.eventType}
+            selectedThemeId={state.themeId}
+            onThemeSelect={(themeId, themeData) => updateState({ themeId, themeData })}
+            onNext={() => handleCompleteStep('event-theme')}
+            onBack={() => goToStep('profile-image')}
+          />
+        );
       
       case 'color-scheme':
         return (
@@ -478,7 +478,7 @@ export default function SetupWizard() {
             coverImagePreview={state.coverImagePreview}
             onColorSchemeChange={(colorScheme) => updateState({ colorScheme })}
             onNext={() => handleCompleteStep('color-scheme')}
-            onBack={() => goToStep('profile-image')}
+            onBack={() => goToStep('event-theme')}
           />
         );
       
@@ -596,10 +596,11 @@ export default function SetupWizard() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleResetWizard}
-              className="p-2 rounded-lg hover:bg-background transition-colors"
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors text-xs font-medium"
               title="Wizard neu starten"
             >
-              <RotateCcw className="w-4 h-4 text-muted-foreground" />
+              <RotateCcw className="w-3.5 h-3.5" />
+              Neustart
             </button>
             <button
               onClick={() => setShowChecklist(!showChecklist)}

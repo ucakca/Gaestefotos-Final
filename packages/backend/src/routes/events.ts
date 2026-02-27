@@ -629,6 +629,40 @@ router.post(
         },
       });
 
+      // Auto-assign entitlement: if host has active premium package on another event, clone it
+      try {
+        const hostUser = await prisma.user.findUnique({ where: { id: event.hostId }, select: { wordpressUserId: true } });
+        const wpUserId = hostUser?.wordpressUserId;
+        if (wpUserId) {
+          const existingEntitlement = await prisma.eventEntitlement.findFirst({
+            where: {
+              wpUserId,
+              status: 'ACTIVE',
+              eventId: { not: event.id },
+              NOT: { source: { startsWith: 'addon' } },
+            },
+            orderBy: { createdAt: 'desc' },
+            select: { wcSku: true, wcOrderId: true, source: true, storageLimitBytes: true },
+          });
+          if (existingEntitlement?.wcSku) {
+            await prisma.eventEntitlement.create({
+              data: {
+                eventId: event.id,
+                wpUserId,
+                wcSku: existingEntitlement.wcSku,
+                wcOrderId: existingEntitlement.wcOrderId,
+                source: existingEntitlement.source || 'auto-assign',
+                status: 'ACTIVE',
+                storageLimitBytes: existingEntitlement.storageLimitBytes,
+              },
+            });
+            logger.info('Auto-assigned entitlement to new event', { eventId: event.id, wcSku: existingEntitlement.wcSku, wpUserId });
+          }
+        }
+      } catch (entErr: any) {
+        logger.error('Failed to auto-assign entitlement', { eventId: event.id, error: entErr?.message });
+      }
+
       // Upload images if provided
       if (files?.coverImage?.[0]) {
         const file = files.coverImage[0];
