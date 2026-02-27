@@ -68,12 +68,14 @@ export async function generateImageToVideo(request: ImageToVideoRequest): Promis
   try {
     let resultUrl: string;
 
-    if (provider.slug.includes('runway') || provider.slug.includes('Runway')) {
+    if (provider.slug.includes('fal')) {
+      resultUrl = await generateWithFal(provider, imageUrl, prompt, duration);
+    } else if (provider.slug.includes('runway') || provider.slug.includes('Runway')) {
       resultUrl = await generateWithRunway(provider, imageUrl, prompt, duration);
     } else if (provider.slug.includes('luma') || provider.slug.includes('Luma')) {
       resultUrl = await generateWithLuma(provider, imageUrl, prompt, duration);
     } else {
-      // Try Runway-style API as default for VIDEO_GEN
+      // Default: try FAL.ai (most models)
       resultUrl = await generateWithRunway(provider, imageUrl, prompt, duration);
     }
 
@@ -243,6 +245,58 @@ async function generateWithLuma(
   throw new Error('LumaAI: Timeout nach 5 Minuten');
 }
 
+
+// ─── FAL.ai Video Models (Seedance, Kling, Wan, Vidu, Hailuo) ──────────────
+
+const FAL_VIDEO_MODELS: Record<string, { model: string; label: string; tier: 'fast' | 'standard' | 'premium' }> = {
+  seedance: { model: 'fal-ai/seedance/image-to-video', label: 'Seedance (schnell)', tier: 'fast' },
+  kling:    { model: 'fal-ai/kling-video/v2.1/image-to-video', label: 'Kling 2.1 (Premium)', tier: 'premium' },
+  wan:      { model: 'fal-ai/wan/v2.1/image-to-video', label: 'Wan 2.1', tier: 'standard' },
+  vidu:     { model: 'fal-ai/vidu/image-to-video', label: 'Vidu (schnell)', tier: 'fast' },
+  hailuo:   { model: 'fal-ai/hailuo/image-to-video', label: 'Hailuo MiniMax', tier: 'standard' },
+};
+
+export function getAvailableVideoModels() {
+  return Object.entries(FAL_VIDEO_MODELS).map(([key, val]) => ({
+    key, model: val.model, label: val.label, tier: val.tier,
+  }));
+}
+
+async function generateWithFal(
+  provider: ResolvedProvider, imageUrl: string, prompt?: string, duration: number = 5,
+): Promise<string> {
+  const apiKey = provider.apiKey;
+  if (!apiKey) throw new Error('FAL.ai: Kein API-Key');
+  let model = provider.model || 'fal-ai/wan/v2.1/image-to-video';
+  const shortcut = Object.keys(FAL_VIDEO_MODELS).find(k => model.toLowerCase().includes(k));
+  if (shortcut && !model.includes('/')) model = FAL_VIDEO_MODELS[shortcut].model;
+  const motionPrompt = prompt || 'gentle cinematic camera movement, subtle animation';
+  logger.info('[AiVideoGen] Starting FAL.ai video', { model, duration });
+  const queueUrl = `https://queue.fal.run/${model}`;
+  const submitRes = await fetch(queueUrl, {
+    method: 'POST',
+    headers: { Authorization: `Key ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image_url: imageUrl, prompt: motionPrompt, duration: String(duration), aspect_ratio: '16:9' }),
+  });
+  if (!submitRes.ok) throw new Error(`FAL video error ${submitRes.status}`);
+  const { request_id } = await submitRes.json() as any;
+  logger.info('[AiVideoGen] FAL queued', { request_id, model });
+  const maxWait = 600000; const pollStart = Date.now();
+  while (Date.now() - pollStart < maxWait) {
+    await sleep(5000);
+    const sRes = await fetch(`https://queue.fal.run/${model}/requests/${request_id}/status`, { headers: { Authorization: `Key ${apiKey}` } });
+    const sData = await sRes.json() as any;
+    if (sData.status === 'COMPLETED') break;
+    if (sData.status === 'FAILED') throw new Error('FAL video failed');
+  }
+  if (Date.now() - pollStart >= maxWait) throw new Error('FAL video timeout');
+  const rRes = await fetch(`https://queue.fal.run/${model}/requests/${request_id}`, { headers: { Authorization: `Key ${apiKey}` } });
+  const rData = await rRes.json() as any;
+  const videoUrl = rData?.video?.url || rData?.output?.video?.url || (Array.isArray(rData?.videos) && rData.videos[0]?.url) || '';
+  if (!videoUrl) throw new Error('FAL: Kein Video-URL');
+  logger.info('[AiVideoGen] FAL completed', { model, sec: Math.round((Date.now() - pollStart) / 1000) });
+  return videoUrl;
+}
 // ─── Helpers ────────────────────────────────────────────────
 
 async function downloadVideo(url: string): Promise<Buffer> {

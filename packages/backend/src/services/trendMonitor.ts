@@ -1,9 +1,9 @@
-// @ts-nocheck
+
 /**
  * AI Trend Monitor Service
  *
  * Fetches weekly trends from multiple sources and generates template/effect suggestions.
- * Sources: Google Trends, Reddit RSS, NewsAPI, FAL.ai models, Hugging Face
+ * Sources: HuggingFace (Image + Video), CivitAI, Hacker News (AI), FAL.ai models
  */
 
 import prisma from '../config/database';
@@ -26,28 +26,89 @@ export interface TrendSuggestion {
   priority: 'high' | 'medium' | 'low';
 }
 
-// ─── Source: Reddit RSS ───────────────────────────────────────────────────────
+// ─── Source: CivitAI Trending Models ──────────────────────────────────────────
 
-async function fetchRedditTrends(subreddit: string): Promise<TrendItem[]> {
+async function fetchCivitAITrending(): Promise<TrendItem[]> {
   try {
-    const res = await fetch(`https://www.reddit.com/r/${subreddit}/hot.json?limit=10`, {
-      headers: { 'User-Agent': 'GaestefoTrendsBot/1.0' },
-      signal: AbortSignal.timeout(8000),
+    const res = await fetch('https://civitai.com/api/v1/models?limit=10&sort=Highest%20Rated&period=Week&types=Checkpoint', {
+      signal: AbortSignal.timeout(10000),
     });
     if (!res.ok) return [];
-    const data = await res.json();
-    return (data?.data?.children || [])
-      .filter((p: any) => !p.data?.stickied)
+    const data: any = await res.json();
+    return (data?.items || []).slice(0, 10).map((m: any) => ({
+      title: m.name || 'Unknown Model',
+      source: 'civitai/trending',
+      score: m.stats?.rating ? Math.round(m.stats.rating * 100) : undefined,
+      url: `https://civitai.com/models/${m.id}`,
+      tags: ['civitai', 'checkpoint', 'image-generation', ...(m.tags || []).slice(0, 3)],
+    }));
+  } catch (e: any) {
+    logger.warn('[TrendMonitor] CivitAI fetch failed', { err: e.message });
+    return [];
+  }
+}
+
+// ─── Source: CivitAI Trending LoRAs ──────────────────────────────────────────
+
+async function fetchCivitAILoRAs(): Promise<TrendItem[]> {
+  try {
+    const res = await fetch('https://civitai.com/api/v1/models?limit=8&sort=Highest%20Rated&period=Week&types=LORA', {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return [];
+    const data: any = await res.json();
+    return (data?.items || []).slice(0, 8).map((m: any) => ({
+      title: m.name || 'Unknown LoRA',
+      source: 'civitai/loras',
+      score: m.stats?.downloadCount,
+      url: `https://civitai.com/models/${m.id}`,
+      tags: ['civitai', 'lora', 'style', ...(m.tags || []).slice(0, 3)],
+    }));
+  } catch (e: any) {
+    logger.warn('[TrendMonitor] CivitAI LoRAs fetch failed', { err: e.message });
+    return [];
+  }
+}
+
+// ─── Source: Hacker News (AI-related) ────────────────────────────────────────
+
+async function fetchHackerNewsTrends(): Promise<TrendItem[]> {
+  try {
+    const topRes = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json', {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!topRes.ok) return [];
+    const topIds = await topRes.json() as number[];
+
+    // Fetch details for top 30 stories, filter for AI-related
+    const items = await Promise.all(
+      topIds.slice(0, 30).map(async (id) => {
+        try {
+          const r = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`, {
+            signal: AbortSignal.timeout(5000),
+          });
+          return r.ok ? r.json() : null;
+        } catch { return null; }
+      })
+    );
+
+    const aiKeywords = ['ai', 'llm', 'gpt', 'diffusion', 'stable', 'flux', 'video', 'image', 'generation', 'model', 'neural', 'deep learning', 'machine learning', 'openai', 'anthropic', 'midjourney', 'runway', 'luma', 'fal.ai', 'comfyui', 'hugging', 'transformer'];
+    return items
+      .filter((item: any) => {
+        if (!item?.title) return false;
+        const lower = item.title.toLowerCase();
+        return aiKeywords.some(kw => lower.includes(kw));
+      })
       .slice(0, 8)
-      .map((p: any) => ({
-        title: p.data.title,
-        source: `reddit/r/${subreddit}`,
-        score: p.data.score,
-        url: `https://reddit.com${p.data.permalink}`,
-        tags: [subreddit, ...((p.data.title || '').toLowerCase().match(/\b\w{4,}\b/g) || []).slice(0, 4)],
+      .map((item: any) => ({
+        title: item.title,
+        source: 'hackernews/ai',
+        score: item.score,
+        url: item.url || `https://news.ycombinator.com/item?id=${item.id}`,
+        tags: ['hackernews', 'tech', 'ai'],
       }));
   } catch (e: any) {
-    logger.warn('[TrendMonitor] Reddit fetch failed', { subreddit, err: e.message });
+    logger.warn('[TrendMonitor] HackerNews fetch failed', { err: e.message });
     return [];
   }
 }
@@ -61,7 +122,7 @@ async function fetchFalModels(apiKey: string): Promise<TrendItem[]> {
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return [];
-    const data = await res.json();
+    const data: any = await res.json();
     return ((data?.models || data) as any[])
       .slice(0, 15)
       .map((m: any) => ({
@@ -76,9 +137,9 @@ async function fetchFalModels(apiKey: string): Promise<TrendItem[]> {
   }
 }
 
-// ─── Source: Hugging Face Trending ────────────────────────────────────────────
+// ─── Source: Hugging Face Trending (Image Models) ────────────────────────────
 
-async function fetchHuggingFaceTrending(): Promise<TrendItem[]> {
+async function fetchHuggingFaceImageModels(): Promise<TrendItem[]> {
   try {
     const res = await fetch('https://huggingface.co/api/models?sort=likes7d&limit=10&filter=text-to-image', {
       signal: AbortSignal.timeout(8000),
@@ -87,48 +148,59 @@ async function fetchHuggingFaceTrending(): Promise<TrendItem[]> {
     const data = await res.json();
     return (data as any[]).slice(0, 8).map((m: any) => ({
       title: m.modelId || m.id,
-      source: 'huggingface/trending',
+      source: 'huggingface/image-models',
       score: m.likes,
       url: `https://huggingface.co/${m.modelId || m.id}`,
       tags: ['ai', 'model', 'image-generation', ...(m.tags || []).slice(0, 3)],
     }));
   } catch (e: any) {
-    logger.warn('[TrendMonitor] HuggingFace fetch failed', { err: e.message });
+    logger.warn('[TrendMonitor] HuggingFace image models fetch failed', { err: e.message });
     return [];
   }
 }
 
-// ─── Source: Google Trends (via SerpAPI or unofficial) ───────────────────────
+// ─── Source: Hugging Face Trending (Video Models) ────────────────────────────
 
-async function fetchGoogleTrends(): Promise<TrendItem[]> {
+async function fetchHuggingFaceVideoModels(): Promise<TrendItem[]> {
   try {
-    // Use Google Trends Daily Trends RSS (no API key needed)
-    const res = await fetch('https://trends.google.com/trends/trendingsearches/daily/rss?geo=DE', {
+    const res = await fetch('https://huggingface.co/api/models?sort=likes7d&limit=8&filter=text-to-video', {
       signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return [];
-    const text = await res.text();
-    const titles = [...text.matchAll(/<title><!\[CDATA\[([^\]]+)\]\]><\/title>/g)]
-      .map(m => m[1])
-      .filter(t => t && !t.includes('Google'))
-      .slice(0, 10);
-    return titles.map(title => ({
-      title,
-      source: 'google-trends/DE',
-      tags: [title.toLowerCase(), 'trending', 'germany'],
+    const data = await res.json();
+    return (data as any[]).slice(0, 6).map((m: any) => ({
+      title: m.modelId || m.id,
+      source: 'huggingface/video-models',
+      score: m.likes,
+      url: `https://huggingface.co/${m.modelId || m.id}`,
+      tags: ['ai', 'model', 'video-generation', ...(m.tags || []).slice(0, 3)],
     }));
   } catch (e: any) {
-    logger.warn('[TrendMonitor] Google Trends fetch failed', { err: e.message });
+    logger.warn('[TrendMonitor] HuggingFace video models fetch failed', { err: e.message });
     return [];
   }
 }
 
-// ─── Source: TikTok via Google Trends proxy ───────────────────────────────────
+// ─── Source: Hugging Face Trending (LLMs) ────────────────────────────────────
 
-async function fetchTikTokTrends(): Promise<TrendItem[]> {
-  // TikTok doesn't have a public API — use Reddit as proxy
-  const tiktokReddit = await fetchRedditTrends('TikTok');
-  return tiktokReddit.map(t => ({ ...t, source: 'tiktok-via-reddit' }));
+async function fetchHuggingFaceLLMs(): Promise<TrendItem[]> {
+  try {
+    const res = await fetch('https://huggingface.co/api/models?sort=likes7d&limit=8&filter=text-generation', {
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data as any[]).slice(0, 6).map((m: any) => ({
+      title: m.modelId || m.id,
+      source: 'huggingface/llms',
+      score: m.likes,
+      url: `https://huggingface.co/${m.modelId || m.id}`,
+      tags: ['ai', 'model', 'llm', 'text-generation', ...(m.tags || []).slice(0, 3)],
+    }));
+  } catch (e: any) {
+    logger.warn('[TrendMonitor] HuggingFace LLMs fetch failed', { err: e.message });
+    return [];
+  }
 }
 
 // ─── AI Suggestions Generator ─────────────────────────────────────────────────
@@ -159,18 +231,29 @@ function generateSuggestions(trends: TrendItem[]): TrendSuggestion[] {
     }
   }
 
-  // Always suggest staying current with trends
-  if (trends.filter(t => t.source.includes('google')).length > 0) {
-    const topTrend = trends.find(t => t.source.includes('google'));
-    if (topTrend) {
-      suggestions.push({
-        type: 'event_theme',
-        title: `Aktuelles Thema: ${topTrend.title}`,
-        reason: `Google Trends DE #1: ${topTrend.title}`,
-        priority: 'low',
-        tags: topTrend.tags || [],
-      });
-    }
+  // Highlight top HackerNews AI trend
+  const topHN = trends.find(t => t.source === 'hackernews/ai');
+  if (topHN) {
+    suggestions.push({
+      type: 'event_theme',
+      title: `AI News: ${topHN.title.slice(0, 60)}`,
+      reason: `Hacker News Top AI Story (Score: ${topHN.score || '?'})`,
+      priority: 'low',
+      tags: topHN.tags || [],
+    });
+  }
+
+  // Highlight top CivitAI model
+  const topCivit = trends.find(t => t.source === 'civitai/trending');
+  if (topCivit) {
+    suggestions.push({
+      type: 'style',
+      title: `Neues Top-Modell: ${topCivit.title.slice(0, 50)}`,
+      reason: 'Top bewertetes CivitAI Modell dieser Woche',
+      category: 'ai',
+      priority: 'medium',
+      tags: topCivit.tags || [],
+    });
   }
 
   return suggestions.slice(0, 10);
@@ -185,30 +268,17 @@ export async function fetchAllTrends(falApiKey?: string): Promise<{
 }> {
   logger.info('[TrendMonitor] Fetching trends from all sources...');
 
-  const [
-    googleTrends,
-    redditMemes,
-    redditOutOfLoop,
-    redditTikTok,
-    hfModels,
-    falModels,
-  ] = await Promise.allSettled([
-    fetchGoogleTrends(),
-    fetchRedditTrends('memes'),
-    fetchRedditTrends('OutOfTheLoop'),
-    fetchTikTokTrends(),
-    fetchHuggingFaceTrending(),
+  const results = await Promise.allSettled([
+    fetchHuggingFaceImageModels(),
+    fetchHuggingFaceVideoModels(),
+    fetchHuggingFaceLLMs(),
+    fetchCivitAITrending(),
+    fetchCivitAILoRAs(),
+    fetchHackerNewsTrends(),
     falApiKey ? fetchFalModels(falApiKey) : Promise.resolve([]),
   ]);
 
-  const allTrends: TrendItem[] = [
-    ...(googleTrends.status === 'fulfilled' ? googleTrends.value : []),
-    ...(redditMemes.status === 'fulfilled' ? redditMemes.value : []),
-    ...(redditOutOfLoop.status === 'fulfilled' ? redditOutOfLoop.value : []),
-    ...(redditTikTok.status === 'fulfilled' ? redditTikTok.value : []),
-    ...(hfModels.status === 'fulfilled' ? hfModels.value : []),
-    ...(falModels.status === 'fulfilled' ? falModels.value : []),
-  ];
+  const allTrends: TrendItem[] = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
 
   const sources = [...new Set(allTrends.map(t => t.source))];
   const suggestions = generateSuggestions(allTrends);

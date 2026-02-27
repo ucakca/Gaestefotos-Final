@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { logger } from '../utils/logger';
 import prisma from '../config/database';
 import sharp from 'sharp';

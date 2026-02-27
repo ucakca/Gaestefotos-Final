@@ -46,6 +46,11 @@ import {
   Bug,
   Activity,
   FolderOpen,
+  Layers,
+  ClipboardList,
+  Image,
+  Video,
+  Cpu,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -96,20 +101,37 @@ const navigation: NavGroup[] = [
     ],
   },
   {
-    name: 'KI-System',
+    name: 'KI-Konfiguration',
     icon: Brain,
     items: [
-      { name: 'Kosten-Monitor', href: '/manage/cost-monitoring', icon: BarChart3 },
-      { name: 'Provider Monitor', href: '/manage/ai-monitoring', icon: Activity },
-      { name: 'AI Features', href: '/manage/ai-features', icon: Sparkles },
-      { name: 'AI Provider', href: '/manage/ai-providers', icon: Brain },
-      { name: '🧪 AI Test Lab', href: '/manage/ai-lab', icon: FlaskConical },
+      { name: 'Feature Registry', href: '/manage/ai-features', icon: Sparkles },
+      { name: 'Feature Surfaces', href: '/manage/ai-surfaces', icon: Layers },
+      { name: 'Provider & Modelle', href: '/manage/ai-providers', icon: Brain },
       { name: 'Face Swap Templates', href: '/manage/face-swap-templates', icon: ScanFace },
-      { name: '📈 Trend Monitor', href: '/manage/trend-monitor', icon: TrendingUp },
+      { name: 'Reference Images', href: '/manage/reference-images', icon: Image },
+    ],
+  },
+  {
+    name: 'Prompts & Tools',
+    icon: ScrollText,
+    items: [
       { name: 'Prompt Studio', href: '/manage/prompt-templates', icon: ScrollText },
       { name: 'Prompt Analyzer', href: '/manage/prompt-analyzer', icon: Wand2 },
-      { name: 'Energie & Credits', href: '/manage/credits', icon: Zap },
+      { name: 'Survey Prompts', href: '/manage/survey-prompts', icon: ClipboardList },
+      { name: 'AI Test Lab', href: '/manage/ai-lab', icon: FlaskConical },
       { name: 'Workflows', href: '/manage/workflows', icon: Workflow },
+    ],
+  },
+  {
+    name: 'KI-Monitoring',
+    icon: Activity,
+    items: [
+      { name: 'Kosten-Monitor', href: '/manage/cost-monitoring', icon: BarChart3 },
+      { name: 'Provider Status', href: '/manage/ai-monitoring', icon: Activity },
+      { name: 'AI Jobs', href: '/manage/ai-jobs', icon: Cpu },
+      { name: 'Video Modelle', href: '/manage/video-models', icon: Video },
+      { name: 'Trend Monitor', href: '/manage/trend-monitor', icon: TrendingUp },
+      { name: 'Energie & Credits', href: '/manage/credits', icon: Zap },
     ],
   },
   {

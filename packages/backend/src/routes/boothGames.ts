@@ -270,11 +270,7 @@ router.post('/face-swap-template', authMiddleware, withEnergyCheck('face_switch'
     if (provider.slug?.includes('fal') || provider.baseUrl?.includes('fal.run')) {
       const model = provider.model || 'fal-ai/inswapper';
       const apiUrl = `https://fal.run/${model}`;
-      let apiKey = provider.apiKey || '';
-      if (!apiKey && provider.apiKeyEncrypted) {
-        const { decryptValue } = await import('../utils/encryption');
-        apiKey = decryptValue({ encrypted: provider.apiKeyEncrypted, iv: provider.apiKeyIv, tag: provider.apiKeyTag });
-      }
+      const apiKey = provider.apiKey || '';
       const r = await fetch(apiUrl, {
         method: 'POST',
         headers: { Authorization: `Key ${apiKey}`, 'Content-Type': 'application/json' },
@@ -291,11 +287,7 @@ router.post('/face-swap-template', authMiddleware, withEnergyCheck('face_switch'
       const baseUrl = provider.baseUrl || 'https://api.replicate.com';
       const model = provider.model || 'deepinsight/insightface:35cfef47cf6a671d9a3b4e3ddd3bbd254e4956b35ecdca1d27578d987ae6feae';
       const version = model.includes(':') ? model.split(':')[1] : model;
-      let apiKey = provider.apiKey || '';
-      if (!apiKey && provider.apiKeyEncrypted) {
-        const { decryptValue } = await import('../utils/encryption');
-        apiKey = decryptValue({ encrypted: provider.apiKeyEncrypted, iv: provider.apiKeyIv, tag: provider.apiKeyTag });
-      }
+      const apiKey = provider.apiKey || '';
       const createRes = await fetch(`${baseUrl}/v1/predictions`, {
         method: 'POST',
         headers: { Authorization: `Token ${apiKey}`, 'Content-Type': 'application/json' },

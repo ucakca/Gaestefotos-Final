@@ -393,6 +393,12 @@ model EventAiConfig {
   energyCooldownSeconds     Int  @default(60)
   energyEnabled         Boolean  @default(true)
   // Custom prompt context (injected into all AI game system prompts)
+  // Reference Image Anchoring (Brand/Sponsor logo for AI outputs)
+  referenceImageUrl      String?
+  referenceImageMode     String?   @default("overlay")
+  referenceImagePosition String?   @default("bottom-right")
+  referenceImageOpacity  Float?    @default(0.8)
+  referenceImageScale    Float?    @default(0.15)
   customPromptContext   String?
   // Event keywords for AI context (from briefing)
   eventKeywords         String[] @default([])

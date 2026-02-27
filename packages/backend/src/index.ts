@@ -63,7 +63,6 @@ import adminUsersRoutes from './routes/adminUsers';
 import adminDashboardRoutes from './routes/adminDashboard';
 import adminSettingsRoutes from './routes/adminSettings';
 import adminBackupsRoutes from './routes/adminBackups';
-import adminCdnRoutes from './routes/adminCdn';
 import cohostInvitesRoutes from './routes/cohostInvites';
 import uploadsRoutes from './routes/uploads';
 import aiRoutes from './routes/ai';
@@ -79,8 +78,6 @@ import { shutdownQueues, getQueueStats } from './services/jobQueue';
 import slideshowRoutes from './routes/slideshow';
 import styleTransferRoutes from './routes/styleTransfer';
 import boothGamesRoutes from './routes/boothGames';
-import faceSwapTemplatesRoutes from './routes/faceSwapTemplates';
-import trendMonitorRoutes from './routes/trendMonitor';
 import boothSetupRoutes from './routes/boothSetup';
 import partnerAiConfigRoutes from './routes/partnerAiConfig';
 import adminCostMonitoringRoutes from './routes/adminCostMonitoring';
@@ -115,7 +112,8 @@ import adminAiLogsRoutes from './routes/adminAiLogs';
 import eventThemesRoutes from './routes/themes';
 import imageCdnRoutes from './routes/imageCdn';
 import debugRoutes from './routes/debug';
-import faceOffRoutes from './routes/faceOff';
+import trendMonitorRoutes from './routes/trendMonitor';
+import adminAiSurfacesRoutes from './routes/adminAiSurfaces';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter, smsLimiter, paymentLimiter, leadLimiter, aiFeatureLimiter, pushSubscribeLimiter, analyticsLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -477,10 +475,13 @@ app.use((req, res, next) => {
 // Maintenance mode gate (must be after request parsing, before routes)
 app.use(maintenanceModeMiddleware);
 
-// Health check: handled by healthRoutes (/api/health) registered below.
-// A simple /health alias is kept for load-balancer probes that hit the root path.
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' });
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'healthy', version: '2.0.0' });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'healthy', version: '2.0.0' });
 });
 
 app.get('/api/version', (_req, res) => {
@@ -606,7 +607,6 @@ app.use('/api/photos', photoRoutes); // Photo actions: /api/photos/:photoId/*
 app.use('/api/photos', categoryRoutes); // Photo category assignment: /api/photos/:photoId/category
 app.use('/api/photos', likesRoutes); // Likes: /api/photos/:photoId/like
 app.use('/api/photos', commentsRoutes); // Comments: /api/photos/:photoId/comments
-app.use('/api', commentsRoutes); // Event comments: /api/events/:eventId/comments (moderation)
 app.use('/api/photos', votesRoutes); // Votes: /api/photos/:photoId/vote
 app.use('/api/events', storiesRoutes); // Stories: /api/events/:eventId/stories
 app.use('/api/photos', storiesRoutes); // Story from photo: /api/photos/:photoId/story
@@ -650,8 +650,6 @@ app.use('/api/admin/users', adminUsersRoutes);
 app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/admin/settings', adminSettingsRoutes);
 app.use('/api/admin/backups', adminBackupsRoutes);
-app.use('/api/admin/cdn', adminCdnRoutes);
-app.use('/api/cdn', adminCdnRoutes); // /api/cdn/verify for nginx auth_request
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
 
 // AI Routes (KI-Assistent)
@@ -665,15 +663,12 @@ app.use('/api', galleryEmbedRoutes);
 app.use('/api/slideshow', slideshowRoutes);
 app.use('/api/style-transfer', aiFeatureLimiter, styleTransferRoutes);
 app.use('/api/booth-games', aiFeatureLimiter, boothGamesRoutes);
-app.use('/api/face-swap', faceSwapTemplatesRoutes);
-app.use('/api/admin/trend-monitor', trendMonitorRoutes);
 app.use('/api/booth', boothSetupRoutes); // Booth Setup: /api/booth/setup, config, heartbeat
 app.use('/api/partner', partnerAiConfigRoutes); // Partner AI Config: /api/partner/events/:eventId/ai-config, briefing
 app.use('/api/events', eventAiConfigRoutes); // AI Config: /api/events/:eventId/ai-features, ai-config
 app.use('/api/events', eventEnergyRoutes); // Energy: /api/events/:eventId/energy, energy/reward, energy/stats
 app.use('/api/events', eventBriefingRoutes); // Briefing: /api/events/:eventId/briefing
 app.use('/api/events', gamificationRoutes); // Gamification: /api/events/:eventId/achievements, leaderboard
-app.use('/api/events', faceOffRoutes); // Face-Off: /api/events/:eventId/face-off/*
 app.use('/api/push', pushSubscribeLimiter, pushRoutes); // Push Notifications: /api/push/vapid-key, subscribe
 app.use('/api/events', analyticsLimiter, analyticsRoutes); // Analytics: /api/events/:eventId/analytics
 app.use('/api/hardware', hardwareRoutes); // Hardware: /api/hardware/*
@@ -689,6 +684,8 @@ app.use('/api/booth-templates', boothTemplatesRoutes);
 app.use('/api/graffiti', graffitiRoutes);
 app.use('/api/workflows', workflowsRoutes);
 app.use('/api/debug', debugRoutes); // Debug mode: /api/debug/*
+app.use('/api/admin/trend-monitor', trendMonitorRoutes);
+app.use('/api/admin/ai-surfaces', adminAiSurfacesRoutes);
 app.use('/api', downloadsRoutes); // Bulk download ZIP: /api/events/:eventId/download/zip
 app.use('/api', paymentLimiter, paymentsRoutes); // Payment per Session: /api/events/:eventId/payment-sessions
 app.use('/api', spinnerRoutes); // 360° Spinner: /api/events/:eventId/spinner
@@ -839,27 +836,6 @@ try {
 } catch (err: any) {
   logger.warn('BullMQ workers not started (Redis may not be available)', { error: err.message });
 }
-
-// Load SMTP config from DB (non-blocking, overrides env-based init if set in DB)
-(async () => {
-  try {
-    const { emailService: es } = await import('./services/email');
-    const { decryptValue: dv } = await import('./utils/encryption');
-    const row = await prisma.appSetting.findUnique({ where: { key: 'smtp_config' } });
-    if (row) {
-      const cfg = row.value as any;
-      if (cfg.passwordEnc) {
-        const pw = dv(JSON.parse(cfg.passwordEnc));
-        const isLocal = cfg.host === 'localhost' || cfg.host === '127.0.0.1' || cfg.host === '::1';
-        const tlsOpts = isLocal ? { rejectUnauthorized: false, ...(cfg.servername ? { servername: cfg.servername } : {}) } : undefined;
-        await es.configure({ host: cfg.host, port: cfg.port, secure: cfg.secure, user: cfg.user, password: pw, from: cfg.from || cfg.user, tlsOptions: tlsOpts });
-        logger.info('SMTP configured from database');
-      }
-    }
-  } catch (err: any) {
-    logger.warn('SMTP DB init failed (non-critical)', { error: err.message });
-  }
-})();
 
 // Start server - listen on all interfaces for external access
 server = httpServer.listen(Number(PORT), '::', () => {

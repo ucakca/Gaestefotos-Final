@@ -378,13 +378,13 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
         }
 
         // Source tagging (booth/mobile/upload) — Phase 1
-        const uploadSource = req.headers['x-upload-source'] as string;
+        const uploadSource = metadata.uploadSource || '';
         if (uploadSource && ['booth', 'mobile', 'upload'].includes(uploadSource)) {
           prisma.photo.update({ where: { id: photo.id }, data: { tags: { push: [`source:${uploadSource}`] } } }).catch(() => {});
         }
 
         // Face-Off team tagging (non-blocking)
-        const deviceIdForTeam = (req.headers['x-device-id'] as string) || (req.query?.deviceId as string) || null;
+        const deviceIdForTeam = metadata.deviceId || null;
         if (deviceIdForTeam) {
           import('./faceOff').then(({ getTeamForDevice }) => {
             const teamId = getTeamForDevice(eventId, deviceIdForTeam);

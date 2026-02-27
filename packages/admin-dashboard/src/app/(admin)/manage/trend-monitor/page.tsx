@@ -52,11 +52,10 @@ interface TrendReport {
 }
 
 const SOURCE_ICONS: Record<string, any> = {
-  'google-trends': Globe,
-  reddit: MessageSquare,
+  civitai: Sparkles,
+  hackernews: Globe,
   'fal.ai': Cpu,
   huggingface: Cpu,
-  tiktok: TrendingUp,
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
@@ -145,7 +144,7 @@ export default function TrendMonitorPage() {
             <div>
               <h1 className="text-2xl font-bold text-white">AI Trend Monitor</h1>
               <p className="text-sm text-gray-400">
-                Wöchentliche Trends aus: Google, Reddit, TikTok, HuggingFace, FAL.ai
+                Trends aus: HuggingFace, CivitAI, Hacker News, FAL.ai
               </p>
             </div>
           </div>
@@ -173,11 +172,12 @@ export default function TrendMonitorPage() {
           <p className="text-xs text-gray-400 mb-3 font-medium">Trend-Quellen (automatisch, keine API-Keys nötig)</p>
           <div className="flex flex-wrap gap-2">
             {[
-              { icon: '🔍', label: 'Google Trends DE', desc: 'Tagesaktuelle Suchanfragen' },
-              { icon: '💬', label: 'Reddit r/memes', desc: 'Virale Memes & Trends' },
-              { icon: '📰', label: 'Reddit r/OutOfTheLoop', desc: 'Aktuelle Nachrichten-Memes' },
-              { icon: '🎵', label: 'Reddit r/TikTok', desc: 'TikTok-Trends via Reddit' },
-              { icon: '🤗', label: 'HuggingFace', desc: 'Trending AI-Modelle (Image)' },
+              { icon: '🤗', label: 'HuggingFace Image', desc: 'Trending Bild-Modelle' },
+              { icon: '🎬', label: 'HuggingFace Video', desc: 'Trending Video-Modelle' },
+              { icon: '🧠', label: 'HuggingFace LLMs', desc: 'Trending Sprach-Modelle' },
+              { icon: '🎨', label: 'CivitAI Checkpoints', desc: 'Top bewertete SD-Modelle' },
+              { icon: '✨', label: 'CivitAI LoRAs', desc: 'Trending Style-LoRAs' },
+              { icon: '📰', label: 'Hacker News AI', desc: 'AI-relevante Tech-News' },
               { icon: '⚡', label: 'FAL.ai Models', desc: 'Neue verfügbare AI-Modelle' },
             ].map(({ icon, label, desc }) => (
               <div key={label} className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg">

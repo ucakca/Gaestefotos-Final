@@ -240,64 +240,6 @@ export async function extractFaceDescriptor(buffer: Buffer): Promise<{
   }
 }
 
-// ─── ArcFace 512-dim via FAL.ai InsightFace ──────────────────────────────────
-
-/**
- * Extract ArcFace 512-dim embedding via FAL.ai InsightFace API.
- * Returns null if no provider configured or on API error.
- *
- * To enable: configure a FACE_RECOGNITION provider with slug containing 'fal'
- * and model = 'fal-ai/insightface' (or similar InsightFace model).
- */
-export async function extractArcFaceEmbedding(
-  buffer: Buffer,
-  provider?: { apiKey: string; model?: string; baseUrl?: string },
-): Promise<number[] | null> {
-  if (!provider?.apiKey) return null;
-
-  try {
-    const model = provider.model || 'fal-ai/insightface';
-    const apiUrl = `https://fal.run/${model}`;
-    const base64 = buffer.toString('base64');
-    const dataUri = `data:image/jpeg;base64,${base64}`;
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Key ${provider.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        image_url: dataUri,
-        max_num: 1,
-      }),
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      logger.warn('[ArcFace] FAL.ai InsightFace error', { status: response.status, err: err.slice(0, 200) });
-      return null;
-    }
-
-    const data: any = await response.json();
-    // FAL.ai InsightFace response: { faces: [{ embedding: number[], ... }] }
-    const embedding: number[] | undefined =
-      data?.faces?.[0]?.embedding ||
-      data?.face?.embedding ||
-      data?.embedding;
-
-    if (!embedding || !Array.isArray(embedding) || embedding.length < 128) {
-      logger.warn('[ArcFace] Invalid embedding from FAL.ai InsightFace', { length: embedding?.length });
-      return null;
-    }
-
-    logger.info('[ArcFace] 512-dim embedding extracted via FAL.ai InsightFace');
-    return embedding;
-  } catch (err: any) {
-    logger.warn('[ArcFace] Failed to extract ArcFace embedding', { error: err.message });
-    return null;
-  }
-}
 
 /**
  * Count faces in an image
@@ -428,7 +370,7 @@ export async function extractArcFaceEmbedding(
       logger.warn('[ArcFace] FAL.ai InsightFace error', { status: response.status, err: err.slice(0, 200) });
       return null;
     }
-    const data = await response.json();
+    const data: any = await response.json();
     const embedding = data?.faces?.[0]?.embedding || data?.face?.embedding || data?.embedding;
     if (!embedding || !Array.isArray(embedding) || embedding.length < 128) {
       logger.warn('[ArcFace] Invalid embedding from FAL.ai InsightFace', { length: (embedding as any)?.length });

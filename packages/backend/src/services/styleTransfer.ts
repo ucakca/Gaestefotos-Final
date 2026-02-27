@@ -206,13 +206,13 @@ function cleanCache() {
 // ── Image preprocessing: resize to max 1024px ──────────────────────────────
 async function preprocessImage(imageUrlOrBuffer: string | Buffer, asPng = false): Promise<Buffer> {
   let raw: Buffer;
+  let dlMs = 0;
   if (Buffer.isBuffer(imageUrlOrBuffer)) {
     raw = imageUrlOrBuffer;
   } else {
     const t0 = Date.now();
     const res = await axios.get(imageUrlOrBuffer, { responseType: 'arraybuffer', timeout: 15000 });
-    const dlMs = Date.now() - t0;
-    void dlMs;
+    dlMs = Date.now() - t0;
     raw = Buffer.from(res.data);
   };
 

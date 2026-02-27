@@ -388,7 +388,7 @@ export default function AiLabPage() {
                 <p className="text-xs text-gray-400 mb-1">Vorschau</p>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`/api/cdn/${activePhotoId}?w=200`}
+                  src={`/api/photos/${activePhotoId}/file`}
                   alt="Test photo"
                   className="w-24 h-24 object-cover rounded-lg border border-white/10"
                   onError={e => { (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'; }}

@@ -236,6 +236,36 @@ const PROVIDER_PRESETS = [
     envKey: 'FAL_API_KEY',
     features: ['face_switch', 'ai_oldify', 'ai_cartoon', 'ai_style_pop', 'yearbook', 'time_machine', 'pet_me', 'emoji_me', 'miniature', 'gif_morph', 'gif_aging', 'trading_card', 'bg_removal', 'style_transfer', 'ai_slot_machine', 'cover_shot', 'photo_strip', 'anime', 'watercolor', 'oil_painting', 'sketch', 'neon_noir', 'renaissance', 'comic_book', 'pixel_art'],
   },
+  {
+    slug: 'fal-ai-video',
+    name: 'FAL.ai Video',
+    type: 'VIDEO_GEN',
+    baseUrl: null,
+    defaultModel: 'fal-ai/seedance/image-to-video',
+    description: '🎬 Video-Generierung — 5 Modelle (Seedance, Kling, Wan, Vidu, Hailuo) via FAL.ai',
+    envKey: 'FAL_API_KEY',
+    features: ['ai_video', 'highlight_reel'],
+  },
+  {
+    slug: 'runway',
+    name: 'Runway Gen-3',
+    type: 'VIDEO_GEN',
+    baseUrl: 'https://api.dev.runwayml.com',
+    defaultModel: 'gen3a_turbo',
+    description: 'Premium Video-Generierung — hohe Qualität, Fallback-Provider',
+    envKey: 'RUNWAY_API_KEY',
+    features: ['ai_video'],
+  },
+  {
+    slug: 'luma-ai',
+    name: 'LumaAI Dream Machine',
+    type: 'VIDEO_GEN',
+    baseUrl: 'https://api.lumalabs.ai',
+    defaultModel: 'dream-machine',
+    description: 'Kreative Video-Generierung — gute Bewegungen, Fallback-Provider',
+    envKey: 'LUMA_API_KEY',
+    features: ['ai_video'],
+  },
 ];
 
 // Known models per provider slug for quick selection
@@ -272,6 +302,21 @@ const MODEL_LIBRARY: Record<string, { id: string; label: string }[]> = {
   'fal-arcface': [
     { id: 'fal-ai/insightface', label: 'InsightFace (ArcFace 512-dim) — Empfohlen' },
     { id: 'fal-ai/face-analysis', label: 'Face Analysis (alternative)' },
+  ],
+  'fal-ai-video': [
+    { id: 'fal-ai/seedance/image-to-video', label: 'Seedance (Schnell)' },
+    { id: 'fal-ai/kling-video/v2.1/image-to-video', label: 'Kling 2.1 (Premium)' },
+    { id: 'fal-ai/wan/v2.1/image-to-video', label: 'Wan 2.1 (Standard)' },
+    { id: 'fal-ai/vidu/image-to-video', label: 'Vidu (Schnell)' },
+    { id: 'fal-ai/hailuo/image-to-video', label: 'Hailuo MiniMax (Standard)' },
+  ],
+  runway: [
+    { id: 'gen3a_turbo', label: 'Gen-3 Alpha Turbo' },
+    { id: 'gen3a', label: 'Gen-3 Alpha (Höchste Qualität)' },
+  ],
+  'luma-ai': [
+    { id: 'dream-machine', label: 'Dream Machine' },
+    { id: 'dream-machine-v1.5', label: 'Dream Machine v1.5' },
   ],
 };
 
