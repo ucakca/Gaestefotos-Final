@@ -219,7 +219,7 @@ export default function SetupTabV2({ event, eventId, onEventUpdate }: SetupTabV2
           value={(event as any)?.theme?.name || 'Kein Theme'}
           onClick={() => { setActiveSheet('theme'); loadThemes(); }}
         />
-        <SetupRow icon={Palette} label="Galerie-Design" link={`/events/${eventId}/design?wizard=1`} />
+        <SetupRow icon={Palette} label="Galerie-Design" link={`/setup?eventId=${eventId}`} />
         <SetupRow icon={QrCode} label="QR-Code Designer" link={`/events/${eventId}/qr-styler`} />
         <SetupRow icon={Mail} label="Einladungen" link={`/events/${eventId}/invitations`} />
       </div>

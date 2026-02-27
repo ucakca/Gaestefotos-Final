@@ -387,7 +387,7 @@ export default function EventDashboardV3Page({ params }: { params: Promise<{ id:
         label: 'Design anpassen',
         completed: designCompleted,
         current: firstIncomplete === 'design',
-        link: `/events/${eventId}/design?wizard=1`,
+        link: `/setup?eventId=${eventId}`,
       },
       {
         id: 'qr',
@@ -971,7 +971,7 @@ function OverviewTab({
                 )}
               </div>
               <Link
-                href={`/events/${eventId}/design?wizard=1`}
+                href={`/setup?eventId=${eventId}`}
                 className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"
               >
                 <Upload className="w-5 h-5 text-white" />
@@ -1010,7 +1010,7 @@ function OverviewTab({
                 Vorschau
               </Link>
               <Link
-                href={`/events/${eventId}/design?wizard=1`}
+                href={`/setup?eventId=${eventId}`}
                 className="px-3 py-1.5 rounded-full bg-card/20 backdrop-blur-sm text-white text-xs font-medium flex items-center gap-1 hover:bg-card/30 transition-colors"
               >
                 <Palette className="w-3.5 h-3.5" />

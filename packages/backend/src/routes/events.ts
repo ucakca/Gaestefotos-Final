@@ -597,11 +597,15 @@ router.post(
         finalDesignConfig.colorScheme = data.colorScheme;
       }
 
+      // Generate unique eventCode for WooCommerce upgrade flow
+      const eventCode = randomString(12);
+
       const event = await prisma.event.create({
         data: {
           hostId: req.userId!,
           title: data.title,
           slug,
+          eventCode,
           dateTime: data.dateTime ? new Date(data.dateTime) : null,
           locationName: data.locationName,
           locationGoogleMapsLink: data.locationGoogleMapsLink,

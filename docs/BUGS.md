@@ -28,8 +28,8 @@ Status: In Bearbeitung
 
 | ID | Problem | Bereich | Priorität | Status |
 |----|---------|---------|-----------|--------|
-| ARCH-001 | Doppelte Funktionen: KI-Farbgenerator, Design-Seite, Setup-Menu | UX/Architektur | 🔴 Hoch | ⏳ Offen |
-| ARCH-002 | Design-Seite altmodisch vs. QR-Styler/Wizard modern | UI-Konsistenz | 🔴 Hoch | ⏳ Offen |
+| ARCH-001 | Doppelte Funktionen: KI-Farbgenerator, Design-Seite, Setup-Menu | UX/Architektur | 🔴 Hoch | ✅ Erledigt |
+| ARCH-002 | Design-Seite altmodisch vs. QR-Styler/Wizard modern | UI-Konsistenz | 🔴 Hoch | ✅ Erledigt |
 | ARCH-003 | Setup-Checkliste Navigation inkonsistent | UX | 🟡 Mittel | ✅ Erledigt |
 | ARCH-004 | Erweiterte Optionen im Setup versteckt | UX | 🟡 Mittel | ✅ Erledigt |
 | DM-001 | Dark Mode: Hardcoded Light-Mode Farben in ~40 Komponenten | Dark Mode CSS | 🔴 Hoch | ✅ Erledigt |
@@ -268,8 +268,9 @@ Setup-Checkliste (erweitert):
 
 ### Phase 3: Konsolidierung (2-3 Tage)
 - [x] ARCH-001: Design-Seite → Redirect zum Dashboard/Setup ✅
-- [ ] ARCH-004: Erweiterte Optionen inventarisieren und einpflegen
-- [ ] Alte/doppelte Komponenten entfernen
+- [x] ARCH-002: Design-Seite komplett auf 18-Zeilen Redirect reduziert, alle Links auf /setup?eventId umgeleitet ✅
+- [x] ARCH-004: Erweiterte Optionen inventarisieren und einpflegen ✅
+- [x] Alte/doppelte Komponenten entfernen (designPresets.ts, useOfflineGallery.ts gelöscht) ✅
 
 ### Phase 4: Cleanup
 - [x] BUG-005: Service Worker Clone-Fehler ✅ (response.clone() vor return + sw.js v5)
@@ -282,8 +283,8 @@ Setup-Checkliste (erweitert):
 - [x] BUG-012: Setup Galerie/Design Links ✅ (?wizard=1 an alle /design Links)
 - [x] ARCH-004: /edit aufgeräumt ✅ (Feature-Toggles + Slug in SetupTabV2, /edit → Redirect)
 - [x] DM-001: Dark Mode Fixes ✅ (40+ Dateien: setup-wizard, gamification, e3, ai-chat, workflow-runtime, invitation-editor, mosaic, highlight-reel, wizard — alle hardcoded light-mode Farben durch opacity-based Theme-Tokens ersetzt)
-- [ ] Unused Code entfernen
-- [ ] Dokumentation aktualisieren
+- [x] Unused Code entfernen ✅ (designPresets.ts, useOfflineGallery.ts)
+- [x] Dokumentation aktualisieren ✅
 
 ---
 
