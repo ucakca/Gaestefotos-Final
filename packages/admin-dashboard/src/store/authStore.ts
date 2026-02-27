@@ -31,11 +31,17 @@ export const useAdminAuthStore = create<AuthState>()(
       },
       login: (token: string, admin: AdminUser) => {
         set({ token, admin, isAuthenticated: true });
+        if (typeof document !== 'undefined') {
+          document.cookie = `auth_token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure`;
+        }
       },
       logout: () => {
         set({ admin: null, token: null, isAuthenticated: false });
         if (typeof window !== 'undefined') {
           localStorage.removeItem('admin-auth-storage');
+        }
+        if (typeof document !== 'undefined') {
+          document.cookie = 'auth_token=; path=/; max-age=0; SameSite=Lax; Secure';
         }
       },
       setToken: (token: string) => {
@@ -54,6 +60,9 @@ export const useAdminAuthStore = create<AuthState>()(
           state?.setHasHydrated(true);
           if (state?.token) {
             state.setToken(state.token);
+            if (typeof document !== 'undefined') {
+              document.cookie = `auth_token=${state.token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure`;
+            }
           }
         };
       },

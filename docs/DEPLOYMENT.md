@@ -244,6 +244,27 @@ Diese Checkliste ist als “einmal durchklicken/abarbeiten” gedacht.
 - Wenn Sentry aktiv: Alerts auf Error-Spikes.
 - Wenn CDN davor: bei Chunk-404 sofort Cache-Regeln/Purge prüfen.
 
+#### Backend Deploy via `deploy.sh` (empfohlen)
+
+Das Backend hat ein automatisiertes Build-Pipeline-Script:
+
+```bash
+cd packages/backend
+bash deploy.sh          # Full deploy: type-check → compile → sync → restart → health
+bash deploy.sh --status # Nur Status prüfen (kein Deploy)
+```
+
+**Was `deploy.sh` macht:**
+1. TypeScript Type-Check (`tsc --noEmit`)
+2. Compile (`tsc --outDir dist`)
+3. Sync: `src/`, `dist/`, `prisma/` → `/opt/gaestefotos/app/packages/backend/`
+4. Service Restart (`systemctl restart gaestefotos-backend`)
+5. Health-Check (`GET /api/health`)
+
+**Pfade:**
+- Repo: `/root/gaestefotos-app-v2/packages/backend/`
+- Produktion: `/opt/gaestefotos/app/packages/backend/`
+
 ## staging
 
 Staging ist optional und kann als Reverse-Proxy auf die App genutzt werden (Routing/Parität prüfen).

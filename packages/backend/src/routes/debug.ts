@@ -140,4 +140,21 @@ router.get('/enabled', async (_req, res: Response) => {
   return res.json({ enabled: debugState.enabled });
 });
 
+// Localhost-only toggle (no auth needed, only from 127.0.0.1)
+router.post('/local-toggle', async (req, res: Response) => {
+  const ip = req.ip || req.socket.remoteAddress || '';
+  if (!ip.includes('127.0.0.1') && !ip.includes('::1') && !ip.includes('::ffff:127.0.0.1')) {
+    return res.status(403).json({ error: 'Only from localhost' });
+  }
+  const { enabled } = req.body;
+  debugState = {
+    enabled: !!enabled,
+    enabledAt: enabled ? new Date().toISOString() : null,
+    enabledBy: 'localhost',
+  };
+  if (!enabled) debugLogs = [];
+  logger.info('Debug mode toggled via localhost', { enabled });
+  return res.json(debugState);
+});
+
 export default router;

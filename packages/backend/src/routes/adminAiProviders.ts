@@ -418,6 +418,172 @@ router.post('/auto-setup', authMiddleware, async (req: AuthRequest, res: Respons
   }
 });
 
+// ─── AI Usage Stats & Cost Aggregation ────────────────────────────────────────
+// IMPORTANT: Must be defined BEFORE /:id to avoid route shadowing
+
+/**
+ * GET /admin/ai-providers/usage-stats
+ * Returns aggregated usage statistics and average costs per feature
+ * Used for self-learning energy cost recommendations
+ */
+router.get('/usage-stats', async (_req: AuthRequest, res: Response) => {
+  try {
+    // Aggregate costs per feature (last 30 days)
+    const stats = await prisma.$queryRaw<Array<{
+      feature: string;
+      totalCalls: bigint;
+      successfulCalls: bigint;
+      avgCostCents: number;
+      totalCostCents: number;
+      avgDurationMs: number;
+      avgInputTokens: number;
+      avgOutputTokens: number;
+    }>>`
+      SELECT 
+        feature,
+        COUNT(*) as "totalCalls",
+        COUNT(*) FILTER (WHERE success = true) as "successfulCalls",
+        AVG(CASE WHEN success = true THEN "costCents" ELSE NULL END) as "avgCostCents",
+        SUM(CASE WHEN success = true THEN "costCents" ELSE 0 END) as "totalCostCents",
+        AVG(CASE WHEN success = true THEN "durationMs" ELSE NULL END) as "avgDurationMs",
+        AVG(CASE WHEN success = true THEN "inputTokens" ELSE NULL END) as "avgInputTokens",
+        AVG(CASE WHEN success = true THEN "outputTokens" ELSE NULL END) as "avgOutputTokens"
+      FROM ai_usage_logs
+      WHERE "createdAt" >= NOW() - INTERVAL '30 days'
+      GROUP BY feature
+      ORDER BY "totalCalls" DESC
+    `;
+
+    // Convert bigints to numbers and calculate recommended energy
+    const ENERGY_TO_USD = 0.002; // 1⚡ = 0.2 Cent = 0.002 USD
+    const MARGIN = 1.2;
+
+    const result = stats.map(s => {
+      const avgCostUsd = (s.avgCostCents || 0) / 100;
+      const recommendedEnergy = Math.max(1, Math.round((avgCostUsd / ENERGY_TO_USD) * MARGIN));
+      
+      return {
+        feature: s.feature,
+        totalCalls: Number(s.totalCalls),
+        successfulCalls: Number(s.successfulCalls),
+        successRate: Number(s.totalCalls) > 0 
+          ? (Number(s.successfulCalls) / Number(s.totalCalls) * 100).toFixed(1) + '%'
+          : '0%',
+        avgCostCents: Number((s.avgCostCents || 0).toFixed(4)),
+        avgCostUsd: Number(avgCostUsd.toFixed(6)),
+        totalCostUsd: Number(((s.totalCostCents || 0) / 100).toFixed(2)),
+        avgDurationMs: Math.round(s.avgDurationMs || 0),
+        avgInputTokens: Math.round(s.avgInputTokens || 0),
+        avgOutputTokens: Math.round(s.avgOutputTokens || 0),
+        recommendedEnergy,
+      };
+    });
+
+    // Also return total stats
+    const totals = await prisma.aiUsageLog.aggregate({
+      where: { createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
+      _count: true,
+      _sum: { costCents: true },
+    });
+
+    res.json({
+      period: '30 days',
+      features: result,
+      totals: {
+        totalCalls: totals._count,
+        totalCostUsd: Number(((totals._sum.costCents || 0) / 100).toFixed(2)),
+      },
+    });
+  } catch (err) {
+    logger.error('Failed to get AI usage stats', err);
+    res.status(500).json({ error: 'Failed to load usage stats' });
+  }
+});
+
+// GET /api/admin/ai-providers/monitoring — Per-provider health
+// IMPORTANT: Must be defined BEFORE /:id to avoid route shadowing
+router.get('/monitoring', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!(await requireAdmin(req, res))) return;
+
+    const hours = parseInt(req.query.hours as string) || 24;
+    const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+
+    const providers = await prisma.aiProvider.findMany({
+      orderBy: [{ isActive: 'desc' }, { name: 'asc' }],
+      select: { id: true, slug: true, name: true, type: true, isActive: true, isDefault: true },
+    });
+
+    const [perProvider, lastSeen, p95Raw] = await Promise.all([
+      prisma.aiUsageLog.groupBy({
+        by: ['providerId'],
+        where: { createdAt: { gte: since } },
+        _count: { id: true },
+        _avg: { durationMs: true },
+        _sum: { costCents: true },
+      }),
+      prisma.aiUsageLog.groupBy({
+        by: ['providerId'],
+        _max: { createdAt: true },
+      }),
+      prisma.$queryRaw<Array<{ providerId: string; p50: number; p95: number }>>`
+        SELECT
+          "providerId",
+          PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY "durationMs") AS p50,
+          PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY "durationMs") AS p95
+        FROM ai_usage_logs
+        WHERE "createdAt" >= ${since} AND "durationMs" IS NOT NULL
+        GROUP BY "providerId"
+      `,
+    ]);
+
+    const errorsPerProvider = await prisma.aiUsageLog.groupBy({
+      by: ['providerId'],
+      where: { createdAt: { gte: since }, success: false },
+      _count: { id: true },
+    });
+
+    const p95Map: Record<string, { p50: number; p95: number }> = {};
+    for (const r of p95Raw as any[]) {
+      p95Map[r.providerId] = { p50: Math.round(Number(r.p50) || 0), p95: Math.round(Number(r.p95) || 0) };
+    }
+
+    const lastSeenMap: Record<string, Date | null> = {};
+    for (const r of lastSeen) lastSeenMap[r.providerId] = r._max.createdAt;
+
+    const stats = providers.map((p) => {
+      const usage = perProvider.find((u) => u.providerId === p.id);
+      const errors = errorsPerProvider.find((e) => e.providerId === p.id);
+      const total = usage?._count?.id ?? 0;
+      const errCount = errors?._count?.id ?? 0;
+      const latency = p95Map[p.id] || { p50: 0, p95: 0 };
+      return {
+        id: p.id,
+        slug: p.slug,
+        name: p.name,
+        type: p.type,
+        isActive: p.isActive,
+        isDefault: p.isDefault,
+        period: { hours },
+        requests: total,
+        errors: errCount,
+        errorRatePct: total > 0 ? Math.round((errCount / total) * 1000) / 10 : 0,
+        avgLatencyMs: Math.round(usage?._avg?.durationMs ?? 0),
+        p50LatencyMs: latency.p50,
+        p95LatencyMs: latency.p95,
+        totalCostCents: usage?._sum?.costCents ?? 0,
+        lastSeenAt: lastSeenMap[p.id] ?? null,
+        status: !p.isActive ? 'DISABLED' : total === 0 ? 'IDLE' : errCount / Math.max(total, 1) > 0.5 ? 'DEGRADED' : 'OK',
+      };
+    });
+
+    res.json({ providers: stats, period: { hours, since } });
+  } catch (error: any) {
+    logger.error('Provider monitoring error', { error: error.message });
+    res.status(500).json({ error: 'Fehler beim Laden' });
+  }
+});
+
 // ─────────────────────────────────────────────────────────────
 // CRUD routes: list, create, get, update, delete
 // ─────────────────────────────────────────────────────────────
@@ -912,170 +1078,6 @@ router.post('/:id/test', authMiddleware, async (req: AuthRequest, res: Response)
       message: error.message || 'Verbindungstest fehlgeschlagen',
       durationMs: 0,
     });
-  }
-});
-
-// ─── AI Usage Stats & Cost Aggregation ────────────────────────────────────────
-
-/**
- * GET /admin/ai-providers/usage-stats
- * Returns aggregated usage statistics and average costs per feature
- * Used for self-learning energy cost recommendations
- */
-router.get('/usage-stats', async (_req: AuthRequest, res: Response) => {
-  try {
-    // Aggregate costs per feature (last 30 days)
-    const stats = await prisma.$queryRaw<Array<{
-      feature: string;
-      totalCalls: bigint;
-      successfulCalls: bigint;
-      avgCostCents: number;
-      totalCostCents: number;
-      avgDurationMs: number;
-      avgInputTokens: number;
-      avgOutputTokens: number;
-    }>>`
-      SELECT 
-        feature,
-        COUNT(*) as "totalCalls",
-        COUNT(*) FILTER (WHERE success = true) as "successfulCalls",
-        AVG(CASE WHEN success = true THEN "costCents" ELSE NULL END) as "avgCostCents",
-        SUM(CASE WHEN success = true THEN "costCents" ELSE 0 END) as "totalCostCents",
-        AVG(CASE WHEN success = true THEN "durationMs" ELSE NULL END) as "avgDurationMs",
-        AVG(CASE WHEN success = true THEN "inputTokens" ELSE NULL END) as "avgInputTokens",
-        AVG(CASE WHEN success = true THEN "outputTokens" ELSE NULL END) as "avgOutputTokens"
-      FROM ai_usage_logs
-      WHERE "createdAt" >= NOW() - INTERVAL '30 days'
-      GROUP BY feature
-      ORDER BY "totalCalls" DESC
-    `;
-
-    // Convert bigints to numbers and calculate recommended energy
-    const ENERGY_TO_USD = 0.002; // 1⚡ = 0.2 Cent = 0.002 USD
-    const MARGIN = 1.2;
-
-    const result = stats.map(s => {
-      const avgCostUsd = (s.avgCostCents || 0) / 100;
-      const recommendedEnergy = Math.max(1, Math.round((avgCostUsd / ENERGY_TO_USD) * MARGIN));
-      
-      return {
-        feature: s.feature,
-        totalCalls: Number(s.totalCalls),
-        successfulCalls: Number(s.successfulCalls),
-        successRate: Number(s.totalCalls) > 0 
-          ? (Number(s.successfulCalls) / Number(s.totalCalls) * 100).toFixed(1) + '%'
-          : '0%',
-        avgCostCents: Number((s.avgCostCents || 0).toFixed(4)),
-        avgCostUsd: Number(avgCostUsd.toFixed(6)),
-        totalCostUsd: Number(((s.totalCostCents || 0) / 100).toFixed(2)),
-        avgDurationMs: Math.round(s.avgDurationMs || 0),
-        avgInputTokens: Math.round(s.avgInputTokens || 0),
-        avgOutputTokens: Math.round(s.avgOutputTokens || 0),
-        recommendedEnergy,
-      };
-    });
-
-    // Also return total stats
-    const totals = await prisma.aiUsageLog.aggregate({
-      where: { createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
-      _count: true,
-      _sum: { costCents: true },
-    });
-
-    res.json({
-      period: '30 days',
-      features: result,
-      totals: {
-        totalCalls: totals._count,
-        totalCostUsd: Number(((totals._sum.costCents || 0) / 100).toFixed(2)),
-      },
-    });
-  } catch (err) {
-    logger.error('Failed to get AI usage stats', err);
-    res.status(500).json({ error: 'Failed to load usage stats' });
-  }
-});
-
-// GET /api/admin/ai-providers/monitoring — Per-provider health: latency, error rate, volume, last seen
-router.get('/monitoring', authMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    if (!(await requireAdmin(req, res))) return;
-
-    const hours = parseInt(req.query.hours as string) || 24;
-    const since = new Date(Date.now() - hours * 60 * 60 * 1000);
-
-    const providers = await prisma.aiProvider.findMany({
-      orderBy: [{ isActive: 'desc' }, { name: 'asc' }],
-      select: { id: true, slug: true, name: true, type: true, isActive: true, isDefault: true },
-    });
-
-    const [perProvider, lastSeen, p95Raw] = await Promise.all([
-      prisma.aiUsageLog.groupBy({
-        by: ['providerId'],
-        where: { createdAt: { gte: since } },
-        _count: { id: true },
-        _avg: { durationMs: true },
-        _sum: { costCents: true },
-      }),
-      prisma.aiUsageLog.groupBy({
-        by: ['providerId'],
-        _max: { createdAt: true },
-      }),
-      prisma.$queryRaw<Array<{ providerId: string; p50: number; p95: number }>>`
-        SELECT
-          "providerId",
-          PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY "durationMs") AS p50,
-          PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY "durationMs") AS p95
-        FROM ai_usage_logs
-        WHERE "createdAt" >= ${since} AND "durationMs" IS NOT NULL
-        GROUP BY "providerId"
-      `,
-    ]);
-
-    const errorsPerProvider = await prisma.aiUsageLog.groupBy({
-      by: ['providerId'],
-      where: { createdAt: { gte: since }, success: false },
-      _count: { id: true },
-    });
-
-    const p95Map: Record<string, { p50: number; p95: number }> = {};
-    for (const r of p95Raw as any[]) {
-      p95Map[r.providerId] = { p50: Math.round(Number(r.p50) || 0), p95: Math.round(Number(r.p95) || 0) };
-    }
-
-    const lastSeenMap: Record<string, Date | null> = {};
-    for (const r of lastSeen) lastSeenMap[r.providerId] = r._max.createdAt;
-
-    const stats = providers.map((p) => {
-      const usage = perProvider.find((u) => u.providerId === p.id);
-      const errors = errorsPerProvider.find((e) => e.providerId === p.id);
-      const total = usage?._count?.id ?? 0;
-      const errCount = errors?._count?.id ?? 0;
-      const latency = p95Map[p.id] || { p50: 0, p95: 0 };
-      return {
-        id: p.id,
-        slug: p.slug,
-        name: p.name,
-        type: p.type,
-        isActive: p.isActive,
-        isDefault: p.isDefault,
-        period: { hours },
-        requests: total,
-        errors: errCount,
-        errorRatePct: total > 0 ? Math.round((errCount / total) * 1000) / 10 : 0,
-        avgLatencyMs: Math.round(usage?._avg?.durationMs ?? 0),
-        p50LatencyMs: latency.p50,
-        p95LatencyMs: latency.p95,
-        totalCostCents: usage?._sum?.costCents ?? 0,
-        lastSeenAt: lastSeenMap[p.id] ?? null,
-        status: !p.isActive ? 'DISABLED' : total === 0 ? 'IDLE' : errCount / Math.max(total, 1) > 0.5 ? 'DEGRADED' : 'OK',
-      };
-    });
-
-    res.json({ providers: stats, period: { hours, since } });
-  } catch (error: any) {
-    logger.error('Provider monitoring error', { error: error.message });
-    res.status(500).json({ error: 'Fehler beim Laden' });
   }
 });
 

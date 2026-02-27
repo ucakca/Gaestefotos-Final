@@ -740,34 +740,39 @@ Alle getroffenen Entscheidungen an einem Ort:
 
 | Datei | Beschreibung | Zuletzt aktualisiert |
 |-------|-------------|---------------------|
-| `docs/MASTER-KONZEPT.md` | **DIESES DOKUMENT** — Single Source of Truth | 19.02.2026 |
+| `docs/MASTER-KONZEPT.md` | **DIESES DOKUMENT** — Single Source of Truth | 27.02.2026 |
+| `docs/TODO.md` | Master-TODO: 32 Tasks (T1-T32), App+Booth balanciert, 4 Prioritäten | 27.02.2026 |
+| `docs/DOCS-AUDIT-UND-MASTER-TODO.md` | Audit aller 58 MD-Files, 10 Cluster, Archivierungs-Plan | 27.02.2026 |
+| `docs/BOOTH-EXPERIENCE-KONZEPT.md` | Booth-Flow, KI-Avatar (Sophie/Viktor), Mini-Spiele, Async Delivery | 27.02.2026 |
+| `docs/TEST-CHECKLISTE-T1.md` | Schritt-für-Schritt Test-Anleitung (10 Sektionen, 60+ Tests) | 27.02.2026 |
+| `docs/RUNPOD-COMFYUI-PLAN.md` | RunPod + ComfyUI KI-Architektur (Server, Costs, Roadmap) | Feb 2026 |
 | `docs/AI-EFFEKTE-KATALOG.md` | Katalog aller AI-Features (14+14+24) | 19.02.2026 |
 | `docs/AI-FEATURE-GATING-KONZEPT.md` | AI Gating Architektur (3-Level) | 19.02.2026 |
 | `docs/AI-STRATEGIE.md` | AI Provider-Strategie (Groq, Grok, OpenAI) | Feb 2026 |
 | `docs/AI-OFFLINE-STRATEGIE.md` | Offline-Strategie für AI-Features | Feb 2026 |
 | `docs/COMPETITOR-AI-BOOTH-ANALYSIS.md` | Konkurrenz-Analyse (Snappic, Fotomaster, Noonah) | 19.02.2026 |
-| `docs/API_MAP.md` | Backend-Endpoints + Code-Pfade | Feb 2026 |
+| `docs/API_MAP.md` | Backend-Endpoints + Code-Pfade | 27.02.2026 |
 | `docs/AUTH_FLOWS.md` | Login, Password Reset, WordPress SSO, 2FA | Feb 2026 |
 | `docs/DB_FIELD_MEANINGS.md` | Datenmodell + Feld-Bedeutungen | Feb 2026 |
 | `docs/FEATURE_FLAGS.md` | Feature-Flag-System (22 Flags) | Feb 2026 |
 | `docs/FEATURES.md` | Feature-Übersicht (Core + Tech + UI) | Feb 2026 |
+| `docs/FEATURES-GUIDE.md` | Ausführlicher Feature-Guide (Mosaic, Partner, Billing, SMS, Email) | Feb 2026 |
 | `docs/PRICING-STRATEGY.md` | Paket- & Preisstrategie | Feb 2026 |
 | `docs/PHOTO-BOOTH-PLATFORM-PLAN.md` | Booth-Architektur + Kernentscheidungen | Feb 2026 |
 | `docs/CUPS-DRUCKER-RECHERCHE.md` | Drucker-Setup (CUPS + DNP DS620A) | Feb 2026 |
 | `docs/woocommerce-setup.md` | WooCommerce-Integration Anleitung | Feb 2026 |
-| `docs/DEPLOYMENT.md` | Deploy-Anleitung (Backend + Frontend) | Feb 2026 |
-| `docs/TODO.md` | Sprint-Übersicht + offene Aufgaben | Feb 2026 |
+| `docs/DEPLOYMENT.md` | Deploy-Anleitung (Backend + Frontend + deploy.sh) | 27.02.2026 |
 | `docs/BUGS.md` | Bug-Tracker | Feb 2026 |
 
 ### Referenz-Dokumente (nützlich, aber nicht primär)
 
 | Datei | Beschreibung |
 |-------|-------------|
-| `docs/FEATURES-GUIDE.md` | Ausführlicher Feature-Guide |
 | `docs/SALES-FEATURE-LISTE.md` | Feature-Liste für Vertrieb |
 | `docs/FOTOMASTER-GAP-ANALYSE.md` | Gap-Analyse vs Fotomaster |
 | `docs/MOSAIC_WALL_KONZEPT.md` | Mosaic-Wall Architektur |
 | `docs/LIVE_WALL_FEATURE.md` | Live-Wall Feature-Spec |
+| `docs/WORKFLOW-BUILDER-REDESIGN.md` | Workflow Builder Redesign (21 offene Punkte) |
 | `docs/TUS_ARCHITECTURE.md` | TUS Upload-Architektur |
 | `docs/COHOSTS.md` | Co-Host System |
 | `docs/STORIES.md` | Stories Feature |

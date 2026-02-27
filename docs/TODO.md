@@ -24,46 +24,93 @@
 
 ## 🔴 PRIORITÄT 1 — SOFORT
 
+### A) App & Platform (app.gästefotos.com)
+
 | # | Task | Dokument | Status | Beschreibung |
 |---|------|----------|--------|--------------|
-| T1 | **Docs Updates** | `MASTER-KONZEPT.md`, `API_MAP.md`, `DEPLOYMENT.md` | ⏳ | Neue Routes, Booth-Experience verlinken, deploy.sh dokumentieren |
-| T2 | **User-Testing AI-Features** | — | ⏳ | Alle 30 AI-Effekte + 14 Spiele auf app/dash.gästefotos.com testen |
-| T3 | **RunPod + ComfyUI Setup** | `RUNPOD-COMFYUI-PLAN.md` | ⏳ | Account, Docker Image, Serverless Worker, FAL.ai Anbindung |
-| T4 | **`/r/:shortCode` Ergebnis-Seite** | `BOOTH-EXPERIENCE-KONZEPT.md` §4 | ⏳ | Frontend-Seite für Async Delivery (QR-Code Ziel, Polling, Download, Share) |
+| T1 | **User-Testing ALLE Features** | — | ⏳ | Alle 30 AI-Effekte, 14 LLM-Spiele, Face Search, Live Wall, Einladungen, QR-Styler, Galerie, Upload auf app/dash.gästefotos.com testen |
+| T2 | **AI Quality Bugs (6 kritisch)** | `PHOTO-BOOTH-PLATFORM-PLAN.md` §11.2 | ⏳ | A1: Face Swap sharp→fal.ai, A2: Face Detection Model-Check, A3: ArcFace 512-dim, A4: Identity Preservation, A5: Stability v1 deprecieren, A6: Replicate Steps erhöhen |
+| T3 | **Offene App-Bugs (3)** | `BUGS.md` | ⚠️ | ARCH-001: doppelte Funktionen eliminieren, ARCH-002: Design-Seite modernisieren/redirect, Unused Code entfernen |
+| T4 | **WooCommerce offene Punkte (8)** | `woocommerce-setup.md` | ⚠️ | Webhook-Stabilität, Paket-Sync, eventCode-Flow, Abo-Verlängerung |
+| T5 | **Docs Updates** | `MASTER-KONZEPT.md`, `API_MAP.md`, `DEPLOYMENT.md` | ⏳ | Neue Routes + Booth-Experience verlinken + deploy.sh + archivierte Docs-Referenzen aktualisieren |
+
+### B) KI-Infrastruktur
+
+| # | Task | Dokument | Status | Beschreibung |
+|---|------|----------|--------|--------------|
+| T6 | **RunPod + ComfyUI Setup** | `RUNPOD-COMFYUI-PLAN.md` | ⏳ | Account, Docker Image, Serverless Worker, FAL.ai Anbindung |
+| T7 | **FAL.ai Endpoint-Testing** | `AI-EFFEKTE-KATALOG.md` | ⏳ | Echte API-Calls testen: Face Swap (fal-ai/inswapper), Video (Kling/Seedance), Style Transfer |
+
+### C) Async Delivery (App + Booth)
+
+| # | Task | Dokument | Status | Beschreibung |
+|---|------|----------|--------|--------------|
+| T8 | **`/r/:shortCode` Ergebnis-Seite** | `BOOTH-EXPERIENCE-KONZEPT.md` §4 | ⏳ | Frontend-Seite: Polling, Download (gästefotos.com-branded), Share, Google Review |
 
 ## 🟡 PRIORITÄT 2 — WICHTIG
 
-| # | Task | Dokument | Status | Beschreibung |
-|---|------|----------|--------|--------------|
-| T5 | **E-Mail/WhatsApp Delivery + DSGVO** | `BOOTH-EXPERIENCE-KONZEPT.md` §4.2 | ⏳ | Transactional E-Mail, WhatsApp/SMS, DSGVO Opt-in Flow |
-| T6 | **Google Review Integration** | `BOOTH-EXPERIENCE-KONZEPT.md` §7 | ⏳ | Rating → bei 4-5★ Google, bei 1-3★ internes Feedback |
-| T7 | **WooCommerce offene Punkte (8)** | `woocommerce-setup.md` | ⚠️ | Webhook-Stabilität, Paket-Sync, Abo-Verlängerung |
-| T8 | **Workflow Builder Redesign (21 offen)** | `WORKFLOW-BUILDER-REDESIGN.md` | ⚠️ | Visual Editor, Simulation, bessere UX |
-| T9 | **Offene Bugs (15)** | `BUGS.md` | ⚠️ | Bug-Fixes priorisieren + abarbeiten |
-| T10 | **Live Wall offene Punkte (13)** | `LIVE_WALL_FEATURE.md` | ⚠️ | Fehler + fehlende Features |
-
-## 🟢 PRIORITÄT 3 — MITTELFRISTIG (Booth-Ökosystem)
+### A) App & Platform
 
 | # | Task | Dokument | Status | Beschreibung |
 |---|------|----------|--------|--------------|
-| T11 | **KI-Avatar MVP** | `BOOTH-EXPERIENCE-KONZEPT.md` §2 | ⏳ | Clip-Bibliothek, State Machine, LLM Text-Bubbles, Gestik (kein Audio) |
-| T12 | **Mini-Spiele (Basis: 4)** | `BOOTH-EXPERIENCE-KONZEPT.md` §3 | ⏳ | Hütchenspiel, RPS, Mimik-Duell, Blind Mimicry |
-| T13 | **Booth Foundation (Offline-First)** | `PHOTO-BOOTH-PLATFORM-PLAN.md` Phase 1 | ⏳ | workflow-runtime, Booth-API-Key, Offline-Queue |
-| T14 | **Hardware-Integration Linux** | `PHOTO-BOOTH-PLATFORM-PLAN.md` Phase 2 | ⏳ | gPhoto2 + Canon, CUPS + DNP, Kiosk-Modus |
-| T15 | **Mosaic Wall offene Punkte (27)** | `MOSAIC_WALL_KONZEPT.md` | ⚠️ | Hardware + Software Tasks |
-| T16 | **Multi-Person Group Transform** | — | ⏳ | Gruppen-Foto Face Swap mit mehreren Gesichtern |
+| T9 | **SMS Sharing testen + konfigurieren** | `FEATURES-GUIDE.md` §7 | ⚠️ | Twilio-Config, Logs, Stats — Code existiert, ungetestet |
+| T10 | **E-Mail Sharing testen + konfigurieren** | `FEATURES-GUIDE.md` §8 | ⚠️ | SendGrid/Postmark Config — Code existiert, ungetestet |
+| T11 | **Gallery Embed + Slideshow testen** | `FEATURES-GUIDE.md` §9-10 | ⚠️ | Embed-Code, Slideshow-Mode — Code existiert, ungetestet |
+| T12 | **Bulk ZIP Download testen** | `FEATURES-GUIDE.md` §11 | ⚠️ | Stream-basierter ZIP — Code existiert, ungetestet |
+| T13 | **Lead Collection testen** | `FEATURES-GUIDE.md` §12 | ⚠️ | DSGVO-Consent, CSV-Export — Code existiert, ungetestet |
+| T14 | **Live Wall Erweiterungen (13)** | `LIVE_WALL_FEATURE.md` | ⚠️ | Filter, Slideshow-Mode, Themed Overlays, Admin-Control |
+| T15 | **Workflow Builder Redesign (21 offen)** | `WORKFLOW-BUILDER-REDESIGN.md` | ⚠️ | 22/38 Steps nicht ausführbar, Dual-Tab UX, Simulation |
 
-## � PRIORITÄT 4 — LANGFRISTIG
+### B) Delivery + Marketing
 
 | # | Task | Dokument | Status | Beschreibung |
 |---|------|----------|--------|--------------|
-| T17 | **Avatar-Galerie + Persönlichkeits-Slider** | `BOOTH-EXPERIENCE-KONZEPT.md` §2.2-2.3 | ⏳ | 7+ Avatare, Custom per Prompt, Slider (Humor/Flirt/Energie/etc.) |
-| T18 | **Avatar Upgrade (Echtzeit Lip-Sync)** | `BOOTH-EXPERIENCE-KONZEPT.md` §2.5 | ⏳ | LivePortrait/SadTalker, Emotion Recognition |
-| T19 | **Booth-Hotspot + Provisioning** | `PHOTO-BOOTH-PLATFORM-PLAN.md` Phase 3 | ⏳ | hostapd, Captive Portal, QR-Provisioning |
-| T20 | **360° Spinner + Drawbot Hardware** | `PHOTO-BOOTH-PLATFORM-PLAN.md` Phase 6 | ⏳ | GoPro-Steuerung, Plotter-Integration |
-| T21 | **Remote Management + Analytics** | `PHOTO-BOOTH-PLATFORM-PLAN.md` Phase 7 | ⏳ | Config Push, Session-Analytics, Drucker-Monitoring |
-| T22 | **Instagram/Facebook Graph API** | — | ⏳ | Host Business-Account Integration |
-| T23 | **Security-Badges (SOC2, etc.)** | `SECURITY-BADGES.md` | ⏳ | Zertifizierungen recherchieren |
+| T16 | **E-Mail/WhatsApp Delivery + DSGVO** | `BOOTH-EXPERIENCE-KONZEPT.md` §4.2 | ⏳ | Transactional E-Mail, WhatsApp/SMS für AI-Ergebnisse, DSGVO Opt-in |
+| T17 | **Google Review Integration** | `BOOTH-EXPERIENCE-KONZEPT.md` §7 | ⏳ | Rating → bei 4-5★ Google, bei 1-3★ internes Feedback |
+
+## 🟢 PRIORITÄT 3 — MITTELFRISTIG
+
+### A) Mosaic Wall (App-Feature)
+
+| # | Task | Dokument | Status | Beschreibung |
+|---|------|----------|--------|--------------|
+| T18 | **Mosaic Wall Implementierung (27 offen)** | `MOSAIC_WALL_KONZEPT.md` | ⚠️ | Datenmodell existiert, Frontend+Backend+Live-Display+Print fehlt |
+
+### B) Booth-Ökosystem
+
+| # | Task | Dokument | Status | Beschreibung |
+|---|------|----------|--------|--------------|
+| T19 | **KI-Avatar MVP (Sophie/Viktor)** | `BOOTH-EXPERIENCE-KONZEPT.md` §2 | ⏳ | Clip-Bibliothek, State Machine, LLM Text-Bubbles, Gestik (kein Audio) |
+| T20 | **Mini-Spiele (Basis: 4)** | `BOOTH-EXPERIENCE-KONZEPT.md` §3 | ⏳ | 3-Schichten: Game Engine + Game UI + Avatar Clips |
+| T21 | **Booth Foundation (Offline-First)** | `PHOTO-BOOTH-PLATFORM-PLAN.md` Phase 1 | ⏳ | Electron, workflow-runtime, Booth-API-Key, Offline-Queue |
+| T22 | **Hardware-Integration Linux** | `PHOTO-BOOTH-PLATFORM-PLAN.md` Phase 2 | ⏳ | gPhoto2 + Canon, CUPS + DNP, Kiosk-Modus |
+
+### C) AI Erweiterungen
+
+| # | Task | Dokument | Status | Beschreibung |
+|---|------|----------|--------|--------------|
+| T23 | **Multi-Person Group Transform** | — | ⏳ | Gruppen-Foto Face Swap mit mehreren Gesichtern |
+| T24 | **QR Async Delivery Backend** | `PHOTO-BOOTH-PLATFORM-PLAN.md` §11.3 B2 | ⏳ | AI-Request → ShortCode → QR → Ergebnis in Galerie wenn fertig |
+
+## 🔵 PRIORITÄT 4 — LANGFRISTIG
+
+### A) App
+
+| # | Task | Dokument | Status | Beschreibung |
+|---|------|----------|--------|--------------|
+| T25 | **Instagram/Facebook Graph API** | — | ⏳ | Host Business-Account Integration |
+| T26 | **Host Self-Service AI-Konfigurator** | `PHOTO-BOOTH-PLATFORM-PLAN.md` §11.3 B1b | ⏳ | Host konfiguriert AI selbst (ohne Admin) |
+| T27 | **Security-Badges (SOC2, etc.)** | `SECURITY-BADGES.md` | ⏳ | Zertifizierungen |
+
+### B) Booth
+
+| # | Task | Dokument | Status | Beschreibung |
+|---|------|----------|--------|--------------|
+| T28 | **Avatar-Galerie + Persönlichkeits-Slider** | `BOOTH-EXPERIENCE-KONZEPT.md` §2.2-2.3 | ⏳ | 7+ Avatare, Custom, Slider |
+| T29 | **Avatar Upgrade (Echtzeit Lip-Sync)** | `BOOTH-EXPERIENCE-KONZEPT.md` §2.5 | ⏳ | LivePortrait/SadTalker, Emotion Recognition |
+| T30 | **Booth-Hotspot + Provisioning** | `PHOTO-BOOTH-PLATFORM-PLAN.md` Phase 3 | ⏳ | hostapd, Captive Portal |
+| T31 | **360° Spinner + Drawbot Hardware** | `PHOTO-BOOTH-PLATFORM-PLAN.md` Phase 6 | ⏳ | GoPro-Steuerung, Plotter |
+| T32 | **Remote Management + Analytics** | `PHOTO-BOOTH-PLATFORM-PLAN.md` Phase 7 | ⏳ | Config Push, Session-Analytics |
 
 ---
 

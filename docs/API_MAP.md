@@ -86,6 +86,50 @@ Admin endpoints (Backend mounts in `packages/backend/src/index.ts`):
   - `GET /api/admin/webhooks/woocommerce/logs` → `packages/backend/src/routes/adminWooWebhooks.ts`
   - `POST /api/admin/webhooks/woocommerce/replay/:logId`
 
+- CDN Browser (Admin):
+  - `GET /api/admin/cdn/browse` → `packages/backend/src/routes/adminCdn.ts`
+  - `GET /api/admin/cdn/sign` (signierte URL für SeaweedFS)
+  - `POST /api/admin/cdn/bulk-sign`
+  - `GET /api/cdn/verify` (Nginx auth_request Sub-Request)
+
+- AI Survey Prompts (Admin):
+  - `GET /api/admin/ai-survey-prompts` → `packages/backend/src/routes/aiSurveyPrompt.ts`
+  - `POST /api/admin/ai-survey-prompts`
+  - `PUT /api/admin/ai-survey-prompts/:id`
+  - `DELETE /api/admin/ai-survey-prompts/:id`
+
+- Face Swap Templates (Admin):
+  - `GET /api/admin/face-swap-templates` → `packages/backend/src/routes/faceSwapTemplates.ts`
+  - `POST /api/admin/face-swap-templates`
+  - `PUT /api/admin/face-swap-templates/:id`
+  - `DELETE /api/admin/face-swap-templates/:id`
+
+- Reference Images (Admin):
+  - `GET /api/events/:id/reference-image` → `packages/backend/src/routes/referenceImage.ts`
+  - `POST /api/events/:id/reference-image`
+  - `DELETE /api/events/:id/reference-image`
+
+- AI Async Delivery:
+  - `POST /api/ai/async-delivery` → `packages/backend/src/routes/aiAsyncDelivery.ts`
+  - `GET /api/ai/async-delivery/:shortCode`
+
+- Face-Off:
+  - `POST /api/ai/face-off` → `packages/backend/src/routes/faceOff.ts`
+  - `GET /api/ai/face-off/:id`
+
+- Debug Mode:
+  - `GET /api/debug/enabled` (public) → `packages/backend/src/routes/debug.ts`
+  - `POST /api/debug/toggle` (Admin auth)
+  - `GET /api/debug/logs` (Admin auth)
+  - `POST /api/debug/logs` (public, Frontend sendet Logs)
+  - `DELETE /api/debug/logs` (Admin auth)
+  - `POST /api/debug/local-toggle` (localhost-only, kein Auth)
+
+- Image CDN:
+  - `GET /cdn/:photoId` → `packages/backend/src/routes/imageCdn.ts`
+  - Query-Params: `?w=400&q=80&f=webp`
+  - On-the-fly Resize + Format-Conversion via Sharp
+
 ## WordPress Bridge (v1)
 
 ### Konfiguration (Env / Secrets)
