@@ -1393,7 +1393,7 @@ router.get(
 
       const event = await prisma.event.findUnique({
         where: { id: eventId },
-        select: { id: true, hostId: true, deletedAt: true, isActive: true },
+        select: { id: true, hostId: true, deletedAt: true, isActive: true, eventCode: true },
       });
 
       if (!event || event.deletedAt || event.isActive === false) {
@@ -1417,6 +1417,8 @@ router.get(
 
       res.json({
         ...packageInfo,
+        // Only expose eventCode to host/admin (needed for WooCommerce upgrade links)
+        eventCode: (isHost || isAdmin) ? event.eventCode : undefined,
         usage: {
           photosBytes: bigintToString(usage.photosBytes),
           videosBytes: bigintToString(usage.videosBytes),

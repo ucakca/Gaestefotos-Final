@@ -36,7 +36,7 @@
 | T1 | **User-Testing ALLE Features** | — | ⏳ | Alle 30 AI-Effekte, 14 LLM-Spiele, Face Search, Live Wall, Einladungen, QR-Styler, Galerie, Upload auf app/dash.gästefotos.com testen |
 | T2 | **AI Quality Bugs (6 kritisch)** | `PHOTO-BOOTH-PLATFORM-PLAN.md` §11.2 | ⏳ | A1: Face Swap sharp→fal.ai, A2: Face Detection Model-Check, A3: ArcFace 512-dim, A4: Identity Preservation, A5: Stability v1 deprecieren, A6: Replicate Steps erhöhen |
 | T3 | **Offene App-Bugs (3)** | `BUGS.md` | ✅ | ARCH-001: doppelte Funktionen eliminieren, ARCH-002: Design-Seite modernisieren/redirect, Unused Code entfernen |
-| T4 | **WooCommerce offene Punkte (8)** | `woocommerce-setup.md` | ⚠️ | Webhook-Stabilität, Paket-Sync, eventCode-Flow, Abo-Verlängerung |
+| T4 | **WooCommerce offene Punkte (8)** | `woocommerce-setup.md` | ✅ | Webhook-URL Alias, SKU-Sync, eventCode-Flow, Briefing-Email, Fehlerhandling, Admin Logs — alle 8 Punkte erledigt (WordPress-Seite: Produkte anlegen + Webhook konfigurieren noch offen) |
 | T5 | **Docs Updates** | `MASTER-KONZEPT.md`, `API_MAP.md`, `DEPLOYMENT.md` | ⏳ | Neue Routes + Booth-Experience verlinken + deploy.sh + archivierte Docs-Referenzen aktualisieren |
 
 ### B) KI-Infrastruktur

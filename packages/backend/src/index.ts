@@ -660,6 +660,7 @@ app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/admin/settings', adminSettingsRoutes);
 app.use('/api/admin/backups', adminBackupsRoutes);
 app.use('/api/webhooks/woocommerce', woocommerceWebhooksRoutes);
+app.use('/api/woo-webhooks', woocommerceWebhooksRoutes); // Alias for backward compat with docs
 
 // AI Jobs Queue (RunPod/ComfyUI)
 app.use('/api/ai-jobs', aiJobsRoutes);

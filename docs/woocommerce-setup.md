@@ -1,6 +1,6 @@
 # WooCommerce × gästefotos.com — Setup-Anleitung
 
-> Stand: 12.02.2026
+> Stand: 28.02.2026
 
 ---
 
@@ -21,16 +21,29 @@ Kunde kauft im Shop → WooCommerce Webhook → App-Backend → Event + Entitlem
 | SKU | Name | Preis | Beschreibung |
 |-----|------|-------|-------------|
 | `free` | Free | 0 € | 4×4 Grid, Wasserzeichen, 7 Tage Archiv |
-| `starter` | Starter | 49 € | Bis 200 Fotos, 30 Tage Archiv |
-| `premium` | Premium | 149 € | Unbegrenzte Fotos, 90 Tage, Live-Wall, ZIP-Download |
-| `professional` | Professional | 299 € | Alles aus Premium + Face Search, Co-Hosts, Gästeliste |
+| `basic` | Basic | 49 € | Bis 200 Fotos, 30 Tage Archiv |
+| `smart` | Smart | 99 € | Erweiterte Features, 60 Tage, Live-Wall |
+| `premium` | Premium | 199 € | Alles aus Smart + Face Search, Co-Hosts, Gästeliste |
+
+### Upgrade-Pakete (Typ: UPGRADE)
+
+| SKU | Name | Preis | Ergebnis |
+|-----|------|-------|----------|
+| `upgrade-basic-smart` | Upgrade: Basic → Smart | 50 € | Event wird auf SMART hochgestuft |
+| `upgrade-basic-premium` | Upgrade: Basic → Premium | 150 € | Event wird auf PREMIUM hochgestuft |
+| `upgrade-smart-premium` | Upgrade: Smart → Premium | 100 € | Event wird auf PREMIUM hochgestuft |
 
 ### Add-on Pakete (Typ: ADDON)
 
 | SKU | Name | Preis | Was es freischaltet |
 |-----|------|-------|-------------------|
-| `addon-mosaic-digital` | Mosaic Wall | 199 € | Digitale Foto-Mosaik-Wand (Display/Beamer) + HD-Export |
-| `addon-mosaic-print` | Mosaic Wall Print + Digital | 599 € | Alles aus Digital + Print-Station + Sticker-Druck |
+| `addon-mosaic-digital` | Mosaic Wall Digital | 199 € | Digitale Foto-Mosaik-Wand (Display/Beamer) + HD-Export |
+| `addon-mosaic-print` | Mosaic Wall + Print | 599 € | Alles aus Digital + Print-Station + Sticker-Druck |
+| `addon-photo-booth` | Photo Booth | 449 € | Foto-Booth Modus mit Druck |
+| `addon-mirror-booth` | Mirror Booth | 549 € | Spiegel-Booth mit Touch-Display |
+| `addon-ki-booth` | KI Booth (AI) | 599 € | KI-gestützte Foto-Booth (Face Swap, Style Transfer) |
+| `addon-drawbot` | Drawbot | 990 € | Roboter-Zeichenmaschine |
+| `addon-highlight-reel` | Highlight Reel | 49 € | Automatisches Event-Highlight-Video |
 
 ### Wichtig bei der Produkt-Einrichtung
 
@@ -50,7 +63,7 @@ Kunde kauft im Shop → WooCommerce Webhook → App-Backend → Event + Entitlem
 | **Name** | `gästefotos App — Order Paid` |
 | **Status** | Aktiv |
 | **Thema** | `Bestellung aktualisiert` (order.updated) |
-| **Auslieferungs-URL** | `https://api.xn--gstefotos-v2a.com/api/woo-webhooks/order-paid` |
+| **Auslieferungs-URL** | `https://api.xn--gstefotos-v2a.com/api/webhooks/woocommerce/order-paid` (Alias: `/api/woo-webhooks/order-paid`) |
 | **Geheimnis** | Muss mit `WOOCOMMERCE_WEBHOOK_SECRET` in der App `.env` übereinstimmen |
 | **API-Version** | WP REST API v3 |
 
@@ -177,10 +190,11 @@ Addon "Mosaic Wall":      mosaicWall=✅, mosaicExport=✅
 
 ## 9. Checkliste für Go-Live
 
-- [ ] Alle Produkte mit korrekten SKUs in WooCommerce angelegt
+- [ ] Alle Produkte mit korrekten SKUs in WooCommerce angelegt (free, basic, smart, premium, addon-*, upgrade-*)
 - [ ] Webhook eingerichtet und getestet (Testbestellung)
-- [ ] `WOOCOMMERCE_WEBHOOK_SECRET` in App `.env` gesetzt
-- [ ] `PackageDefinition` Einträge in der App-DB mit passenden SKUs
+- [x] `WOOCOMMERCE_WEBHOOK_SECRET` in App `.env` gesetzt ✅ (28.02.2026)
+- [x] `PackageDefinition` Einträge in der App-DB mit passenden SKUs ✅ (14 Pakete aktiv)
+- [x] `eventCode` wird bei Event-Erstellung automatisch generiert ✅ (28.02.2026)
 - [ ] eventCode-Flow im Checkout implementiert (Custom Field oder URL-Parameter)
 - [ ] Testbestellung: Base + Addon → Event wird erstellt, Features aktiv
 - [ ] Testbestellung: Nur Addon mit eventCode → Features am Event aktiv

@@ -521,11 +521,7 @@ export async function processWooOrderPaidWebhook(params: {
         const briefingUrl = `${frontendUrl}/events/${ev.id}/briefing`;
         const dashboardUrl = `${frontendUrl}/events/${ev.id}/dashboard`;
         const packageName = pkg?.name || pkg?.resultingTier || 'Standard';
-        await (emailService as any).transporter?.sendMail({
-          from: (emailService as any).config?.from || 'info@gaestefotos.com',
-          to: customerEmail,
-          subject: `🎉 Dein gästefotos.com Event ist bereit! Jetzt Briefing ausfüllen`,
-          html: `
+        const html = `
             <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px">
               <h2 style="color:#295B4D">Vielen Dank für deine Buchung! 🎉</h2>
               <p>Dein <strong>${packageName}</strong>-Paket wurde aktiviert.</p>
@@ -539,8 +535,13 @@ export async function processWooOrderPaidWebhook(params: {
               ${ev.eventCode ? `<p style="background:#f5f5f5;padding:12px;border-radius:8px">Dein Event-Code: <strong>${ev.eventCode}</strong></p>` : ''}
               <hr style="margin:24px 0;border:none;border-top:1px solid #eee">
               <p style="color:#666;font-size:13px">Bei Fragen: <a href="mailto:support@gaestefotos.com">support@gaestefotos.com</a></p>
-            </div>`,
-          text: `Vielen Dank für deine Buchung!\n\nBriefing ausfüllen: ${briefingUrl}\nDashboard: ${dashboardUrl}${ev.eventCode ? `\nEvent-Code: ${ev.eventCode}` : ''}`,
+            </div>`;
+        const text = `Vielen Dank für deine Buchung!\n\nBriefing ausfüllen: ${briefingUrl}\nDashboard: ${dashboardUrl}${ev.eventCode ? `\nEvent-Code: ${ev.eventCode}` : ''}`;
+        await emailService.sendCustomEmail({
+          to: customerEmail,
+          subject: `🎉 Dein gästefotos.com Event ist bereit! Jetzt Briefing ausfüllen`,
+          html,
+          text,
         });
         logger.info('WooCommerce: Briefing-Email gesendet', { to: customerEmail, eventId: ev.id });
       }).catch((err: any) => logger.warn('WooCommerce: Briefing-Email fehlgeschlagen', { error: err.message }));

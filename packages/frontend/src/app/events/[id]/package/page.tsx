@@ -58,10 +58,9 @@ interface PackageOption {
 
 const TIER_CONFIG: Record<string, { icon: React.ElementType; gradient: string; badge: string }> = {
   FREE: { icon: Sparkles, gradient: 'from-gray-100 to-gray-200', badge: 'Kostenlos' },
-  STARTER: { icon: Zap, gradient: 'from-blue-100 to-blue-200', badge: 'Starter' },
-  PRO: { icon: Crown, gradient: 'from-purple-100 to-pink-200', badge: 'Pro' },
+  BASIC: { icon: Zap, gradient: 'from-blue-100 to-blue-200', badge: 'Basic' },
+  SMART: { icon: Crown, gradient: 'from-purple-100 to-pink-200', badge: 'Smart' },
   PREMIUM: { icon: Star, gradient: 'from-amber-100 to-yellow-200', badge: 'Premium' },
-  ENTERPRISE: { icon: Shield, gradient: 'from-emerald-100 to-teal-200', badge: 'Enterprise' },
 };
 
 const FEATURE_LIST: { key: keyof PackageOption; label: string; icon: React.ElementType }[] = [
