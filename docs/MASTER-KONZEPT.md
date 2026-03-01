@@ -1,6 +1,6 @@
 # gästefotos.com — Master-Konzept (Single Source of Truth)
 
-> Stand: 19. Februar 2026
+> Stand: 1. März 2026
 > Zweck: **Zentrales Dokument** — alle Entscheidungen, Verbindungen, Architekturen und offene Punkte an EINEM Ort.
 > Regel: Wenn etwas hier nicht steht oder hier nicht verlinkt ist, existiert es nicht.
 
@@ -40,7 +40,7 @@
 | Subdomain | Zweck | Tech | Code-Pfad |
 |-----------|-------|------|-----------|
 | **app.gästefotos.com** | Gäste-App (Event-Galerie, Upload, AI-Features) | Next.js 14 | `packages/frontend/` |
-| **dash.gästefotos.com** | Host-Dashboard + Admin-Dashboard | Next.js 14 (gleiche Codebase) | `packages/frontend/` |
+| **dash.gästefotos.com** | Admin-Dashboard (separates Package) | Next.js 14 | `packages/admin-dashboard/` |
 | **api.gästefotos.com** | Backend API | Express + Prisma | `packages/backend/` |
 | **gästefotos.com** | Marketing-Website + WooCommerce Shop | WordPress | extern (Plesk) |
 | **Booth-App** | Electron Booth-Software (offline-fähig) | Electron + Next.js | `packages/booth-app/` |
@@ -139,9 +139,21 @@ Socket.IO: Echtzeit zwischen allen Clients (Galerie-Updates, Mosaic, Analytics)
 | `/api/statistics` | `routes/statistics.ts` | Event-Analytics |
 | `/api/booth-games` | `routes/boothGames.ts` | **AI-Spiele + Effekte (14+14)** |
 | `/api/partners` | `routes/partners.ts` | Partner CRUD, Members, Hardware, Billing |
-| `/api/ai` | `routes/aiRoutes.ts` | AI Chat, Style Transfer, Provider Management |
+| `/api/ai` | `routes/aiRoutes.ts` | AI Chat, Knowledge Store, Provider Management |
+| `/api/style-transfer` | `routes/styleTransfer.ts` | Style Transfer (fal.ai flux/dev img2img) |
+| `/api/ai-jobs` | `routes/aiJobs.ts` | RunPod/ComfyUI AI Jobs Queue |
+| `/api/ai-jobs` | `routes/aiAsyncDelivery.ts` | Async AI: Video, Face Swap, ShortCode Delivery |
+| `/api/r` | `routes/aiResult.ts` | Result Page (`/r/:shortCode`) |
+| `/api/sms` | `routes/smsShare.ts` | SMS Sharing (Twilio) |
+| `/api/email` | `routes/email.ts` | Email Sharing, Test, Event Invites |
+| `/api/slideshow` | `routes/slideshow.ts` | Slideshow API |
+| `/api/leads` | `routes/leads.ts` | Lead Collection (DSGVO-Consent) |
+| `/api/push` | `routes/push.ts` | Push-Notifications (VAPID/Web Push) |
+| `/api/graffiti` | `routes/graffiti.ts` | Air Graffiti Feature |
+| `/api/workflows` | `routes/workflows.ts` | Workflow Builder CRUD + Runtime |
+| `/api/debug` | `routes/debug.ts` | Debug Mode (Logs, Toggle) |
 | `/api/webhooks/woocommerce` | `routes/woocommerceWebhooks.ts` | WooCommerce Order Webhook |
-| `/api/admin/*` | `routes/admin*.ts` | Admin-Endpoints (Feature-Flags, Logs, CMS, etc.) |
+| `/api/admin/*` | `routes/admin*.ts` | Admin-Endpoints (Feature-Flags, Logs, CMS, AI, Cost-Monitoring, etc.) |
 
 ### Kern-Services (Backend)
 
@@ -154,6 +166,12 @@ Socket.IO: Echtzeit zwischen allen Clients (Galerie-Updates, Mosaic, Analytics)
 | **AI Style Effects** | `services/aiStyleEffects.ts` | Image-to-Image Effekte (Stability, Replicate, Sharp) |
 | **Package Limits** | `services/packageLimits.ts` | Effektives Paket für Event berechnen (Base + Addons) |
 | **Audit Logger** | `services/auditLogger.ts` | Alle Aktionen loggen (Fire-and-Forget) |
+| **Face Switch** | `services/faceSwitch.ts` | Face Swap via fal.ai inswapper (Fallback: sharp resize) |
+| **AI Video Gen** | `services/aiVideoGen.ts` | Video-Generierung via fal.ai wan-i2v |
+| **BG Removal** | `services/bgRemoval.ts` | Hintergrundentfernung via remove.bg |
+| **Knowledge Store** | `services/cache/knowledgeStore.ts` | AI-Antwort Cache (Redis 24h + Postgres permanent) |
+| **Email Service** | `services/email.ts` | Nodemailer, SMTP aus `.env` oder DB `app_settings` |
+| **Event Recap** | `services/eventRecap.ts` | Automatische Event-Zusammenfassung per E-Mail (Cron) |
 
 ### Frontend-Architektur (Next.js 14 App Router)
 
@@ -544,7 +562,7 @@ WooCommerce Buchung → Webhook → Backend
 
 > Detail-Dokument: `docs/woocommerce-setup.md`
 
-### Status: IMPLEMENTIERT ✅ (noch nicht produktiv getestet)
+### Status: IMPLEMENTIERT + E2E GETESTET ✅
 
 **Code**: `packages/backend/src/routes/woocommerceWebhooks.ts` (590 Zeilen)
 
@@ -566,6 +584,9 @@ WooCommerce Buchung → Webhook → Backend
 
 - [x] Briefing-E-Mail nach erfolgreicher Buchung ✅ (21.02.2026 — woocommerceWebhooks.ts P1-1)
 - [x] EventAiConfig automatisch aus Paket-Defaults erstellen ✅ (21.02.2026 — woocommerceWebhooks.ts P1-2)
+- [x] 14 WooCommerce-Produkte mit exakten SKUs erstellt ✅ (28.02.2026)
+- [x] Webhook konfiguriert (order.updated) ✅ (28.02.2026)
+- [x] eventCode Checkout-Feld im WP-Plugin ✅ (28.02.2026)
 - [ ] Produktiv-Test mit echter WooCommerce-Bestellung
 - [ ] Custom AI-Theme Addon in WooCommerce anlegen (SKU: `addon-custom-ai-theme`)
 
@@ -731,6 +752,7 @@ Alle getroffenen Entscheidungen an einem Ort:
 | **Sprint 19** | AI Cost Monitoring Dashboard (Frontend: Summary, Timeline-Chart, Provider-Breakdown, Feature-Ranking, Top-Events, Alerts + Sidebar-Link) | ✅ DONE | Sprint 14 |
 | **Sprint 20** | Workflow Builder Redesign (Dual-Tab: ⚡ Automationen Pipeline-Builder mit 16 Steps + 5 Presets + 🔧 Booth-Flows ReactFlow-Editor unverändert) | ✅ DONE | Sprint 18 |
 | **Sprint 21** | AI Provider Usage Dashboard (3-Tab: Übersicht + Letzte Jobs-Tabelle + Provider Details mit 30d-Stats + Replicate Live-Predictions via API) | ✅ DONE | Sprint 14+19 |
+| **Sprint 22** | AI E2E Integration (fal.ai Face Swap, Video wan-i2v, Style Transfer, BG Removal, 8 LLM-Spiele, Knowledge Store Seeding, Email DB-Init, eventRecap Fix, Nginx gzip, Security+Performance Audit) | ✅ DONE | Sprint 7+16 |
 
 ---
 
@@ -740,8 +762,8 @@ Alle getroffenen Entscheidungen an einem Ort:
 
 | Datei | Beschreibung | Zuletzt aktualisiert |
 |-------|-------------|---------------------|
-| `docs/MASTER-KONZEPT.md` | **DIESES DOKUMENT** — Single Source of Truth | 27.02.2026 |
-| `docs/TODO.md` | Master-TODO: 32 Tasks (T1-T32), App+Booth balanciert, 4 Prioritäten | 27.02.2026 |
+| `docs/MASTER-KONZEPT.md` | **DIESES DOKUMENT** — Single Source of Truth | 01.03.2026 |
+| `docs/TODO.md` | Master-TODO: 32 Tasks (T1-T32), App+Booth balanciert, 4 Prioritäten | 01.03.2026 |
 | `docs/DOCS-AUDIT-UND-MASTER-TODO.md` | Audit aller 58 MD-Files, 10 Cluster, Archivierungs-Plan | 27.02.2026 |
 | `docs/BOOTH-EXPERIENCE-KONZEPT.md` | Booth-Flow, KI-Avatar (Sophie/Viktor), Mini-Spiele, Async Delivery | 27.02.2026 |
 | `docs/TEST-CHECKLISTE-T1.md` | Schritt-für-Schritt Test-Anleitung (10 Sektionen, 60+ Tests) | 27.02.2026 |
@@ -751,7 +773,7 @@ Alle getroffenen Entscheidungen an einem Ort:
 | `docs/AI-STRATEGIE.md` | AI Provider-Strategie (Groq, Grok, OpenAI) | Feb 2026 |
 | `docs/AI-OFFLINE-STRATEGIE.md` | Offline-Strategie für AI-Features | Feb 2026 |
 | `docs/COMPETITOR-AI-BOOTH-ANALYSIS.md` | Konkurrenz-Analyse (Snappic, Fotomaster, Noonah) | 19.02.2026 |
-| `docs/API_MAP.md` | Backend-Endpoints + Code-Pfade | 27.02.2026 |
+| `docs/API_MAP.md` | Backend-Endpoints + Code-Pfade (90+ Routes) | 01.03.2026 |
 | `docs/AUTH_FLOWS.md` | Login, Password Reset, WordPress SSO, 2FA | Feb 2026 |
 | `docs/DB_FIELD_MEANINGS.md` | Datenmodell + Feld-Bedeutungen | Feb 2026 |
 | `docs/FEATURE_FLAGS.md` | Feature-Flag-System (22 Flags) | Feb 2026 |
@@ -761,7 +783,7 @@ Alle getroffenen Entscheidungen an einem Ort:
 | `docs/PHOTO-BOOTH-PLATFORM-PLAN.md` | Booth-Architektur + Kernentscheidungen | Feb 2026 |
 | `docs/CUPS-DRUCKER-RECHERCHE.md` | Drucker-Setup (CUPS + DNP DS620A) | Feb 2026 |
 | `docs/woocommerce-setup.md` | WooCommerce-Integration Anleitung | Feb 2026 |
-| `docs/DEPLOYMENT.md` | Deploy-Anleitung (Backend + Frontend + deploy.sh) | 27.02.2026 |
+| `docs/DEPLOYMENT.md` | Deploy-Anleitung (Backend + Frontend + deploy.sh + Launch Checklist) | 01.03.2026 |
 | `docs/BUGS.md` | Bug-Tracker | Feb 2026 |
 
 ### Referenz-Dokumente (nützlich, aber nicht primär)

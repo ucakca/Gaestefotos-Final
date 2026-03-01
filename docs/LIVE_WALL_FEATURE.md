@@ -191,18 +191,20 @@ xl:columns-4       /* Large (1280px+) */
 
 ## 🚀 Erweiterungen (Future)
 
-### Geplant
-- [ ] Filter (Nur Gästebuch / Nur Challenges / Nur Stories)
-- [ ] Slideshow-Mode (Auto-Advance alle 3s)
+### Implementiert (01.03.2026)
+- [x] Filter (Content-Typ: Fotos / Gästebuch / Challenges / Stories) — in Grid + Slideshow
+- [x] Slideshow-Mode (Auto-Advance 3-15s konfigurierbar, 5 Animationstypen, Shuffle)
+- [x] Konfetti-Animation bei Challenge-Fotos
+- [x] Photo-Stats Counter (Anzahl pro Typ im Filter-UI)
+- [x] Reaction-Emojis (Floating Hearts via WebSocket bei Likes)
+- [x] Live-Kommentare (Photo Comments als Speech Bubbles)
+- [x] Top-Fotografen Leaderboard (alle 10 Fotos in SlideshowMode.tsx)
+- [x] Ken Burns Effect (SlideshowMode.tsx)
+
+### Offen
 - [ ] Themed Overlays (Hochzeit, Geburtstag, etc.)
 - [ ] Sound-Effekt bei neuem Foto
 - [ ] Admin-Control (Foto verbergen)
-
-### Ideen
-- [ ] Reaction-Emojis (Gäste können liken)
-- [ ] Live-Kommentare (Chat-Layer)
-- [ ] Konfetti-Animation bei Challenge
-- [ ] Photo-Stats (Anzahl Fotos pro Stunde)
 
 ---
 

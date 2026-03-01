@@ -121,6 +121,7 @@ import aiSurveyPromptRoutes from './routes/aiSurveyPrompt';
 import faceOffRoutes from './routes/faceOff';
 import faceSwapTemplatesRoutes from './routes/faceSwapTemplates';
 import referenceImageRoutes from './routes/referenceImage';
+import feedbackRoutes from './routes/feedback';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter, smsLimiter, paymentLimiter, leadLimiter, aiFeatureLimiter, pushSubscribeLimiter, analyticsLimiter } from './middleware/rateLimit';
 import { logger } from './utils/logger';
@@ -711,6 +712,7 @@ app.use('/api', paymentLimiter, paymentsRoutes); // Payment per Session: /api/ev
 app.use('/api', spinnerRoutes); // 360° Spinner: /api/events/:eventId/spinner
 app.use('/api', drawbotRoutes); // Drawbot: /api/events/:eventId/drawbot
 app.use('/api', videoJobsRoutes); // Video/GIF/Boomerang: /api/events/:eventId/video-jobs
+app.use('/api/feedback', feedbackRoutes); // Guest Feedback + Google Review: /api/feedback
 
 // Event Themes (AI generation + CRUD)
 app.use('/api/event-themes', eventThemesRoutes);

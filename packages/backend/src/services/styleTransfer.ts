@@ -301,6 +301,39 @@ async function callPuLID(apiKey: string, imageBuffer: Buffer, prompt: string, ve
   return pollReplicateResult(apiKey, resp.data.id);
 }
 
+// ── fal.ai img2img — direkte API ─────────────────────────────────────────────
+async function callFalAiStyleTransfer(apiKey: string, imageBuffer: Buffer, prompt: string, negativePrompt: string, strength: number): Promise<Buffer> {
+  const model = 'fal-ai/flux/dev/image-to-image';
+  const apiUrl = `https://fal.run/${model}`;
+  const dataUri = `data:image/jpeg;base64,${imageBuffer.toString('base64')}`;
+
+  const resp = await fetch(apiUrl, {
+    method: 'POST',
+    headers: { 'Authorization': `Key ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      image_url: dataUri, prompt, negative_prompt: negativePrompt,
+      strength, num_inference_steps: 28, guidance_scale: 3.5, num_images: 1, output_format: 'jpeg',
+    }),
+  });
+
+  if (!resp.ok) {
+    const errText = await resp.text();
+    throw new Error(`fal.ai style transfer error ${resp.status}: ${errText.slice(0, 300)}`);
+  }
+
+  const data: any = await resp.json();
+  const outputUrl: string | undefined =
+    data?.images?.[0]?.url || data?.image?.url || (typeof data?.image === 'string' ? data.image : undefined);
+  if (!outputUrl) throw new Error('No output image from fal.ai style transfer');
+
+  if (outputUrl.startsWith('data:')) {
+    return Buffer.from(outputUrl.split(',')[1], 'base64');
+  }
+  const imgRes = await fetch(outputUrl);
+  if (!imgRes.ok) throw new Error(`fal.ai image fetch failed: ${imgRes.status}`);
+  return Buffer.from(await imgRes.arrayBuffer());
+}
+
 // ── Flux.1 [dev] img2img — höhere Qualität als SDXL ──────────────────────────
 async function callFlux1Dev(apiKey: string, imageBuffer: Buffer, prompt: string, strength: number, versionHash: string): Promise<Buffer> {
   const dataUri = `data:image/jpeg;base64,${imageBuffer.toString('base64')}`;
@@ -536,6 +569,8 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
         resultBuffer = await callStabilityAI(apiKey, imageBuffer, finalPrompt, style.negativePrompt, strength, effectiveModel);
       } else if (slug.includes('replicate')) {
         resultBuffer = await callReplicate(apiKey, imageBuffer, finalPrompt, style.negativePrompt, strength, effectiveModel);
+      } else if (slug.includes('fal')) {
+        resultBuffer = await callFalAiStyleTransfer(apiKey, imageBuffer, style.editPrompt || finalPrompt, style.negativePrompt || '', strength);
       } else {
         throw new Error(`Provider "${provider.name}" für Style Transfer nicht unterstützt.`);
       }

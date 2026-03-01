@@ -106,7 +106,7 @@ Berechtigung: ADMIN only
 Liste aller Package Definitions mit Feature Flags
 ```bash
 curl -H "Authorization: Bearer $ADMIN_TOKEN" \
-  http://localhost:4000/api/admin/feature-flags
+  http://localhost:8001/api/admin/feature-flags
 ```
 
 **Response:**
@@ -145,7 +145,7 @@ curl -H "Authorization: Bearer $ADMIN_TOKEN" \
 Einzelne Package Definition
 ```bash
 curl -H "Authorization: Bearer $ADMIN_TOKEN" \
-  http://localhost:4000/api/admin/feature-flags/pkg_123
+  http://localhost:8001/api/admin/feature-flags/pkg_123
 ```
 
 #### **PUT /api/admin/feature-flags/:id**
@@ -155,7 +155,7 @@ curl -X PUT \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"allowVideoUpload": false}' \
-  http://localhost:4000/api/admin/feature-flags/pkg_123
+  http://localhost:8001/api/admin/feature-flags/pkg_123
 ```
 
 #### **POST /api/admin/feature-flags**
@@ -171,7 +171,7 @@ curl -X POST \
     "allowGuestbook": true,
     "allowZipDownload": true
   }' \
-  http://localhost:4000/api/admin/feature-flags
+  http://localhost:8001/api/admin/feature-flags
 ```
 
 #### **DELETE /api/admin/feature-flags/:id**
@@ -179,7 +179,7 @@ Delete Package Definition
 ```bash
 curl -X DELETE \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
-  http://localhost:4000/api/admin/feature-flags/pkg_123
+  http://localhost:8001/api/admin/feature-flags/pkg_123
 ```
 
 ---
@@ -439,14 +439,14 @@ Admin schaltet Gästebuch für "Free" an → User B sieht es jetzt auch
 ```bash
 # Get all packages
 curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:4000/api/admin/feature-flags
+  http://localhost:8001/api/admin/feature-flags
 
 # Toggle feature
 curl -X PUT \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"allowVideoUpload": true}' \
-  http://localhost:4000/api/admin/feature-flags/$PACKAGE_ID
+  http://localhost:8001/api/admin/feature-flags/$PACKAGE_ID
 ```
 
 ---

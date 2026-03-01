@@ -859,4 +859,42 @@ router.delete('/event-automations/:eventId/:workflowId', authMiddleware, async (
   }
 });
 
+// ─── Execution Log (from qaLogEvent) ─────────────────────────────────────────
+
+router.get('/execution-log', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.userRole !== 'ADMIN') return res.status(403).json({ error: 'Nur Admins' });
+
+    const { limit = '50', workflowId } = req.query;
+    const take = Math.min(parseInt(limit as string) || 50, 200);
+
+    const where: any = {
+      type: { in: ['WORKFLOW_EXECUTED', 'WORKFLOW_NOTIFICATION', 'PRINT_JOB_CREATED'] },
+    };
+
+    if (workflowId) {
+      where.data = { path: ['workflowId'], equals: workflowId };
+    }
+
+    const logs = await prisma.qaLogEvent.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take,
+      select: {
+        id: true,
+        type: true,
+        level: true,
+        message: true,
+        data: true,
+        createdAt: true,
+      },
+    });
+
+    res.json({ logs, total: logs.length });
+  } catch (error) {
+    logger.error('Execution log error', { message: (error as Error).message });
+    res.status(500).json({ error: 'Fehler beim Laden der Execution Logs' });
+  }
+});
+
 export default router;

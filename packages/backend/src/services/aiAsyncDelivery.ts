@@ -24,7 +24,7 @@ export interface AiJobCreateInput {
 export interface AiJobResult {
   id: string;
   shortCode: string;
-  status: 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  status: 'QUEUED' | 'PROCESSING' | 'DONE' | 'FAILED';
   feature: string;
   resultUrl?: string | null;
   error?: string | null;
@@ -47,7 +47,7 @@ async function generateUniqueShortCode(): Promise<string> {
   for (let attempt = 0; attempt < 10; attempt++) {
     const code = generateShortCode();
     const existing = await prisma.$queryRawUnsafe<any[]>(
-      `SELECT 1 FROM ai_jobs WHERE short_code = $1 LIMIT 1`, code,
+      `SELECT 1 FROM ai_jobs WHERE "shortCode" = $1 LIMIT 1`, code,
     );
     if (existing.length === 0) return code;
   }
@@ -57,21 +57,21 @@ async function generateUniqueShortCode(): Promise<string> {
 export async function createAiJob(input: AiJobCreateInput): Promise<AiJobResult> {
   const shortCode = await generateUniqueShortCode();
   const rows = await prisma.$queryRawUnsafe<any[]>(
-    `INSERT INTO ai_jobs (event_id, photo_id, user_id, device_id, feature, input_data, short_code, status)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, 'QUEUED')
-     RETURNING id, short_code, status, feature, created_at`,
-    input.eventId, input.photoId || null, input.userId || null, input.deviceId || null,
+    `INSERT INTO ai_jobs (id, "eventId", "photoId", workflow, parameters, "shortCode", status, "createdAt", "updatedAt")
+     VALUES (gen_random_uuid()::text, $1, $2, $3, $4::jsonb, $5, 'QUEUED', NOW(), NOW())
+     RETURNING id, "shortCode", status, workflow, "createdAt"`,
+    input.eventId, input.photoId || null,
     input.feature, JSON.stringify(input.inputData || {}), shortCode,
   );
   const row = rows[0];
   logger.info('[AiAsync] Job created', { id: row.id, shortCode, feature: input.feature });
-  return { id: row.id, shortCode: row.short_code, status: 'QUEUED', feature: row.feature, createdAt: row.created_at };
+  return { id: row.id, shortCode: row.shortCode, status: 'QUEUED', feature: row.workflow, createdAt: row.createdAt };
 }
 
 export async function getAiJobByShortCode(shortCode: string): Promise<AiJobResult | null> {
   const rows = await prisma.$queryRawUnsafe<any[]>(
-    `SELECT id, short_code, status, feature, result_url, error, created_at, started_at, completed_at
-     FROM ai_jobs WHERE short_code = $1 AND expires_at > NOW() LIMIT 1`,
+    `SELECT id, "shortCode", status, workflow, "resultUrl", error, "createdAt", "startedAt", "completedAt"
+     FROM ai_jobs WHERE "shortCode" = $1 LIMIT 1`,
     shortCode.toUpperCase(),
   );
   if (rows.length === 0) return null;
@@ -80,7 +80,7 @@ export async function getAiJobByShortCode(shortCode: string): Promise<AiJobResul
 
 export async function getAiJobById(jobId: string): Promise<AiJobResult | null> {
   const rows = await prisma.$queryRawUnsafe<any[]>(
-    `SELECT id, short_code, status, feature, result_url, error, created_at, started_at, completed_at
+    `SELECT id, "shortCode", status, workflow, "resultUrl", error, "createdAt", "startedAt", "completedAt"
      FROM ai_jobs WHERE id = $1 LIMIT 1`, jobId,
   );
   if (rows.length === 0) return null;
@@ -89,40 +89,40 @@ export async function getAiJobById(jobId: string): Promise<AiJobResult | null> {
 
 export async function getAiJobsForDevice(eventId: string, deviceId: string): Promise<AiJobResult[]> {
   const rows = await prisma.$queryRawUnsafe<any[]>(
-    `SELECT id, short_code, status, feature, result_url, error, created_at, started_at, completed_at
-     FROM ai_jobs WHERE event_id = $1 AND device_id = $2 AND expires_at > NOW()
-     ORDER BY created_at DESC LIMIT 20`,
-    eventId, deviceId,
+    `SELECT id, "shortCode", status, workflow, "resultUrl", error, "createdAt", "startedAt", "completedAt"
+     FROM ai_jobs WHERE "eventId" = $1
+     ORDER BY "createdAt" DESC LIMIT 20`,
+    eventId,
   );
   return rows.map(mapRow);
 }
 
 export async function markJobProcessing(jobId: string): Promise<void> {
-  await prisma.$executeRawUnsafe(`UPDATE ai_jobs SET status = 'PROCESSING', started_at = NOW() WHERE id = $1`, jobId);
+  await prisma.$executeRawUnsafe(`UPDATE ai_jobs SET status = 'PROCESSING', "startedAt" = NOW(), "updatedAt" = NOW() WHERE id = $1`, jobId);
 }
 
 export async function markJobCompleted(jobId: string, resultUrl: string, resultStoragePath?: string): Promise<AiJobResult> {
   const rows = await prisma.$queryRawUnsafe<any[]>(
-    `UPDATE ai_jobs SET status = 'COMPLETED', result_url = $2, result_storage_path = $3, completed_at = NOW()
+    `UPDATE ai_jobs SET status = 'DONE', "resultUrl" = $2, "completedAt" = NOW(), "updatedAt" = NOW()
      WHERE id = $1
-     RETURNING id, short_code, status, feature, result_url, error, created_at, started_at, completed_at`,
-    jobId, resultUrl, resultStoragePath || null,
+     RETURNING id, "shortCode", status, workflow, "resultUrl", error, "createdAt", "startedAt", "completedAt"`,
+    jobId, resultUrl,
   );
   if (rows.length === 0) throw new Error(`Job ${jobId} not found`);
-  logger.info('[AiAsync] Job completed', { jobId, shortCode: rows[0].short_code });
+  logger.info('[AiAsync] Job completed', { jobId, shortCode: rows[0].shortCode });
   return mapRow(rows[0]);
 }
 
 export async function markJobFailed(jobId: string, error: string): Promise<void> {
   await prisma.$executeRawUnsafe(
-    `UPDATE ai_jobs SET status = 'FAILED', error = $2, completed_at = NOW() WHERE id = $1`,
+    `UPDATE ai_jobs SET status = 'FAILED', error = $2, "completedAt" = NOW(), "updatedAt" = NOW() WHERE id = $1`,
     jobId, error.slice(0, 1000),
   );
   logger.warn('[AiAsync] Job failed', { jobId, error: error.slice(0, 200) });
 }
 
 export async function cleanupExpiredJobs(): Promise<number> {
-  const result = await prisma.$executeRawUnsafe(`DELETE FROM ai_jobs WHERE expires_at < NOW()`);
+  const result = await prisma.$executeRawUnsafe(`DELETE FROM ai_jobs WHERE "completedAt" < NOW() - INTERVAL '7 days'`);
   if (typeof result === 'number' && result > 0) logger.info('[AiAsync] Cleaned expired jobs', { count: result });
   return typeof result === 'number' ? result : 0;
 }
@@ -159,8 +159,8 @@ export async function executeAsync(
 
 function mapRow(row: any): AiJobResult {
   return {
-    id: row.id, shortCode: row.short_code, status: row.status, feature: row.feature,
-    resultUrl: row.result_url, error: row.error, createdAt: row.created_at,
-    startedAt: row.started_at, completedAt: row.completed_at,
+    id: row.id, shortCode: row.shortCode, status: row.status, feature: row.workflow,
+    resultUrl: row.resultUrl, error: row.error, createdAt: row.createdAt,
+    startedAt: row.startedAt, completedAt: row.completedAt,
   };
 }

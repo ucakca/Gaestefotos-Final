@@ -589,6 +589,42 @@ if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD)
   });
 }
 
+// Fallback: initialize from DB app_settings (smtp_config) if env vars not set
+(async () => {
+  if (process.env.SMTP_HOST) return; // already configured via env
+  try {
+    const crypto = await import('crypto');
+    const raw = process.env.TWO_FACTOR_ENCRYPTION_KEY;
+    if (!raw) return;
+    const row = await prisma.$queryRawUnsafe<any[]>(
+      `SELECT value FROM app_settings WHERE key = 'smtp_config' LIMIT 1`
+    );
+    if (!row?.[0]?.value) return;
+    const cfg = typeof row[0].value === 'string' ? JSON.parse(row[0].value) : row[0].value;
+    if (!cfg.host || !cfg.user) return;
+    let password = '';
+    if (cfg.passwordEnc) {
+      const enc = typeof cfg.passwordEnc === 'string' ? JSON.parse(cfg.passwordEnc) : cfg.passwordEnc;
+      const key = Buffer.from(raw, 'hex');
+      const dc = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(enc.iv, 'base64'));
+      dc.setAuthTag(Buffer.from(enc.tag, 'base64'));
+      password = Buffer.concat([dc.update(Buffer.from(enc.encrypted, 'base64')), dc.final()]).toString('utf8');
+    }
+    await emailService.configure({
+      host: cfg.host,
+      port: cfg.port || 465,
+      secure: cfg.secure ?? true,
+      user: cfg.user,
+      password,
+      from: cfg.from || cfg.user,
+      tlsOptions: cfg.servername ? { servername: cfg.servername } : undefined,
+    });
+    logger.info('[EmailService] Configured from DB app_settings');
+  } catch (err) {
+    logger.warn('[EmailService] DB init failed', { error: (err as Error).message });
+  }
+})();
+
 
 
 

@@ -155,7 +155,9 @@ async function callStabilityBgRemoval(imageBuffer: Buffer, provider: any): Promi
  * Call remove.bg API
  */
 async function callRemoveBgApi(imageBuffer: Buffer, provider: any): Promise<Buffer> {
-  const baseUrl = provider.baseUrl || 'https://api.remove.bg';
+  let baseUrl = provider.baseUrl || 'https://api.remove.bg';
+  // Strip trailing path segments to avoid double /v1.0
+  baseUrl = baseUrl.replace(/\/v1\.0\/?$/, '');
   const url = `${baseUrl}/v1.0/removebg`;
 
   const formData = new FormData();

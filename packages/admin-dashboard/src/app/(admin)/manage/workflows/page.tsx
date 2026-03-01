@@ -1518,8 +1518,107 @@ function EventAutomationTab() {
   );
 }
 
+// ─── Execution Log Tab ─────────────────────────────────────────────────────────────────
+
+function ExecutionLogTab() {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadLogs = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { data } = await api.get('/workflows/execution-log?limit=100');
+      setLogs(data.logs || []);
+    } catch { /* ignore */ }
+    finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { loadLogs(); }, [loadLogs]);
+
+  const formatTime = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  };
+
+  const typeLabels: Record<string, { label: string; color: string }> = {
+    WORKFLOW_EXECUTED: { label: 'Ausgeführt', color: 'bg-green-100 text-green-700' },
+    WORKFLOW_NOTIFICATION: { label: 'Benachrichtigung', color: 'bg-blue-100 text-blue-700' },
+    PRINT_JOB_CREATED: { label: 'Druckauftrag', color: 'bg-amber-100 text-amber-700' },
+  };
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold">Execution Log</h2>
+          <p className="text-sm text-muted-foreground">Letzte Workflow-Ausführungen und Ergebnisse</p>
+        </div>
+        <button
+          onClick={loadLogs}
+          disabled={loading}
+          className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg border border-border hover:bg-muted/50 transition-colors"
+        >
+          {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RotateCcw className="w-3 h-3" />}
+          Aktualisieren
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+      ) : logs.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <History className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p className="text-sm">Noch keine Workflow-Ausführungen protokolliert.</p>
+        </div>
+      ) : (
+        <div className="rounded-xl border border-border/50 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-muted/30 border-b border-border/50">
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Zeitpunkt</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Typ</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Workflow</th>
+                <th className="px-4 py-2.5 text-left font-medium text-muted-foreground">Details</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/30">
+              {logs.map((log: any) => {
+                const meta = (log.data || {}) as any;
+                const typeInfo = typeLabels[log.type] || { label: log.type, color: 'bg-gray-100 text-gray-700' };
+                return (
+                  <tr key={log.id} className="hover:bg-muted/10 transition-colors">
+                    <td className="px-4 py-2.5 text-xs text-muted-foreground whitespace-nowrap">{formatTime(log.createdAt)}</td>
+                    <td className="px-4 py-2.5">
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${typeInfo.color}`}>
+                        {typeInfo.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5 text-xs">
+                      <div className="font-medium">{meta.workflowName || meta.workflowId?.slice(0, 8) || '—'}</div>
+                      {meta.trigger && <div className="text-muted-foreground">Trigger: {meta.trigger}</div>}
+                    </td>
+                    <td className="px-4 py-2.5 text-xs text-muted-foreground">
+                      {meta.stepsExecuted !== undefined && <span>{meta.stepsExecuted} Steps</span>}
+                      {meta.success !== undefined && (
+                        <span className={`ml-2 ${meta.success ? 'text-green-600' : 'text-red-600'}`}>
+                          {meta.success ? '✓ OK' : '✗ Fehler'}
+                        </span>
+                      )}
+                      {log.message && <div className="truncate max-w-xs" title={log.message}>{log.message}</div>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function WorkflowBuilderPage() {
-  const [activeTab, setActiveTab] = useState<'automations' | 'booth' | 'event-assign'>('automations');
+  const [activeTab, setActiveTab] = useState<'automations' | 'booth' | 'event-assign' | 'log'>('automations');
 
   return (
     <div className="h-screen flex flex-col">
@@ -1556,6 +1655,16 @@ export default function WorkflowBuilderPage() {
           >
             🔗 Event-Zuweisung
           </button>
+          <button
+            onClick={() => setActiveTab('log')}
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'log'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            📋 Execution Log
+          </button>
         </div>
       </div>
 
@@ -1568,6 +1677,10 @@ export default function WorkflowBuilderPage() {
         ) : activeTab === 'event-assign' ? (
           <div className="h-full overflow-y-auto">
             <EventAutomationTab />
+          </div>
+        ) : activeTab === 'log' ? (
+          <div className="h-full overflow-y-auto">
+            <ExecutionLogTab />
           </div>
         ) : (
           <ReactFlowProvider>

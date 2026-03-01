@@ -195,7 +195,7 @@ export async function startEventRecapWorker(): Promise<void> {
       for (const event of events) {
         // Check if recap was already sent (use EventReminderLog)
         const existing = await (prisma as any).eventReminderLog.findFirst({
-          where: { eventId: event.id, type: 'EVENT_RECAP' },
+          where: { eventId: event.id, kind: 'EVENT_RECAP' },
         }).catch(() => null);
 
         if (existing) continue;
@@ -206,7 +206,8 @@ export async function startEventRecapWorker(): Promise<void> {
           await (prisma as any).eventReminderLog.create({
             data: {
               eventId: event.id,
-              type: 'EVENT_RECAP',
+              kind: 'EVENT_RECAP',
+              daysBefore: 0,
               sentAt: new Date(),
             },
           }).catch(() => {});

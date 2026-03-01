@@ -51,6 +51,7 @@ import {
   Image,
   Video,
   Cpu,
+  Star,
 } from 'lucide-react';
 import { useAdminAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -141,6 +142,7 @@ const navigation: NavGroup[] = [
       { name: 'Embed Code', href: '/manage/embed', icon: Code2 },
       { name: 'Slideshow', href: '/manage/slideshow', icon: Presentation },
       { name: 'SMS Sharing', href: '/manage/sms', icon: MessageSquare },
+      { name: 'Feedback & Reviews', href: '/manage/feedback', icon: Star },
       { name: 'Woo Inbox', href: '/settings/woo', icon: ShoppingCart },
     ],
   },

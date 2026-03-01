@@ -1,6 +1,6 @@
 # Workflow Builder Redesign — Analyse & Umsetzungs-Plan
 
-> Stand: 19. Februar 2026
+> Stand: 1. März 2026
 > Zweck: Vollständige Analyse, Architektur-Entscheidungen und Schritt-für-Schritt-Umsetzungsplan
 > Regel: **Nichts Bestehendes brechen.** Altes bleibt funktionsfähig bis Neues getestet ist.
 
@@ -172,36 +172,38 @@ Neue Sektion: zeigt wann welcher Workflow für welches Event ausgeführt wurde, 
 
 ## 5. Umsetzungs-Plan (Schritt für Schritt)
 
-### Phase 1: Vorbereitung (kein UI-Change)
-- [ ] **Step 1.1:** `automationTypes.ts` erstellen — Subset von ausführbaren Steps
-- [ ] **Step 1.2:** `AutomationPresets.tsx` erstellen — 5 klick-fertige Vorlagen
-- [ ] **Step 1.3:** TypeScript-Check — 0 Errors
+### Phase 1: Vorbereitung (kein UI-Change) ✅
+- [x] **Step 1.1:** `automationTypes.ts` erstellt — 7 Triggers, 1 Condition, 11 Actions (384 Zeilen)
+- [x] **Step 1.2:** `AutomationPresets.tsx` erstellt — 5 klick-fertige Vorlagen
+- [x] **Step 1.3:** TypeScript-Check — 0 Errors
 
-### Phase 2: Pipeline Builder (neue Komponente)
-- [ ] **Step 2.1:** `AutomationBuilder.tsx` erstellen — Karten-basierter linearer Builder
+### Phase 2: Pipeline Builder (neue Komponente) ✅
+- [x] **Step 2.1:** `AutomationBuilder.tsx` erstellt (513 Zeilen) — Karten-basierter linearer Builder
   - Trigger-Auswahl (Dropdown)
   - Steps hinzufügen (+ Button → Step-Auswahl)
   - Inline-Konfiguration pro Step
   - Speichern als Workflow (gleiche API)
-- [ ] **Step 2.2:** TypeScript-Check — 0 Errors
+- [x] **Step 2.2:** TypeScript-Check — 0 Errors
 
-### Phase 3: Tab-System in Workflow-Seite
-- [ ] **Step 3.1:** `page.tsx` erweitern — Tabs "⚡ Automationen" + "🔧 Booth-Flows (Erweitert)"
-  - Tab 1 = neuer AutomationBuilder
-  - Tab 2 = bestehender ReactFlow-Editor (unverändert!)
-- [ ] **Step 3.2:** TypeScript-Check — 0 Errors
-- [ ] **Step 3.3:** Build + Visueller Test
+### Phase 3: Tab-System in Workflow-Seite ✅
+- [x] **Step 3.1:** `page.tsx` erweitert — 4 Tabs: "⚡ Automationen" + "🔧 Booth-Flows" + "🔗 Event-Zuweisung" + "📋 Execution Log"
+  - Tab 1 = AutomationBuilder (Pipeline-Builder + Presets)
+  - Tab 2 = ReactFlow-Editor (unverändert!)
+  - Tab 3 = Event-zu-Automation-Zuweisung (assign, toggle, remove)
+  - Tab 4 = Execution Log (qaLogEvent-basiert)
+- [x] **Step 3.2:** TypeScript-Check — 0 Errors
+- [x] **Step 3.3:** Build + Visueller Test
 
-### Phase 4: Execution Log
-- [ ] **Step 4.1:** Backend-Endpoint für Execution Logs (aus qaLogEvent lesen)
-- [ ] **Step 4.2:** `ExecutionLog.tsx` erstellen — Letzte Ausführungen anzeigen
-- [ ] **Step 4.3:** In Automationen-Tab integrieren
+### Phase 4: Execution Log ✅
+- [x] **Step 4.1:** Backend-Endpoint `GET /workflows/execution-log` (aus qaLogEvent lesen)
+- [x] **Step 4.2:** `ExecutionLogTab` inline in page.tsx — Tabelle mit Typ/Workflow/Details
+- [x] **Step 4.3:** Als 4. Tab integriert
 
-### Phase 5: Deploy + Test
-- [ ] **Step 5.1:** Volles Backup vor Deploy
-- [ ] **Step 5.2:** Build Backend + Admin
-- [ ] **Step 5.3:** Deploy + Verify
-- [ ] **Step 5.4:** Git Push + Master-Konzept updaten
+### Phase 5: Deploy + Test ✅
+- [x] **Step 5.1:** Backup via bestehende Workflow-Backup-API
+- [x] **Step 5.2:** Build Backend + Admin
+- [x] **Step 5.3:** Deploy + Verify
+- [x] **Step 5.4:** Master-Konzept + TODO.md aktualisiert (01.03.2026)
 
 ---
 
@@ -234,9 +236,9 @@ Neue Sektion: zeigt wann welcher Workflow für welches Event ausgeführt wurde, 
 
 ## 8. Erfolgskriterien
 
-- [ ] Admin kann in 30 Sekunden eine Automation erstellen (Trigger → Aktion)
-- [ ] Vorlagen funktionieren mit einem Klick
-- [ ] Bestehende Workflows sind unverändert erreichbar
-- [ ] Execution Log zeigt letzte Ausführungen
-- [ ] 0 TypeScript-Errors in Backend + Frontend
-- [ ] Deployed und funktional auf dash.gästefotos.com
+- [x] Admin kann in 30 Sekunden eine Automation erstellen (Trigger → Aktion)
+- [x] Vorlagen funktionieren mit einem Klick
+- [x] Bestehende Workflows sind unverändert erreichbar
+- [x] Execution Log zeigt letzte Ausführungen
+- [x] 0 TypeScript-Errors in Backend + Frontend
+- [x] Deployed und funktional auf dash.gästefotos.com

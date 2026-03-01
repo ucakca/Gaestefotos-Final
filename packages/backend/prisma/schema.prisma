@@ -2608,3 +2608,23 @@ enum AiJobStatus {
   FAILED
   CANCELLED
 }
+
+// ─── Guest Feedback / Google Review Flow ─────────────────────────────────────
+
+model GuestFeedback {
+  id              String    @id @default(uuid())
+  eventId         String?
+  aiJobId         String?
+  rating          Int       // 1-5 stars
+  message         String?   // Internal feedback text (1-3 stars)
+  context         String    @default("result_page") // result_page, gallery, booth
+  googleReviewSent Boolean  @default(false) // true if user was redirected to Google
+  ipHash          String?
+  userAgent       String?
+  createdAt       DateTime  @default(now())
+
+  @@index([eventId])
+  @@index([rating])
+  @@index([createdAt])
+  @@map("guest_feedback")
+}

@@ -706,14 +706,15 @@ export async function isAiOnline(): Promise<boolean> {
       method: 'HEAD',
       signal: AbortSignal.timeout(3000),
     });
-    return response.ok || response.status === 401 || response.status === 403;
+    // Any HTTP response (even 4xx) means the API is reachable
+    return response.status > 0;
   } catch {
     try {
       const response = await fetch('https://api.openai.com', {
         method: 'HEAD',
         signal: AbortSignal.timeout(3000),
       });
-      return response.ok || response.status === 401 || response.status === 403;
+      return response.status > 0;
     } catch {
       return false;
     }

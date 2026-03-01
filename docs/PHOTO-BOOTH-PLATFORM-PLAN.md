@@ -774,12 +774,12 @@ Alle getroffenen Entscheidungen auf einen Blick:
 
 | # | Aufgabe | Priorität | Status | Details |
 |---|---------|-----------|--------|---------|
-| A1 | **face_switch → FAL.ai echter Face Swap** | 🔴 SOFORT | Offen | `services/faceSwitch.ts` komplett ersetzen — sharp.composite() durch `fal-ai/inswapper` API-Call |
-| A2 | **Face Detection Model-Check beim Start** | 🔴 HOCH | Offen | Admin-Warnung wenn `packages/backend/models/` leer/fehlt, statt silent fallback |
-| A3 | **Face Search → ArcFace 512-dim** | 🟡 HOCH | Offen | `services/faceRecognition.ts` — InsightFace (via FAL oder lokal) statt TinyFaceDetector 128-dim |
-| A4 | **Identity Preservation für Style Effects** | 🟡 MITTEL | Offen | `services/aiStyleEffects.ts` — FAL InstantID Branch für yearbook/oldify/cartoon |
-| A5 | **Stability AI v1 API deprecieren** | 🟡 MITTEL | Offen | `services/aiStyleEffects.ts:231` — auf Stability v2beta oder abschalten |
-| A6 | **Replicate Steps erhöhen** | 🟢 NIEDRIG | Offen | `services/aiStyleEffects.ts:316` — 20 → 30 num_inference_steps |
+| A1 | **face_switch → FAL.ai echter Face Swap** | 🔴 SOFORT | ✅ Erledigt | `faceSwitch.ts` nutzt `fal-ai/inswapper` mit AI-Fallback auf resize+paste (01.03.2026) |
+| A2 | **Face Detection Model-Check beim Start** | 🔴 HOCH | ✅ Erledigt | `checkModelsAvailable()` + Admin-Endpoint `/api/admin/ops/face-models`, alle 6 Models vorhanden (01.03.2026) |
+| A3 | **Face Search → ArcFace 512-dim** | 🟡 HOCH | ✅ Erledigt | `extractArcFaceEmbedding()` via fal.ai InsightFace in `jobWorkers.ts`, pgvector `descriptorArc` Spalte (01.03.2026) |
+| A4 | **Identity Preservation für Style Effects** | 🟡 MITTEL | ✅ Erledigt | `callFalInstantId()` Branch in `aiStyleEffects.ts`, IDENTITY_PROMPTS für yearbook/oldify/cartoon (01.03.2026) |
+| A5 | **Stability AI v1 API deprecieren** | 🟡 MITTEL | ✅ Erledigt | Deprecation-Warning hinzugefügt, fal.ai ist primärer Provider, Stability als Fallback (01.03.2026) |
+| A6 | **Replicate Steps erhöhen** | 🟢 NIEDRIG | ✅ Erledigt | Bereits bei 35 `num_inference_steps` (Code war schon aktualisiert) (01.03.2026) |
 
 ### 11.3 AI Produkt-Features (No-Code Layer)
 

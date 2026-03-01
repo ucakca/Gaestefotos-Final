@@ -57,8 +57,8 @@ router.get('/admin/list', authMiddleware, async (req: AuthRequest, res: Response
     let paramIdx = 1;
 
     if (status) { where += ` AND status = $${paramIdx++}`; params.push(status.toUpperCase()); }
-    if (feature) { where += ` AND feature = $${paramIdx++}`; params.push(feature); }
-    if (eventId) { where += ` AND event_id = $${paramIdx++}`; params.push(eventId); }
+    if (feature) { where += ` AND workflow = $${paramIdx++}`; params.push(feature); }
+    if (eventId) { where += ` AND "eventId" = $${paramIdx++}`; params.push(eventId); }
 
     const countRows = await (await import('../config/database')).default.$queryRawUnsafe<any[]>(
       `SELECT COUNT(*)::int as total FROM ai_jobs ${where}`, ...params,
@@ -66,11 +66,11 @@ router.get('/admin/list', authMiddleware, async (req: AuthRequest, res: Response
     const total = countRows[0]?.total || 0;
 
     const rows = await (await import('../config/database')).default.$queryRawUnsafe<any[]>(
-      `SELECT id, event_id, photo_id, device_id, feature, status, short_code, result_url, error,
-              created_at, started_at, completed_at, expires_at,
-              EXTRACT(EPOCH FROM (COALESCE(completed_at, NOW()) - COALESCE(started_at, created_at)))::int as duration_sec
+      `SELECT id, "eventId", "photoId", "guestName", workflow as feature, status, "shortCode", "resultUrl", error,
+              "createdAt", "startedAt", "completedAt",
+              EXTRACT(EPOCH FROM (COALESCE("completedAt", NOW()) - COALESCE("startedAt", "createdAt")))::int as duration_sec
        FROM ai_jobs ${where}
-       ORDER BY created_at DESC
+       ORDER BY "createdAt" DESC
        LIMIT $${paramIdx++} OFFSET $${paramIdx++}`,
       ...params, limit, offset,
     );
@@ -79,16 +79,16 @@ router.get('/admin/list', authMiddleware, async (req: AuthRequest, res: Response
       `SELECT status, COUNT(*)::int as count FROM ai_jobs GROUP BY status`,
     );
     const featureRows = await (await import('../config/database')).default.$queryRawUnsafe<any[]>(
-      `SELECT feature, COUNT(*)::int as count FROM ai_jobs GROUP BY feature ORDER BY count DESC`,
+      `SELECT workflow as feature, COUNT(*)::int as count FROM ai_jobs GROUP BY workflow ORDER BY count DESC`,
     );
 
     res.json({
       jobs: rows.map((r: any) => ({
-        id: r.id, eventId: r.event_id, photoId: r.photo_id, deviceId: r.device_id,
-        feature: r.feature, status: r.status, shortCode: r.short_code,
-        resultUrl: r.result_url, error: r.error,
-        createdAt: r.created_at, startedAt: r.started_at, completedAt: r.completed_at,
-        expiresAt: r.expires_at, durationSec: r.duration_sec,
+        id: r.id, eventId: r.eventId, photoId: r.photoId, guestName: r.guestName,
+        feature: r.feature, status: r.status, shortCode: r.shortCode,
+        resultUrl: r.resultUrl, error: r.error,
+        createdAt: r.createdAt, startedAt: r.startedAt, completedAt: r.completedAt,
+        durationSec: r.duration_sec,
       })),
       total,
       stats: Object.fromEntries(statsRows.map((r: any) => [r.status, r.count])),
@@ -196,7 +196,10 @@ router.post('/face-swap', authMiddleware, async (req: AuthRequest, res: Response
 
         const photo = await db.photo.findUnique({ where: { id: photoId }, select: { storagePath: true, url: true } });
         if (!photo?.storagePath) throw new Error('Foto nicht gefunden');
-        const guestUrl = photo.url || await storageService.getFileUrl(photo.storagePath);
+
+        // Read photo from storage and convert to base64 data URI (localhost URLs aren't accessible from fal.ai)
+        const guestBuffer = await storageService.getFile(photo.storagePath);
+        const guestDataUri = `data:image/jpeg;base64,${guestBuffer.toString('base64')}`;
 
         const provider = await resolveProvider('face_switch');
         if (!provider) throw new Error('Kein Face-Swap Provider');
@@ -207,20 +210,28 @@ router.post('/face-swap', authMiddleware, async (req: AuthRequest, res: Response
         const submitRes = await fetch(queueUrl, {
           method: 'POST',
           headers: { Authorization: `Key ${apiKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ base_image_url: tplUrl, swap_image_url: guestUrl }),
+          body: JSON.stringify({ base_image_url: tplUrl, swap_image_url: guestDataUri }),
         });
-        if (!submitRes.ok) throw new Error(`FAL queue error ${submitRes.status}`);
-        const { request_id } = await submitRes.json() as any;
+        if (!submitRes.ok) {
+          const errBody = await submitRes.text();
+          throw new Error(`FAL queue error ${submitRes.status}: ${errBody.slice(0, 200)}`);
+        }
+        const submitData = await submitRes.json() as any;
+        const request_id = submitData.request_id;
+        const statusUrl = submitData.status_url || `https://queue.fal.run/${swapModel}/requests/${request_id}/status`;
+        const responseUrl = submitData.response_url || `https://queue.fal.run/${swapModel}/requests/${request_id}`;
 
         for (let i = 0; i < 120; i++) {
           await new Promise(ok => setTimeout(ok, 5000));
-          const sRes = await fetch(`https://queue.fal.run/${swapModel}/requests/${request_id}/status`, { headers: { Authorization: `Key ${apiKey}` } });
-          const sData = await sRes.json() as any;
+          const sRes = await fetch(statusUrl, { headers: { Authorization: `Key ${apiKey}` } });
+          const sText = await sRes.text();
+          let sData: any;
+          try { sData = JSON.parse(sText); } catch { continue; }
           if (sData.status === 'COMPLETED') break;
           if (sData.status === 'FAILED') throw new Error('Face swap failed');
         }
 
-        const rRes = await fetch(`https://queue.fal.run/${swapModel}/requests/${request_id}`, { headers: { Authorization: `Key ${apiKey}` } });
+        const rRes = await fetch(responseUrl, { headers: { Authorization: `Key ${apiKey}` } });
         const rData = await rRes.json() as any;
         const outputUrl = rData?.image?.url || rData?.output?.url || '';
         if (!outputUrl) throw new Error('Kein Ergebnis-Bild');

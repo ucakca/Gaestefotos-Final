@@ -109,13 +109,14 @@ Admin endpoints (Backend mounts in `packages/backend/src/index.ts`):
   - `POST /api/events/:id/reference-image`
   - `DELETE /api/events/:id/reference-image`
 
-- AI Async Delivery:
-  - `POST /api/ai/async-delivery` → `packages/backend/src/routes/aiAsyncDelivery.ts`
-  - `GET /api/ai/async-delivery/:shortCode`
+- AI Async Delivery (mounted at `/api/ai-jobs`):
+  - `GET /api/ai-jobs/video-models` → `packages/backend/src/routes/aiAsyncDelivery.ts`
+  - `GET /api/ai-jobs/:shortCode`
+  - `GET /api/ai-jobs/admin/list`
 
-- Face-Off:
-  - `POST /api/ai/face-off` → `packages/backend/src/routes/faceOff.ts`
-  - `GET /api/ai/face-off/:id`
+- Face-Off (mounted at `/api/events`):
+  - `POST /api/events/:eventId/face-off` → `packages/backend/src/routes/faceOff.ts`
+  - `GET /api/events/:eventId/face-off/:id`
 
 - Debug Mode:
   - `GET /api/debug/enabled` (public) → `packages/backend/src/routes/debug.ts`
@@ -129,6 +130,80 @@ Admin endpoints (Backend mounts in `packages/backend/src/index.ts`):
   - `GET /cdn/:photoId` → `packages/backend/src/routes/imageCdn.ts`
   - Query-Params: `?w=400&q=80&f=webp`
   - On-the-fly Resize + Format-Conversion via Sharp
+
+- AI Knowledge Store / Cache:
+  - `GET /api/ai/cache/stats` → `packages/backend/src/routes/ai.ts`
+  - `GET /api/ai/cache/online-status`
+  - `POST /api/ai/cache/seed` (Admin, event types)
+  - `POST /api/ai/cache/seed-extended` (Admin, extended seeding)
+
+- Style Transfer:
+  - `POST /api/style-transfer/:eventId` → `packages/backend/src/routes/styleTransfer.ts`
+  - Provider: fal.ai (flux/dev img2img)
+
+- Booth Games:
+  - `POST /api/booth-games/:game` → `packages/backend/src/routes/boothGames.ts`
+  - Games: compliment-mirror, fortune-teller, ai-roast, ai-bingo, ai-meme, photo-critic, couple-match, etc.
+  - `POST /api/booth-games/bg-removal` (Background Removal via remove.bg)
+  - `POST /api/booth-games/face-switch` (Face Switch via fal.ai inswapper)
+
+- SMS Sharing:
+  - `GET /api/sms/status` → `packages/backend/src/routes/smsShare.ts`
+  - `POST /api/sms/share-photo`
+
+- Gallery Embed:
+  - `GET /api/events/:eventId/embed` → `packages/backend/src/routes/galleryEmbed.ts`
+  - `GET /embed/:slug` (public embed page, HTML response)
+
+- AI Jobs (RunPod/ComfyUI):
+  - `POST /api/ai-jobs` → `packages/backend/src/routes/aiJobs.ts`
+  - `GET /api/ai-jobs/:id`
+  - `GET /api/ai-jobs/video-models`
+  - `GET /api/ai-jobs/admin/list`
+
+- Result Page:
+  - `GET /api/r/:shortCode` → `resultRouter` exported from `packages/backend/src/routes/aiJobs.ts`
+
+- Cost Monitoring (Admin):
+  - `GET /api/admin/cost-monitoring/summary` → `packages/backend/src/routes/adminCostMonitoring.ts`
+  - `GET /api/admin/cost-monitoring/timeline`
+  - `GET /api/admin/cost-monitoring/top-events`
+  - `GET /api/admin/cost-monitoring/alerts`
+
+- Trend Monitor (Admin):
+  - `GET /api/admin/trend-monitor` → `packages/backend/src/routes/trendMonitor.ts`
+
+- Guest Feedback / Google Review:
+  - `POST /api/feedback` → `packages/backend/src/routes/feedback.ts` (public, kein Auth)
+  - `PATCH /api/feedback/:id/google-sent` (Google-Klick markieren)
+  - `GET /api/feedback/stats` (Admin)
+  - `GET /api/feedback` (Admin, paginiert)
+
+- Booth Setup:
+  - `POST /api/booth/setup` → `packages/backend/src/routes/boothSetup.ts`
+  - `GET /api/booth/config/:eventId`
+  - `POST /api/booth/heartbeat`
+  - `POST /api/booth/upload`
+
+- Booth Games:
+  - `POST /api/booth-games/:game` → `packages/backend/src/routes/boothGames.ts`
+  - Games: compliment-mirror, fortune-teller, ai-roast, ai-bingo, ai-meme, photo-critic, couple-match, face-switch, bg-removal, style-effect, etc.
+
+- Workflows:
+  - `GET /api/workflows` → `packages/backend/src/routes/workflows.ts`
+  - `POST /api/workflows`
+  - `PUT /api/workflows/:id`
+  - `DELETE /api/workflows/:id`
+
+- Hardware:
+  - `GET /api/hardware/:eventId` → `packages/backend/src/routes/hardware.ts`
+  - `POST /api/hardware/:eventId`
+
+- Air Graffiti:
+  - `POST /api/events/:eventId/graffiti` → `packages/backend/src/routes/graffiti.ts`
+
+- Payments:
+  - `POST /api/payments` → `packages/backend/src/routes/payments.ts`
 
 ## WordPress Bridge (v1)
 

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Share2, Loader2, CheckCircle, XCircle, Clock, Sparkles, ArrowLeft } from 'lucide-react';
+import { Download, Share2, Loader2, CheckCircle, XCircle, Clock, Sparkles, ArrowLeft, Star, Send, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 interface AiResult {
@@ -26,6 +26,200 @@ const WORKFLOW_LABELS: Record<string, string> = {
   vintage: 'Zeitreise',
   upscale_4x: 'HD Upscaling',
 };
+
+// ─── Feedback / Google Review Flow ─────────────────────────────────────────
+type FeedbackPhase = 'idle' | 'rating' | 'feedback-form' | 'google-redirect' | 'thank-you';
+
+function FeedbackFlow({ eventId, aiJobId }: { eventId?: string; aiJobId?: string }) {
+  const [phase, setPhase] = useState<FeedbackPhase>('idle');
+  const [hoverStar, setHoverStar] = useState(0);
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [googleUrl, setGoogleUrl] = useState<string | null>(null);
+  const [feedbackId, setFeedbackId] = useState<string | null>(null);
+
+  const submitFeedback = useCallback(async (rating: number, message?: string, googleSent?: boolean) => {
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating, message, eventId, aiJobId, context: 'result_page', googleReviewSent: googleSent }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFeedbackId(data.id);
+        return data;
+      }
+    } catch { /* ignore */ }
+    finally { setSubmitting(false); }
+    return null;
+  }, [eventId, aiJobId]);
+
+  const handleStarClick = useCallback(async (star: number) => {
+    setSelectedRating(star);
+    if (star >= 4) {
+      // Submit immediately, check for Google redirect
+      const data = await submitFeedback(star);
+      if (data?.googleReviewUrl) {
+        setGoogleUrl(data.googleReviewUrl);
+        setPhase('google-redirect');
+      } else {
+        setPhase('thank-you');
+      }
+    } else {
+      // 1-3 stars: show internal feedback form
+      setPhase('feedback-form');
+    }
+  }, [submitFeedback]);
+
+  const handleFeedbackSubmit = useCallback(async () => {
+    await submitFeedback(selectedRating, feedbackText);
+    setPhase('thank-you');
+  }, [selectedRating, feedbackText, submitFeedback]);
+
+  const handleGoogleClick = useCallback(async () => {
+    if (feedbackId) {
+      fetch(`/api/feedback/${feedbackId}/google-sent`, { method: 'PATCH' }).catch(() => {});
+    }
+    if (googleUrl) window.open(googleUrl, '_blank');
+    setPhase('thank-you');
+  }, [feedbackId, googleUrl]);
+
+  if (phase === 'idle') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.5 }}
+        className="text-center pt-4"
+      >
+        <button
+          onClick={() => setPhase('rating')}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Hat dir das gefallen? Bewerte uns! ⭐
+        </button>
+      </motion.div>
+    );
+  }
+
+  if (phase === 'rating') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-card/50 backdrop-blur rounded-2xl border border-border p-6 text-center space-y-3"
+      >
+        <p className="text-sm font-medium text-foreground">Wie hat dir das Ergebnis gefallen?</p>
+        <div className="flex justify-center gap-1" onMouseLeave={() => setHoverStar(0)}>
+          {[1, 2, 3, 4, 5].map(star => (
+            <motion.button
+              key={star}
+              onMouseEnter={() => setHoverStar(star)}
+              onClick={() => handleStarClick(star)}
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
+              disabled={submitting}
+              className="p-1 transition-colors"
+            >
+              <Star
+                className={`w-8 h-8 transition-colors ${
+                  star <= (hoverStar || selectedRating)
+                    ? 'fill-yellow-400 text-yellow-400'
+                    : 'text-muted-foreground/30'
+                }`}
+              />
+            </motion.button>
+          ))}
+        </div>
+        {submitting && <Loader2 className="w-4 h-4 animate-spin mx-auto text-muted-foreground" />}
+      </motion.div>
+    );
+  }
+
+  if (phase === 'feedback-form') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-card/50 backdrop-blur rounded-2xl border border-border p-6 space-y-4"
+      >
+        <div className="text-center">
+          <p className="text-sm font-medium text-foreground">Was können wir besser machen?</p>
+          <p className="text-xs text-muted-foreground mt-1">Dein Feedback hilft uns, den Service zu verbessern.</p>
+        </div>
+        <textarea
+          value={feedbackText}
+          onChange={e => setFeedbackText(e.target.value)}
+          placeholder="Dein Feedback..."
+          rows={3}
+          maxLength={2000}
+          className="w-full rounded-xl border border-border bg-background/50 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-warning/50"
+        />
+        <div className="flex gap-2">
+          <button
+            onClick={handleFeedbackSubmit}
+            disabled={submitting}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-warning text-warning-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+          >
+            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            Absenden
+          </button>
+          <button
+            onClick={() => { submitFeedback(selectedRating); setPhase('thank-you'); }}
+            className="px-4 py-2.5 rounded-xl border border-border text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Überspringen
+          </button>
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (phase === 'google-redirect') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-card/50 backdrop-blur rounded-2xl border border-border p-6 text-center space-y-4"
+      >
+        <div className="text-3xl">🎉</div>
+        <p className="text-sm font-medium text-foreground">Danke für {selectedRating} Sterne!</p>
+        <p className="text-xs text-muted-foreground">Würdest du uns auch auf Google bewerten? Das hilft uns sehr!</p>
+        <div className="flex gap-2 justify-center">
+          <button
+            onClick={handleGoogleClick}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-500 text-white font-medium text-sm hover:bg-blue-600 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Auf Google bewerten
+          </button>
+          <button
+            onClick={() => setPhase('thank-you')}
+            className="px-4 py-2.5 rounded-xl border border-border text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Nein, danke
+          </button>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // thank-you
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="text-center py-3"
+    >
+      <p className="text-sm text-green-500 font-medium">✓ Danke für dein Feedback!</p>
+    </motion.div>
+  );
+}
+
+// ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function AiResultPage({ params }: { params: Promise<{ code: string }> }) {
   const [result, setResult] = useState<AiResult | null>(null);
@@ -275,6 +469,9 @@ export default function AiResultPage({ params }: { params: Promise<{ code: strin
                   </Link>
                 </div>
               )}
+
+              {/* Google Review / Feedback Flow */}
+              <FeedbackFlow eventId={result.eventSlug || undefined} />
 
               {/* Stats */}
               {result.computeTimeMs && (

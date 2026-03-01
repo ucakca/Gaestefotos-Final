@@ -30,6 +30,7 @@ import * as QRCode from 'qrcode';
 
 type AnimationType = 'fade' | 'slide' | 'zoom' | 'flip' | 'collage';
 type ViewMode = 'grid' | 'slideshow';
+type ContentFilter = 'all' | 'photos' | 'guestbook' | 'challenges' | 'stories';
 
 const ANIMATION_VARIANTS: Record<AnimationType, { initial: any; animate: any; exit: any }> = {
   fade: {
@@ -99,6 +100,10 @@ export default function LiveWallPage() {
   const [intervalSec, setIntervalSec] = useState(6);
   const [shuffleMode, setShuffleMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [contentFilter, setContentFilter] = useState<ContentFilter>('all');
+  const [allPhotos, setAllPhotos] = useState<Photo[]>([]);
+  const [confettiParticles, setConfettiParticles] = useState<{id:number;x:number;color:string;delay:number}[]>([]);
+  const confettiIdRef = useRef(0);
   const slideshowTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   const containerRef = useRef<HTMLDivElement>(null);
@@ -236,7 +241,7 @@ export default function LiveWallPage() {
 
       // Sort by date (newest first) and limit
       allPhotos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      setPhotos(allPhotos.slice(0, 50));
+      setAllPhotos(allPhotos.slice(0, 100));
       setLoading(false);
     } catch (err) {
       // Error loading photos
@@ -273,7 +278,51 @@ export default function LiveWallPage() {
     }
   };
 
+  // Apply content filter
+  const filteredPhotos = React.useMemo(() => {
+    if (contentFilter === 'all') return allPhotos;
+    return allPhotos.filter(p => {
+      switch (contentFilter) {
+        case 'photos': return !p.isGuestbookEntry && !p.isChallengeCompletion && !p.isStory;
+        case 'guestbook': return p.isGuestbookEntry;
+        case 'challenges': return p.isChallengeCompletion;
+        case 'stories': return p.isStory;
+        default: return true;
+      }
+    });
+  }, [allPhotos, contentFilter]);
+
+  // Keep photos state in sync with filteredPhotos for slideshow
+  useEffect(() => {
+    setPhotos(filteredPhotos.slice(0, 50));
+    setCurrentIndex(0);
+  }, [filteredPhotos]);
+
+  // Stats
+  const stats = React.useMemo(() => ({
+    total: allPhotos.length,
+    photos: allPhotos.filter(p => !p.isGuestbookEntry && !p.isChallengeCompletion && !p.isStory).length,
+    guestbook: allPhotos.filter(p => p.isGuestbookEntry).length,
+    challenges: allPhotos.filter(p => p.isChallengeCompletion).length,
+    stories: allPhotos.filter(p => p.isStory).length,
+  }), [allPhotos]);
+
   const currentPhoto = photos[currentIndex] || null;
+
+  // Spawn confetti when challenge photo appears
+  useEffect(() => {
+    if (currentPhoto?.isChallengeCompletion && viewMode === 'slideshow') {
+      const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+      const particles = Array.from({ length: 30 }, (_, i) => ({
+        id: confettiIdRef.current++,
+        x: Math.random() * 100,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        delay: Math.random() * 0.5,
+      }));
+      setConfettiParticles(particles);
+      setTimeout(() => setConfettiParticles([]), 3000);
+    }
+  }, [currentIndex, currentPhoto?.isChallengeCompletion, viewMode]);
 
   const nextSlide = () => {
     if (photos.length === 0) return;
@@ -415,6 +464,22 @@ export default function LiveWallPage() {
                   />
                   <span className="text-xs text-white font-mono">{intervalSec}s</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-white/60">Filter:</span>
+                  <div className="flex rounded-lg bg-card/10 p-0.5">
+                    {([{k:'all',l:'Alle'},{k:'photos',l:'📷'},{k:'guestbook',l:'💬'},{k:'challenges',l:'🏆'},{k:'stories',l:'📱'}] as {k:ContentFilter,l:string}[]).map(f => (
+                      <button
+                        key={f.k}
+                        onClick={() => setContentFilter(f.k)}
+                        className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                          contentFilter === f.k ? 'bg-blue-500 text-white' : 'text-white/50 hover:text-white'
+                        }`}
+                      >
+                        {f.l}{f.k !== 'all' && stats[f.k] > 0 ? ` ${stats[f.k]}` : ''}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className="text-xs text-white/40">
                   {photos.length} Medien • Foto {currentIndex + 1}/{photos.length}
                 </div>
@@ -528,6 +593,20 @@ export default function LiveWallPage() {
               </motion.div>
             )}
           </AnimatePresence>
+          {/* Confetti for Challenge Photos */}
+          <AnimatePresence>
+            {confettiParticles.map(p => (
+              <motion.div
+                key={p.id}
+                initial={{ top: -20, left: `${p.x}%`, opacity: 1, rotate: 0 }}
+                animate={{ top: '110%', opacity: [1, 1, 0], rotate: Math.random() > 0.5 ? 360 : -360 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 2.5 + Math.random(), delay: p.delay, ease: 'easeIn' }}
+                className="absolute z-30 pointer-events-none"
+                style={{ width: 10, height: 10, borderRadius: Math.random() > 0.5 ? '50%' : '2px', backgroundColor: p.color }}
+              />
+            ))}
+          </AnimatePresence>
           {/* Progress bar */}
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-card/10">
             <motion.div
@@ -542,6 +621,22 @@ export default function LiveWallPage() {
       ) : (
         /* ═══ GRID MODE ═══ */
         <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Grid Filter + Stats Bar */}
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <div className="flex rounded-lg bg-background p-0.5 border border-border">
+              {([{k:'all',l:'Alle',c:stats.total},{k:'photos',l:'📷 Fotos',c:stats.photos},{k:'guestbook',l:'💬 Gästebuch',c:stats.guestbook},{k:'challenges',l:'🏆 Challenges',c:stats.challenges},{k:'stories',l:'📱 Stories',c:stats.stories}] as {k:ContentFilter,l:string,c:number}[]).map(f => (
+                <button
+                  key={f.k}
+                  onClick={() => setContentFilter(f.k)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    contentFilter === f.k ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {f.l}{f.c > 0 ? ` (${f.c})` : ''}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
             <AnimatePresence>
               {photos.map((photo, index) => (

@@ -18,6 +18,7 @@
 10. [Slideshow Mode](#10-slideshow-mode)
 11. [Bulk Download (ZIP)](#11-bulk-download-zip)
 12. [Lead Collection](#12-lead-collection)
+13. [Feedback & Google Review Integration](#13-feedback--google-review-integration)
 
 ---
 
@@ -310,10 +311,10 @@ CreditBalance (userId, balance, totalConsumed, totalRecharged)
 ### API
 | Methode | Endpoint | Beschreibung |
 |---------|----------|--------------|
-| GET | `/api/admin/credits/balance` | Gesamt-Übersicht |
-| GET | `/api/admin/credits/transactions` | Transaktionen auflisten |
-| POST | `/api/admin/credits/add` | Credits einem User hinzufügen |
-| GET | `/api/admin/credits/user/:userId` | User-Balance abfragen |
+| GET | `/api/admin/credits/overview` | Gesamt-Übersicht |
+| GET | `/api/admin/credits/:userId` | User-Balance abfragen |
+| GET | `/api/admin/credits/:userId/history` | Transaktionen eines Users |
+| POST | `/api/admin/credits/:userId/add` | Credits einem User hinzufügen |
 
 ---
 
@@ -338,7 +339,8 @@ PENDING → SENT → DELIVERED
 ### API
 | Methode | Endpoint | Beschreibung |
 |---------|----------|--------------|
-| POST | `/api/sms/send` | SMS senden (Foto-Link an Telefonnummer) |
+| GET | `/api/sms/status` | SMS-Service Status (Auth) |
+| POST | `/api/sms/share-photo` | Foto per SMS teilen (Auth) |
 | GET | `/api/sms/admin/logs` | SMS-Logs (Admin) |
 | GET | `/api/sms/admin/stats` | SMS-Statistiken (Admin) |
 | GET | `/api/sms/admin/config` | Twilio-Config lesen (Admin) |
@@ -446,6 +448,37 @@ Gäste geben vor/nach dem Foto ihre Kontaktdaten ein (Name, E-Mail, Telefon). Ho
 | GET | `/api/leads/event/:eventId/stats` | Lead-Statistiken |
 | GET | `/api/leads/event/:eventId/export` | CSV-Export |
 | GET | `/api/leads/partner/:partnerId` | Partner-Leads |
+
+---
+
+## 13. Feedback & Google Review Integration
+
+### Konzept
+Nach dem Download eines AI-Ergebnisses auf der Ergebnis-Seite (`/r/:shortCode`) werden Gäste um eine Bewertung gebeten. Zufriedene Gäste (4-5★) werden zu Google Reviews weitergeleitet, unzufriedene (1-3★) geben internes Feedback — so landen nur positive Bewertungen öffentlich.
+
+### Flow
+1. Gast sieht AI-Ergebnis auf `/r/:shortCode` → Button "Hat dir das gefallen? ⭐"
+2. Gast klickt → 5-Sterne-Rating erscheint
+3. **4-5 Sterne**: Sofort gespeichert → "Bewerte uns auf Google!" (falls `google_place_id` konfiguriert)
+4. **1-3 Sterne**: Internes Feedback-Formular → "Was können wir besser machen?"
+5. Feedback wird in `GuestFeedback` gespeichert (IP-Dedup: 1 pro Stunde pro Event)
+
+### Konfiguration
+- **Global**: `AppSetting` mit key `google_place_id` → Google Place ID
+- **Pro Event**: `featuresConfig.googlePlaceId` überschreibt global
+
+### Für Admins
+- **Admin-Dashboard** → Sidebar → **"Feedback & Reviews"** (`/manage/feedback`)
+- Stats: Gesamt, Durchschnitt, Verteilung (1-5★), Google-Konversionsrate
+- Recent Feed: Letzte 20 Feedbacks mit Rating, Text, Zeitstempel
+
+### API
+| Methode | Endpoint | Beschreibung |
+|---------|----------|--------------|
+| POST | `/api/feedback` | Feedback abgeben (public, kein Auth) |
+| PATCH | `/api/feedback/:id/google-sent` | Google-Klick markieren |
+| GET | `/api/feedback/stats` | Feedback-Statistiken (Admin) |
+| GET | `/api/feedback` | Feedback-Liste (Admin) |
 
 ---
 

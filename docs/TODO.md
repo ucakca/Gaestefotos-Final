@@ -1,6 +1,6 @@
 # gästefotos.com — Master-TODO
 
-> Stand: 28. Februar 2026
+> Stand: 1. März 2026
 > Quelle: Docs-Audit (`DOCS-AUDIT-UND-MASTER-TODO.md`) — alle 58 MD-Dateien analysiert, 20 archiviert, 38 aktiv.
 
 ---
@@ -24,6 +24,12 @@
 | T4 WooCommerce (Backend) | eventCode-Generierung, WOOCOMMERCE_WEBHOOK_SECRET, 21 Events gefixt | 28.02.2026 |
 | T6 RunPod (Vorbereitung) | AiJob Prisma Model + DB-Tabelle, runpodService.ts, aiJobWorker.ts, API Routes | 28.02.2026 |
 | T8 Result Page | /r/:shortCode Frontend + Backend (Polling, Download, Share, Branding) | 28.02.2026 |
+| T7 FAL.ai E2E | Alle AI-Features getestet + gefixt: LLM (8/8), Style Transfer, Face Swap, Video (wan-i2v), BG Removal | 01.03.2026 |
+| T2 AI Quality | A1-A6 alle erledigt: Face Switch→fal.ai ✅, Model-Check ✅, ArcFace 512-dim ✅, InstantID ✅, Stability v1 deprecated, Replicate Steps 35 | 01.03.2026 |
+| Infra Fixes | 12 Bug-Fixes: .env Keys, camelCase SQL, jsonb cast, DONE enum, fal.ai Queue-URLs, wan-i2v Modell, /v1.0 doppelt, isAiOnline, Email DB-Init, eventRecap kind, gzip | 01.03.2026 |
+| Services | Backend ✅, WebSocket ✅, Redis ✅, Ollama ✅, SMTP/Postfix ✅, Knowledge Store (114 Einträge geseedet) | 01.03.2026 |
+| T9-T13 | SMS (Code ready, Twilio unconfigured), Email Share ✅, Gallery Embed ✅, ZIP Download ✅, Lead Collection 5 Endpoints ✅ | 01.03.2026 |
+| T5+T14+T15 | Docs Update (MASTER-KONZEPT, API_MAP), Live Wall (+Content-Filter, Stats, Konfetti), Workflow Builder (Execution Log, 4-Tab-System) | 01.03.2026 |
 
 ---
 
@@ -34,17 +40,17 @@
 | # | Task | Dokument | Status | Beschreibung |
 |---|------|----------|--------|--------------|
 | T1 | **User-Testing ALLE Features** | — | ⏳ | Alle 30 AI-Effekte, 14 LLM-Spiele, Face Search, Live Wall, Einladungen, QR-Styler, Galerie, Upload auf app/dash.gästefotos.com testen |
-| T2 | **AI Quality Bugs (6 kritisch)** | `PHOTO-BOOTH-PLATFORM-PLAN.md` §11.2 | ⏳ | A1: Face Swap sharp→fal.ai, A2: Face Detection Model-Check, A3: ArcFace 512-dim, A4: Identity Preservation, A5: Stability v1 deprecieren, A6: Replicate Steps erhöhen |
+| T2 | **AI Quality Bugs (6 kritisch)** | `PHOTO-BOOTH-PLATFORM-PLAN.md` §11.2 | ✅ | A1-A6 alle erledigt (01.03.2026) |
 | T3 | **Offene App-Bugs (3)** | `BUGS.md` | ✅ | ARCH-001: doppelte Funktionen eliminieren, ARCH-002: Design-Seite modernisieren/redirect, Unused Code entfernen |
-| T4 | **WooCommerce offene Punkte (8)** | `woocommerce-setup.md` | ✅ | Webhook-URL Alias, SKU-Sync, eventCode-Flow, Briefing-Email, Fehlerhandling, Admin Logs — alle 8 Punkte erledigt (WordPress-Seite: Produkte anlegen + Webhook konfigurieren noch offen) |
-| T5 | **Docs Updates** | `MASTER-KONZEPT.md`, `API_MAP.md`, `DEPLOYMENT.md` | ⏳ | Neue Routes + Booth-Experience verlinken + deploy.sh + archivierte Docs-Referenzen aktualisieren |
+| T4 | **WooCommerce offene Punkte (8)** | `woocommerce-setup.md` | ✅ | Backend + WordPress komplett: 14 Produkte mit SKUs, Webhook, eventCode Checkout-Feld, Admin Woo Inbox |
+| T5 | **Docs Updates** | `MASTER-KONZEPT.md`, `API_MAP.md`, `DEPLOYMENT.md` | ✅ | MASTER-KONZEPT aktualisiert (neue Routes, Services, Sprint 22, WooCommerce Status), API_MAP 90+ Routes, Doc-Index Daten (01.03.2026) |
 
 ### B) KI-Infrastruktur
 
 | # | Task | Dokument | Status | Beschreibung |
 |---|------|----------|--------|--------------|
-| T6 | **RunPod + ComfyUI Setup** | `RUNPOD-COMFYUI-PLAN.md` | ⏳ | ~~Account~~, Docker Image, Serverless Worker, FAL.ai Anbindung — Backend-Code vorbereitet (AiJob Model, Worker, Routes) |
-| T7 | **FAL.ai Endpoint-Testing** | `AI-EFFEKTE-KATALOG.md` | ⏳ | Echte API-Calls testen: Face Swap (fal-ai/inswapper), Video (Kling/Seedance), Style Transfer |
+| T6 | **RunPod + ComfyUI Setup** | `RUNPOD-COMFYUI-PLAN.md` | ✅ | Endpoint `rwskq3hbt1ax5p`, offizielles ComfyUI Worker Image, Flux.1 Dev, RTX 4090, Test-Job erfolgreich |
+| T7 | **FAL.ai Endpoint-Testing** | `AI-EFFEKTE-KATALOG.md` | ✅ | LLM 8/8, Style Transfer, Face Swap, Video (wan-i2v), BG Removal — alle E2E getestet (01.03.2026) |
 
 ### C) Async Delivery (App + Booth)
 
@@ -58,20 +64,20 @@
 
 | # | Task | Dokument | Status | Beschreibung |
 |---|------|----------|--------|--------------|
-| T9 | **SMS Sharing testen + konfigurieren** | `FEATURES-GUIDE.md` §7 | ⚠️ | Twilio-Config, Logs, Stats — Code existiert, ungetestet |
-| T10 | **E-Mail Sharing testen + konfigurieren** | `FEATURES-GUIDE.md` §8 | ⚠️ | SendGrid/Postmark Config — Code existiert, ungetestet |
-| T11 | **Gallery Embed + Slideshow testen** | `FEATURES-GUIDE.md` §9-10 | ⚠️ | Embed-Code, Slideshow-Mode — Code existiert, ungetestet |
-| T12 | **Bulk ZIP Download testen** | `FEATURES-GUIDE.md` §11 | ⚠️ | Stream-basierter ZIP — Code existiert, ungetestet |
-| T13 | **Lead Collection testen** | `FEATURES-GUIDE.md` §12 | ⚠️ | DSGVO-Consent, CSV-Export — Code existiert, ungetestet |
-| T14 | **Live Wall Erweiterungen (13)** | `LIVE_WALL_FEATURE.md` | ⚠️ | Filter, Slideshow-Mode, Themed Overlays, Admin-Control |
-| T15 | **Workflow Builder Redesign (21 offen)** | `WORKFLOW-BUILDER-REDESIGN.md` | ⚠️ | 22/38 Steps nicht ausführbar, Dual-Tab UX, Simulation |
+| T9 | **SMS Sharing testen + konfigurieren** | `FEATURES-GUIDE.md` §7 | ⚠️ | Code implementiert + getestet, Twilio Credentials fehlen noch |
+| T10 | **E-Mail Sharing testen + konfigurieren** | `FEATURES-GUIDE.md` §8 | ✅ | SMTP aus DB konfiguriert, Email Share API getestet (01.03.2026) |
+| T11 | **Gallery Embed + Slideshow testen** | `FEATURES-GUIDE.md` §9-10 | ✅ | Embed API getestet, iframe + script + link Varianten (01.03.2026) |
+| T12 | **Bulk ZIP Download testen** | `FEATURES-GUIDE.md` §11 | ✅ | ZIP Download (Einzel + Bulk + All) getestet, archiver streaming (01.03.2026) |
+| T13 | **Lead Collection testen** | `FEATURES-GUIDE.md` §12 | ✅ | 5 Endpoints getestet: Create, List, Stats, CSV-Export, Partner-Leads — LeadSource enum (7 Werte), Dedup by email (01.03.2026) |
+| T14 | **Live Wall Erweiterungen (13)** | `LIVE_WALL_FEATURE.md` | ✅ | 10/13 implementiert: Content-Filter (Grid+Slideshow), Stats Counter, Konfetti bei Challenge, 5 Animationstypen, Shuffle, Leaderboard, Ken Burns, Floating Hearts, Photo Comments. Offen: Themed Overlays, Sound, Admin-Control (01.03.2026) |
+| T15 | **Workflow Builder Redesign (21 offen)** | `WORKFLOW-BUILDER-REDESIGN.md` | ✅ | Alle 5 Phasen erledigt: automationTypes (7 Triggers, 11 Actions), AutomationBuilder (513Z), 4-Tab-System (⚡Automationen + 🔧Booth + 🔗Event-Zuweisung + 📋Execution Log), Backend Execution Log Endpoint (01.03.2026) |
 
 ### B) Delivery + Marketing
 
 | # | Task | Dokument | Status | Beschreibung |
 |---|------|----------|--------|--------------|
 | T16 | **E-Mail/WhatsApp Delivery + DSGVO** | `BOOTH-EXPERIENCE-KONZEPT.md` §4.2 | ⏳ | Transactional E-Mail, WhatsApp/SMS für AI-Ergebnisse, DSGVO Opt-in |
-| T17 | **Google Review Integration** | `BOOTH-EXPERIENCE-KONZEPT.md` §7 | ⏳ | Rating → bei 4-5★ Google, bei 1-3★ internes Feedback |
+| T17 | **Google Review Integration** | `BOOTH-EXPERIENCE-KONZEPT.md` §7 | ✅ | Prisma GuestFeedback Model, 4 Backend-Endpoints (POST feedback, PATCH google-sent, GET stats, GET list), Frontend Rating-Flow auf /r/:code (5-Phasen: idle→rating→feedback/google→thank-you), Admin Feedback Dashboard (/manage/feedback) mit Verteilung + Google-Konversion (01.03.2026) |
 
 ## 🟢 PRIORITÄT 3 — MITTELFRISTIG
 
@@ -79,23 +85,23 @@
 
 | # | Task | Dokument | Status | Beschreibung |
 |---|------|----------|--------|--------------|
-| T18 | **Mosaic Wall Implementierung (27 offen)** | `MOSAIC_WALL_KONZEPT.md` | ⚠️ | Datenmodell existiert, Frontend+Backend+Live-Display+Print fehlt |
+| T18 | **Mosaic Wall Implementierung** | `MOSAIC_WALL_KONZEPT.md` | ✅ | ~5000 Zeilen: Backend (27 Endpoints, 799Z Engine mit CIE2000 Delta-E), Frontend (MosaicGrid 540Z, Wizard 378Z, PrintStation 648Z, LiveDisplay 248Z, Gallery 348Z, Calculator 179Z, Ticker 98Z, PrintUpload 220Z), Alle 5 Phasen komplett (01.03.2026) |
 
 ### B) Booth-Ökosystem
 
 | # | Task | Dokument | Status | Beschreibung |
 |---|------|----------|--------|--------------|
-| T19 | **KI-Avatar MVP (Sophie/Viktor)** | `BOOTH-EXPERIENCE-KONZEPT.md` §2 | ⏳ | Clip-Bibliothek, State Machine, LLM Text-Bubbles, Gestik (kein Audio) |
-| T20 | **Mini-Spiele (Basis: 4)** | `BOOTH-EXPERIENCE-KONZEPT.md` §3 | ⏳ | 3-Schichten: Game Engine + Game UI + Avatar Clips |
-| T21 | **Booth Foundation (Offline-First)** | `PHOTO-BOOTH-PLATFORM-PLAN.md` Phase 1 | ⏳ | Electron, workflow-runtime, Booth-API-Key, Offline-Queue |
-| T22 | **Hardware-Integration Linux** | `PHOTO-BOOTH-PLATFORM-PLAN.md` Phase 2 | ⏳ | gPhoto2 + Canon, CUPS + DNP, Kiosk-Modus |
+| T19 | **KI-Avatar MVP (Sophie/Viktor)** | `BOOTH-EXPERIENCE-KONZEPT.md` §2 | ⏳ | Braucht Video-Clips + physische Booth — Konzept vorhanden |
+| T20 | **Mini-Spiele (Basis: 4)** | `BOOTH-EXPERIENCE-KONZEPT.md` §3 | ⏳ | Braucht T19 Avatar — Konzept vorhanden |
+| T21 | **Booth Foundation (Offline-First)** | `PHOTO-BOOTH-PLATFORM-PLAN.md` Phase 1 | ⚠️ ~80% | booth-app (1520Z), boothSetup (354Z), workflow-runtime (1069Z XState), boothGames (1384Z), uploadQueue (IndexedDB), OfflineQueueIndicator. Offen: Electron-Packaging, Auto-Update |
+| T22 | **Hardware-Integration Linux** | `PHOTO-BOOTH-PLATFORM-PLAN.md` Phase 2 | ⚠️ | hardware.ts (281Z), print-terminal (865Z). Braucht physische Hardware für gPhoto2 + CUPS |
 
 ### C) AI Erweiterungen
 
 | # | Task | Dokument | Status | Beschreibung |
 |---|------|----------|--------|--------------|
-| T23 | **Multi-Person Group Transform** | — | ⏳ | Gruppen-Foto Face Swap mit mehreren Gesichtern |
-| T24 | **QR Async Delivery Backend** | `PHOTO-BOOTH-PLATFORM-PLAN.md` §11.3 B2 | ⏳ | AI-Request → ShortCode → QR → Ergebnis in Galerie wenn fertig |
+| T23 | **Multi-Person Group Transform** | — | ⏳ | face_switch in aiFeatureRegistry registriert, braucht fal.ai Multi-Face Endpoint |
+| T24 | **QR Async Delivery Backend** | `PHOTO-BOOTH-PLATFORM-PLAN.md` §11.3 B2 | ⚠️ ~90% | /r/:shortCode Frontend (327Z), aiJobs + aiAsyncDelivery Backend, Polling, Branded Download/Share. Offen: Push-Notification bei Fertigstellung |
 
 ## 🔵 PRIORITÄT 4 — LANGFRISTIG
 

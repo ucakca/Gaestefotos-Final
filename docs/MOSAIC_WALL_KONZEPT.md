@@ -1,7 +1,7 @@
 # Photo Mosaic Wall — Technisches Konzept
 
 **Erstellt:** 2026-02-10
-**Status:** Konzept finalisiert, bereit für Implementierung
+**Status:** Implementierung abgeschlossen (01.03.2026)
 
 ---
 
@@ -325,43 +325,45 @@ Wenn ein Event eine aktive MosaicWall hat:
 
 ## 11. Implementierungs-Reihenfolge
 
-### Phase 1: Digital MVP (2-3 Tage)
-- [ ] Prisma Schema: MosaicWall + MosaicTile
-- [ ] Mosaic Engine Service (Zielbild-Analyse, Foto-Analyse, Placement)
-- [ ] API Endpoints (CRUD + Place + Tiles)
-- [ ] Auto-Hook bei Photo-Upload
-- [ ] Admin-Setup UI (Zielbild + Grid-Config)
+### Phase 1: Digital MVP ✅
+- [x] Prisma Schema: MosaicWall + MosaicTile + MosaicPrintJob (3 Models, 6 Enums)
+- [x] Mosaic Engine Service (799 Zeilen: Zielbild-Analyse, Foto-Analyse, CIE2000 Delta-E Placement, Auto-Fill, Overlay Blending)
+- [x] API Endpoints (27 Endpoints: CRUD + Place + Tiles + Analyze + Export + Print)
+- [x] Auto-Hook bei Photo-Upload (in photos.ts integriert)
+- [x] Admin-Setup UI (MosaicWizard.tsx, 378 Zeilen)
 
-### Phase 2: Live-Display (1-2 Tage)
-- [ ] `/live/[slug]/mosaic` Route (Fullscreen, kein Auth)
-- [ ] Polling-Hook (3s Intervall)
-- [ ] 5 Tile-Animationen (Puzzle, Flip, Particles, Zoom, Ripple)
-- [ ] Hero-Moment Animation
-- [ ] Ticker (Stats am unteren Rand)
-- [ ] "Coming to Life" Puls ab 80%
-- [ ] Meilenstein-Animationen (25/50/75/100%)
+### Phase 2: Live-Display ✅
+- [x] `/live/[slug]/mosaic` Route (248 Zeilen, Fullscreen, kein Auth)
+- [x] Polling-Hook (3s Intervall, inkrementell via `since` Parameter)
+- [x] 5 Tile-Animationen (Puzzle, Flip, Particles, Zoom, Ripple) — konfigurierbar via selectedAnimations
+- [x] Hero-Moment Animation (isHero Toggle)
+- [x] Ticker (MosaicTicker.tsx, 98 Zeilen: Top-Uploader, letzte Uploads, Fortschritt)
+- [x] "Coming to Life" Puls ab 80%
+- [x] Meilenstein-Animationen (25/50/75/100%)
 
-### Phase 3: Print-Station (1 Tag)
-- [ ] `/events/[id]/mosaic/print-station` Route
-- [ ] Label-Layout Rendering
-- [ ] Nummern-System (Abholnummer auf Gast-Handy)
-- [ ] Auto-Print Modus (Chrome Kiosk)
-- [ ] Print-Queue Management
+### Phase 3: Print-Station ✅
+- [x] `/events/[id]/mosaic/print-station` Route (648 Zeilen)
+- [x] Label-Layout Rendering (Sticker-Endpoint mit SVG-Overlay, 300 DPI)
+- [x] PIN-System (4-stellig, A-Z/2-9, Deduplizierung) + QR-Payload
+- [x] Auto-Print Modus (Chrome Kiosk via Print-Terminal)
+- [x] Print-Queue Management (Batch-Update, History, Expire)
 
-### Phase 4: Online-Galerie + Extras (1 Tag)
-- [ ] Interaktive Online-Mosaic-Galerie (Hover/Tap zeigt Foto)
-- [ ] "Mein Tile finden" Funktion
-- [ ] HD-Export des fertigen Mosaiks
-- [ ] "Digitales Dankeschön" E-Mail
-- [ ] Mosaik-Rechner / Event-Simulation
+### Phase 4: Online-Galerie + Extras ✅
+- [x] Interaktive Online-Mosaic-Galerie (348 Zeilen, Hover/Tap zeigt Foto)
+- [x] "Mein Tile finden" Funktion (my-print-code Endpoint)
+- [x] HD-Export des fertigen Mosaiks (Web 200px/tile + Print 400px/tile, JPG/PNG)
+- [x] MosaicPrintUpload.tsx (220 Zeilen) für Gast-Upload
+- [x] Mosaik-Rechner / Event-Simulation (MosaicCalculator.tsx, 179 Zeilen)
 
-### Phase 5: Feature Flag + Business (0.5 Tag)
-- [ ] Feature-Gate im Backend
-- [ ] Paket-Integration (Free vs. Pro)
-- [ ] Sponsoring-Tiles (Corporate)
-- [ ] Dashboard-Widget
+### Phase 5: Feature Flag + Business ✅
+- [x] Feature-Gate im Backend (10 Checks: mosaicWall, mosaicPrint, mosaicExport)
+- [x] Paket-Integration (Free = Demo 4×4, Pro = Full, Premium = Print + Export)
+- [x] Demo-Retention Worker (demoMosaicRetention.ts)
+- [x] KI-Overlay-Analyse (analyze-overlay Endpoint mit Kontrast/Detail/Helligkeit)
 
 ---
 
 *Konzept finalisiert: 2026-02-10*
+*Implementierung abgeschlossen: 2026-03-01*
+*~5000 Zeilen Code (Backend 2296 + Frontend 2667)*
 *Quellen: FotoMaster, PictureMosaics, Limelight Photo Booth*

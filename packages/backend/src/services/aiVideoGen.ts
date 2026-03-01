@@ -53,11 +53,12 @@ export async function generateImageToVideo(request: ImageToVideoRequest): Promis
 
   videoJobs.set(jobId, { id: jobId, status: 'pending' });
 
-  // Get photo URL
+  // Get photo and convert to base64 data URI (localhost URLs aren't accessible from external APIs)
   const photo = await prisma.photo.findUnique({ where: { id: photoId } });
   if (!photo) throw new Error('Foto nicht gefunden');
 
-  const imageUrl = await storageService.getFileUrl(photo.storagePath || '');
+  const photoBuffer = await storageService.getFile(photo.storagePath || '');
+  const imageUrl = `data:image/jpeg;base64,${photoBuffer.toString('base64')}`;
 
   // Try Runway first, then LumaAI
   const provider = await resolveProvider('ai_video');
@@ -267,7 +268,7 @@ async function generateWithFal(
 ): Promise<string> {
   const apiKey = provider.apiKey;
   if (!apiKey) throw new Error('FAL.ai: Kein API-Key');
-  let model = provider.model || 'fal-ai/wan/v2.1/image-to-video';
+  let model = provider.model || 'fal-ai/wan-i2v';
   const shortcut = Object.keys(FAL_VIDEO_MODELS).find(k => model.toLowerCase().includes(k));
   if (shortcut && !model.includes('/')) model = FAL_VIDEO_MODELS[shortcut].model;
   const motionPrompt = prompt || 'gentle cinematic camera movement, subtle animation';
@@ -278,22 +279,44 @@ async function generateWithFal(
     headers: { Authorization: `Key ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ image_url: imageUrl, prompt: motionPrompt, duration: String(duration), aspect_ratio: '16:9' }),
   });
-  if (!submitRes.ok) throw new Error(`FAL video error ${submitRes.status}`);
-  const { request_id } = await submitRes.json() as any;
-  logger.info('[AiVideoGen] FAL queued', { request_id, model });
+  if (!submitRes.ok) {
+    const errBody = await submitRes.text();
+    throw new Error(`FAL video submit error ${submitRes.status}: ${errBody.slice(0, 200)}`);
+  }
+  const submitData = await submitRes.json() as any;
+  const request_id = submitData.request_id;
+  const statusUrl = submitData.status_url;
+  const responseUrl = submitData.response_url;
+  if (!request_id || !statusUrl) throw new Error('FAL: Keine request_id oder status_url');
+  logger.info('[AiVideoGen] FAL queued', { request_id, model, statusUrl });
   const maxWait = 600000; const pollStart = Date.now();
   while (Date.now() - pollStart < maxWait) {
     await sleep(5000);
-    const sRes = await fetch(`https://queue.fal.run/${model}/requests/${request_id}/status`, { headers: { Authorization: `Key ${apiKey}` } });
-    const sData = await sRes.json() as any;
+    const sRes = await fetch(statusUrl, { headers: { Authorization: `Key ${apiKey}` } });
+    const sText = await sRes.text();
+    let sData: any;
+    try { sData = JSON.parse(sText); } catch {
+      logger.warn('[AiVideoGen] FAL status non-JSON', { body: sText.slice(0, 200) });
+      continue;
+    }
+    logger.info('[AiVideoGen] FAL poll', { request_id, status: sData.status });
     if (sData.status === 'COMPLETED') break;
-    if (sData.status === 'FAILED') throw new Error('FAL video failed');
+    if (sData.status === 'FAILED') throw new Error(`FAL video failed: ${JSON.stringify(sData.error || sData).slice(0, 200)}`);
   }
   if (Date.now() - pollStart >= maxWait) throw new Error('FAL video timeout');
-  const rRes = await fetch(`https://queue.fal.run/${model}/requests/${request_id}`, { headers: { Authorization: `Key ${apiKey}` } });
-  const rData = await rRes.json() as any;
+  const rRes = await fetch(responseUrl || `https://queue.fal.run/fal-ai/wan/requests/${request_id}`, {
+    headers: { Authorization: `Key ${apiKey}` },
+  });
+  const rText = await rRes.text();
+  let rData: any;
+  try { rData = JSON.parse(rText); } catch {
+    throw new Error(`FAL result parse error: ${rText.slice(0, 200)}`);
+  }
   const videoUrl = rData?.video?.url || rData?.output?.video?.url || (Array.isArray(rData?.videos) && rData.videos[0]?.url) || '';
-  if (!videoUrl) throw new Error('FAL: Kein Video-URL');
+  if (!videoUrl) {
+    logger.warn('[AiVideoGen] FAL no video URL', { keys: Object.keys(rData || {}), data: JSON.stringify(rData).slice(0, 300) });
+    throw new Error('FAL: Kein Video-URL');
+  }
   logger.info('[AiVideoGen] FAL completed', { model, sec: Math.round((Date.now() - pollStart) / 1000) });
   return videoUrl;
 }

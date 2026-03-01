@@ -196,6 +196,7 @@ export async function applyStyleEffect(
       const identityPrompt = buildIdentityPrompt(effect, styleConfig.prompt, options.variant);
       resultBuffer = await callFalInstantId(imageBuffer, provider, identityPrompt.prompt, identityPrompt.negativePrompt);
     } else if (provider.slug.includes('stability') || provider.slug.includes('stable')) {
+      logger.warn('[StyleEffects] Stability AI v1 API is deprecated — consider switching to fal.ai provider');
       resultBuffer = await callStabilityImg2Img(imageBuffer, provider, styleConfig.prompt, styleConfig.negativePrompt, strength);
     } else if (provider.slug.includes('replicate')) {
       resultBuffer = await callReplicateImg2Img(imageBuffer, provider, effect, styleConfig.prompt, strength);
