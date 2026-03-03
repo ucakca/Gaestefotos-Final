@@ -68,6 +68,13 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction):
     return next();
   }
 
+  // Skip CSRF for Bearer token auth — browsers cannot auto-send Authorization
+  // headers in cross-origin requests, so Bearer auth is inherently CSRF-safe.
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith('Bearer ')) {
+    return next();
+  }
+
   // Extract session ID (from JWT or session cookie)
   const sessionId = extractSessionId(req);
   
@@ -182,7 +189,16 @@ function extractSessionId(req: Request): string | null {
     return userId;
   }
 
-  return null;
+  // Fallback: use existing CSRF cookie as session anchor (for unauthenticated users)
+  const csrfCookie = req.cookies?.[CSRF_COOKIE];
+  if (csrfCookie) {
+    return `anon:${csrfCookie.slice(0, 16)}`;
+  }
+
+  // Last resort: generate a fingerprint from IP + user-agent
+  const fingerprint = `${req.ip || '0.0.0.0'}:${(req.headers['user-agent'] || '').slice(0, 64)}`;
+  const hash = crypto.createHash('sha256').update(fingerprint).digest('hex').slice(0, 32);
+  return `anon:${hash}`;
 }
 
 /**

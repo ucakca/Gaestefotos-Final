@@ -110,6 +110,7 @@ const navigation: NavGroup[] = [
       { name: 'Provider & Modelle', href: '/manage/ai-providers', icon: Brain },
       { name: 'Face Swap Templates', href: '/manage/face-swap-templates', icon: ScanFace },
       { name: 'Reference Images', href: '/manage/reference-images', icon: Image },
+      { name: 'ComfyUI Manager', href: '/manage/comfyui', icon: Cpu },
     ],
   },
   {

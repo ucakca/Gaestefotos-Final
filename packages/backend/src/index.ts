@@ -120,10 +120,14 @@ import aiAsyncDeliveryRoutes from './routes/aiAsyncDelivery';
 import aiSurveyPromptRoutes from './routes/aiSurveyPrompt';
 import faceOffRoutes from './routes/faceOff';
 import faceSwapTemplatesRoutes from './routes/faceSwapTemplates';
+import adminWorkflowsRoutes, { workflowSyncRouter } from './routes/adminWorkflows';
+import adminComfyuiRoutes from './routes/adminComfyui';
 import referenceImageRoutes from './routes/referenceImage';
 import feedbackRoutes from './routes/feedback';
+import fontProxyRoutes from './routes/fontProxy';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter, smsLimiter, paymentLimiter, leadLimiter, aiFeatureLimiter, pushSubscribeLimiter, analyticsLimiter } from './middleware/rateLimit';
+import { csrfTokenGenerator, getCsrfTokenHandler, csrfProtection } from './middleware/csrf';
 import { logger } from './utils/logger';
 import { storageService } from './services/storage';
 import { startRetentionPurgeWorker } from './services/retentionPurge';
@@ -593,6 +597,13 @@ if (process.env.NODE_ENV !== 'production') {
   app.use('/api-docs', (_req, res) => res.status(404).json({ error: 'Not found' }));
 }
 
+ // CSRF token endpoint — frontend fetches token before state-changing requests
+ app.get('/api/csrf-token', csrfTokenGenerator, getCsrfTokenHandler);
+
+ // CSRF protection for admin state-changing routes (POST/PUT/DELETE)
+ // TODO: Extend to all /api routes once frontend sends X-CSRF-Token header consistently
+ app.use('/api/admin', csrfProtection);
+
  // API Routes with rate limiting
  // Note: authLimiter is applied per-route in auth.ts for more granular control
  app.use('/api/health', healthRoutes); // Health checks (no auth required)
@@ -702,6 +713,9 @@ app.use('/api/debug', debugRoutes); // Debug mode: /api/debug/*
 app.use('/api/admin/trend-monitor', trendMonitorRoutes);
 app.use('/api/admin/ai-surfaces', adminAiSurfacesRoutes);
 app.use('/api/admin/cdn', adminCdnRoutes); // CDN Browser: /api/admin/cdn/browse, sign, bulk-sign
+app.use('/api/admin/workflows', adminWorkflowsRoutes); // ComfyUI Workflow Management: list, upload, test, delete
+app.use('/api/admin/comfyui', adminComfyuiRoutes); // ComfyUI Manager: pod lifecycle, workflow sync, endpoint health
+app.use('/api/workflow-sync', workflowSyncRouter); // Workflow Sync: ComfyUI Pod ↔ Backend (API key auth)
 app.use('/api/ai-jobs', aiAsyncDeliveryRoutes); // Async AI Jobs: /api/ai-jobs/video-models, :shortCode, admin/list
 app.use('/api/face-swap', faceSwapTemplatesRoutes); // Face Swap Templates: /api/face-swap/templates
 app.use('/api/events', aiSurveyPromptRoutes); // Survey Prompts: /api/events/:eventId/survey-prompts
@@ -716,6 +730,9 @@ app.use('/api/feedback', feedbackRoutes); // Guest Feedback + Google Review: /ap
 
 // Event Themes (AI generation + CRUD)
 app.use('/api/event-themes', eventThemesRoutes);
+
+// Font Proxy: DSGVO-compliant Google Fonts proxy (no IP leak to Google)
+app.use('/api/fonts', fontProxyRoutes);
 
 // Image CDN: optimized image serving with resize/format params
 app.use('/cdn', imageCdnRoutes);
