@@ -1,0 +1,48 @@
+{
+  "_meta": {
+    "title": "ReActor Face Swap",
+    "description": "Face swap using ReActor node with CodeFormer restoration. Replaces fal-ai/face-swap and fal-ai/inswapper.",
+    "author": "gaestefotos.com",
+    "version": "1.0.0"
+  },
+  "1": {
+    "class_type": "LoadImage",
+    "_meta": { "title": "Source Face (swap FROM)" },
+    "inputs": {
+      "image": "source_face.png"
+    }
+  },
+  "2": {
+    "class_type": "LoadImage",
+    "_meta": { "title": "Target Image (swap INTO)" },
+    "inputs": {
+      "image": "target_image.png"
+    }
+  },
+  "3": {
+    "class_type": "ReActorFaceSwap",
+    "_meta": { "title": "ReActor Face Swap" },
+    "inputs": {
+      "enabled": true,
+      "input_image": ["2", 0],
+      "source_image": ["1", 0],
+      "swap_model": "inswapper_128.onnx",
+      "facedetection": "retinaface_resnet50",
+      "face_restore_model": "codeformer-v0.1.0.pth",
+      "face_restore_visibility": 1.0,
+      "codeformer_weight": 0.7,
+      "detect_gender_source": "no",
+      "detect_gender_input": "no",
+      "source_faces_index": "0",
+      "input_faces_index": "0",
+      "console_log_level": 1
+    }
+  },
+  "4": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": ["3", 0],
+      "filename_prefix": "faceswap"
+    }
+  }
+}

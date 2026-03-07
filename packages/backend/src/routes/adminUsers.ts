@@ -90,7 +90,7 @@ router.patch('/:id/role', authMiddleware, requireRole('ADMIN'), async (req: Auth
 
     return res.json({ ok: true, user });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -104,7 +104,7 @@ router.patch('/:id/lock', authMiddleware, requireRole('ADMIN'), async (req: Auth
     }
 
     const user = await prisma.user.findUnique({ where: { id }, select: { id: true, email: true, name: true } });
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(404).json({ error: 'Benutzer nicht gefunden' });
 
     const updated = await prisma.user.update({
       where: { id },
@@ -127,7 +127,7 @@ router.patch('/:id/lock', authMiddleware, requireRole('ADMIN'), async (req: Auth
 
     return res.json({ ok: true, user: updated });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -146,7 +146,7 @@ router.delete('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequ
 
     return res.json({ ok: true });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -173,12 +173,12 @@ router.get('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
     }
 
     return res.json({ ok: true, user });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -202,7 +202,7 @@ router.get('/stats', authMiddleware, requireRole('ADMIN'), async (req: AuthReque
 
     return res.json({ ok: true, stats: { total, hosts, admins, locked: lockedCount, newToday: todayNew, newThisWeek: weekNew } });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 

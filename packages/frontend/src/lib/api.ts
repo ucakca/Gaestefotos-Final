@@ -43,7 +43,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true, // Important for CORS with credentials
-  timeout: 30000, // 30 second timeout
+  timeout: 120000, // 120 second timeout (RunPod cold starts)
 });
 
 export function buildApiUrl(path: string): string {
@@ -178,8 +178,31 @@ api.interceptors.response.use(
   }
 );
 
-// Add auth token and device ID to requests
-api.interceptors.request.use((config) => {
+// Read a cookie value by name
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+// Ensure we have a CSRF token before the first mutating request
+let csrfFetched = false;
+async function ensureCsrfToken(): Promise<string | null> {
+  let token = getCookie('csrf-token');
+  if (token) return token;
+  if (csrfFetched) return null;
+  try {
+    csrfFetched = true;
+    const res = await api.get('/csrf-token');
+    token = res.data?.csrfToken || getCookie('csrf-token');
+    return token;
+  } catch {
+    return null;
+  }
+}
+
+// Add auth token, device ID, and CSRF token to requests
+api.interceptors.request.use(async (config) => {
   if (typeof window !== 'undefined') {
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
     if (token) {
@@ -196,6 +219,14 @@ api.interceptors.request.use((config) => {
     // Don't set Content-Type for FormData, let browser set it with boundary
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type'];
+    }
+    // CSRF token for state-changing requests
+    const method = (config.method || '').toUpperCase();
+    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+      const csrfToken = getCookie('csrf-token') || await ensureCsrfToken();
+      if (csrfToken) {
+        config.headers['x-csrf-token'] = csrfToken;
+      }
     }
   }
   return config;

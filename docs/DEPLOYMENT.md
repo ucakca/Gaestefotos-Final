@@ -265,6 +265,19 @@ bash deploy.sh --status # Nur Status prüfen (kein Deploy)
 - Repo: `/root/gaestefotos-app-v2/packages/backend/`
 - Produktion: `/opt/gaestefotos/app/packages/backend/`
 
+## Backend Workers (auto-start)
+
+Die folgenden Worker starten automatisch mit dem Backend-Service und brauchen kein separates Deployment:
+
+| Worker | Datei | Intervall | Beschreibung |
+|--------|-------|-----------|--------------|
+| Photo Delivery | `services/photoDelivery.ts` | 60s | Sendet E-Mails an opted-in Gäste bei neuen approved Fotos |
+| AI Job Worker | `services/aiJobWorker.ts` | 10s | Pollt RunPod für AI-Ergebnis, benachrichtigt Gäste |
+| Event Recap | `services/eventRecap.ts` | Cron | Sendet Recap-E-Mail 24h nach Event-Ende |
+| Workflow Timer | `services/workflowTimerWorker.ts` | 60s | Prüft Event-Lifecycle-Transitions, triggert Workflows |
+
+**Hinweis:** Alle Worker respektieren DSGVO — E-Mails nur an Gäste mit `emailOptIn=true`, jede E-Mail enthält One-Click Unsubscribe Link.
+
 ## staging
 
 Staging ist optional und kann als Reverse-Proxy auf die App genutzt werden (Routing/Parität prüfen).

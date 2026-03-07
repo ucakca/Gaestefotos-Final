@@ -142,7 +142,7 @@ export function issueEventAccessCookie(res: Response, eventId: string) {
   const domain = process.env.COOKIE_DOMAIN || undefined;
   res.cookie(getEventAccessCookieName(eventId), token, {
     httpOnly: true,
-    secure: true,
+    secure: isProd,
     sameSite: 'lax',
     domain,
     maxAge: ttlSeconds * 1000,

@@ -115,7 +115,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
       ...event,
       photoCount: event._count?.photos || 0,
       guestCount: event._count?.guests || 0,
-      viewCount: (event as any).visitCount || 0,
+      viewCount: event.visitCount || 0,
       pendingCount: 0, // Will be computed below
     }));
 
@@ -162,7 +162,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     res.json({ events: enriched });
   } catch (error) {
     logger.error('Get events error', { message: getErrorMessage(error) });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -227,7 +227,7 @@ async function handleEventStorageUsage(req: AuthRequest, res: Response) {
       message: getErrorMessage(error),
       eventId: req.params.id,
     });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 }
 
@@ -281,7 +281,7 @@ router.get('/check-limit', authMiddleware, async (req: AuthRequest, res: Respons
     });
   } catch (error) {
     logger.error('Check event limit error', { message: getErrorMessage(error) });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -307,11 +307,11 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     });
 
     if (!event) {
-      return res.status(404).json({ error: 'Event not found' });
+      return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
     if (!(await hasEventManageAccess(req, event.id))) {
-      return res.status(404).json({ error: 'Event not found' });
+      return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
     const storageEndsAt = await getEventStorageEndsAt(event.id);
@@ -321,7 +321,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     res.json({ event: { ...event, storageEndsAt, isStorageLocked, effectivePackage, packageInfo } });
   } catch (error) {
     logger.error('Get event error', { message: getErrorMessage(error), eventId: req.params.id });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -348,7 +348,7 @@ router.get('/slug/:slug', async (req: AuthRequest, res: Response) => {
     });
 
     if (!event) {
-      return res.status(404).json({ error: 'Event not found' });
+      return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
     const rawSource = typeof req.query.source === 'string' ? req.query.source : '';
@@ -370,19 +370,23 @@ router.get('/slug/:slug', async (req: AuthRequest, res: Response) => {
 
     // Issue access cookie for guests so follow-up public endpoints work in a fresh browser.
     issueEventAccessCookie(res, event.id);
+    // Strip raw password hash, expose only boolean flag for frontend PasswordGate
+    const eventVisitCount = event.visitCount || 0;
+    const { password: _pw, ...eventWithoutPassword } = event as any;
     res.json({ 
       event: { 
-        ...event, 
+        ...eventWithoutPassword, 
+        hasPassword: !!_pw,
         storageEndsAt, 
         isStorageLocked, 
         effectivePackage,
         packageInfo,
-        visitCount: (event as any).visitCount || 0,
+        visitCount: eventVisitCount,
       } 
     });
   } catch (error) {
     logger.error('Get event by slug error', { message: getErrorMessage(error), slug: req.params.slug });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -417,7 +421,7 @@ router.get('/:id/wifi', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     logger.error('Get WiFi info error', { message: getErrorMessage(error), eventId: req.params.id });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -446,7 +450,7 @@ router.get('/:id/traffic', authMiddleware, async (req: AuthRequest, res: Respons
     return res.json({ ok: true, stats });
   } catch (error) {
     logger.error('Get event traffic stats error', { message: getErrorMessage(error), eventId: req.params.id });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -813,7 +817,7 @@ router.post(
         return res.status(400).json({ error: error.errors });
       }
       logger.error('Create event error', { message: getErrorMessage(error) });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -828,11 +832,11 @@ router.patch(
       });
 
       if (!existingEvent) {
-        return res.status(404).json({ error: 'Event not found' });
+        return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
       if (!(await hasEventManageAccess(req, req.params.id))) {
-        return res.status(403).json({ error: 'Forbidden' });
+        return res.status(403).json({ error: 'Zugriff verweigert' });
       }
 
       const data = req.body as any; // Schema validation temporarily disabled
@@ -882,7 +886,7 @@ router.patch(
         return res.status(400).json({ error: error.errors });
       }
       logger.error('Patch event error', { message: getErrorMessage(error), eventId: req.params.id });
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -899,11 +903,11 @@ router.get(
       });
 
       if (!event || event.deletedAt || event.isActive === false) {
-        return res.status(404).json({ error: 'Event not found' });
+        return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
       if (!(await hasEventManageAccess(req, eventId))) {
-        return res.status(404).json({ error: 'Event not found' });
+        return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
       const storageEndsAt = await getEventStorageEndsAt(eventId);
@@ -912,7 +916,7 @@ router.get(
       res.json({ storageEndsAt, isStorageLocked, effectivePackage });
     } catch (error) {
       logger.error('Get storage limits error', { message: getErrorMessage(error), eventId: req.params.id });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -1088,7 +1092,7 @@ router.get(
         return res.status(400).json({ error: error.errors });
       }
       logger.error('Get upload issues error', { message: getErrorMessage(error), eventId: req.params.id });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -1118,7 +1122,7 @@ router.post('/:id/access', async (req: AuthRequest, res: Response) => {
 
     const secret = getInviteJwtSecret();
     if (!secret) {
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Interner Serverfehler' });
     }
 
     let decoded: any;
@@ -1151,7 +1155,7 @@ router.post('/:id/access', async (req: AuthRequest, res: Response) => {
       message: getErrorMessage(error),
       eventId: req.params.id,
     });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -1186,7 +1190,7 @@ router.post('/:id/verify-password', async (req: AuthRequest, res: Response) => {
     return res.json({ valid: true });
   } catch (error) {
     logger.error('Verify password error', { message: getErrorMessage(error), eventId: req.params.id });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -1209,7 +1213,7 @@ router.post('/:id/invite-token', authMiddleware, async (req: AuthRequest, res: R
 
     const secret = getInviteJwtSecret();
     if (!secret) {
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Interner Serverfehler' });
     }
 
     const inviteToken = jwt.sign(
@@ -1229,7 +1233,7 @@ router.post('/:id/invite-token', authMiddleware, async (req: AuthRequest, res: R
       message: getErrorMessage(error),
       eventId: req.params.id,
     });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -1246,11 +1250,11 @@ router.put(
       });
 
       if (!existingEvent) {
-        return res.status(404).json({ error: 'Event not found' });
+        return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
       if (!(await hasEventManageAccess(req, req.params.id))) {
-        return res.status(403).json({ error: 'Forbidden' });
+        return res.status(403).json({ error: 'Zugriff verweigert' });
       }
 
       const data = req.body as any; // Schema validation temporarily disabled
@@ -1298,7 +1302,7 @@ router.put(
         return res.status(400).json({ error: error.errors });
       }
       logger.error('Update event error', { message: getErrorMessage(error), eventId: req.params.id });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -1314,11 +1318,11 @@ router.delete(
       });
 
       if (!existingEvent) {
-        return res.status(404).json({ error: 'Event not found' });
+        return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
       if (!(await hasEventManageAccess(req, req.params.id))) {
-        return res.status(403).json({ error: 'Forbidden' });
+        return res.status(403).json({ error: 'Zugriff verweigert' });
       }
 
       // Soft-delete with 7-day grace period instead of hard delete
@@ -1337,7 +1341,7 @@ router.delete(
       res.json({ message: 'Event deleted', purgeAfter: purgeAfter.toISOString() });
     } catch (error) {
       logger.error('Delete event error', { message: getErrorMessage(error), eventId: req.params.id });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -1362,7 +1366,7 @@ router.post(
       const isOwner = req.userId === event.hostId;
       const isAdmin = isPrivilegedRole(req.userRole);
       if (!isOwner && !isAdmin) {
-        return res.status(403).json({ error: 'Forbidden' });
+        return res.status(403).json({ error: 'Zugriff verweigert' });
       }
 
       if (event.purgeAfter && new Date() > event.purgeAfter) {
@@ -1379,7 +1383,7 @@ router.post(
       return res.json({ ok: true, message: 'Event wiederhergestellt' });
     } catch (error) {
       logger.error('Restore event error', { message: getErrorMessage(error), eventId: req.params.id });
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -1430,7 +1434,7 @@ router.get(
       });
     } catch (error) {
       logger.error('Get package info error', { message: getErrorMessage(error), eventId: req.params.id });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -1492,7 +1496,7 @@ router.get(
       res.json({ packages: serialized });
     } catch (error) {
       logger.error('Get available packages error', { message: getErrorMessage(error) });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -1620,7 +1624,7 @@ router.get(
       res.json(event.invitationDesign || null);
     } catch (error: any) {
       logger.error('Get invitation design error', { error: error.message, eventId: req.params.eventId });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -1656,7 +1660,7 @@ router.put(
       res.json((updatedEvent as any).invitationDesign);
     } catch (error: any) {
       logger.error('Update invitation design error', { error: error.message, eventId: req.params.eventId });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -1758,7 +1762,7 @@ router.get(
 router.get('/:eventId/guestbook/stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
     const [total, approved, pending] = await Promise.all([
       prisma.guestbookEntry.count({ where: { eventId } }),
@@ -1776,7 +1780,7 @@ router.get('/:eventId/guestbook/stats', authMiddleware, async (req: AuthRequest,
 router.get('/:eventId/stories/stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
     const [totalStories, activeStories, expiredStories] = await Promise.all([
       prisma.story.count({ where: { photo: { eventId } } }),
@@ -1794,7 +1798,7 @@ router.get('/:eventId/stories/stats', authMiddleware, async (req: AuthRequest, r
 router.get('/:eventId/challenges/stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
     const [totalChallenges, totalCompletions, uniqueGuests] = await Promise.all([
       prisma.challenge.count({ where: { eventId } }),
@@ -1821,7 +1825,7 @@ router.get('/:eventId/challenges/stats', authMiddleware, async (req: AuthRequest
 router.get('/:eventId/photos/activity', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
     const limit = Math.min(50, parseInt(req.query.limit as string, 10) || 20);
     const photos = await prisma.photo.findMany({
@@ -1855,12 +1859,15 @@ router.get('/:eventId/qr-code', optionalAuthMiddleware, async (req: AuthRequest,
     const baseUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
     const shareUrl = `${baseUrl}/e3/${event.slug}`;
 
-    // Simple QR code URL via Google Charts (no external dep needed)
-    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(shareUrl)}&format=svg`;
+    // Generate QR code locally (no external dependency, no data leak)
+    const QRCode = require('qrcode');
+    const svgString = await QRCode.toString(shareUrl, { type: 'svg', margin: 1 });
+    const qrDataUri = `data:image/svg+xml;base64,${Buffer.from(svgString).toString('base64')}`;
 
-    res.json({ qrUrl: qrImageUrl, shareUrl, slug: event.slug });
+    res.json({ qrUrl: qrDataUri, shareUrl, slug: event.slug });
   } catch (error: any) {
-    res.status(500).json({ error: 'Fehler' });
+    logger.error('QR code generation error', { error: error.message, eventId: req.params.eventId });
+    res.status(500).json({ error: 'QR-Code-Generierung fehlgeschlagen' });
   }
 });
 
@@ -1869,7 +1876,7 @@ router.get('/:eventId/guests/search', authMiddleware, async (req: AuthRequest, r
   try {
     const { eventId } = req.params;
     const q = (req.query.q as string || '').trim();
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
     if (!q) return res.json({ guests: [] });
 
     const guests = await prisma.guest.findMany({
@@ -1895,7 +1902,7 @@ router.get('/:eventId/guests/search', authMiddleware, async (req: AuthRequest, r
 router.get('/:eventId/photos/status-timeline', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
     const photos = await prisma.photo.findMany({
       where: { eventId, deletedAt: null },
@@ -1914,7 +1921,7 @@ router.get('/:eventId/photos/status-timeline', authMiddleware, async (req: AuthR
 router.get('/:eventId/invitation-stats', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
     const [total, withEmail, sent] = await Promise.all([
       prisma.guest.count({ where: { eventId } }),
@@ -1932,7 +1939,7 @@ router.get('/:eventId/invitation-stats', authMiddleware, async (req: AuthRequest
 router.get('/:eventId/photos/pending-count', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
     const count = await prisma.photo.count({ where: { eventId, status: 'PENDING', deletedAt: null } });
     res.json({ pendingCount: count });
   } catch (error: any) {

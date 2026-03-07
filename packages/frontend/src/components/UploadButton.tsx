@@ -208,6 +208,7 @@ export default function UploadButton({
   });
   const [showNamePrompt, setShowNamePrompt] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploadLimit, setUploadLimit] = useState<{ limited: boolean; max: number | null; used: number; remaining: number | null } | null>(null);
 
   // Persist name to localStorage when it changes
   useEffect(() => {
@@ -215,6 +216,16 @@ export default function UploadButton({
       localStorage.setItem('guestUploaderName', uploaderName.trim());
     }
   }, [uploaderName]);
+
+  // Fetch upload limit when modal opens or name changes
+  useEffect(() => {
+    if (!showModal) return;
+    const name = uploaderName.trim();
+    const params = name ? `?guest=${encodeURIComponent(name)}` : '';
+    api.get(`/uploads/limit/${eventId}${params}`)
+      .then((res) => setUploadLimit(res.data))
+      .catch(() => setUploadLimit(null));
+  }, [showModal, eventId, uploaderName]);
   const [queueNotice, setQueueNotice] = useState<string | null>(null);
   const [pendingQueueCount, setPendingQueueCount] = useState<number>(0);
 
@@ -614,6 +625,7 @@ export default function UploadButton({
             title={disabled ? disabledReason : undefined}
             variant="secondary"
             size="sm"
+            data-upload-fab=""
             className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center p-0 ${
               disabled ? 'cursor-not-allowed' : ''
             }`}
@@ -747,6 +759,19 @@ export default function UploadButton({
           {disabled && disabledReason && (
             <div className="mb-4 rounded-lg border border-status-warning bg-background px-3 py-2 text-sm text-status-warning">
               {disabledReason}
+            </div>
+          )}
+
+          {uploadLimit?.limited && (
+            <div className={`mb-4 rounded-lg border px-3 py-2 text-sm ${
+              uploadLimit.remaining === 0
+                ? 'border-destructive/50 bg-destructive/5 text-destructive'
+                : 'border-border bg-background text-muted-foreground'
+            }`}>
+              {uploadLimit.remaining === 0
+                ? `Upload-Limit erreicht (${uploadLimit.max} Fotos pro Gast)`
+                : `${uploadLimit.used} / ${uploadLimit.max} Fotos hochgeladen — noch ${uploadLimit.remaining} m\u00f6glich`
+              }
             </div>
           )}
 

@@ -151,7 +151,7 @@ router.patch('/:id/status', authMiddleware, requireRole('ADMIN'), async (req: Au
 
     return res.json({ ok: true, event });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -173,7 +173,7 @@ router.delete('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequ
 
     return res.json({ ok: true });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -221,12 +221,12 @@ router.get('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest
     });
 
     if (!event) {
-      return res.status(404).json({ error: 'Event not found' });
+      return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
     return res.json({ ok: true, event });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -319,7 +319,7 @@ router.get('/:id/available-packages', authMiddleware, requireRole('ADMIN'), asyn
 
     return res.json({ ok: true, packages: serialized });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -350,7 +350,7 @@ router.get('/:id/package', authMiddleware, requireRole('ADMIN'), async (req: Aut
       source: entitlement?.source || null,
     });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -736,7 +736,7 @@ router.patch('/:id/reassign-host', authMiddleware, requireRole('ADMIN'), async (
     auditLog({ type: AuditType.ADMIN_EVENT_STATUS, message: `Event "${event.title}" Host geändert auf ${newHost.email}`, eventId: id, data: { oldHostId: event.hostId, newHostId }, req });
     return res.json({ ok: true, event: updated, newHost });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -755,7 +755,7 @@ router.post('/bulk-status', authMiddleware, requireRole('ADMIN'), async (req: Au
     auditLog({ type: AuditType.ADMIN_EVENT_STATUS, message: `Bulk ${isActive ? 'aktiviert' : 'deaktiviert'}: ${result.count} Events`, data: { ids, isActive }, req });
     return res.json({ ok: true, updated: result.count });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -790,7 +790,7 @@ router.get('/:id/photos', authMiddleware, requireRole('ADMIN'), async (req: Auth
 
     return res.json({ ok: true, total, photos: photos.map((p: any) => ({ ...p, url: `/cdn/${p.id}` })) });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -828,7 +828,7 @@ router.get('/storage-stats', authMiddleware, requireRole('ADMIN'), async (req: A
       })),
     });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 

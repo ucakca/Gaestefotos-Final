@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Container } from '@/components/ui/Container';
 import { FormInput } from '@/components/ui/FormInput';
-import { Lock } from 'lucide-react';
+import { Lock, Eye, EyeOff } from 'lucide-react';
 
 const passwordSchema = z.object({
   password: z.string().min(1, 'Bitte Passwort eingeben'),
@@ -21,6 +22,7 @@ type PasswordGateProps = {
 };
 
 export function PasswordGate({ onSubmit, serverError }: PasswordGateProps) {
+  const [showPassword, setShowPassword] = useState(false);
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
     defaultValues: { password: '' },
@@ -36,13 +38,22 @@ export function PasswordGate({ onSubmit, serverError }: PasswordGateProps) {
         <h2 className="text-2xl font-semibold mb-4 text-foreground">Event-Passwort</h2>
         <p className="text-muted-foreground mb-6 text-sm">Dieses Event ist passwortgeschützt.</p>
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
-          <div>
+          <div className="relative">
             <FormInput
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               placeholder="Passwort eingeben"
               error={errors.password?.message}
               {...register('password')}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-3 top-[11px] text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
             {serverError && (
               <Alert variant="danger" className="mt-2">
                 {serverError}

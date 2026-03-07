@@ -14,10 +14,11 @@ export interface DuplicateResult {
 }
 
 /**
- * Calculate MD5 hash for exact duplicate detection
+ * Calculate SHA-256 content hash for exact duplicate detection.
+ * Note: DB column is still called md5Hash (legacy name, migration pending).
  */
-export function calculateMD5Hash(buffer: Buffer): string {
-  return crypto.createHash('md5').update(buffer).digest('hex');
+export function calculateContentHash(buffer: Buffer): string {
+  return crypto.createHash('sha256').update(buffer).digest('hex');
 }
 
 /**
@@ -50,8 +51,8 @@ export async function calculatePerceptualHash(buffer: Buffer): Promise<string> {
     return hash;
   } catch (error) {
     logger.error('Error calculating perceptual hash:', error);
-    // Fallback: use MD5 if sharp fails
-    return calculateMD5Hash(buffer);
+    // Fallback: use content hash if sharp fails
+    return calculateContentHash(buffer);
   }
 }
 
@@ -251,7 +252,7 @@ export async function processDuplicateDetection(
 ): Promise<DuplicateResult> {
   try {
     // Calculate hashes
-    const md5Hash = calculateMD5Hash(buffer);
+    const md5Hash = calculateContentHash(buffer);
     const perceptualHash = await calculatePerceptualHash(buffer);
     const qualityScore = await calculateQualityScore(buffer, metadata);
 

@@ -16,7 +16,7 @@ router.use(authMiddleware, requireRole('ADMIN'));
 router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Nicht autorisiert' });
     }
 
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
@@ -49,7 +49,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Nicht autorisiert' });
     }
 
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
@@ -80,7 +80,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Nicht autorisiert' });
     }
 
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
@@ -189,7 +189,7 @@ router.put('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Nicht autorisiert' });
     }
 
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
@@ -289,7 +289,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 router.delete('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Nicht autorisiert' });
     }
 
     const user = await prisma.user.findUnique({ where: { id: req.userId } });

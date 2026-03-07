@@ -2,6 +2,7 @@ import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { decryptValue } from '../utils/encryption';
 import { resolvePrompt } from './promptTemplates';
+import { getStylePromptConfig, recordPipelineExecution } from './pipelineRunner';
 import axios from 'axios';
 import FormData from 'form-data';
 import { storageService } from './storage';
@@ -501,25 +502,43 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
     }
   }
 
-  // ── 2. Parallel: photo + prompt from DB ──
+  // ── 2. Parallel: photo + prompt from DB (Pipeline Runner → PromptTemplates → Hardcoded) ──
   const t1 = Date.now();
+  const pipelineFeature = `style_transfer_${request.style}`;
   const promptFeature = `style_transfer:${request.style}`;
-  const [resolvedPrompt, photo] = await Promise.all([
+  const [pipelineConfig, resolvedPrompt, photo] = await Promise.all([
+    getStylePromptConfig(pipelineFeature, request.eventId).catch(() => null),
     resolvePrompt(promptFeature),
     prisma.photo.findUnique({ where: { id: request.photoId } }),
   ]);
   timings.dbLookup = Date.now() - t1;
 
-  // Build style from DB prompt or fallback to hardcoded AI_STYLES
+  // Build style: Pipeline Runner → PromptTemplates → Hardcoded AI_STYLES
   const hardcodedStyle = AI_STYLES[request.style];
-  const style = resolvedPrompt.source === 'db'
-    ? {
-        name: request.style,
-        prompt: resolvedPrompt.userPromptTpl || hardcodedStyle?.prompt || '',
-        negativePrompt: resolvedPrompt.negativePrompt || hardcodedStyle?.negativePrompt,
-        strength: resolvedPrompt.strength ?? hardcodedStyle?.strength ?? 0.65,
-      }
-    : hardcodedStyle;
+  let promptSource = 'hardcoded';
+  let style: { name: string; prompt: string; negativePrompt?: string; strength: number; editPrompt?: string } | undefined;
+
+  if (pipelineConfig) {
+    promptSource = 'pipeline';
+    style = {
+      name: request.style,
+      prompt: pipelineConfig.prompt,
+      negativePrompt: pipelineConfig.negativePrompt || hardcodedStyle?.negativePrompt,
+      strength: pipelineConfig.strength ?? hardcodedStyle?.strength ?? 0.65,
+      editPrompt: pipelineConfig.editPrompt || hardcodedStyle?.editPrompt,
+    };
+  } else if (resolvedPrompt.source !== 'fallback') {
+    promptSource = 'promptTemplates';
+    style = {
+      name: request.style,
+      prompt: resolvedPrompt.userPromptTpl || hardcodedStyle?.prompt || '',
+      negativePrompt: resolvedPrompt.negativePrompt || hardcodedStyle?.negativePrompt,
+      strength: resolvedPrompt.strength ?? hardcodedStyle?.strength ?? 0.65,
+      editPrompt: hardcodedStyle?.editPrompt,
+    };
+  } else {
+    style = hardcodedStyle;
+  }
 
   if (!style) {
     throw new Error(`Unbekannter Style: ${request.style}`);
@@ -531,7 +550,7 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
   const providerList = await getStyleTransferProviderList((resolvedPrompt as any).providerId || null, photo.url || '');
   if (providerList.length === 0) throw new Error('Kein AI-Provider für Style Transfer konfiguriert.');
 
-  logger.info('[StyleTransfer] Prompt resolved', { feature: promptFeature, source: resolvedPrompt.source, providers: providerList.map(p => p.provider.slug) });
+  logger.info('[StyleTransfer] Prompt resolved', { feature: pipelineFeature, source: promptSource, providers: providerList.map(p => p.provider.slug) });
 
   const strength = request.strength ?? style.strength;
   const finalPrompt = request.prompt ? `${request.prompt}, ${style.prompt}` : style.prompt;
@@ -571,6 +590,14 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
         resultBuffer = await callReplicate(apiKey, imageBuffer, finalPrompt, style.negativePrompt, strength, effectiveModel);
       } else if (slug.includes('fal')) {
         resultBuffer = await callFalAiStyleTransfer(apiKey, imageBuffer, style.editPrompt || finalPrompt, style.negativePrompt || '', strength);
+      } else if (slug.includes('runpod') || slug.includes('comfyui')) {
+        const { runFluxImg2Img } = await import('./comfyuiWorkflows');
+        resultBuffer = await runFluxImg2Img(imageBuffer, {
+          prompt: style.editPrompt || finalPrompt,
+          negativePrompt: style.negativePrompt || '',
+          strength,
+          steps: 28,
+        });
       } else {
         throw new Error(`Provider "${provider.name}" für Style Transfer nicht unterstützt.`);
       }
@@ -622,6 +649,11 @@ export async function executeStyleTransfer(request: StyleTransferRequest): Promi
       costCents: estimateCost(provider.slug),
     },
   }).catch(err => logger.error('[StyleTransfer] Failed to log usage', { err }));
+
+  // Record pipeline metrics (non-blocking)
+  if (promptSource === 'pipeline') {
+    recordPipelineExecution(pipelineFeature, true, durationMs).catch(() => {});
+  }
 
   return {
     outputUrl,

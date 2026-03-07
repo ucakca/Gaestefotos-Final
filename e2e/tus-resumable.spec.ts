@@ -59,6 +59,17 @@ test.describe('Suite J: Tus Resumable Uploads', () => {
     expect(tusResumable).toBeDefined();
   });
 
+  test('J.1b: isTusEnabled status endpoint returns config', async ({ request }) => {
+    const res = await request.get(`${apiBase}/api/uploads/status`);
+    expect(res.ok()).toBeTruthy();
+
+    const body = await res.json();
+    expect(body).toHaveProperty('enabled', true);
+    expect(body).toHaveProperty('maxSize');
+    expect(typeof body.maxSize).toBe('number');
+    expect(body.maxSize).toBeGreaterThan(0);
+  });
+
   test('J.2: Upload small file via Tus', async ({ page }) => {
     test.setTimeout(30_000);
 

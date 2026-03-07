@@ -19,7 +19,6 @@ import path from 'path';
 import fs from 'fs/promises';
 import { existsSync, mkdirSync } from 'fs';
 import { logger } from '../utils/logger';
-import { resolvePrompt, renderPrompt } from './promptTemplates';
 
 // Lazy import: canvas has native bindings that may not be available in all environments
 let _canvas: typeof import('canvas') | null = null;

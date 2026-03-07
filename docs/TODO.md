@@ -1,6 +1,6 @@
 # gästefotos.com — Master-TODO
 
-> Stand: 1. März 2026
+> Stand: 7. März 2026
 > Quelle: Docs-Audit (`DOCS-AUDIT-UND-MASTER-TODO.md`) — alle 58 MD-Dateien analysiert, 20 archiviert, 38 aktiv.
 
 ---
@@ -27,6 +27,13 @@
 | T7 FAL.ai E2E | Alle AI-Features getestet + gefixt: LLM (8/8), Style Transfer, Face Swap, Video (wan-i2v), BG Removal | 01.03.2026 |
 | T2 AI Quality | A1-A6 alle erledigt: Face Switch→fal.ai ✅, Model-Check ✅, ArcFace 512-dim ✅, InstantID ✅, Stability v1 deprecated, Replicate Steps 35 | 01.03.2026 |
 | Infra Fixes | 12 Bug-Fixes: .env Keys, camelCase SQL, jsonb cast, DONE enum, fal.ai Queue-URLs, wan-i2v Modell, /v1.0 doppelt, isAiOnline, Email DB-Init, eventRecap kind, gzip | 01.03.2026 |
+| Security Audit | FIX-1: AI-Job deviceId Filter, FIX-2: CSRF für alle /api Routes, FIX-3: IP-basiertes Upload-Limit, Quick-Wins (8 Items) | 05-06.03.2026 |
+| ARCH Fixes | RunPod Service-Layer vereinheitlicht (shared extractOutputBuffer, Double-Submit-Bug gefixt), Qwen Workflow-Fix (text→prompt), 27 Unit-Tests, Upload-Limit-Anzeige für Gäste | 06.03.2026 |
+| Optimierungen | photoStats.ts Refactor (-1022 Zeilen via Helper), pipelineRunner.ts atomare DB-Updates, ADMIN_2FA_REQUIRED=true, Alter RunPod-Endpoint gelöscht | 07.03.2026 |
+| Inkonsistenz-Fixes | Multer 50→100MB (FB-02), visitCount `as any` entfernt (FB-05), publicRoutes vervollständigt (FB-07), GPS-EXIF-Filter DSGVO (S-06) | 07.03.2026 |
+| Performance | P-03 Double-Event-Load eliminiert (validatedEventCache), P-05 Blur 512px by design bestätigt | 07.03.2026 |
+| UX-Verbesserungen | UX-02 Upload-CTA im EventHero (5 Sprachen), UX-04 KI-Effekte-CTA-Banner auf Galerie, Upload-Limit-Bypass-Tests (6/6) | 07.03.2026 |
+| Prod-Tests | 8/8 Services active, HTTP 200, CSRF ✅, Rate-Limit ✅, Auth 401 ✅, WooCommerce 403 ✅, RunPod 3 Worker, SSL valid, 206/206 Tests | 07.03.2026 |
 | Services | Backend ✅, WebSocket ✅, Redis ✅, Ollama ✅, SMTP/Postfix ✅, Knowledge Store (114 Einträge geseedet) | 01.03.2026 |
 | T9-T13 | SMS (Code ready, Twilio unconfigured), Email Share ✅, Gallery Embed ✅, ZIP Download ✅, Lead Collection 5 Endpoints ✅ | 01.03.2026 |
 | T5+T14+T15 | Docs Update (MASTER-KONZEPT, API_MAP), Live Wall (+Content-Filter, Stats, Konfetti), Workflow Builder (Execution Log, 4-Tab-System) | 01.03.2026 |
@@ -49,7 +56,7 @@
 
 | # | Task | Dokument | Status | Beschreibung |
 |---|------|----------|--------|--------------|
-| T6 | **RunPod + ComfyUI Setup** | `RUNPOD-COMFYUI-PLAN.md` | ✅ | Endpoint `rwskq3hbt1ax5p`, offizielles ComfyUI Worker Image, Flux.1 Dev, RTX 4090, Test-Job erfolgreich |
+| T6 | **RunPod + ComfyUI Setup** | `RUNPOD-COMFYUI-PLAN.md` | ✅ | Endpoint `fkyvpdld673jrf` (EU A6000), Qwen Image Edit Model, 18 Workflows, Live-Test erfolgreich (35s, 800×528 PNG) |
 | T7 | **FAL.ai Endpoint-Testing** | `AI-EFFEKTE-KATALOG.md` | ✅ | LLM 8/8, Style Transfer, Face Swap, Video (wan-i2v), BG Removal — alle E2E getestet (01.03.2026) |
 
 ### C) Async Delivery (App + Booth)
@@ -69,14 +76,14 @@
 | T11 | **Gallery Embed + Slideshow testen** | `FEATURES-GUIDE.md` §9-10 | ✅ | Embed API getestet, iframe + script + link Varianten (01.03.2026) |
 | T12 | **Bulk ZIP Download testen** | `FEATURES-GUIDE.md` §11 | ✅ | ZIP Download (Einzel + Bulk + All) getestet, archiver streaming (01.03.2026) |
 | T13 | **Lead Collection testen** | `FEATURES-GUIDE.md` §12 | ✅ | 5 Endpoints getestet: Create, List, Stats, CSV-Export, Partner-Leads — LeadSource enum (7 Werte), Dedup by email (01.03.2026) |
-| T14 | **Live Wall Erweiterungen (13)** | `LIVE_WALL_FEATURE.md` | ✅ | 10/13 implementiert: Content-Filter (Grid+Slideshow), Stats Counter, Konfetti bei Challenge, 5 Animationstypen, Shuffle, Leaderboard, Ken Burns, Floating Hearts, Photo Comments. Offen: Themed Overlays, Sound, Admin-Control (01.03.2026) |
+| T14 | **Live Wall Erweiterungen (13)** | `LIVE_WALL_FEATURE.md` | ✅ | **13/13 komplett**: Content-Filter, Stats Counter, Konfetti, 5 Animationstypen, Shuffle, Leaderboard, Ken Burns, Floating Hearts, Comments, **Themed Overlays** (6 Typen: Konfetti/Herzen/Schnee/Sterne/Blasen/Partikel), **Sound-Effekte** (Web Audio ding bei neuen Fotos), **Admin-Fernsteuerung** (WallAdminControl Panel via `?admin=1`, WebSocket Relay, Ankündigungs-Overlay) (02.03.2026) |
 | T15 | **Workflow Builder Redesign (21 offen)** | `WORKFLOW-BUILDER-REDESIGN.md` | ✅ | Alle 5 Phasen erledigt: automationTypes (7 Triggers, 11 Actions), AutomationBuilder (513Z), 4-Tab-System (⚡Automationen + 🔧Booth + 🔗Event-Zuweisung + 📋Execution Log), Backend Execution Log Endpoint (01.03.2026) |
 
 ### B) Delivery + Marketing
 
 | # | Task | Dokument | Status | Beschreibung |
 |---|------|----------|--------|--------------|
-| T16 | **E-Mail/WhatsApp Delivery + DSGVO** | `BOOTH-EXPERIENCE-KONZEPT.md` §4.2 | ⏳ | Transactional E-Mail, WhatsApp/SMS für AI-Ergebnisse, DSGVO Opt-in |
+| T16 | **E-Mail/WhatsApp Delivery + DSGVO** | `BOOTH-EXPERIENCE-KONZEPT.md` §4.2 | ✅ | DSGVO E-Mail Opt-in im QuickUploadModal (localStorage Persistenz), photoDelivery Worker (approved photos → E-Mail an opted-in Gäste), Unsubscribe Endpoint (GET /api/guests/:id/unsubscribe mit HTML-Bestätigung), AI Job Emails mit Unsubscribe-Link, emailOptIn/emailOptInAt in Guest Model (02.03.2026) |
 | T17 | **Google Review Integration** | `BOOTH-EXPERIENCE-KONZEPT.md` §7 | ✅ | Prisma GuestFeedback Model, 4 Backend-Endpoints (POST feedback, PATCH google-sent, GET stats, GET list), Frontend Rating-Flow auf /r/:code (5-Phasen: idle→rating→feedback/google→thank-you), Admin Feedback Dashboard (/manage/feedback) mit Verteilung + Google-Konversion (01.03.2026) |
 
 ## 🟢 PRIORITÄT 3 — MITTELFRISTIG
@@ -134,7 +141,7 @@
 | **Frontend** | Next.js, Port 3000 (app.gästefotos.com) |
 | **Admin** | Next.js, Port 3001 (dash.gästefotos.com) |
 | **Storage** | SeaweedFS (selbst-gehostet) |
-| **AI** | 14 Provider (Grok, Groq, OpenAI, fal.ai, Replicate, etc.), 50 Feature-Mappings |
+| **AI** | 7 Provider (Grok/xAI, Groq, OpenAI, fal.ai, RunPod/ComfyUI, Ollama, remove.bg), 18 Qwen Workflows + fal.ai Fallback |
 | **Prod-Pfad** | `/opt/gaestefotos/app/` |
 | **Dev-Pfad** | `/root/gaestefotos-app-v2/` |
 | **Deploy** | `./deploy.sh backend` oder `./deploy.sh all` (type-check → build → sync → restart → verify) |

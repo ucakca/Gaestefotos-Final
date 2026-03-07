@@ -81,7 +81,8 @@ export type AiFeature =
   | 'neon_noir'
   | 'renaissance'
   | 'comic_book'
-  | 'pixel_art';
+  | 'pixel_art'
+  | 'group_face_swap';
 
 // ─── Feature Definition ──────────────────────────────────────
 
@@ -174,6 +175,8 @@ export const AI_FEATURE_REGISTRY: AiFeatureDefinition[] = [
     emoji: '\u{1F3E0}', gradient: 'from-lime-400 to-green-600', guestDescription: 'Tilt-Shift Miniatur-Welt!', endpoint: '/booth-games/style-effect', uiGroup: 'effect', inputFlow: 'photo_only', energyCostCategory: 'image_effect', sortOrder: 8 },
   { key: 'face_switch', label: 'Face Swap', description: 'Gesichter in Gruppenfotos tauschen', category: 'image', providerType: 'IMAGE_GEN', creditCost: 5, isWorkflow: true, allowedDevices: GUEST_DEVICES, packageCategory: 'advanced',
     emoji: '\u{1F504}', gradient: 'from-emerald-500 to-teal-500', guestDescription: 'Gesichter im Gruppenfoto tauschen!', endpoint: '/booth-games/face-switch', uiGroup: 'effect', inputFlow: 'photo_only', energyCostCategory: 'face_swap', sortOrder: 9 },
+  { key: 'group_face_swap', label: 'Gruppen Face Swap', description: 'Alle Gesichter in einem Gruppenfoto tauschen', category: 'image', providerType: 'IMAGE_GEN', creditCost: 8, isWorkflow: true, allowedDevices: GUEST_DEVICES, packageCategory: 'advanced',
+    emoji: '\u{1F465}', gradient: 'from-teal-500 to-cyan-600', guestDescription: 'Alle Gesichter im Gruppenfoto auf einen Charakter tauschen!', endpoint: '/booth-games/group-face-swap', uiGroup: 'effect', inputFlow: 'photo_only', energyCostCategory: 'face_swap', sortOrder: 9.5 },
   { key: 'bg_removal', label: 'Hintergrund weg', description: 'Hintergrund aus Fotos entfernen', category: 'image', providerType: 'IMAGE_GEN', creditCost: 3, isWorkflow: true, allowedDevices: GUEST_DEVICES, packageCategory: 'advanced',
     emoji: '\u2702\uFE0F', gradient: 'from-violet-500 to-purple-600', guestDescription: 'Hintergrund entfernen \u2014 nur du!', endpoint: '/booth-games/bg-removal', uiGroup: 'effect', inputFlow: 'photo_only', energyCostCategory: 'image_effect', sortOrder: 10 },
   { key: 'gif_morph', label: 'GIF Morph', description: 'Animiertes GIF in 2 Kunststilen', category: 'image', providerType: 'IMAGE_GEN', creditCost: 4, isWorkflow: true, allowedDevices: APP_AND_BOOTH, packageCategory: 'imageEffects',

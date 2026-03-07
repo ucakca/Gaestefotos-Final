@@ -18,7 +18,8 @@ const MAX_POLL_ATTEMPTS = 120; // 6 minutes max
 
 interface RunPodJobInput {
   workflow: Record<string, any>;
-  images?: Record<string, string>; // name → base64 or URL
+  // worker-comfyui v5.x format: array of { name, image } where image is a data URI
+  images?: Array<{ name: string; image: string }>;
 }
 
 interface RunPodJobResponse {
@@ -124,13 +125,10 @@ async function cancelJob(jobId: string): Promise<boolean> {
 }
 
 /**
- * Submit and poll until completion (blocking)
- * Use for synchronous flows where the caller can wait.
+ * Poll an already-submitted job until completion.
+ * Use when the job was submitted separately via submitJob().
  */
-async function submitAndWait(input: RunPodJobInput, timeoutMs = 360000): Promise<RunPodJobResponse | null> {
-  const submitted = await submitJob(input);
-  if (!submitted) return null;
-
+async function pollForResult(jobId: string, timeoutMs = 360000): Promise<RunPodJobResponse | null> {
   const deadline = Date.now() + timeoutMs;
   let attempts = 0;
 
@@ -138,7 +136,7 @@ async function submitAndWait(input: RunPodJobInput, timeoutMs = 360000): Promise
     await new Promise(r => setTimeout(r, POLL_INTERVAL_MS));
     attempts++;
 
-    const status = await checkJobStatus(submitted.jobId);
+    const status = await checkJobStatus(jobId);
     if (!status) continue;
 
     if (status.status === 'COMPLETED' || status.status === 'FAILED' || status.status === 'TIMED_OUT' || status.status === 'CANCELLED') {
@@ -146,8 +144,49 @@ async function submitAndWait(input: RunPodJobInput, timeoutMs = 360000): Promise
     }
   }
 
-  logger.warn('RunPod job timed out', { jobId: submitted.jobId, attempts });
-  return { id: submitted.jobId, status: 'TIMED_OUT' };
+  logger.warn('RunPod job timed out', { jobId, attempts });
+  return { id: jobId, status: 'TIMED_OUT' };
+}
+
+/**
+ * Submit and poll until completion (blocking).
+ * Use for synchronous flows where the caller can wait.
+ */
+async function submitAndWait(input: RunPodJobInput, timeoutMs = 360000): Promise<RunPodJobResponse | null> {
+  const submitted = await submitJob(input);
+  if (!submitted) return null;
+  return pollForResult(submitted.jobId, timeoutMs);
+}
+
+/**
+ * Extract the first output image Buffer from a RunPod COMPLETED response.
+ * Handles all known formats: worker-comfyui v5.x (base64, s3_url), legacy, and external URLs.
+ * Returns { buffer, externalUrl } — at least one will be set on success.
+ */
+async function extractOutputBuffer(output: any): Promise<{ buffer: Buffer | null; externalUrl: string | null }> {
+  let buffer: Buffer | null = null;
+  let externalUrl: string | null = null;
+
+  if (output?.images && Array.isArray(output.images) && output.images.length > 0) {
+    const img = output.images[0];
+    if (img.type === 'base64' && img.data) {
+      buffer = Buffer.from(img.data, 'base64');
+    } else if (img.type === 's3_url' && img.data) {
+      const res = await fetch(img.data);
+      if (res.ok) buffer = Buffer.from(await res.arrayBuffer());
+    } else if (img.image) {
+      buffer = Buffer.from(img.image, 'base64');
+    } else if (img.url) {
+      const res = await fetch(img.url);
+      if (res.ok) buffer = Buffer.from(await res.arrayBuffer());
+    }
+  } else if (output?.message && typeof output.message === 'string') {
+    buffer = Buffer.from(output.message, 'base64');
+  } else if (output?.image_url || output?.url) {
+    externalUrl = output.image_url || output.url;
+  }
+
+  return { buffer, externalUrl };
 }
 
 export const runpodService = {
@@ -155,5 +194,7 @@ export const runpodService = {
   submitJob,
   checkJobStatus,
   cancelJob,
+  pollForResult,
   submitAndWait,
+  extractOutputBuffer,
 };

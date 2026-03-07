@@ -307,10 +307,46 @@ const [total, photos] = await Promise.all([
 3. **Event Description** - Nicht verfügbar (Schema-Feld fehlt)
 4. **Photo Moderation History** - Nur aktueller Status (keine History)
 
+### 7. Live Wall Admin-Fernsteuerung
+
+**Zugang:** `/live/[slug]/wall?admin=1` (Public Wall mit Admin-Panel)
+
+**Funktionen:**
+- Play/Pause Slideshow (remote)
+- Sound-Effekte ein/aus (Web Audio Synthesizer)
+- QR-Code auf der Wall ein-/ausblenden
+- Intervall-Slider (3–20 Sekunden)
+- View-Mode wechseln (10 Modi: Grid, Slideshow, Masonry, Collage, Cinematic, Polaroid, CoverFlow, Bento, Mosaik, Mixed)
+- Overlay-Effekt wählen (6 Typen: Partikel, Konfetti, Herzen, Schnee, Sterne, Blasen) + Intensität
+- Live-Ankündigung auf der Wall anzeigen (z.B. "Torte wird angeschnitten!")
+
+**Technisch:**
+- Frontend Hook: `useWallControl` (packages/frontend/src/hooks/useWallControl.ts)
+- Admin Panel: `WallAdminControl` (packages/frontend/src/components/wall/WallAdminControl.tsx)
+- WebSocket Event: `wall:control` — Admin sendet → Backend relayed an alle Clients im Event-Room
+- Sound Hook: `useWallSounds` (packages/frontend/src/hooks/useWallSounds.ts) — prozeduraler Web Audio API Synthesizer
+
+**Dashboard-Integration:**
+- Button in `/events/[id]/live-wall` öffnet die Public Wall im Admin-Modus (neuer Tab)
+- Sound-Toggle auch direkt im Dashboard verfügbar
+
+### 8. Photo Delivery (DSGVO E-Mail Opt-in)
+
+**Funktionen:**
+- Gäste können beim Upload ihre E-Mail-Adresse hinterlassen (DSGVO-konform mit explizitem Opt-in)
+- Approved Fotos werden automatisch per E-Mail an opted-in Gäste zugestellt
+- One-Click Unsubscribe in jeder E-Mail (GET /api/guests/:id/unsubscribe)
+- AI Job Ergebnis-Emails enthalten ebenfalls Unsubscribe-Links
+
+**Technisch:**
+- Worker: `packages/backend/src/services/photoDelivery.ts` (prüft alle 60s)
+- Frontend: E-Mail Opt-in im QuickUploadModal (Success-Phase), localStorage-Persistenz
+- Prisma: `Guest.emailOptIn` (Boolean), `Guest.emailOptInAt` (DateTime?)
+
 ## Zukünftige Erweiterungen
 
 ### Phase 1 (Nächste Schritte)
-- [ ] Real-time Dashboard Updates (WebSockets)
+- [x] Real-time Dashboard Updates (WebSockets) — ✅ Live Wall Admin Control
 - [ ] Export-Funktionen (CSV, PDF)
 - [ ] Erweiterte Filter-Optionen
 - [ ] Bulk-Actions für Events/Users
@@ -376,5 +412,5 @@ pnpm --filter @gaestefotos/frontend build
 ---
 
 **Dokumentation erstellt:** 18.01.2026  
-**Letztes Update:** 18.01.2026  
-**Version:** 2.0.0
+**Letztes Update:** 02.03.2026  
+**Version:** 2.1.0

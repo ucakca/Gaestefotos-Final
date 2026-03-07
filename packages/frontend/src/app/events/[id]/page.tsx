@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 
-export default async function EventDetailRedirectPage({ params }: { params: { id: string } }) {
-  redirect(`/events/${params.id}/dashboard`);
+export default async function EventDetailRedirectPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  redirect(`/events/${id}/dashboard`);
 }

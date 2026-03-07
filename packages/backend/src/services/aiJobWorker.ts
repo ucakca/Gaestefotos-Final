@@ -11,6 +11,12 @@
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { runpodService } from './runpodService';
+import { StorageService } from './storage';
+import { sendPushToEvent, pushTemplates } from './pushNotification';
+import { emailService } from './email';
+
+const storageService = new StorageService();
+const APP_BASE_URL = process.env.APP_BASE_URL || process.env.FRONTEND_URL || 'https://gästefotos.com';
 
 const WORKER_INTERVAL_MS = 30_000; // 30 seconds
 const MAX_CONCURRENT_JOBS = 3;
@@ -71,10 +77,10 @@ async function processJob(jobId: string): Promise<void> {
     // Submit to RunPod
     const submitted = await runpodService.submitJob({
       workflow: workflowJson,
-      images: inputImages.reduce((acc: Record<string, string>, path: string, i: number) => {
-        acc[`input_${i}`] = path;
-        return acc;
-      }, {}),
+      images: inputImages.map((path: string, i: number) => ({
+        name: `input_${i}.png`,
+        image: path.startsWith('data:') ? path : `data:image/png;base64,${path}`,
+      })),
     });
 
     if (!submitted) {
@@ -109,11 +115,8 @@ async function processJob(jobId: string): Promise<void> {
       data: { runpodJobId: submitted.jobId },
     });
 
-    // Poll for result (non-blocking for the worker — each job polls independently)
-    const result = await runpodService.submitAndWait(
-      { workflow: workflowJson },
-      300_000 // 5 min timeout
-    );
+    // Poll the already-submitted job for result
+    const result = await runpodService.pollForResult(submitted.jobId, 300_000);
 
     if (!result || result.status === 'TIMED_OUT') {
       await (prisma as any).aiJob.update({
@@ -141,14 +144,35 @@ async function processJob(jobId: string): Promise<void> {
     }
 
     if (result.status === 'COMPLETED') {
-      // TODO: Download result from RunPod output, save to SeaweedFS, generate resultUrl
-      const outputUrl = result.output?.image_url || result.output?.url || null;
+      // ── 1. Extract output image from RunPod result ──
+      const { buffer: resultBuffer, externalUrl } = await runpodService.extractOutputBuffer(result.output);
 
+      // ── 2. Save to SeaweedFS if we have a buffer ──
+      let storagePath: string | null = null;
+      let publicUrl: string | null = externalUrl;
+
+      if (resultBuffer && resultBuffer.length > 0) {
+        try {
+          storagePath = await storageService.uploadFile(
+            job.eventId,
+            `ai-job-${shortCode}.png`,
+            resultBuffer,
+            'image/png',
+          );
+          publicUrl = `/api/media/${storagePath}`;
+          logger.info('AI job result saved to storage', { jobId, storagePath, size: resultBuffer.length });
+        } catch (storageErr: any) {
+          logger.warn('AI job storage upload failed, using external URL', { jobId, error: storageErr.message });
+        }
+      }
+
+      // ── 3. Update job as DONE ──
       await (prisma as any).aiJob.update({
         where: { id: jobId },
         data: {
           status: 'DONE',
-          resultUrl: outputUrl,
+          result: storagePath,
+          resultUrl: publicUrl,
           completedAt: new Date(),
           computeTimeMs: result.executionTime ? Math.round(result.executionTime * 1000) : null,
         },
@@ -156,8 +180,10 @@ async function processJob(jobId: string): Promise<void> {
 
       logger.info('AI job completed', { jobId, workflow: job.workflow, shortCode });
 
-      // TODO: Send notification (push + email) to guest
-      // if (job.guestEmail) { ... }
+      // ── 4. Notify guest (push + email, non-blocking) ──
+      notifyGuest(job, shortCode).catch((err) =>
+        logger.warn('AI job guest notification failed', { jobId, error: err.message })
+      );
     }
   } catch (err: any) {
     logger.error('AI job processing error', { jobId, error: err.message });
@@ -169,6 +195,58 @@ async function processJob(jobId: string): Promise<void> {
         completedAt: new Date(),
       },
     }).catch(() => {});
+  }
+}
+
+/**
+ * Notify the guest that their AI result is ready (push + email)
+ */
+async function notifyGuest(job: any, shortCode: string): Promise<void> {
+  const resultPageUrl = `${APP_BASE_URL}/r/${shortCode}`;
+
+  // Push notification to all subscribers of this event
+  await sendPushToEvent(job.eventId, pushTemplates.aiJobComplete(job.guestName, job.workflow, shortCode));
+
+  // Email notification if guest provided an email AND has DSGVO opt-in
+  const guestRecord = job.guestEmail
+    ? await prisma.guest.findFirst({ where: { eventId: job.eventId, email: job.guestEmail }, select: { id: true, emailOptIn: true } })
+    : null;
+  if (job.guestEmail && guestRecord?.emailOptIn) {
+    try {
+      await emailService.sendCustomEmail({
+        to: job.guestEmail,
+        subject: '✨ Dein KI-Ergebnis ist fertig!',
+        text: `Hallo ${job.guestName || 'Gast'},\n\ndein ${job.workflow}-Ergebnis ist fertig!\n\nHier anschauen & herunterladen:\n${resultPageUrl}\n\nViel Spaß!\nDein Gästefotos-Team`,
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px;">
+            <h2 style="color: #7c3aed; margin-bottom: 8px;">✨ Dein KI-Ergebnis ist fertig!</h2>
+            <p style="color: #374151; font-size: 15px; line-height: 1.6;">
+              Hallo ${job.guestName || 'Gast'},<br><br>
+              dein <strong>${job.workflow}</strong>-Ergebnis ist bereit!
+            </p>
+            <a href="${resultPageUrl}" style="display: inline-block; margin: 24px 0; padding: 14px 28px; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 15px;">
+              Ergebnis anschauen →
+            </a>
+            <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">
+              Oder kopiere diesen Link: ${resultPageUrl}
+            </p>
+            <p style="color: #9ca3af; font-size: 11px; margin-top: 16px; text-align: center;">
+              <a href="${APP_BASE_URL}/api/events/${job.eventId}/guests/email-optin?email=${encodeURIComponent(job.guestEmail)}&unsubscribe=1" style="color: #9ca3af; text-decoration: underline;">Abmelden</a>
+            </p>
+          </div>
+        `,
+      });
+
+      // Mark as notified
+      await (prisma as any).aiJob.update({
+        where: { id: job.id },
+        data: { notified: true, notifiedAt: new Date() },
+      });
+
+      logger.info('AI job guest notified via email', { jobId: job.id, email: job.guestEmail });
+    } catch (emailErr: any) {
+      logger.warn('AI job email notification failed', { jobId: job.id, error: emailErr.message });
+    }
   }
 }
 

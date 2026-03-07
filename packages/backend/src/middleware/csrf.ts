@@ -145,9 +145,10 @@ export function csrfTokenGenerator(req: Request, res: Response, next: NextFuncti
       res.locals.csrfToken = token;
 
       // Set cookie for client-side access
+      const isProd = process.env.NODE_ENV === 'production';
       res.cookie(CSRF_COOKIE, token, {
         httpOnly: false, // Allow JS access for sending in headers
-        secure: true,
+        secure: isProd,
         sameSite: 'strict',
         maxAge: CSRF_TOKEN_EXPIRY_MS,
       });

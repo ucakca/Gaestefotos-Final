@@ -56,12 +56,15 @@ async function generateUniqueShortCode(): Promise<string> {
 
 export async function createAiJob(input: AiJobCreateInput): Promise<AiJobResult> {
   const shortCode = await generateUniqueShortCode();
+  const params = { ...input.inputData };
+  if (input.deviceId) params._deviceId = input.deviceId;
+  if (input.userId) params._userId = input.userId;
   const rows = await prisma.$queryRawUnsafe<any[]>(
     `INSERT INTO ai_jobs (id, "eventId", "photoId", workflow, parameters, "shortCode", status, "createdAt", "updatedAt")
      VALUES (gen_random_uuid()::text, $1, $2, $3, $4::jsonb, $5, 'QUEUED', NOW(), NOW())
      RETURNING id, "shortCode", status, workflow, "createdAt"`,
     input.eventId, input.photoId || null,
-    input.feature, JSON.stringify(input.inputData || {}), shortCode,
+    input.feature, JSON.stringify(params), shortCode,
   );
   const row = rows[0];
   logger.info('[AiAsync] Job created', { id: row.id, shortCode, feature: input.feature });
@@ -90,9 +93,9 @@ export async function getAiJobById(jobId: string): Promise<AiJobResult | null> {
 export async function getAiJobsForDevice(eventId: string, deviceId: string): Promise<AiJobResult[]> {
   const rows = await prisma.$queryRawUnsafe<any[]>(
     `SELECT id, "shortCode", status, workflow, "resultUrl", error, "createdAt", "startedAt", "completedAt"
-     FROM ai_jobs WHERE "eventId" = $1
+     FROM ai_jobs WHERE "eventId" = $1 AND parameters->>'_deviceId' = $2
      ORDER BY "createdAt" DESC LIMIT 20`,
-    eventId,
+    eventId, deviceId,
   );
   return rows.map(mapRow);
 }

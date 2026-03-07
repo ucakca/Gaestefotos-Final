@@ -209,7 +209,8 @@
     "wishlist": "Wishlist",
     "toWishlist": "Go to wishlist",
     "storageFull": "Storage full - upload currently not possible",
-    "defaultWelcome": "So glad you're all here! Let's create unforgettable memories together \u2764\ufe0f"
+    "uploadPhoto": "Upload Photo",
+    "defaultWelcome": "So glad you're all here! Let's create unforgettable memories together ❤️"
   },
   "info": {
     "eventInfo": "Event Info",

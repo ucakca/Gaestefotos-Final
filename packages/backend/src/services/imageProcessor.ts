@@ -26,42 +26,39 @@ export class ImageProcessor {
       throw new Error('Sharp image processor not available - cannot process uploads');
     }
 
+    // Decode buffer once, clone() for each variant (ARCH-05)
+    const pipeline = sharp(buffer).rotate();
+
     // Original: Full quality, only rotate and strip EXIF/GPS for privacy
-    const original = await sharp(buffer)
-      .rotate() // Auto-rotate based on EXIF orientation
-      .withMetadata({ orientation: undefined }) // Strip all EXIF including GPS
-      .toBuffer();
+    const original = await pipeline.clone().toBuffer();
 
     // Optimized: Resize for gallery view (1920px max, good quality)
-    const optimized = await sharp(buffer)
-      .rotate()
+    const optimized = await pipeline
+      .clone()
       .resize(1920, 1920, {
         fit: 'inside',
         withoutEnlargement: true,
       })
       .jpeg({ quality: 85, progressive: true })
-      .withMetadata({ orientation: undefined })
       .toBuffer();
 
     // Thumbnail: Small preview (300px)
-    const thumbnail = await sharp(buffer)
-      .rotate()
+    const thumbnail = await pipeline
+      .clone()
       .resize(300, 300, {
         fit: 'cover',
       })
       .jpeg({ quality: 75, progressive: true })
-      .withMetadata({ orientation: undefined })
       .toBuffer();
 
     // WebP: Same as optimized but WebP format (30-50% smaller)
-    const webp = await sharp(buffer)
-      .rotate()
+    const webp = await pipeline
+      .clone()
       .resize(1920, 1920, {
         fit: 'inside',
         withoutEnlargement: true,
       })
       .webp({ quality: 82 })
-      .withMetadata({ orientation: undefined })
       .toBuffer();
 
     return {

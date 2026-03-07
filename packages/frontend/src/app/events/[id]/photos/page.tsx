@@ -5,8 +5,9 @@ import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { Photo, Event as EventType } from '@gaestefotos/shared';
-import { Check, X, Trash2, Download, Square, CheckSquare, Edit, ScanFace, Image as ImageIcon, Copy, Folder, FileDown, Upload, MoreVertical, ChevronDown, Star } from 'lucide-react';
+import { Check, X, Trash2, Download, Square, CheckSquare, Edit, ScanFace, Image as ImageIcon, Copy, Folder, FileDown, Upload, MoreVertical, ChevronDown, Star, Send } from 'lucide-react';
 import SocialShare from '@/components/SocialShare';
+import SocialPublishModal from '@/components/social/SocialPublishModal';
 import { useToastStore } from '@/store/toastStore';
 import { useAuthStore } from '@/store/authStore';
 import DashboardFooter from '@/components/DashboardFooter';
@@ -104,6 +105,7 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
   const [showFaceSearch, setShowFaceSearch] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [socialPublishPhoto, setSocialPublishPhoto] = useState<Photo | null>(null);
 
   const [storiesByPhotoId, setStoriesByPhotoId] = useState<Record<string, any>>({});
   const [togglingStoryPhotoId, setTogglingStoryPhotoId] = useState<string | null>(null);
@@ -606,6 +608,18 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
                   </>
                 )}
                 <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSocialPublishPhoto(selectedPhoto);
+                    setSelectedPhoto(null);
+                  }}
+                  className="gap-1.5"
+                >
+                  <Send className="w-4 h-4" />
+                  Social Media
+                </Button>
+                <Button
                   variant="secondary"
                   size="sm"
                   onClick={() => setSelectedPhoto(null)}
@@ -617,6 +631,15 @@ export default function PhotoManagementPage({ params }: { params: Promise<{ id: 
           </DialogContent>
         )}
       </Dialog>
+
+      {/* Social Publish Modal */}
+      <SocialPublishModal
+        isOpen={socialPublishPhoto !== null}
+        onClose={() => setSocialPublishPhoto(null)}
+        imageUrl={socialPublishPhoto?.url || ''}
+        defaultCaption={event?.title ? `📸 ${event.title} #gästefotos` : ''}
+        onSuccess={() => showToast('Auf Social Media veröffentlicht!', 'success')}
+      />
 
       {/* Photo Editor Modal */}
       <AnimatePresence>

@@ -21,12 +21,16 @@ import {
   Monitor,
   Settings,
   Shuffle,
-  ChevronDown
+  ChevronDown,
+  ExternalLink,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import * as QRCode from 'qrcode';
+import { useWallSounds } from '@/hooks/useWallSounds';
 
 type AnimationType = 'fade' | 'slide' | 'zoom' | 'flip' | 'collage';
 type ViewMode = 'grid' | 'slideshow';
@@ -105,6 +109,10 @@ export default function LiveWallPage() {
   const [confettiParticles, setConfettiParticles] = useState<{id:number;x:number;color:string;delay:number}[]>([]);
   const confettiIdRef = useRef(0);
   const slideshowTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const { play: playSound } = useWallSounds(soundEnabled);
+  const prevPhotoCountRef = useRef(0);
+  const [eventSlug, setEventSlug] = useState('');
   
   const containerRef = useRef<HTMLDivElement>(null);
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -160,6 +168,7 @@ export default function LiveWallPage() {
     try {
       const { data } = await api.get(`/events/${eventId}`);
       setEventTitle(data.event?.title || 'Event Wall');
+      if (data.event?.slug) setEventSlug(data.event.slug);
     } catch (err) {
       // Error loading event
     }
@@ -241,7 +250,13 @@ export default function LiveWallPage() {
 
       // Sort by date (newest first) and limit
       allPhotos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      setAllPhotos(allPhotos.slice(0, 100));
+      const sliced = allPhotos.slice(0, 100);
+      // Play sound when new photos arrive
+      if (prevPhotoCountRef.current > 0 && sliced.length > prevPhotoCountRef.current) {
+        playSound('ding');
+      }
+      prevPhotoCountRef.current = sliced.length;
+      setAllPhotos(sliced);
       setLoading(false);
     } catch (err) {
       // Error loading photos
@@ -409,6 +424,22 @@ export default function LiveWallPage() {
               </div>
             )}
 
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className={`p-1.5 rounded-lg transition-colors ${soundEnabled ? 'bg-blue-500 text-white' : viewMode === 'slideshow' ? 'bg-card/10 text-white/60 hover:bg-card/20' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+              title={soundEnabled ? 'Sound aus' : 'Sound an'}
+            >
+              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+            {eventSlug && (
+              <button
+                onClick={() => window.open(`/live/${eventSlug}/wall?admin=1`, '_blank')}
+                className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 text-xs font-medium ${viewMode === 'slideshow' ? 'bg-card/10 text-white/60 hover:bg-card/20' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+                title="Public Wall mit Admin-Steuerung öffnen"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </button>
+            )}
             <Button variant="ghost" size="sm" onClick={() => setShowQR(!showQR)}>
               <QrCode className="w-4 h-4" />
             </Button>

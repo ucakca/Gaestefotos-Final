@@ -351,6 +351,21 @@ export default function EventHero({
             </div>
           </div>
           
+          {!isStorageLocked && !uploadDisabled && (
+            <button
+              onClick={() => {
+                const fab = document.querySelector('[data-upload-fab]') as HTMLButtonElement;
+                if (fab) { fab.click(); return; }
+                const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+                if (fileInput) fileInput.click();
+              }}
+              className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+            >
+              <Camera className="w-4 h-4" />
+              {t('uploadPhoto')}
+            </button>
+          )}
+
           {welcomeMessage && (
             <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
               {welcomeMessage}

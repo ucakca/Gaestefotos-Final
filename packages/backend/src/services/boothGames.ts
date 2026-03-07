@@ -1,6 +1,7 @@
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { resolvePrompt, renderPrompt } from './promptTemplates';
+import { getLlmPromptConfig, recordPipelineExecution } from './pipelineRunner';
 import { enrichSystemPrompt } from './eventPromptContext';
 import { withKnowledge } from './cache/knowledgeStore';
 import { generateCompletion } from '../lib/groq';
@@ -232,7 +233,12 @@ export const generateComplimentAI = withKnowledge<
   'compliment-mirror',
   async ({ eventId, eventType, eventTitle, guestName, locale }) => {
     try {
-      const prompt = await resolvePrompt('compliment_mirror', eventId);
+      // Pipeline Runner → PromptTemplates → Hardcoded
+      const [pipelineCfg, prompt] = await Promise.all([
+        getLlmPromptConfig('compliment_mirror', eventId).catch(() => null),
+        resolvePrompt('compliment_mirror', eventId),
+      ]);
+      const startMs = Date.now();
 
       // Build context variables
       const eventContext = eventType
@@ -240,9 +246,9 @@ export const generateComplimentAI = withKnowledge<
         : '';
       const guestContext = guestName ? ` Gastname: ${guestName}.` : '';
 
-      const rawSystemPrompt = prompt.systemPrompt || FALLBACK_PROMPTS_CM.systemPrompt;
+      const rawSystemPrompt = pipelineCfg?.systemPrompt || prompt.systemPrompt || FALLBACK_PROMPTS_CM.systemPrompt;
       const systemPrompt = eventId ? await enrichSystemPrompt(eventId, rawSystemPrompt) : rawSystemPrompt;
-      const userPromptTpl = prompt.userPromptTpl || FALLBACK_PROMPTS_CM.userPromptTpl;
+      const userPromptTpl = pipelineCfg?.userPrompt || prompt.userPromptTpl || FALLBACK_PROMPTS_CM.userPromptTpl;
 
       const userPrompt = renderPrompt(userPromptTpl, {
         eventContext,
@@ -250,8 +256,8 @@ export const generateComplimentAI = withKnowledge<
       });
 
       const response = await generateCompletion(userPrompt, systemPrompt, {
-        maxTokens: prompt.maxTokens || 150,
-        temperature: prompt.temperature || 0.95,
+        maxTokens: pipelineCfg?.maxTokens || prompt.maxTokens || 150,
+        temperature: pipelineCfg?.temperature || prompt.temperature || 0.95,
       });
 
       // Parse JSON response
@@ -260,6 +266,7 @@ export const generateComplimentAI = withKnowledge<
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         if (parsed.compliment && parsed.verdict) {
+          if (pipelineCfg) recordPipelineExecution('compliment_mirror', true, Date.now() - startMs).catch(() => {});
           return { compliment: parsed.compliment, verdict: parsed.verdict, source: 'ai' as const };
         }
       }
@@ -319,27 +326,33 @@ export const generateFortuneTellerAI = withKnowledge<
   'fortune-teller',
   async ({ eventId, eventType, eventTitle, guestName }) => {
     try {
-      const prompt = await resolvePrompt('fortune_teller', eventId);
+      // Pipeline Runner → PromptTemplates → Hardcoded
+      const [pipelineCfg, prompt] = await Promise.all([
+        getLlmPromptConfig('fortune_teller', eventId).catch(() => null),
+        resolvePrompt('fortune_teller', eventId),
+      ]);
+      const startMs = Date.now();
       const eventContext = eventType ? ` Event-Typ: ${eventType}${eventTitle ? `, Titel: "${eventTitle}"` : ''}.` : '';
       const guestContext = guestName ? ` Gastname: ${guestName}.` : '';
 
-      const rawSystemPrompt = prompt.systemPrompt || `Du bist eine mystische Wahrsagerin auf einer Party.
+      const rawSystemPrompt = pipelineCfg?.systemPrompt || prompt.systemPrompt || `Du bist eine mystische Wahrsagerin auf einer Party.
 Gib dem Gast eine witzige, kreative Zukunftsvorhersage.
 Antworte NUR auf Deutsch. Sei mystisch aber humorvoll. Max 3 Sätze.
 Antworte NUR als JSON: {"prediction": "...", "luckyItem": "...", "luckyNumber": 7}`;
       const systemPrompt = eventId ? await enrichSystemPrompt(eventId, rawSystemPrompt) : rawSystemPrompt;
-      const userPromptTpl = prompt.userPromptTpl || 'Gib dem Gast eine witzige Zukunftsvorhersage.{{eventContext}}{{guestContext}}';
+      const userPromptTpl = pipelineCfg?.userPrompt || prompt.userPromptTpl || 'Gib dem Gast eine witzige Zukunftsvorhersage.{{eventContext}}{{guestContext}}';
       const userPrompt = renderPrompt(userPromptTpl, { eventContext, guestContext });
 
       const response = await generateCompletion(userPrompt, systemPrompt, {
-        maxTokens: prompt.maxTokens || 200,
-        temperature: prompt.temperature || 0.95,
+        maxTokens: pipelineCfg?.maxTokens || prompt.maxTokens || 200,
+        temperature: pipelineCfg?.temperature || prompt.temperature || 0.95,
       });
 
       const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         if (parsed.prediction) {
+          if (pipelineCfg) recordPipelineExecution('fortune_teller', true, Date.now() - startMs).catch(() => {});
           return { prediction: parsed.prediction, luckyItem: parsed.luckyItem || '🍀', luckyNumber: parsed.luckyNumber || 7, source: 'ai' as const };
         }
       }
@@ -373,27 +386,33 @@ export const generateRoastAI = withKnowledge<
   'ai-roast',
   async ({ eventId, eventType, eventTitle, guestName }) => {
     try {
-      const prompt = await resolvePrompt('ai_roast', eventId);
+      // Pipeline Runner → PromptTemplates → Hardcoded
+      const [pipelineCfg, prompt] = await Promise.all([
+        getLlmPromptConfig('ai_roast', eventId).catch(() => null),
+        resolvePrompt('ai_roast', eventId),
+      ]);
+      const startMs = Date.now();
       const eventContext = eventType ? ` Event-Typ: ${eventType}${eventTitle ? `, Titel: "${eventTitle}"` : ''}.` : '';
       const guestContext = guestName ? ` Gastname: ${guestName}.` : '';
 
-      const rawSystemPrompt = prompt.systemPrompt || `Du bist ein Stand-Up-Comedian auf einer Party.
+      const rawSystemPrompt = pipelineCfg?.systemPrompt || prompt.systemPrompt || `Du bist ein Stand-Up-Comedian auf einer Party.
 Roaste den Gast liebevoll und witzig. NIEMALS verletzend oder beleidigend.
 Antworte NUR auf Deutsch. Max 2 Sätze Roast + 1 Rettungs-Kompliment.
 Antworte NUR als JSON: {"roast": "...", "rescue": "..."}`;
-      const userPromptTpl = prompt.userPromptTpl || 'Roaste den Gast liebevoll.{{eventContext}}{{guestContext}}';
+      const userPromptTpl = pipelineCfg?.userPrompt || prompt.userPromptTpl || 'Roaste den Gast liebevoll.{{eventContext}}{{guestContext}}';
       const systemPrompt = eventId ? await enrichSystemPrompt(eventId, rawSystemPrompt) : rawSystemPrompt;
       const userPrompt = renderPrompt(userPromptTpl, { eventContext, guestContext });
 
       const response = await generateCompletion(userPrompt, systemPrompt, {
-        maxTokens: prompt.maxTokens || 200,
-        temperature: prompt.temperature || 0.95,
+        maxTokens: pipelineCfg?.maxTokens || prompt.maxTokens || 200,
+        temperature: pipelineCfg?.temperature || prompt.temperature || 0.95,
       });
 
       const jsonMatch = response.content.trim().match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         if (parsed.roast) {
+          if (pipelineCfg) recordPipelineExecution('ai_roast', true, Date.now() - startMs).catch(() => {});
           return { roast: parsed.roast, rescue: parsed.rescue || '❤️', source: 'ai' as const };
         }
       }

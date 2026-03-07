@@ -24,7 +24,7 @@ router.post('/accept', authMiddleware, async (req: AuthRequest, res: Response) =
 
     const secret = getInviteJwtSecret();
     if (!secret) {
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Interner Serverfehler' });
     }
 
     let decoded: any;
@@ -50,7 +50,7 @@ router.post('/accept', authMiddleware, async (req: AuthRequest, res: Response) =
     }
 
     if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Nicht autorisiert' });
     }
 
     if (event.hostId === req.userId) {
@@ -103,7 +103,7 @@ router.post('/accept', authMiddleware, async (req: AuthRequest, res: Response) =
     logger.error('Accept cohost invite error', {
       message: getErrorMessage(error),
     });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 

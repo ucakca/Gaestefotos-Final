@@ -1,4 +1,4 @@
-// Temporär deaktiviert - i18n wird später vollständig implementiert
+// i18n uses cookie-based locale (NEXT_LOCALE) — no middleware routing needed.
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -61,10 +61,10 @@ export async function middleware(request: NextRequest) {
   // be blocked. Using 'unsafe-inline' for scripts is the pragmatic fallback.
   const cspHeader = [
     `default-src 'self'`,
-    `script-src 'self' 'unsafe-inline' 'unsafe-eval'`,
-    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
+    `script-src 'self' 'unsafe-inline'`,
+    `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: https: http: blob:`,
-    `font-src 'self' https://fonts.gstatic.com`,
+    `font-src 'self'`,
     `connect-src 'self' https: wss:`,
     `media-src 'self' blob:`,
     `frame-src 'self'`,
@@ -79,7 +79,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // Public routes that don't require authentication
-  const publicRoutes = ['/', '/login', '/register', '/e', '/e2', '/e3', '/i', '/s', '/s2'];
+  const publicRoutes = [
+    '/', '/login', '/register', '/forgot-password', '/reset-password',
+    '/e', '/e2', '/e3', '/i', '/s', '/s2', '/r', '/live',
+    '/agb', '/datenschutz', '/impressum', '/cookies', '/faq',
+    '/pricing', '/partner', '/offline', '/version',
+  ];
   
   const { pathname } = request.nextUrl;
   const host = (request.headers.get('host') || '').toLowerCase();

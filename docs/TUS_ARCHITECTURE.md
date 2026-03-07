@@ -2,7 +2,8 @@
 
 **Erstellt:** 2026-01-10  
 **Status:** Implementiert  
-**Implementiert:** 2026-01-10
+**Implementiert:** 2026-01-10  
+**Aktualisiert:** 2026-03-07
 
 ---
 
@@ -38,18 +39,21 @@
 ┌─────────────────────────────────────────────────────────────────────┐
 │                          BACKEND                                     │
 │  ┌─────────────────────────────────────────────────────────────┐    │
-│  │  tus-node-server (Express Middleware)                        │    │
+│  │  @tus/server v2.x (Express Middleware)                       │    │
 │  │  - Endpoint: POST /api/uploads                               │    │
 │  │  - Chunk-Empfang + Zusammenbau                               │    │
-│  │  - SeaweedFS als Backend-Store                               │    │
+│  │  - FileStore (lokaler Temp-Ordner /tmp/tus-uploads)          │    │
+│  │  - IP-basiertes Upload-Limit (maxUploadsPerGuest)            │    │
 │  └─────────────────────────────────────────────────────────────┘    │
 │                                    │                                 │
 │                                    ▼                                 │
 │  ┌─────────────────────────────────────────────────────────────┐    │
-│  │  Post-Upload Processing                                      │    │
-│  │  - Original speichern (storagePath_original)                 │    │
-│  │  - Optimized generieren (storagePath → 1920px für Galerie)   │    │
-│  │  - Thumbnail generieren (storagePath_thumb → 300px)          │    │
+│  │  Post-Upload Processing (processCompletedUpload)             │    │
+│  │  - Original speichern (storagePathOriginal, EXIF-stripped)   │    │
+│  │  - Optimized generieren (storagePath → 1920px JPEG 85%)      │    │
+│  │  - Thumbnail generieren (storagePathThumb → 300px JPEG 75%) │    │
+│  │  - WebP generieren (storagePathWebp → 1920px WebP 82%)      │    │
+│  │  - sharp(buffer).rotate() + pipeline.clone() (1× geladen)   │    │
 │  └─────────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────────┘
                                     │
@@ -58,9 +62,10 @@
 │                       SEAWEEDFS (S3)                                 │
 │  events/{eventId}/                                                   │
 │  ├── {photoId}/                                                      │
-│  │   ├── original.jpg      ← Volle Qualität (für Host-Download)     │
-│  │   ├── optimized.jpg     ← 1920px (für Gäste-Galerie)             │
-│  │   └── thumb.jpg         ← 300px (für Thumbnails)                 │
+│  │   ├── {id}_orig.jpg     ← Volle Qualität (für Host-Download)     │
+│  │   ├── {id}_opt.jpg      ← 1920px JPEG 85% (für Gäste-Galerie)   │
+│  │   ├── {id}_thumb.jpg    ← 300px JPEG 75% (Thumbnails)            │
+│  │   └── {id}_webp.webp    ← 1920px WebP 82% (modernes Format)      │
 │  └── {videoId}/                                                      │
 │      └── original.mp4      ← Volle Qualität                         │
 └─────────────────────────────────────────────────────────────────────┘
@@ -72,32 +77,31 @@
 
 ### 3.1 Backend: tus-node-server
 
-**Package:** `@tus/server` + `@tus/s3-store`
+**Package:** `@tus/server` + `@tus/file-store`
 
 ```typescript
-// packages/backend/src/routes/uploads.ts
+// packages/backend/src/routes/uploads.ts (vereinfacht)
 
 import { Server } from '@tus/server';
-import { S3Store } from '@tus/s3-store';
+import { FileStore } from '@tus/file-store';
 
 const tusServer = new Server({
   path: '/api/uploads',
-  datastore: new S3Store({
-    partSize: 5 * 1024 * 1024, // 5MB chunks
-    s3ClientConfig: {
-      endpoint: process.env.SEAWEEDFS_ENDPOINT,
-      region: 'us-east-1',
-      credentials: {
-        accessKeyId: process.env.SEAWEEDFS_ACCESS_KEY,
-        secretAccessKey: process.env.SEAWEEDFS_SECRET_KEY,
-      },
-      forcePathStyle: true,
-    },
-    bucket: process.env.SEAWEEDFS_BUCKET,
+  respectForwardedHeaders: true,
+  datastore: new FileStore({
+    directory: process.env.TUS_UPLOAD_DIR || '/tmp/tus-uploads',
   }),
-  onUploadFinish: async (req, res, upload) => {
-    // Post-Processing: Original → Optimized → Thumbnail
-    await processUploadedFile(upload);
+  maxSize: 104_857_600, // 100MB
+  onUploadCreate: async (req, upload) => {
+    // Validate: eventId in metadata, auth check
+    await validateTusRequest(req);
+    return { res: undefined, metadata: upload.metadata };
+  },
+  onUploadFinish: async (req, upload) => {
+    // IP-Hash für Upload-Limit-Tracking extrahieren
+    // Post-Processing: Original → Optimized → Thumbnail → WebP
+    await processCompletedUpload(upload);
+    return {};
   },
 });
 ```
@@ -165,40 +169,27 @@ async function processUploadedFile(
   const originalBuffer = await storageService.getFile(tusUpload.id);
   
   if (mediaType === 'photo') {
-    // 1. Original behalten (nur EXIF strippen)
-    const original = await sharp(originalBuffer)
-      .rotate()
-      .withMetadata({ orientation: undefined })
-      .toBuffer();
-    
-    // 2. Optimized für Galerie (1920px)
-    const optimized = await sharp(originalBuffer)
-      .rotate()
-      .resize(1920, 1920, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 85 })
-      .withMetadata({ orientation: undefined })
-      .toBuffer();
-    
-    // 3. Thumbnail (300px)
-    const thumbnail = await sharp(originalBuffer)
-      .rotate()
-      .resize(300, 300, { fit: 'cover' })
-      .jpeg({ quality: 75 })
-      .toBuffer();
-    
-    // Upload alle Varianten
-    const basePath = `events/${eventId}/${tusUpload.id}`;
-    await Promise.all([
-      storageService.uploadBuffer(`${basePath}/original.jpg`, original),
-      storageService.uploadBuffer(`${basePath}/optimized.jpg`, optimized),
-      storageService.uploadBuffer(`${basePath}/thumb.jpg`, thumbnail),
+    // Pipeline: 1× Bild laden, 4 Varianten via clone()
+    const pipeline = sharp(originalBuffer).rotate(); // EXIF-Rotation VOR Strip
+    // sharp() ohne .withMetadata() = strippt EXIF automatisch (inkl. GPS)
+
+    const [original, optimized, thumbnail, webp] = await Promise.all([
+      pipeline.clone().toBuffer(),
+      pipeline.clone().resize(1920, 1920, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 85 }).toBuffer(),
+      pipeline.clone().resize(300, 300, { fit: 'cover' })
+        .jpeg({ quality: 75 }).toBuffer(),
+      pipeline.clone().resize(1920, 1920, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 82 }).toBuffer(),
     ]);
     
-    return {
-      originalPath: `${basePath}/original.jpg`,
-      optimizedPath: `${basePath}/optimized.jpg`,
-      thumbnailPath: `${basePath}/thumb.jpg`,
-    };
+    // Upload alle 4 Varianten parallel zu SeaweedFS
+    await Promise.all([
+      storageService.uploadFile(eventId, `${photoId}_orig`, original, 'image/jpeg'),
+      storageService.uploadFile(eventId, `${photoId}_opt`, optimized, 'image/jpeg'),
+      storageService.uploadFile(eventId, `${photoId}_thumb`, thumbnail, 'image/jpeg'),
+      storageService.uploadFile(eventId, `${photoId}_webp`, webp, 'image/webp'),
+    ]);
   }
   
   // Videos: Nur Original speichern (kein Transcoding)
@@ -223,6 +214,7 @@ model Photo {
   storagePath          String?   // Optimized (1920px) - für Galerie
   storagePathOriginal  String?   // Original (volle Qualität) - für Download
   storagePathThumb     String?   // Thumbnail (300px) - für Previews
+  storagePathWebp      String?   // WebP (1920px) - modernes Format
   
   // Tus-spezifisch
   tusUploadId          String?   // Tus Upload ID für Resume
@@ -260,12 +252,24 @@ HEAD /api/uploads/{uploadId}
 └── Response: Upload-Offset (für Resume)
 ```
 
-### 5.2 Download Endpoints
+### 5.2 Status & Limit Endpoints
 
 ```
-GET /api/photos/{id}/file
-└── Query: ?quality=original|optimized|thumb
-    - Gäste: optimized (Standard)
+GET /api/uploads/status
+└── Response: { enabled: true, maxSize: 104857600 }
+
+GET /api/uploads/limit/:eventId?guest=name
+└── Response: { limited: bool, max: number|null, used: number, remaining: number|null }
+    - Zeigt Gästen ihr verbleibendes Upload-Kontingent
+```
+
+### 5.3 Download Endpoints
+
+```
+GET /cdn/:photoId
+└── Query: ?w=400&q=80&f=webp
+    - On-the-fly Resize + Format-Conversion via Sharp
+    - Gäste: optimized/webp (Standard)
     - Host/Admin: original wenn ?quality=original
 
 GET /api/photos/{id}/download
@@ -279,18 +283,21 @@ GET /api/videos/{id}/file
 
 ## 6. Frontend-Integration
 
-### 6.1 UploadButton.tsx Änderungen
+### 6.1 UploadButton.tsx — Progressiver Upload (aktuelle Implementierung)
 
 ```typescript
-// ENTFERNEN: Client-side Resize
-// const resizedFile = await resizeImageIfNeeded(file);
+// Client-side Resize BLEIBT (Bandbreiten-Optimierung, max 2500px)
+const file = await resizeImageIfNeeded(originalFile);
 
-// NEU: Tus Upload mit Original-Datei
-const uploadUrl = await uploadWithTus(file, eventId, (progress) => {
-  setUploadProgress(progress);
-});
+// Phase 1: Tiny Preview (~30KB) für sofortige Galerie-Anzeige
+const preview = await generateQuickPreview(originalFile);
+await api.post(`/events/${eventId}/photos/quick-preview`, previewForm);
 
-// Backend verarbeitet Original und erstellt Varianten
+// Phase 2: Volle Qualität via TUS (resumable)
+await uploadWithTus(file, { eventId, uploadedBy: name, onProgress });
+
+// Backend erstellt 4 Varianten + speichert in SeaweedFS
+// + Upload-Limit-Anzeige: GET /api/uploads/limit/:eventId
 ```
 
 ### 6.2 Galerie-Anzeige
@@ -321,10 +328,10 @@ const uploadUrl = await uploadWithTus(file, eventId, (progress) => {
 
 ```env
 # .env
-TUS_ENABLED=true
-TUS_CHUNK_SIZE=5242880        # 5MB
-TUS_MAX_SIZE=524288000        # 500MB (für Videos)
-TUS_EXPIRATION=86400000       # 24h (incomplete uploads)
+TUS_UPLOAD_DIR=/tmp/tus-uploads    # Temp-Ordner für Chunks
+TUS_MAX_SIZE=104857600             # 100MB (Fotos + Videos)
+# Cleanup: Stale Temp-Files werden alle 30min gelöscht (> 2h alt)
+# Progressive Zombie-Records werden alle 15min gelöscht (> 1h alt)
 ```
 
 ---
@@ -374,18 +381,18 @@ TUS_EXPIRATION=86400000       # 24h (incomplete uploads)
 **Begründung:**
 - Transcoding ist CPU-intensiv
 - Browser können die meisten Formate abspielen
-- Größenlimit (500MB) als Schutz
+- Größenlimit (100MB via TUS) als Schutz
 
 ---
 
-## 12. Nächste Schritte (Sonnet)
+## 12. Status (Stand: 07.03.2026)
 
-1. **Original-Qualität Fix** (sofort)
-   - Client-side Resize entfernen
-   - Backend: Original speichern, Optimized für Galerie
-
-2. **Tus.io Integration** (danach)
-   - Backend Route implementieren
-   - Frontend Client integrieren
-
-**Wechsel zu Sonnet für Implementierung.**
+✅ **Alle Schritte abgeschlossen:**
+1. Original-Qualität Fix — Backend speichert 4 Varianten (orig, opt, thumb, webp)
+2. TUS-Integration — `@tus/server` v2.x + `@tus/file-store` in `uploads.ts`
+3. Frontend — `tus-js-client` in `tusUpload.ts` mit auto-resume
+4. Upload-Limits — Multer + TUS + Nginx einheitlich auf 100MB
+5. IP-basiertes Upload-Limit (S-05) + Gäste-Anzeige
+6. Progressive Upload (Phase 1: Vorschau → Phase 2: TUS Full Quality)
+7. GPS-EXIF-Strip auf Bild- und Metadaten-Ebene (DSGVO)
+8. Production Tests bestanden (206/206 Unit-Tests, alle Services aktiv)

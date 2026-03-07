@@ -121,7 +121,7 @@ export function EventThemeProvider({ theme, customOverrides, children }: EventTh
       link.rel = 'stylesheet';
       document.head.appendChild(link);
     }
-    link.href = `https://fonts.googleapis.com/css2?family=${families}&display=swap`;
+    link.href = `/api/fonts/css?family=${families}&display=swap`;
 
     return () => {
       link?.remove();

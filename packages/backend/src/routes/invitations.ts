@@ -45,7 +45,7 @@ function issueInvitationAccessCookie(res: Response, invitationId: string) {
   const domain = process.env.COOKIE_DOMAIN || undefined;
   res.cookie(getInvitationAccessCookieName(invitationId), token, {
     httpOnly: true,
-    secure: true,
+    secure: isProd,
     sameSite: 'lax',
     domain,
     maxAge: ttlSeconds * 1000,
@@ -260,7 +260,7 @@ router.get('/events/:eventId/invitations', authMiddleware, async (req: AuthReque
     });
   } catch (error) {
     logger.error('List invitations error', { message: getErrorMessage(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -303,7 +303,7 @@ router.post('/events/:eventId/invitations/:invitationId/shortlinks', authMiddlew
       return res.status(400).json({ error: error.errors });
     }
     logger.error('Create invitation shortlink error', { message: getErrorMessage(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -386,7 +386,7 @@ router.post('/events/:eventId/invitations', authMiddleware, async (req: AuthRequ
       return res.status(400).json({ error: error.errors });
     }
     logger.error('Create invitation error', { message: getErrorMessage(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -437,7 +437,7 @@ router.put('/events/:eventId/invitations/:invitationId', authMiddleware, async (
       return res.status(400).json({ error: error.errors });
     }
     logger.error('Update invitation error', { message: getErrorMessage(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -484,7 +484,7 @@ router.get('/events/slug/:slug/invitations/public', async (req: AuthRequest, res
     });
   } catch (error) {
     logger.error('Public list invitations error', { message: getErrorMessage(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -581,7 +581,7 @@ router.get('/invitations/slug/:slug', passwordLimiter, async (req: AuthRequest, 
       return res.status(400).json({ error: error.errors });
     }
     logger.error('Public get invitation error', { message: getErrorMessage(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -658,7 +658,7 @@ router.post('/invitations/slug/:slug/rsvp', passwordLimiter, async (req: AuthReq
       return res.status(400).json({ error: error.errors });
     }
     logger.error('Submit invitation RSVP error', { message: getErrorMessage(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -735,7 +735,7 @@ router.get('/invitations/slug/:slug/ics', passwordLimiter, async (req: AuthReque
       return res.status(400).json({ error: error.errors });
     }
     logger.error('Invitation ICS error', { message: getErrorMessage(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -806,7 +806,7 @@ router.get('/shortlinks/:code', async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     logger.error('Resolve shortlink error', { message: getErrorMessage(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 

@@ -1,6 +1,6 @@
 # gästefotos.com — Master-Konzept (Single Source of Truth)
 
-> Stand: 1. März 2026
+> Stand: 6. März 2026
 > Zweck: **Zentrales Dokument** — alle Entscheidungen, Verbindungen, Architekturen und offene Punkte an EINEM Ort.
 > Regel: Wenn etwas hier nicht steht oder hier nicht verlinkt ist, existiert es nicht.
 
@@ -163,10 +163,14 @@ Socket.IO: Echtzeit zwischen allen Clients (Galerie-Updates, Mosaic, Analytics)
 | **AI Feature Gate** | `services/aiFeatureGate.ts` | 3-Level AI-Gating (Paket ∩ Event ∩ Device) |
 | **AI Feature Registry** | `services/aiFeatureRegistry.ts` | Zentrale Registry aller 33+ AI-Features |
 | **AI Execution** | `services/aiExecution.ts` | Provider-Auflösung, Credit-Check, Logging |
-| **AI Style Effects** | `services/aiStyleEffects.ts` | Image-to-Image Effekte (Stability, Replicate, Sharp) |
+| **AI Style Effects** | `services/aiStyleEffects.ts` | Image-to-Image Effekte (RunPod/Qwen → fal.ai Fallback) |
 | **Package Limits** | `services/packageLimits.ts` | Effektives Paket für Event berechnen (Base + Addons) |
 | **Audit Logger** | `services/auditLogger.ts` | Alle Aktionen loggen (Fire-and-Forget) |
-| **Face Switch** | `services/faceSwitch.ts` | Face Swap via fal.ai inswapper (Fallback: sharp resize) |
+| **Face Switch** | `services/faceSwitch.ts` | Face Swap via RunPod/Qwen (Fallback: fal.ai inswapper) |
+| **RunPod Service** | `services/runpodService.ts` | Unified RunPod API: submitJob, pollForResult, extractOutputBuffer |
+| **ComfyUI Workflows** | `services/comfyuiWorkflows.ts` | ComfyUI Workflow-Ausführung auf RunPod |
+| **Workflow Registry** | `services/comfyuiWorkflowRegistry.ts` | 18 Qwen-Workflows laden, Params injizieren, auf RunPod ausführen |
+| **AI Job Worker** | `services/aiJobWorker.ts` | Async AI-Job Queue (30s Intervall, RunPod polling) |
 | **AI Video Gen** | `services/aiVideoGen.ts` | Video-Generierung via fal.ai wan-i2v |
 | **BG Removal** | `services/bgRemoval.ts` | Hintergrundentfernung via remove.bg |
 | **Knowledge Store** | `services/cache/knowledgeStore.ts` | AI-Antwort Cache (Redis 24h + Postgres permanent) |
@@ -767,8 +771,8 @@ Alle getroffenen Entscheidungen an einem Ort:
 | `docs/DOCS-AUDIT-UND-MASTER-TODO.md` | Audit aller 58 MD-Files, 10 Cluster, Archivierungs-Plan | 27.02.2026 |
 | `docs/BOOTH-EXPERIENCE-KONZEPT.md` | Booth-Flow, KI-Avatar (Sophie/Viktor), Mini-Spiele, Async Delivery | 27.02.2026 |
 | `docs/TEST-CHECKLISTE-T1.md` | Schritt-für-Schritt Test-Anleitung (10 Sektionen, 60+ Tests) | 27.02.2026 |
-| `docs/RUNPOD-COMFYUI-PLAN.md` | RunPod + ComfyUI KI-Architektur (Server, Costs, Roadmap) | Feb 2026 |
-| `docs/AI-EFFEKTE-KATALOG.md` | Katalog aller AI-Features (14+14+24) | 19.02.2026 |
+| `docs/RUNPOD-COMFYUI-PLAN.md` | RunPod + ComfyUI KI-Architektur (Qwen Image Edit, 18 Workflows, Roadmap ✅) | 06.03.2026 |
+| `docs/AI-EFFEKTE-KATALOG.md` | Katalog aller AI-Features (14+14+24, Provider: RunPod/Qwen + fal.ai) | 06.03.2026 |
 | `docs/AI-FEATURE-GATING-KONZEPT.md` | AI Gating Architektur (3-Level) | 19.02.2026 |
 | `docs/AI-STRATEGIE.md` | AI Provider-Strategie (Groq, Grok, OpenAI) | Feb 2026 |
 | `docs/AI-OFFLINE-STRATEGIE.md` | Offline-Strategie für AI-Features | Feb 2026 |

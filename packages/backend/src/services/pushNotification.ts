@@ -191,6 +191,17 @@ export const pushTemplates = {
     tag: 'host-upload',
     url: '/dashboard',
   }),
+
+  aiJobComplete: (guestName: string | null, workflow: string, shortCode: string) => ({
+    title: '✨ Dein KI-Ergebnis ist fertig!',
+    body: guestName
+      ? `${guestName}, dein ${workflow}-Ergebnis wartet auf dich!`
+      : `Dein ${workflow}-Ergebnis ist bereit zum Anschauen!`,
+    icon: '/icons/icon-192x192.png',
+    badge: '/icons/badge-72x72.png',
+    tag: `ai-job-${shortCode}`,
+    url: `/r/${shortCode}`,
+  }),
 };
 
 export { VAPID_PUBLIC_KEY };

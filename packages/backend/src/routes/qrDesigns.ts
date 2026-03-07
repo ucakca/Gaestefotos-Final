@@ -49,7 +49,7 @@ router.get('/events/:eventId/qr-designs', authMiddleware, async (req: AuthReques
     return res.json({ designs: qrDesigns });
   } catch (error) {
     logger.error('Get QR designs error', { message: getErrorMessage(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -106,7 +106,7 @@ router.put('/events/:eventId/qr-designs/:designId', authMiddleware, async (req: 
     return res.json({ ok: true, design: newDesign });
   } catch (error) {
     logger.error('Save QR design error', { message: getErrorMessage(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -145,7 +145,7 @@ router.delete('/events/:eventId/qr-designs/:designId', authMiddleware, async (re
     return res.json({ ok: true });
   } catch (error) {
     logger.error('Delete QR design error', { message: getErrorMessage(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 

@@ -25,7 +25,7 @@ router.get('/:eventId/guests', async (req: AuthRequest, res: Response) => {
     const { search, page, limit } = req.query;
 
     const event = await prisma.event.findUnique({ where: { id: eventId } });
-    if (!event) return res.status(404).json({ error: 'Event not found' });
+    if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
 
     const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
     const limitNum = Math.min(500, Math.max(1, parseInt(limit as string, 10) || 500));
@@ -49,7 +49,7 @@ router.get('/:eventId/guests', async (req: AuthRequest, res: Response) => {
     res.json({ guests, total, page: pageNum, limit: limitNum });
   } catch (error) {
     logger.error('Get guests error', { error: getErrorMessage(error), eventId: req.params.eventId });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -65,7 +65,7 @@ router.post('/:eventId/guests', async (req: AuthRequest, res: Response) => {
     });
 
     if (!event) {
-      return res.status(404).json({ error: 'Event not found' });
+      return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
     // Generate access token
@@ -94,7 +94,7 @@ router.post('/:eventId/guests', async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: error.errors });
     }
     logger.error('Create guest error', { error: getErrorMessage(error), eventId: req.params.eventId });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -130,7 +130,7 @@ router.put(
       res.json({ guest: updatedGuest });
     } catch (error) {
       logger.error('Update guest error', { error: getErrorMessage(error), eventId: req.params.eventId, guestId: req.params.guestId });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -149,11 +149,11 @@ router.delete(
       });
 
       if (!event) {
-        return res.status(404).json({ error: 'Event not found' });
+        return res.status(404).json({ error: 'Event nicht gefunden' });
       }
 
       if (!(await hasEventManageAccess(req, eventId))) {
-        return res.status(403).json({ error: 'Forbidden' });
+        return res.status(403).json({ error: 'Zugriff verweigert' });
       }
 
       await prisma.guest.delete({
@@ -163,7 +163,7 @@ router.delete(
       res.json({ message: 'Guest deleted' });
     } catch (error) {
       logger.error('Delete guest error', { error: getErrorMessage(error), eventId: req.params.eventId, guestId: req.params.guestId });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -175,7 +175,7 @@ router.patch(
   async (req: AuthRequest, res: Response) => {
     try {
       const { eventId, guestId } = req.params;
-      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
       const { notes, dietaryRequirements, plusOneCount, status } = req.body;
       const updateData: any = {};
@@ -223,7 +223,7 @@ router.get(
   async (req: AuthRequest, res: Response) => {
     try {
       const { eventId } = req.params;
-      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
       const limit = Math.min(100, parseInt(req.query.limit as string, 10) || 50);
       const offset = parseInt(req.query.offset as string, 10) || 0;
@@ -254,7 +254,7 @@ router.get(
   async (req: AuthRequest, res: Response) => {
     try {
       const { eventId } = req.params;
-      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
       const guests = await prisma.guest.findMany({
         where: { eventId },
@@ -283,7 +283,7 @@ router.get(
   async (req: AuthRequest, res: Response) => {
     try {
       const { eventId } = req.params;
-      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
       const guests = await prisma.guest.findMany({
         where: { eventId },
@@ -311,7 +311,7 @@ router.get(
   async (req: AuthRequest, res: Response) => {
     try {
       const { eventId } = req.params;
-      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
       const guests = await prisma.guest.findMany({
         where: { eventId },
@@ -342,7 +342,7 @@ router.patch(
   async (req: AuthRequest, res: Response) => {
     try {
       const { eventId } = req.params;
-      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
       const { guestIds, status } = req.body;
       if (!Array.isArray(guestIds) || guestIds.length === 0) return res.status(400).json({ error: 'guestIds erforderlich' });
@@ -368,7 +368,7 @@ router.get(
   async (req: AuthRequest, res: Response) => {
     try {
       const { eventId } = req.params;
-      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
       const total = await prisma.guest.count({ where: { eventId } });
       const checkedIn = await prisma.guest.count({ where: { eventId, isCheckedIn: true } as any }).catch(() => 0);
@@ -388,7 +388,7 @@ router.post(
   async (req: AuthRequest, res: Response) => {
     try {
       const { eventId } = req.params;
-      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
       const { guests: importList } = req.body;
       if (!Array.isArray(importList) || importList.length === 0) {
@@ -462,7 +462,7 @@ router.patch(
   async (req: AuthRequest, res: Response) => {
     try {
       const { eventId, guestId } = req.params;
-      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
       const guest = await prisma.guest.findFirst({ where: { id: guestId, eventId } });
       if (!guest) return res.status(404).json({ error: 'Gast nicht gefunden' });
@@ -489,7 +489,7 @@ router.get(
   async (req: AuthRequest, res: Response) => {
     try {
       const { eventId } = req.params;
-      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+      if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
       const [total, accepted, declined, pending, withEmail, plusOnes] = await Promise.all([
         prisma.guest.count({ where: { eventId } }),
@@ -524,7 +524,7 @@ router.get(
     try {
       const { eventId } = req.params;
       if (!(await hasEventManageAccess(req, eventId))) {
-        return res.status(403).json({ error: 'Forbidden' });
+        return res.status(403).json({ error: 'Zugriff verweigert' });
       }
 
       const guests = await prisma.guest.findMany({
@@ -566,7 +566,7 @@ router.get(
     try {
       const { eventId } = req.params;
       if (!(await hasEventManageAccess(req, eventId))) {
-        return res.status(403).json({ error: 'Forbidden' });
+        return res.status(403).json({ error: 'Zugriff verweigert' });
       }
       const event = await prisma.event.findUnique({ where: { id: eventId }, select: { slug: true } });
       if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
@@ -589,7 +589,7 @@ router.post(
     try {
       const { eventId } = req.params;
       if (!(await hasEventManageAccess(req, eventId))) {
-        return res.status(403).json({ error: 'Forbidden' });
+        return res.status(403).json({ error: 'Zugriff verweigert' });
       }
 
       const event = await prisma.event.findUnique({ where: { id: eventId } });
@@ -667,7 +667,7 @@ router.post(
     try {
       const { eventId, guestId } = req.params;
       if (!(await hasEventManageAccess(req, eventId))) {
-        return res.status(403).json({ error: 'Forbidden' });
+        return res.status(403).json({ error: 'Zugriff verweigert' });
       }
 
       const [guest, event] = await Promise.all([
@@ -731,5 +731,117 @@ router.post(
   }
 );
 
-export default router;
+// ─── DSGVO Email Opt-in ──────────────────────────────────────────────────────
 
+const emailOptInSchema = z.object({
+  email: z.string().email(),
+  optIn: z.boolean(),
+  guestName: z.string().optional(),
+});
+
+// Public endpoint: guest opts in/out of email notifications (no auth required)
+router.post('/:eventId/guests/email-optin', async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const data = emailOptInSchema.parse(req.body);
+
+    const event = await prisma.event.findUnique({ where: { id: eventId }, select: { id: true, isActive: true, deletedAt: true } });
+    if (!event || event.deletedAt || !event.isActive) {
+      return res.status(404).json({ error: 'Event nicht gefunden' });
+    }
+
+    // Find existing guest by email, or create one
+    let guest = await prisma.guest.findFirst({
+      where: { eventId, email: data.email },
+    });
+
+    if (guest) {
+      guest = await prisma.guest.update({
+        where: { id: guest.id },
+        data: {
+          emailOptIn: data.optIn,
+          emailOptInAt: data.optIn ? new Date() : null,
+        },
+      });
+    } else if (data.optIn) {
+      // Create new guest entry with opt-in
+      guest = await prisma.guest.create({
+        data: {
+          eventId,
+          firstName: data.guestName || 'Gast',
+          lastName: '',
+          email: data.email,
+          emailOptIn: true,
+          emailOptInAt: new Date(),
+          status: 'ACCEPTED',
+        },
+      });
+    }
+
+    logger.info('Guest email opt-in updated', { eventId, email: data.email, optIn: data.optIn });
+    res.json({ success: true, optIn: data.optIn });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Ungültige Eingabe', details: error.errors });
+    }
+    logger.error('Email opt-in error', { error: getErrorMessage(error) });
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// Public endpoint: check opt-in status
+router.get('/:eventId/guests/email-optin/:email', async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId, email } = req.params;
+    const guest = await prisma.guest.findFirst({
+      where: { eventId, email: decodeURIComponent(email) },
+      select: { emailOptIn: true, emailOptInAt: true },
+    });
+
+    res.json({ optIn: guest?.emailOptIn || false, optInAt: guest?.emailOptInAt || null });
+  } catch (error) {
+    logger.error('Email opt-in check error', { error: getErrorMessage(error) });
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// Public GET endpoint: one-click unsubscribe from email links (?email=...&unsubscribe=1)
+router.get('/:eventId/guests/email-optin', async (req: AuthRequest, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const email = req.query.email as string;
+    const unsubscribe = req.query.unsubscribe as string;
+
+    if (!email || unsubscribe !== '1') {
+      return res.status(400).json({ error: 'Ungültige Anfrage' });
+    }
+
+    const guest = await prisma.guest.findFirst({
+      where: { eventId, email },
+    });
+
+    if (guest) {
+      await prisma.guest.update({
+        where: { id: guest.id },
+        data: { emailOptIn: false, emailOptInAt: null },
+      });
+      logger.info('Guest unsubscribed via email link', { eventId, email });
+    }
+
+    // Return a simple HTML confirmation page
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(`<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Abgemeldet</title></head>
+<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f9fafb">
+<div style="text-align:center;max-width:400px;padding:32px">
+  <div style="font-size:48px;margin-bottom:16px">✅</div>
+  <h1 style="font-size:20px;color:#374151;margin:0 0 8px">Erfolgreich abgemeldet</h1>
+  <p style="color:#6b7280;font-size:15px;line-height:1.6;margin:0">Du erhältst keine weiteren E-Mail-Benachrichtigungen für dieses Event.</p>
+</div>
+</body></html>`);
+  } catch (error) {
+    logger.error('Unsubscribe error', { error: getErrorMessage(error) });
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+export default router;

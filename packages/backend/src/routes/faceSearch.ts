@@ -37,7 +37,7 @@ function issueConsentCookie(res: Response, eventId: string, consentId: string) {
   const domain = process.env.COOKIE_DOMAIN || undefined;
   res.cookie(getConsentCookieName(eventId), token, {
     httpOnly: true,
-    secure: true,
+    secure: isProd,
     sameSite: 'lax',
     domain,
     maxAge: ttlSeconds * 1000,
@@ -50,7 +50,7 @@ function clearConsentCookie(res: Response, eventId: string) {
   const domain = process.env.COOKIE_DOMAIN || undefined;
   res.cookie(getConsentCookieName(eventId), '', {
     httpOnly: true,
-    secure: true,
+    secure: isProd,
     sameSite: 'lax',
     domain,
     maxAge: 0,
@@ -179,7 +179,7 @@ router.get(
       return res.json({ accepted: await isValidDbConsent(req, eventId) });
     } catch (error) {
       logger.error('Error reading face search consent', { message: getErrorMessage(error), eventId: req.params.eventId });
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -250,7 +250,7 @@ router.post(
       return res.json({ ok: true, accepted: true });
     } catch (error) {
       logger.error('Error accepting face search consent', { message: getErrorMessage(error), eventId: req.params.eventId });
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -312,7 +312,7 @@ router.delete(
       return res.json({ ok: true, accepted: false });
     } catch (error) {
       logger.error('Error revoking face search consent', { message: getErrorMessage(error), eventId: req.params.eventId });
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );

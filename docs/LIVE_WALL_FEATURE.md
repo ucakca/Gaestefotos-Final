@@ -1,8 +1,11 @@
 # Live-Wall Feature - Dokumentation
 
-**Datum:** 20.01.2026  
+**Datum:** 20.01.2026 (aktualisiert 02.03.2026)  
 **Status:** ✅ LIVE  
-**Route:** `/events/[id]/live-wall`
+**Routes:**
+- Dashboard: `/events/[id]/live-wall`
+- Public Wall: `/live/[slug]/wall` (Realtime via Socket.IO)
+- Admin-Modus: `/live/[slug]/wall?admin=1`
 
 ---
 
@@ -201,10 +204,35 @@ xl:columns-4       /* Large (1280px+) */
 - [x] Top-Fotografen Leaderboard (alle 10 Fotos in SlideshowMode.tsx)
 - [x] Ken Burns Effect (SlideshowMode.tsx)
 
-### Offen
-- [ ] Themed Overlays (Hochzeit, Geburtstag, etc.)
-- [ ] Sound-Effekt bei neuem Foto
-- [ ] Admin-Control (Foto verbergen)
+### Implementiert (02.03.2026)
+- [x] **Themed Overlays** — 6 Typen: `particles`, `confetti`, `hearts`, `snowflakes`, `stars`, `bubbles`
+  - Komponente: `packages/frontend/src/components/event-theme/WallThemeOverlay.tsx`
+  - Props: `overlayType` (OverlayType), `intensity` (0–1)
+  - Particles: glowing orbs mit Event-Theme-Farben (primary/secondary/accent)
+  - Symbols: Emoji-basierte Animationen (fallend mit Wobble + Rotation)
+  - Inferred from theme oder manuell per Admin-Control
+- [x] **Sound-Effekte** — Prozeduraler Web Audio API Synthesizer
+  - Hook: `packages/frontend/src/hooks/useWallSounds.ts`
+  - Sounds: `ding` (neue Fotos), `whoosh` (Slide-Wechsel), `pop` (Reaktion), `chime` (Achievement)
+  - Kein externer Audio-Download — alle Sounds werden per OscillatorNode + GainNode erzeugt
+  - Aktivierbar per Admin-Control oder Sound-Toggle im Dashboard
+- [x] **Admin-Fernsteuerung** (Wall Remote Control)
+  - Hook: `packages/frontend/src/hooks/useWallControl.ts`
+  - Panel: `packages/frontend/src/components/wall/WallAdminControl.tsx`
+  - Zugang: `/live/[slug]/wall?admin=1` (Floating Panel unten-links)
+  - Features:
+    - Play/Pause Slideshow
+    - Sound ein/aus
+    - QR-Code ein/aus
+    - Intervall-Slider (3–20s)
+    - View-Mode-Wechsel (Grid, Slideshow, Masonry, Collage, Cinematic, Polaroid, CoverFlow, Bento, Mosaik, Mixed)
+    - Overlay-Typ + Intensität
+    - Ankündigungs-Nachricht (live auf der Wall angezeigt, z.B. "Torte wird angeschnitten!")
+  - WebSocket-Relay: `wall:control` Event (Backend: `packages/backend/src/index.ts`)
+    - Admin sendet → Server broadcastet an alle Clients im Event-Room
+  - Dashboard-Link: Button in `/events/[id]/live-wall` öffnet Public Wall im Admin-Modus
+
+### Alle 13 Features komplett ✔️
 
 ---
 

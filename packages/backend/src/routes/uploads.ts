@@ -1,6 +1,7 @@
 import { Server, Upload } from '@tus/server';
 import { FileStore } from '@tus/file-store';
 import { Router, Request, Response } from 'express';
+import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs/promises';
 import jwt from 'jsonwebtoken';
@@ -21,6 +22,21 @@ import { sanitizeText } from '../utils/sanitize';
 // Rate-limit map: eventId → last notification timestamp
 const photoEmailNotifyMap = new Map<string, number>();
 const PHOTO_EMAIL_NOTIFY_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
+
+// IP-based upload counter: "eventId:ipHash" → count (prevents maxUploadsPerGuest bypass via name change)
+const ipUploadCountMap = new Map<string, number>();
+// Periodically clean old entries (every 30 min, keep map bounded)
+setInterval(() => ipUploadCountMap.clear(), 30 * 60 * 1000);
+
+// P-03 fix: Cache validated events to avoid double DB load (validateTusRequest + processCompletedUpload)
+const validatedEventCache = new Map<string, { data: any; ts: number }>();
+const EVENT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 min TTL
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of validatedEventCache) {
+    if (now - v.ts > EVENT_CACHE_TTL_MS) validatedEventCache.delete(k);
+  }
+}, 60 * 1000);
 
 const router = Router();
 
@@ -93,10 +109,10 @@ async function validateTusRequest(req: Request): Promise<void> {
     throw { status_code: 400, body: 'eventId in Upload-Metadata erforderlich' };
   }
 
-  // Check event exists and is active
+  // Check event exists and is active (P-03: include featuresConfig to avoid second DB load)
   const event = await prisma.event.findUnique({
     where: { id: eventId },
-    select: { id: true, hostId: true, deletedAt: true, isActive: true },
+    select: { id: true, hostId: true, deletedAt: true, isActive: true, featuresConfig: true },
   });
 
   if (!event || event.deletedAt || event.isActive === false) {
@@ -126,6 +142,7 @@ async function validateTusRequest(req: Request): Promise<void> {
 
   // Admin/host always allowed
   if (userId && (userRole === 'ADMIN' || userRole === 'SUPERADMIN' || userId === event.hostId)) {
+    validatedEventCache.set(eventId, { data: event, ts: Date.now() });
     return;
   }
 
@@ -136,6 +153,7 @@ async function validateTusRequest(req: Request): Promise<void> {
     try {
       const decoded = jwt.verify(eventAccessToken, jwtSecret) as any;
       if (decoded?.type === 'event_access' && decoded?.eventId === eventId) {
+        validatedEventCache.set(eventId, { data: event, ts: Date.now() });
         return;
       }
     } catch {
@@ -148,7 +166,10 @@ async function validateTusRequest(req: Request): Promise<void> {
     const member = await prisma.eventMember.findUnique({
       where: { eventId_userId: { eventId, userId } },
     });
-    if (member) return;
+    if (member) {
+      validatedEventCache.set(eventId, { data: event, ts: Date.now() });
+      return;
+    }
   }
 
   throw { status_code: 403, body: 'Kein Zugriff auf dieses Event' };
@@ -175,8 +196,14 @@ const tusServer = new Server({
     return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onUploadFinish: async (_req: any, upload: any) => {
+  onUploadFinish: async (req: any, upload: any) => {
     try {
+      // Extract IP for per-guest upload limiting (S-05 fix)
+      const headers = req?.headers as any;
+      const getH = (n: string) => typeof headers?.get === 'function' ? headers.get(n) : headers?.[n.toLowerCase()] || null;
+      const rawIp = getH('x-forwarded-for')?.split(',')[0]?.trim() || getH('x-real-ip') || req?.ip || 'unknown';
+      const ipHash = crypto.createHash('sha256').update(rawIp).digest('hex').slice(0, 16);
+      upload._ipHash = ipHash;
       await processCompletedUpload(upload);
     } catch (error: any) {
       logger.error('Error processing completed upload', { error: error.message, uploadId: upload.id });
@@ -322,47 +349,61 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
         }
       } else {
         // Determine photo status based on event moderation settings
-        const event = await prisma.event.findUnique({
+        // P-03 fix: reuse cached event from validateTusRequest instead of second DB load
+        const cached = validatedEventCache.get(eventId);
+        const eventForConfig = cached?.data ?? await prisma.event.findUnique({
           where: { id: eventId },
           select: { featuresConfig: true },
         });
-        const featuresConfig = (event?.featuresConfig || {}) as any;
+        if (cached) validatedEventCache.delete(eventId); // cleanup after use
+        const featuresConfig = (eventForConfig?.featuresConfig || {}) as any;
         const moderationRequired = featuresConfig?.moderationRequired === true;
         const photoStatus = moderationRequired ? 'PENDING' : 'APPROVED';
 
         // Check upload limit per guest (if configured)
+        // S-05 fix: enforce limit by BOTH uploadedBy name AND IP hash to prevent bypass via name change
         const maxUploadsPerGuest = featuresConfig?.maxUploadsPerGuest;
-        if (maxUploadsPerGuest && typeof maxUploadsPerGuest === 'number' && maxUploadsPerGuest > 0 && uploadedBy) {
-          const existingCount = await prisma.photo.count({
-            where: { eventId, uploadedBy, deletedAt: null },
-          });
-          if (existingCount >= maxUploadsPerGuest) {
-            throw { status_code: 429, body: `Upload-Limit erreicht (max. ${maxUploadsPerGuest} Fotos pro Gast)` };
+        if (maxUploadsPerGuest && typeof maxUploadsPerGuest === 'number' && maxUploadsPerGuest > 0) {
+          // Check by name (original behavior)
+          if (uploadedBy) {
+            const existingCount = await prisma.photo.count({
+              where: { eventId, uploadedBy, deletedAt: null },
+            });
+            if (existingCount >= maxUploadsPerGuest) {
+              throw { status_code: 429, body: `Upload-Limit erreicht (max. ${maxUploadsPerGuest} Fotos pro Gast)` };
+            }
+          }
+          // Check by IP hash (prevents bypass via name change)
+          const ipHash = (upload as any)?._ipHash;
+          if (ipHash) {
+            const ipKey = `${eventId}:${ipHash}`;
+            const ipCount = ipUploadCountMap.get(ipKey) || 0;
+            if (ipCount >= maxUploadsPerGuest * 2) {
+              throw { status_code: 429, body: `Upload-Limit erreicht` };
+            }
+            ipUploadCountMap.set(ipKey, ipCount + 1);
           }
         }
 
-        // Standard TUS upload: create new photo record
+        // Standard TUS upload: create new photo record (single write)
+        const generatedId = crypto.randomUUID();
         const photo = await prisma.photo.create({
           data: {
+            id: generatedId,
             eventId,
             storagePath,
             storagePathOriginal,
             storagePathThumb,
             storagePathWebp,
             categoryId: resolvedCategoryId,
-            url: '',
+            url: `/cdn/${generatedId}`,
             status: photoStatus,
             sizeBytes: uploadBytes,
             uploadedBy: uploadedBy || null,
           },
         });
         photoId = photo.id;
-
-        // Update URL
-        const updatedPhoto = await prisma.photo.update({
-          where: { id: photo.id },
-          data: { url: `/cdn/${photo.id}` },
-        });
+        const updatedPhoto = photo;
 
         // Emit WebSocket event for real-time updates
         try {
@@ -426,6 +467,10 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
                 where: { id: photo.id },
                 data: { faceCount: faceResult.faceCount, faceData: { faces: faceResult.faces, descriptors: faceResult.descriptors || [] } },
               });
+              // SEC-05: Only store face embeddings (biometric data) if faceSearch is enabled for this event (DSGVO consent gate)
+              const { isFeatureEnabled } = await import('../services/featureGate');
+              const faceSearchEnabled = await isFeatureEnabled(eventId, 'faceSearch').catch(() => false);
+              if (!faceSearchEnabled) return;
               const { storeFaceEmbedding } = await import('../services/faceSearchPgvector');
               const { resolveProvider } = await import('../services/aiExecution');
               const { extractArcFaceEmbedding } = await import('../services/faceRecognition');
@@ -617,6 +662,44 @@ setInterval(async () => {
     logger.warn('[Progressive Cleanup] Failed', { error: error.message });
   }
 }, 15 * 60 * 1000); // Run every 15 minutes
+
+// Upload limit info for guests (FEAT-03)
+router.get('/limit/:eventId', async (req: Request, res: Response) => {
+  try {
+    const { eventId } = req.params;
+    const guestName = (req.query.guest as string) || '';
+
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { featuresConfig: true },
+    });
+    if (!event) return res.status(404).json({ error: 'Event nicht gefunden' });
+
+    const featuresConfig = event.featuresConfig as Record<string, any> | null;
+    const maxUploadsPerGuest = featuresConfig?.maxUploadsPerGuest;
+
+    if (!maxUploadsPerGuest || typeof maxUploadsPerGuest !== 'number' || maxUploadsPerGuest <= 0) {
+      return res.json({ limited: false, max: null, used: 0, remaining: null });
+    }
+
+    let used = 0;
+    if (guestName) {
+      used = await prisma.photo.count({
+        where: { eventId, uploadedBy: guestName, deletedAt: null },
+      });
+    }
+
+    res.json({
+      limited: true,
+      max: maxUploadsPerGuest,
+      used,
+      remaining: Math.max(0, maxUploadsPerGuest - used),
+    });
+  } catch (error: any) {
+    logger.error('Upload limit check error', { error: error.message });
+    res.status(500).json({ error: 'Interner Fehler' });
+  }
+});
 
 // Status endpoint to check if Tus is enabled (must be before Tus handlers)
 router.get('/status', (_req: Request, res: Response) => {

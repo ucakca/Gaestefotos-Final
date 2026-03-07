@@ -34,6 +34,7 @@ model User {
   partnerMemberships           PartnerMember[]
   pushSubscriptions            PushSubscription[]
   passwordHistory              PasswordHistory[]
+  socialAccounts               SocialAccount[]
 
   @@index([role])
   @@index([isLocked])
@@ -144,6 +145,7 @@ model Event {
   briefing                EventBriefing?
   eventAutomations        EventAutomation[]
   aiJobs                  AiJob[]
+  pipelineOverrides       AiPipelineEvent[]
 
   @@index([slug])
   @@index([hostId])
@@ -508,6 +510,8 @@ model Guest {
   firstName            String
   lastName             String
   email                String?
+  emailOptIn           Boolean               @default(false)
+  emailOptInAt         DateTime?
   status               GuestStatus           @default(PENDING)
   dietaryRequirements  String?
   plusOneCount         Int                   @default(0)
@@ -2607,6 +2611,250 @@ enum AiJobStatus {
   DONE
   FAILED
   CANCELLED
+}
+
+// ─────────────────────────────────────────────────────────────
+// AI Pipeline System
+// Central management for all AI feature execution pipelines.
+// Each pipeline defines HOW a feature executes: executor, prompts, workflow, nodes.
+// Replaces scattered config across aiStyleEffects.ts, styleTransfer.ts, comfyuiWorkflows.ts.
+// ─────────────────────────────────────────────────────────────
+
+enum PipelineExecutor {
+  COMFYUI       // RunPod Serverless ComfyUI (Qwen Image Edit, ReActor, Flux, WAN)
+  LLM           // OpenAI, Groq, Ollama (text generation)
+  LOCAL         // Sharp, rembg, canvas — no external API needed
+  EXTERNAL      // fal.ai, Replicate, Stability (external image/video APIs)
+}
+
+enum PipelineInputType {
+  SINGLE_IMAGE
+  MULTI_IMAGE
+  TEXT_ONLY
+  IMAGE_AND_TEXT
+  NAME_ONLY
+  NAME_AND_PHOTO
+  NONE
+}
+
+enum PipelineOutputType {
+  IMAGE
+  TEXT
+  VIDEO
+  GIF
+  JSON
+}
+
+model AiPipeline {
+  id                String            @id @default(uuid())
+  featureKey        String            @unique               // Maps to AiFeature: "ai_cartoon", "face_swap", "compliment_mirror"
+  name              String                                  // Display name: "Pixar Cartoon"
+  description       String?                                 // Short description for UI
+
+  // ─── Executor Config ─────
+  executor          PipelineExecutor                        // WHERE it runs: COMFYUI, LLM, LOCAL, EXTERNAL
+  model             String?                                 // Model: "qwen_image_edit", "gpt-4o-mini", "rembg"
+
+  // ─── ComfyUI Specific ─────
+  workflowJson      Json?                                   // Complete ComfyUI API-format workflow JSON
+  fallbackWorkflow  String?                                 // Fallback workflow key if custom fails: "flux_img2img"
+
+  // ─── I/O ─────
+  inputType         PipelineInputType   @default(SINGLE_IMAGE)
+  outputType        PipelineOutputType  @default(IMAGE)
+
+  // ─── Default Parameters ─────
+  defaultStrength   Float?              @default(0.75)
+  defaultSteps      Int?                @default(4)
+  defaultCfg        Float?              @default(1.0)
+  defaultSampler    String?             @default("euler")
+  defaultScheduler  String?             @default("beta")
+  extraConfig       Json?                                   // Any additional config (JSON blob)
+
+  // ─── Status ─────
+  isActive          Boolean             @default(true)
+  isDefault         Boolean             @default(true)      // System default (not user-deletable)
+  creditCost        Int                 @default(0)
+
+  // ─── Testing & Metrics ─────
+  lastTestedAt      DateTime?
+  lastTestResult    String?                                 // "success" or error message
+  avgDurationMs     Int?
+  totalExecutions   Int                 @default(0)
+  successCount      Int                 @default(0)
+
+  // ─── Timestamps ─────
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  // ─── Relations ─────
+  prompts           AiPipelinePrompt[]
+  nodes             AiPipelineNode[]
+  eventOverrides    AiPipelineEvent[]
+
+  @@index([executor])
+  @@index([isActive])
+  @@map("ai_pipelines")
+}
+
+model AiPipelinePrompt {
+  id                String      @id @default(uuid())
+  pipelineId        String
+  pipeline          AiPipeline  @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+
+  // ─── Content ─────
+  prompt            String                                  // Main prompt text (image gen / edit instruction)
+  negativePrompt    String?                                 // Negative prompt (image gen)
+  systemPrompt      String?                                 // System prompt (LLM features)
+  editPrompt        String?                                 // Qwen Image Edit instruction
+
+  // ─── Parameters ─────
+  strength          Float?
+  temperature       Float?
+  maxTokens         Int?
+
+  // ─── Versioning ─────
+  version           Int         @default(1)
+  isActive          Boolean     @default(true)              // Active version (max 1 per pipeline+variant)
+
+  // ─── A/B Testing ─────
+  variantLabel      String?                                 // null = default, "A" / "B" for A/B test
+  trafficWeight     Int         @default(100)               // % of traffic for this variant
+  testCount         Int         @default(0)                 // How many times this variant was used
+  successCount      Int         @default(0)                 // Successful executions
+  avgRating         Float?                                  // Average user rating (1-5)
+
+  // ─── Metadata ─────
+  changelog         String?                                 // What changed in this version
+  createdBy         String?                                 // Admin user ID
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@unique([pipelineId, version, variantLabel])
+  @@index([pipelineId, isActive])
+  @@index([pipelineId, variantLabel])
+  @@map("ai_pipeline_prompts")
+}
+
+model AiPipelineNode {
+  id                String      @id @default(uuid())
+  pipelineId        String
+  pipeline          AiPipeline  @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+
+  // ─── Node Definition ─────
+  nodeId            String                                  // Unique within pipeline: "input_1", "comfyui_1", "prompt_1"
+  nodeType          String                                  // "input", "processor", "config", "output", "postprocess"
+  label             String                                  // Display label in editor
+
+  // ─── Visual Position (ReactFlow) ─────
+  positionX         Float       @default(0)
+  positionY         Float       @default(0)
+  width             Float?
+  height            Float?
+
+  // ─── Config ─────
+  config            Json?                                   // Node-specific config (varies by nodeType)
+
+  // ─── Connections ─────
+  connections       Json        @default("[]")              // [{sourceNodeId, sourcePort, targetNodeId, targetPort}]
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@unique([pipelineId, nodeId])
+  @@index([pipelineId])
+  @@map("ai_pipeline_nodes")
+}
+
+model AiPipelineEvent {
+  id                  String      @id @default(uuid())
+  pipelineId          String
+  pipeline            AiPipeline  @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  eventId             String
+  event               Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // ─── Overrides ─────
+  customPrompt        String?                               // Override prompt for this event
+  customNegativePrompt String?
+  customLogoUrl       String?                               // Company logo URL for branded effects
+  logoPosition        String?     @default("bottom-right")  // "top-left", "top-right", "bottom-left", "bottom-right", "center"
+  logoOpacity         Float?      @default(0.8)
+  logoScale           Float?      @default(0.15)            // Logo size relative to image (0.0-1.0)
+  customConfig        Json?                                 // Any additional overrides
+
+  isActive            Boolean     @default(true)
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  @@unique([pipelineId, eventId])
+  @@index([eventId])
+  @@index([pipelineId])
+  @@map("ai_pipeline_events")
+}
+
+// ─── SOCIAL ACCOUNTS (Facebook / Instagram Graph API) ────────────────────────
+
+model SocialAccount {
+  id                String          @id @default(uuid())
+  userId            String
+  provider          SocialProvider  // FACEBOOK, INSTAGRAM
+  providerAccountId String          // Facebook User ID or Instagram Business Account ID
+  accessToken       String          // Long-lived access token (encrypted at rest)
+  refreshToken      String?         // For token refresh flow
+  tokenExpiresAt    DateTime?       // When access token expires
+  scope             String[]        @default([]) // Granted permissions
+  accountName       String?         // Display name (page name, IG username)
+  accountImageUrl   String?         // Profile picture URL
+  // Facebook-specific
+  pageId            String?         // Facebook Page ID (if connected via page)
+  pageAccessToken   String?         // Page-level access token
+  // Instagram-specific
+  igUserId          String?         // Instagram Business Account ID (from FB page)
+  igUsername         String?         // @username
+  isActive          Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider, providerAccountId])
+  @@index([userId])
+  @@map("social_accounts")
+}
+
+enum SocialProvider {
+  FACEBOOK
+  INSTAGRAM
+}
+
+model SocialShareLog {
+  id                String              @id @default(uuid())
+  userId            String
+  eventId           String?
+  socialAccountId   String
+  provider          SocialProvider
+  platform          String              @default("feed") // feed, story, reel
+  mediaType         String              @default("photo") // photo, video, carousel
+  externalPostId    String?             // Post ID from Graph API
+  caption           String?
+  imageUrl          String?             // Source image URL
+  status            SocialShareStatus   @default(PENDING)
+  errorMessage      String?
+  publishedAt       DateTime?
+  createdAt         DateTime            @default(now())
+
+  @@index([userId])
+  @@index([eventId])
+  @@index([socialAccountId])
+  @@index([status])
+  @@map("social_share_logs")
+}
+
+enum SocialShareStatus {
+  PENDING
+  PUBLISHING
+  PUBLISHED
+  FAILED
 }
 
 // ─── Guest Feedback / Google Review Flow ─────────────────────────────────────

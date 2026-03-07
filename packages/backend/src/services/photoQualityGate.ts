@@ -9,7 +9,13 @@
  * Decision E11: Blur+Duplicate+Resolution always active (no opt-out).
  */
 
-import sharp from 'sharp';
+// Sharp import - fallback if not available (matches imageProcessor.ts pattern)
+let sharp: any;
+try {
+  sharp = require('sharp');
+} catch {
+  // Sharp not available - handled in runPhotoQualityGate
+}
 import { logger } from '../utils/logger';
 import { processDuplicateDetection, DuplicateResult } from './duplicateDetection';
 
@@ -147,6 +153,11 @@ export async function runPhotoQualityGate(
   photoId: string,
   buffer: Buffer,
 ): Promise<QualityCheckResult> {
+  if (!sharp) {
+    logger.error('[QualityGate] Sharp not available — cannot run quality checks');
+    throw new Error('Sharp image processor not available — cannot run quality gate');
+  }
+
   const warnings: string[] = [];
 
   // Run checks in parallel

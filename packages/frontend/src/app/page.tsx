@@ -571,6 +571,17 @@ export default function Home() {
               <div className="space-y-2 text-xs text-muted-foreground">
                 <Link href="/impressum" className="block hover:text-foreground transition-colors">Impressum</Link>
                 <Link href="/datenschutz" className="block hover:text-foreground transition-colors">Datenschutzerkl&auml;rung</Link>
+                <Link href="/cookies" className="block hover:text-foreground transition-colors">Cookie-Richtlinie</Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    document.cookie = 'gf_consent=; path=/; max-age=0';
+                    window.location.reload();
+                  }}
+                  className="block hover:text-foreground transition-colors text-left"
+                >
+                  Cookie-Einstellungen
+                </button>
               </div>
             </div>
           </div>

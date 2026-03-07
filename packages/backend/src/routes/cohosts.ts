@@ -73,7 +73,7 @@ router.get('/:eventId/cohosts', authMiddleware, async (req: AuthRequest, res: Re
     return res.json({ cohosts: members });
   } catch (error) {
     logger.error('List cohosts error', { message: getErrorMessage(error), eventId: req.params.eventId });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -138,7 +138,7 @@ router.put('/:eventId/cohosts/:userId/permissions', authMiddleware, async (req: 
       return res.status(404).json({ error: 'Co-Host nicht gefunden' });
     }
     logger.error('Update cohost permissions error', { message: getErrorMessage(error), eventId: req.params.eventId, userId: req.params.userId });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -228,7 +228,7 @@ router.post('/:eventId/cohosts', authMiddleware, async (req: AuthRequest, res: R
       return res.status(400).json({ error: error.errors });
     }
     logger.error('Add cohost error', { message: getErrorMessage(error), eventId: req.params.eventId });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -268,7 +268,7 @@ router.delete('/:eventId/cohosts/:userId', authMiddleware, async (req: AuthReque
       return res.status(404).json({ error: 'Co-Host nicht gefunden' });
     }
     logger.error('Remove cohost error', { message: getErrorMessage(error), eventId: req.params.eventId, userId: req.params.userId });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -304,7 +304,7 @@ router.post('/:eventId/cohosts/invite-token', authMiddleware, async (req: AuthRe
 
     const secret = getCohostInviteJwtSecret();
     if (!secret) {
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Interner Serverfehler' });
     }
 
     const inviteToken = jwt.sign(
@@ -340,7 +340,7 @@ router.post('/:eventId/cohosts/invite-token', authMiddleware, async (req: AuthRe
       message: getErrorMessage(error),
       eventId: req.params.eventId,
     });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 

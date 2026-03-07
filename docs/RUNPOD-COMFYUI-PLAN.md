@@ -1,5 +1,5 @@
 # RunPod + ComfyUI KI-Architektur Plan
-**Stand: Februar 2026**
+**Stand: März 2026 (aktualisiert 2026-03-06)**
  
 ---
  
@@ -45,19 +45,22 @@ werden (kein Reload-Overhead zwischen Requests).
 | **Gästebuch PDF** | puppeteer/canvas | ~500 MB | ~1s |
  
 ### ☁️ Cloud (RunPod + ComfyUI — benötigt Internet)
- 
+
+> **Architektur-Entscheidung (2026-03-01):** EIN Modell (Qwen Image Edit fp8) für ALLE Style-Effekte + Face Swap. Konsistente Qualität, einfaches Deployment.
+
 | Feature | Workflow | VRAM | Latenz |
 |---|---|---|---|
-| **Face Swap (nur Gesicht)** | Qwen 2509 + BFS Face V1 | 16-24 GB | ~15-25s |
-| **Head Swap (mit Haar)** | Qwen 2509 + BFS Head V5 | 16-24 GB | ~20-30s |
-| **Style Transfer + Identität** | Flux.1 dev + PuLID | 16 GB | ~20-30s |
-| **Anime / Kunst-Stile** | SDXL + InstantID + Style LoRA | 12-16 GB | ~25-35s |
-| **Superheld / Movie Poster** | Qwen BFS + Compositing | 16 GB | ~25s |
-| **Historisch / Zeitreise** | Qwen BFS + Vintage LoRA | 16 GB | ~25s |
-| **Magazin-Cover** | InstantID + SDXL + Text Overlay | 16 GB | ~30s |
-| **Upscaling 4x** | SUPIR / RealESRGAN 4x | 8-16 GB | ~10-20s |
-| **Video / GIF Morph** | AnimateDiff + Face2Face | 24 GB | ~60-120s |
-| **AI Video Portrait** | CogVideoX / Wan2.1 | 24 GB | ~90-180s |
+| **17 Style-Effekte** | Qwen Image Edit fp8 + Lightning 4-step LoRA | 16-24 GB | ~25-35s |
+| **Face Swap** | Qwen Image Edit (TextEncodeQwenImageEditPlus, 2 Bilder) | 16-24 GB | ~25-35s |
+| **Video / GIF** | fal.ai wan-i2v (Fallback) | extern | ~60s |
+| **Background Removal** | remove.bg API | extern | ~2s |
+| **Style Transfer (Fallback)** | fal.ai flux/dev img2img | extern | ~15s |
+
+**Aktiver Endpoint:** `fkyvpdld673jrf` "ComfyUI-Gaestefotos-EU-A6000"  
+**Docker Image:** `brandboost/gaestefotos-comfyui-worker:v2-qwen-20260301`  
+**GPUs:** A6000 (48GB), A48, RTX 4090 (24GB), A100 (80GB)  
+**Workers:** 0-3, auto-scale, idle timeout 5s  
+**18 Workflow-JSONs:** `/packages/backend/src/workflows/*.json`
  
 ---
  
@@ -85,7 +88,7 @@ Qwen Image Edit 2509 benötigt **mind. 16 GB VRAM** (fp16), optimal 24 GB.
 | **A100 80GB** | 80 GB | ~$1.09/h | Overkill für uns |
 | RTX 4060 Ti | 16 GB | sehr günstig | ⚠️ Grenzwertig (INT8 nötig) |
  
-**Empfehlung: RTX 4090 (24 GB)** — perfekte Balance aus VRAM, Speed und Preis.
+**Aktuelle Konfiguration:** A6000 (48GB) primär + RTX 4090 (24GB) + A100 (80GB) für maximale Verfügbarkeit.
  
 ### Network Volume (wichtig!)
 - Persistenter Speicher zwischen Pod-Restarts
@@ -238,11 +241,9 @@ Danach: nur ~€0.03 Compute-Kosten pro Bild
  
 | Name | Pipeline | Qualität |
 |---|---|---|
-| **Standard Face Swap** | Qwen BFS Head V5 → SUPIR 4x | ⭐⭐⭐⭐⭐ |
-| **Premium Style Portrait** | Qwen BFS → PuLID Boost → Style LoRA | ⭐⭐⭐⭐⭐ |
-| **Anime Transformation** | InstantID → Anime LoRA → Color Grade | ⭐⭐⭐⭐ |
-| **Magazin-Cover** | InstantID → SDXL Studio → Text Overlay | ⭐⭐⭐⭐ |
-| **Zeitreise** | Qwen BFS → Vintage LoRA → Desaturation | ⭐⭐⭐⭐ |
+| **Face Swap** | Qwen Image Edit (TextEncodeQwenImageEditPlus, 2 Bilder) | ⭐⭐⭐⭐⭐ |
+| **17 Style-Effekte** | Qwen Image Edit + Effekt-Prompt (z.B. cartoon, anime, oil_painting) | ⭐⭐⭐⭐⭐ |
+| **Fallback Style Transfer** | fal.ai flux/dev img2img (wenn RunPod offline) | ⭐⭐⭐⭐ |
  
 ---
  
@@ -264,8 +265,8 @@ Danach: nur ~€0.03 Compute-Kosten pro Bild
 │  │  - FFmpeg       │             ▼              │
 │  └─────────────────┘    ┌────────────────────┐  │
 │                         │  RunPod Serverless  │  │
-│                         │  (RTX 4090, 24GB)  │  │
-│                         │  ComfyUI Worker    │  │
+│                         │  (A6000/4090/A100) │  │
+│                         │  ComfyUI + Qwen    │  │
 │                         └────────┬───────────┘  │
 │                                  │ Ergebnis     │
 │                         ┌────────▼───────────┐  │
@@ -313,31 +314,31 @@ Marge:          €409+
  
 ## 8. Implementierungs-Roadmap
  
-### Phase 1 — RunPod Setup (1-2 Tage)
-- [ ] RunPod Account + API Key
-- [ ] Network Volume anlegen (50 GB)
-- [ ] ComfyUI Docker Image bauen (Qwen 2509 + BFS LoRA V5 + SUPIR)
-- [ ] Als Serverless Worker deployen (FlashBoot aktivieren)
-- [ ] Test: BFS Head V5 mit echtem Foto
+### Phase 1 — RunPod Setup ✅ ERLEDIGT
+- [x] RunPod Account + API Key
+- [x] Docker Image gebaut: `brandboost/gaestefotos-comfyui-worker:v2-qwen-20260301` (~30GB)
+- [x] Als Serverless Worker deployed: Endpoint `fkyvpdld673jrf` (EU, A6000/4090/A100)
+- [x] Live-Test: `ai_cartoon` Workflow, 35s, 800×528 PNG — erfolgreich (2026-03-06)
+- [x] Workflow-Fix: `"text"` → `"prompt"` in allen 18 JSONs (ComfyUI Node-Interface)
  
-### Phase 2 — Backend Integration (2-3 Tage)
-- [ ] `runpodService.ts` — ComfyUI API Client (Job submit + polling)
-- [ ] `AiJob` Prisma Model + Queue Worker (30s Intervall)
-- [ ] `faceSwitch.ts` auf RunPod/Qwen umstellen
-- [ ] Offline-Fallback: Retry (2x) → Queue → Normal-Foto
-- [ ] Push + E-Mail Notification nach Job-DONE
+### Phase 2 — Backend Integration ✅ ERLEDIGT
+- [x] `runpodService.ts` — submitJob, pollForResult, extractOutputBuffer, submitAndWait
+- [x] `AiJob` Prisma Model + Queue Worker (30s Intervall)
+- [x] `comfyuiWorkflowRegistry.ts` — 18 Workflows laden, Params injizieren, auf RunPod ausführen
+- [x] `aiStyleEffects.ts` — Custom Workflow FIRST, fal.ai Fallback
+- [x] Push + E-Mail Notification nach Job-DONE
+- [x] **Bug Fix (2026-03-06):** Double-Submit in aiJobWorker.ts gefixt (submitJob + submitAndWait)
+- [x] **ARCH-03 (2026-03-06):** Shared extractOutputBuffer, dreifach duplizierten Parser entfernt
  
-### Phase 3 — Admin Workflow Manager (2-3 Tage)
-- [ ] Admin UI: Workflow JSON hochladen/verwalten/testen
-- [ ] Workflow ↔ AiFeature Mapping
-- [ ] Cold-Start Scheduling (Event-Buchung → Pod-Start -30min)
-- [ ] Kosten-Tracking per Workflow
+### Phase 3 — Admin Workflow Manager ✅ ERLEDIGT
+- [x] Admin API: GET/PUT/DELETE `/api/admin/workflows/:effect` + POST test
+- [x] Workflow ↔ AiFeature Mapping (StyleEffect enum)
+- [x] Workflow-Sync: `/api/workflow-sync` (x-sync-key Auth)
  
-### Phase 4 — Weitere Workflows (laufend)
-- [ ] Style Transfer (PuLID + Flux.1)
-- [ ] Anime / Kunst-Stile (InstantID + SDXL)
-- [ ] Magazin-Cover Template
-- [ ] Video/GIF (AnimateDiff) — spätere Phase
+### Phase 4 — Weitere Workflows ✅ ERLEDIGT
+- [x] 17 Style-Effekte via Qwen Image Edit (alle in `/packages/backend/src/workflows/`)
+- [x] Face Swap via Qwen Image Edit (TextEncodeQwenImageEditPlus)
+- [x] Video: fal.ai wan-i2v als Fallback
  
 ---
  
@@ -347,7 +348,7 @@ Marge:          €409+
 |---|---|---|
 | E-1 | RunPod Serverless + FlashBoot für Produktion | ✅ |
 | E-2 | RTX 4090 (24 GB) als primäre GPU | ✅ |
-| E-3 | Qwen Image Edit 2509 + BFS LoRA V5 als Face/Head Swap | ✅ |
+| E-3 | Qwen Image Edit fp8 + Lightning 4-step LoRA für ALLE Effekte + Face Swap | ✅ |
 | E-4 | Network Volume für persistente Modell-Speicherung | ✅ |
 | E-5 | Cold Start mit Event-Buchungen verknüpfen (-30min) | ✅ |
 | E-6 | App-Features: Queue + Notification bei Offline | ✅ |

@@ -11,6 +11,7 @@ import { DebugProvider } from '@/components/debug/DebugProvider'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { ServiceWorkerProvider } from '@/components/pwa/ServiceWorkerProvider'
 import AutoLocaleDetect from '@/components/AutoLocaleDetect'
+import CookieConsentBanner from '@/components/CookieConsentBanner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -55,7 +56,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: 'cover',
   themeColor: '#295B4D',
 }
@@ -103,6 +103,7 @@ export default async function RootLayout({
                 <MaintenanceBanner />
                 {children}
                 <ToastProvider />
+                <CookieConsentBanner />
               </DebugProvider>
             </ServiceWorkerProvider>
           </ThemeProvider>

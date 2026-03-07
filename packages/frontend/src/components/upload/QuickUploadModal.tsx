@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Upload, ImagePlus, CheckCircle2, AlertCircle, RotateCcw,
-  Loader2, Trash2, ChevronDown, Camera, FolderOpen,
+  Loader2, Trash2, ChevronDown, Camera, FolderOpen, Share2, Mail,
 } from 'lucide-react';
 import { useTranslations } from '@/components/I18nProvider';
 import * as tus from 'tus-js-client';
@@ -36,6 +36,8 @@ interface QuickUploadModalProps {
   open: boolean;
   onClose: () => void;
   eventId: string;
+  eventSlug?: string;
+  eventTitle?: string;
   categories?: CategoryOption[];
   onComplete?: (count: number) => void;
 }
@@ -57,7 +59,7 @@ function validateFile(file: File): string | null {
   return null;
 }
 
-export default function QuickUploadModal({ open, onClose, eventId, categories, onComplete }: QuickUploadModalProps) {
+export default function QuickUploadModal({ open, onClose, eventId, eventSlug, eventTitle, categories, onComplete }: QuickUploadModalProps) {
   const [phase, setPhase] = useState<ModalPhase>('select');
   const [files, setFiles] = useState<FileState[]>([]);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -70,13 +72,18 @@ export default function QuickUploadModal({ open, onClose, eventId, categories, o
   const uploadStartedRef = useRef(false);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounterRef = useRef(0);
+  const [optInEmail, setOptInEmail] = useState('');
+  const [optInConsent, setOptInConsent] = useState(false);
+  const [optInStatus, setOptInStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const t = useTranslations('upload');
 
-  // Load name from localStorage
+  // Load name + opt-in email from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('gf_uploader_name');
       if (saved) setUploaderName(saved);
+      const savedEmail = localStorage.getItem('gf_optin_email');
+      if (savedEmail) setOptInEmail(savedEmail);
     }
   }, []);
 
@@ -601,6 +608,92 @@ export default function QuickUploadModal({ open, onClose, eventId, categories, o
                       {errorCount > 0 && ` · ${errorCount} failed`}
                     </p>
                   </div>
+
+                  {/* DSGVO Email Opt-in */}
+                  {errorCount === 0 && eventId && optInStatus !== 'done' && (
+                    <div className="bg-muted/50 border border-border rounded-xl p-4 text-left space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-primary" />
+                        <p className="text-sm font-medium text-foreground">Fotos per E-Mail erhalten</p>
+                      </div>
+                      <div className="space-y-2">
+                        <input
+                          type="email"
+                          placeholder="deine@email.de"
+                          value={optInEmail}
+                          onChange={(e) => setOptInEmail(e.target.value)}
+                          className="w-full px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        />
+                        <label className="flex items-start gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={optInConsent}
+                            onChange={(e) => setOptInConsent(e.target.checked)}
+                            className="mt-0.5 rounded border-border"
+                          />
+                          <span className="text-xs text-muted-foreground leading-relaxed">
+                            Ich stimme zu, Event-Fotos und Benachrichtigungen per E-Mail zu erhalten. Widerruf jederzeit möglich.
+                          </span>
+                        </label>
+                      </div>
+                      <button
+                        disabled={!optInEmail || !optInConsent || optInStatus === 'sending'}
+                        onClick={async () => {
+                          setOptInStatus('sending');
+                          try {
+                            const res = await fetch(`/api/events/${eventId}/guests/email-optin`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ email: optInEmail, optIn: true, guestName: uploaderName || undefined }),
+                            });
+                            if (res.ok) {
+                              setOptInStatus('done');
+                              if (typeof window !== 'undefined') localStorage.setItem('gf_optin_email', optInEmail);
+                            } else {
+                              setOptInStatus('error');
+                            }
+                          } catch {
+                            setOptInStatus('error');
+                          }
+                        }}
+                        className="w-full py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {optInStatus === 'sending' ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Anmelden'}
+                      </button>
+                      {optInStatus === 'error' && (
+                        <p className="text-xs text-destructive">Fehler beim Anmelden. Bitte versuche es erneut.</p>
+                      )}
+                    </div>
+                  )}
+                  {optInStatus === 'done' && (
+                    <div className="flex items-center gap-2 p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                      <p className="text-sm text-emerald-700 dark:text-emerald-400">Du erhältst die Event-Fotos per E-Mail!</p>
+                    </div>
+                  )}
+
+                  {/* Social Share after successful upload */}
+                  {errorCount === 0 && eventSlug && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-foreground">Event teilen</p>
+                      <div className="flex justify-center gap-3">
+                        <button
+                          onClick={async () => {
+                            const shareUrl = `${window.location.origin}/e3/${eventSlug}`;
+                            if (navigator.share) {
+                              try { await navigator.share({ title: eventTitle || 'Event Fotos', url: shareUrl }); } catch {}
+                            } else {
+                              navigator.clipboard.writeText(shareUrl);
+                            }
+                          }}
+                          className="flex items-center gap-2 px-4 py-2.5 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-xl text-sm font-medium text-primary transition-colors"
+                        >
+                          <Share2 className="w-4 h-4" />
+                          Foto teilen
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {errorCount > 0 && (
                     <div className="space-y-2">

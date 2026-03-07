@@ -15,7 +15,7 @@ import { EnergyBar, EnergyCostBadge, InsufficientEnergyOverlay } from './EnergyB
 
 // ─── Types ──────────────────────────────────────────────────
 
-type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'face_swap_template' | 'bg_removal' | 'gif_morph' | 'gif_aging' | 'ai_video' | 'trading_card' | 'time_machine' | 'pet_me' | 'yearbook' | 'emoji_me' | 'miniature';
+type EffectKey = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'face_switch' | 'face_swap_template' | 'group_face_swap' | 'bg_removal' | 'gif_morph' | 'gif_aging' | 'ai_video' | 'trading_card' | 'time_machine' | 'pet_me' | 'yearbook' | 'emoji_me' | 'miniature';
 type Step = 'photo' | 'effects' | 'video_preset' | 'decade_select' | 'template_select' | 'processing' | 'result' | 'error';
 
 interface FaceSwapTpl { id: string; title: string; category: string; imageUrl: string; thumbnailUrl?: string; }
@@ -191,6 +191,14 @@ const EFFECTS: EffectDef[] = [
     gradient: 'from-purple-500 to-violet-600',
     endpoint: '/booth-games/face-swap-template',
   },
+  {
+    key: 'group_face_swap' as EffectKey,
+    name: 'Gruppen Face Swap',
+    emoji: '👥',
+    description: 'Alle Gesichter im Gruppenfoto auf einen Charakter tauschen!',
+    gradient: 'from-teal-500 to-cyan-600',
+    endpoint: '/booth-games/group-face-swap',
+  },
 ];
 
 // ─── Component ──────────────────────────────────────────────
@@ -313,6 +321,8 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
       } else if (effect.key === 'face_switch' || effect.key === 'bg_removal') {
         effectRes = await api.post(effect.endpoint, { photoId });
       } else if ((effect.key as string) === 'face_swap_template') {
+        effectRes = await api.post(effect.endpoint, { photoId, eventId, templateId: selectedTemplateIdRef.current });
+      } else if ((effect.key as string) === 'group_face_swap') {
         effectRes = await api.post(effect.endpoint, { photoId, eventId, templateId: selectedTemplateIdRef.current });
       } else {
         effectRes = await api.post(effect.endpoint, { photoId, effect: effect.key });
@@ -525,7 +535,7 @@ export default function AiEffectsModal({ isOpen, onClose, eventId, onComplete }:
                         } else if (effect.key === 'time_machine') {
                           setSelectedEffect(effect);
                           setStep('decade_select');
-                        } else if (effect.key === 'face_swap_template') {
+                        } else if (effect.key === 'face_swap_template' || (effect.key as string) === 'group_face_swap') {
                           setSelectedEffect(effect);
                           loadFaceSwapTemplates();
                           setStep('template_select');

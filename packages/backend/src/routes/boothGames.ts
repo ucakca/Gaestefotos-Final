@@ -358,6 +358,114 @@ router.post('/face-switch', authMiddleware, withEnergyCheck('face_switch'), asyn
   }
 });
 
+// POST /api/booth-games/group-face-swap — Swap ALL faces in a group photo with a template
+router.post('/group-face-swap', authMiddleware, withEnergyCheck('group_face_swap'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { photoId, eventId, templateId, templateIds } = req.body;
+    if (!photoId || !eventId) {
+      return res.status(400).json({ error: 'photoId und eventId sind erforderlich' });
+    }
+    if (!templateId && (!templateIds || !Array.isArray(templateIds) || templateIds.length === 0)) {
+      return res.status(400).json({ error: 'templateId oder templateIds[] ist erforderlich' });
+    }
+
+    // 1. Get source photo with face data
+    const photo = await prisma.photo.findUnique({
+      where: { id: photoId },
+      select: { storagePath: true, eventId: true, faceData: true, faceCount: true },
+    });
+    if (!photo?.storagePath) return res.status(404).json({ error: 'Foto nicht gefunden' });
+
+    const faceCount = photo.faceCount || 0;
+    if (faceCount < 1) {
+      return res.status(400).json({ error: 'Keine Gesichter im Foto erkannt. Bitte ein Foto mit sichtbaren Gesichtern verwenden.' });
+    }
+
+    // 2. Resolve template(s)
+    const resolvedTemplateIds: string[] = templateIds || [templateId];
+    const templateRows: any[] = await prisma.$queryRawUnsafe(
+      `SELECT id, "imageUrl" FROM face_swap_templates WHERE id = ANY($1::uuid[]) AND "isActive" = true`,
+      resolvedTemplateIds
+    );
+    if (templateRows.length === 0) return res.status(404).json({ error: 'Template(s) nicht gefunden' });
+
+    // 3. Download template images
+    const templateBufferMap: Record<string, Buffer> = {};
+    for (const row of templateRows) {
+      const tplRes = await fetch(row.imageUrl);
+      if (!tplRes.ok) throw new Error(`Template ${row.id} konnte nicht geladen werden`);
+      templateBufferMap[row.id] = Buffer.from(await tplRes.arrayBuffer());
+    }
+
+    // 4. Build assignments: single template for all, or per-face
+    let assignments: { faceIndex: number; templateBuffer: Buffer }[];
+    if (templateIds && templateIds.length > 1) {
+      // Per-face: templateIds[0] → face 0, templateIds[1] → face 1, etc.
+      assignments = templateIds.map((tid: string, i: number) => ({
+        faceIndex: i,
+        templateBuffer: templateBufferMap[tid] || templateBufferMap[templateRows[0].id],
+      }));
+    } else {
+      // Single template for ALL faces
+      const buf = templateBufferMap[resolvedTemplateIds[0]] || templateBufferMap[templateRows[0].id];
+      assignments = [{ faceIndex: -1, templateBuffer: buf }];
+    }
+
+    // 5. Prepare AI execution
+    const { prepareAiExecution, logAiUsage } = await import('../services/aiExecution');
+    const execution = await prepareAiExecution(req.userId!, 'group_face_swap', eventId);
+    if (!execution.success) throw new Error(execution.error || 'AI-Feature nicht verfügbar');
+
+    // 6. Get photo buffer
+    const { storageService } = await import('../services/storage');
+    const groupImageBuffer = await storageService.getFile(photo.storagePath);
+
+    const startTime = Date.now();
+
+    // 7. Execute group face swap
+    const { performGroupFaceSwapTemplate } = await import('../services/faceSwitch');
+    const result = await performGroupFaceSwapTemplate(
+      groupImageBuffer,
+      photo.faceData,
+      assignments,
+      execution.provider,
+    );
+
+    if (result.facesSwapped === 0) {
+      throw new Error('Konnte keine Gesichter tauschen');
+    }
+
+    // 8. Save result
+    const savedPath = await storageService.uploadFile(
+      eventId,
+      `group-face-swap-${photoId}-${Date.now()}.jpg`,
+      result.outputBuffer,
+      'image/jpeg'
+    );
+    const savedUrl = await storageService.getFileUrl(savedPath);
+
+    if (execution.provider) {
+      await logAiUsage(execution.provider.id, 'group_face_swap', {
+        providerType: execution.provider.type,
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
+    }
+
+    res.json({
+      success: true,
+      outputUrl: savedUrl,
+      storagePath: savedPath,
+      faceCount,
+      facesSwapped: result.facesSwapped,
+      usedAi: result.usedAi,
+    });
+  } catch (error) {
+    logger.error('Group face swap error', { message: (error as Error).message });
+    res.status(500).json({ error: (error as Error).message || 'Gruppen Face Swap Fehler' });
+  }
+});
+
 // POST /api/booth-games/style-effect — Apply AI style effect (dynamic energy check per effect)
 router.post('/style-effect', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {

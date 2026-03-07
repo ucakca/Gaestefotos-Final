@@ -122,9 +122,11 @@ import faceOffRoutes from './routes/faceOff';
 import faceSwapTemplatesRoutes from './routes/faceSwapTemplates';
 import adminWorkflowsRoutes, { workflowSyncRouter } from './routes/adminWorkflows';
 import adminComfyuiRoutes from './routes/adminComfyui';
+import adminPipelinesRoutes from './routes/adminPipelines';
 import referenceImageRoutes from './routes/referenceImage';
 import feedbackRoutes from './routes/feedback';
 import fontProxyRoutes from './routes/fontProxy';
+import socialRoutes from './routes/social';
 
 import { apiLimiter, authLimiter, uploadLimiter, passwordLimiter, smsLimiter, paymentLimiter, leadLimiter, aiFeatureLimiter, pushSubscribeLimiter, analyticsLimiter } from './middleware/rateLimit';
 import { csrfTokenGenerator, getCsrfTokenHandler, csrfProtection } from './middleware/csrf';
@@ -133,6 +135,7 @@ import { storageService } from './services/storage';
 import { startRetentionPurgeWorker } from './services/retentionPurge';
 import { startDemoMosaicRetentionWorker } from './services/demoMosaicRetention';
 import { startEventRecapWorker } from './services/eventRecap';
+import { startPhotoDeliveryWorker } from './services/photoDelivery';
 import { startVirusScanWorker } from './services/virusScan';
 import { startOrphanCleanupWorker } from './services/orphanCleanup';
 import { startStorageReminderWorker } from './services/storageReminder';
@@ -181,6 +184,7 @@ storageService.ensureBucketExists().catch((err) => {
 startRetentionPurgeWorker();
 startDemoMosaicRetentionWorker();
 startEventRecapWorker();
+startPhotoDeliveryWorker();
 startVirusScanWorker();
 startOrphanCleanupWorker();
 startStorageReminderWorker();
@@ -600,9 +604,25 @@ if (process.env.NODE_ENV !== 'production') {
  // CSRF token endpoint — frontend fetches token before state-changing requests
  app.get('/api/csrf-token', csrfTokenGenerator, getCsrfTokenHandler);
 
- // CSRF protection for admin state-changing routes (POST/PUT/DELETE)
- // TODO: Extend to all /api routes once frontend sends X-CSRF-Token header consistently
- app.use('/api/admin', csrfProtection);
+ // CSRF protection for all authenticated state-changing routes (POST/PUT/DELETE/PATCH).
+ // Exempt paths that use their own auth mechanisms (TUS uploads, webhooks, public endpoints).
+ app.use('/api', (req, res, next) => {
+   const p = req.path;
+   // Skip paths with non-cookie auth or their own verification
+   if (p.startsWith('/uploads')          // TUS uses custom cookie/token auth inline
+       || p.startsWith('/webhooks/')     // WooCommerce uses HMAC signature
+       || p.startsWith('/woo-webhooks')  // Alias
+       || p.startsWith('/workflow-sync') // Uses x-sync-key header auth
+       || p.startsWith('/health')        // Public
+       || p.startsWith('/csrf-token')    // Token endpoint itself
+       || p.startsWith('/landing')       // Public
+       || p.startsWith('/cms')           // Public CMS
+       || p.startsWith('/r/')            // Public result page
+   ) {
+     return next();
+   }
+   return csrfProtection(req, res, next);
+ });
 
  // API Routes with rate limiting
  // Note: authLimiter is applied per-route in auth.ts for more granular control
@@ -715,6 +735,7 @@ app.use('/api/admin/ai-surfaces', adminAiSurfacesRoutes);
 app.use('/api/admin/cdn', adminCdnRoutes); // CDN Browser: /api/admin/cdn/browse, sign, bulk-sign
 app.use('/api/admin/workflows', adminWorkflowsRoutes); // ComfyUI Workflow Management: list, upload, test, delete
 app.use('/api/admin/comfyui', adminComfyuiRoutes); // ComfyUI Manager: pod lifecycle, workflow sync, endpoint health
+app.use('/api/admin/pipelines', adminPipelinesRoutes); // KI-Studio: Pipeline CRUD, Prompts, Nodes
 app.use('/api/workflow-sync', workflowSyncRouter); // Workflow Sync: ComfyUI Pod ↔ Backend (API key auth)
 app.use('/api/ai-jobs', aiAsyncDeliveryRoutes); // Async AI Jobs: /api/ai-jobs/video-models, :shortCode, admin/list
 app.use('/api/face-swap', faceSwapTemplatesRoutes); // Face Swap Templates: /api/face-swap/templates
@@ -727,6 +748,7 @@ app.use('/api', spinnerRoutes); // 360° Spinner: /api/events/:eventId/spinner
 app.use('/api', drawbotRoutes); // Drawbot: /api/events/:eventId/drawbot
 app.use('/api', videoJobsRoutes); // Video/GIF/Boomerang: /api/events/:eventId/video-jobs
 app.use('/api/feedback', feedbackRoutes); // Guest Feedback + Google Review: /api/feedback
+app.use('/api/social', socialRoutes); // Social Media: OAuth, accounts, publish
 
 // Event Themes (AI generation + CRUD)
 app.use('/api/event-themes', eventThemesRoutes);
@@ -805,6 +827,14 @@ io.on('connection', (socket) => {
   socket.on('leave:event', (eventId: string) => {
     socket.leave(`event:${eventId}`);
     logger.info('Client left event', { socketId: socket.id, eventId });
+  });
+
+  // Wall control: relay admin commands to all wall displays in the event room
+  socket.on('wall:control', (data: any) => {
+    if (!data?.eventId || typeof data.eventId !== 'string') return;
+    const { eventId, ...controlData } = data;
+    // Broadcast to all clients in the event room except sender
+    socket.to(`event:${eventId}`).emit('wall:control', controlData);
   });
 
   socket.on('disconnect', () => {

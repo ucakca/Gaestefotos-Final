@@ -231,10 +231,10 @@ async function executeSendEmail(ctx: ExecutionContext, config: any): Promise<Ste
     photoCount: String(await prisma.photo.count({ where: { eventId: ctx.eventId, status: 'APPROVED' } })),
   };
 
-  // ── Handle 'all_guests' — send to every guest with email ──
+  // ── Handle 'all_guests' — send to every guest with email + DSGVO opt-in ──
   if (recipient === 'all_guests') {
     const guests = await prisma.guest.findMany({
-      where: { eventId: ctx.eventId, email: { not: null } },
+      where: { eventId: ctx.eventId, email: { not: null }, emailOptIn: true },
       select: { email: true, firstName: true },
     });
     if (guests.length === 0) {

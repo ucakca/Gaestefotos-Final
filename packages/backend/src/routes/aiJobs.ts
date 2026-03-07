@@ -80,7 +80,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     logger.error('Create AI job error', { message: getErrorMessage(error) });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -112,7 +112,7 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
     res.json(job);
   } catch (error) {
     logger.error('Get AI job error', { message: getErrorMessage(error) });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -146,7 +146,7 @@ router.get('/event/:eventId', authMiddleware, async (req: AuthRequest, res: Resp
     res.json({ jobs });
   } catch (error) {
     logger.error('List AI jobs error', { message: getErrorMessage(error) });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -174,7 +174,7 @@ router.post('/:id/cancel', authMiddleware, async (req: AuthRequest, res: Respons
     res.json({ success: true });
   } catch (error) {
     logger.error('Cancel AI job error', { message: getErrorMessage(error) });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -225,6 +225,6 @@ resultRouter.get('/:shortCode', async (req, res) => {
     });
   } catch (error) {
     logger.error('Get AI result error', { message: getErrorMessage(error) });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });

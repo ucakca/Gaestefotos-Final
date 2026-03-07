@@ -19,7 +19,7 @@ const iconButtonVariants = cva(
         danger: 'bg-destructive text-destructive-foreground hover:brightness-105 shadow-md',
       },
       size: {
-        sm: 'w-8 h-8',
+        sm: 'w-9 h-9',
         md: 'w-10 h-10',
         lg: 'w-11 h-11',
         xl: 'w-12 h-12',
@@ -38,7 +38,7 @@ export interface IconButtonProps
   icon: ReactNode;
   asChild?: boolean;
   'aria-label': string;
-  title: string;
+  title?: string;
   loading?: boolean;
 }
 

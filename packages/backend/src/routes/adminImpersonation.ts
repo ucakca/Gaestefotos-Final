@@ -28,7 +28,7 @@ router.post('/token', authMiddleware, requireRole('ADMIN', 'SUPERADMIN'), async 
   });
 
   if (!target) {
-    return res.status(404).json({ error: 'User not found' });
+    return res.status(404).json({ error: 'Benutzer nicht gefunden' });
   }
 
   // Prevent impersonating other admins

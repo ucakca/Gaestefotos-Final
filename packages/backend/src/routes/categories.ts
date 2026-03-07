@@ -374,7 +374,7 @@ router.put(
 router.put('/:eventId/categories/reorder', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
     const { order } = req.body; // Array of { id, order }
     if (!Array.isArray(order) || order.length === 0) return res.status(400).json({ error: 'order Array erforderlich' });

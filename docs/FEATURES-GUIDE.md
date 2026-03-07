@@ -269,21 +269,26 @@ Gäste können ihre Fotos mit KI-gestützten Effekten bearbeiten. Jeder Effekt v
 | **AI Cartoon** | Cartoon-/Comic-Stil | `/api/booth-games/style-effect` |
 | **Style Transfer** | Stil eines Referenzbilds übertragen | `/api/style-transfer` |
 
-### AI-Provider-System
+### AI-Provider-System (Stand 2026-03-06)
 
 Admins konfigurieren Provider unter `/manage/ai-providers`:
-- **Groq** — Schnelle LLM-Inferenz (Llama 3.1) für Chat, Vorschläge, Compliment Mirror
-- **Grok (xAI)** — Leistungsstarkes LLM mit OpenAI-kompatibler API (`grok-2-latest`)
-- **OpenAI** — GPT-4o / GPT-Vision für komplexe Textaufgaben & DALL-E
-- **Replicate** — Stable Diffusion, SDXL, Faceswap-Modelle
-- **Stability AI** — Background Removal, Style-Effekte
+- **RunPod/ComfyUI** — Qwen Image Edit fp8: 17 Style-Effekte + Face Swap (18 Workflows, primär)
+- **fal.ai** — flux/dev img2img (Style Transfer Fallback) + wan-i2v (Video) + face-swap
+- **Groq** — Schnelle LLM-Inferenz (Llama 3.3-70b) für Chat, Vorschläge, Spiele
+- **Grok (xAI)** — grok-2-vision für AI-Kategorisierung + LLM-Fallback
+- **OpenAI** — GPT-4o als 3. LLM-Fallback
+- **Ollama (lokal)** — llama3.2:3b + llava:7b als Offline-Fallback
+- **remove.bg** — Background Removal
 - Pro Effekt wird automatisch der passende Provider gewählt (`aiExecution.ts`)
 
 ### Backend-Architektur
 - `aiExecution.ts` — Zentrale Ausführung: Provider-Resolution + Credit-Check + Logging
-- `faceSwitch.ts` — Face Detection (vorhandene faceData) + Gesichter-Shuffle + sharp-Compositing
-- `bgRemoval.ts` — Multi-Provider (Replicate/Stability) mit Polling
-- `aiStyleEffects.ts` — Style-Effekte via Stability AI / Replicate
+- `runpodService.ts` — Unified RunPod API: submitJob, pollForResult, extractOutputBuffer
+- `comfyuiWorkflowRegistry.ts` — 18 Qwen-Workflows laden, Params injizieren, auf RunPod ausführen
+- `aiStyleEffects.ts` — Style-Effekte: Custom Workflow (RunPod/Qwen) → fal.ai Fallback
+- `faceSwitch.ts` — Face Swap via RunPod/Qwen (Fallback: fal.ai inswapper)
+- `bgRemoval.ts` — Background Removal via remove.bg
+- `aiJobWorker.ts` — Async AI-Job Queue (30s Intervall, RunPod polling)
 
 ---
 

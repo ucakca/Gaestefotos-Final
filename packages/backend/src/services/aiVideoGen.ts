@@ -69,14 +69,16 @@ export async function generateImageToVideo(request: ImageToVideoRequest): Promis
   try {
     let resultUrl: string;
 
-    if (provider.slug.includes('fal')) {
+    if (provider.slug.includes('runpod') || provider.slug.includes('comfyui')) {
+      resultUrl = await generateWithRunPod(photoBuffer, prompt, duration);
+    } else if (provider.slug.includes('fal')) {
       resultUrl = await generateWithFal(provider, imageUrl, prompt, duration);
     } else if (provider.slug.includes('runway') || provider.slug.includes('Runway')) {
       resultUrl = await generateWithRunway(provider, imageUrl, prompt, duration);
     } else if (provider.slug.includes('luma') || provider.slug.includes('Luma')) {
       resultUrl = await generateWithLuma(provider, imageUrl, prompt, duration);
     } else {
-      // Default: try FAL.ai (most models)
+      // Default: try Runway
       resultUrl = await generateWithRunway(provider, imageUrl, prompt, duration);
     }
 
@@ -246,6 +248,29 @@ async function generateWithLuma(
   throw new Error('LumaAI: Timeout nach 5 Minuten');
 }
 
+
+// ─── RunPod EU: WAN 2.1 via ComfyUI (DSGVO-compliant) ──────────────────────
+
+async function generateWithRunPod(
+  imageBuffer: Buffer, prompt?: string, duration: number = 5,
+): Promise<string> {
+  const { runWanI2V } = await import('./comfyuiWorkflows');
+  logger.info('[AiVideoGen] Starting RunPod EU WAN 2.1 video', { duration });
+  const videoBuffer = await runWanI2V(imageBuffer, {
+    prompt: prompt || 'gentle cinematic camera movement, subtle animation, high quality',
+    duration,
+  });
+  // Save to temp storage and return URL
+  const storageKey = await storageService.uploadFile(
+    'ai-temp',
+    `wan-video-${Date.now()}.webp`,
+    videoBuffer,
+    'video/webp',
+  );
+  const url = await storageService.getFileUrl(storageKey, 7200);
+  logger.info('[AiVideoGen] RunPod EU WAN 2.1 completed', { size: videoBuffer.length });
+  return url;
+}
 
 // ─── FAL.ai Video Models (Seedance, Kling, Wan, Vidu, Hailuo) ──────────────
 

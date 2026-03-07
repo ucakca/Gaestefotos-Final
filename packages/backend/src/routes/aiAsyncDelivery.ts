@@ -203,41 +203,59 @@ router.post('/face-swap', authMiddleware, async (req: AuthRequest, res: Response
 
         const provider = await resolveProvider('face_switch');
         if (!provider) throw new Error('Kein Face-Swap Provider');
-        const apiKey = provider.apiKey || '';
 
-        const swapModel = provider.model || 'fal-ai/face-swap';
-        const queueUrl = `https://queue.fal.run/${swapModel}`;
-        const submitRes = await fetch(queueUrl, {
-          method: 'POST',
-          headers: { Authorization: `Key ${apiKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ base_image_url: tplUrl, swap_image_url: guestDataUri }),
-        });
-        if (!submitRes.ok) {
-          const errBody = await submitRes.text();
-          throw new Error(`FAL queue error ${submitRes.status}: ${errBody.slice(0, 200)}`);
+        let buf: Buffer;
+
+        if (provider.slug?.includes('runpod') || provider.slug?.includes('comfyui')) {
+          // ─── RunPod EU: ReActor Face Swap (DSGVO-compliant) ───
+          const { runReactorFaceSwap } = await import('../services/comfyuiWorkflows');
+          // Download template image
+          let tplBuffer: Buffer;
+          if (tplUrl.startsWith('data:')) {
+            tplBuffer = Buffer.from(tplUrl.split(',')[1], 'base64');
+          } else {
+            const tplRes = await fetch(tplUrl);
+            if (!tplRes.ok) throw new Error('Template-Download fehlgeschlagen');
+            tplBuffer = Buffer.from(await tplRes.arrayBuffer());
+          }
+          buf = await runReactorFaceSwap(guestBuffer, tplBuffer);
+        } else {
+          // ─── fal.ai Face Swap (legacy) ───
+          const apiKey = provider.apiKey || '';
+          const swapModel = provider.model || 'fal-ai/face-swap';
+          const queueUrl = `https://queue.fal.run/${swapModel}`;
+          const submitRes = await fetch(queueUrl, {
+            method: 'POST',
+            headers: { Authorization: `Key ${apiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ base_image_url: tplUrl, swap_image_url: guestDataUri }),
+          });
+          if (!submitRes.ok) {
+            const errBody = await submitRes.text();
+            throw new Error(`FAL queue error ${submitRes.status}: ${errBody.slice(0, 200)}`);
+          }
+          const submitData = await submitRes.json() as any;
+          const request_id = submitData.request_id;
+          const statusUrl = submitData.status_url || `https://queue.fal.run/${swapModel}/requests/${request_id}/status`;
+          const responseUrl = submitData.response_url || `https://queue.fal.run/${swapModel}/requests/${request_id}`;
+
+          for (let i = 0; i < 120; i++) {
+            await new Promise(ok => setTimeout(ok, 5000));
+            const sRes = await fetch(statusUrl, { headers: { Authorization: `Key ${apiKey}` } });
+            const sText = await sRes.text();
+            let sData: any;
+            try { sData = JSON.parse(sText); } catch { continue; }
+            if (sData.status === 'COMPLETED') break;
+            if (sData.status === 'FAILED') throw new Error('Face swap failed');
+          }
+
+          const rRes = await fetch(responseUrl, { headers: { Authorization: `Key ${apiKey}` } });
+          const rData = await rRes.json() as any;
+          const outputUrl = rData?.image?.url || rData?.output?.url || '';
+          if (!outputUrl) throw new Error('Kein Ergebnis-Bild');
+
+          const imgRes = await fetch(outputUrl);
+          buf = Buffer.from(await imgRes.arrayBuffer()) as Buffer;
         }
-        const submitData = await submitRes.json() as any;
-        const request_id = submitData.request_id;
-        const statusUrl = submitData.status_url || `https://queue.fal.run/${swapModel}/requests/${request_id}/status`;
-        const responseUrl = submitData.response_url || `https://queue.fal.run/${swapModel}/requests/${request_id}`;
-
-        for (let i = 0; i < 120; i++) {
-          await new Promise(ok => setTimeout(ok, 5000));
-          const sRes = await fetch(statusUrl, { headers: { Authorization: `Key ${apiKey}` } });
-          const sText = await sRes.text();
-          let sData: any;
-          try { sData = JSON.parse(sText); } catch { continue; }
-          if (sData.status === 'COMPLETED') break;
-          if (sData.status === 'FAILED') throw new Error('Face swap failed');
-        }
-
-        const rRes = await fetch(responseUrl, { headers: { Authorization: `Key ${apiKey}` } });
-        const rData = await rRes.json() as any;
-        const outputUrl = rData?.image?.url || rData?.output?.url || '';
-        if (!outputUrl) throw new Error('Kein Ergebnis-Bild');
-
-        const imgRes = await fetch(outputUrl);
-        let buf: Buffer = Buffer.from(await imgRes.arrayBuffer()) as Buffer;
 
         try {
           const { applyReferenceImageOverlay } = await import('../services/referenceImageAnchoring');

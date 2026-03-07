@@ -34,7 +34,7 @@ import { PasswordGate } from '@/components/ui/PasswordGate';
 import { Section } from '@/components/ui/Section';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EventThemeProvider } from '@/components/event-theme/EventThemeProvider';
-import { Trophy, Play, X } from 'lucide-react';
+import { Trophy, Play, X, Sparkles } from 'lucide-react';
 import { useGuestEventData } from '@/hooks/useGuestEventData';
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
 import { useScrollHeader } from '@/hooks/useScrollHeader';
@@ -173,6 +173,19 @@ export default function PublicEventPageV2() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredPhotos]);
+
+  // Deeplink: ?upload=1 → open upload modal directly (QR → Upload shortcut)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !event?.id) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('upload') === '1') {
+      setQuickUploadOpen(true);
+      const url = new URL(window.location.href);
+      url.searchParams.delete('upload');
+      window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event?.id]);
 
   // Check if mosaic wall is active for this event
   useEffect(() => {
@@ -482,6 +495,23 @@ export default function PublicEventPageV2() {
             </div>
           )}
 
+          {/* UX-04: AI Effects Discovery CTA */}
+          {filteredPhotos.length > 0 && featuresConfig?.enableFotoSpass !== false && (
+            <div className="px-4 pt-3">
+              <button
+                onClick={() => setAiEffectsOpen(true)}
+                className="w-full flex items-center gap-3 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5 px-4 py-3 text-left transition-all hover:from-primary/10 hover:to-accent/10"
+              >
+                <span className="text-xl">✨</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-foreground">{tGuest('aiEffectsCta') || 'KI-Effekte ausprobieren'}</div>
+                  <div className="text-xs text-muted-foreground truncate">{tGuest('aiEffectsCtaSub') || 'Verwandle deine Fotos mit Cartoon, Pop Art & mehr'}</div>
+                </div>
+                <Sparkles className="w-5 h-5 text-primary flex-shrink-0" />
+              </button>
+            </div>
+          )}
+
           {/* V0 Photo Grid (Masonry) */}
           <div className="px-4 pt-4 pb-24">
             {featuresConfig?.mysteryMode ? (
@@ -757,6 +787,8 @@ export default function PublicEventPageV2() {
         open={quickUploadOpen}
         onClose={() => setQuickUploadOpen(false)}
         eventId={event?.id || ''}
+        eventSlug={slug}
+        eventTitle={event?.title}
         categories={categories?.map((cat: any) => ({ id: cat.id, name: cat.name, icon: cat.iconKey })) || []}
         onComplete={() => reloadPhotos()}
       />

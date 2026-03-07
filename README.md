@@ -1,6 +1,6 @@
 # Gaestefotos — Enterprise Event Photo Platform
 
-**Version 2.1.0** | **Production** | **Updated 2026-02-16**
+**Version 2.1.0** | **Production** | **Updated 2026-03-06**
 
 The all-in-one SaaS + Hardware platform for event photography. QR-Upload, Live Wall, Face Search, Photo Booth, Mosaic Wall, AI Photo Styles, Workflow Builder — GDPR-compliant, made in Austria.
 
@@ -35,11 +35,11 @@ The all-in-one SaaS + Hardware platform for event photography. QR-Upload, Live W
           ┌───────────┬───────────┼───────────┬──────────┐
           │           │           │           │          │
     ┌─────┴────┐ ┌────┴───┐ ┌────┴────┐ ┌────┴───┐ ┌───┴────┐
-    │PostgreSQL│ │ Redis  │ │SeaweedFS│ │ Groq   │ │Twilio  │
-    │ 78 Models│ │ Cache  │ │S3 Store │ │+4 AI   │ │ SMS    │
-    │ Prisma   │ │Sessions│ │ Photos  │ │Providers│ │        │
-    └──────────┘ │CSRF/RL │ │ Videos  │ └────────┘ └────────┘
-                 └────────┘ └─────────┘
+    │PostgreSQL│ │ Redis  │ │SeaweedFS│ │ 7 AI    │ │RunPod/ │
+    │ 95 Models│ │ Cache  │ │S3 Store │ │Providers│ │ComfyUI │
+    │ Prisma   │ │Sessions│ │ Photos  │ │Groq,xAI │ │Serverl.│
+    └──────────┘ │CSRF/RL │ │ Videos  │ │fal,OAI  │ └────────┘
+                 └────────┘ └─────────┘ └─────────┘
 ```
 
 ---
@@ -48,9 +48,9 @@ The all-in-one SaaS + Hardware platform for event photography. QR-Upload, Live W
 
 | Package | Stack | Port | Description |
 |---------|-------|------|-------------|
-| `backend` | Express, Prisma, Socket.IO | 8001 | API Server — 85 route files, 78 DB models |
-| `frontend` | Next.js 16, React, Tailwind | 3000 | User App — 55 pages, 282 components |
-| `admin-dashboard` | Next.js 16, React, Tailwind | 3001 | Admin UI — 35 pages |
+| `backend` | Express, Prisma, Socket.IO | 8001 | API Server — 117 route files, 95 DB models |
+| `frontend` | Next.js 16, React, Tailwind | 3000 | User App — 68 pages, 269 components |
+| `admin-dashboard` | Next.js 16, React, Tailwind | 3001 | Admin UI — 57 pages |
 | `shared` | TypeScript | — | Shared types & utils |
 
 ---
@@ -62,24 +62,24 @@ gaestefotos-app-v2/
 ├── packages/
 │   ├── backend/
 │   │   ├── src/
-│   │   │   ├── routes/             # 85 API route files
+│   │   │   ├── routes/             # 117 API route files
 │   │   │   ├── services/           # Business logic (AI, cache, billing, face search, …)
 │   │   │   ├── middleware/         # Auth, CSRF (Redis), rate-limit (Redis), CSP
 │   │   │   └── index.ts
 │   │   ├── prisma/
-│   │   │   ├── schema.prisma       # 78 models, 2255 lines
-│   │   │   └── migrations/         # 50 migrations
+│   │   │   ├── schema.prisma       # 95 models
+│   │   │   └── migrations/         # 54 migrations
 │   │   └── package.json
 │   │
 │   ├── frontend/
 │   │   ├── src/
-│   │   │   ├── app/                # 55 pages (App Router)
+│   │   │   ├── app/                # 68 pages (App Router)
 │   │   │   │   ├── e3/[slug]/      # Public event gallery
 │   │   │   │   ├── i/[slug]/       # Digital invitations
 │   │   │   │   ├── live/[slug]/    # Live wall + camera
 │   │   │   │   ├── events/[id]/    # Host event management (15 sub-pages)
 │   │   │   │   └── dashboard/      # Host dashboard
-│   │   │   ├── components/         # 282 React components
+│   │   │   ├── components/         # 269 React components
 │   │   │   ├── hooks/              # Custom hooks
 │   │   │   ├── lib/                # API client, auth, i18n
 │   │   │   └── store/              # Zustand stores
@@ -188,7 +188,7 @@ Cookie-based locale switching (no URL prefix routing). 5 languages: German, Engl
 
 ### Backend
 
-Express.js, Prisma ORM (78 models), Socket.IO, Sharp, @tus/server, @aws-sdk/client-s3, rate-limit-redis, pdf-lib, qrcode, nodemailer, winston, zod, bcryptjs, jsonwebtoken, ioredis
+Express.js, Prisma ORM (95 models), Socket.IO, Sharp, @tus/server, @aws-sdk/client-s3, rate-limit-redis, pdf-lib, qrcode, nodemailer, winston, zod, bcryptjs, jsonwebtoken, ioredis
 
 ### Frontend
 
@@ -281,15 +281,15 @@ See `docs/` for 41 documentation files including:
 
 | Metric | Value |
 |--------|-------|
-| Backend API routes | 85 |
-| Frontend pages | 55 |
-| React components | 282 |
+| Backend API routes | 117 |
+| Frontend pages | 68 |
+| React components | 269 |
 | Admin pages | 35 |
-| Prisma models | 78 |
-| DB migrations | 50 |
+| Prisma models | 95 |
+| DB migrations | 54 |
 | E2E test specs | 19 |
 | AI features | 17 |
-| AI providers | 5 |
+| AI providers | 7 |
 | Workflow step types | 37 |
 | Languages | 5 |
 | Rate limiters | 20 (all Redis-backed) |

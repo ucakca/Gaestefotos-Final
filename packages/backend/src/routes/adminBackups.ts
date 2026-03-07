@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { execSync, exec } from 'child_process';
+import { execFileSync, execFile, spawnSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { authMiddleware, requireRole, AuthRequest } from '../middleware/auth';
@@ -103,7 +103,12 @@ router.get('/', async (_req: AuthRequest, res: Response) => {
     // Disk usage
     let diskFree = 0, diskTotal = 0;
     try {
-      const dfOutput = execSync('df -B1 /opt/backups 2>/dev/null || df -B1 / 2>/dev/null').toString();
+      let dfOutput: string;
+      try {
+        dfOutput = execFileSync('df', ['-B1', '/opt/backups'], { stdio: ['ignore', 'pipe', 'ignore'] }).toString();
+      } catch {
+        dfOutput = execFileSync('df', ['-B1', '/'], { stdio: ['ignore', 'pipe', 'ignore'] }).toString();
+      }
       const lines = dfOutput.trim().split('\n');
       if (lines.length >= 2) {
         const parts = lines[1].split(/\s+/);
@@ -139,7 +144,7 @@ router.get('/schedule', async (_req: AuthRequest, res: Response) => {
   try {
     let crontab = '';
     try {
-      crontab = execSync('crontab -l 2>/dev/null').toString();
+      crontab = execFileSync('crontab', ['-l'], { stdio: ['ignore', 'pipe', 'ignore'] }).toString();
     } catch { /* no crontab */ }
 
     const schedule: BackupSchedule = {
@@ -190,7 +195,7 @@ router.post('/run', async (req: AuthRequest, res: Response) => {
 
     if (type === 'db') {
       // DB-only backup
-      exec(`${BACKUP_DB_SCRIPT} manual`, (error, stdout, stderr) => {
+      execFile(BACKUP_DB_SCRIPT, ['manual'], (error, stdout, stderr) => {
         if (error) {
           logger.error('DB backup failed:', { error: error.message, stderr });
         } else {
@@ -212,9 +217,14 @@ router.post('/run', async (req: AuthRequest, res: Response) => {
         : '';
 
       const incrFile = path.join(incrDir, `incr_${timestamp}.tar.gz`);
-      const cmd = `mkdir -p "${incrDir}" && tar -czf "${incrFile}" ${newerThan} -C /opt/gaestefotos app --exclude="*/node_modules" --exclude="*/.next" --exclude="*/.pnpm-store" --exclude="*/dist" --exclude="*/.turbo" 2>/dev/null`;
+      fs.mkdirSync(incrDir, { recursive: true });
+      const tarArgs = ['-czf', incrFile];
+      if (newerThan) tarArgs.push(`--newer-mtime=${new Date(lastFullBackup!).toISOString()}`);
+      tarArgs.push('-C', '/opt/gaestefotos', 'app',
+        '--exclude=*/node_modules', '--exclude=*/.next',
+        '--exclude=*/.pnpm-store', '--exclude=*/dist', '--exclude=*/.turbo');
 
-      exec(cmd, (error, stdout, stderr) => {
+      execFile('tar', tarArgs, (error, _stdout, stderr) => {
         if (error) {
           logger.error('Incremental backup failed:', { error: error.message, stderr });
         } else {
@@ -224,14 +234,14 @@ router.post('/run', async (req: AuthRequest, res: Response) => {
 
       // Also do DB backup if requested
       if (includeDb) {
-        exec(`${BACKUP_DB_SCRIPT} manual`, () => {});
+        execFile(BACKUP_DB_SCRIPT, ['manual'], () => {});
       }
 
       return res.json({ success: true, message: 'Inkrementelles Backup gestartet', type: 'incremental' });
     }
 
     // Full backup
-    exec(`${BACKUP_SCRIPT} manual`, (error, stdout, stderr) => {
+    execFile(BACKUP_SCRIPT, ['manual'], (error, stdout, stderr) => {
       if (error) {
         logger.error('Full backup failed:', { error: error.message, stderr });
       } else {
@@ -240,7 +250,7 @@ router.post('/run', async (req: AuthRequest, res: Response) => {
     });
 
     if (includeDb) {
-      exec(`${BACKUP_DB_SCRIPT} manual`, () => {});
+      execFile(BACKUP_DB_SCRIPT, ['manual'], () => {});
     }
 
     res.json({ success: true, message: 'Vollständiges Backup gestartet', type: 'full' });
@@ -328,16 +338,23 @@ router.post('/verify', async (req: AuthRequest, res: Response) => {
     let fileCount = 0;
     try {
       if (filePath.endsWith('.tar.gz')) {
-        const output = execSync(`tar -tzf "${filePath}" 2>/dev/null | wc -l`).toString().trim();
-        fileCount = parseInt(output) || 0;
-        isValid = fileCount > 0;
+        const result = spawnSync('tar', ['-tzf', filePath], { stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 50 * 1024 * 1024 });
+        if (result.status === 0 && result.stdout) {
+          fileCount = result.stdout.toString().split('\n').filter(Boolean).length;
+          isValid = fileCount > 0;
+        }
       } else if (filePath.endsWith('.sql.gz')) {
-        const output = execSync(`gzip -t "${filePath}" 2>&1 && echo OK || echo FAIL`).toString().trim();
-        isValid = output.includes('OK');
+        const testResult = spawnSync('gzip', ['-t', filePath], { stdio: ['ignore', 'ignore', 'pipe'] });
+        isValid = testResult.status === 0;
         if (isValid) {
-          const sizeOutput = execSync(`gzip -l "${filePath}" 2>/dev/null | tail -1`).toString();
-          const parts = sizeOutput.trim().split(/\s+/);
-          fileCount = parseInt(parts[1]) || 0; // uncompressed size
+          const listResult = spawnSync('gzip', ['-l', filePath], { stdio: ['ignore', 'pipe', 'ignore'] });
+          if (listResult.stdout) {
+            const lines = listResult.stdout.toString().trim().split('\n');
+            if (lines.length >= 2) {
+              const parts = lines[1].trim().split(/\s+/);
+              fileCount = parseInt(parts[1]) || 0; // uncompressed size
+            }
+          }
         }
       }
     } catch {

@@ -14,7 +14,7 @@ let scanTimer: NodeJS.Timeout | null = null;
  * Scan a buffer with ClamAV via clamdscan.
  * Returns { clean: boolean, threat?: string }
  */
-export async function scanBuffer(buffer: Buffer): Promise<{ clean: boolean; threat?: string }> {
+export async function scanBuffer(buffer: Buffer): Promise<{ clean: boolean; threat?: string; quarantine?: boolean }> {
   const tmpFile = join(tmpdir(), `clamscan-${randomBytes(8).toString('hex')}`);
   try {
     await writeFile(tmpFile, buffer);
@@ -25,15 +25,18 @@ export async function scanBuffer(buffer: Buffer): Promise<{ clean: boolean; thre
           // Exit code 1 = virus found
           const match = output.match(/:\s*(.+)\s+FOUND/);
           resolve({ clean: false, threat: match?.[1] || 'UNKNOWN' });
-        } else {
-          // Exit code 0 = clean, or other error = treat as clean to not block uploads
+        } else if (!error) {
+          // Exit code 0 = clean
           resolve({ clean: true });
+        } else {
+          // Other error (timeout, crash, etc.) = quarantine, do NOT treat as clean
+          resolve({ clean: false, threat: 'SCAN_UNAVAILABLE', quarantine: true });
         }
       });
     });
   } catch (error) {
-    logger.warn('[VirusScan] clamdscan failed, treating as clean', { message: getErrorMessage(error) });
-    return { clean: true };
+    logger.warn('[VirusScan] clamdscan failed, quarantining upload', { message: getErrorMessage(error) });
+    return { clean: false, threat: 'SCAN_UNAVAILABLE', quarantine: true };
   } finally {
     await unlink(tmpFile).catch(() => {});
   }
@@ -79,6 +82,23 @@ async function processPendingPhotoScans(): Promise<void> {
               ...prev,
               scanStatus: 'CLEAN',
               scanError: null,
+              scanUpdatedAt: new Date().toISOString(),
+            },
+          },
+        });
+      } else if (result.quarantine) {
+        // ClamAV unavailable — quarantine for later re-scan, do NOT approve
+        logger.warn('[VirusScan] ClamAV unavailable, quarantining photo', {
+          photoId: item.id,
+          eventId: item.eventId,
+        });
+        await prisma.photo.update({
+          where: { id: item.id },
+          data: {
+            exifData: {
+              ...prev,
+              scanStatus: 'QUARANTINED',
+              scanError: 'ClamAV unavailable',
               scanUpdatedAt: new Date().toISOString(),
             },
           },

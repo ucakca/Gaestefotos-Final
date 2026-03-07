@@ -123,6 +123,10 @@ router.put('/:eventId/ai-config', authMiddleware, async (req: AuthRequest, res: 
 
     const {
       disabledFeatures, boothPreset, welcomeMessage, customPromptContext,
+      eventKeywords, eventTypeHint,
+      // Reference image / branding
+      referenceImageUrl, referenceImageMode, referenceImagePosition,
+      referenceImageOpacity, referenceImageScale,
       // Energy config fields
       energyStartBalance, energyRewardFirstUpload, energyRewardGuestbook,
       energyRewardChallenge, energyRewardSurvey, energyRewardSocialShare,
@@ -137,6 +141,14 @@ router.put('/:eventId/ai-config', authMiddleware, async (req: AuthRequest, res: 
     if (boothPreset !== undefined) updateData.boothPreset = boothPreset;
     if (welcomeMessage !== undefined) updateData.welcomeMessage = welcomeMessage;
     if (customPromptContext !== undefined) updateData.customPromptContext = customPromptContext;
+    if (eventKeywords !== undefined) updateData.eventKeywords = eventKeywords;
+    if (eventTypeHint !== undefined) updateData.eventTypeHint = eventTypeHint;
+    // Reference image fields
+    if (referenceImageUrl !== undefined) updateData.referenceImageUrl = referenceImageUrl;
+    if (referenceImageMode !== undefined) updateData.referenceImageMode = referenceImageMode;
+    if (referenceImagePosition !== undefined) updateData.referenceImagePosition = referenceImagePosition;
+    if (referenceImageOpacity !== undefined) updateData.referenceImageOpacity = referenceImageOpacity != null ? Number(referenceImageOpacity) : null;
+    if (referenceImageScale !== undefined) updateData.referenceImageScale = referenceImageScale != null ? Number(referenceImageScale) : null;
     // Energy fields (only set if explicitly provided)
     if (energyStartBalance !== undefined) updateData.energyStartBalance = Number(energyStartBalance);
     if (energyRewardFirstUpload !== undefined) updateData.energyRewardFirstUpload = Number(energyRewardFirstUpload);

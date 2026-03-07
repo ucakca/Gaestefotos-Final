@@ -105,6 +105,7 @@ const navigation: NavGroup[] = [
     name: 'KI-Konfiguration',
     icon: Brain,
     items: [
+      { name: 'KI-Studio', href: '/manage/ki-studio', icon: Brain },
       { name: 'Feature Registry', href: '/manage/ai-features', icon: Sparkles },
       { name: 'Feature Surfaces', href: '/manage/ai-surfaces', icon: Layers },
       { name: 'Provider & Modelle', href: '/manage/ai-providers', icon: Brain },

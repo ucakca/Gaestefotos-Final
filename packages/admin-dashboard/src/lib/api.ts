@@ -24,11 +24,35 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
-// Request interceptor to add auth token
+// Read a cookie value by name
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+// Fetch CSRF token once before first mutating request
+let csrfFetched = false;
+async function ensureCsrfToken(): Promise<string | null> {
+  let token = getCookie('csrf-token');
+  if (token) return token;
+  if (csrfFetched) return null;
+  try {
+    csrfFetched = true;
+    const res = await api.get('/csrf-token');
+    token = res.data?.csrfToken || getCookie('csrf-token');
+    return token;
+  } catch {
+    return null;
+  }
+}
+
+// Request interceptor to add auth token and CSRF token
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
     // Let browser set correct Content-Type + boundary for FormData uploads
     if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
       delete config.headers['Content-Type'];
@@ -45,6 +69,18 @@ api.interceptors.request.use(
         // Ignore parse errors
       }
     }
+
+    // CSRF token for state-changing requests
+    if (typeof window !== 'undefined') {
+      const method = (config.method || '').toUpperCase();
+      if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+        const csrfToken = getCookie('csrf-token') || await ensureCsrfToken();
+        if (csrfToken) {
+          config.headers['x-csrf-token'] = csrfToken;
+        }
+      }
+    }
+
     return config;
   },
   (error) => {

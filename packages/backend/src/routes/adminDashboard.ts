@@ -130,7 +130,7 @@ router.get('/stats', authMiddleware, requireRole('ADMIN'), async (_req: AuthRequ
     });
   } catch (error: any) {
     logger.error('[admin] dashboard stats error', { message: error?.message || String(error) });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -240,7 +240,7 @@ router.get('/analytics', authMiddleware, requireRole('ADMIN'), async (_req: Auth
     });
   } catch (error: any) {
     logger.error('[admin] analytics error', { message: error?.message || String(error) });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 

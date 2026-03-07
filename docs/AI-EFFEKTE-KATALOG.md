@@ -1,6 +1,6 @@
 # AI-Effekte Katalog — gästefotos.com
 
-> Stand: Februar 2026 | Basierend auf Competitor-Analyse, Trend-Research & eigenen Ideen
+> Stand: März 2026 (aktualisiert 2026-03-06) | Basierend auf Competitor-Analyse, Trend-Research & eigenen Ideen
 
 ---
 
@@ -10,36 +10,38 @@
 
 | Effekt | Feature-Key | Provider | Guest-UI | Credits |
 |--------|-------------|----------|----------|---------|
-| Ölgemälde | `style_transfer:oil-painting` | Replicate | StyleTransferModal | 5 |
-| Aquarell | `style_transfer:watercolor` | Replicate | StyleTransferModal | 5 |
-| Pop Art | `style_transfer:pop-art` | Replicate | StyleTransferModal | 5 |
-| Bleistiftzeichnung | `style_transfer:sketch` | Replicate | StyleTransferModal | 5 |
-| Cartoon | `style_transfer:cartoon` | Replicate | StyleTransferModal | 5 |
-| Vintage Retro | `style_transfer:vintage` | Replicate | StyleTransferModal | 5 |
-| Cyberpunk | `style_transfer:cyberpunk` | Replicate | StyleTransferModal | 5 |
-| Renaissance | `style_transfer:renaissance` | Replicate | StyleTransferModal | 5 |
-| Anime | `style_transfer:anime` | Replicate | StyleTransferModal | 5 |
-| Neon Glow | `style_transfer:neon-glow` | Replicate | StyleTransferModal | 5 |
-| AI Karikatur | `style_transfer:caricature` | Replicate | StyleTransferModal | 5 |
-| Magazine Cover | `style_transfer:magazine-cover` | Replicate | StyleTransferModal | 5 |
-| Comic Book Hero | `style_transfer:comic-hero` | Replicate | StyleTransferModal | 5 |
-| Lego Minifig | `style_transfer:lego` | Replicate | StyleTransferModal | 5 |
-| Claymation | `style_transfer:claymation` | Replicate | StyleTransferModal | 5 |
-| Neon Cyberpunk Portrait | `style_transfer:neon-portrait` | Replicate | StyleTransferModal | 5 |
-| Barbie / Ken Doll | `style_transfer:barbie` | Replicate | StyleTransferModal | 5 |
-| Studio Ghibli | `style_transfer:ghibli` | Replicate | StyleTransferModal | 5 |
-| AI Headshot | `style_transfer:headshot` | Replicate | StyleTransferModal | 5 |
-| Stained Glass | `style_transfer:stained-glass` | Replicate | StyleTransferModal | 5 |
-| Ukiyo-e | `style_transfer:ukiyo-e` | Replicate | StyleTransferModal | 5 |
-| **Oldify / Aging** | `ai_oldify` | Replicate | **AiEffectsModal** | 4 |
-| **Pixar 3D Cartoon** | `ai_cartoon` | Replicate | **AiEffectsModal** | 4 |
-| **Style Pop** | `ai_style_pop` | Replicate | **AiEffectsModal** | 4 |
+| Ölgemälde | `style_transfer:oil-painting` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Aquarell | `style_transfer:watercolor` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Pop Art | `style_transfer:pop-art` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Bleistiftzeichnung | `style_transfer:sketch` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Cartoon | `style_transfer:cartoon` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Vintage Retro | `style_transfer:vintage` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Cyberpunk | `style_transfer:cyberpunk` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Renaissance | `style_transfer:renaissance` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Anime | `style_transfer:anime` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Neon Glow | `style_transfer:neon-glow` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| AI Karikatur | `style_transfer:caricature` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Magazine Cover | `style_transfer:magazine-cover` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Comic Book Hero | `style_transfer:comic-hero` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Lego Minifig | `style_transfer:lego` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Claymation | `style_transfer:claymation` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Neon Cyberpunk Portrait | `style_transfer:neon-portrait` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Barbie / Ken Doll | `style_transfer:barbie` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Studio Ghibli | `style_transfer:ghibli` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| AI Headshot | `style_transfer:headshot` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Stained Glass | `style_transfer:stained-glass` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| Ukiyo-e | `style_transfer:ukiyo-e` | RunPod/Qwen → fal.ai | StyleTransferModal | 5 |
+| **Oldify / Aging** | `ai_oldify` | RunPod/Qwen → fal.ai | **AiEffectsModal** | 4 |
+| **Pixar 3D Cartoon** | `ai_cartoon` | RunPod/Qwen → fal.ai | **AiEffectsModal** | 4 |
+| **Style Pop** | `ai_style_pop` | RunPod/Qwen → fal.ai | **AiEffectsModal** | 4 |
+
+> **Provider-Kette:** Eigene ComfyUI-Workflows (Qwen Image Edit fp8) auf RunPod Serverless → bei Fehler/Offline: fal.ai flux/dev img2img als Fallback
 
 ### Neue Bild-Effekte (MEDIUM Priority) 🟡
 
 | Effekt | Feature-Key | Beschreibung | Provider | Status |
 |--------|-------------|-------------|----------|--------|
-| **Face Swap** | `face_switch` | Gesichter tauschen (InsightFace/ReActor) | Replicate | Backend ✅, Guest-UI fehlt |
+| **Face Swap** | `face_switch` | Gesichter tauschen (Qwen TextEncodeQwenImageEditPlus) | RunPod/Qwen → fal.ai | ✅ Backend + Guest-UI |
 | **BG Removal** | `bg_removal` | Hintergrund entfernen (remove.bg API) | remove.bg | Backend ✅, Guest-UI fehlt |
 | **AI Group Theme** | `ai_group_theme` | Gruppenfoto → alle im gleichen Stil | Replicate (multi-face) |
 | **Trading Card** | `ai_trading_card` | Selfie → personalisierte Sammelkarte mit Stats | Template + img2img |
@@ -80,7 +82,7 @@
 
 | Effekt | Feature-Key | Provider | Guest-UI | Credits |
 |--------|-------------|----------|----------|---------|
-| **AI Video** (Image-to-Video) | `ai_video` | Runway (gen4_turbo) / LumaAI (ray2) | **AiEffectsModal** (8 Presets) | 10 |
+| **AI Video** (Image-to-Video) | `ai_video` | fal.ai (wan-i2v) | **AiEffectsModal** (8 Presets) | 10 |
 | **Event Highlight Reel** | `highlight_reel` | ffmpeg (lokal) | Host-Dashboard | 10 |
 
 ### Noch nicht implementiert
@@ -202,31 +204,31 @@
 
 ---
 
-## 7. PROVIDER-KONFIGURATION (aktiv)
+## 7. PROVIDER-KONFIGURATION (aktiv — Stand 2026-03-06)
 
 | Provider | Typ | Model | Features | Status |
 |----------|-----|-------|----------|--------|
-| **Groq** | LLM | llama-3.3-70b | 11 Features (Chat, Games, Suggest) | ✅ aktiv |
-| **Grok/xAI** | LLM | grok-3-mini | ai_categorize | ✅ aktiv |
-| **Replicate** | IMAGE_GEN | SDXL | 6 Features (Style Transfer, Effekte) | ✅ aktiv |
-| **Stability AI** | IMAGE_GEN | SDXL | Backup | ✅ aktiv |
+| **RunPod/ComfyUI** | IMAGE_GEN | Qwen Image Edit fp8 + Lightning 4-step LoRA | 17 Style-Effekte + Face Swap (18 Workflows) | ✅ aktiv (primär) |
+| **fal.ai** | IMAGE_GEN | flux/dev img2img | Style Transfer Fallback | ✅ aktiv (Fallback) |
+| **fal.ai** | VIDEO_GEN | wan-i2v | AI Video (Image-to-Video) | ✅ aktiv |
+| **Groq** | LLM | llama-3.3-70b-versatile | 11 Features (Chat, Games, Suggest) | ✅ aktiv (primär) |
+| **Grok/xAI** | LLM | grok-2-vision | ai_categorize, LLM-Fallback | ✅ aktiv |
+| **OpenAI** | LLM | gpt-4o | LLM-Fallback (3. Priorität) | ✅ aktiv |
+| **Ollama (lokal)** | LLM | llama3.2:3b, llava:7b | Offline-Fallback | ✅ aktiv |
 | **remove.bg** | IMAGE_GEN | — | bg_removal | ✅ aktiv |
-| **Runway** | VIDEO_GEN | gen4_turbo | highlight_reel | ✅ aktiv |
-| **LumaAI** | VIDEO_GEN | ray2 | Backup | ✅ aktiv |
 
 ### Kosten/Request
 
 | Effekt-Typ | Primär | Fallback | Kosten/Request |
 |------------|--------|----------|----------------|
-| Style Transfer (img2img) | **Replicate** (SDXL) | Stability AI | ~$0.03 |
-| Face Swap | **Replicate** (InsightFace) | — | ~$0.05 |
-| BG Removal | **remove.bg** | Replicate (BRIA) | ~$0.02 |
-| Aging/Cartoon | **Replicate** (SDXL) | Stability AI | ~$0.04 |
-| Video Generation | **Runway** (gen4_turbo) | LumaAI (ray2) | ~$0.15-0.30 |
-| LLM Text | **Groq** (Llama 3.3) | Grok → OpenAI | ~$0.001 |
+| Style Transfer (17 Effekte) | **RunPod/Qwen** (Serverless) | fal.ai flux/dev | ~$0.025-0.035 |
+| Face Swap | **RunPod/Qwen** (2-Image Edit) | fal.ai face-swap | ~$0.025-0.035 |
+| BG Removal | **remove.bg** | — | ~$0.02 |
+| Video Generation | **fal.ai** (wan-i2v) | — | ~$0.10-0.15 |
+| LLM Text | **Groq** (Llama 3.3) | Grok → OpenAI → Ollama | ~$0.001 |
 | GIF Assembly | **Lokal** (Sharp.js + gifenc) | — | $0 |
-| Face Recognition | **Lokal** (WASM) | — | $0 |
+| Face Recognition | **Lokal** (face-api.js WASM) | — | $0 |
 
 ---
 
-> *Letzte Aktualisierung: 19. Februar 2026 — Sprint 6 abgeschlossen (14 Effekte + 14 Spiele + 24 Stile + 8 Video-Presets + 5 Jahrzehnt-Presets)*
+> *Letzte Aktualisierung: 6. März 2026 — Provider-Migration: Replicate → RunPod/Qwen Image Edit (18 Workflows). fal.ai als Fallback. ARCH-03: Service-Layer vereinheitlicht. Live-Test erfolgreich (2026-03-06).*

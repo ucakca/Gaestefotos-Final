@@ -7,7 +7,7 @@ const router = Router();
 router.get('/settings', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Nicht autorisiert' });
     }
     
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
@@ -27,7 +27,7 @@ router.get('/settings', authMiddleware, async (req: AuthRequest, res: Response) 
 router.post('/settings', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Nicht autorisiert' });
     }
     
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
@@ -59,7 +59,7 @@ router.post('/checkout-url', authMiddleware, async (req: AuthRequest, res: Respo
     const { eventId, designId, format, quantity = 1 } = req.body;
 
     if (!eventId || !designId || !format) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: 'Pflichtfelder fehlen' });
     }
 
     const settings = await prisma.printServiceSettings.findFirst();

@@ -76,6 +76,12 @@ class WebSocketManager {
     };
   }
 
+  emit(event: string, data: any) {
+    if (this.socket) {
+      this.socket.emit(event, data);
+    }
+  }
+
   off(event: string, callback: (data: any) => void) {
     this.listeners.get(event)?.delete(callback);
   }

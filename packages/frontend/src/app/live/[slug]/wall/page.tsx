@@ -9,10 +9,14 @@ import { useEventRealtime } from '@/hooks/useEventRealtime';
 import { wsManager } from '@/lib/websocket';
 import QRCode from '@/components/QRCode';
 import { EventThemeProvider, useEventTheme } from '@/components/event-theme/EventThemeProvider';
-import { WallThemeOverlay } from '@/components/event-theme/WallThemeOverlay';
+import { WallThemeOverlay, OverlayType } from '@/components/event-theme/WallThemeOverlay';
 import { Button } from '@/components/ui/Button';
 import MosaicGrid, { MosaicTileData } from '@/components/mosaic/MosaicGrid';
 import MosaicTicker from '@/components/mosaic/MosaicTicker';
+import { useWallSounds } from '@/hooks/useWallSounds';
+import { useWallControl } from '@/hooks/useWallControl';
+
+const WallAdminControl = lazy(() => import('@/components/wall/WallAdminControl'));
 
 // Lazy load new animation components
 const CinematicFlow = lazy(() => import('@/components/wall/CinematicFlow'));
@@ -45,6 +49,21 @@ export default function LiveWallPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [cursorHidden, setCursorHidden] = useState(false);
   const cursorTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isAdmin = searchParams.get('admin') === '1';
+
+  // Wall remote control (admin sends commands, wall receives)
+  const wallControl = useWallControl(event?.id || '', isAdmin ? 'admin' : 'wall');
+
+  // Sound effects
+  const { play: playSound } = useWallSounds(wallControl.state.soundEnabled);
+
+  // Sync wall control state → local state
+  useEffect(() => {
+    if (isAdmin) return; // Admin controls locally, wall receives
+    if (wallControl.state.viewMode && wallControl.state.viewMode !== viewMode) {
+      setViewMode(wallControl.state.viewMode as any);
+    }
+  }, [wallControl.state.viewMode, isAdmin]);
 
   // Mosaic state (for mosaic + mixed modes)
   const [mosaicWall, setMosaicWall] = useState<any>(null);
@@ -280,6 +299,9 @@ export default function LiveWallPage() {
     }
     prevIdsRef.current = currentIds;
     if (added.size > 0) {
+      // Play sound for new photo arrival
+      playSound('ding');
+
       setNewIds((prev) => {
         const next = new Set(prev);
         for (const id of added) next.add(id);
@@ -293,7 +315,7 @@ export default function LiveWallPage() {
         });
       }, 2500);
     }
-  }, [photos]);
+  }, [photos, playSound]);
 
   // Slideshow auto-advance
   useEffect(() => {
@@ -357,7 +379,24 @@ export default function LiveWallPage() {
 
   return (
     <EventThemeProvider theme={eventTheme} customOverrides={customThemeData}>
-    <WallThemeOverlay />
+    <WallThemeOverlay overlayType={wallControl.state.overlayType} intensity={wallControl.state.overlayIntensity} />
+
+    {/* Admin Announcement Overlay */}
+    <AnimatePresence>
+      {wallControl.state.messageVisible && wallControl.state.message && (
+        <motion.div
+          initial={{ opacity: 0, y: -40 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -40 }}
+          className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] max-w-2xl w-full px-4"
+        >
+          <div className="bg-gradient-to-r from-primary/90 to-accent/90 backdrop-blur-md text-white rounded-2xl px-8 py-5 shadow-2xl text-center">
+            <p className="text-2xl font-bold">{wallControl.state.message}</p>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+
     <div className={`min-h-screen bg-foreground text-background ${cursorHidden ? 'cursor-none' : ''}`}>
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-10 bg-foreground/50 p-4 flex justify-between items-center">
@@ -864,6 +903,18 @@ export default function LiveWallPage() {
             photos={displayPhotos.map(p => ({ id: p.id, url: p.url }))}
             mode="cinema"
           />
+        </Suspense>
+      )}
+
+      {/* Admin Control Panel (only visible with ?admin=1) */}
+      {isAdmin && (
+        <Suspense fallback={null}>
+          <div className="fixed bottom-4 left-4 z-[70] w-80">
+            <WallAdminControl
+              state={wallControl.state}
+              sendCommand={wallControl.sendCommand}
+            />
+          </div>
         </Suspense>
       )}
     </div>

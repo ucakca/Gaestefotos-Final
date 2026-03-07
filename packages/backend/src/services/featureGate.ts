@@ -332,11 +332,18 @@ export async function getEventFeatures(eventId: string): Promise<{
       },
     });
     
+    // Batch-load all addon packages in one query (ARCH-04: fixes N+1)
+    const addonSkus = addonEntitlements.map((e) => e.wcSku).filter(Boolean) as string[];
+    const addonPkgs = addonSkus.length > 0
+      ? await prisma.packageDefinition.findMany({
+          where: { sku: { in: addonSkus }, isActive: true },
+        })
+      : [];
+    const pkgBySku = new Map(addonPkgs.map((p) => [p.sku, p]));
+
     for (const ent of addonEntitlements) {
       if (!ent.wcSku) continue;
-      const addonPkg = await prisma.packageDefinition.findFirst({
-        where: { sku: ent.wcSku, isActive: true },
-      });
+      const addonPkg = pkgBySku.get(ent.wcSku);
       if (!addonPkg) continue;
       
       activeAddons.push({ sku: addonPkg.sku, name: addonPkg.name });

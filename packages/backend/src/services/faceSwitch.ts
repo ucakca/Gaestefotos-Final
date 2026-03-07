@@ -214,9 +214,10 @@ export async function performFaceSwitch(
   }
 
   const pairs = buildSwapPairs(faces);
+  const isRunPod    = provider?.slug?.includes('runpod') || provider?.slug?.includes('comfyui');
   const isFal      = provider?.slug?.includes('fal') || provider?.baseUrl?.includes('fal.run');
   const isReplicate = provider?.slug?.includes('replicate') || provider?.baseUrl?.includes('replicate.com');
-  const useAi = !!provider?.apiKey && (isFal || isReplicate);
+  const useAi = isRunPod || (!!provider?.apiKey && (isFal || isReplicate));
 
   let usedAi = false;
 
@@ -227,9 +228,15 @@ export async function performFaceSwitch(
       let aiResult: Buffer | null = null;
       if (useAi) {
         try {
-          aiResult = isFal
-            ? await swapFaceWithFal(from.buffer, to.buffer, to.width, to.height, provider)
-            : await swapFaceWithReplicate(from.buffer, to.buffer, to.width, to.height, provider);
+          if (isRunPod) {
+            const { runReactorFaceSwap } = await import('./comfyuiWorkflows');
+            const swapped = await runReactorFaceSwap(from.buffer, to.buffer);
+            aiResult = await sharp(swapped).resize(to.width, to.height, { fit: 'fill' }).jpeg({ quality: 92 }).toBuffer();
+          } else {
+            aiResult = isFal
+              ? await swapFaceWithFal(from.buffer, to.buffer, to.width, to.height, provider)
+              : await swapFaceWithReplicate(from.buffer, to.buffer, to.width, to.height, provider);
+          }
         } catch (err: any) {
           logger.warn('AI face swap failed — falling back to resize+paste', { err: err.message });
         }
@@ -250,6 +257,168 @@ export async function performFaceSwitch(
   logger.info('Face switch completed', { facesDetected: faces.length, facesSwapped: pairs.length, usedAi });
 
   return { outputBuffer, facesDetected: faces.length, facesSwapped: pairs.length, usedAi };
+}
+
+// ─── Group Face Swap Template ────────────────────────────────────────────────
+
+interface GroupFaceSwapAssignment {
+  faceIndex: number;
+  templateBuffer: Buffer;
+}
+
+/**
+ * Swap every detected face in a group photo with a template face.
+ *
+ * - RunPod/ReActor: single call with input_faces_index='0,1,...,N-1'
+ * - fal.ai / Replicate: iterative — one call per face, chaining results
+ *
+ * @param assignments — if all use the same template, pass a single-element array
+ *   with faceIndex=-1 (means "all"). Otherwise one entry per face.
+ */
+export async function performGroupFaceSwapTemplate(
+  groupImageBuffer: Buffer,
+  faceData: any,
+  templateBuffers: GroupFaceSwapAssignment[],
+  provider: any,
+): Promise<{ outputBuffer: Buffer; facesSwapped: number; usedAi: boolean }> {
+  // Count faces
+  let faceArray: any[] = [];
+  if (Array.isArray(faceData)) faceArray = faceData;
+  else if (faceData && Array.isArray(faceData.faces)) faceArray = faceData.faces;
+
+  const faceCount = faceArray.length;
+  if (faceCount === 0) {
+    return { outputBuffer: groupImageBuffer, facesSwapped: 0, usedAi: false };
+  }
+
+  const isRunPod   = provider?.slug?.includes('runpod') || provider?.slug?.includes('comfyui');
+  const isFal      = provider?.slug?.includes('fal') || provider?.baseUrl?.includes('fal.run');
+  const isReplicate = provider?.slug?.includes('replicate') || provider?.baseUrl?.includes('replicate.com');
+
+  // Determine if we use a single template for all faces or per-face templates
+  const singleTemplate = templateBuffers.length === 1;
+  const allFaceIndices = Array.from({ length: faceCount }, (_, i) => i);
+
+  let outputBuffer = groupImageBuffer;
+  let usedAi = false;
+  let facesSwapped = 0;
+
+  if (isRunPod && singleTemplate) {
+    // ── RunPod ReActor: single call, swap ALL faces at once ──
+    try {
+      const { runReactorFaceSwap } = await import('./comfyuiWorkflows');
+      const result = await runReactorFaceSwap(
+        templateBuffers[0].templateBuffer,
+        groupImageBuffer,
+        {
+          sourceFaceIndex: '0',
+          inputFaceIndex: allFaceIndices.join(','),
+        },
+      );
+      outputBuffer = result;
+      usedAi = true;
+      facesSwapped = faceCount;
+    } catch (err: any) {
+      logger.warn('RunPod group face swap failed', { err: err.message });
+    }
+  } else if (isRunPod && !singleTemplate) {
+    // ── RunPod ReActor: one call per unique template assignment ──
+    try {
+      const { runReactorFaceSwap } = await import('./comfyuiWorkflows');
+      let currentImage = groupImageBuffer;
+      for (const assignment of templateBuffers) {
+        const result = await runReactorFaceSwap(
+          assignment.templateBuffer,
+          currentImage,
+          {
+            sourceFaceIndex: '0',
+            inputFaceIndex: String(assignment.faceIndex),
+          },
+        );
+        currentImage = result;
+        facesSwapped++;
+      }
+      outputBuffer = currentImage;
+      usedAi = true;
+    } catch (err: any) {
+      logger.warn('RunPod per-face group swap failed', { err: err.message });
+    }
+  } else if (isFal || isReplicate) {
+    // ── fal.ai / Replicate: iterative full-image calls ──
+    // Each call swaps the most prominent unswapped face
+    try {
+      let currentImage = groupImageBuffer;
+      const templatesToApply = singleTemplate
+        ? allFaceIndices.map(i => ({ faceIndex: i, templateBuffer: templateBuffers[0].templateBuffer }))
+        : templateBuffers;
+
+      for (const assignment of templatesToApply) {
+        const tplB64 = assignment.templateBuffer.toString('base64');
+        const curB64 = currentImage.toString('base64');
+
+        if (isFal) {
+          const model = provider.model || 'fal-ai/inswapper';
+          const apiUrl = `https://fal.run/${model}`;
+          const r = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Authorization': `Key ${provider.apiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              base_image_url: `data:image/jpeg;base64,${curB64}`,
+              swap_image_url: `data:image/jpeg;base64,${tplB64}`,
+              target_face_index: assignment.faceIndex,
+            }),
+          });
+          if (!r.ok) throw new Error(`FAL.ai error ${r.status}: ${(await r.text()).slice(0, 200)}`);
+          const data: any = await r.json();
+          const outUrl = data?.image?.url ?? data?.images?.[0]?.url ?? (typeof data?.image === 'string' ? data.image : '');
+          if (!outUrl) throw new Error('No output from fal.ai group swap');
+          if (outUrl.startsWith('data:')) {
+            currentImage = Buffer.from(outUrl.split(',')[1], 'base64');
+          } else {
+            const imgRes = await fetch(outUrl);
+            currentImage = Buffer.from(await imgRes.arrayBuffer());
+          }
+        } else {
+          // Replicate
+          const baseUrl = provider.baseUrl || 'https://api.replicate.com';
+          const model = provider.model || 'deepinsight/insightface:35cfef47cf6a671d9a3b4e3ddd3bbd254e4956b35ecdca1d27578d987ae6feae';
+          const version = model.includes(':') ? model.split(':')[1] : model;
+          const createRes = await fetch(`${baseUrl}/v1/predictions`, {
+            method: 'POST',
+            headers: { 'Authorization': `Token ${provider.apiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              version,
+              input: {
+                target_image: `data:image/jpeg;base64,${curB64}`,
+                source_image: `data:image/jpeg;base64,${tplB64}`,
+              },
+            }),
+          });
+          if (!createRes.ok) throw new Error(`Replicate error ${createRes.status}`);
+          let result: any = await createRes.json();
+          for (let i = 0; i < 60; i++) {
+            if (result.status === 'succeeded') break;
+            if (result.status === 'failed' || result.status === 'canceled') throw new Error(`Replicate: ${result.error}`);
+            await new Promise(r => setTimeout(r, 2000));
+            const poll = await fetch(result.urls.get, { headers: { 'Authorization': `Token ${provider.apiKey}` } });
+            result = await poll.json();
+          }
+          const outputUrl = Array.isArray(result.output) ? result.output[0] : result.output;
+          const imgRes = await fetch(outputUrl);
+          currentImage = Buffer.from(await imgRes.arrayBuffer());
+        }
+
+        facesSwapped++;
+      }
+      outputBuffer = currentImage;
+      usedAi = true;
+    } catch (err: any) {
+      logger.warn('fal.ai/Replicate group face swap failed', { err: err.message });
+    }
+  }
+
+  logger.info('Group face swap template completed', { faceCount, facesSwapped, usedAi });
+  return { outputBuffer, facesSwapped, usedAi };
 }
 
 // ─── Public Entry Point ──────────────────────────────────────────────────────

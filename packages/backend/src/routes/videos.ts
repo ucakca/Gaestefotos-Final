@@ -1,5 +1,8 @@
 import { Router, Response } from 'express';
 import multer from 'multer';
+import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 import prisma from '../config/database';
 import { authMiddleware, requireRole, AuthRequest, optionalAuthMiddleware, hasEventAccess, hasEventManageAccess, hasEventPermission, isPrivilegedRole } from '../middleware/auth';
 import { storageService } from '../services/storage';
@@ -19,9 +22,18 @@ import { selectSmartCategoryId } from '../services/smartAlbum';
 
 const router = Router();
 
-// Multer setup for video uploads
+// Multer setup for video uploads — diskStorage to avoid holding 100MB+ in RAM
+const VIDEO_UPLOAD_DIR = process.env.VIDEO_UPLOAD_TMP_DIR || '/tmp/video-uploads';
+fs.mkdirSync(VIDEO_UPLOAD_DIR, { recursive: true });
+
 const upload = multer({
-  storage: multer.memoryStorage(),
+  storage: multer.diskStorage({
+    destination: VIDEO_UPLOAD_DIR,
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname) || '.mp4';
+      cb(null, `${Date.now()}-${crypto.randomUUID()}${ext}`);
+    },
+  }),
   limits: {
     fileSize: 100 * 1024 * 1024, // 100MB
   },
@@ -32,8 +44,7 @@ const upload = multer({
       cb(new Error('Nur Videodateien sind erlaubt'));
     }
   },
-  }
-);
+});
 
 // Get all videos for an event (similar to photos route)
 router.get(
@@ -512,10 +523,15 @@ router.post(
       const moderationRequired = featuresConfig?.moderationRequired === true;
       const status = moderationRequired && isGuest ? 'PENDING' : 'APPROVED';
 
-      const uploadBytes = BigInt(file.buffer.length);
+      // Read file from disk (diskStorage) instead of memory buffer
+      const filePath = file.path;
+      const fileBuffer = fs.readFileSync(filePath);
+      const uploadBytes = BigInt(fileBuffer.length);
       try {
         await assertUploadWithinLimit(eventId, uploadBytes);
       } catch (e: any) {
+        // Clean up temp file on limit error
+        fs.unlink(filePath, () => {});
         if (e?.httpStatus) {
           return res.status(e.httpStatus).json({ error: 'Speicherlimit erreicht' });
         }
@@ -547,12 +563,15 @@ router.post(
         const storagePath = await storageService.uploadFile(
           eventId,
           `video.${extension}`,
-          file.buffer,
+          fileBuffer,
           file.mimetype,
           tempVideo.id,
           uploaderName,
           event.hostId
         );
+
+        // Clean up temp file after successful storage upload
+        fs.unlink(filePath, () => {});
 
         // Update with permanent URL
         const permanentUrl = baseUrl 
@@ -585,6 +604,8 @@ router.post(
           },
         });
       } catch (uploadErr) {
+        // Clean up temp file on upload error
+        fs.unlink(filePath, () => {});
         try {
           await (prisma as any).video.update({
             where: { id: tempVideo.id },
@@ -797,7 +818,7 @@ router.post(
     if (!video) return res.status(404).json({ error: 'Video nicht gefunden' });
 
     if (!(await hasEventManageAccess(req, video.eventId))) {
-      return res.status(403).json({ error: 'Forbidden' });
+      return res.status(403).json({ error: 'Zugriff verweigert' });
     }
 
     const newStatus = action === 'approve' ? 'APPROVED' : 'REJECTED';
@@ -820,7 +841,7 @@ router.delete('/:videoId', authMiddleware, async (req: AuthRequest, res: Respons
     const { videoId } = req.params;
     const video = await prisma.video.findUnique({ where: { id: videoId } });
     if (!video) return res.status(404).json({ error: 'Video nicht gefunden' });
-    if (!(await hasEventManageAccess(req, video.eventId))) return res.status(403).json({ error: 'Forbidden' });
+    if (!(await hasEventManageAccess(req, video.eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
     await prisma.video.update({ where: { id: videoId }, data: { deletedAt: new Date() } });
     cache.del(`event:${video.eventId}:videos`);
@@ -835,7 +856,7 @@ router.delete('/:videoId', authMiddleware, async (req: AuthRequest, res: Respons
 router.get('/:eventId/trash', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { eventId } = req.params;
-    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Forbidden' });
+    if (!(await hasEventManageAccess(req, eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
     const videos = await prisma.video.findMany({
       where: { eventId, deletedAt: { not: null } },
@@ -854,7 +875,7 @@ router.post('/:videoId/restore', authMiddleware, async (req: AuthRequest, res: R
     const { videoId } = req.params;
     const video = await prisma.video.findUnique({ where: { id: videoId } });
     if (!video) return res.status(404).json({ error: 'Video nicht gefunden' });
-    if (!(await hasEventManageAccess(req, video.eventId))) return res.status(403).json({ error: 'Forbidden' });
+    if (!(await hasEventManageAccess(req, video.eventId))) return res.status(403).json({ error: 'Zugriff verweigert' });
 
     const restored = await prisma.video.update({ where: { id: videoId }, data: { deletedAt: null } });
     cache.del(`event:${video.eventId}:videos`);
@@ -1358,7 +1379,7 @@ router.post(
       res.json({ ok: true, videoId });
     } catch (error: any) {
       logger.error('Mark video scan CLEAN failed', { message: getErrorMessage(error), videoId: req.params.videoId });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );

@@ -277,10 +277,20 @@ export async function extractImageMetadata(buffer: Buffer): Promise<ImageMetadat
 
     if (exif && typeof exif === 'object') {
       result.exif = {};
-      // Extract all non-buffer fields
+      // DSGVO: GPS/location fields to strip (personal data)
+      const GPS_KEYS = new Set([
+        'latitude', 'longitude', 'GPSLatitude', 'GPSLongitude',
+        'GPSLatitudeRef', 'GPSLongitudeRef', 'GPSAltitude', 'GPSAltitudeRef',
+        'GPSPosition', 'GPSSpeed', 'GPSSpeedRef', 'GPSTrack', 'GPSTrackRef',
+        'GPSImgDirection', 'GPSImgDirectionRef', 'GPSDestLatitude',
+        'GPSDestLongitude', 'GPSDestBearing', 'GPSMapDatum', 'GPSDateStamp',
+        'GPSTimeStamp', 'GPSProcessingMethod', 'GPSAreaInformation',
+      ]);
+      // Extract all non-buffer, non-GPS fields
       for (const [key, value] of Object.entries(exif)) {
         if (Buffer.isBuffer(value) || value instanceof Uint8Array) continue;
         if (typeof value === 'function') continue;
+        if (GPS_KEYS.has(key)) continue;
         result.exif[key] = value;
       }
 

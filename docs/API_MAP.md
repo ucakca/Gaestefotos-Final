@@ -205,6 +205,27 @@ Admin endpoints (Backend mounts in `packages/backend/src/index.ts`):
 - Payments:
   - `POST /api/payments` → `packages/backend/src/routes/payments.ts`
 
+- TUS Uploads:
+  - `POST /api/uploads` → `packages/backend/src/routes/uploads.ts` (TUS Create)
+  - `PATCH /api/uploads/:id` (TUS Chunk)
+  - `HEAD /api/uploads/:id` (TUS Resume-Status)
+  - `GET /api/uploads/status` → `{ enabled, maxSize }` (Public)
+  - `GET /api/uploads/limit/:eventId?guest=name` → `{ limited, max, used, remaining }` (Upload-Limit-Info für Gäste)
+  - **Limit:** 100MB einheitlich (Multer + TUS + Nginx). Stand: 07.03.2026.
+
+- CSRF Token:
+  - `GET /api/csrf-token` → CSRF-Token generieren + Cookie setzen
+  - CSRF-Schutz auf allen POST/PUT/DELETE/PATCH `/api/*` Routes (außer uploads, webhooks, workflow-sync, health, landing, cms, /r/)
+
+- Workflow Sync (RunPod → Backend):
+  - `POST /api/workflow-sync` → `packages/backend/src/routes/workflowSync.ts` (x-sync-key Auth)
+
+- Admin ComfyUI Workflows:
+  - `GET /api/admin/workflows/:effect` → `packages/backend/src/routes/adminWorkflows.ts`
+  - `PUT /api/admin/workflows/:effect` (Workflow-JSON aktualisieren)
+  - `DELETE /api/admin/workflows/:effect`
+  - `POST /api/admin/workflows/:effect/test` (Test-Job an RunPod senden)
+
 ## WordPress Bridge (v1)
 
 ### Konfiguration (Env / Secrets)
@@ -409,6 +430,15 @@ Realtime (Socket.IO):
 - Emitted events:
   - `photo_uploaded` (bei Upload) → `packages/backend/src/routes/photos.ts`
   - `photo_approved` (bei Moderation) → `packages/backend/src/routes/photos.ts`
+  - `wall:control` (Admin-Fernsteuerung) → Relay in `packages/backend/src/index.ts`
+    - Admin sendet `{ eventId, ...controlData }` → Server broadcastet `controlData` an alle Clients im Room `event:<eventId>` (außer Sender)
+    - Steuerbare Felder: `viewMode`, `isPlaying`, `soundEnabled`, `intervalSec`, `showQR`, `overlayType`, `overlayIntensity`, `message`, `messageVisible`
+
+Admin-Fernsteuerung (Frontend):
+- Hook: `packages/frontend/src/hooks/useWallControl.ts` — Role-basiert (admin sendet, wall empfängt)
+- Panel: `packages/frontend/src/components/wall/WallAdminControl.tsx` — sichtbar bei `?admin=1`
+- Sound: `packages/frontend/src/hooks/useWallSounds.ts` — prozeduraler Web Audio Synthesizer
+- Overlay: `packages/frontend/src/components/event-theme/WallThemeOverlay.tsx` — 6 Typen
 
 ## Tracking (QR / Quellen)
 
@@ -418,6 +448,29 @@ Realtime (Socket.IO):
 - Host/Admin: `GET /api/events/:id/traffic`
   - Liefert Zähler pro `source`
   - Code: `packages/backend/src/routes/events.ts`
+
+## Photo Delivery (DSGVO Opt-in)
+
+Backend:
+- Worker: `packages/backend/src/services/photoDelivery.ts`
+  - Prüft alle 60s auf neue APPROVED Fotos
+  - Sendet E-Mails an Gäste mit `emailOptIn=true`
+  - Respektiert DSGVO: nur mit explizitem Opt-in, Unsubscribe-Link in jeder E-Mail
+
+- Guest Unsubscribe:
+  - `GET /api/guests/:guestId/unsubscribe` → `packages/backend/src/routes/guests.ts`
+    - Public (kein Auth), rendert HTML-Bestätigungsseite
+    - Setzt `emailOptIn=false` auf dem Guest-Record
+
+- Guest Email Opt-in (POST beim Upload):
+  - `POST /api/events/:eventId/guests/opt-in` → `packages/backend/src/routes/guests.ts`
+    - Body: `{ email, name?, guestId? }`
+    - Setzt `emailOptIn=true`, `emailOptInAt=now()` auf Guest
+    - Idempotent (doppelte Calls sicher)
+
+Frontend:
+- Opt-in UI: `packages/frontend/src/components/upload/QuickUploadModal.tsx` (Success-Phase)
+  - E-Mail-Feld + Checkbox, localStorage-Persistenz für wiederkehrende Gäste
 
 ## Offene Punkte (wird fortlaufend ergänzt)
 

@@ -28,7 +28,7 @@ const uploadSingleDesignImage = (fieldName: string) => (req: AuthRequest, res: R
     if (!err) return next();
     const code = (err as any)?.code;
     if (code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'Datei zu groß. Maximum: 10MB' });
+      return res.status(400).json({ error: 'Datei zu groß. Maximum: 50MB' });
     }
     return res.status(400).json({ error: (err as any)?.message || String(err) });
   });
@@ -42,7 +42,7 @@ router.post('/:id/design/cover', authMiddleware, uploadSingleDesignImage('file')
     if (!event) return;
     
     if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      return res.status(400).json({ error: 'Keine Datei hochgeladen' });
     }
 
     const coverUrl = await storageService.uploadFile(
@@ -78,7 +78,7 @@ router.post('/:id/design/profile', authMiddleware, uploadSingleDesignImage('file
     if (!event) return;
     
     if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      return res.status(400).json({ error: 'Keine Datei hochgeladen' });
     }
 
     const profileUrl = await storageService.uploadFile(
@@ -189,7 +189,7 @@ router.get(
       await archive.finalize();
     } catch (error) {
       logger.error('Download zip error', { message: getErrorMessage(error) });
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );

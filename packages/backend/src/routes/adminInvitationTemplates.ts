@@ -18,7 +18,7 @@ function handleError(res: Response, error: unknown) {
       return res.status(409).json({ error: 'Conflict' });
     }
     if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'Not found' });
+      return res.status(404).json({ error: 'Nicht gefunden' });
     }
   }
 

@@ -72,7 +72,7 @@ router.post(
       res.status(201).json({ jobId, status: 'QUEUED' });
     } catch (error: any) {
       logger.error('Create video job error', { error: error.message });
-      res.status(500).json({ error: error.message || 'Internal server error' });
+      res.status(500).json({ error: error.message || 'Interner Serverfehler' });
     }
   }
 );
@@ -95,7 +95,7 @@ router.get(
       });
     } catch (error: any) {
       logger.error('Get video job error', { error: error.message });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -121,7 +121,7 @@ router.get(
       });
     } catch (error: any) {
       logger.error('List video jobs error', { error: error.message });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -151,7 +151,7 @@ router.get(
       res.send(buffer);
     } catch (error: any) {
       logger.error('Download video job error', { error: error.message });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -170,7 +170,7 @@ router.post(
       res.json({ success: true });
     } catch (error: any) {
       logger.error('Cancel video job error', { error: error.message });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );
@@ -186,7 +186,7 @@ router.get(
       res.json(stats);
     } catch (error: any) {
       logger.error('Video job stats error', { error: error.message });
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Interner Serverfehler' });
     }
   }
 );

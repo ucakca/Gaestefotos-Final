@@ -124,7 +124,7 @@ export async function processWooOrderPaidWebhook(params: {
           })
           .catch(() => null);
       }
-      return { httpStatus: 403, body: { error: 'Forbidden' } };
+      return { httpStatus: 403, body: { error: 'Zugriff verweigert' } };
     }
 
     const payload = orderPaidSchema.parse(rawPayload);
@@ -569,7 +569,7 @@ export async function processWooOrderPaidWebhook(params: {
           })
           .catch(() => null);
       }
-      return { httpStatus: 404, body: { error: 'Event not found' } };
+      return { httpStatus: 404, body: { error: 'Event nicht gefunden' } };
     }
     if (error?.code === 'EVENT_CODE_NOT_OWNED') {
       logger.info('woocommerce_webhook_ignored', { reason: 'eventCode_not_owned_by_customer' });
@@ -608,7 +608,7 @@ export async function processWooOrderPaidWebhook(params: {
         })
         .catch(() => null);
     }
-    return { httpStatus: 500, body: { error: 'Internal server error' } };
+    return { httpStatus: 500, body: { error: 'Interner Serverfehler' } };
   }
 }
 

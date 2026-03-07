@@ -94,7 +94,7 @@ router.get('/', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, r
     });
   } catch (error: any) {
     logger.error('Error fetching logs', { error: error.message });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -158,7 +158,7 @@ router.get('/stats', authMiddleware, requireRole('ADMIN'), async (_req: AuthRequ
     });
   } catch (error: any) {
     logger.error('Error fetching log stats', { error: error.message });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -177,7 +177,7 @@ router.get('/types', authMiddleware, requireRole('ADMIN'), async (_req: AuthRequ
     });
   } catch (error: any) {
     logger.error('Error fetching log types', { error: error.message });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -197,7 +197,7 @@ router.get('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest
     return res.json({ ok: true, log });
   } catch (error: any) {
     logger.error('Error fetching log detail', { error: error.message });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -237,7 +237,7 @@ router.get('/errors', authMiddleware, requireRole('ADMIN'), async (req: AuthRequ
       })),
     });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -253,7 +253,7 @@ router.delete('/errors/cleanup', authMiddleware, requireRole('ADMIN'), async (_r
 
     return res.json({ ok: true, deleted: result.count });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 

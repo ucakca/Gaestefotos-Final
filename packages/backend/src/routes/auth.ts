@@ -236,7 +236,7 @@ router.post('/2fa/setup/start', authMiddleware, requireRole('ADMIN'), twoFactorS
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
     }
     if (user.twoFactorEnabled) {
       return res.status(400).json({ error: '2FA already enabled' });
@@ -274,7 +274,7 @@ router.post('/2fa/setup/start', authMiddleware, requireRole('ADMIN'), twoFactorS
     logger.info('[auth] 2fa setup start', { userId: user.id });
   } catch (error: any) {
     logger.error('[auth] 2fa setup start error', { message: error?.message || String(error) });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -295,7 +295,7 @@ router.post('/2fa/setup/confirm', authMiddleware, requireRole('ADMIN'), twoFacto
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
     }
     if (user.twoFactorEnabled) {
       return res.status(400).json({ error: '2FA already enabled' });
@@ -336,7 +336,7 @@ router.post('/2fa/setup/confirm', authMiddleware, requireRole('ADMIN'), twoFacto
       return res.status(400).json({ error: error.errors });
     }
     logger.error('[auth] 2fa setup confirm error', { message: getErrorMessage(error) });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -416,7 +416,7 @@ router.post('/2fa/setup/start-challenge', passwordLimiter, twoFactorSetupLimiter
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
     }
     if (user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
@@ -502,7 +502,7 @@ router.post('/2fa/setup/confirm-challenge', passwordLimiter, twoFactorSetupLimit
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
     }
     if (user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
@@ -593,7 +593,7 @@ function setAuthCookie(res: Response, token: string, ttlSeconds: number) {
   const domain = process.env.COOKIE_DOMAIN || undefined;
   res.cookie('auth_token', token, {
     httpOnly: true,
-    secure: true,
+    secure: isProd,
     sameSite: 'lax',
     domain,
     maxAge: ttlSeconds * 1000,
@@ -638,7 +638,7 @@ function clearAuthCookie(res: Response) {
   const domain = process.env.COOKIE_DOMAIN || undefined;
   res.clearCookie('auth_token', {
     httpOnly: true,
-    secure: true,
+    secure: isProd,
     sameSite: 'lax',
     domain,
     path: '/',
@@ -732,7 +732,7 @@ router.post('/register', passwordLimiter, async (req: Request, res: Response) =>
       return res.status(400).json({ error: error.errors });
     }
     logger.error('Register error', { error: error.message, stack: error.stack });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -747,7 +747,7 @@ router.post('/change-password', passwordLimiter, authMiddleware, async (req: Aut
     const data = changePasswordSchema.parse(req.body);
 
     if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Nicht autorisiert' });
     }
 
     const user = await prisma.user.findUnique({
@@ -756,7 +756,7 @@ router.post('/change-password', passwordLimiter, authMiddleware, async (req: Aut
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
     }
 
     const currentOk = await bcrypt.compare(data.currentPassword, user.password);
@@ -786,7 +786,7 @@ router.post('/change-password', passwordLimiter, authMiddleware, async (req: Aut
       return res.status(400).json({ error: 'Passwort muss min. 10 Zeichen, Großbuchstabe, Zahl und Sonderzeichen enthalten.' });
     }
     logger.error('Change password error', { error: error.message });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -1015,7 +1015,7 @@ router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
       return res.status(400).json({ error: error.errors });
     }
     logger.error('Login error', { error: error.message, stack: error.stack });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -1047,10 +1047,10 @@ router.post('/wordpress-sso', wordpressSsoLimiter, async (req: Request, res: Res
       const headerSecret = String(req.get('x-gf-wp-sso-secret') || '').trim();
       const bodySecret = String(parsed.data.ssoSecret || '').trim();
       if (!headerSecret && !bodySecret) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        return res.status(401).json({ error: 'Nicht autorisiert' });
       }
       if (headerSecret !== requiredSecret && bodySecret !== requiredSecret) {
-        return res.status(403).json({ error: 'Forbidden' });
+        return res.status(403).json({ error: 'Zugriff verweigert' });
       }
     }
 
@@ -1118,7 +1118,7 @@ router.post('/wordpress-sso', wordpressSsoLimiter, async (req: Request, res: Res
     });
   } catch (error: any) {
     logger.error('wordpress-sso error', { message: error?.message || String(error) });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -1150,7 +1150,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
     if (!user) {
       clearRefreshCookie(res);
       clearAuthCookie(res);
-      return res.status(401).json({ error: 'User not found' });
+      return res.status(401).json({ error: 'Benutzer nicht gefunden' });
     }
 
     // Issue new access token
@@ -1171,7 +1171,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
     res.json({ user, token });
   } catch (error: any) {
     logger.error('[auth] refresh error', { error: error.message });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -1216,13 +1216,13 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'Benutzer nicht gefunden' });
     }
 
     res.json({ user });
   } catch (error: any) {
     logger.error('Get me error', { error: error.message, stack: error.stack });
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 

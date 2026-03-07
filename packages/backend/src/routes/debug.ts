@@ -25,7 +25,7 @@ router.get('/state', authMiddleware, async (req: AuthRequest, res: Response) => 
     return res.json(debugState);
   } catch (error) {
     logger.error('Get debug state error', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -58,7 +58,7 @@ router.post('/toggle', authMiddleware, async (req: AuthRequest, res: Response) =
     return res.json(debugState);
   } catch (error) {
     logger.error('Toggle debug mode error', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -77,7 +77,7 @@ router.get('/logs', authMiddleware, async (req: AuthRequest, res: Response) => {
     return res.json({ logs: debugLogs });
   } catch (error) {
     logger.error('Get debug logs error', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -111,7 +111,7 @@ router.post('/logs', async (_req, res: Response) => {
     return res.json({ ok: true, stored: true });
   } catch (error) {
     logger.error('Add debug log error', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -131,7 +131,7 @@ router.delete('/logs', authMiddleware, async (req: AuthRequest, res: Response) =
     return res.json({ ok: true });
   } catch (error) {
     logger.error('Clear debug logs error', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 

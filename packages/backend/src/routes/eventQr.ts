@@ -36,7 +36,7 @@ const uploadSingleDesignImage = (fieldName: string) => (req: AuthRequest, res: R
     if (!err) return next();
     const code = (err as any)?.code;
     if (code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'Datei zu groß. Maximum: 10MB' });
+      return res.status(400).json({ error: 'Datei zu groß. Maximum: 50MB' });
     }
     return res.status(400).json({ error: (err as any)?.message || String(err) });
   });
@@ -216,7 +216,7 @@ router.get('/:id/qr/config', authMiddleware, async (req: AuthRequest, res: Respo
     return res.json({ ok: true, qrTemplateConfig });
   } catch (error) {
     logger.error('Get QR config error', { message: getErrorMessage(error), eventId: req.params.id });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -246,7 +246,7 @@ router.put('/:id/qr/config', authMiddleware, async (req: AuthRequest, res: Respo
     return res.json({ ok: true, event: updated });
   } catch (error) {
     logger.error('Save QR config error', { message: getErrorMessage(error), eventId: req.params.id });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -304,7 +304,7 @@ router.post('/:id/qr/export.png', authMiddleware, async (req: AuthRequest, res: 
     return res.send(png);
   } catch (error) {
     logger.error('QR export PNG error', { message: getErrorMessage(error), eventId: req.params.id });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -396,7 +396,7 @@ router.post('/:id/qr/export.pdf', authMiddleware, async (req: AuthRequest, res: 
     return res.send(Buffer.from(pdfBytes));
   } catch (error) {
     logger.error('QR export PDF error', { message: getErrorMessage(error), eventId: req.params.id });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -510,7 +510,7 @@ router.post('/:id/qr/export-diy.pdf', authMiddleware, async (req: AuthRequest, r
     return res.send(Buffer.from(pdfBytes));
   } catch (error) {
     logger.error('QR DIY export error', { message: getErrorMessage(error), eventId: req.params.id });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -521,7 +521,7 @@ router.post('/:id/qr/logo', authMiddleware, uploadSingleDesignImage('logo'), asy
     if (!event) return;
 
     if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      return res.status(400).json({ error: 'Keine Datei hochgeladen' });
     }
 
     const logoUrl = await storageService.uploadFile(eventId, req.file.originalname, req.file.buffer, req.file.mimetype);
@@ -605,16 +605,16 @@ router.post('/:id/qr/save-design', authMiddleware, async (req: AuthRequest, res:
 
     const event = await prisma.event.findUnique({ where: { id } });
     if (!event) {
-      return res.status(404).json({ error: 'Event not found' });
+      return res.status(404).json({ error: 'Event nicht gefunden' });
     }
 
     if (!req.userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Nicht autorisiert' });
     }
 
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user || (event.hostId !== user.id && user.role !== 'ADMIN')) {
-      return res.status(403).json({ error: 'Forbidden' });
+      return res.status(403).json({ error: 'Zugriff verweigert' });
     }
 
     const design = await prisma.qrDesign.upsert({

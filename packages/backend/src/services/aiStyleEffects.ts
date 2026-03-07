@@ -13,6 +13,8 @@ import sharp from 'sharp';
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
 import { prepareAiExecution, logAiUsage, AiFeature } from './aiExecution';
+import { executeCustomWorkflow } from './comfyuiWorkflowRegistry';
+import { getStylePromptConfig, recordPipelineExecution } from './pipelineRunner';
 
 export type StyleEffect = 'ai_oldify' | 'ai_cartoon' | 'ai_style_pop' | 'time_machine' | 'pet_me' | 'yearbook' | 'emoji_me' | 'miniature' | 'anime' | 'watercolor' | 'oil_painting' | 'sketch' | 'neon_noir' | 'renaissance' | 'comic_book' | 'pixel_art' | 'gif_morph' | 'gif_aging' | 'trading_card';
 
@@ -175,7 +177,12 @@ export async function applyStyleEffect(
   }
 
   const provider = execution.provider;
-  let styleConfig = { ...STYLE_PROMPTS[effect] };
+
+  // 1) Try DB pipeline config first, fall back to hardcoded STYLE_PROMPTS
+  const dbConfig = await getStylePromptConfig(effect, eventId);
+  let styleConfig = dbConfig
+    ? { prompt: dbConfig.prompt, negativePrompt: dbConfig.negativePrompt, strength: dbConfig.strength }
+    : { ...STYLE_PROMPTS[effect] };
 
   // Override prompt for Time Machine decade variants
   if (effect === 'time_machine' && options.variant && TIME_MACHINE_DECADES[options.variant]) {
@@ -186,12 +193,50 @@ export async function applyStyleEffect(
 
   const strength = styleConfig.strength * intensity;
 
+  if (dbConfig) {
+    logger.info(`[StyleEffects] Using DB pipeline prompt for "${effect}" (v${dbConfig.strength})`);
+  }
+
   try {
     let resultBuffer: Buffer;
 
     const useInstantId = (provider.model || '').toLowerCase().includes('instantid');
 
-    if (useInstantId) {
+    if (provider.slug.includes('runpod') || provider.slug.includes('comfyui')) {
+      // RunPod EU: Self-hosted ComfyUI workflows (DSGVO-compliant)
+      
+      // 1. Try custom workflow first (designed in ComfyUI Node Editor)
+      const customResult = await executeCustomWorkflow(effect, imageBuffer, {
+        prompt: styleConfig.prompt,
+        negativePrompt: styleConfig.negativePrompt,
+        strength,
+        steps: 28,
+        seed: Math.floor(Math.random() * 2147483647),
+      });
+      
+      if (customResult) {
+        logger.info(`[StyleEffects] Used custom workflow for "${effect}"`);
+        resultBuffer = customResult;
+      } else {
+        // 2. Fallback: generic flux-img2img (prompt-only approach)
+        logger.info(`[StyleEffects] No custom workflow for "${effect}", using generic flux-img2img`);
+        const { runFluxImg2Img, runInstantIdStyle } = await import('./comfyuiWorkflows');
+        if (useInstantId) {
+          const identityPrompt = buildIdentityPrompt(effect, styleConfig.prompt, options.variant);
+          resultBuffer = await runInstantIdStyle(imageBuffer, {
+            prompt: identityPrompt.prompt,
+            negativePrompt: identityPrompt.negativePrompt,
+          });
+        } else {
+          resultBuffer = await runFluxImg2Img(imageBuffer, {
+            prompt: styleConfig.prompt,
+            negativePrompt: styleConfig.negativePrompt,
+            strength,
+            steps: 28,
+          });
+        }
+      }
+    } else if (useInstantId) {
       // Identity-preserving path: FAL.ai InstantID keeps the person's face recognizable
       const identityPrompt = buildIdentityPrompt(effect, styleConfig.prompt, options.variant);
       resultBuffer = await callFalInstantId(imageBuffer, provider, identityPrompt.prompt, identityPrompt.negativePrompt);
@@ -222,6 +267,9 @@ export async function applyStyleEffect(
       success: true,
     });
 
+    // Record pipeline metrics
+    recordPipelineExecution(effect, true, durationMs).catch(() => {});
+
     logger.info(`Style effect ${effect} completed`, { durationMs, providerId: provider.id });
 
     return { outputBuffer: finalBuffer, effect, format: outputFormat };
@@ -233,6 +281,9 @@ export async function applyStyleEffect(
       success: false,
       errorMessage: err.message,
     });
+
+    // Record pipeline metrics
+    recordPipelineExecution(effect, false, durationMs).catch(() => {});
 
     logger.error(`Style effect ${effect} failed`, { err, providerId: provider.id });
     throw new Error(`Style-Effekt ${effect} fehlgeschlagen: ${err.message}`);

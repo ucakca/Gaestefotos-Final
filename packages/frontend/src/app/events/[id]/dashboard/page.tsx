@@ -54,7 +54,10 @@ import {
   TrendingUp,
   Download,
   RotateCcw,
+  Instagram,
+  Facebook,
 } from 'lucide-react';
+import SocialAccountsManager from '@/components/social/SocialAccountsManager';
 import { useToastStore } from '@/store/toastStore';
 import { useAuthStore } from '@/store/authStore';
 import { FullPageLoader } from '@/components/ui/FullPageLoader';
@@ -1174,8 +1177,8 @@ function OverviewTab({
         </div>
       )}
 
-      {/* Quick Actions — Briefing + AI */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Quick Actions — Briefing + AI Config + Games */}
+      <div className="grid grid-cols-3 gap-3">
         <Link
           href={`/events/${eventId}/briefing`}
           className="group flex flex-col gap-2 p-4 rounded-2xl bg-gradient-to-br from-violet-500/10 to-purple-500/5 border border-violet-200/50 hover:border-violet-300 hover:shadow-lg hover:-translate-y-0.5 transition-all"
@@ -1184,8 +1187,20 @@ function OverviewTab({
             <FileText className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="text-sm font-bold text-foreground">Event-Briefing</p>
-            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">Infos für AI-Personalisierung</p>
+            <p className="text-sm font-bold text-foreground">Briefing</p>
+            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">AI-Personalisierung</p>
+          </div>
+        </Link>
+        <Link
+          href={`/events/${eventId}/ai-config`}
+          className="group flex flex-col gap-2 p-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-blue-500/5 border border-indigo-200/50 hover:border-indigo-300 hover:shadow-lg hover:-translate-y-0.5 transition-all"
+        >
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+            <Sparkles className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-foreground">KI-Config</p>
+            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">Features & Energy</p>
           </div>
         </Link>
         <Link
@@ -1197,9 +1212,28 @@ function OverviewTab({
           </div>
           <div>
             <p className="text-sm font-bold text-foreground">KI-Spiele</p>
-            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">Roast, Bingo, DJ & mehr</p>
+            <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">Roast, Bingo & mehr</p>
           </div>
         </Link>
+      </div>
+
+      {/* Social Media Accounts */}
+      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-border">
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <div className="flex items-center -space-x-1">
+              <Facebook className="w-4 h-4 text-blue-600" />
+              <Instagram className="w-4 h-4 text-pink-500" />
+            </div>
+            Social Media
+          </h3>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            Fotos direkt auf Facebook & Instagram veröffentlichen
+          </p>
+        </div>
+        <div className="p-4">
+          <SocialAccountsManager redirectPath={`/events/${eventId}/dashboard`} />
+        </div>
       </div>
 
       {/* Recent Uploads Preview */}
@@ -1397,6 +1431,7 @@ function OverviewTab({
         const quickActions = [
           { label: 'Event Wall', sub: 'Slideshow starten', icon: Play, href: `/events/${eventId}/live-wall`, gradient: 'from-purple-500 to-violet-600', shadow: 'shadow-purple-500/20', featureKey: 'liveWall' as const },
           { label: 'Mosaic Wall', sub: 'Foto-Mosaik', icon: LayoutGrid, href: `/events/${eventId}/mosaic`, gradient: 'from-pink-500 to-rose-600', shadow: 'shadow-pink-500/20', featureKey: 'mosaicWall' as const },
+          { label: 'KI-Konfigurator', sub: 'Features & Energy', icon: Sparkles, href: `/events/${eventId}/ai-config`, gradient: 'from-indigo-500 to-blue-600', shadow: 'shadow-indigo-500/20', featureKey: null },
           { label: 'KI-Kunst', sub: 'AI Style Transfer', icon: Sparkles, href: `/events/${eventId}/ki-booth`, gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20', featureKey: 'aiEffects' as const },
           { label: 'Foto-Spiele', sub: 'Face Switch & mehr', icon: Gamepad2, href: `/events/${eventId}/booth-games`, gradient: 'from-emerald-500 to-teal-500', shadow: 'shadow-emerald-500/20', featureKey: 'boothGames' as const },
           { label: 'Live-Analytics', sub: 'Echtzeit-Statistiken', icon: Activity, href: `/events/${eventId}/live-analytics`, gradient: 'from-cyan-500 to-blue-500', shadow: 'shadow-cyan-500/20', featureKey: null },

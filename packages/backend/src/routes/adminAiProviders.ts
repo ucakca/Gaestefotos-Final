@@ -14,7 +14,7 @@ import {
 // (legacy requireAdmin function kept for backwards compat but router.use enforces it)
 async function requireAdmin(req: AuthRequest, res: Response): Promise<boolean> {
   if (!req.userId) {
-    res.status(401).json({ error: 'Unauthorized' });
+    res.status(401).json({ error: 'Nicht autorisiert' });
     return false;
   }
   const user = await prisma.user.findUnique({ where: { id: req.userId } });

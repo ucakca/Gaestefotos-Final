@@ -54,7 +54,7 @@ router.get('/storage-stats/:eventId', authMiddleware, requireRole('ADMIN'), asyn
     });
   } catch (error: any) {
     logger.error('[admin] storage stats error', { message: error?.message || String(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -66,7 +66,7 @@ router.get('/proxy/:photoId/thumb', authMiddleware, requireRole('ADMIN'), async 
       where: { id: req.params.photoId },
       select: { storagePathThumb: true, storagePath: true },
     });
-    if (!photo) return res.status(404).json({ error: 'Not found' });
+    if (!photo) return res.status(404).json({ error: 'Nicht gefunden' });
 
     const path = photo.storagePathThumb || photo.storagePath;
     if (!path) return res.status(404).json({ error: 'No file' });
@@ -79,7 +79,7 @@ router.get('/proxy/:photoId/thumb', authMiddleware, requireRole('ADMIN'), async 
     return res.send(buffer);
   } catch (error: any) {
     logger.error('[admin] proxy thumb error', { message: error?.message || String(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -89,7 +89,7 @@ router.get('/proxy/:photoId/original', authMiddleware, requireRole('ADMIN'), asy
       where: { id: req.params.photoId },
       select: { storagePathOriginal: true, storagePath: true },
     });
-    if (!photo) return res.status(404).json({ error: 'Not found' });
+    if (!photo) return res.status(404).json({ error: 'Nicht gefunden' });
 
     const path = photo.storagePathOriginal || photo.storagePath;
     if (!path) return res.status(404).json({ error: 'No file' });
@@ -102,7 +102,7 @@ router.get('/proxy/:photoId/original', authMiddleware, requireRole('ADMIN'), asy
     return res.send(buffer);
   } catch (error: any) {
     logger.error('[admin] proxy original error', { message: error?.message || String(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -166,7 +166,7 @@ router.get('/event/:eventId', authMiddleware, requireRole('ADMIN'), async (req: 
     return res.json({ ok: true, event, total, photos: photosWithUrls });
   } catch (error: any) {
     logger.error('[admin] event photos error', { message: error?.message || String(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -204,7 +204,7 @@ router.get('/:photoId', authMiddleware, requireRole('ADMIN'), async (req: AuthRe
     });
   } catch (error: any) {
     logger.error('[admin] get photo error', { message: error?.message || String(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -229,7 +229,7 @@ router.get('/:photoId/download', authMiddleware, requireRole('ADMIN'), async (re
     return res.json({ ok: true, downloadUrl });
   } catch (error: any) {
     logger.error('[admin] download photo error', { message: error?.message || String(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -310,7 +310,7 @@ router.get('/', authMiddleware, requireRole('ADMIN'), async (req: AuthRequest, r
     return res.json({ ok: true, total, photos });
   } catch (error: any) {
     logger.error('[admin] list photos error', { message: error?.message || String(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -344,7 +344,7 @@ router.post('/bulk-moderate', authMiddleware, requireRole('ADMIN'), async (req: 
     return res.json({ ok: true, count: result.count });
   } catch (error: any) {
     logger.error('[admin] bulk moderate error', { message: error?.message || String(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
@@ -370,7 +370,7 @@ router.delete('/bulk-delete', authMiddleware, requireRole('ADMIN'), async (req: 
     return res.json({ ok: true, count: result.count });
   } catch (error: any) {
     logger.error('[admin] bulk delete error', { message: error?.message || String(error) });
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 

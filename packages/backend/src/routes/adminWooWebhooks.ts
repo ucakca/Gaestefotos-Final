@@ -259,7 +259,7 @@ router.get('/sku-mapping', authMiddleware, requireRole('ADMIN'), async (_req: Au
 
     return res.json({ ok: true, mapping, orphanedSkus });
   } catch (error: any) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Interner Serverfehler' });
   }
 });
 
