@@ -80,6 +80,16 @@ router.patch('/:id/role', authMiddleware, requireRole('ADMIN'), async (req: Auth
       return res.status(400).json({ error: 'Invalid role' });
     }
 
+    // Only SUPERADMIN can assign ADMIN role; block changes to ADMIN/SUPERADMIN users unless requester is SUPERADMIN
+    const target = await prisma.user.findUnique({ where: { id }, select: { role: true } });
+    if (!target) return res.status(404).json({ error: 'Benutzer nicht gefunden' });
+    if ((target.role === 'ADMIN' || target.role === 'SUPERADMIN') && req.userRole !== 'SUPERADMIN') {
+      return res.status(403).json({ error: 'Nur Superadmins können Admin-Rollen ändern' });
+    }
+    if (role === 'ADMIN' && req.userRole !== 'SUPERADMIN') {
+      return res.status(403).json({ error: 'Nur Superadmins können die Admin-Rolle vergeben' });
+    }
+
     const user = await prisma.user.update({
       where: { id },
       data: { role },
@@ -103,8 +113,13 @@ router.patch('/:id/lock', authMiddleware, requireRole('ADMIN'), async (req: Auth
       return res.status(400).json({ error: 'Cannot lock yourself' });
     }
 
-    const user = await prisma.user.findUnique({ where: { id }, select: { id: true, email: true, name: true } });
+    const user = await prisma.user.findUnique({ where: { id }, select: { id: true, email: true, name: true, role: true } });
     if (!user) return res.status(404).json({ error: 'Benutzer nicht gefunden' });
+
+    // Protect ADMIN/SUPERADMIN from being locked by non-SUPERADMIN
+    if (((user as any).role === 'ADMIN' || (user as any).role === 'SUPERADMIN') && req.userRole !== 'SUPERADMIN') {
+      return res.status(403).json({ error: 'Nur Superadmins können Admins sperren' });
+    }
 
     const updated = await prisma.user.update({
       where: { id },
@@ -139,7 +154,14 @@ router.delete('/:id', authMiddleware, requireRole('ADMIN'), async (req: AuthRequ
       return res.status(400).json({ error: 'Cannot delete yourself' });
     }
 
-    const deletedUser = await prisma.user.findUnique({ where: { id }, select: { email: true, name: true } });
+    const deletedUser = await prisma.user.findUnique({ where: { id }, select: { email: true, name: true, role: true } });
+    if (!deletedUser) return res.status(404).json({ error: 'Benutzer nicht gefunden' });
+
+    // Protect ADMIN/SUPERADMIN from being deleted by non-SUPERADMIN
+    if ((deletedUser.role === 'ADMIN' || deletedUser.role === 'SUPERADMIN') && req.userRole !== 'SUPERADMIN') {
+      return res.status(403).json({ error: 'Nur Superadmins können Admins löschen' });
+    }
+
     await prisma.user.delete({ where: { id } });
 
     auditLog({ type: AuditType.ADMIN_USER_DELETED, message: `User gelöscht: ${deletedUser?.email || id}`, data: { targetUserId: id, email: deletedUser?.email }, req });

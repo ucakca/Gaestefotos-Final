@@ -29,7 +29,7 @@ router.post('/accept', authMiddleware, async (req: AuthRequest, res: Response) =
 
     let decoded: any;
     try {
-      decoded = jwt.verify(inviteToken, secret);
+      decoded = jwt.verify(inviteToken, secret, { algorithms: ['HS256'] });
     } catch {
       return res.status(400).json({ error: 'Ungültiger Invite Token' });
     }

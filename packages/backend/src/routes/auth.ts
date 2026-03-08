@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { z } from 'zod';
 import { domainToASCII } from 'node:url';
 import prisma from '../config/database';
@@ -30,6 +31,7 @@ import {
   generateTotpSecretBase32,
   verifyTotp,
 } from '../utils/twoFactor';
+import { getRedis } from '../services/cache/redis';
 
 const router = Router();
 
@@ -74,7 +76,7 @@ function verifyTwoFactorChallengeToken(token: string): { userId: string; role: s
 
   let decoded: any;
   try {
-    decoded = jwt.verify(token, jwtSecret) as any;
+    decoded = jwt.verify(token, jwtSecret, { algorithms: ['HS256'] }) as any;
   } catch (e: any) {
     logger.warn('[auth] 2fa challenge token verify failed', {
       message: e?.message || String(e),
@@ -97,6 +99,25 @@ function verifyTwoFactorChallengeToken(token: string): { userId: string; role: s
     throw new Error('Invalid 2FA token');
   }
   return { userId: decoded.userId, role: decoded.role, purpose };
+}
+
+/**
+ * SEC-17: Mark a 2FA challenge token as consumed (single-use).
+ * Uses a Redis key with the token's JWT ID (jti) or hash.
+ * Returns false if the token was already used.
+ */
+async function consume2faChallengeToken(token: string): Promise<boolean> {
+  try {
+    const redis = getRedis();
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex').slice(0, 32);
+    const key = `2fa_used:${tokenHash}`;
+    // SET NX with 11 min TTL (slightly longer than token's 10 min expiry)
+    const result = await redis.set(key, '1', 'EX', 660, 'NX');
+    return result === 'OK'; // true = first use, false = already consumed
+  } catch {
+    // If Redis fails, allow the request (fail-open for UX, token still has JWT expiry protection)
+    return true;
+  }
 }
 
 const emailSchema = z
@@ -126,6 +147,13 @@ router.post('/2fa/verify', passwordLimiter, twoFactorVerifyLimiter, async (req: 
 
     if (challenge.purpose !== '2fa') {
       return res.status(401).json({ error: 'Invalid 2FA token' });
+    }
+
+    // SEC-17: Ensure 2FA challenge token is single-use
+    const isFirstUse = await consume2faChallengeToken(data.twoFactorToken);
+    if (!isFirstUse) {
+      logger.warn('[auth] 2fa challenge token reuse attempt', { userId: challenge.userId });
+      return res.status(401).json({ error: '2FA token already used' });
     }
 
     const user = await prisma.user.findUnique({
@@ -778,7 +806,13 @@ router.post('/change-password', passwordLimiter, authMiddleware, async (req: Aut
 
     await recordPasswordHash(user.id, hashedNew);
 
+    // Revoke all refresh tokens so stolen sessions are invalidated
+    await revokeAllRefreshTokens(user.id);
+
     auditLog({ type: AuditType.AUTH_PASSWORD_CHANGE, message: 'Passwort geändert', data: { userId: user.id }, req });
+
+    // Clear refresh cookie on the current response
+    clearRefreshCookie(res);
 
     return res.json({ ok: true });
   } catch (error: any) {
@@ -1019,6 +1053,155 @@ router.post('/login', passwordLimiter, async (req: Request, res: Response) => {
   }
 });
 
+// ──────────────────────────────────────────────────────────────────
+// Password Reset (forgot-password + reset-password)
+// ──────────────────────────────────────────────────────────────────
+
+const forgotPasswordSchema = z.object({
+  email: emailSchema,
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  newPassword: z.string()
+    .min(10, 'Passwort muss mindestens 10 Zeichen lang sein')
+    .regex(/[A-Z]/, 'Passwort muss mindestens einen Großbuchstaben enthalten')
+    .regex(/[a-z]/, 'Passwort muss mindestens einen Kleinbuchstaben enthalten')
+    .regex(/[0-9]/, 'Passwort muss mindestens eine Zahl enthalten')
+    .regex(/[^A-Za-z0-9]/, 'Passwort muss mindestens ein Sonderzeichen enthalten'),
+});
+
+function createPasswordResetToken(userId: string): string {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) throw new Error('Server misconfigured: JWT_SECRET is missing');
+  return jwt.sign({ userId, purpose: 'password_reset' }, jwtSecret, { expiresIn: '30m' });
+}
+
+function verifyPasswordResetToken(token: string): { userId: string } {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) throw new Error('Server misconfigured: JWT_SECRET is missing');
+  const decoded = jwt.verify(token, jwtSecret, { algorithms: ['HS256'] }) as any;
+  if (!decoded || decoded.purpose !== 'password_reset' || typeof decoded.userId !== 'string') {
+    throw new Error('Invalid password reset token');
+  }
+  return { userId: decoded.userId };
+}
+
+async function consumePasswordResetToken(token: string): Promise<boolean> {
+  try {
+    const redis = getRedis();
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex').slice(0, 32);
+    const key = `pw_reset_used:${tokenHash}`;
+    const result = await redis.set(key, '1', 'EX', 1800, 'NX');
+    return result === 'OK';
+  } catch {
+    return true;
+  }
+}
+
+router.post('/forgot-password', passwordLimiter, async (req: Request, res: Response) => {
+  try {
+    const data = forgotPasswordSchema.parse(req.body);
+
+    // Always respond the same to prevent email enumeration
+    const successResponse = { ok: true, message: 'Falls ein Account mit dieser E-Mail existiert, wurde ein Reset-Link gesendet.' };
+
+    const emailCandidates = getEmailAuthCandidates(data.email);
+    const user = await prisma.user.findFirst({
+      where: { email: { in: emailCandidates } },
+      select: { id: true, email: true, name: true },
+    });
+
+    if (!user) {
+      // Constant-time delay to prevent timing-based enumeration
+      await sleep(getJitterMs(200, 500));
+      return res.json(successResponse);
+    }
+
+    const resetToken = createPasswordResetToken(user.id);
+    const frontendUrl = process.env.FRONTEND_URL || 'https://app.xn--gstefotos-v2a.com';
+    const resetUrl = `${frontendUrl}/reset-password?token=${encodeURIComponent(resetToken)}`;
+
+    try {
+      const { emailService } = await import('../services/email');
+      await emailService.sendCustomEmail({
+        to: user.email,
+        subject: 'Passwort zurücksetzen — Gästefotos',
+        text: `Hallo ${user.name || ''},\n\nKlicke auf diesen Link, um dein Passwort zurückzusetzen:\n${resetUrl}\n\nDer Link ist 30 Minuten gültig.\n\nFalls du kein Passwort-Reset angefordert hast, kannst du diese E-Mail ignorieren.`,
+        html: `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,sans-serif"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:24px 16px"><tr><td align="center"><table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden"><tr><td style="background:linear-gradient(135deg,#e879a6,#f9a825);padding:24px 32px;text-align:center"><h2 style="margin:0;color:#fff;font-size:18px">Passwort zurücksetzen</h2></td></tr><tr><td style="padding:24px 32px"><p style="color:#374151">Hallo <strong>${user.name || ''}</strong>,</p><p style="color:#374151">Klicke auf den Button, um dein Passwort zurückzusetzen:</p><p style="text-align:center;margin:24px 0"><a href="${resetUrl}" style="display:inline-block;background:linear-gradient(135deg,#e879a6,#f9a825);color:#fff;text-decoration:none;padding:12px 32px;border-radius:8px;font-weight:600;font-size:16px">Passwort zurücksetzen</a></p><p style="color:#6b7280;font-size:13px">Der Link ist 30 Minuten gültig. Falls du kein Reset angefordert hast, ignoriere diese E-Mail.</p></td></tr></table></td></tr></table></body></html>`,
+      });
+    } catch (emailErr: any) {
+      logger.error('[auth] Failed to send password reset email', { error: emailErr.message, userId: user.id });
+      // Don't reveal email sending failure to prevent enumeration
+    }
+
+    auditLog({ type: AuditType.AUTH_PASSWORD_CHANGE, message: `Passwort-Reset angefordert: ${user.email}`, data: { userId: user.id }, req });
+
+    return res.json(successResponse);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+    logger.error('Forgot password error', { error: error.message });
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+router.post('/reset-password', passwordLimiter, async (req: Request, res: Response) => {
+  try {
+    const data = resetPasswordSchema.parse(req.body);
+
+    let tokenData: { userId: string };
+    try {
+      tokenData = verifyPasswordResetToken(data.token);
+    } catch {
+      return res.status(401).json({ error: 'Ungültiger oder abgelaufener Reset-Link.' });
+    }
+
+    // Single-use check
+    const isFirstUse = await consumePasswordResetToken(data.token);
+    if (!isFirstUse) {
+      return res.status(401).json({ error: 'Dieser Reset-Link wurde bereits verwendet.' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: tokenData.userId },
+      select: { id: true, email: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Benutzer nicht gefunden.' });
+    }
+
+    // Check password reuse
+    const hashedNew = await bcrypt.hash(data.newPassword, 10);
+    const reused = await isPasswordReused(user.id, data.newPassword);
+    if (reused) {
+      return res.status(400).json({ error: 'Dieses Passwort wurde bereits zuvor verwendet. Bitte wähle ein neues.' });
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedNew },
+    });
+
+    await recordPasswordHash(user.id, hashedNew);
+    await revokeAllRefreshTokens(user.id);
+
+    auditLog({ type: AuditType.AUTH_PASSWORD_CHANGE, message: `Passwort über Reset geändert: ${user.email}`, data: { userId: user.id }, req });
+
+    return res.json({ ok: true, message: 'Passwort erfolgreich geändert. Du kannst dich jetzt einloggen.' });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: error.errors });
+    }
+    logger.error('Reset password error', { error: error.message });
+    res.status(500).json({ error: 'Interner Serverfehler' });
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────
+
 const wordpressSsoSchema = z.object({
   wpUserId: z.union([z.number().int(), z.string()]).transform((v) => (typeof v === 'string' ? parseInt(v, 10) : v)),
   ssoSecret: z.string().optional(),
@@ -1043,13 +1226,21 @@ router.post('/wordpress-sso', wordpressSsoLimiter, async (req: Request, res: Res
     }
 
     const requiredSecret = (process.env.WORDPRESS_SSO_SECRET || '').trim();
-    if (requiredSecret) {
+    if (!requiredSecret) {
+      logger.error('[auth] WORDPRESS_SSO_SECRET is not configured — SSO endpoint disabled for security');
+      return res.status(503).json({ error: 'SSO nicht konfiguriert' });
+    }
+    {
       const headerSecret = String(req.get('x-gf-wp-sso-secret') || '').trim();
       const bodySecret = String(parsed.data.ssoSecret || '').trim();
       if (!headerSecret && !bodySecret) {
         return res.status(401).json({ error: 'Nicht autorisiert' });
       }
-      if (headerSecret !== requiredSecret && bodySecret !== requiredSecret) {
+      const headerOk = headerSecret.length === requiredSecret.length &&
+        crypto.timingSafeEqual(Buffer.from(headerSecret), Buffer.from(requiredSecret));
+      const bodyOk = bodySecret.length === requiredSecret.length &&
+        crypto.timingSafeEqual(Buffer.from(bodySecret), Buffer.from(requiredSecret));
+      if (!headerOk && !bodyOk) {
         return res.status(403).json({ error: 'Zugriff verweigert' });
       }
     }
@@ -1183,7 +1374,7 @@ router.post('/logout', async (req: Request, res: Response) => {
     if (token) {
       const jwtSecret = process.env.JWT_SECRET;
       if (jwtSecret) {
-        const payload = jwt.verify(token, jwtSecret) as any;
+        const payload = jwt.verify(token, jwtSecret, { algorithms: ['HS256'] }) as any;
         if (payload?.userId) {
           await revokeAllRefreshTokens(payload.userId);
         }

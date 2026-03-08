@@ -36,7 +36,9 @@ async function verifyCsrfToken(sessionId: string, token: string): Promise<boolea
     const redis = getRedis();
     const stored = await redis.get(`${CSRF_PREFIX}${sessionId}`);
     if (!stored) return false;
-    return stored === token;
+    // Use constant-time comparison to prevent timing attacks
+    if (stored.length !== token.length) return false;
+    return crypto.timingSafeEqual(Buffer.from(stored), Buffer.from(token));
   } catch (error) {
     logger.warn('[csrf] Redis verify failed, rejecting CSRF token', { error });
     return false;

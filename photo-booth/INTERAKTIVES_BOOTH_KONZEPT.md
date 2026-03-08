@@ -2,8 +2,16 @@
 
 **Erstellt:** 2026-01-29  
 **Aktualisiert:** 2026-01-29  
-**Status:** Konzeptphase  
+**Status:** ⚠️ VERALTET — nur zur Referenz
 **Hardware:** Mirror Booth mit kapazitivem Touch + Sony ZV-E10
+
+> ⚠️ **VERALTET (Stand: März 2026)**
+> Dieses Dokument basiert auf einem frühen Konzept mit Sony ZV-E10 (kein USB-Capture-Support) und Electron.
+> 
+> **Aktuelle Architektur:** → `docs/PHOTO-BOOTH-PLATFORM-PLAN.md` (§ Architektur-Update März 2026)
+> **Aktuelle Experience-Konzepte:** → `docs/BOOTH-EXPERIENCE-KONZEPT.md`
+> 
+> Inhalte dieses Dokuments (Fortuna AI, AR-Filter, Wiedererkennung, Director Mode) sind in die aktuellen Docs übernommen.
 
 ---
 

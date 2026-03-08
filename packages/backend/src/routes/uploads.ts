@@ -132,7 +132,7 @@ async function validateTusRequest(req: Request): Promise<void> {
 
   if (authToken && jwtSecret) {
     try {
-      const decoded = jwt.verify(authToken, jwtSecret) as any;
+      const decoded = jwt.verify(authToken, jwtSecret, { algorithms: ['HS256'] }) as any;
       userId = decoded.userId;
       userRole = decoded.role;
     } catch {
@@ -151,7 +151,7 @@ async function validateTusRequest(req: Request): Promise<void> {
   const eventAccessToken = cookies[eventAccessCookieName];
   if (eventAccessToken && jwtSecret) {
     try {
-      const decoded = jwt.verify(eventAccessToken, jwtSecret) as any;
+      const decoded = jwt.verify(eventAccessToken, jwtSecret, { algorithms: ['HS256'] }) as any;
       if (decoded?.type === 'event_access' && decoded?.eventId === eventId) {
         validatedEventCache.set(eventId, { data: event, ts: Date.now() });
         return;
@@ -239,7 +239,9 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
   }
 
   const filePath = path.join(TUS_UPLOAD_DIR, upload.id);
-  
+  // SEC-14: Track uploaded storage paths for cleanup if DB write fails
+  const uploadedStoragePaths: string[] = [];
+
   try {
     // Read the uploaded file
     const buffer = await fs.readFile(filePath);
@@ -258,7 +260,9 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
         buffer,
         filetype
       );
-      
+      // SEC-14: Track for cleanup if DB write fails
+      uploadedStoragePaths.push(storagePath);
+
       await prisma.video.create({
         data: {
           eventId,
@@ -308,15 +312,22 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
         storageService.uploadFile(eventId, `${baseFilename}_thumb${ext}`, processed.thumbnail, 'image/jpeg'),
         storageService.uploadFile(eventId, `${baseFilename}_webp.webp`, processed.webp, 'image/webp'),
       ]);
+      // SEC-14: Track for cleanup if DB write fails
+      uploadedStoragePaths.push(storagePath, storagePathOriginal, storagePathThumb, storagePathWebp);
 
       let photoId: string;
 
-      // Check progressive upload record existence before updating
+      // Check progressive upload record existence AND ownership before updating
       const progressiveExists = progressivePhotoId
-        ? await prisma.photo.findUnique({ where: { id: progressivePhotoId } })
+        ? await prisma.photo.findUnique({ where: { id: progressivePhotoId }, select: { id: true, eventId: true, uploadedBy: true } })
         : null;
       if (progressivePhotoId && !progressiveExists) {
         logger.warn('[ProgressiveUpload] Phase 1 record not found, falling back to standard upload', { progressivePhotoId, eventId });
+      }
+      // SEC-07: Verify the progressive photo belongs to this event (prevents cross-event overwrites)
+      if (progressivePhotoId && progressiveExists && progressiveExists.eventId !== eventId) {
+        logger.warn('[ProgressiveUpload] Photo belongs to different event — rejecting', { progressivePhotoId, eventId, actualEventId: progressiveExists.eventId });
+        throw { status_code: 403, body: 'Kein Zugriff auf dieses Foto' };
       }
 
       if (progressivePhotoId && progressiveExists) {
@@ -361,27 +372,32 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
         const photoStatus = moderationRequired ? 'PENDING' : 'APPROVED';
 
         // Check upload limit per guest (if configured)
-        // S-05 fix: enforce limit by BOTH uploadedBy name AND IP hash to prevent bypass via name change
+        // SEC-06: Use Redis atomic counters to prevent race condition on concurrent uploads
         const maxUploadsPerGuest = featuresConfig?.maxUploadsPerGuest;
         if (maxUploadsPerGuest && typeof maxUploadsPerGuest === 'number' && maxUploadsPerGuest > 0) {
-          // Check by name (original behavior)
+          const { getRedis } = await import('../services/cache/redis');
+          const redis = getRedis();
+          // Atomic counter by guest name (prevents race via INCR before create)
           if (uploadedBy) {
-            const existingCount = await prisma.photo.count({
-              where: { eventId, uploadedBy, deletedAt: null },
-            });
-            if (existingCount >= maxUploadsPerGuest) {
+            const nameKey = `guest_uploads:${eventId}:${uploadedBy}`;
+            const currentCount = await redis.incr(nameKey);
+            // Set TTL on first increment (24h, auto-cleanup)
+            if (currentCount === 1) await redis.expire(nameKey, 86400);
+            if (currentCount > maxUploadsPerGuest) {
+              await redis.decr(nameKey); // Roll back
               throw { status_code: 429, body: `Upload-Limit erreicht (max. ${maxUploadsPerGuest} Fotos pro Gast)` };
             }
           }
-          // Check by IP hash (prevents bypass via name change)
+          // Atomic counter by IP hash (prevents bypass via name change)
           const ipHash = (upload as any)?._ipHash;
           if (ipHash) {
-            const ipKey = `${eventId}:${ipHash}`;
-            const ipCount = ipUploadCountMap.get(ipKey) || 0;
-            if (ipCount >= maxUploadsPerGuest * 2) {
+            const ipKey = `guest_uploads_ip:${eventId}:${ipHash}`;
+            const ipCount = await redis.incr(ipKey);
+            if (ipCount === 1) await redis.expire(ipKey, 86400);
+            if (ipCount > maxUploadsPerGuest * 2) {
+              await redis.decr(ipKey); // Roll back
               throw { status_code: 429, body: `Upload-Limit erreicht` };
             }
-            ipUploadCountMap.set(ipKey, ipCount + 1);
           }
         }
 
@@ -610,6 +626,15 @@ async function processCompletedUpload(upload: Upload): Promise<void> {
     await fs.unlink(`${filePath}.json`).catch((cleanupError: any) => {
       logger.warn('Failed to cleanup temp metadata file after error', { error: cleanupError.message, filePath: `${filePath}.json` });
     });
+    // SEC-14: Clean up orphaned SeaweedFS files if DB write failed after storage upload
+    if (uploadedStoragePaths.length > 0) {
+      logger.warn('[TUS] Cleaning up orphaned storage files after DB error', { eventId, paths: uploadedStoragePaths });
+      await Promise.allSettled(
+        uploadedStoragePaths.map(p => storageService.deleteFile(p).catch((e: any) => {
+          logger.warn('[TUS] Failed to clean orphaned storage file', { path: p, error: e.message });
+        }))
+      );
+    }
     throw error;
   }
 }

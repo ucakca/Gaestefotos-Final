@@ -12,6 +12,7 @@
 
 import { getRedis } from './cache/redis';
 import { logger } from '../utils/logger';
+import { domainToASCII } from 'node:url';
 
 const PREFIX = 'lockout:';
 
@@ -27,12 +28,33 @@ function getLockoutSec(): number {
   return Math.max(60, parseInt(process.env.LOCKOUT_DURATION_SEC || '900', 10) || 900);
 }
 
+/**
+ * SEC-09: Normalize email to a canonical form for lockout tracking.
+ * Converts domain to ASCII (Punycode) and lowercases everything,
+ * so that user@exämple.com and user@xn--exmple-cua.com share the same counter.
+ */
+function normalizeEmailForLockout(email: string): string {
+  const trimmed = email.toLowerCase().trim();
+  const at = trimmed.lastIndexOf('@');
+  if (at > 0 && at < trimmed.length - 1) {
+    const local = trimmed.slice(0, at);
+    const domain = trimmed.slice(at + 1);
+    try {
+      const asciiDomain = domainToASCII(domain);
+      return `${local}@${asciiDomain}`;
+    } catch {
+      // Fall through to default
+    }
+  }
+  return trimmed;
+}
+
 function attemptsKey(email: string): string {
-  return `${PREFIX}attempts:${email.toLowerCase().trim()}`;
+  return `${PREFIX}attempts:${normalizeEmailForLockout(email)}`;
 }
 
 function lockedKey(email: string): string {
-  return `${PREFIX}locked:${email.toLowerCase().trim()}`;
+  return `${PREFIX}locked:${normalizeEmailForLockout(email)}`;
 }
 
 /**
@@ -48,8 +70,9 @@ export async function isAccountLocked(email: string): Promise<{ locked: boolean;
     }
     return { locked: false, remainingSeconds: 0 };
   } catch (error) {
-    logger.warn('[AccountLockout] Redis error in isAccountLocked, allowing login', { error });
-    return { locked: false, remainingSeconds: 0 };
+    // Fail closed: if Redis is unavailable, treat as locked to prevent brute-force during outages
+    logger.error('[AccountLockout] Redis error in isAccountLocked — failing closed for safety', { error });
+    return { locked: true, remainingSeconds: 60 };
   }
 }
 

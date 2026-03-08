@@ -60,7 +60,7 @@ function hasInvitationAccess(req: any, invitationId: string): boolean {
   const token = cookies[getInvitationAccessCookieName(invitationId)];
   if (!token) return false;
   try {
-    const decoded = jwt.verify(token, jwtSecret) as any;
+    const decoded = jwt.verify(token, jwtSecret, { algorithms: ['HS256'] }) as any;
     return decoded?.type === 'invitation_access' && decoded?.invitationId === invitationId;
   } catch {
     return false;

@@ -55,7 +55,7 @@ export function requireApiKey(requiredScopes: string[] = []) {
 
     const apiKey = await (prisma as any).apiKey.findFirst({
       where: {
-        OR: [{ keyHash }, { prefix }],
+        keyHash,
         status: 'ACTIVE',
       },
     });

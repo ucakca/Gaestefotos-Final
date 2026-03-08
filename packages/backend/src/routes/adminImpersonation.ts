@@ -31,9 +31,9 @@ router.post('/token', authMiddleware, requireRole('ADMIN', 'SUPERADMIN'), async 
     return res.status(404).json({ error: 'Benutzer nicht gefunden' });
   }
 
-  // Prevent impersonating other admins
-  if (target.role === 'ADMIN') {
-    return res.status(403).json({ error: 'Cannot impersonate another admin' });
+  // Prevent impersonating admins and superadmins
+  if (target.role === 'ADMIN' || target.role === 'SUPERADMIN') {
+    return res.status(403).json({ error: 'Cannot impersonate another admin or superadmin' });
   }
 
   const ttlSeconds = data.expiresInSeconds ?? 60 * 15;
@@ -107,8 +107,8 @@ router.post('/generate', authMiddleware, requireRole('ADMIN', 'SUPERADMIN'), asy
     return res.status(404).json({ error: 'User nicht gefunden' });
   }
 
-  if (target.role === 'ADMIN') {
-    return res.status(403).json({ error: 'Kann keinen anderen Admin impersonieren' });
+  if (target.role === 'ADMIN' || target.role === 'SUPERADMIN') {
+    return res.status(403).json({ error: 'Kann keinen anderen Admin oder Superadmin impersonieren' });
   }
 
   const ttlSeconds = (data.ttlMinutes ?? 30) * 60;

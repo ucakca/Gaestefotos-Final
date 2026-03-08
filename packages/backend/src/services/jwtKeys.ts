@@ -53,7 +53,7 @@ export function verifyJwt<T = any>(token: string): T {
 
   for (const secret of secrets) {
     try {
-      return jwt.verify(token, secret) as T;
+      return jwt.verify(token, secret, { algorithms: ['HS256'] }) as T;
     } catch (err) {
       lastError = err as Error;
       // Only retry on signature/key mismatch errors, not on expiry

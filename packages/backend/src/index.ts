@@ -829,12 +829,48 @@ io.on('connection', (socket) => {
     logger.info('Client left event', { socketId: socket.id, eventId });
   });
 
-  // Wall control: relay admin commands to all wall displays in the event room
-  socket.on('wall:control', (data: any) => {
+  // Wall control: relay admin/host commands to all wall displays in the event room
+  // SEC-15: Only allow authenticated hosts/admins to send wall:control commands
+  socket.on('wall:control', async (data: any) => {
     if (!data?.eventId || typeof data.eventId !== 'string') return;
     const { eventId, ...controlData } = data;
-    // Broadcast to all clients in the event room except sender
-    socket.to(`event:${eventId}`).emit('wall:control', controlData);
+
+    // Verify sender is host or admin via JWT from handshake cookies
+    try {
+      const cookie = socket.handshake.headers?.cookie;
+      if (!cookie) return;
+      const cookies = cookie.split(';').reduce((acc: Record<string, string>, c: string) => {
+        const [k, ...v] = c.trim().split('=');
+        if (k) acc[k] = v.join('=');
+        return acc;
+      }, {} as Record<string, string>);
+      const authToken = cookies['auth_token'];
+      if (!authToken) return;
+
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) return;
+      const jwt = await import('jsonwebtoken');
+      const decoded = jwt.default.verify(authToken, jwtSecret, { algorithms: ['HS256'] }) as any;
+      if (!decoded?.userId) return;
+
+      // Check if user is host of this event or admin
+      if (decoded.role === 'ADMIN' || decoded.role === 'SUPERADMIN') {
+        // Admins can control any wall
+      } else {
+        const event = await prisma.event.findUnique({ where: { id: eventId }, select: { hostId: true } });
+        if (!event || event.hostId !== decoded.userId) {
+          // Check if user is a co-host
+          const cohost = await prisma.eventMember.findFirst({
+            where: { eventId, userId: decoded.userId, role: { in: ['HOST', 'COHOST'] } },
+          });
+          if (!cohost) return; // Not authorized
+        }
+      }
+
+      socket.to(`event:${eventId}`).emit('wall:control', controlData);
+    } catch {
+      // Invalid token or DB error — silently ignore
+    }
   });
 
   socket.on('disconnect', () => {

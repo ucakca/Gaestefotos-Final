@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import prisma from '../config/database';
 import { logger } from '../utils/logger';
@@ -81,28 +82,35 @@ router.get('/logs', authMiddleware, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Add debug log (called from frontend apps - no auth required)
-router.post('/logs', async (_req, res: Response) => {
+// Add debug log (called from frontend apps)
+// Rate-limited and input-sanitized to prevent log injection / memory exhaustion
+const debugLogLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, message: 'Too many debug logs' });
+router.post('/logs', debugLogLimiter, async (_req, res: Response) => {
   try {
     if (!debugState.enabled) {
       return res.status(200).json({ ok: true, stored: false });
     }
 
-    const { type, message, details, stack, domain, userAgent } = _req.body;
-    
+    const type = String(_req.body?.type || 'info').slice(0, 20);
+    const message = String(_req.body?.message || '').slice(0, 2000);
+    const details = typeof _req.body?.details === 'string' ? _req.body.details.slice(0, 5000) : undefined;
+    const stack = typeof _req.body?.stack === 'string' ? _req.body.stack.slice(0, 5000) : undefined;
+    const domain = String(_req.body?.domain || 'unknown').slice(0, 100);
+    const userAgent = typeof _req.body?.userAgent === 'string' ? _req.body.userAgent.slice(0, 300) : undefined;
+
     const log = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-      type: type || 'info',
+      type,
       timestamp: new Date().toISOString(),
-      message: message || '',
+      message,
       details,
       stack,
-      domain: domain || 'unknown',
+      domain,
       userAgent,
     };
 
     debugLogs.unshift(log);
-    
+
     // Keep only last MAX_LOGS
     if (debugLogs.length > MAX_LOGS) {
       debugLogs = debugLogs.slice(0, MAX_LOGS);
@@ -141,9 +149,11 @@ router.get('/enabled', async (_req, res: Response) => {
 });
 
 // Localhost-only toggle (no auth needed, only from 127.0.0.1)
+// Uses socket.remoteAddress (not req.ip) to bypass trust proxy and prevent X-Forwarded-For spoofing
 router.post('/local-toggle', async (req, res: Response) => {
-  const ip = req.ip || req.socket.remoteAddress || '';
-  if (!ip.includes('127.0.0.1') && !ip.includes('::1') && !ip.includes('::ffff:127.0.0.1')) {
+  const socketIp = req.socket.remoteAddress || '';
+  const isLocalhost = socketIp === '127.0.0.1' || socketIp === '::1' || socketIp === '::ffff:127.0.0.1';
+  if (!isLocalhost) {
     return res.status(403).json({ error: 'Only from localhost' });
   }
   const { enabled } = req.body;

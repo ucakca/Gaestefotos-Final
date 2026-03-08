@@ -116,7 +116,7 @@ function hasInviteAccess(req: Request, eventId: string): boolean {
   if (!token) return false;
 
   try {
-    const decoded = jwt.verify(token, secret) as any;
+    const decoded = jwt.verify(token, secret, { algorithms: ['HS256'] }) as any;
     const t = decoded?.type;
     const okType = t === 'invite' || t === 'event_invite';
     return okType && decoded?.eventId === eventId;

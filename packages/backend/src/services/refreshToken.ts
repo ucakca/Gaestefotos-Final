@@ -42,13 +42,19 @@ export async function consumeRefreshToken(token: string): Promise<string | null>
   try {
     const redis = getRedis();
     const key = `${REFRESH_PREFIX}${token}`;
-    const userId = await redis.get(key);
+
+    // Atomic GET+DEL via Lua script to prevent double-spend race condition
+    const luaScript = `
+      local val = redis.call('GET', KEYS[1])
+      if val then redis.call('DEL', KEYS[1]) end
+      return val
+    `;
+    const userId = await (redis as any).eval(luaScript, 1, key) as string | null;
 
     if (!userId) return null;
 
-    // Delete the consumed token (rotation: old token is invalid after use)
-    await redis.del(key);
-    await redis.srem(`${USER_REFRESH_PREFIX}${userId}`, token);
+    // Clean up user's token set (non-critical, best-effort)
+    await redis.srem(`${USER_REFRESH_PREFIX}${userId}`, token).catch(() => {});
 
     return userId;
   } catch (error) {

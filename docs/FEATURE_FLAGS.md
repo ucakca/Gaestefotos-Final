@@ -68,6 +68,99 @@ Das Feature Flags System ermöglicht die **flexible Steuerung von Funktionen** b
 - **Beschreibung:** Werbefrei (keine Ads, kein Branding)
 - **Use Case:** Premium-Experience ohne Ablenkungen
 
+### **13. Booth Games** 🎮
+- **Flag:** `allowBoothGames`
+- **Beschreibung:** Photo-Booth-Spiele (z.B. Grimassen-Challenge, Pose-Match)
+- **Default:** `true`
+- **Use Case:** Interaktive Booth-Erlebnisse bei Events
+
+### **14. Mosaic Wall** 🧩
+- **Flag:** `allowMosaicWall`
+- **Beschreibung:** Automatisches Foto-Mosaik aus Event-Fotos
+- **Use Case:** Live-Mosaik auf Beamer, das mit jedem Foto wächst
+
+### **15. Mosaic Print** 🖨️
+- **Flag:** `allowMosaicPrint`
+- **Beschreibung:** Druck des fertigen Mosaiks (Print-Terminal)
+- **Use Case:** Physisches Erinnerungsstück vom Event
+
+### **16. Mosaic Export** 📤
+- **Flag:** `allowMosaicExport`
+- **Beschreibung:** Export des Mosaiks als hochauflösende Bilddatei
+- **Use Case:** Host möchte Mosaik für Poster/Druck verwenden
+
+### **17. AI Effects** ✨
+- **Flag:** `allowAiEffects`
+- **Beschreibung:** Grundlegende AI-Bildeffekte (Filter, Stile)
+- **Use Case:** Fotos mit KI-Filtern aufwerten
+
+### **18. AI Face Switch** 🔄
+- **Flag:** `allowAiFaceSwitch`
+- **Beschreibung:** KI-basierter Gesichtertausch zwischen Fotos
+- **Use Case:** Spaß-Feature für Gruppen-Events
+
+### **19. AI Background Removal** 🖼️
+- **Flag:** `allowAiBgRemoval`
+- **Beschreibung:** KI-Hintergrundentfernung/-austausch
+- **Use Case:** Fotos mit individuellem Hintergrund versehen
+
+### **20. AI Games** 🎲
+- **Flag:** `allowAiGames`
+- **Beschreibung:** KI-basierte Foto-Spiele (z.B. Photo Challenges mit KI-Bewertung)
+- **Default:** `true`
+- **Use Case:** Interaktive Spiele während des Events
+
+### **21. AI Image Effects** 🎨
+- **Flag:** `allowAiImageEffects`
+- **Beschreibung:** Erweiterte KI-Bildeffekte (Cartoon, Ölgemälde etc.)
+- **Use Case:** Kreative Foto-Transformationen
+
+### **22. AI GIF/Video** 🎬
+- **Flag:** `allowAiGifVideo`
+- **Beschreibung:** KI-generierte GIFs und Videos aus Fotos
+- **Use Case:** Animierte Erinnerungen erstellen
+
+### **23. AI Advanced** 🧠
+- **Flag:** `allowAiAdvanced`
+- **Beschreibung:** Premium-KI-Features (hochauflösend, erweiterte Modelle)
+- **Use Case:** Professionelle KI-Bearbeitung
+
+### **24. AI Host Tools** 🛠️
+- **Flag:** `allowAiHostTools`
+- **Beschreibung:** KI-Tools für den Host (Auto-Sortierung, Smart Albums, AI-Captions)
+- **Default:** `true`
+- **Use Case:** Host spart Zeit bei der Foto-Verwaltung
+
+### **25. AI Style Transfer** 🖌️
+- **Flag:** `allowAiStyleTransfer`
+- **Beschreibung:** KI-Stiltransfer (z.B. Foto im Van-Gogh-Stil)
+- **Use Case:** Künstlerische Foto-Transformationen
+
+### **26. SMS Sharing** 📱
+- **Flag:** `allowSmsSharing`
+- **Beschreibung:** Fotos per SMS teilen
+- **Use Case:** Gäste ohne Smartphone-App können Fotos per SMS erhalten
+
+### **27. Email Sharing** 📧
+- **Flag:** `allowEmailSharing`
+- **Beschreibung:** Fotos per E-Mail teilen
+- **Use Case:** Gäste erhalten einzelne Fotos per E-Mail
+
+### **28. Gallery Embed** 🌐
+- **Flag:** `allowGalleryEmbed`
+- **Beschreibung:** Galerie als Widget auf externen Webseiten einbetten
+- **Use Case:** Event-Galerie auf der Hochzeits-Homepage anzeigen
+
+### **29. Slideshow** 📽️
+- **Flag:** `allowSlideshow`
+- **Beschreibung:** Automatische Slideshow-Ansicht der Event-Fotos
+- **Use Case:** Fotos als Diashow auf Beamer oder TV zeigen
+
+### **30. Lead Collection** 📋
+- **Flag:** `allowLeadCollection`
+- **Beschreibung:** Kontaktdaten-Sammlung von Gästen
+- **Use Case:** B2B-Events: Leads/Kontakte über die Foto-App erfassen
+
 ---
 
 ## 🛠️ Admin Dashboard
@@ -198,7 +291,8 @@ model PackageDefinition {
   storageLimitBytes    BigInt?
   isActive             Boolean               @default(true)
   
-  // Feature Flags
+  // Feature Flags — Package-Level (30 Flags)
+  allowBoothGames      Boolean               @default(true)
   allowBulkOperations  Boolean               @default(false)
   allowCoHosts         Boolean               @default(false)
   allowFaceSearch      Boolean               @default(false)
@@ -206,10 +300,27 @@ model PackageDefinition {
   allowGuestbook       Boolean               @default(false)
   allowGuestlist       Boolean               @default(false)
   allowLiveWall        Boolean               @default(false)
+  allowMosaicWall      Boolean               @default(false)
+  allowMosaicPrint     Boolean               @default(false)
+  allowMosaicExport    Boolean               @default(false)
   allowPasswordProtect Boolean               @default(false)
   allowStories         Boolean               @default(false)
   allowVideoUpload     Boolean               @default(false)
   allowZipDownload     Boolean               @default(false)
+  allowAiEffects       Boolean               @default(false)
+  allowAiFaceSwitch    Boolean               @default(false)
+  allowAiBgRemoval     Boolean               @default(false)
+  allowAiGames         Boolean               @default(true)
+  allowAiImageEffects  Boolean               @default(false)
+  allowAiGifVideo      Boolean               @default(false)
+  allowAiAdvanced      Boolean               @default(false)
+  allowAiHostTools     Boolean               @default(true)
+  allowAiStyleTransfer Boolean               @default(false)
+  allowSmsSharing      Boolean               @default(false)
+  allowEmailSharing    Boolean               @default(false)
+  allowGalleryEmbed    Boolean               @default(false)
+  allowSlideshow       Boolean               @default(false)
+  allowLeadCollection  Boolean               @default(false)
   isAdFree             Boolean               @default(false)
   
   // Limits
@@ -452,5 +563,5 @@ curl -X PUT \
 ---
 
 **Status:** ✅ PRODUCTION READY
-**Version:** 1.0.0
-**Last Updated:** 2026-01-22
+**Version:** 2.0.0
+**Last Updated:** 2026-03-08

@@ -63,8 +63,9 @@
 |---|---|
 | **SSL/TLS** | Alle Verbindungen über HTTPS (Let's Encrypt via Plesk). HSTS aktiviert. |
 | **Cookie-Flags** | `secure: isProd`, `httpOnly: true`, `sameSite: 'lax'` für Auth-Cookies. |
-| **CSP** | Content-Security-Policy ohne `unsafe-eval`. `unsafe-inline` nur für `script-src`/`style-src` (Next.js Turbopack Workaround). |
-| **CSRF** | CSRF-Token-Validierung auf allen mutierenden `/api/*` Routes. |
+| **CSP** | Content-Security-Policy auf Nginx-Ebene gesetzt. Backend setzt zusätzlich CSP via Helmet. `unsafe-inline` für `script-src`/`style-src` (Next.js Workaround). |
+| **CSRF** | CSRF-Token-Validierung auf allen mutierenden `/api/*` Routes. Constant-time Vergleich via `crypto.timingSafeEqual`. |
+| **HSTS** | Strict-Transport-Security mit `max-age=31536000; includeSubDomains` auf Nginx-Ebene. |
 
 ---
 
@@ -85,4 +86,4 @@
 |---|---|---|---|
 | G-03 | `uploadedBy` Klarname ohne Lösch-Option für Gäste | Offen | Product-Entscheidung: Name ist für Host-Funktion essentiell. Gast kann Pseudonym verwenden. Löschung über Event-Purge. |
 | G-04 | IP-Hash in QaLogEvent | ✅ Gelöst | Automatische Retention (7/90 Tage). Hash mit Salt nicht rückführbar ohne Secret. |
-| S-01 | CSP `unsafe-inline` | Teilweise | Wartet auf Next.js Turbopack Nonce-Support. `unsafe-eval` bereits entfernt. |
+| S-01 | CSP `unsafe-inline` | Teilweise | Wartet auf Next.js Turbopack Nonce-Support. `unsafe-eval` bereits entfernt. CSP jetzt auch auf Nginx-Ebene gesetzt (Stand 2026-03-08). |

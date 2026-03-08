@@ -1127,7 +1127,7 @@ router.post('/:id/access', async (req: AuthRequest, res: Response) => {
 
     let decoded: any;
     try {
-      decoded = jwt.verify(inviteToken, secret);
+      decoded = jwt.verify(inviteToken, secret, { algorithms: ['HS256'] });
     } catch {
       return res.status(404).json({ error: 'Event nicht gefunden' });
     }

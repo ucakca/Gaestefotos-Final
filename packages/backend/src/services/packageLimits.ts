@@ -252,58 +252,67 @@ export async function assertUploadWithinLimit(eventId: string, uploadBytes: bigi
   }
 
   if (!acquired) {
-    logger.warn('[StorageLimit] Could not acquire lock, falling back to unlocked check', { eventId });
-    // Fallback: do the check without lock (better than blocking forever)
+    logger.warn('[StorageLimit] Could not acquire lock — rejecting upload to prevent race condition', { eventId });
+    const err: any = new Error('Upload temporarily unavailable — please retry');
+    err.code = 'STORAGE_LIMIT_LOCK_CONTENTION';
+    err.httpStatus = 503;
+    throw err;
   }
 
   try {
-    // Get current DB usage + any pending reservations from other concurrent uploads
+    // Get current DB usage
     const used = await getEventUsageBytes(eventId);
-    const pendingReserve = toBigInt(await redis.get(reserveKey));
-    const totalUsed = used + pendingReserve;
 
-    if (totalUsed + uploadBytes > limit) {
+    // Atomically increment the pending reservation counter via INCRBY
+    // This prevents two concurrent uploads from overwriting each other's reservations
+    const uploadBytesNum = Number(uploadBytes); // Redis INCRBY works with numbers
+    const totalReservedAfter = await redis.incrby(reserveKey, uploadBytesNum);
+    // Set TTL on the reservation key (5 min auto-expire for crash recovery)
+    await redis.expire(reserveKey, 300);
+
+    const totalUsed = used + BigInt(totalReservedAfter);
+
+    if (totalUsed > limit) {
+      // Over limit — roll back the reservation we just added
+      await redis.decrby(reserveKey, uploadBytesNum);
       const err: any = new Error('Storage limit exceeded');
       err.code = 'STORAGE_LIMIT_EXCEEDED';
       err.httpStatus = 403;
       err.details = {
         usedBytes: used.toString(),
-        pendingBytes: pendingReserve.toString(),
+        pendingBytes: totalReservedAfter.toString(),
         limitBytes: limit.toString(),
         uploadBytes: uploadBytes.toString(),
       };
       throw err;
     }
-
-    // Reserve the space atomically — add uploadBytes to the pending reserve counter
-    // TTL of 5 minutes: if the upload fails/crashes, the reservation expires
-    const newReserve = (pendingReserve + uploadBytes).toString();
-    await redis.set(reserveKey, newReserve, 'EX', 300);
   } finally {
-    // Release lock only if we own it
+    // Release lock only if we own it (compare-and-delete via Lua for atomicity)
     if (acquired) {
-      const current = await redis.get(lockKey);
-      if (current === lockValue) {
-        await redis.del(lockKey);
-      }
+      const luaRelease = `
+        if redis.call('GET', KEYS[1]) == ARGV[1] then
+          return redis.call('DEL', KEYS[1])
+        end
+        return 0
+      `;
+      await (redis as any).eval(luaRelease, 1, lockKey, lockValue);
     }
   }
 }
 
 /**
  * Release storage reservation after successful DB write.
- * Call this after prisma.photo.create() succeeds.
+ * Call this after prisma.photo.create() succeeds to free the reserved bytes.
  */
 export async function releaseStorageReservation(eventId: string, uploadBytes: bigint): Promise<void> {
   try {
     const redis = getRedis();
     const reserveKey = `upload_reserve:${eventId}`;
-    const current = toBigInt(await redis.get(reserveKey));
-    const newReserve = current - uploadBytes;
-    if (newReserve <= 0n) {
+    const uploadBytesNum = Number(uploadBytes);
+    const newVal = await redis.decrby(reserveKey, uploadBytesNum);
+    // If counter went to 0 or below, clean up the key
+    if (newVal <= 0) {
       await redis.del(reserveKey);
-    } else {
-      await redis.set(reserveKey, newReserve.toString(), 'EX', 300);
     }
   } catch (err) {
     logger.warn('[StorageLimit] Failed to release reservation', { eventId, error: err });

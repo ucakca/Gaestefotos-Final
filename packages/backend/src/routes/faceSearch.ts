@@ -80,7 +80,7 @@ function hasConsent(req: AuthRequest, eventId: string): boolean {
     const cookies = parseCookies(req);
     const token = cookies[getConsentCookieName(eventId)];
     if (!token) return false;
-    const decoded = jwt.verify(token, jwtSecret) as any;
+    const decoded = jwt.verify(token, jwtSecret, { algorithms: ['HS256'] }) as any;
     return decoded?.type === 'face_search_consent' && decoded?.eventId === eventId && !!decoded?.consentId;
   } catch {
     return false;
@@ -97,7 +97,7 @@ function getConsentId(req: AuthRequest, eventId: string): string | null {
     const cookies = parseCookies(req);
     const token = cookies[getConsentCookieName(eventId)];
     if (!token) return null;
-    const decoded = jwt.verify(token, jwtSecret) as any;
+    const decoded = jwt.verify(token, jwtSecret, { algorithms: ['HS256'] }) as any;
     if (decoded?.type !== 'face_search_consent') return null;
     if (decoded?.eventId !== eventId) return null;
     const consentId = String(decoded?.consentId || '').trim();

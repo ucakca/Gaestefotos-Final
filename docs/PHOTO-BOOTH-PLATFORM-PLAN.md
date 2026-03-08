@@ -1,7 +1,169 @@
 # Photo Booth Platform — Architektur & Planung
 
-> Stand: 18. Februar 2026
+> Stand: 8. März 2026 *(aktualisiert — Architektur-Update)*
 > Status: PLANUNGSPHASE — Alle Kernentscheidungen getroffen ✅
+
+---
+
+## ⚡ ARCHITEKTUR-UPDATE — März 2026
+
+> Die folgenden Entscheidungen ersetzen/ergänzen §5.1–§5.3. Alle neuen Entscheidungen sind hier zusammengefasst. Verwandte Dokumente: → `docs/BOOTH-EXPERIENCE-KONZEPT.md` · → `photo-booth/INTERAKTIVES_BOOTH_KONZEPT.md` *(veraltet, nur zur Referenz)*
+
+### Plattform-Entscheidung: PWA + Hardware Abstraction Layer (statt Electron)
+
+| Aspekt | Alt (Electron) | Neu (PWA + HAL) |
+|---|---|---|
+| **Plattformen** | Nur Linux | Linux + Android + iPad |
+| **Kiosk-Modus** | Electron Fullscreen | Chrome `--kiosk` / Guided Access / Fully Kiosk Browser |
+| **Hardware-Zugriff** | Electron IPC → gPhoto2 | HAL Provider → CCAPI (WiFi) oder gPhoto2-Bridge (USB) |
+| **Updates** | Electron auto-updater | Browser cached automatisch (Service Worker) |
+| **Deployment** | Electron Build + Packaging | Next.js PWA, läuft auf jedem modernen Browser |
+
+**Kiosk-Modus pro Plattform:**
+- **Linux**: `chromium-browser --kiosk --noerrdialogs http://localhost:3002` → Admin via Ctrl+Alt+F2
+- **Android**: Fully Kiosk Browser (15€/Gerät) oder Android Lock Task Mode → Admin via PIN
+- **iPad**: Guided Access (iOS integriert, kostenlos) → Admin via Triple-Click + PIN
+
+### Kamera-Strategie: Canon-first + CCAPI
+
+**Entscheidung:** Standardisierung auf Canon EOS-Reihe für ALLE Booth-Typen.
+
+| Grund | Details |
+|---|---|
+| **CCAPI** | Canon ist der EINZIGE Hersteller mit öffentlicher REST-API für WiFi-Steuerung |
+| **kein Bridge nötig** | Tablet spricht direkt HTTP mit Kamera — kein Raspberry Pi, kein extra Gerät |
+| **gPhoto2** | Bester gPhoto2-Support für USB-Setups (Linux PC) |
+| **AI-Steuerung** | Alle Settings (Blende, ISO, Belichtung, WB) per API steuerbar — AI Fotograf |
+
+**Canon CCAPI Endpoint-Format:**
+```
+PUT http://{camera_ip}:8080/ccapi/ver100/shooting/settings/av   → Blende
+PUT http://{camera_ip}:8080/ccapi/ver100/shooting/settings/tv   → Belichtungszeit
+PUT http://{camera_ip}:8080/ccapi/ver100/shooting/settings/iso  → ISO
+PUT http://{camera_ip}:8080/ccapi/ver100/shooting/settings/wb   → Weißabgleich
+GET http://{camera_ip}:8080/ccapi/ver100/shooting/liveview/flip → Live-View MJPEG
+POST http://{camera_ip}:8080/ccapi/ver100/shooting/control/shutterbutton → Auslösen
+```
+
+**Canon-Modelle für verschiedene Booth-Typen:**
+- **EOS R100** (~450€) — Mobile Booth / Tablet-Setup / Einsteiger
+- **EOS R10** (~700€) — Standard Photo Booth / Mirror Booth
+- **EOS R7** (~1.300€) — Premium Mirror Booth / KI Booth
+
+Alle drei unterstützen CCAPI. Einmalige Aktivierung via Canon Desktop-Tool (Firmware-Update).
+
+### Hardware Abstraction Layer (HAL)
+
+Die booth-app erkennt beim Setup automatisch den verfügbaren Camera-Provider:
+
+```typescript
+interface CameraProvider {
+  connect(): Promise<void>;
+  capture(): Promise<Blob>;          // Foto auslösen + JPEG zurück
+  getLiveView(): ReadableStream;     // Live-View MJPEG für Mirror Booth
+  setSettings(s: CameraSettings): Promise<void>; // AI-Fotograf-Steuerung
+  getStatus(): Promise<CameraStatus>;
+}
+
+// Provider-Auswahl beim Booth-Start:
+// config.cameraIp vorhanden   → CanonCCAPIProvider  (Tablet + WiFi)
+// config.bridgeUrl vorhanden  → GPhoto2BridgeProvider (Linux PC + USB)
+// sonst                       → WebcamProvider        (Fallback / Demo)
+```
+
+### Dual-Kamera Architektur (NEU)
+
+Jede Booth hat ab sofort **zwei Kameras** mit unterschiedlichen Rollen:
+
+| Kamera | Rolle | Verwendung | Hardware |
+|---|---|---|---|
+| **Primärkamera (DSLR)** | Hochqualitäts-Aufnahme | Endfotos, Drucke, Upload | Canon EOS R100/R10/R7 |
+| **Sekundärkamera (AI-Cam)** | Echtzeit-AI-Verarbeitung | Personenerkennung, Emotionen, AR-Filter, Avatar-Reaktion, Gestenerkennung | USB-Webcam (Linux) **oder** Tablet-Frontkamera (Tablet) |
+
+**Warum zwei Kameras?**
+- Die DSLR ist **nicht** für Dauerbetrieb / Live-Verarbeitung geeignet (Shutter-Count, Hitze, Latenz)
+- Die AI-Cam läuft **immer** und liefert den kontinuierlichen Datenstrom für AI-Features
+- Trennung = bessere Performance UND längere DSLR-Lebensdauer
+
+**AI-Cam Hardware:**
+- **Full Booth (Linux PC)**: USB-Webcam (z.B. Logitech C920, ~50€) — separat montiert (am Rahmen/Spiegel)
+- **Mobile Booth (Tablet)**: Tablet-Frontkamera — bereits eingebaut, keine Extrakosten
+- **Lite Booth (nur Tablet)**: Tablet-Frontkamera übernimmt BEIDE Rollen (kein DSLR)
+
+**AI-Cam Features (laufen kontinuierlich, kein Internet nötig):**
+- Personenerkennung / Besucher-Zählung (Idle-Screen: "X Personen vor der Booth")
+- Gesichtserkennung für Wiedererkennung ("Hey, dich kenne ich!")
+- Emotions-Tracking → Avatar reagiert in Echtzeit
+- AR-Filter Live-Preview (MediaPipe Face Mesh, ~30fps)
+- Gestenerkennung ("Wink = Selfie auslösen", "Daumen hoch = Foto behalten")
+- Reaktions-Foto nach DSLR-Shot (AI-Cam macht Bild während Gast aufs Ergebnis reagiert)
+
+**Code-Abstraktion:**
+```typescript
+interface AiCamProvider {
+  startStream(): void;
+  getFrame(): ImageData;             // Aktuelles Frame für AI-Verarbeitung
+  detectFaces(): FaceDetection[];    // MediaPipe Face Detection
+  detectEmotion(): EmotionResult;    // Emotionserkennung
+  detectGesture(): GestureResult;    // Gestenerkennung
+  getFaceEmbedding(): Float32Array;  // Für Wiedererkennung
+}
+// Implementierung: immer getUserMedia (Browser-API)
+// Linux: USB-Webcam → /dev/video0 → getUserMedia
+// Tablet: front-facing camera → getUserMedia({ facingMode: 'user' })
+```
+
+### Guided Setup Wizard (AI-Assistent beim Aufbau)
+
+Beim ersten Start führt ein **Schritt-für-Schritt-Assistent** den Partner durch den Aufbau:
+
+```
+Schritt 1: Kamera-Verbindung
+  → CCAPI: Canon einschalten, WLAN-Verbindung prüfen, IP-Adresse anzeigen
+  → gPhoto2: USB-Kabel einstecken, Kamera-Erkennung
+  ✅ "Canon EOS R100 verbunden — Akku 87%, SD 28GB frei"
+
+Schritt 2: Kamera-Positionierung (AI-Cam analysiert Live-View)
+  → Live-View wird angezeigt
+  → AI prüft: Abstand optimal? Kamera zentriert? Gesichtszone leer?
+  ⚠️  "Kamera 5cm nach rechts — Zentrierung nicht optimal"
+  ✅  "Abstand 2.1m — optimal für Portrait"
+
+Schritt 3: Licht-Analyse (AI Fotograf)
+  → AI analysiert Live-View (Histogramm, Belichtungswert)
+  → Settings werden automatisch optimiert
+  → ISO: 400→800, Blende: f/2.8, WB: auto→3200K
+  ✅  "Belichtung optimiert — bereit für dunkle Locations"
+
+Schritt 4: Test-Shot + Bewertung
+  → Testfoto auslösen → AI bewertet Ergebnis
+  ✅  "Belichtung: optimal | Schärfe: gut | WB: leicht warm → korrigiert"
+
+Schritt 5: Drucker-Check (falls vorhanden)
+  → CUPS-Verbindung prüfen, Test-Print
+  ✅  "DNP DS620A bereit — 400 Prints verfügbar"
+
+✅ BOOTH BEREIT — Event starten
+```
+
+**AI-Fotograf Adaptive Mode:** Während des Events prüft die AI alle 5 Minuten (in Idle-Phase) ob Lichtbedingungen sich geändert haben → automatische Nachjustierung.
+
+### 3 Booth-Tiers
+
+| | **Tier A: Full Booth** | **Tier B: Mobile Booth** | **Tier C: Lite Booth** |
+|---|---|---|---|
+| **Gerät** | Linux-PC + Display | iPad / Android Tablet | iPad / Android Tablet |
+| **DSLR** | Canon per USB (gPhoto2) | Canon per WiFi (CCAPI) | ❌ kein DSLR |
+| **AI-Cam** | USB-Webcam (Logitech) | Tablet-Frontkamera | Tablet-Frontkamera |
+| **Drucker** | DNP USB (CUPS) | AirPrint / IPP WiFi | Optional AirPrint |
+| **Kiosk** | Chrome `--kiosk` | Guided Access / FKB | Guided Access / FKB |
+| **Offline** | Service Worker + IndexedDB | Service Worker + IndexedDB | Service Worker + IndexedDB |
+| **Setup-Zeit** | ~15min | ~5min | ~2min |
+| **Kosten** | ~1.700€ | ~750€ | ~400€ |
+| **Foto-Qualität** | ★★★★★ DSLR | ★★★★★ DSLR | ★★★☆☆ Tablet-Cam |
+| **Einsatz** | Photo/Mirror Booth, Events | Mobile/Messen | Selfie-Station |
+
+*FKB = Fully Kiosk Browser (Android)*
 
 ---
 
@@ -336,25 +498,30 @@ Die Booth-App hat **keinen UI-Zugang** zu Drucker-Einstellungen. Kein Settings-M
 
 Android-Tablets (360° Spinner, Sharing Station) sind eigenständige Geräte = kein Mixed-OS.
 
-### 5.2 Framework: Electron
+### 5.2 Framework: PWA + Hardware Abstraction Layer *(aktualisiert März 2026)*
 
-**Entscheidung:** Electron beibehalten — USB-Zugriff, Kiosk-Modus, lokaler Drucker, lokale Kamera alles nötig. PWA nicht geeignet (kein USB/Drucker-Zugriff).
+**Entscheidung:** Wechsel von Electron zu **Next.js PWA + HAL** für Cross-Platform-Unterstützung (Linux, Android, iPad).
 
-### 5.3 Kamera-Anbindung (Linux)
+Details: → *Architektur-Update-Sektion oben* · Hardware-Zugriff via CCAPI (WiFi) oder gPhoto2-Bridge (USB)
 
-| Tool | Verwendung |
-|------|-----------|
-| **gPhoto2** | Primär — DSLR-Steuerung (Sony, Canon, Nikon) via `child_process` in Electron |
-| **WebRTC** | Fallback — Webcam wenn keine DSLR angeschlossen |
+### 5.3 Kamera-Anbindung *(aktualisiert März 2026)*
 
-**AI Auto-Exposure (Profi-Fotograf-Modus):**
-- Kalibrierungs-Modus beim Aufbau: 3-5 Testfotos → Belichtung, Weißabgleich, Kontrast analysieren
-- Settings werden pro Location gespeichert (jede Location ist anders!)
-- Während Event: leichte Auto-Korrekturen bei Lichtänderung
-- Lokal mit Sharp/OpenCV — kein Cloud-API, keine Token-Kosten
-- Partner kann manuelle Presets laden ("Indoor warm", "Outdoor Tageslicht", "Party Neon")
+| Tool | Verwendung | Plattform |
+|------|----------|---|
+| **Canon CCAPI** | Primär für Tablet-Setups — REST API direkt per WiFi | iOS, Android |
+| **gPhoto2** | Primär für Linux-PC-Setups — USB via Bridge-Service | Linux |
+| **getUserMedia (Webcam)** | AI-Cam (immer aktiv) + Fallback/Demo | alle |
 
-**Erste DSLR:** Sony ZV10 (vorhanden) → gPhoto2-Kompatibilität verifizieren.
+**Dual-Kamera:** Primärkamera (DSLR) für Fotos + Sekundärkamera (AI-Cam) für Live-AI → Details: *Architektur-Update-Sektion oben*
+
+**AI Auto-Exposure (Profi-Fotograf-Modus / Guided Setup):**
+- Guided Setup Wizard beim Aufbau: Positions-Check, Licht-Analyse, Auto-Tune
+- Settings werden pro Location gecached (jede Location ist anders!)
+- Adaptive Mode während Event: Licht-Check alle 5min in Idle-Phase
+- Kein Cloud-API nötig — AI-Cam Frame → lokale Analyse
+- Manuelle Presets: "Indoor warm", "Outdoor Tageslicht", "Party Neon"
+
+Details: → *Architektur-Update-Sektion oben (Guided Setup Wizard)*
 
 ### 5.4 Drucker-Integration (Linux)
 
@@ -731,11 +898,17 @@ Alle getroffenen Entscheidungen auf einen Blick:
 
 | # | Frage | Entscheidung |
 |---|-------|-------------|
-| 1 | Betriebssystem | **Linux** (Ubuntu Minimal) — stabiler, gPhoto2, CUPS, Kiosk |
-| 2 | Mixed-OS? | **NEIN** — eine Plattform für alle Booths |
-| 3 | Framework | **Electron** (USB, Kiosk, Drucker, Kamera) |
-| 4 | DSLR-Tool | **gPhoto2** (Linux, ~2500 Kameras) |
-| 5 | Booth-DSLR | **Canon EOS R100** (~450€) — bester gPhoto2-Support, Branchenstandard |
+| 1 | Betriebssystem | **Linux** (Ubuntu Minimal) für Full Booths — stabiler, gPhoto2, CUPS, Kiosk |
+| 2 | Mixed-OS? | **Ja (3 Tiers)** — Linux (Tier A), Android/iPad (Tier B/C) via PWA |
+| 3 | Framework | **PWA (Next.js) + HAL** *(März 2026)* — Cross-Platform, kein Electron |
+| 4 | DSLR-Tool | **Canon CCAPI** (WiFi/Tablet) + **gPhoto2** (USB/Linux) via HAL |
+| 5 | Booth-DSLR | **Canon EOS R100/R10/R7** — einziger Hersteller mit öffentlicher REST-API (CCAPI) |
+| 22 | Kamera-Strategie | **Canon-first** — CCAPI für alle Tablet-Setups, gPhoto2 für Linux-Setups |
+| 23 | Dual-Kamera | **Ja** — DSLR (Fotos) + AI-Cam/Webcam/Frontkamera (Live-AI) getrennt |
+| 24 | AI-Cam (Linux) | **USB-Webcam** (Logitech C920/StreamCam, ~50€) — separat am Booth-Rahmen |
+| 25 | AI-Cam (Tablet) | **Tablet-Frontkamera** — getUserMedia front-facing, keine Extrakosten |
+| 26 | Guided Setup | **AI-Wizard** — Kamera-Check, Positions-Check, Licht-Analyse, Auto-Tune beim Aufbau |
+| 27 | AI-Fotograf | **Adaptive Mode** — Canon CCAPI alle Settings (Blende/ISO/WB/Belichtung) AI-gesteuert |
 | 6 | Drucker-System | **CUPS + Gutenprint** — DNP DS620A = Tier 1 ✅ verifiziert |
 | 7 | Offline-Speicher | **Externe SSD** (500GB-1TB, USB 3.0) |
 | 8 | Upload-Throttling | **1 Foto / 5-10 Sek** (keine Foto-Flut) |
@@ -826,9 +999,23 @@ Alle getroffenen Entscheidungen auf einen Blick:
 
 1. ✅ **Kernentscheidungen getroffen** (OS, Framework, Hardware, Geschäftsmodell)
 2. ✅ **CUPS + DNP DS620A auf Linux recherchiert** → Tier 1, Gutenprint, funktioniert
-3. ✅ **Sony ZV-E10 gPhoto2 geprüft** → kein USB-Capture, Canon EOS R50 stattdessen
+3. ✅ **Sony ZV-E10 gPhoto2 geprüft** → kein USB-Capture, Canon EOS R100 stattdessen
 4. ✅ **Branchenübliche Drucker-Liste erstellt** → `docs/CUPS-DRUCKER-RECHERCHE.md`
-5. 🔜 **Hardware bestellen** (Canon EOS R100, DNP DS620A, Booth, SSD)
-6. 🔜 **Praxis-Tests** (gPhoto2 + Canon, CUPS + DNP, Perforations-Media)
-7. 🔜 **Linux-Booth OS aufsetzen** (Ubuntu Minimal + Kiosk)
-8. 🔜 **Phase 1 starten** (Offline-Queue, Booth-API, Session-Tracking)
+5. ✅ **Architektur-Update März 2026** → PWA+HAL, Canon-first (CCAPI), Dual-Kamera, Guided Setup
+6. 🔜 **Hardware bestellen** (Canon EOS R100, DNP DS620A, Booth, SSD, USB-Webcam Logitech C920)
+7. 🔜 **Canon CCAPI aktivieren** (Firmware-Update + Desktop-Tool, einmalig)
+8. 🔜 **Praxis-Tests** (CCAPI + WiFi, gPhoto2 + USB, CUPS + DNP, Perforations-Media)
+9. 🔜 **Linux-Booth OS aufsetzen** (Ubuntu Minimal + Chrome Kiosk statt Electron)
+10. 🔜 **Phase 1 starten** (HAL implementieren, Offline-Queue, Booth-API, Session-Tracking)
+
+---
+
+## 14. Verwandte Dokumente
+
+| Dokument | Inhalt | Status |
+|---|---|---|
+| `docs/BOOTH-EXPERIENCE-KONZEPT.md` | KI-Avatar, Mini-Spiele, Async Delivery, Reaction Tracking | ✅ Aktuell (Feb 2026) |
+| `docs/CUPS-DRUCKER-RECHERCHE.md` | DNP DS620A CUPS-Setup, Gutenprint, Linux-Kompatibilität | ✅ Aktuell |
+| `photo-booth/INTERAKTIVES_BOOTH_KONZEPT.md` | Interaktive Features, Fortuna AI, AR-Filter | ⚠️ Veraltet (Jan 2026, Sony ZV-E10) — nur zur Referenz, Inhalte in BOOTH-EXPERIENCE-KONZEPT.md |
+| `photo-booth/OFFLINE_BETRIEB_ANALYSE.md` | Offline-First Analyse, PWA vs. Electron, IndexedDB | ✅ Relevant |
+| `photo-booth/WETTBEWERBSANALYSE_FIESTAPICS.md` | Fiesta/PBSCO Analyse | ✅ Relevant |

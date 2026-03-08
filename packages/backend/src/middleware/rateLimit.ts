@@ -45,10 +45,9 @@ export const apiLimiter: any = rateLimit({
     if (identity) return `user:${identity}`;
     return req.ip || 'unknown';
   },
-  // Skip rate limiting for file requests (they are served via proxy)
+  // Skip rate limiting for CDN file delivery routes only (exact path prefixes)
   skip: (req: Request) => {
-    if (req.path.includes('/file') || req.path.includes('/photo/')) return true;
-    return false;
+    return req.path.startsWith('/api/cdn/file/') || req.path.startsWith('/api/photos/file/');
   },
 });
 

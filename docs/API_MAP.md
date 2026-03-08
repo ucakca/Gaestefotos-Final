@@ -5,6 +5,7 @@ Ziel: Schnelle Orientierung, **welcher Endpoint** wofür da ist und **wo der Cod
 ## Laiensicher (was passiert wann?)
 
 - **Login**: Du meldest dich an → System setzt ein Cookie → du bist eingeloggt.
+- **Passwort vergessen**: Du gibst deine E-Mail ein → bekommst einen Reset-Link per E-Mail → klickst darauf → setzt neues Passwort.
 - **Event erstellen**: Host legt ein Event an → bekommt einen Gast-Link (`/e/<slug>`).
 - **Gäste laden hoch**: Gäste öffnen den Gast-Link → laden Fotos/Videos hoch.
 - **Moderation**: Host/Admin gibt Inhalte frei → erst dann tauchen sie öffentlich auf (je nach Event-Config).
@@ -14,7 +15,7 @@ Ziel: Schnelle Orientierung, **welcher Endpoint** wofür da ist und **wo der Cod
 
 Quelle: `packages/backend/src/index.ts`
 
-- `app.use('/api/auth', authRoutes)` → `packages/backend/src/routes/auth.ts`
+- `app.use('/api/auth', authRoutes)` → `packages/backend/src/routes/auth.ts` (Login, Register, 2FA, Password-Reset, WP-SSO, Refresh, Logout)
 - `app.use('/api/events', eventRoutes)` → `packages/backend/src/routes/events.ts`
 - `app.use('/api/guests', guestRoutes)` → `packages/backend/src/routes/guests.ts`
 - `app.use('/api/photos', photoRoutes)` → `packages/backend/src/routes/photos.ts`
@@ -232,8 +233,8 @@ Admin endpoints (Backend mounts in `packages/backend/src/index.ts`):
 
 - **Required (Prod)**
   - `WOOCOMMERCE_WEBHOOK_SECRET` (Webhook signature validation)
-- **Optional (Feature/Hardening)**
-  - `WORDPRESS_SSO_SECRET` (zusätzlicher Schutz für `POST /api/auth/wordpress-sso` via Header/Body Secret)
+- **Required (Prod)**
+  - `WORDPRESS_SSO_SECRET` (**PFLICHT** für `POST /api/auth/wordpress-sso` — Endpoint ist deaktiviert wenn nicht gesetzt. Constant-time Vergleich via `crypto.timingSafeEqual`.)
   - `WORDPRESS_URL` (default fallback: `https://gästefotos.com`)
   - `WORDPRESS_VERIFY_SECRET` (optional Header `X-GF-Verify-Secret` für WP verify-password)
 - **Optional (DB/PHP Fallback für verify-password / user lookup)**
@@ -430,8 +431,9 @@ Realtime (Socket.IO):
 - Emitted events:
   - `photo_uploaded` (bei Upload) → `packages/backend/src/routes/photos.ts`
   - `photo_approved` (bei Moderation) → `packages/backend/src/routes/photos.ts`
-  - `wall:control` (Admin-Fernsteuerung) → Relay in `packages/backend/src/index.ts`
-    - Admin sendet `{ eventId, ...controlData }` → Server broadcastet `controlData` an alle Clients im Room `event:<eventId>` (außer Sender)
+  - `wall:control` (Admin/Host-Fernsteuerung) → Relay in `packages/backend/src/index.ts`
+    - **Auth-Check:** Nur Host, Co-Host oder Admin dürfen `wall:control` senden (JWT aus Handshake-Cookie geprüft)
+    - Admin/Host sendet `{ eventId, ...controlData }` → Server broadcastet `controlData` an alle Clients im Room `event:<eventId>` (außer Sender)
     - Steuerbare Felder: `viewMode`, `isPlaying`, `soundEnabled`, `intervalSec`, `showQR`, `overlayType`, `overlayIntensity`, `message`, `messageVisible`
 
 Admin-Fernsteuerung (Frontend):

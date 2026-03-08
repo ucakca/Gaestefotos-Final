@@ -1,7 +1,13 @@
 # Booth Experience Konzept — KI-Avatar + Spiele + Async Delivery
 
-> Stand: 27. Februar 2026
+> Stand: 27. Februar 2026 *(Querverweise ergänzt März 2026)*
 > Status: KONZEPTPHASE — Architektur-Entscheidungen getroffen ✅
+>
+> **Verwandte Dokumente:**
+> → `docs/PHOTO-BOOTH-PLATFORM-PLAN.md` — Architektur, Hardware, Tiers, Canon CCAPI, Dual-Kamera
+> → `photo-booth/INTERAKTIVES_BOOTH_KONZEPT.md` — ⚠️ Veraltet, nur zur Referenz
+>
+> **Hinweis Dual-Kamera (März 2026):** Alle AI-Cam-Features (Emotionen, AR-Filter, Wiedererkennung, Avatar-Reaktion) laufen auf der **Sekundärkamera** — USB-Webcam (Linux) oder Tablet-Frontkamera — NICHT auf der DSLR. Details: → `PHOTO-BOOTH-PLATFORM-PLAN.md` § Dual-Kamera Architektur
 
 ---
 
