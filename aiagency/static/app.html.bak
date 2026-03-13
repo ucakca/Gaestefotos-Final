@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agency Orchestrator</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+  [x-cloak]{display:none}
+  body{background:#0f1117;color:#e2e8f0;font-family:system-ui,sans-serif}
+  .sidebar-item{@apply flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer text-sm transition-all}
+  .sidebar-item:hover{@apply bg-gray-800}
+  .sidebar-item.active{@apply bg-gray-800 text-white}
+  .card{background:#161b27;border:1px solid #1e2535;border-radius:12px}
+  .input{@apply w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500 transition-colors}
+  .btn{@apply px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer}
+  .btn-primary{@apply bg-purple-600 hover:bg-purple-700 text-white}
+  .btn-ghost{@apply bg-gray-800 hover:bg-gray-700 text-gray-300}
+  .btn-danger{@apply bg-red-900/50 hover:bg-red-800 text-red-300}
+  .btn-sm{@apply px-2 py-1 text-xs}
+  .badge{@apply px-2 py-0.5 rounded-full text-xs font-medium}
+  .badge-green{@apply bg-green-900/50 text-green-400}
+  .badge-purple{@apply bg-purple-900/50 text-purple-400}
+  .badge-gray{@apply bg-gray-800 text-gray-400}
+  .badge-red{@apply bg-red-900/50 text-red-400}
+  .badge-yellow{@apply bg-yellow-900/50 text-yellow-400}
+  .msg-supervisor{background:#1a1d2e;border-left:3px solid #4a5568}
+  .msg-director{background:#1a1424;border-left:3px solid #7c3aed}
+  .msg-agent{background:#0d1f0d;border-left:3px solid #16a34a}
+  .msg-user{background:#1a2744;border-left:3px solid #3b82f6}
+  .msg-error{background:#1a0d0d;border-left:3px solid #dc2626}
+  .pulse{animation:pulse 1.5s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  pre{white-space:pre-wrap;word-break:break-word;font-family:'JetBrains Mono','Fira Code',monospace;font-size:.8rem;line-height:1.6}
+  .scrollbar::-webkit-scrollbar{width:4px}
+  .scrollbar::-webkit-scrollbar-track{background:transparent}
+  .scrollbar::-webkit-scrollbar-thumb{background:#2d3748;border-radius:2px}
+  .modal-bg{background:rgba(0,0,0,.7);backdrop-filter:blur(4px)}
+  textarea{resize:vertical}
+  .tag{@apply px-2 py-0.5 bg-gray-700 rounded text-xs text-gray-300}
+</style>
+</head>
+<body class="h-full overflow-hidden" x-data="App()" x-init="init()" x-cloak>
+
+<!-- Monaco Editor Modal -->
+<div x-show="monacoOpen" class="fixed inset-0 z-50 modal-bg flex items-center justify-center p-4" @click.self="monacoOpen=false">
+  <div class="w-full max-w-5xl bg-gray-900 rounded-xl border border-gray-700 flex flex-col" style="height:80vh">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-700">
+      <div class="flex items-center gap-3">
+        <span class="text-sm font-medium" x-text="monacoTitle"></span>
+        <select x-model="monacoLang" class="input text-xs py-0.5 w-28">
+          <option value="markdown">Markdown</option><option value="typescript">TypeScript</option>
+          <option value="javascript">JavaScript</option><option value="python">Python</option>
+          <option value="sql">SQL</option><option value="json">JSON</option>
+          <option value="shell">Shell</option><option value="yaml">YAML</option>
+          <option value="html">HTML</option><option value="css">CSS</option>
+        </select>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn btn-ghost btn-sm" @click="copyMonaco()">📋 Copy</button>
+        <button class="btn btn-ghost btn-sm" @click="monacoOpen=false">✕</button>
+      </div>
+    </div>
+    <div id="monacoContainer" class="flex-1 overflow-hidden rounded-b-xl"></div>
+  </div>
+</div>
+
+<!-- Agent Form Modal -->
+<div x-show="agentModal" class="fixed inset-0 z-40 modal-bg flex items-center justify-center p-4" @click.self="agentModal=false">
+  <div class="w-full max-w-2xl card p-6 max-h-screen overflow-y-auto scrollbar">
+    <h3 class="font-semibold mb-4" x-text="editingAgent.id ? 'Agent bearbeiten' : 'Neuer Agent'"></h3>
+    <div class="space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="text-xs text-gray-400 mb-1 block">Name *</label><input x-model="editingAgent.name" class="input" placeholder="Backend Architect"></div>
+        <div><label class="text-xs text-gray-400 mb-1 block">Slug *</label><input x-model="editingAgent.slug" class="input" placeholder="backend-architect"></div>
+      </div>
+      <div><label class="text-xs text-gray-400 mb-1 block">Beschreibung</label><input x-model="editingAgent.description" class="input"></div>
+      <div class="grid grid-cols-3 gap-3">
+        <div><label class="text-xs text-gray-400 mb-1 block">Kategorie</label>
+          <select x-model="editingAgent.category" class="input">
+            <option value="engineering">Engineering</option><option value="design">Design</option>
+            <option value="marketing">Marketing</option><option value="product">Product</option>
+            <option value="testing">Testing</option><option value="strategy">Strategy</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <div><label class="text-xs text-gray-400 mb-1 block">Provider Override</label>
+          <select x-model="editingAgent.provider_override" class="input">
+            <option value="">Global Default</option><option value="ollama">Ollama</option>
+            <option value="openai">OpenAI</option><option value="anthropic">Anthropic</option>
+            <option value="groq">Groq</option>
+          </select>
+        </div>
+        <div><label class="text-xs text-gray-400 mb-1 block">Model Override</label><input x-model="editingAgent.model_override" class="input" placeholder="gpt-4o-mini"></div>
+      </div>
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label class="text-xs text-gray-400">System Prompt</label>
+          <button class="text-xs text-purple-400 hover:text-purple-300" @click="openMonaco(editingAgent.system_prompt, 'System Prompt', 'markdown')">Edit in IDE</button>
+        </div>
+        <textarea x-model="editingAgent.system_prompt" class="input h-40 font-mono text-xs" placeholder="You are..."></textarea>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" x-model="editingAgent.enabled" id="agentEnabled" class="rounded">
+        <label for="agentEnabled" class="text-sm text-gray-300">Agent aktiviert</label>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-5">
+      <button class="btn btn-primary" @click="saveAgent()">Speichern</button>
+      <button class="btn btn-ghost" @click="agentModal=false">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rule Form Modal -->
+<div x-show="ruleModal" class="fixed inset-0 z-40 modal-bg flex items-center justify-center p-4" @click.self="ruleModal=false">
+  <div class="w-full max-w-xl card p-6">
+    <h3 class="font-semibold mb-4" x-text="editingRule.id ? 'Regel bearbeiten' : 'Neue Regel'"></h3>
+    <div class="space-y-3">
+      <div><label class="text-xs text-gray-400 mb-1 block">Name *</label><input x-model="editingRule.name" class="input"></div>
+      <div><label class="text-xs text-gray-400 mb-1 block">Beschreibung</label><input x-model="editingRule.description" class="input"></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="text-xs text-gray-400 mb-1 block">Scope</label>
+          <select x-model="editingRule.scope" class="input">
+            <option value="global">Global (alle Agents)</option>
+            <option value="agent">Spezifischer Agent</option>
+          </select>
+        </div>
+        <div x-show="editingRule.scope === 'agent'">
+          <label class="text-xs text-gray-400 mb-1 block">Agent</label>
+          <select x-model="editingRule.agent_id" class="input">
+            <option value="">Wählen...</option>
+            <template x-for="a in agents" :key="a.id"><option :value="a.id" x-text="a.name"></option></template>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="text-xs text-gray-400 mb-1 block">Regelinhalt *</label>
+        <textarea x-model="editingRule.content" class="input h-32" placeholder="Always respond in German. Use formal language."></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="text-xs text-gray-400 mb-1 block">Priorität</label><input type="number" x-model.number="editingRule.priority" class="input" placeholder="0"></div>
+        <div class="flex items-end pb-1"><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" x-model="editingRule.enabled" class="rounded"> <span class="text-sm text-gray-300">Aktiviert</span></label></div>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-5">
+      <button class="btn btn-primary" @click="saveRule()">Speichern</button>
+      <button class="btn btn-ghost" @click="ruleModal=false">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Memory Form Modal -->
+<div x-show="memoryModal" class="fixed inset-0 z-40 modal-bg flex items-center justify-center p-4" @click.self="memoryModal=false">
+  <div class="w-full max-w-lg card p-6">
+    <h3 class="font-semibold mb-4" x-text="editingMemory.id ? 'Memory bearbeiten' : 'Neuer Eintrag'"></h3>
+    <div class="space-y-3">
+      <div><label class="text-xs text-gray-400 mb-1 block">Key *</label><input x-model="editingMemory.key" class="input" placeholder="project_language"></div>
+      <div><label class="text-xs text-gray-400 mb-1 block">Value *</label><textarea x-model="editingMemory.value" class="input h-24" placeholder="TypeScript"></textarea></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="text-xs text-gray-400 mb-1 block">Scope</label>
+          <select x-model="editingMemory.scope" class="input">
+            <option value="global">Global</option><option value="agent">Agent</option><option value="session">Session</option>
+          </select>
+        </div>
+        <div x-show="editingMemory.scope === 'agent'">
+          <label class="text-xs text-gray-400 mb-1 block">Agent</label>
+          <select x-model="editingMemory.agent_id" class="input">
+            <option value="">Wählen...</option>
+            <template x-for="a in agents" :key="a.id"><option :value="a.id" x-text="a.name"></option></template>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-5">
+      <button class="btn btn-primary" @click="saveMemory()">Speichern</button>
+      <button class="btn btn-ghost" @click="memoryModal=false">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- API Key Modal -->
+<div x-show="keyModal" class="fixed inset-0 z-40 modal-bg flex items-center justify-center p-4" @click.self="keyModal=false">
+  <div class="w-full max-w-lg card p-6">
+    <h3 class="font-semibold mb-4" x-text="editingKey.id ? 'API Key bearbeiten' : 'Neuer API Key'"></h3>
+    <div class="space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="text-xs text-gray-400 mb-1 block">Provider *</label>
+          <select x-model="editingKey.provider" class="input">
+            <option value="openai">OpenAI</option><option value="anthropic">Anthropic</option>
+            <option value="groq">Groq</option><option value="ollama">Ollama</option>
+            <option value="xai">xAI (Grok)</option><option value="fal.ai">fal.ai (Bilder)</option><option value="remove.bg">remove.bg (BG)</option><option value="custom">Custom</option>
+          </select>
+        </div>
+        <div><label class="text-xs text-gray-400 mb-1 block">Label</label><input x-model="editingKey.label" class="input" placeholder="Production Key"></div>
+      </div>
+      <div>
+        <label class="text-xs text-gray-400 mb-1 block">API Key <span x-show="editingKey.id" class="text-gray-600">(leer lassen um nicht zu ändern)</span></label>
+        <input x-model="editingKey.key_value" type="password" class="input font-mono" placeholder="sk-...">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="text-xs text-gray-400 mb-1 block">Default Model</label><input x-model="editingKey.model_default" class="input" placeholder="gpt-4o-mini"></div>
+        <div><label class="text-xs text-gray-400 mb-1 block">Base URL (optional)</label><input x-model="editingKey.base_url" class="input" placeholder="https://api.openai.com/v1"></div>
+      </div>
+      <div class="flex items-center gap-2"><input type="checkbox" x-model="editingKey.is_active" id="keyActive" class="rounded"><label for="keyActive" class="text-sm text-gray-300">Aktiv</label></div>
+    </div>
+    <div class="flex gap-3 mt-5">
+      <button class="btn btn-primary" @click="saveKey()">Speichern</button>
+      <button class="btn btn-ghost" @click="keyModal=false">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Agents Modal -->
+<div x-show="importModal" class="fixed inset-0 z-40 modal-bg flex items-center justify-center p-4" @click.self="importModal=false">
+  <div class="w-full max-w-3xl card p-6" style="max-height:85vh;overflow-y:auto" class="scrollbar">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-semibold">Agency-Agents importieren</h3>
+      <div class="flex gap-2">
+        <button class="btn btn-primary btn-sm" @click="importAll()">Alle importieren</button>
+        <button class="btn btn-ghost btn-sm" @click="importModal=false">✕</button>
+      </div>
+    </div>
+    <div class="mb-3"><input x-model="importFilter" class="input" placeholder="Suchen..."></div>
+    <div class="space-y-1">
+      <template x-for="f in filteredAgentFiles" :key="f.file">
+        <div class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-800 group">
+          <div class="flex items-center gap-3">
+            <span class="badge badge-gray" x-text="f.category"></span>
+            <div>
+              <div class="text-sm font-medium" x-text="f.name"></div>
+              <div class="text-xs text-gray-500" x-text="f.description"></div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span x-show="f.already_imported" class="badge badge-green">✓ Import</span>
+            <button x-show="!f.already_imported" class="btn btn-ghost btn-sm" @click="importSingle(f)">Import</button>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
+
+<!-- Main layout -->
+<div class="flex h-screen overflow-hidden">
+
+  <!-- Sidebar -->
+  <div class="w-56 flex-shrink-0 flex flex-col" style="background:#0c0f1a;border-right:1px solid #1e2535">
+    <div class="p-4 border-b border-gray-800">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-lg">🎬</span>
+        <span class="font-bold text-sm">Agency OS</span>
+      </div>
+      <div class="flex items-center gap-2 mt-2">
+        <div class="w-2 h-2 rounded-full" :class="health.ollama ? 'bg-green-500' : 'bg-red-500'"></div>
+        <span class="text-xs text-gray-500" x-text="health.ollama ? 'Ollama Online' : 'Ollama Offline'"></span>
+      </div>
+    </div>
+
+    <nav class="flex-1 p-2 overflow-y-auto scrollbar">
+      <div class="text-xs text-gray-600 px-3 py-1 mt-2 mb-1 uppercase tracking-wider">Hauptmenü</div>
+      <a class="sidebar-item" :class="{active:view==='chat'}" @click="view='chat'">💬 <span>Chat</span></a>
+      <a class="sidebar-item" :class="{active:view==='agents'}" @click="view='agents';loadAgents()">🤖 <span>Agents</span> <span class="ml-auto badge badge-gray text-xs" x-text="agents.length"></span></a>
+      <a class="sidebar-item" :class="{active:view==='memory'}" @click="view='memory';loadMemory()">🧠 <span>Memory</span></a>
+      <a class="sidebar-item" :class="{active:view==='rules'}" @click="view='rules';loadRules()">📜 <span>Rules</span></a>
+      <a class="sidebar-item" :class="{active:view==='studio'}" @click="view='studio';loadStudioTools()">🎨 <span>Studio</span></a>
+      <div class="text-xs text-gray-600 px-3 py-1 mt-3 mb-1 uppercase tracking-wider">Konfiguration</div>
+      <a class="sidebar-item" :class="{active:view==='keys'}" @click="view='keys';loadKeys()">🔑 <span>API Keys</span></a>
+      <a class="sidebar-item" :class="{active:view==='settings'}" @click="view='settings';loadSettings()">⚙️ <span>Settings</span></a>
+    </nav>
+
+    <div class="p-3 border-t border-gray-800">
+      <div class="text-xs text-gray-600 mb-1">Auth Key</div>
+      <input x-model="apiKey" @change="saveApiKey()" type="password" class="input text-xs" placeholder="change-me-please">
+      <div class="mt-2 text-xs text-gray-600">
+        💰 <span x-text="'$' + (health.costs?.total_usd || 0).toFixed(5)"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content area -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+
+    <!-- ══════════ CHAT VIEW ══════════ -->
+    <div x-show="view==='chat'" class="flex flex-1 overflow-hidden h-full">
+
+      <!-- Conversations sidebar -->
+      <div class="w-56 flex-shrink-0 flex flex-col" style="background:#0c0f1a;border-right:1px solid #1e2535">
+        <div class="p-3 border-b border-gray-800 flex items-center justify-between">
+          <span class="text-sm font-medium">Unterhaltungen</span>
+          <button class="btn btn-primary btn-sm" @click="newConversation()">+</button>
+        </div>
+        <div class="flex-1 overflow-y-auto scrollbar p-2">
+          <template x-for="conv in conversations" :key="conv.id">
+            <div class="p-2 rounded-lg cursor-pointer text-sm hover:bg-gray-800 group relative"
+              :class="{'bg-gray-800': activeConvId === conv.id}"
+              @click="selectConversation(conv.id)">
+              <div class="flex items-center gap-1">
+                <span x-show="conv.pinned" class="text-yellow-500 text-xs">📌</span>
+                <span class="truncate" x-text="conv.title"></span>
+              </div>
+              <div class="text-xs text-gray-600 mt-0.5" x-text="conv.message_count + ' Nachrichten'"></div>
+              <div class="absolute right-1 top-1 hidden group-hover:flex gap-1">
+                <button class="text-gray-600 hover:text-yellow-400 text-xs p-0.5" @click.stop="pinConversation(conv)" title="Pin">📌</button>
+                <button class="text-gray-600 hover:text-red-400 text-xs p-0.5" @click.stop="deleteConversation(conv.id)" title="Löschen">✕</button>
+              </div>
+            </div>
+          </template>
+          <div x-show="conversations.length === 0" class="text-xs text-gray-600 text-center p-4">
+            Keine Unterhaltungen.<br>Erstelle eine neue mit +
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat main -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Chat header -->
+        <div class="px-4 py-3 border-b border-gray-800 flex items-center justify-between" style="background:#0c0f1a">
+          <div x-show="activeConvId">
+            <div class="font-medium text-sm" x-text="activeConvTitle"></div>
+            <div class="text-xs text-gray-500" x-show="isRunning">
+              <span class="pulse inline-block w-2 h-2 bg-purple-500 rounded-full mr-1"></span>
+              <span x-text="runningStatus"></span>
+            </div>
+          </div>
+          <div x-show="!activeConvId" class="text-sm text-gray-500">Wähle oder erstelle eine Unterhaltung</div>
+          <div class="flex items-center gap-2">
+            <select x-model="chatMode" class="input text-xs py-1 w-40">
+              <option value="auto">🎬 Auto (Director)</option>
+              <template x-for="a in agents.filter(a=>a.enabled)" :key="a.slug">
+                <option :value="a.slug" x-text="'🤖 ' + a.name"></option>
+              </template>
+            </select>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="msgContainer" class="flex-1 overflow-y-auto scrollbar p-4 space-y-3">
+          <template x-for="msg in messages" :key="msg.id">
+            <div :class="{
+              'msg-user': msg.role === 'user',
+              'msg-agent': msg.role === 'assistant',
+              'msg-supervisor': msg.role === 'system' && msg.agent === 'supervisor',
+              'msg-director': msg.role === 'system' && msg.agent === 'director',
+              'msg-error': msg.role === 'error'
+            }" class="rounded-xl p-4">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-semibold" :class="{
+                    'text-blue-400': msg.role === 'user',
+                    'text-green-400': msg.role === 'assistant',
+                    'text-gray-400': msg.role === 'system' && msg.agent === 'supervisor',
+                    'text-purple-400': msg.role === 'system' && msg.agent === 'director'
+                  }" x-text="msgLabel(msg)"></span>
+                  <span x-show="msg.meta?.tokens_out" class="text-xs text-gray-600" x-text="(msg.meta?.tokens_in||0)+'→'+(msg.meta?.tokens_out||0)+' tok'"></span>
+                </div>
+                <div class="flex gap-1">
+                  <button class="text-xs text-gray-600 hover:text-white" @click="openMonaco(contentOfMsg(msg), msgLabel(msg))" title="In IDE öffnen">⌨️</button>
+                  <button class="text-xs text-gray-600 hover:text-white" @click="copyText(contentOfMsg(msg))" title="Kopieren">📋</button>
+                </div>
+              </div>
+              <pre class="text-gray-300 text-sm leading-relaxed" x-text="contentOfMsg(msg)"></pre>
+            </div>
+          </template>
+
+          <!-- Live stream messages -->
+          <template x-for="msg in liveMessages" :key="msg.id">
+            <div :class="`msg-${msg.type} rounded-xl p-4`">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="pulse inline-block w-1.5 h-1.5 rounded-full" :class="{
+                  'bg-gray-500': msg.type==='supervisor',
+                  'bg-purple-500': msg.type==='director',
+                  'bg-green-500': msg.type==='agent'
+                }"></span>
+                <span class="text-xs font-semibold" :class="{
+                  'text-gray-400':msg.type==='supervisor',
+                  'text-purple-400':msg.type==='director',
+                  'text-green-400':msg.type==='agent'
+                }" x-text="msg.label"></span>
+                <span x-show="msg.free" class="badge badge-gray text-xs">Ollama · kostenlos</span>
+              </div>
+              <pre class="text-gray-300 text-sm leading-relaxed" x-text="msg.content"></pre>
+            </div>
+          </template>
+
+          <div x-show="messages.length === 0 && liveMessages.length === 0 && activeConvId" class="text-center text-gray-600 py-16 text-sm">
+            Schreibe eine Nachricht um zu beginnen.<br>
+            <span class="text-xs mt-2 block">Tipp: Im Auto-Modus analysiert der Director deine Anforderungen und wählt automatisch die richtigen Agents.</span>
+          </div>
+        </div>
+
+        <!-- Input -->
+        <div class="p-4 border-t border-gray-800" style="background:#0c0f1a">
+          <div class="flex gap-3">
+            <textarea x-model="chatInput" @keydown.ctrl.enter="sendMessage()" class="input flex-1 h-16 text-sm" placeholder="Beschreibe dein Projekt oder Problem... (Ctrl+Enter zum Senden)" :disabled="!activeConvId || isRunning"></textarea>
+            <button class="btn btn-primary px-5" @click="sendMessage()" :disabled="!activeConvId || isRunning || !chatInput.trim()">
+              <span x-show="!isRunning">▶</span>
+              <span x-show="isRunning" class="pulse">⏳</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ AGENTS VIEW ══════════ -->
+    <div x-show="view==='agents'" class="flex-1 overflow-y-auto scrollbar p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-lg font-bold">Agents</h2>
+          <p class="text-sm text-gray-500 mt-1">Verwalte deine AI-Spezialisten</p>
+        </div>
+        <div class="flex gap-3">
+          <button class="btn btn-ghost" @click="openImportModal()">📥 Aus Dateien importieren</button>
+          <button class="btn btn-primary" @click="openAgentModal()">+ Neuer Agent</button>
+        </div>
+      </div>
+
+      <div class="mb-4 flex gap-3">
+        <input x-model="agentFilter" class="input w-64" placeholder="Suchen...">
+        <select x-model="agentCategoryFilter" class="input w-40">
+          <option value="">Alle Kategorien</option>
+          <option value="engineering">Engineering</option>
+          <option value="design">Design</option>
+          <option value="marketing">Marketing</option>
+          <option value="product">Product</option>
+          <option value="testing">Testing</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-1 gap-3">
+        <template x-for="agent in filteredAgents" :key="agent.id">
+          <div class="card p-4 flex items-start justify-between hover:border-gray-600 transition-colors">
+            <div class="flex items-start gap-4 flex-1 min-w-0">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center text-lg flex-shrink-0" :style="`background: ${agentColor(agent.category)}`">
+                <span x-text="agentEmoji(agent.category)"></span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-medium" x-text="agent.name"></span>
+                  <span class="badge badge-gray" x-text="agent.category"></span>
+                  <span x-show="agent.source === 'agency-agents'" class="badge badge-purple">agency-agents</span>
+                  <span x-show="!agent.enabled" class="badge badge-red">Deaktiviert</span>
+                  <span x-show="agent.model_override" class="badge badge-yellow" x-text="agent.model_override"></span>
+                </div>
+                <p class="text-sm text-gray-500 mt-1 truncate" x-text="agent.description || agent.slug"></p>
+                <div class="text-xs text-gray-600 mt-1 flex items-center gap-3">
+                  <span x-text="agent.slug"></span>
+                  <span x-show="agent.system_prompt" x-text="(agent.system_prompt||'').split(' ').length + ' Wörter im Prompt'"></span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0 ml-4">
+              <button class="btn btn-ghost btn-sm" @click="toggleAgent(agent)">
+                <span x-text="agent.enabled ? '⏸' : '▶'"></span>
+              </button>
+              <button class="btn btn-ghost btn-sm" @click="openAgentModal(agent)">✏️ Edit</button>
+              <button class="btn btn-danger btn-sm" @click="deleteAgent(agent.slug)">🗑</button>
+            </div>
+          </div>
+        </template>
+        <div x-show="filteredAgents.length === 0" class="text-center text-gray-600 py-12">
+          Keine Agents gefunden. Importiere Agents aus den agency-agents Dateien oder erstelle einen neuen.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ MEMORY VIEW ══════════ -->
+    <div x-show="view==='memory'" class="flex-1 overflow-y-auto scrollbar p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-lg font-bold">Memory</h2>
+          <p class="text-sm text-gray-500 mt-1">Persistentes Wissen für Agents</p>
+        </div>
+        <button class="btn btn-primary" @click="openMemoryModal()">+ Neuer Eintrag</button>
+      </div>
+
+      <div class="mb-4 flex gap-3">
+        <input x-model="memorySearch" @input.debounce="loadMemory()" class="input w-64" placeholder="Suchen...">
+        <select x-model="memoryScopeFilter" @change="loadMemory()" class="input w-36">
+          <option value="">Alle Scopes</option>
+          <option value="global">Global</option>
+          <option value="agent">Agent</option>
+          <option value="session">Session</option>
+        </select>
+        <button class="btn btn-danger btn-sm" @click="if(confirm('Alle globalen Memory-Einträge löschen?')) clearMemory()" title="Global Memory löschen">🗑 Global löschen</button>
+      </div>
+
+      <div class="space-y-2">
+        <template x-for="mem in memory" :key="mem.id">
+          <div class="card p-3 flex items-start justify-between hover:border-gray-600">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <code class="text-purple-300 text-sm font-mono" x-text="mem.key"></code>
+                <span class="badge" :class="{'badge-purple':mem.scope==='global','badge-yellow':mem.scope==='agent','badge-gray':mem.scope==='session'}" x-text="mem.scope"></span>
+                <span x-show="mem.agent_id" class="text-xs text-gray-600" x-text="agentName(mem.agent_id)"></span>
+              </div>
+              <p class="text-sm text-gray-400 truncate" x-text="mem.value"></p>
+              <span class="text-xs text-gray-600" x-text="mem.updated_at?.substring(0,10)"></span>
+            </div>
+            <div class="flex gap-2 flex-shrink-0 ml-4">
+              <button class="btn btn-ghost btn-sm" @click="openMemoryModal(mem)">✏️</button>
+              <button class="btn btn-danger btn-sm" @click="deleteMemory(mem.id)">🗑</button>
+            </div>
+          </div>
+        </template>
+        <div x-show="memory.length === 0" class="text-center text-gray-600 py-12">
+          Kein Memory-Einträge. Füge Wissen hinzu das Agents über deine Projekte wissen sollten.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ RULES VIEW ══════════ -->
+    <div x-show="view==='rules'" class="flex-1 overflow-y-auto scrollbar p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-lg font-bold">Rules</h2>
+          <p class="text-sm text-gray-500 mt-1">Verhaltensregeln für Agents</p>
+        </div>
+        <button class="btn btn-primary" @click="openRuleModal()">+ Neue Regel</button>
+      </div>
+
+      <div class="space-y-2">
+        <template x-for="rule in rules" :key="rule.id">
+          <div class="card p-4 hover:border-gray-600" :class="{'opacity-50': !rule.enabled}">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="font-medium text-sm" x-text="rule.name"></span>
+                  <span class="badge" :class="rule.scope==='global'?'badge-purple':'badge-yellow'" x-text="rule.scope"></span>
+                  <span x-show="rule.agent_id" class="text-xs text-gray-500" x-text="'→ ' + agentName(rule.agent_id)"></span>
+                  <span x-show="!rule.enabled" class="badge badge-red">Deaktiviert</span>
+                  <span class="text-xs text-gray-600" x-text="'Priorität: ' + rule.priority"></span>
+                </div>
+                <p class="text-xs text-gray-500 mb-2" x-text="rule.description"></p>
+                <pre class="text-xs text-gray-400 bg-gray-900 rounded p-2 max-h-20 overflow-hidden" x-text="rule.content"></pre>
+              </div>
+              <div class="flex gap-2 ml-4 flex-shrink-0">
+                <button class="btn btn-ghost btn-sm" @click="toggleRule(rule)" x-text="rule.enabled ? '⏸' : '▶'"></button>
+                <button class="btn btn-ghost btn-sm" @click="openRuleModal(rule)">✏️</button>
+                <button class="btn btn-danger btn-sm" @click="deleteRule(rule.id)">🗑</button>
+              </div>
+            </div>
+          </div>
+        </template>
+        <div x-show="rules.length === 0" class="text-center text-gray-600 py-12">
+          Keine Regeln. Erstelle globale Regeln wie "Antworte immer auf Deutsch" oder agent-spezifische Verhaltensregeln.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ API KEYS VIEW ══════════ -->
+    <div x-show="view==='keys'" class="flex-1 overflow-y-auto scrollbar p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-lg font-bold">API Keys</h2>
+          <p class="text-sm text-gray-500 mt-1">LLM Provider Konfiguration</p>
+        </div>
+        <button class="btn btn-primary" @click="openKeyModal()">+ Neuer Key</button>
+      </div>
+
+      <div class="card p-4 mb-6" style="border-color:#7c3aed33;background:#1a1424">
+        <div class="text-sm font-medium text-purple-300 mb-2">ℹ️ Kostenstruktur</div>
+        <div class="text-xs text-gray-400 space-y-1">
+          <div>🟢 <strong>Supervisor + Director</strong> — immer Ollama (lokal, kostenlos)</div>
+          <div>💰 <strong>Specialist Agents</strong> — konfigurierbar per Agent oder global (Provider unten)</div>
+          <div>💡 Empfehlung: Groq für günstigen Premium-Zugang, oder Ollama für komplett kostenlos</div>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <template x-for="key in apiKeys" :key="key.id">
+          <div class="card p-4 flex items-center justify-between hover:border-gray-600">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center text-lg" :style="providerBg(key.provider)">
+                <span x-text="providerEmoji(key.provider)"></span>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-medium" x-text="key.provider"></span>
+                  <span x-show="key.label" class="badge badge-gray" x-text="key.label"></span>
+                  <span :class="key.test_status === 'ok' ? 'badge-green' : key.test_status === 'error' ? 'badge-red' : 'badge-gray'" class="badge" x-text="key.test_status"></span>
+                  <span x-show="!key.is_active" class="badge badge-red">Inaktiv</span>
+                </div>
+                <div class="text-xs text-gray-500 mt-0.5 font-mono" x-text="key.key_masked"></div>
+                <div class="text-xs text-gray-600" x-show="key.model_default" x-text="'Default: ' + key.model_default"></div>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost btn-sm" @click="testKey(key)" :class="{'opacity-50':testingKey===key.id}">
+                <span x-show="testingKey !== key.id">🧪 Test</span>
+                <span x-show="testingKey === key.id" class="pulse">Testing...</span>
+              </button>
+              <button class="btn btn-ghost btn-sm" @click="openKeyModal(key)">✏️</button>
+              <button class="btn btn-danger btn-sm" @click="deleteKey(key.id)">🗑</button>
+            </div>
+          </div>
+        </template>
+        <div x-show="apiKeys.length === 0" class="text-center text-gray-600 py-12">
+          Keine API Keys konfiguriert. Füge Keys für OpenAI, Anthropic, Groq etc. hinzu.
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ SETTINGS VIEW ══════════ -->
+    <div x-show="view==='settings'" class="flex-1 overflow-y-auto scrollbar p-6">
+      <div class="mb-6">
+        <h2 class="text-lg font-bold">Settings</h2>
+        <p class="text-sm text-gray-500 mt-1">System-Konfiguration</p>
+      </div>
+
+      <div class="grid grid-cols-1 gap-6 max-w-2xl">
+        <!-- LLM Settings -->
+        <div class="card p-5">
+          <h3 class="font-medium mb-4 text-purple-300">🤖 LLM Konfiguration</h3>
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-gray-400 mb-1 block">Specialist Provider</label>
+                <select x-model="settings.specialist_provider" class="input" @change="saveSetting('specialist_provider', $event.target.value)">
+                  <option value="ollama">Ollama (Free/Local)</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="anthropic">Anthropic</option>
+                  <option value="groq">Groq</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-gray-400 mb-1 block">Specialist Model</label>
+                <input x-model="settings.specialist_model" class="input" @change="saveSetting('specialist_model', $event.target.value)" placeholder="llama3.2:3b">
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-gray-400 mb-1 block">Supervisor/Director Model (Ollama, immer kostenlos)</label>
+              <input x-model="settings.supervisor_model" class="input w-64" @change="saveSetting('supervisor_model', $event.target.value)" placeholder="llama3.2:3b">
+            </div>
+          </div>
+        </div>
+
+        <!-- Orchestration Settings -->
+        <div class="card p-5">
+          <h3 class="font-medium mb-4 text-purple-300">🎬 Orchestrierung</h3>
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-gray-400 mb-1 block">Max Revisionen pro Agent</label>
+                <input type="number" x-model.number="settings.max_revisions" class="input" min="0" max="5" @change="saveSetting('max_revisions', $event.target.value)">
+              </div>
+              <div>
+                <label class="text-xs text-gray-400 mb-1 block">Max Agents pro Run</label>
+                <input type="number" x-model.number="settings.max_agents_per_run" class="input" min="1" max="20" @change="saveSetting('max_agents_per_run', $event.target.value)">
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="checkbox" :checked="settings.stream_thinking === 'true'" @change="saveSetting('stream_thinking', $event.target.checked.toString())" id="streamThinking" class="rounded">
+              <label for="streamThinking" class="text-sm text-gray-300">Supervisor/Director Thinking im Chat anzeigen</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="card p-5">
+          <h3 class="font-medium mb-4 text-purple-300">📊 System Status</h3>
+          <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-gray-400">Ollama</span><span :class="health.ollama ? 'text-green-400' : 'text-red-400'" x-text="health.ollama ? '✅ Online' : '❌ Offline'"></span></div>
+            <div class="flex justify-between"><span class="text-gray-400">Ollama Models</span><span class="text-gray-300 text-xs" x-text="(health.ollama_models||[]).join(', ') || 'keine'"></span></div>
+            <div class="flex justify-between"><span class="text-gray-400">Agents in DB</span><span class="text-gray-300" x-text="health.agents"></span></div>
+            <div class="flex justify-between"><span class="text-gray-400">Gesamtkosten</span><span class="text-green-400" x-text="'$' + (health.costs?.total_usd || 0).toFixed(5)"></span></div>
+          </div>
+          <button class="btn btn-ghost btn-sm mt-4" @click="loadHealth()">🔄 Aktualisieren</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ STUDIO VIEW ══════════ -->
+    <div x-show="view==='studio'" class="flex-1 overflow-y-auto scrollbar p-6">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h2 class="text-lg font-bold">🎨 AI Studio</h2>
+          <p class="text-sm text-gray-500 mt-1">Standalone AI Tools — unabhängig, keine App-Anmeldung nötig</p>
+        </div>
+      </div>
+
+      <!-- Tab nav -->
+      <div class="flex gap-1 mb-6 bg-gray-900 p-1 rounded-lg w-fit flex-wrap">
+        <button class="px-3 py-1.5 rounded-md text-xs transition-all" :class="studioTab==='analyze'?'bg-gray-700 text-white':'text-gray-500 hover:text-gray-300'" @click="studioTab='analyze';clearStudioResult()">🔍 Bildanalyse</button>
+        <button class="px-3 py-1.5 rounded-md text-xs transition-all" :class="studioTab==='caption'?'bg-gray-700 text-white':'text-gray-500 hover:text-gray-300'" @click="studioTab='caption';clearStudioResult()">✍️ Caption</button>
+        <button class="px-3 py-1.5 rounded-md text-xs transition-all" :class="studioTab==='text'?'bg-gray-700 text-white':'text-gray-500 hover:text-gray-300'" @click="studioTab='text';clearStudioResult()">📝 Text Tools</button>
+        <button class="px-3 py-1.5 rounded-md text-xs transition-all" :class="studioTab==='effect'?'bg-gray-700 text-white':'text-gray-500 hover:text-gray-300'" @click="studioTab='effect';clearStudioResult()">✨ Effekte</button>
+        <button class="px-3 py-1.5 rounded-md text-xs transition-all" :class="studioTab==='generate'?'bg-gray-700 text-white':'text-gray-500 hover:text-gray-300'" @click="studioTab='generate';clearStudioResult()">🖼 Generieren</button>
+        <button class="px-3 py-1.5 rounded-md text-xs transition-all" :class="studioTab==='removebg'?'bg-gray-700 text-white':'text-gray-500 hover:text-gray-300'" @click="studioTab='removebg';clearStudioResult()">🪄 BG entfernen</button>
+      </div>
+
+      <!-- ── Image Analysis ── -->
+      <div x-show="studioTab==='analyze'" class="grid grid-cols-2 gap-6 max-w-4xl">
+        <div class="card p-5">
+          <h3 class="font-medium mb-4 text-purple-300">🔍 Bildanalyse <span class="badge badge-green ml-2">Ollama · kostenlos</span></h3>
+          <div class="space-y-3">
+            <div><label class="text-xs text-gray-400 mb-1 block">Bild hochladen</label>
+              <input type="file" accept="image/*" @change="studioFile=$event.target.files[0];studioPreview=URL.createObjectURL($event.target.files[0])" class="input text-xs">
+            </div>
+            <div x-show="studioPreview" class="rounded-lg overflow-hidden border border-gray-700"><img :src="studioPreview" class="w-full max-h-48 object-contain bg-gray-900"></div>
+            <div><label class="text-xs text-gray-400 mb-1 block">Frage / Prompt</label>
+              <textarea x-model="studioAnalyzeQ" class="input h-20 text-sm" placeholder="Beschreibe dieses Bild im Detail. Was siehst du?"></textarea>
+            </div>
+            <button class="btn btn-primary w-full" @click="runAnalyze()" :disabled="!studioFile||studioLoading">
+              <span x-show="!studioLoading">🔍 Analysieren</span><span x-show="studioLoading" class="pulse">Analysiere...</span>
+            </button>
+          </div>
+        </div>
+        <div class="card p-5" x-show="studioResult">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-medium text-green-300">Ergebnis</h3>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost btn-sm" @click="openMonaco(studioResult,'Bildanalyse')">⌨️ IDE</button>
+              <button class="btn btn-ghost btn-sm" @click="copyText(studioResult)">📋</button>
+            </div>
+          </div>
+          <pre class="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap" x-text="studioResult"></pre>
+        </div>
+      </div>
+
+      <!-- ── Caption from Image ── -->
+      <div x-show="studioTab==='caption'" class="grid grid-cols-2 gap-6 max-w-4xl">
+        <div class="card p-5">
+          <h3 class="font-medium mb-4 text-purple-300">✍️ Caption Generator <span class="badge badge-green ml-2">Ollama · kostenlos</span></h3>
+          <div class="space-y-3">
+            <div><label class="text-xs text-gray-400 mb-1 block">Bild hochladen</label>
+              <input type="file" accept="image/*" @change="studioFile=$event.target.files[0];studioPreview=URL.createObjectURL($event.target.files[0])" class="input text-xs">
+            </div>
+            <div x-show="studioPreview" class="rounded-lg overflow-hidden border border-gray-700"><img :src="studioPreview" class="w-full max-h-40 object-contain bg-gray-900"></div>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="text-xs text-gray-400 mb-1 block">Stil</label>
+                <select x-model="studioCaptionStyle" class="input">
+                  <option value="instagram">Instagram</option><option value="linkedin">LinkedIn</option>
+                  <option value="twitter">Twitter/X</option><option value="facebook">Facebook</option>
+                  <option value="alt text">Alt Text (SEO)</option>
+                </select>
+              </div>
+              <div><label class="text-xs text-gray-400 mb-1 block">Sprache</label>
+                <select x-model="studioCaptionLang" class="input">
+                  <option value="German">Deutsch</option><option value="English">English</option><option value="French">Français</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-primary w-full" @click="runCaption()" :disabled="!studioFile||studioLoading">
+              <span x-show="!studioLoading">✍️ Caption erstellen</span><span x-show="studioLoading" class="pulse">Erstelle...</span>
+            </button>
+          </div>
+        </div>
+        <div class="card p-5" x-show="studioResult">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-medium text-green-300">Caption</h3>
+            <button class="btn btn-ghost btn-sm" @click="copyText(studioResult)">📋 Kopieren</button>
+          </div>
+          <pre class="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap" x-text="studioResult"></pre>
+        </div>
+      </div>
+
+      <!-- ── Text Tools ── -->
+      <div x-show="studioTab==='text'" class="grid grid-cols-2 gap-6 max-w-4xl">
+        <div class="card p-5">
+          <h3 class="font-medium mb-4 text-purple-300">📝 Text Tools</h3>
+          <div class="space-y-3">
+            <div><label class="text-xs text-gray-400 mb-1 block">Tool</label>
+              <select x-model="studioTextTool" class="input">
+                <option value="instagram">Instagram Post + Hashtags</option>
+                <option value="linkedin">LinkedIn Post</option>
+                <option value="tweet">Tweet (max 280 Zeichen)</option>
+                <option value="caption">Social Media Caption</option>
+                <option value="blog_intro">Blog Einleitung</option>
+                <option value="blog_outline">Blog Gliederung</option>
+                <option value="email_subject">E-Mail Betreffzeilen (5x)</option>
+                <option value="seo_meta">SEO Meta Title + Description</option>
+                <option value="product_desc">Produktbeschreibung</option>
+                <option value="tagline">Slogans / Taglines (5x)</option>
+                <option value="cold_email">Cold Outreach E-Mail</option>
+                <option value="faq">FAQ generieren</option>
+                <option value="press_release">Pressemitteilung</option>
+                <option value="roast">Lustiger Roast</option>
+              </select>
+            </div>
+            <div><label class="text-xs text-gray-400 mb-1 block">Input / Kontext</label>
+              <textarea x-model="studioTextInput" class="input h-28 text-sm" placeholder="Beschreibe das Produkt, Thema oder die Person..."></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="text-xs text-gray-400 mb-1 block">Ton</label>
+                <select x-model="studioTextTone" class="input">
+                  <option value="professional">Professionell</option><option value="casual">Locker</option>
+                  <option value="funny">Witzig</option><option value="enthusiastic">Enthusiastisch</option><option value="formal">Formal</option>
+                </select>
+              </div>
+              <div><label class="text-xs text-gray-400 mb-1 block">Sprache</label>
+                <select x-model="studioTextLang" class="input">
+                  <option value="German">Deutsch</option><option value="English">English</option><option value="French">Français</option>
+                </select>
+              </div>
+            </div>
+            <div><label class="text-xs text-gray-400 mb-1 block">Zusätzliche Anweisungen (optional)</label>
+              <input x-model="studioTextExtra" class="input text-sm" placeholder="z.B. Erwähne Nachhaltigkeit...">
+            </div>
+            <button class="btn btn-primary w-full" @click="runTextTool()" :disabled="!studioTextInput.trim()||studioLoading">
+              <span x-show="!studioLoading">⚡ Generieren</span><span x-show="studioLoading" class="pulse">Generiere...</span>
+            </button>
+          </div>
+        </div>
+        <div class="card p-5" x-show="studioResult">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-medium text-green-300">Ergebnis</h3>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost btn-sm" @click="openMonaco(studioResult,'Text Tool')">⌨️ IDE</button>
+              <button class="btn btn-ghost btn-sm" @click="copyText(studioResult)">📋</button>
+            </div>
+          </div>
+          <pre class="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap" x-text="studioResult"></pre>
+        </div>
+      </div>
+
+      <!-- ── Image Effects ── -->
+      <div x-show="studioTab==='effect'" class="max-w-4xl">
+        <div x-show="!studioTools.image_effects?.available" class="card p-4 mb-4" style="border-color:#f59e0b33;background:#1a1500">
+          <div class="text-sm text-yellow-300">⚠️ fal.ai API Key erforderlich. Füge deinen Key unter <button class="underline" @click="view='keys';loadKeys()">API Keys</button> hinzu (Provider: <code>fal.ai</code>).</div>
+        </div>
+        <div class="grid grid-cols-2 gap-6">
+          <div class="card p-5">
+            <h3 class="font-medium mb-4 text-purple-300">✨ Bildstil Effekte <span class="badge badge-yellow ml-2">fal.ai</span></h3>
+            <div class="space-y-3">
+              <div><label class="text-xs text-gray-400 mb-1 block">Bild hochladen</label>
+                <input type="file" accept="image/*" @change="studioFile=$event.target.files[0];studioPreview=URL.createObjectURL($event.target.files[0])" class="input text-xs">
+              </div>
+              <div x-show="studioPreview" class="rounded-lg overflow-hidden border border-gray-700"><img :src="studioPreview" class="w-full max-h-40 object-contain bg-gray-900"></div>
+              <div><label class="text-xs text-gray-400 mb-1 block">Effekt wählen</label>
+                <div class="grid grid-cols-3 gap-1.5">
+                  <template x-for="eff in ['cartoon','anime','watercolor','oil_painting','sketch','neon_noir','vintage','pop_art','pencil_drawing','renaissance']" :key="eff">
+                    <button class="text-xs px-2 py-1.5 rounded-lg border transition-all"
+                      :class="studioEffect===eff?'border-purple-500 bg-purple-900/30 text-purple-300':'border-gray-700 text-gray-400 hover:border-gray-500'"
+                      @click="studioEffect=eff" x-text="eff.replace('_',' ')"></button>
+                  </template>
+                </div>
+              </div>
+              <div><label class="text-xs text-gray-400 mb-1 block">Stärke: <span x-text="studioEffectStrength"></span></label>
+                <input type="range" x-model.number="studioEffectStrength" min="0.3" max="1.0" step="0.05" class="w-full">
+              </div>
+              <button class="btn btn-primary w-full" @click="runEffect()" :disabled="!studioFile||!studioEffect||studioLoading||!studioTools.image_effects?.available">
+                <span x-show="!studioLoading">✨ Effekt anwenden</span><span x-show="studioLoading" class="pulse">Verarbeite... (~30s)</span>
+              </button>
+            </div>
+          </div>
+          <div class="card p-5" x-show="studioResultImg||studioResult">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-medium text-green-300">Ergebnis</h3>
+              <a x-show="studioResultImg" :href="studioResultImg" download="effect.jpg" class="btn btn-ghost btn-sm">⬇️ Download</a>
+            </div>
+            <img x-show="studioResultImg" :src="studioResultImg" class="w-full rounded-lg border border-gray-700">
+            <pre x-show="studioResult&&!studioResultImg" class="text-sm text-gray-300 whitespace-pre-wrap" x-text="studioResult"></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Image Generation ── -->
+      <div x-show="studioTab==='generate'" class="max-w-4xl">
+        <div x-show="!studioTools.image_generation?.available" class="card p-4 mb-4" style="border-color:#f59e0b33;background:#1a1500">
+          <div class="text-sm text-yellow-300">⚠️ fal.ai API Key erforderlich. Füge deinen Key unter <button class="underline" @click="view='keys';loadKeys()">API Keys</button> hinzu.</div>
+        </div>
+        <div class="grid grid-cols-2 gap-6">
+          <div class="card p-5">
+            <h3 class="font-medium mb-4 text-purple-300">🖼 Bild generieren <span class="badge badge-yellow ml-2">fal.ai FLUX</span></h3>
+            <div class="space-y-3">
+              <div><label class="text-xs text-gray-400 mb-1 block">Prompt</label>
+                <textarea x-model="studioGenPrompt" class="input h-24 text-sm" placeholder="A majestic mountain landscape at sunset, golden hour..."></textarea>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div><label class="text-xs text-gray-400 mb-1 block">Stil</label>
+                  <select x-model="studioGenStyle" class="input">
+                    <option value="photo">Fotorealistisch</option><option value="illustration">Illustration</option>
+                    <option value="painting">Gemälde</option><option value="cartoon">Cartoon</option>
+                    <option value="minimalist">Minimalistisch</option><option value="cinematic">Cinematisch</option>
+                  </select>
+                </div>
+                <div><label class="text-xs text-gray-400 mb-1 block">Format</label>
+                  <select x-model="studioGenSize" class="input">
+                    <option value="1024x1024">Quadrat (1:1)</option><option value="1280x720">Landscape (16:9)</option>
+                    <option value="720x1280">Portrait (9:16)</option><option value="1024x768">Standard (4:3)</option>
+                  </select>
+                </div>
+              </div>
+              <button class="btn btn-primary w-full" @click="runGenerate()" :disabled="!studioGenPrompt.trim()||studioLoading||!studioTools.image_generation?.available">
+                <span x-show="!studioLoading">🖼 Generieren</span><span x-show="studioLoading" class="pulse">Generiere... (~15s)</span>
+              </button>
+            </div>
+          </div>
+          <div class="card p-5" x-show="studioResultImg||studioResult">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-medium text-green-300">Ergebnis</h3>
+              <a x-show="studioResultImg" :href="studioResultImg" target="_blank" class="btn btn-ghost btn-sm">⬇️ Download</a>
+            </div>
+            <img x-show="studioResultImg" :src="studioResultImg" class="w-full rounded-lg border border-gray-700">
+            <pre x-show="studioResult&&!studioResultImg" class="text-sm text-gray-300 whitespace-pre-wrap" x-text="studioResult"></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Background Removal ── -->
+      <div x-show="studioTab==='removebg'" class="max-w-4xl">
+        <div x-show="!studioTools.background_removal?.available" class="card p-4 mb-4" style="border-color:#f59e0b33;background:#1a1500">
+          <div class="text-sm text-yellow-300">⚠️ remove.bg API Key erforderlich. Füge deinen Key unter <button class="underline" @click="view='keys';loadKeys()">API Keys</button> hinzu (Provider: <code>remove.bg</code>).</div>
+        </div>
+        <div class="grid grid-cols-2 gap-6">
+          <div class="card p-5">
+            <h3 class="font-medium mb-4 text-purple-300">🪄 Hintergrund entfernen <span class="badge badge-yellow ml-2">remove.bg</span></h3>
+            <div class="space-y-3">
+              <div><label class="text-xs text-gray-400 mb-1 block">Bild hochladen</label>
+                <input type="file" accept="image/*" @change="studioFile=$event.target.files[0];studioPreview=URL.createObjectURL($event.target.files[0])" class="input text-xs">
+              </div>
+              <div x-show="studioPreview" class="rounded-lg overflow-hidden border border-gray-700" style="background:repeating-conic-gradient(#444 0% 25%,#222 0% 50%) 0 0/20px 20px">
+                <img :src="studioPreview" class="w-full max-h-48 object-contain">
+              </div>
+              <button class="btn btn-primary w-full" @click="runRemoveBg()" :disabled="!studioFile||studioLoading||!studioTools.background_removal?.available">
+                <span x-show="!studioLoading">🪄 Hintergrund entfernen</span><span x-show="studioLoading" class="pulse">Verarbeite...</span>
+              </button>
+            </div>
+          </div>
+          <div class="card p-5" x-show="studioResultImg">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-medium text-green-300">Ergebnis (transparentes PNG)</h3>
+              <a :href="studioResultImg" download="bg-removed.png" class="btn btn-ghost btn-sm">⬇️ PNG</a>
+            </div>
+            <div class="rounded-lg overflow-hidden border border-gray-700" style="background:repeating-conic-gradient(#444 0% 25%,#222 0% 50%) 0 0/20px 20px">
+              <img :src="studioResultImg" class="w-full max-h-64 object-contain">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Monaco CDN -->
+<script>var require = { paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } };</script>
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+
+<script>
+let monacoEditor = null;
+
+function App() {
+  return {
+    view: 'chat',
+    apiKey: localStorage.getItem('agency_key') || 'change-me-please',
+    health: {},
+
+    // Chat
+    conversations: [],
+    activeConvId: null,
+    activeConvTitle: '',
+    messages: [],
+    liveMessages: [],
+    chatInput: '',
+    chatMode: 'auto',
+    isRunning: false,
+    runningStatus: 'Läuft...',
+
+    // Agents
+    agents: [],
+    agentFilter: '',
+    agentCategoryFilter: '',
+    agentFiles: [],
+    agentModal: false,
+    importModal: false,
+    importFilter: '',
+    editingAgent: {},
+
+    // Memory
+    memory: [],
+    memorySearch: '',
+    memoryScopeFilter: '',
+    memoryModal: false,
+    editingMemory: {},
+
+    // Rules
+    rules: [],
+    ruleModal: false,
+    editingRule: {},
+
+    // API Keys
+    apiKeys: [],
+    keyModal: false,
+    editingKey: {},
+    testingKey: null,
+
+    // Settings
+    settings: {},
+
+    // Studio
+    studioTab: 'analyze',
+    studioFile: null,
+    studioPreview: null,
+    studioLoading: false,
+    studioResult: '',
+    studioResultImg: null,
+    studioTools: {},
+    studioAnalyzeQ: 'Beschreibe dieses Bild im Detail. Was siehst du?',
+    studioCaptionStyle: 'instagram',
+    studioCaptionLang: 'German',
+    studioTextTool: 'instagram',
+    studioTextInput: '',
+    studioTextTone: 'professional',
+    studioTextLang: 'German',
+    studioTextExtra: '',
+    studioEffect: 'cartoon',
+    studioEffectStrength: 0.75,
+    studioGenPrompt: '',
+    studioGenStyle: 'photo',
+    studioGenSize: '1024x1024',
+
+    // Monaco
+    monacoOpen: false,
+    monacoTitle: '',
+    monacoLang: 'markdown',
+    monacoContent: '',
+
+    // ── Computed ──────────────────────────────────────────────────────
+
+    get filteredAgents() {
+      return this.agents.filter(a => {
+        const q = this.agentFilter.toLowerCase();
+        const matchQ = !q || a.name.toLowerCase().includes(q) || a.slug.includes(q) || a.description?.toLowerCase().includes(q);
+        const matchCat = !this.agentCategoryFilter || a.category === this.agentCategoryFilter;
+        return matchQ && matchCat;
+      });
+    },
+    get filteredAgentFiles() {
+      const q = this.importFilter.toLowerCase();
+      return this.agentFiles.filter(f => !q || f.name.toLowerCase().includes(q) || f.category.includes(q));
+    },
+
+    // ── Init ──────────────────────────────────────────────────────────
+
+    async init() {
+      await this.loadHealth();
+      await this.loadConversations();
+      await this.loadAgents();
+      this.initMonaco();
+    },
+
+    saveApiKey() { localStorage.setItem('agency_key', this.apiKey); },
+
+    // ── API helpers ───────────────────────────────────────────────────
+
+    async api(method, path, body) {
+      const opts = { method, headers: { 'Content-Type': 'application/json', 'x-api-key': this.apiKey } };
+      if (body) opts.body = JSON.stringify(body);
+      const r = await fetch(path, opts);
+      if (!r.ok) { const e = await r.json().catch(() => ({detail: r.status})); throw new Error(e.detail || r.status); }
+      return r.json();
+    },
+    get: (p) => fetch(p, { headers: { 'x-api-key': '' } }).then(r => r.json()),
+
+    // ── Health ────────────────────────────────────────────────────────
+
+    async loadHealth() {
+      try { this.health = await fetch('/api/health').then(r => r.json()); } catch(e) {}
+    },
+
+    // ── Conversations ─────────────────────────────────────────────────
+
+    async loadConversations() {
+      try { this.conversations = await this.api('GET', '/api/chat/conversations'); } catch(e) {}
+    },
+
+    async newConversation() {
+      const conv = await this.api('POST', '/api/chat/conversations');
+      this.conversations.unshift(conv);
+      await this.selectConversation(conv.id);
+    },
+
+    async selectConversation(cid) {
+      this.activeConvId = cid;
+      const conv = this.conversations.find(c => c.id === cid);
+      this.activeConvTitle = conv?.title || '';
+      this.liveMessages = [];
+      try { this.messages = await this.api('GET', `/api/chat/conversations/${cid}/messages`); }
+      catch(e) { this.messages = []; }
+      this.$nextTick(() => this.scrollMsgs());
+    },
+
+    async deleteConversation(cid) {
+      if (!confirm('Unterhaltung löschen?')) return;
+      await this.api('DELETE', `/api/chat/conversations/${cid}`);
+      this.conversations = this.conversations.filter(c => c.id !== cid);
+      if (this.activeConvId === cid) { this.activeConvId = null; this.messages = []; }
+    },
+
+    async pinConversation(conv) {
+      await this.api('PATCH', `/api/chat/conversations/${conv.id}`, { pinned: !conv.pinned });
+      await this.loadConversations();
+    },
+
+    // ── Chat / Orchestration ─────────────────────────────────────────
+
+    async sendMessage() {
+      if (!this.chatInput.trim() || !this.activeConvId || this.isRunning) return;
+      const msg = this.chatInput.trim();
+      this.chatInput = '';
+      this.isRunning = true;
+      this.liveMessages = [];
+
+      // Add user message locally
+      this.messages.push({ id: Date.now(), role: 'user', content: msg, agent: '', meta: {} });
+      this.$nextTick(() => this.scrollMsgs());
+
+      const response = await fetch('/api/chat/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': this.apiKey },
+        body: JSON.stringify({ conversation_id: this.activeConvId, message: msg, mode: this.chatMode })
+      });
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      const self = this;
+
+      function pump() {
+        reader.read().then(({ done, value }) => {
+          if (done) { self.isRunning = false; self.runningStatus = ''; self.liveMessages = []; self.loadConversations(); return; }
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split('\n\n');
+          buffer = parts.pop();
+          for (const part of parts) {
+            if (!part.trim()) continue;
+            let evtType = 'message', dataStr = '';
+            for (const line of part.split('\n')) {
+              if (line.startsWith('event:')) evtType = line.slice(6).trim();
+              else if (line.startsWith('data:')) dataStr = line.slice(5).trim();
+            }
+            if (dataStr) {
+              try { self.handleStreamEvent(evtType, JSON.parse(dataStr)); } catch(e) {}
+            }
+          }
+          pump();
+        }).catch(() => { self.isRunning = false; });
+      }
+      pump();
+    },
+
+    handleStreamEvent(type, data) {
+      const push = (label, content, msgType, free = false) => {
+        const id = Date.now() + Math.random();
+        // Replace last live message of same type if still "working"
+        const last = this.liveMessages[this.liveMessages.length - 1];
+        if (last && last.type === msgType && last.replacing) {
+          this.liveMessages[this.liveMessages.length - 1] = { id, type: msgType, label, content, free };
+        } else {
+          this.liveMessages.push({ id, type: msgType, label, content, free });
+        }
+        this.$nextTick(() => this.scrollMsgs());
+      };
+
+      if (type === 'supervisor') {
+        if (data.status === 'analyzing') {
+          this.runningStatus = 'Supervisor analysiert...';
+          if (this.settings.stream_thinking !== 'false')
+            push('🔍 Supervisor', data.message, 'supervisor', true);
+        } else if (data.status === 'plan_ready') {
+          this.runningStatus = `Plan: ${data.tasks?.length} Tasks (${data.complexity})`;
+          const tasks = (data.tasks||[]).map(t => `[${t.id}] ${t.agent} → ${t.mission} (deps: ${JSON.stringify(t.depends_on||[])})`).join('\n');
+          push('📋 Supervisor Plan', `${data.project_summary}\n\n${tasks}`, 'supervisor', true);
+        }
+      } else if (type === 'director') {
+        if (data.status === 'validating') push('🎬 Director', 'Validiere Plan...', 'director', true);
+        else if (data.status === 'plan_validated') {
+          const issues = data.issues?.length ? '\nProbleme: ' + data.issues.join(', ') : '';
+          push('🎬 Director', `Plan: ${data.verdict === 'approved' ? '✅ Genehmigt' : '⚠️ Korrekturen nötig'}${issues}`, 'director', true);
+        } else if (data.status === 'wave_start') {
+          this.runningStatus = `Welle ${data.wave}/${data.total_waves}: ${data.agents?.join(', ')}`;
+          push('🎬 Director', `Welle ${data.wave}/${data.total_waves}: ${data.agents?.join(' → ')}`, 'director', true);
+        } else if (data.status === 'reviewing') {
+          this.runningStatus = `Director überprüft ${data.agent}...`;
+          push('🎬 Director', data.message, 'director', true);
+        } else if (data.status === 'review_result') {
+          const score = '★'.repeat(data.score||0) + '☆'.repeat(5-(data.score||0));
+          const issues = data.issues?.length ? '\n' + data.issues.join('\n') : '';
+          push('🎬 Director Review', `${data.verdict === 'approved' ? '✅' : '⚠️'} ${data.agent}: ${data.verdict} ${score}${issues}`, 'director', true);
+        } else if (data.status === 'revision_requested') {
+          push('🔄 Revision', `${data.agent}: ${data.instruction}`, 'director', true);
+        } else if (data.status === 'synthesizing') {
+          this.runningStatus = 'Director synthetisiert...';
+          push('🎬 Director', 'Erstelle finale Synthese...', 'director', true);
+        }
+      } else if (type === 'agent') {
+        if (data.status === 'working') {
+          this.runningStatus = `${data.agent} arbeitet${data.attempt > 1 ? ' (Versuch '+data.attempt+')' : ''}...`;
+          push('⏳ ' + data.agent, `Mission: ${data.mission}`, 'agent');
+        } else if (data.status === 'done') {
+          // Move from live to persistent messages
+          this.liveMessages = this.liveMessages.filter(m => m.type !== 'agent' || !m.label.includes(data.agent));
+          this.messages.push({
+            id: Date.now(), role: 'assistant', agent: data.agent,
+            content: data.output, meta: { tokens_in: data.tokens_in, tokens_out: data.tokens_out, mission: data.mission }
+          });
+          this.$nextTick(() => this.scrollMsgs());
+        }
+      } else if (type === 'done') {
+        this.liveMessages = [];
+        if (data.synthesis?.summary) {
+          this.messages.push({
+            id: Date.now(), role: 'system', agent: 'director',
+            content: `Synthese: ${data.synthesis.summary}\n\nNächste Schritte:\n${(data.synthesis.next_steps||[]).map(s=>'→ '+s).join('\n')}\n\nGesamtkosten: $${data.total_cost_usd}`,
+            meta: { type: 'synthesis' }
+          });
+        }
+        this.loadConversations();
+        this.$nextTick(() => this.scrollMsgs());
+      } else if (type === 'error') {
+        push('❌ Fehler', data.message, 'error');
+      }
+    },
+
+    scrollMsgs() {
+      const el = document.getElementById('msgContainer');
+      if (el) el.scrollTop = el.scrollHeight;
+    },
+
+    msgLabel(msg) {
+      if (msg.role === 'user') return '👤 Du';
+      if (msg.role === 'assistant') return '🤖 ' + (msg.agent || 'Agent');
+      if (msg.agent === 'supervisor') return '🔍 Supervisor';
+      if (msg.agent === 'director') return '🎬 Director';
+      return msg.role;
+    },
+
+    contentOfMsg(msg) {
+      if (msg.agent === 'supervisor' && typeof msg.content === 'string' && msg.content.startsWith('{')) {
+        try { const p = JSON.parse(msg.content); return p.project_summary || msg.content; } catch(e) {}
+      }
+      return msg.content || '';
+    },
+
+    // ── Agents ────────────────────────────────────────────────────────
+
+    async loadAgents() {
+      try { this.agents = await this.api('GET', '/api/agents'); } catch(e) {}
+    },
+
+    openAgentModal(agent = null) {
+      this.editingAgent = agent ? {...agent} : { slug:'', name:'', description:'', system_prompt:'', category:'engineering', color:'purple', enabled:true, source:'custom' };
+      this.agentModal = true;
+    },
+
+    async saveAgent() {
+      try {
+        if (this.editingAgent.id) {
+          await this.api('PUT', `/api/agents/${this.editingAgent.slug}`, this.editingAgent);
+        } else {
+          await this.api('POST', '/api/agents', this.editingAgent);
+        }
+        this.agentModal = false;
+        await this.loadAgents();
+      } catch(e) { alert('Fehler: ' + e.message); }
+    },
+
+    async deleteAgent(slug) {
+      if (!confirm('Agent löschen?')) return;
+      await this.api('DELETE', `/api/agents/${slug}`);
+      await this.loadAgents();
+    },
+
+    async toggleAgent(agent) {
+      await this.api('PATCH', `/api/agents/${agent.slug}/toggle`);
+      await this.loadAgents();
+    },
+
+    async openImportModal() {
+      this.importModal = true;
+      try { this.agentFiles = await this.api('GET', '/api/agents/from-files'); } catch(e) {}
+    },
+
+    async importSingle(f) {
+      try {
+        await this.api('POST', '/api/agents/import-from-file', { file: f.file });
+        f.already_imported = true;
+        await this.loadAgents();
+      } catch(e) { alert('Fehler: ' + e.message); }
+    },
+
+    async importAll() {
+      if (!confirm(`Alle ${this.agentFiles.length} Agents importieren?`)) return;
+      const result = await this.api('POST', '/api/agents/import-all');
+      alert(`${result.imported} Agents importiert`);
+      this.agentFiles = this.agentFiles.map(f => ({...f, already_imported: true}));
+      await this.loadAgents();
+    },
+
+    agentName(id) {
+      const a = this.agents.find(a => a.id === id);
+      return a ? a.name : id;
+    },
+
+    agentColor(cat) {
+      const colors = { engineering:'#1e3a5f', design:'#3d1f5f', marketing:'#1f3d1f', product:'#3d3d1f', testing:'#3d1f1f', custom:'#2d2d2d' };
+      return colors[cat] || '#2d2d2d';
+    },
+
+    agentEmoji(cat) {
+      const emojis = { engineering:'⚙️', design:'🎨', marketing:'📢', product:'📦', testing:'🧪', strategy:'🎯', custom:'🤖' };
+      return emojis[cat] || '🤖';
+    },
+
+    // ── Memory ────────────────────────────────────────────────────────
+
+    async loadMemory() {
+      try {
+        const params = new URLSearchParams();
+        if (this.memoryScopeFilter) params.set('scope', this.memoryScopeFilter);
+        if (this.memorySearch) params.set('search', this.memorySearch);
+        this.memory = await this.api('GET', '/api/memory?' + params);
+      } catch(e) {}
+    },
+
+    openMemoryModal(mem = null) {
+      this.editingMemory = mem ? {...mem} : { key:'', value:'', scope:'global', agent_id:null, tags:[] };
+      this.memoryModal = true;
+    },
+
+    async saveMemory() {
+      try {
+        if (this.editingMemory.id) await this.api('PUT', `/api/memory/${this.editingMemory.id}`, this.editingMemory);
+        else await this.api('POST', '/api/memory', this.editingMemory);
+        this.memoryModal = false;
+        await this.loadMemory();
+      } catch(e) { alert('Fehler: ' + e.message); }
+    },
+
+    async deleteMemory(mid) {
+      if (!confirm('Eintrag löschen?')) return;
+      await this.api('DELETE', `/api/memory/${mid}`);
+      await this.loadMemory();
+    },
+
+    async clearMemory() {
+      await this.api('DELETE', '/api/memory?scope=global');
+      await this.loadMemory();
+    },
+
+    // ── Rules ─────────────────────────────────────────────────────────
+
+    async loadRules() {
+      try { this.rules = await this.api('GET', '/api/rules'); } catch(e) {}
+    },
+
+    openRuleModal(rule = null) {
+      this.editingRule = rule ? {...rule} : { name:'', description:'', content:'', scope:'global', agent_id:null, enabled:true, priority:0 };
+      this.ruleModal = true;
+    },
+
+    async saveRule() {
+      try {
+        if (this.editingRule.id) await this.api('PUT', `/api/rules/${this.editingRule.id}`, this.editingRule);
+        else await this.api('POST', '/api/rules', this.editingRule);
+        this.ruleModal = false;
+        await this.loadRules();
+      } catch(e) { alert('Fehler: ' + e.message); }
+    },
+
+    async deleteRule(rid) {
+      if (!confirm('Regel löschen?')) return;
+      await this.api('DELETE', `/api/rules/${rid}`);
+      await this.loadRules();
+    },
+
+    async toggleRule(rule) {
+      await this.api('PATCH', `/api/rules/${rule.id}/toggle`);
+      await this.loadRules();
+    },
+
+    // ── API Keys ──────────────────────────────────────────────────────
+
+    async loadKeys() {
+      try { this.apiKeys = await this.api('GET', '/api/keys'); } catch(e) {}
+    },
+
+    openKeyModal(key = null) {
+      this.editingKey = key ? {...key, key_value:''} : { provider:'openai', label:'', key_value:'', model_default:'', base_url:'', is_active:true };
+      this.keyModal = true;
+    },
+
+    async saveKey() {
+      try {
+        if (this.editingKey.id) await this.api('PUT', `/api/keys/${this.editingKey.id}`, this.editingKey);
+        else await this.api('POST', '/api/keys', this.editingKey);
+        this.keyModal = false;
+        await this.loadKeys();
+      } catch(e) { alert('Fehler: ' + e.message); }
+    },
+
+    async deleteKey(kid) {
+      if (!confirm('Key löschen?')) return;
+      await this.api('DELETE', `/api/keys/${kid}`);
+      await this.loadKeys();
+    },
+
+    async testKey(key) {
+      this.testingKey = key.id;
+      try {
+        const r = await this.api('POST', `/api/keys/${key.id}/test`);
+        key.test_status = r.status;
+        alert(`${r.status === 'ok' ? '✅' : '❌'} ${key.provider}: ${r.message}`);
+      } catch(e) { alert('Test-Fehler: ' + e.message); }
+      this.testingKey = null;
+      await this.loadKeys();
+    },
+
+    providerEmoji(p) {
+      const m = { openai:'🟢', anthropic:'🟠', groq:'⚡', ollama:'🦙', xai:'𝕏', custom:'🔧' };
+      return m[p] || '🔑';
+    },
+
+    providerBg(p) {
+      const m = { openai:'background:#0a2a0a', anthropic:'background:#2a1a0a', groq:'background:#0a0a2a', ollama:'background:#1a0a2a' };
+      return m[p] || 'background:#1a1a1a';
+    },
+
+    // ── Settings ──────────────────────────────────────────────────────
+
+    async loadSettings() {
+      try {
+        const all = await this.api('GET', '/api/settings');
+        this.settings = Object.fromEntries(Object.entries(all).map(([k, v]) => [k, v.value]));
+      } catch(e) {}
+    },
+
+    async saveSetting(key, value) {
+      try { await this.api('PUT', `/api/settings/${key}`, { value: String(value) }); } catch(e) {}
+    },
+
+    // ── Studio ────────────────────────────────────────────────────────
+
+    async loadStudioTools() {
+      try { this.studioTools = await this.api('GET', '/api/studio/tools'); } catch(e) {}
+    },
+
+    clearStudioResult() { this.studioResult = ''; this.studioResultImg = null; },
+
+    readFileAsBase64(file) {
+      return new Promise(res => {
+        const r = new FileReader();
+        r.onload = e => res(e.target.result.split(',')[1]);
+        r.readAsDataURL(file);
+      });
+    },
+
+    async runAnalyze() {
+      if (!this.studioFile) return;
+      this.studioLoading = true; this.clearStudioResult();
+      try {
+        const fd = new FormData();
+        fd.append('file', this.studioFile);
+        fd.append('question', this.studioAnalyzeQ || 'Beschreibe dieses Bild.');
+        const r = await fetch('/api/studio/analyze', { method:'POST', headers:{'x-api-key':this.apiKey}, body:fd });
+        const d = await r.json();
+        this.studioResult = d.result || d.detail || 'Kein Ergebnis';
+      } catch(e) { this.studioResult = 'Fehler: ' + e.message; }
+      this.studioLoading = false;
+    },
+
+    async runCaption() {
+      if (!this.studioFile) return;
+      this.studioLoading = true; this.clearStudioResult();
+      try {
+        const fd = new FormData();
+        fd.append('file', this.studioFile);
+        fd.append('style', this.studioCaptionStyle);
+        fd.append('language', this.studioCaptionLang);
+        const r = await fetch('/api/studio/caption-from-image', { method:'POST', headers:{'x-api-key':this.apiKey}, body:fd });
+        const d = await r.json();
+        this.studioResult = d.result || d.detail || 'Kein Ergebnis';
+      } catch(e) { this.studioResult = 'Fehler: ' + e.message; }
+      this.studioLoading = false;
+    },
+
+    async runTextTool() {
+      if (!this.studioTextInput.trim()) return;
+      this.studioLoading = true; this.clearStudioResult();
+      try {
+        const d = await this.api('POST', '/api/studio/text', {
+          tool: this.studioTextTool, input: this.studioTextInput,
+          language: this.studioTextLang, tone: this.studioTextTone,
+          extra: this.studioTextExtra || null,
+        });
+        this.studioResult = d.result || d.detail || 'Kein Ergebnis';
+      } catch(e) { this.studioResult = 'Fehler: ' + e.message; }
+      this.studioLoading = false;
+    },
+
+    async runEffect() {
+      if (!this.studioFile || !this.studioEffect) return;
+      this.studioLoading = true; this.clearStudioResult();
+      try {
+        const b64 = await this.readFileAsBase64(this.studioFile);
+        const d = await this.api('POST', '/api/studio/effect', {
+          image_base64: b64, effect: this.studioEffect, strength: this.studioEffectStrength,
+        });
+        if (d.result) this.studioResultImg = d.result;
+        else this.studioResult = d.detail || 'Kein Ergebnis';
+      } catch(e) { this.studioResult = 'Fehler: ' + e.message; }
+      this.studioLoading = false;
+    },
+
+    async runGenerate() {
+      if (!this.studioGenPrompt.trim()) return;
+      this.studioLoading = true; this.clearStudioResult();
+      try {
+        const [w, h] = this.studioGenSize.split('x').map(Number);
+        const d = await this.api('POST', '/api/studio/generate', {
+          prompt: this.studioGenPrompt, style: this.studioGenStyle, width: w, height: h,
+        });
+        if (d.result) this.studioResultImg = d.result;
+        else this.studioResult = d.detail || 'Kein Ergebnis';
+      } catch(e) { this.studioResult = 'Fehler: ' + e.message; }
+      this.studioLoading = false;
+    },
+
+    async runRemoveBg() {
+      if (!this.studioFile) return;
+      this.studioLoading = true; this.clearStudioResult();
+      try {
+        const fd = new FormData();
+        fd.append('file', this.studioFile);
+        const r = await fetch('/api/studio/remove-bg', { method:'POST', headers:{'x-api-key':this.apiKey}, body:fd });
+        const d = await r.json();
+        if (d.result) this.studioResultImg = d.result;
+        else this.studioResult = d.detail || 'Kein Ergebnis';
+      } catch(e) { this.studioResult = 'Fehler: ' + e.message; }
+      this.studioLoading = false;
+    },
+
+    // ── Monaco Editor ─────────────────────────────────────────────────
+
+    initMonaco() {
+      require(['vs/editor/editor.main'], () => {
+        monacoEditor = monaco.editor.create(document.getElementById('monacoContainer'), {
+          value: '',
+          language: 'markdown',
+          theme: 'vs-dark',
+          fontSize: 13,
+          fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+          minimap: { enabled: false },
+          wordWrap: 'on',
+          lineNumbers: 'on',
+          scrollBeyondLastLine: false,
+          automaticLayout: true,
+        });
+      });
+    },
+
+    openMonaco(content, title = 'Editor', lang = 'markdown') {
+      if (!content) return;
+      this.monacoTitle = title;
+      this.monacoLang = lang;
+      this.monacoContent = content;
+      this.monacoOpen = true;
+      this.$nextTick(() => {
+        if (monacoEditor) {
+          monacoEditor.setValue(content);
+          monaco.editor.setModelLanguage(monacoEditor.getModel(), lang);
+        }
+      });
+    },
+
+    copyMonaco() {
+      const val = monacoEditor ? monacoEditor.getValue() : this.monacoContent;
+      navigator.clipboard.writeText(val);
+    },
+
+    copyText(text) {
+      navigator.clipboard.writeText(text || '');
+    },
+  };
+}
+</script>
+</body>
+</html>

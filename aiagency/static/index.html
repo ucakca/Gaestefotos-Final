@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agency Orchestrator</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { background: #0f1117; color: #e2e8f0; font-family: 'Inter', system-ui, sans-serif; }
+  .thinking { background: #1a1d2e; border-left: 3px solid #4a5568; }
+  .agent-output { background: #0d1f0d; border-left: 3px solid #38a169; }
+  .director-box { background: #1a1424; border-left: 3px solid #805ad5; }
+  .error-box { background: #1a0d0d; border-left: 3px solid #e53e3e; }
+  .wave-badge { background: #2d3748; }
+  .approved { color: #68d391; }
+  .revision { color: #fbd38d; }
+  .cost-badge { background: #1a2744; color: #63b3ed; }
+  pre { white-space: pre-wrap; word-break: break-word; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.82rem; }
+  .pulse { animation: pulse 1.5s cubic-bezier(0.4,0,0.6,1) infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #0f1117; }
+  ::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 3px; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<div class="max-w-5xl mx-auto px-4 py-8">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold text-white">🎬 Agency Orchestrator</h1>
+      <p class="text-sm text-gray-500 mt-1">Supervisor + Director = Ollama (FREE) · Specialists = konfigurierbar</p>
+    </div>
+    <div id="costBadge" class="cost-badge px-3 py-1 rounded-full text-sm hidden">
+      💰 <span id="costValue">$0.00000</span>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="bg-gray-900 rounded-xl p-6 mb-6 border border-gray-800">
+    <label class="block text-sm text-gray-400 mb-2">API Key</label>
+    <input id="apiKey" type="password" placeholder="change-me-please"
+      class="w-full bg-gray-800 rounded-lg px-4 py-2 text-sm mb-4 border border-gray-700 focus:border-purple-500 focus:outline-none text-white" />
+
+    <label class="block text-sm text-gray-400 mb-2">Projektbeschreibung</label>
+    <textarea id="description" rows="5" placeholder="Beschreibe dein Projekt oder Problem...&#10;&#10;Beispiel: Ich brauche eine E-Commerce Plattform mit PostgreSQL-Datenbankschema, REST API in Node.js, React Frontend mit modernem UI-Design, und CI/CD Deployment auf meinem Ubuntu-Server."
+      class="w-full bg-gray-800 rounded-lg px-4 py-3 text-sm border border-gray-700 focus:border-purple-500 focus:outline-none text-white resize-none"></textarea>
+
+    <div class="flex gap-3 mt-4">
+      <button id="runBtn" onclick="runOrchestration()"
+        class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">
+        ▶ Orchestrierung starten
+      </button>
+      <button onclick="clearOutput()"
+        class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+        Löschen
+      </button>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div id="statusBar" class="hidden mb-4 flex items-center gap-3 text-sm text-gray-400">
+    <span id="statusDot" class="w-2 h-2 rounded-full bg-purple-500 pulse"></span>
+    <span id="statusText">Initialisiere...</span>
+  </div>
+
+  <!-- Execution plan (shown after supervisor) -->
+  <div id="planBox" class="hidden bg-gray-900 rounded-xl p-4 mb-4 border border-gray-800">
+    <h3 class="text-sm font-semibold text-gray-300 mb-3">📋 Ausführungsplan</h3>
+    <div id="planWaves" class="space-y-2"></div>
+  </div>
+
+  <!-- Output stream -->
+  <div id="output" class="space-y-3"></div>
+
+  <!-- Final synthesis -->
+  <div id="synthesis" class="hidden bg-gray-900 rounded-xl p-6 mt-6 border border-purple-800">
+    <h3 class="text-lg font-semibold text-purple-300 mb-4">✅ Director: Finale Bewertung</h3>
+    <div id="synthesisContent"></div>
+  </div>
+
+</div>
+
+<script>
+let eventSource = null;
+
+function runOrchestration() {
+  const description = document.getElementById('description').value.trim();
+  const apiKey = document.getElementById('apiKey').value.trim() || 'change-me-please';
+
+  if (!description) { alert('Bitte Projektbeschreibung eingeben'); return; }
+
+  clearOutput();
+  document.getElementById('statusBar').classList.remove('hidden');
+  document.getElementById('costBadge').classList.remove('hidden');
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('runBtn').textContent = '⏳ Läuft...';
+
+  const body = JSON.stringify({ description });
+
+  fetch('/api/run?api_key=' + encodeURIComponent(apiKey), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+    body
+  }).then(response => {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    function pump() {
+      reader.read().then(({ done, value }) => {
+        if (done) { onStreamDone(); return; }
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (line.startsWith('event:')) {
+            // handled below
+          } else if (line.startsWith('data:')) {
+            const eventLine = lines[lines.indexOf(line) - 1] || '';
+            const eventType = eventLine.startsWith('event:') ? eventLine.slice(6).trim() : 'message';
+            try {
+              const data = JSON.parse(line.slice(5).trim());
+              handleEvent(eventType, data);
+            } catch(e) {}
+          }
+        }
+        pump();
+      });
+    }
+
+    // Better: parse SSE properly
+    let lastEvent = 'message';
+    reader.cancel();
+
+    // Use proper SSE via EventSource with POST workaround
+    const es = new EventSource('/api/run?api_key=' + encodeURIComponent(apiKey) + '&description=' + encodeURIComponent(description) + '&_method=GET');
+    // Fallback: direct fetch + manual SSE parse
+    startSSE(description, apiKey);
+  }).catch(e => {
+    showError('Verbindungsfehler: ' + e.message);
+    onStreamDone();
+  });
+}
+
+function startSSE(description, apiKey) {
+  fetch('/api/run', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+    body: JSON.stringify({ description })
+  }).then(response => {
+    if (!response.ok) {
+      response.json().then(d => showError(d.detail || 'HTTP ' + response.status));
+      onStreamDone();
+      return;
+    }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    function readChunk() {
+      reader.read().then(({ done, value }) => {
+        if (done) { onStreamDone(); return; }
+        buffer += decoder.decode(value, { stream: true });
+
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop();
+
+        for (const part of parts) {
+          if (!part.trim()) continue;
+          const lines = part.split('\n');
+          let eventType = 'message';
+          let dataStr = '';
+          for (const line of lines) {
+            if (line.startsWith('event:')) eventType = line.slice(6).trim();
+            else if (line.startsWith('data:')) dataStr = line.slice(5).trim();
+          }
+          if (dataStr) {
+            try { handleEvent(eventType, JSON.parse(dataStr)); }
+            catch(e) { console.warn('Parse error', e, dataStr); }
+          }
+        }
+        readChunk();
+      }).catch(e => { showError('Stream-Fehler: ' + e.message); onStreamDone(); });
+    }
+    readChunk();
+  }).catch(e => { showError('Fehler: ' + e.message); onStreamDone(); });
+}
+
+function handleEvent(type, data) {
+  switch(type) {
+    case 'supervisor': handleSupervisor(data); break;
+    case 'director':   handleDirector(data); break;
+    case 'agent':      handleAgent(data); break;
+    case 'error':      handleError(data); break;
+    case 'done':       handleDone(data); break;
+  }
+}
+
+function handleSupervisor(data) {
+  if (data.status === 'analyzing') {
+    setStatus('🔍 Supervisor analysiert Anforderungen...');
+    appendThinking('🔍 Supervisor', data.message, 'free');
+  } else if (data.status === 'plan_ready') {
+    setStatus('📋 Plan erstellt');
+    showPlan(data);
+    appendThinking('📋 Plan', `Komplexität: ${data.complexity} · ${data.tasks.length} Tasks`, 'free');
+  }
+}
+
+function handleDirector(data) {
+  if (data.status === 'validating') {
+    setStatus('🎬 Director validiert Plan...');
+    appendThinking('🎬 Director', 'Überprüfe Ausführungsplan...', 'free');
+  } else if (data.status === 'plan_validated') {
+    const issues = data.issues?.length ? ' · ⚠️ ' + data.issues.join(', ') : '';
+    appendThinking('🎬 Director', `Plan: ${data.verdict === 'approved' ? '✅ Genehmigt' : '⚠️ Korrekturen nötig'}${issues}`, 'free');
+  } else if (data.status === 'execution_order') {
+    setStatus(`📊 ${data.message}`);
+  } else if (data.status === 'wave_start') {
+    appendDivider(`Welle ${data.wave}/${data.total_waves}: ${data.agents.join(' → ')}`);
+    setStatus(`⚡ Welle ${data.wave}: ${data.agents.join(', ')}`);
+  } else if (data.status === 'reviewing') {
+    appendThinking('🎬 Director', data.message, 'free');
+  } else if (data.status === 'review_result') {
+    const score = '★'.repeat(data.score || 0) + '☆'.repeat(5 - (data.score || 0));
+    const verdictClass = data.verdict === 'approved' ? 'approved' : 'revision';
+    appendThinking('🎬 Director Review',
+      `<span class="${verdictClass}">${data.verdict === 'approved' ? '✅' : '⚠️'} ${data.verdict}</span> ${score} · Integration: ${data.integration_check}` +
+      (data.issues?.length ? `<br><span class="text-gray-500 text-xs">${data.issues.join(' · ')}</span>` : ''),
+      'free', true);
+  } else if (data.status === 'revision_requested') {
+    appendThinking('🔄 Revision', data.instruction, 'free');
+  } else if (data.status === 'synthesizing') {
+    setStatus('🎬 Director erstellt Synthese...');
+    appendThinking('🎬 Director', 'Erstelle finale Zusammenfassung...', 'free');
+  }
+}
+
+function handleAgent(data) {
+  if (data.status === 'working') {
+    const attempt = data.attempt > 1 ? ` (Versuch ${data.attempt})` : '';
+    setStatus(`⚡ ${data.agent} arbeitet${attempt}...`);
+    appendThinking(`🤖 ${data.agent}`, `Mission: ${data.mission}${attempt}`, 'paid-working');
+  } else if (data.status === 'done') {
+    appendAgentOutput(data.agent, data.mission, data.output, data.tokens_in, data.tokens_out);
+  }
+}
+
+function handleError(data) {
+  showError(data.agent ? `[${data.agent}] ${data.message}` : data.message);
+}
+
+function handleDone(data) {
+  setStatus('✅ Fertig');
+  document.getElementById('costBadge').classList.remove('hidden');
+  document.getElementById('costValue').textContent = '$' + (data.total_cost_usd || 0).toFixed(5);
+  showSynthesis(data);
+  onStreamDone();
+}
+
+function showPlan(data) {
+  const box = document.getElementById('planBox');
+  const waves = document.getElementById('planWaves');
+  box.classList.remove('hidden');
+  const taskMap = {};
+  (data.tasks || []).forEach(t => taskMap[t.id] = t);
+  const grouped = {};
+  // Simple display: list tasks with their dependencies
+  (data.tasks || []).forEach(t => {
+    const deps = t.depends_on?.length ? ` (nach: ${t.depends_on.join(', ')})` : ' (Start)';
+    const div = document.createElement('div');
+    div.className = 'flex items-start gap-3 text-sm';
+    div.innerHTML = `<span class="wave-badge px-2 py-0.5 rounded text-xs text-purple-300 whitespace-nowrap">${t.id}</span>
+      <span class="text-blue-300 font-medium whitespace-nowrap">${t.agent}</span>
+      <span class="text-gray-400">${t.mission}</span>
+      <span class="text-gray-600 text-xs whitespace-nowrap ml-auto">${deps}</span>`;
+    waves.appendChild(div);
+  });
+}
+
+function showSynthesis(data) {
+  const box = document.getElementById('synthesis');
+  const content = document.getElementById('synthesisContent');
+  box.classList.remove('hidden');
+  const s = data.synthesis || {};
+  const stars = s.overall_quality ? '★'.repeat(s.overall_quality) + '☆'.repeat(5 - s.overall_quality) : '';
+  content.innerHTML = `
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div class="bg-gray-800 rounded-lg p-3">
+        <div class="text-xs text-gray-500 mb-1">Qualität</div>
+        <div class="text-yellow-400">${stars}</div>
+      </div>
+      <div class="bg-gray-800 rounded-lg p-3">
+        <div class="text-xs text-gray-500 mb-1">Kosten (Session)</div>
+        <div class="text-green-400">$${(data.total_cost_usd || 0).toFixed(5)}</div>
+      </div>
+    </div>
+    <p class="text-gray-300 mb-4">${s.summary || ''}</p>
+    ${s.next_steps?.length ? `<div class="mt-3"><div class="text-xs text-gray-500 mb-2">Nächste Schritte</div>
+      ${s.next_steps.map(s => `<div class="flex items-start gap-2 text-sm text-gray-300 mb-1"><span class="text-purple-400">→</span>${s}</div>`).join('')}
+    </div>` : ''}
+    ${s.integration_issues?.length ? `<div class="mt-3 text-xs text-yellow-600">⚠️ ${s.integration_issues.join(' · ')}</div>` : ''}
+    <div class="mt-4 pt-3 border-t border-gray-700 text-xs text-gray-600">
+      Agents: ${data.agents_used?.join(', ')} · Revisionen: ${data.total_revisions || 0}
+    </div>`;
+  box.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────
+
+function appendThinking(label, msg, type, html = false) {
+  const out = document.getElementById('output');
+  const div = document.createElement('div');
+  div.className = 'thinking rounded-lg px-4 py-2 text-xs text-gray-400';
+  div.innerHTML = `<span class="text-gray-600 font-medium">${label}</span> <span class="mx-2 text-gray-700">·</span>${html ? msg : escHtml(msg)}
+    <span class="ml-2 text-gray-700 text-xs">${type === 'free' ? '(Ollama · kostenlos)' : ''}</span>`;
+  out.appendChild(div);
+  div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function appendAgentOutput(agent, mission, output, tokIn, tokOut) {
+  const out = document.getElementById('output');
+  const div = document.createElement('div');
+  div.className = 'agent-output rounded-xl p-5';
+  div.innerHTML = `
+    <div class="flex items-center justify-between mb-3">
+      <div>
+        <span class="text-green-400 font-semibold">🤖 ${escHtml(agent)}</span>
+        <span class="text-gray-500 text-xs ml-3">${escHtml(mission)}</span>
+      </div>
+      <span class="text-xs text-gray-600">${tokIn}→${tokOut} tokens</span>
+    </div>
+    <pre class="text-gray-300 leading-relaxed">${escHtml(output)}</pre>`;
+  out.appendChild(div);
+  div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function appendDivider(label) {
+  const out = document.getElementById('output');
+  const div = document.createElement('div');
+  div.className = 'flex items-center gap-3 my-2';
+  div.innerHTML = `<div class="flex-1 h-px bg-gray-800"></div>
+    <span class="text-xs text-gray-600 wave-badge px-3 py-1 rounded-full">${escHtml(label)}</span>
+    <div class="flex-1 h-px bg-gray-800"></div>`;
+  out.appendChild(div);
+}
+
+function showError(msg) {
+  const out = document.getElementById('output');
+  const div = document.createElement('div');
+  div.className = 'error-box rounded-lg px-4 py-3 text-sm text-red-400';
+  div.textContent = '❌ ' + msg;
+  out.appendChild(div);
+}
+
+function setStatus(msg) {
+  document.getElementById('statusText').textContent = msg;
+}
+
+function clearOutput() {
+  document.getElementById('output').innerHTML = '';
+  document.getElementById('planBox').classList.add('hidden');
+  document.getElementById('planWaves').innerHTML = '';
+  document.getElementById('synthesis').classList.add('hidden');
+  document.getElementById('statusBar').classList.add('hidden');
+  document.getElementById('costBadge').classList.add('hidden');
+}
+
+function onStreamDone() {
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('runBtn').textContent = '▶ Orchestrierung starten';
+  document.getElementById('statusDot').classList.remove('pulse');
+  document.getElementById('statusDot').classList.add('bg-green-500');
+  document.getElementById('statusDot').classList.remove('bg-purple-500');
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
